@@ -529,5 +529,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get amenities for a specific park - for external applications
+  publicApiRouter.get("/parks/:id/amenities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const amenities = await storage.getParkAmenities(parkId);
+      
+      // Format for external consumption
+      const formattedAmenities = amenities.map(amenity => ({
+        id: amenity.id,
+        name: amenity.name,
+        category: amenity.category,
+        icon: amenity.icon
+      }));
+      
+      res.json({
+        status: "success",
+        data: formattedAmenities,
+        count: formattedAmenities.length
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching park amenities data" 
+      });
+    }
+  });
+  
   return httpServer;
 }
