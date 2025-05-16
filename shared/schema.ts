@@ -1,6 +1,7 @@
 import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -195,6 +196,82 @@ export const DEFAULT_AMENITIES = [
 ] as const;
 
 // Extended Park data with amenities and images
+// Define relations
+export const usersRelations = relations(users, ({ one }) => ({
+  municipality: one(municipalities, {
+    fields: [users.municipalityId],
+    references: [municipalities.id],
+  }),
+}));
+
+export const municipalitiesRelations = relations(municipalities, ({ many }) => ({
+  users: many(users),
+  parks: many(parks),
+}));
+
+export const parksRelations = relations(parks, ({ one, many }) => ({
+  municipality: one(municipalities, {
+    fields: [parks.municipalityId],
+    references: [municipalities.id],
+  }),
+  parkImages: many(parkImages),
+  parkAmenities: many(parkAmenities),
+  documents: many(documents),
+  activities: many(activities),
+  comments: many(comments),
+  incidents: many(incidents),
+}));
+
+export const parkImagesRelations = relations(parkImages, ({ one }) => ({
+  park: one(parks, {
+    fields: [parkImages.parkId],
+    references: [parks.id],
+  }),
+}));
+
+export const amenitiesRelations = relations(amenities, ({ many }) => ({
+  parkAmenities: many(parkAmenities),
+}));
+
+export const parkAmenitiesRelations = relations(parkAmenities, ({ one }) => ({
+  park: one(parks, {
+    fields: [parkAmenities.parkId],
+    references: [parks.id],
+  }),
+  amenity: one(amenities, {
+    fields: [parkAmenities.amenityId],
+    references: [amenities.id],
+  }),
+}));
+
+export const documentsRelations = relations(documents, ({ one }) => ({
+  park: one(parks, {
+    fields: [documents.parkId],
+    references: [parks.id],
+  }),
+}));
+
+export const activitiesRelations = relations(activities, ({ one }) => ({
+  park: one(parks, {
+    fields: [activities.parkId],
+    references: [parks.id],
+  }),
+}));
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  park: one(parks, {
+    fields: [comments.parkId],
+    references: [parks.id],
+  }),
+}));
+
+export const incidentsRelations = relations(incidents, ({ one }) => ({
+  park: one(parks, {
+    fields: [incidents.parkId],
+    references: [parks.id],
+  }),
+}));
+
 export type ExtendedPark = Park & {
   amenities?: Amenity[];
   images?: ParkImage[];

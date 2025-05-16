@@ -5,6 +5,8 @@ import {
   type Document, type InsertDocument, type Activity, type InsertActivity, type Comment, type InsertComment, 
   type Incident, type InsertIncident, type ExtendedPark, PARK_TYPES, DEFAULT_AMENITIES
 } from "@shared/schema";
+import { db } from "./db";
+import { and, eq, like, inArray, or, desc, isNull } from "drizzle-orm";
 
 // Storage interface for all CRUD operations
 export interface IStorage {
@@ -728,4 +730,439 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+
+
+// Implementation using PostgreSQL with Drizzle
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await db.insert(users).values(user).returning();
+    return newUser;
+  }
+
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
+    const [updatedUser] = await db.update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser || undefined;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getMunicipality(id: number): Promise<Municipality | undefined> {
+    const [municipality] = await db.select().from(municipalities).where(eq(municipalities.id, id));
+    return municipality || undefined;
+  }
+
+  async getMunicipalities(): Promise<Municipality[]> {
+    return await db.select().from(municipalities).orderBy(municipalities.name);
+  }
+
+  async createMunicipality(municipalityData: InsertMunicipality): Promise<Municipality> {
+    const [newMunicipality] = await db.insert(municipalities).values(municipalityData).returning();
+    return newMunicipality;
+  }
+
+  async updateMunicipality(id: number, municipalityData: Partial<InsertMunicipality>): Promise<Municipality | undefined> {
+    const [updatedMunicipality] = await db.update(municipalities)
+      .set(municipalityData)
+      .where(eq(municipalities.id, id))
+      .returning();
+    return updatedMunicipality || undefined;
+  }
+
+  async deleteMunicipality(id: number): Promise<boolean> {
+    const result = await db.delete(municipalities).where(eq(municipalities.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getPark(id: number): Promise<Park | undefined> {
+    const [park] = await db.select().from(parks).where(eq(parks.id, id));
+    return park || undefined;
+  }
+
+  async getExtendedPark(id: number): Promise<ExtendedPark | undefined> {
+    const park = await this.getPark(id);
+    if (!park) return undefined;
+
+    const parkAmenities = await this.getParkAmenities(id);
+    const parkImages = await this.getParkImages(id);
+    const parkDocuments = await this.getParkDocuments(id);
+    const parkActivities = await this.getParkActivities(id);
+    const parkComments = await this.getParkComments(id, true); // Only approved comments
+    
+    const [municipality] = await db.select().from(municipalities).where(eq(municipalities.id, park.municipalityId));
+    
+    // Find primary image URL
+    let primaryImage = undefined;
+    const primaryImgRecord = parkImages.find(img => img.isPrimary);
+    if (primaryImgRecord) {
+      primaryImage = primaryImgRecord.imageUrl;
+    } else if (parkImages.length > 0) {
+      primaryImage = parkImages[0].imageUrl;
+    }
+
+    return {
+      ...park,
+      amenities: parkAmenities,
+      images: parkImages,
+      primaryImage,
+      documents: parkDocuments,
+      activities: parkActivities,
+      comments: parkComments,
+      municipality: municipality
+    };
+  }
+
+  async getParks(filters?: Partial<{
+    municipalityId: number;
+    parkType: string;
+    postalCode: string;
+    amenities: number[];
+    search: string;
+  }>): Promise<Park[]> {
+    let query = db.select().from(parks);
+    
+    if (filters) {
+      const whereConditions = [];
+      
+      if (filters.municipalityId !== undefined) {
+        whereConditions.push(eq(parks.municipalityId, filters.municipalityId));
+      }
+      
+      if (filters.parkType) {
+        whereConditions.push(eq(parks.parkType, filters.parkType));
+      }
+      
+      if (filters.postalCode) {
+        whereConditions.push(eq(parks.postalCode, filters.postalCode));
+      }
+      
+      if (filters.search) {
+        whereConditions.push(
+          or(
+            like(parks.name, `%${filters.search}%`),
+            like(parks.description || '', `%${filters.search}%`),
+            like(parks.address, `%${filters.search}%`)
+          )
+        );
+      }
+      
+      if (whereConditions.length > 0) {
+        query = query.where(and(...whereConditions));
+      }
+    }
+    
+    const result = await query.orderBy(parks.name);
+    
+    // Filter by amenities if specified
+    if (filters?.amenities && filters.amenities.length > 0) {
+      const parksWithAmenities = [];
+      
+      for (const park of result) {
+        const parkAmenityRecords = await db.select()
+          .from(parkAmenities)
+          .where(
+            and(
+              eq(parkAmenities.parkId, park.id),
+              inArray(parkAmenities.amenityId, filters.amenities)
+            )
+          );
+          
+        if (parkAmenityRecords.length === filters.amenities.length) {
+          parksWithAmenities.push(park);
+        }
+      }
+      
+      return parksWithAmenities;
+    }
+    
+    return result;
+  }
+
+  async getExtendedParks(filters?: Partial<{
+    municipalityId: number;
+    parkType: string;
+    postalCode: string;
+    amenities: number[];
+    search: string;
+  }>): Promise<ExtendedPark[]> {
+    const parksList = await this.getParks(filters);
+    const extendedParks: ExtendedPark[] = [];
+    
+    for (const park of parksList) {
+      const extendedPark = await this.getExtendedPark(park.id);
+      if (extendedPark) {
+        extendedParks.push(extendedPark);
+      }
+    }
+    
+    return extendedParks;
+  }
+
+  async createPark(parkData: InsertPark): Promise<Park> {
+    const [newPark] = await db.insert(parks).values(parkData).returning();
+    return newPark;
+  }
+
+  async updatePark(id: number, parkData: Partial<InsertPark>): Promise<Park | undefined> {
+    const [updatedPark] = await db.update(parks)
+      .set({
+        ...parkData,
+        updatedAt: new Date()
+      })
+      .where(eq(parks.id, id))
+      .returning();
+    return updatedPark || undefined;
+  }
+
+  async deletePark(id: number): Promise<boolean> {
+    const result = await db.delete(parks).where(eq(parks.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getParkImage(id: number): Promise<ParkImage | undefined> {
+    const [image] = await db.select().from(parkImages).where(eq(parkImages.id, id));
+    return image || undefined;
+  }
+
+  async getParkImages(parkId: number): Promise<ParkImage[]> {
+    return await db.select()
+      .from(parkImages)
+      .where(eq(parkImages.parkId, parkId))
+      .orderBy(desc(parkImages.isPrimary));
+  }
+
+  async createParkImage(imageData: InsertParkImage): Promise<ParkImage> {
+    // If this is a primary image, make sure no other images for this park are primary
+    if (imageData.isPrimary) {
+      await db.update(parkImages)
+        .set({ isPrimary: false })
+        .where(eq(parkImages.parkId, imageData.parkId));
+    }
+    
+    const [newImage] = await db.insert(parkImages).values(imageData).returning();
+    return newImage;
+  }
+
+  async updateParkImage(id: number, imageData: Partial<InsertParkImage>): Promise<ParkImage | undefined> {
+    const image = await this.getParkImage(id);
+    if (!image) return undefined;
+    
+    // If setting this as primary, unset others
+    if (imageData.isPrimary) {
+      await db.update(parkImages)
+        .set({ isPrimary: false })
+        .where(eq(parkImages.parkId, image.parkId));
+    }
+    
+    const [updatedImage] = await db.update(parkImages)
+      .set(imageData)
+      .where(eq(parkImages.id, id))
+      .returning();
+    return updatedImage || undefined;
+  }
+
+  async deleteParkImage(id: number): Promise<boolean> {
+    const result = await db.delete(parkImages).where(eq(parkImages.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getAmenity(id: number): Promise<Amenity | undefined> {
+    const [amenity] = await db.select().from(amenities).where(eq(amenities.id, id));
+    return amenity || undefined;
+  }
+
+  async getAmenities(): Promise<Amenity[]> {
+    return await db.select().from(amenities).orderBy(amenities.name);
+  }
+
+  async createAmenity(amenityData: InsertAmenity): Promise<Amenity> {
+    const [newAmenity] = await db.insert(amenities).values(amenityData).returning();
+    return newAmenity;
+  }
+
+  async getParkAmenities(parkId: number): Promise<Amenity[]> {
+    const parkAmenitiesData = await db.select()
+      .from(parkAmenities)
+      .where(eq(parkAmenities.parkId, parkId));
+      
+    if (parkAmenitiesData.length === 0) return [];
+    
+    const amenityIds = parkAmenitiesData.map(pa => pa.amenityId);
+    return await db.select()
+      .from(amenities)
+      .where(inArray(amenities.id, amenityIds))
+      .orderBy(amenities.name);
+  }
+
+  async addAmenityToPark(parkAmenityData: InsertParkAmenity): Promise<ParkAmenity> {
+    // Check if the relation already exists
+    const [existing] = await db.select()
+      .from(parkAmenities)
+      .where(
+        and(
+          eq(parkAmenities.parkId, parkAmenityData.parkId),
+          eq(parkAmenities.amenityId, parkAmenityData.amenityId)
+        )
+      );
+      
+    if (existing) return existing;
+    
+    const [newParkAmenity] = await db.insert(parkAmenities)
+      .values(parkAmenityData)
+      .returning();
+    return newParkAmenity;
+  }
+
+  async removeAmenityFromPark(parkId: number, amenityId: number): Promise<boolean> {
+    const result = await db.delete(parkAmenities)
+      .where(
+        and(
+          eq(parkAmenities.parkId, parkId),
+          eq(parkAmenities.amenityId, amenityId)
+        )
+      );
+    return result.rowCount > 0;
+  }
+
+  async getDocument(id: number): Promise<Document | undefined> {
+    const [document] = await db.select().from(documents).where(eq(documents.id, id));
+    return document || undefined;
+  }
+
+  async getParkDocuments(parkId: number): Promise<Document[]> {
+    return await db.select()
+      .from(documents)
+      .where(eq(documents.parkId, parkId))
+      .orderBy(documents.title);
+  }
+
+  async createDocument(documentData: InsertDocument): Promise<Document> {
+    const [newDocument] = await db.insert(documents).values(documentData).returning();
+    return newDocument;
+  }
+
+  async deleteDocument(id: number): Promise<boolean> {
+    const result = await db.delete(documents).where(eq(documents.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getActivity(id: number): Promise<Activity | undefined> {
+    const [activity] = await db.select().from(activities).where(eq(activities.id, id));
+    return activity || undefined;
+  }
+
+  async getParkActivities(parkId: number): Promise<Activity[]> {
+    return await db.select()
+      .from(activities)
+      .where(eq(activities.parkId, parkId))
+      .orderBy(activities.startDate);
+  }
+
+  async createActivity(activityData: InsertActivity): Promise<Activity> {
+    const [newActivity] = await db.insert(activities).values(activityData).returning();
+    return newActivity;
+  }
+
+  async updateActivity(id: number, activityData: Partial<InsertActivity>): Promise<Activity | undefined> {
+    const [updatedActivity] = await db.update(activities)
+      .set(activityData)
+      .where(eq(activities.id, id))
+      .returning();
+    return updatedActivity || undefined;
+  }
+
+  async deleteActivity(id: number): Promise<boolean> {
+    const result = await db.delete(activities).where(eq(activities.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getComment(id: number): Promise<Comment | undefined> {
+    const [comment] = await db.select().from(comments).where(eq(comments.id, id));
+    return comment || undefined;
+  }
+
+  async getParkComments(parkId: number, approvedOnly: boolean = false): Promise<Comment[]> {
+    let query = db.select().from(comments).where(eq(comments.parkId, parkId));
+    
+    if (approvedOnly) {
+      query = query.where(eq(comments.isApproved, true));
+    }
+    
+    return await query.orderBy(desc(comments.createdAt));
+  }
+
+  async createComment(commentData: InsertComment): Promise<Comment> {
+    const [newComment] = await db.insert(comments)
+      .values({
+        ...commentData,
+        isApproved: false
+      })
+      .returning();
+    return newComment;
+  }
+
+  async approveComment(id: number): Promise<Comment | undefined> {
+    const [approvedComment] = await db.update(comments)
+      .set({ isApproved: true })
+      .where(eq(comments.id, id))
+      .returning();
+    return approvedComment || undefined;
+  }
+
+  async deleteComment(id: number): Promise<boolean> {
+    const result = await db.delete(comments).where(eq(comments.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getIncident(id: number): Promise<Incident | undefined> {
+    const [incident] = await db.select().from(incidents).where(eq(incidents.id, id));
+    return incident || undefined;
+  }
+
+  async getParkIncidents(parkId: number): Promise<Incident[]> {
+    return await db.select()
+      .from(incidents)
+      .where(eq(incidents.parkId, parkId))
+      .orderBy(desc(incidents.createdAt));
+  }
+
+  async createIncident(incidentData: InsertIncident): Promise<Incident> {
+    const [newIncident] = await db.insert(incidents)
+      .values({
+        ...incidentData,
+        status: 'pending',
+        updatedAt: new Date()
+      })
+      .returning();
+    return newIncident;
+  }
+
+  async updateIncidentStatus(id: number, status: string): Promise<Incident | undefined> {
+    const [updatedIncident] = await db.update(incidents)
+      .set({ 
+        status, 
+        updatedAt: new Date() 
+      })
+      .where(eq(incidents.id, id))
+      .returning();
+    return updatedIncident || undefined;
+  }
+}
+
+// Use database storage
+export const storage = new DatabaseStorage();
