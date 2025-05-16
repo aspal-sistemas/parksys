@@ -1,0 +1,81 @@
+1. Arquitectura General (SaaS - Multitenencia)
+Modelo SaaS multitenencia: cada ciudad o municipio tiene su propia instancia lógica (base de datos segmentada o compartida con identificadores).
+
+Front-end ciudadano (público): acceso sin registro, enfocado en navegación, búsqueda y participación.
+
+Back-end institucional (privado): acceso con usuarios administrativos para municipios y gestores de parques.
+
+🧱 2. Módulos Principales
+A. Catálogo e Inventario de Espacios Públicos
+Geolocalización (Google Maps, Mapbox u OpenStreetMap)
+
+Tipología del parque (barrial, vecinal, lineal, metropolitano, ecológico, botánico, deportivo, etc.)
+
+Datos técnicos:
+
+Nombre
+
+Ubicación y coordenadas
+
+Superficie (m²/ha)
+
+Año de fundación
+
+Responsable administrativo
+
+Estado de conservación
+
+Reglamento interno (PDF)
+
+Multimedios (fotos, video)
+
+Documentos técnicos adjuntos (plan maestro, planos, evaluaciones, etc.)
+
+B. Amenidades, Atracciones y Servicios
+Selector de íconos: juegos infantiles, baños, canchas, ciclovías, senderos, zona de mascotas, huertos urbanos, food trucks, fuentes, escenarios culturales, iluminación, seguridad, accesibilidad, wifi…
+
+Actividades programadas: eventos deportivos, ferias, clases al aire libre, conciertos.
+
+C. Buscador Ciudadano Inteligente
+Filtros por:
+
+Nombre del parque
+
+Tipo de parque
+
+Código postal, colonia o zona
+
+Amenidades específicas
+
+Accesibilidad (parques con baños, rampas, biciestacionamientos)
+
+Resultados en mapa interactivo + vista de lista
+
+D. Ficha Pública de Cada Parque
+Información general + multimedia
+
+Horarios de apertura
+
+Cómo llegar
+
+Noticias y novedades del parque
+
+Comentarios y reseñas ciudadanas (opcional moderación)
+
+Actividades próximas
+
+Contacto con el administrador
+
+Reporte de incidentes o sugerencias
+
+E. Panel Administrativo para Municipios
+Alta/baja/edición de parques y espacios
+
+Gestión de actividades, noticias y contenido multimedia
+
+Estadísticas de visitas al sitio
+
+Control de usuarios y permisos por parque o distrito
+
+Descarga de reportes en PDF/Excel
+
