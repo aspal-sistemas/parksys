@@ -32,7 +32,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
   const handleApplyFilters = () => {
     onApplyFilters({
       search: search || undefined,
-      parkType: parkType || undefined,
+      parkType: parkType && parkType !== 'todos' ? parkType : undefined,
       postalCode: postalCode || undefined,
       amenityIds: selectedAmenities.length > 0 ? selectedAmenities : undefined,
     });
@@ -109,7 +109,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
               <SelectValue placeholder="Todos los tipos" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos los tipos</SelectItem>
+              <SelectItem value="todos">Todos los tipos</SelectItem>
               {PARK_TYPES.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
                   {type.label}

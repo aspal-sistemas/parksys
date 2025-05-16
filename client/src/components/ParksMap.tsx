@@ -4,6 +4,31 @@ import { useLocation } from 'wouter';
 import { Button } from "@/components/ui/button";
 import { ExtendedPark } from '@shared/schema';
 
+// Definir la interfaz de Google Maps para evitar errores de TypeScript
+declare global {
+  interface Window {
+    google: typeof google;
+  }
+}
+
+// Stub para el objeto google
+declare var google: {
+  maps: {
+    Map: any;
+    Marker: any;
+    LatLngBounds: any;
+    SymbolPath: {
+      CIRCLE: any;
+    };
+    MapTypeId: {
+      ROADMAP: any;
+    };
+    Animation: {
+      BOUNCE: any;
+    };
+  };
+};
+
 interface ParksMapProps {
   parks: ExtendedPark[];
   selectedParkId?: number;
@@ -27,7 +52,7 @@ const ParksMap: React.FC<ParksMapProps> = ({
   useEffect(() => {
     if (!window.google && !document.querySelector('script[src*="maps.googleapis.com"]')) {
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY || ''}&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = () => setMapLoaded(true);
