@@ -143,7 +143,7 @@ const Activities: React.FC = () => {
       (activity.description?.toLowerCase().includes(searchTerm.toLowerCase())) : 
       true;
       
-    const matchesCategory = categoryFilter ? 
+    const matchesCategory = categoryFilter && categoryFilter !== 'all' ? 
       activity.category === categoryFilter : 
       true;
       
@@ -212,7 +212,7 @@ const Activities: React.FC = () => {
             </div>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todas las categorías</SelectItem>
+            <SelectItem value="all">Todas las categorías</SelectItem>
             {uniqueCategories.map(category => (
               <SelectItem key={category} value={category}>
                 {category.charAt(0).toUpperCase() + category.slice(1)}
