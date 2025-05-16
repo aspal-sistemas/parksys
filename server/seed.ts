@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { 
-  users, municipalities, parks, amenities, DEFAULT_AMENITIES 
+  users, municipalities, parks, amenities, parkAmenities, DEFAULT_AMENITIES 
 } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
@@ -80,8 +80,55 @@ export async function seedDatabase() {
     }).returning();
     
     console.log(`Parque ${parqueMetropolitano.name} creado correctamente.`);
+    
+    // Verificar si ya existen amenidades asociadas al parque
+    const parkAmenitiesData = await db.select().from(parkAmenities).where(eq(parkAmenities.parkId, parqueMetropolitano.id));
+    
+    // Si no hay amenidades asociadas, agregar algunas
+    if (parkAmenitiesData.length === 0) {
+      console.log("Asociando amenidades al parque...");
+      
+      // Obtener IDs de algunas amenidades para asociarlas
+      const amenityList = await db.select().from(amenities).limit(6);
+      
+      // Asociar amenidades al parque
+      for (const amenity of amenityList) {
+        await db.insert(parkAmenities).values({
+          parkId: parqueMetropolitano.id,
+          amenityId: amenity.id
+        });
+      }
+      
+      console.log(`${amenityList.length} amenidades asociadas al parque correctamente.`);
+    }
   } else {
     console.log(`Ya existen ${existingMunicipalities.length} municipios en la base de datos.`);
+    
+    // Asociar amenidades a parques existentes
+    const existingParks = await db.select().from(parks);
+    
+    for (const park of existingParks) {
+      // Verificar si ya existen amenidades asociadas al parque
+      const parkAmenitiesData = await db.select().from(parkAmenities).where(eq(parkAmenities.parkId, park.id));
+      
+      // Si no hay amenidades asociadas, agregar algunas
+      if (parkAmenitiesData.length === 0) {
+        console.log(`Asociando amenidades al parque ${park.name}...`);
+        
+        // Obtener IDs de algunas amenidades para asociarlas
+        const amenityList = await db.select().from(amenities).limit(6);
+        
+        // Asociar amenidades al parque
+        for (const amenity of amenityList) {
+          await db.insert(parkAmenities).values({
+            parkId: park.id,
+            amenityId: amenity.id
+          });
+        }
+        
+        console.log(`${amenityList.length} amenidades asociadas al parque ${park.name} correctamente.`);
+      }
+    }
   }
   
   console.log("Base de datos inicializada correctamente.");
