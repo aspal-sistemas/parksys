@@ -6,7 +6,7 @@ import {
   type Incident, type InsertIncident, type ExtendedPark, PARK_TYPES, DEFAULT_AMENITIES
 } from "@shared/schema";
 import { db } from "./db";
-import { and, eq, like, inArray, or, desc, isNull } from "drizzle-orm";
+import { and, eq, like, inArray, or, desc, isNull, lte, gte } from "drizzle-orm";
 
 // Storage interface for all CRUD operations
 export interface IStorage {
@@ -33,6 +33,14 @@ export interface IStorage {
     postalCode: string;
     amenities: number[];
     search: string;
+    minArea?: number;
+    maxArea?: number;
+    hasAccessibility?: boolean;
+    hasActivities?: boolean;
+    foundedBefore?: number;
+    foundedAfter?: number;
+    conservationStatus?: string;
+    nearLocation?: {latitude: string, longitude: string, maxDistance: number};
   }>): Promise<Park[]>;
   getExtendedParks(filters?: Partial<{
     municipalityId: number;
@@ -40,6 +48,14 @@ export interface IStorage {
     postalCode: string;
     amenities: number[];
     search: string;
+    minArea?: number;
+    maxArea?: number;
+    hasAccessibility?: boolean;
+    hasActivities?: boolean;
+    foundedBefore?: number;
+    foundedAfter?: number;
+    conservationStatus?: string;
+    nearLocation?: {latitude: string, longitude: string, maxDistance: number};
   }>): Promise<ExtendedPark[]>;
   createPark(park: InsertPark): Promise<Park>;
   updatePark(id: number, park: Partial<InsertPark>): Promise<Park | undefined>;
@@ -833,6 +849,14 @@ export class DatabaseStorage implements IStorage {
     postalCode: string;
     amenities: number[];
     search: string;
+    minArea?: number;
+    maxArea?: number;
+    hasAccessibility?: boolean;
+    hasActivities?: boolean;
+    foundedBefore?: number;
+    foundedAfter?: number;
+    conservationStatus?: string;
+    nearLocation?: {latitude: string, longitude: string, maxDistance: number};
   }>): Promise<Park[]> {
     let query = db.select().from(parks);
     
@@ -861,12 +885,26 @@ export class DatabaseStorage implements IStorage {
         );
       }
       
+      if (filters.conservationStatus) {
+        whereConditions.push(eq(parks.conservationStatus, filters.conservationStatus));
+      }
+      
+      if (filters.foundedBefore) {
+        whereConditions.push(lte(parks.foundationYear, filters.foundedBefore));
+      }
+      
+      if (filters.foundedAfter) {
+        whereConditions.push(gte(parks.foundationYear, filters.foundedAfter));
+      }
+      
       if (whereConditions.length > 0) {
         query = query.where(and(...whereConditions));
       }
     }
     
-    const result = await query.orderBy(parks.name);
+    let result = await query.orderBy(parks.name);
+    
+    // Post-database filtering for complex conditions
     
     // Filter by amenities if specified
     if (filters?.amenities && filters.amenities.length > 0) {
@@ -887,7 +925,98 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
-      return parksWithAmenities;
+      result = parksWithAmenities;
+    }
+    
+    // Filter by area
+    if ((filters?.minArea !== undefined) || (filters?.maxArea !== undefined)) {
+      result = result.filter(park => {
+        // Parse area string to number
+        const areaPart = park.area?.split(' ')[0]; // Extract the numeric part
+        if (!areaPart) return false;
+        
+        const areaValue = parseFloat(areaPart);
+        if (isNaN(areaValue)) return false;
+        
+        const hasHectares = park.area?.includes('hectárea') || park.area?.includes('hectareas');
+        // Convert to square meters if in hectares
+        const areaInM2 = hasHectares ? areaValue * 10000 : areaValue;
+        
+        if (filters.minArea !== undefined && areaInM2 < filters.minArea) return false;
+        if (filters.maxArea !== undefined && areaInM2 > filters.maxArea) return false;
+        
+        return true;
+      });
+    }
+    
+    // Filter by accessibility features
+    if (filters?.hasAccessibility) {
+      const accessibilityParks = [];
+      
+      for (const park of result) {
+        // Check for amenities related to accessibility
+        const accessibilityAmenities = await db
+          .select()
+          .from(parkAmenities)
+          .innerJoin(amenities, eq(parkAmenities.amenityId, amenities.id))
+          .where(
+            and(
+              eq(parkAmenities.parkId, park.id),
+              eq(amenities.category, 'accesibilidad')
+            )
+          );
+          
+        if (accessibilityAmenities.length > 0) {
+          accessibilityParks.push(park);
+        }
+      }
+      
+      result = accessibilityParks;
+    }
+    
+    // Filter by parks with activities
+    if (filters?.hasActivities) {
+      const parksWithActivities = [];
+      
+      for (const park of result) {
+        const parkActivities = await db
+          .select()
+          .from(activities)
+          .where(eq(activities.parkId, park.id))
+          .limit(1);
+          
+        if (parkActivities.length > 0) {
+          parksWithActivities.push(park);
+        }
+      }
+      
+      result = parksWithActivities;
+    }
+    
+    // Filter by location proximity (simple distance calculation)
+    if (filters?.nearLocation) {
+      result = result.filter(park => {
+        // Simple distance calculation using latitude and longitude
+        const lat1 = parseFloat(park.latitude);
+        const lon1 = parseFloat(park.longitude);
+        const lat2 = parseFloat(filters.nearLocation!.latitude);
+        const lon2 = parseFloat(filters.nearLocation!.longitude);
+        
+        if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) return false;
+        
+        // Calculate distance using haversine formula
+        const R = 6371; // Radius of the earth in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+          Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+          Math.sin(dLon/2) * Math.sin(dLon/2); 
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        const distance = R * c; // Distance in km
+        
+        return distance <= filters.nearLocation!.maxDistance;
+      });
     }
     
     return result;
