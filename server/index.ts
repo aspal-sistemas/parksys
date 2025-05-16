@@ -36,7 +36,16 @@ app.use((req, res, next) => {
   next();
 });
 
+import { seedDatabase } from "./seed";
+
 (async () => {
+  try {
+    // Inicializar la base de datos con datos predeterminados
+    await seedDatabase();
+  } catch (error) {
+    console.error("Error al inicializar la base de datos:", error);
+  }
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
