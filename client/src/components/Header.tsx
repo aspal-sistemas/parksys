@@ -51,9 +51,15 @@ const Header: React.FC = () => {
                   </a>
                 </Link>
                 
-                <a href="#" className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 px-1 pt-1 pb-3 text-sm font-medium">
-                  Actividades
-                </a>
+                <Link href="/activities">
+                  <a className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                    location === '/activities' 
+                      ? 'border-primary text-gray-900' 
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}>
+                    Actividades
+                  </a>
+                </Link>
                 
                 <a href="#" className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 px-1 pt-1 pb-3 text-sm font-medium">
                   Acerca de
@@ -121,9 +127,15 @@ const Header: React.FC = () => {
               </a>
             </Link>
             
-            <a href="#" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50">
-              Actividades
-            </a>
+            <Link href="/activities">
+              <a className={`block px-3 py-2 rounded-md text-base font-medium ${
+                location === '/activities' 
+                  ? 'bg-primary-50 text-primary-700' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}>
+                Actividades
+              </a>
+            </Link>
             
             <a href="#" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50">
               Acerca de

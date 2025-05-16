@@ -1,74 +1,32 @@
-import React from 'react';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { insertActivitySchema, InsertActivity, Activity, Park } from '@shared/schema';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { CalendarDays, MapPin, Clock } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { Activity, InsertActivity, Park, insertActivitySchema } from "@shared/schema";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
-// Extendemos el schema para añadir validaciones adicionales
-const formSchema = insertActivitySchema.extend({
-  // Verificamos que la fecha sea en el futuro si es una actividad nueva
-  startDate: z.coerce.date().refine(
-    (date) => {
-      if (!date) return false;
-      // Solo validamos para el futuro si es una actividad nueva (sin id)
-      return true;
-    },
-    {
-      message: "La fecha de inicio debe ser en el futuro",
-    }
-  ),
-  endDate: z.coerce.date().optional(),
-  parkId: z.coerce.number({
-    required_error: "Debes seleccionar un parque",
-    invalid_type_error: "Debes seleccionar un parque válido"
-  }),
-  // Añadimos las demás validaciones
-  title: z.string().min(3, "El título debe tener al menos 3 caracteres"),
-  description: z.string().min(10, "La descripción debe tener al menos 10 caracteres"),
-  location: z.string().min(3, "La ubicación debe tener al menos 3 caracteres").optional(),
-  category: z.string().min(2, "La categoría debe tener al menos 2 caracteres").optional(),
-});
-
-// Categorías predefinidas
-const CATEGORIES = [
-  { value: "deporte", label: "Deporte" },
-  { value: "cultura", label: "Cultura" },
-  { value: "educacion", label: "Educación" },
-  { value: "comunidad", label: "Comunidad" },
-  { value: "medio_ambiente", label: "Medio Ambiente" },
-  { value: "evento", label: "Evento Especial" },
+// Categorías de actividades
+const ACTIVITY_CATEGORIES = [
+  { value: "deportiva", label: "Deportiva" },
+  { value: "cultural", label: "Cultural" },
+  { value: "recreativa", label: "Recreativa" },
+  { value: "educativa", label: "Educativa" },
+  { value: "comunitaria", label: "Comunitaria" },
+  { value: "ambiental", label: "Ambiental" },
+  { value: "otro", label: "Otro" },
 ];
 
 interface ActivityFormProps {
@@ -78,82 +36,93 @@ interface ActivityFormProps {
   onCancel: () => void;
 }
 
-const ActivityForm: React.FC<ActivityFormProps> = ({ 
-  parks, 
-  activity,
-  onSuccess, 
-  onCancel 
-}) => {
+const ActivityForm: React.FC<ActivityFormProps> = ({ parks, activity, onSuccess, onCancel }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const isEditing = !!activity;
   
-  // Inicializar formulario
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      parkId: activity?.parkId || 0,
-      title: activity?.title || '',
-      description: activity?.description || '',
-      category: activity?.category || '',
-      location: activity?.location || '',
-      startDate: activity?.startDate ? new Date(activity.startDate) : new Date(),
-      endDate: activity?.endDate ? new Date(activity.endDate) : undefined,
-    },
+  // Extender el esquema de actividad con validaciones adicionales
+  const activityFormSchema = insertActivitySchema.extend({
+    startDate: z.date({
+      required_error: "La fecha de inicio es requerida",
+    }),
+    endDate: z.date().optional(),
+    parkId: z.number({
+      required_error: "El parque es requerido",
+    }),
   });
-  
-  // Mutation para crear/actualizar actividad
+
+  // Crear tipo para el formulario con la extensión de tipos
+  type ActivityFormValues = z.infer<typeof activityFormSchema>;
+
+  // Configurar valores por defecto
+  const defaultValues: Partial<ActivityFormValues> = {
+    title: activity?.title || "",
+    description: activity?.description || "",
+    parkId: activity?.parkId || undefined,
+    category: activity?.category || undefined,
+    location: activity?.location || "",
+    startDate: activity?.startDate ? new Date(activity.startDate) : undefined,
+    endDate: activity?.endDate ? new Date(activity.endDate) : undefined,
+  };
+
+  // Configurar el formulario
+  const form = useForm<ActivityFormValues>({
+    resolver: zodResolver(activityFormSchema),
+    defaultValues,
+  });
+
+  // Mutation para crear o actualizar una actividad
   const mutation = useMutation({
     mutationFn: (data: InsertActivity) => {
-      if (isEditing && activity) {
-        return apiRequest(`/api/activities/${activity.id}`, 'PUT', data);
+      if (activity) {
+        // Si existe, actualizar
+        return apiRequest(`/api/activities/${activity.id}`, "PUT", data);
       } else {
-        return apiRequest('/api/activities', 'POST', data);
+        // Si no existe, crear nueva
+        return apiRequest(`/api/parks/${data.parkId}/activities`, "POST", data);
       }
     },
     onSuccess: () => {
-      // Invalidar consultas para actualizar datos
-      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/parks'] });
+      // Invalidar consultas para recargar datos
+      queryClient.invalidateQueries({ queryKey: ["activities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/parks"] });
       
-      // Notificar y cerrar
       toast({
-        title: isEditing ? "Actividad actualizada" : "Actividad creada",
-        description: isEditing
-          ? "La actividad ha sido actualizada exitosamente"
-          : "La nueva actividad ha sido creada exitosamente",
+        title: activity ? "Actividad actualizada" : "Actividad creada",
+        description: activity
+          ? "La actividad ha sido actualizada exitosamente."
+          : "La nueva actividad ha sido creada exitosamente.",
       });
       
       onSuccess();
     },
-    onError: (error) => {
-      console.error('Error:', error);
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: `Hubo un problema al ${isEditing ? 'actualizar' : 'crear'} la actividad. Inténtalo de nuevo.`,
+        description: `No se pudo ${activity ? 'actualizar' : 'crear'} la actividad: ${error.message || 'Ocurrió un error inesperado.'}`,
         variant: "destructive",
       });
     },
   });
-  
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    mutation.mutate(data as InsertActivity);
+
+  // Manejar envío del formulario
+  const onSubmit = (data: ActivityFormValues) => {
+    mutation.mutate(data);
   };
-  
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Selección de parque */}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {/* Selección del parque */}
         <FormField
           control={form.control}
           name="parkId"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Parque</FormLabel>
-              <Select
+              <Select 
                 onValueChange={(value) => field.onChange(parseInt(value))}
-                defaultValue={field.value.toString()}
-                value={field.value.toString()}
+                defaultValue={field.value?.toString()}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -169,32 +138,32 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
                 </SelectContent>
               </Select>
               <FormDescription>
-                Elige el parque donde se realizará esta actividad
+                Selecciona el parque donde se realizará la actividad
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
-        {/* Título */}
+
+        {/* Título de la actividad */}
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Título de la actividad</FormLabel>
+              <FormLabel>Título</FormLabel>
               <FormControl>
-                <Input placeholder="Ej. Yoga en el Parque" {...field} />
+                <Input placeholder="Nombre de la actividad" {...field} />
               </FormControl>
               <FormDescription>
-                Un título descriptivo y atractivo para la actividad
+                Nombre claro y conciso para la actividad
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
-        {/* Descripción */}
+
+        {/* Descripción de la actividad */}
         <FormField
           control={form.control}
           name="description"
@@ -203,30 +172,30 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
               <FormLabel>Descripción</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Describe la actividad con detalles para los asistentes..." 
-                  className="resize-y min-h-[100px]"
+                  placeholder="Describe la actividad en detalle" 
+                  className="min-h-[80px]" 
                   {...field} 
+                  value={field.value || ""}
                 />
               </FormControl>
               <FormDescription>
-                Detalles sobre la actividad, qué llevar, requisitos, etc.
+                Información detallada sobre la actividad
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
-        {/* Categoría */}
+
+        {/* Categoría de la actividad */}
         <FormField
           control={form.control}
           name="category"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Categoría</FormLabel>
-              <Select
+              <Select 
                 onValueChange={field.onChange}
-                defaultValue={field.value}
-                value={field.value}
+                defaultValue={field.value || undefined}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -234,7 +203,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {CATEGORIES.map((category) => (
+                  {ACTIVITY_CATEGORIES.map((category) => (
                     <SelectItem key={category.value} value={category.value}>
                       {category.label}
                     </SelectItem>
@@ -242,57 +211,58 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
                 </SelectContent>
               </Select>
               <FormDescription>
-                Clasifica la actividad para facilitar su búsqueda
+                Tipo de actividad que se realizará
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
-        {/* Ubicación dentro del parque */}
+
+        {/* Ubicación específica dentro del parque */}
         <FormField
           control={form.control}
           name="location"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Ubicación específica</FormLabel>
+              <FormLabel>Ubicación</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                  <Input placeholder="Ej. Área central del parque" className="pl-9" {...field} />
-                </div>
+                <Input 
+                  placeholder="Ubicación específica dentro del parque" 
+                  {...field} 
+                  value={field.value || ""}
+                />
               </FormControl>
               <FormDescription>
-                Lugar exacto dentro del parque donde se realizará la actividad
+                Lugar específico dentro del parque (ej. "Área de picnic", "Cancha principal")
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         {/* Fecha y hora de inicio */}
         <FormField
           control={form.control}
           name="startDate"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Fecha y hora de inicio</FormLabel>
+              <FormLabel>Fecha de inicio</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "pl-3 text-left font-normal",
+                        "w-full pl-3 text-left font-normal",
                         !field.value && "text-muted-foreground"
                       )}
                     >
-                      <CalendarDays className="mr-2 h-4 w-4" />
                       {field.value ? (
-                        format(field.value, "PPP' - 'HH:mm", { locale: es })
+                        format(field.value, "PPP", { locale: es })
                       ) : (
-                        <span>Selecciona fecha y hora</span>
+                        <span>Seleccionar fecha</span>
                       )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
@@ -303,94 +273,61 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
                     onSelect={field.onChange}
                     initialFocus
                   />
-                  <div className="p-3 border-t border-border">
-                    <Input
-                      type="time"
-                      value={format(field.value || new Date(), "HH:mm")}
-                      onChange={(e) => {
-                        const [hours, minutes] = e.target.value.split(":");
-                        const date = new Date(field.value || new Date());
-                        date.setHours(parseInt(hours));
-                        date.setMinutes(parseInt(minutes));
-                        field.onChange(date);
-                      }}
-                    />
-                  </div>
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                Cuándo comienza la actividad
+                Fecha en que inicia la actividad
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
-        {/* Fecha y hora de fin (opcional) */}
+
+        {/* Fecha y hora de finalización (opcional) */}
         <FormField
           control={form.control}
           name="endDate"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Fecha y hora de finalización (opcional)</FormLabel>
+              <FormLabel>Fecha de finalización (opcional)</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "pl-3 text-left font-normal",
+                        "w-full pl-3 text-left font-normal",
                         !field.value && "text-muted-foreground"
                       )}
                     >
-                      <Clock className="mr-2 h-4 w-4" />
                       {field.value ? (
-                        format(field.value, "PPP' - 'HH:mm", { locale: es })
+                        format(field.value, "PPP", { locale: es })
                       ) : (
-                        <span>Seleccionar finalización (opcional)</span>
+                        <span>Seleccionar fecha</span>
                       )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={field.value || undefined}
+                    selected={field.value}
                     onSelect={field.onChange}
                     initialFocus
-                    disabled={(date) => {
-                      // No permitir seleccionar fechas antes de la fecha de inicio
-                      const startDate = form.getValues().startDate;
-                      return date < new Date(startDate.setHours(0, 0, 0, 0));
-                    }}
                   />
-                  <div className="p-3 border-t border-border">
-                    <Input
-                      type="time"
-                      value={field.value ? format(field.value, "HH:mm") : ""}
-                      onChange={(e) => {
-                        if (!field.value && !e.target.value) return;
-                        
-                        const [hours, minutes] = e.target.value.split(":");
-                        // Si no hay fecha seleccionada, usar la fecha de inicio
-                        const date = new Date(field.value || form.getValues().startDate);
-                        date.setHours(parseInt(hours));
-                        date.setMinutes(parseInt(minutes));
-                        field.onChange(date);
-                      }}
-                    />
-                  </div>
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                Cuándo termina la actividad (deja en blanco si no tiene un final definido)
+                Fecha en que termina la actividad (dejar en blanco para actividades de un solo día)
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
-        <div className="flex justify-end space-x-2 pt-2">
+
+        {/* Botones de acción */}
+        <div className="flex justify-end space-x-2 pt-4">
           <Button 
             type="button" 
             variant="outline" 
@@ -404,13 +341,10 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
             disabled={mutation.isPending}
           >
             {mutation.isPending ? (
-              <>
-                <CalendarDays className="mr-2 h-4 w-4 animate-spin" />
-                {isEditing ? "Actualizando..." : "Creando..."}
-              </>
-            ) : (
-              isEditing ? "Actualizar actividad" : "Crear actividad"
-            )}
+              <span className="inline-flex items-center gap-1">
+                <span className="animate-spin">⏳</span> Guardando...
+              </span>
+            ) : activity ? "Actualizar actividad" : "Crear actividad"}
           </Button>
         </div>
       </form>
