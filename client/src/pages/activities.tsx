@@ -122,7 +122,7 @@ const diffTimeClass = (dateString: string | Date) => {
 // Componente principal de Actividades
 const Activities: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [viewType, setViewType] = useState<'upcoming' | 'all' | 'past'>('upcoming');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   
@@ -273,7 +273,7 @@ const Activities: React.FC = () => {
             className="mt-4"
             onClick={() => {
               setSearchTerm('');
-              setCategoryFilter('');
+              setCategoryFilter('all');
               setViewType('all');
             }}
           >
