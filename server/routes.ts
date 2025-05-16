@@ -451,6 +451,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get detailed information about a specific park
+  publicApiRouter.get("/parks/:id", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const park = await storage.getExtendedPark(parkId);
+      
+      if (!park) {
+        return res.status(404).json({
+          status: "error",
+          message: "Park not found"
+        });
+      }
+      
+      // Format park data for public API consumption
+      const formattedPark = {
+        id: park.id,
+        name: park.name,
+        type: park.parkType,
+        address: park.address,
+        postalCode: park.postalCode,
+        municipality: park.municipality ? {
+          id: park.municipality.id,
+          name: park.municipality.name,
+          state: park.municipality.state
+        } : null,
+        location: {
+          latitude: park.latitude,
+          longitude: park.longitude
+        },
+        description: park.description,
+        size: park.area,
+        foundedIn: park.foundationYear,
+        administrator: park.administrator,
+        condition: park.conservationStatus,
+        schedule: park.openingHours,
+        contact: {
+          email: park.contactEmail,
+          phone: park.contactPhone
+        },
+        amenities: park.amenities?.map(amenity => ({
+          id: amenity.id,
+          name: amenity.name,
+          category: amenity.category,
+          icon: amenity.icon
+        })) || [],
+        images: park.images?.map(image => ({
+          id: image.id,
+          url: image.imageUrl,
+          caption: image.caption,
+          isPrimary: image.isPrimary
+        })) || [],
+        lastUpdated: park.updatedAt
+      };
+      
+      res.json({
+        status: "success",
+        data: formattedPark
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching detailed park data" 
+      });
+    }
+  });
+  
   // Get parks by municipality ID - for inter-municipal integration
   publicApiRouter.get("/municipalities/:id/parks", async (req: Request, res: Response) => {
     try {
@@ -553,6 +620,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         status: "error", 
         message: "Error fetching park amenities data" 
+      });
+    }
+  });
+  
+  // Get activities for a specific park - for external applications
+  publicApiRouter.get("/parks/:id/activities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const activities = await storage.getParkActivities(parkId);
+      
+      // Format for external consumption
+      const formattedActivities = activities.map(activity => ({
+        id: activity.id,
+        title: activity.title,
+        description: activity.description,
+        startDate: activity.startDate,
+        endDate: activity.endDate,
+        category: activity.category,
+        location: activity.location
+      }));
+      
+      res.json({
+        status: "success",
+        data: formattedActivities,
+        count: formattedActivities.length
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching park activities data" 
       });
     }
   });

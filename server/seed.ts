@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { 
-  users, municipalities, parks, amenities, parkAmenities, DEFAULT_AMENITIES 
+  users, municipalities, parks, amenities, parkAmenities, activities, DEFAULT_AMENITIES 
 } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
@@ -127,6 +127,54 @@ export async function seedDatabase() {
         }
         
         console.log(`${amenityList.length} amenidades asociadas al parque ${park.name} correctamente.`);
+      }
+      
+      // Verificar si ya existen actividades para el parque
+      const existingActivities = await db.select().from(activities).where(eq(activities.parkId, park.id));
+      
+      // Si no hay actividades, agregar algunas de ejemplo
+      if (existingActivities.length === 0) {
+        console.log(`Agregando actividades al parque ${park.name}...`);
+        
+        const today = new Date();
+        const nextWeek = new Date(today);
+        nextWeek.setDate(today.getDate() + 7);
+        
+        const nextMonth = new Date(today);
+        nextMonth.setMonth(today.getMonth() + 1);
+        
+        // Crear algunas actividades de ejemplo
+        await db.insert(activities).values([
+          {
+            parkId: park.id,
+            title: "Yoga en el Parque",
+            description: "Sesión de yoga para todos los niveles, traer tapete propio.",
+            startDate: nextWeek.toISOString(),
+            endDate: new Date(nextWeek.getTime() + 2 * 60 * 60 * 1000).toISOString(), // 2 horas después
+            category: "deporte",
+            location: "Área central del parque"
+          },
+          {
+            parkId: park.id,
+            title: "Concierto al Aire Libre",
+            description: "Banda local tocando música acústica para toda la familia.",
+            startDate: nextMonth.toISOString(),
+            endDate: new Date(nextMonth.getTime() + 3 * 60 * 60 * 1000).toISOString(), // 3 horas después
+            category: "cultura",
+            location: "Anfiteatro"
+          },
+          {
+            parkId: park.id,
+            title: "Limpieza Comunitaria",
+            description: "Ayúdanos a mantener limpio nuestro parque. Se proporcionarán guantes y bolsas.",
+            startDate: new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(), // En dos semanas
+            endDate: new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(), // 4 horas después
+            category: "comunidad",
+            location: "Entrada principal"
+          }
+        ]);
+        
+        console.log(`3 actividades agregadas al parque ${park.name} correctamente.`);
       }
     }
   }
