@@ -464,6 +464,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Get park activities
+      const activities = await storage.getParkActivities(parkId);
+
       // Format park data for public API consumption
       const formattedPark = {
         id: park.id,
@@ -502,6 +505,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           caption: image.caption,
           isPrimary: image.isPrimary
         })) || [],
+        activities: activities.map(activity => ({
+          id: activity.id,
+          title: activity.title,
+          description: activity.description,
+          startDate: activity.startDate,
+          endDate: activity.endDate,
+          category: activity.category,
+          location: activity.location
+        })),
         lastUpdated: park.updatedAt
       };
       
