@@ -84,6 +84,7 @@ export const activities = pgTable("activities", {
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date"),
   category: text("category"),
+  location: text("location"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

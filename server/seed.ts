@@ -149,8 +149,8 @@ export async function seedDatabase() {
             parkId: park.id,
             title: "Yoga en el Parque",
             description: "Sesión de yoga para todos los niveles, traer tapete propio.",
-            startDate: nextWeek.toISOString(),
-            endDate: new Date(nextWeek.getTime() + 2 * 60 * 60 * 1000).toISOString(), // 2 horas después
+            startDate: nextWeek, // Usar directamente el objeto Date
+            endDate: new Date(nextWeek.getTime() + 2 * 60 * 60 * 1000), // 2 horas después
             category: "deporte",
             location: "Área central del parque"
           },
@@ -158,8 +158,8 @@ export async function seedDatabase() {
             parkId: park.id,
             title: "Concierto al Aire Libre",
             description: "Banda local tocando música acústica para toda la familia.",
-            startDate: nextMonth.toISOString(),
-            endDate: new Date(nextMonth.getTime() + 3 * 60 * 60 * 1000).toISOString(), // 3 horas después
+            startDate: nextMonth, // Usar directamente el objeto Date
+            endDate: new Date(nextMonth.getTime() + 3 * 60 * 60 * 1000), // 3 horas después
             category: "cultura",
             location: "Anfiteatro"
           },
@@ -167,8 +167,8 @@ export async function seedDatabase() {
             parkId: park.id,
             title: "Limpieza Comunitaria",
             description: "Ayúdanos a mantener limpio nuestro parque. Se proporcionarán guantes y bolsas.",
-            startDate: new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(), // En dos semanas
-            endDate: new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(), // 4 horas después
+            startDate: new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000), // En dos semanas
+            endDate: new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000), // 4 horas después
             category: "comunidad",
             location: "Entrada principal"
           }
