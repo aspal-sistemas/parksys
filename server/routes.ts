@@ -667,5 +667,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Advanced search endpoint for parks
+  publicApiRouter.get("/search/parks", async (req: Request, res: Response) => {
+    try {
+      const filters: any = {};
+      
+      // Basic filters
+      if (req.query.municipalityId) filters.municipalityId = Number(req.query.municipalityId);
+      if (req.query.parkType) filters.parkType = String(req.query.parkType);
+      if (req.query.postalCode) filters.postalCode = String(req.query.postalCode);
+      if (req.query.search) filters.search = String(req.query.search);
+      
+      // Area filters
+      if (req.query.minArea) filters.minArea = Number(req.query.minArea);
+      if (req.query.maxArea) filters.maxArea = Number(req.query.maxArea);
+      
+      // Boolean filters
+      if (req.query.hasAccessibility === 'true') filters.hasAccessibility = true;
+      if (req.query.hasActivities === 'true') filters.hasActivities = true;
+      
+      // Date/Year filters
+      if (req.query.foundedBefore) filters.foundedBefore = Number(req.query.foundedBefore);
+      if (req.query.foundedAfter) filters.foundedAfter = Number(req.query.foundedAfter);
+      
+      // Conservation status
+      if (req.query.conservationStatus) filters.conservationStatus = String(req.query.conservationStatus);
+      
+      // Location proximity search
+      if (req.query.latitude && req.query.longitude && req.query.maxDistance) {
+        filters.nearLocation = {
+          latitude: String(req.query.latitude),
+          longitude: String(req.query.longitude),
+          maxDistance: Number(req.query.maxDistance)
+        };
+      }
+      
+      // Handle amenities filter as array of IDs
+      if (req.query.amenities) {
+        const amenityIds = Array.isArray(req.query.amenities) 
+          ? req.query.amenities.map(Number) 
+          : [Number(req.query.amenities)];
+        
+        if (amenityIds.length > 0 && !amenityIds.some(isNaN)) {
+          filters.amenities = amenityIds;
+        }
+      }
+      
+      // Set extended results option
+      const extended = req.query.extended === 'true';
+      
+      // Fetch parks with applied filters
+      const parks = extended 
+        ? await storage.getExtendedParks(filters)
+        : await storage.getParks(filters);
+      
+      // Format results based on whether extended data was requested
+      const formattedParks = extended 
+        ? parks.map(park => ({
+            id: park.id,
+            name: park.name,
+            type: park.parkType,
+            address: park.address,
+            postalCode: park.postalCode,
+            latitude: park.latitude,
+            longitude: park.longitude,
+            description: park.description,
+            area: park.area,
+            foundationYear: park.foundationYear,
+            conservationStatus: park.conservationStatus,
+            accessibilityFeatures: park.accessibilityFeatures,
+            openingHours: park.openingHours,
+            contactEmail: park.contactEmail,
+            contactPhone: park.contactPhone,
+            images: park.images?.map(img => ({
+              id: img.id,
+              url: img.imageUrl,
+              caption: img.caption,
+              isPrimary: img.isPrimary
+            })),
+            primaryImage: park.primaryImage,
+            amenities: park.amenities?.map(amenity => ({
+              id: amenity.id,
+              name: amenity.name,
+              category: amenity.category,
+              icon: amenity.icon
+            })),
+            activities: park.activities?.map(activity => ({
+              id: activity.id,
+              title: activity.title,
+              description: activity.description,
+              startDate: activity.startDate,
+              endDate: activity.endDate,
+              category: activity.category,
+              location: activity.location
+            })),
+            municipality: park.municipality ? {
+              id: park.municipality.id,
+              name: park.municipality.name,
+              state: park.municipality.state
+            } : null,
+            lastUpdated: park.updatedAt
+          }))
+        : parks.map(park => ({
+            id: park.id,
+            name: park.name,
+            type: park.parkType,
+            address: park.address,
+            latitude: park.latitude,
+            longitude: park.longitude,
+            foundationYear: park.foundationYear,
+            conservationStatus: park.conservationStatus,
+            area: park.area
+          }));
+      
+      res.json({
+        status: "success",
+        data: formattedParks,
+        count: formattedParks.length,
+        filters: filters
+      });
+      
+    } catch (error) {
+      console.error("Advanced search error:", error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error processing advanced search" 
+      });
+    }
+  });
+  
   return httpServer;
 }

@@ -1028,6 +1028,14 @@ export class DatabaseStorage implements IStorage {
     postalCode: string;
     amenities: number[];
     search: string;
+    minArea?: number;
+    maxArea?: number;
+    hasAccessibility?: boolean;
+    hasActivities?: boolean;
+    foundedBefore?: number;
+    foundedAfter?: number;
+    conservationStatus?: string;
+    nearLocation?: {latitude: string, longitude: string, maxDistance: number};
   }>): Promise<ExtendedPark[]> {
     const parksList = await this.getParks(filters);
     const extendedParks: ExtendedPark[] = [];
