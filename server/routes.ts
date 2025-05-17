@@ -462,7 +462,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/parks/:id/comments", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
-      const commentData = { ...req.body, parkId };
+      
+      // Si el usuario está autenticado, podemos aprobar automáticamente el comentario
+      // si pertenece al municipio del parque o es super_admin
+      let autoApprove = false;
+      
+      if (req.user) {
+        if (req.user.role === 'super_admin') {
+          autoApprove = true;
+        } else {
+          const park = await storage.getPark(parkId);
+          if (park && park.municipalityId === req.user.municipalityId) {
+            autoApprove = true;
+          }
+        }
+      }
+      
+      const commentData = { ...req.body, parkId, approved: autoApprove };
       
       const data = insertCommentSchema.parse(commentData);
       const result = await storage.createComment(data);
@@ -479,9 +495,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Approve a comment (admin/municipality only)
-  apiRouter.put("/comments/:id/approve", async (req: Request, res: Response) => {
+  apiRouter.put("/comments/:id/approve", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const commentId = Number(req.params.id);
+      
+      // Verificamos primero que el usuario tenga acceso al comentario
+      const comment = await storage.getComment(commentId);
+      if (!comment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+      
+      // Verificamos que el usuario tenga acceso al parque del comentario
+      if (req.user.role !== 'super_admin') {
+        const park = await storage.getPark(comment.parkId);
+        if (!park) {
+          return res.status(404).json({ message: "Park not found" });
+        }
+        
+        if (park.municipalityId !== req.user.municipalityId) {
+          return res.status(403).json({ 
+            message: "No tiene permisos para aprobar comentarios de este parque" 
+          });
+        }
+      }
+      
       const result = await storage.approveComment(commentId);
       
       if (!result) {
