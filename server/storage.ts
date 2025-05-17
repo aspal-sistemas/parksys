@@ -975,10 +975,29 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getUserByExternalId(externalId: string): Promise<User | undefined> {
-    // Como no existe la columna externalId en la base de datos,
-    // buscamos por username, que puede contener el identificador externo
-    const [user] = await db.select().from(users).where(like(users.username, `%${externalId}`));
-    return user || undefined;
+    // Como no existe la columna externalId en la base de datos, usamos SQL directo
+    try {
+      console.log("Buscando usuario con externalId:", externalId);
+      const result = await db.execute(sql`SELECT * FROM users WHERE username LIKE ${`%${externalId}%`}`);
+      
+      if (result.rows.length > 0) {
+        // Convertimos a nuestro formato esperado
+        const userData = result.rows[0];
+        return {
+          id: userData.id,
+          username: userData.username,
+          password: userData.password,
+          email: userData.email,
+          role: userData.role,
+          fullName: userData.full_name,
+          municipalityId: userData.municipality_id
+        };
+      }
+      return undefined;
+    } catch (error) {
+      console.error("Error en getUserByExternalId:", error);
+      return undefined;
+    }
   }
 
   async createUser(user: InsertUser): Promise<User> {

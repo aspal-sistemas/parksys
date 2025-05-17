@@ -3,6 +3,8 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { isAuthenticated, hasMunicipalityAccess, hasParkAccess } from "./middleware/auth";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
   insertActivitySchema, insertDocumentSchema, insertParkImageSchema,
