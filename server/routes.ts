@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { isAuthenticated, hasMunicipalityAccess, hasParkAccess } from "./middleware/auth";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { sql } from "drizzle-orm";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
@@ -642,62 +642,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Basic authentication for testing
+  // Basic authentication for testing usando la función directa
   apiRouter.post("/login", async (req: Request, res: Response) => {
     try {
       const { username, password } = req.body;
       
-      // Consulta SQL directa para evitar problemas con columnas inexistentes
-      const result = await db.execute(sql`
-        SELECT id, username, email, full_name, role, municipality_id 
-        FROM users 
-        WHERE username = ${username} AND password = ${password}
-      `);
+      // Importamos la función de autenticación directa que creamos
+      const { authenticateUser } = await import('./directAuth');
       
-      if (result.rows.length === 0) {
-        return res.status(401).json({ message: "Invalid credentials" });
+      // Autenticamos al usuario de forma directa sin usar el ORM
+      const result = await authenticateUser(username, password);
+      
+      if (!result.success) {
+        return res.status(401).json({ message: result.message });
       }
       
-      const userData = result.rows[0];
-      
-      // En una aplicación real, crearíamos una sesión y cookies seguras
-      // Si el usuario pertenece a un municipio, incluimos su información
-      let municipalityData = null;
-      if (userData.municipality_id) {
-        const municipalityResult = await db.execute(sql`
-          SELECT id, name, state, logo_url 
-          FROM municipalities 
-          WHERE id = ${userData.municipality_id}
-        `);
-        
-        if (municipalityResult.rows.length > 0) {
-          const municipality = municipalityResult.rows[0];
-          municipalityData = {
-            id: municipality.id,
-            name: municipality.name,
-            state: municipality.state,
-            logoUrl: municipality.logo_url
-          };
-        }
-      }
-      
-      // Convertimos a formato camelCase para mantener consistencia
-      const user = {
-        id: userData.id,
-        username: userData.username,
-        email: userData.email,
-        fullName: userData.full_name,
-        role: userData.role,
-        municipalityId: userData.municipality_id
-      };
-      
-      res.json({
-        user: {
-          ...user,
-          municipality: municipalityData
-        },
-        token: 'dummy-token-for-testing'
-      });
+      // Enviamos los datos del usuario autenticado
+      res.json(result.data);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error during login" });
