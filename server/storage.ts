@@ -964,9 +964,9 @@ export class DatabaseStorage implements IStorage {
   
   async getUserByExternalId(externalId: string): Promise<User | undefined> {
     // Como no existe la columna externalId en la base de datos,
-    // este método simplemente devuelve undefined por el momento
-    console.log(`Intento fallido de getUserByExternalId con id: ${externalId}`);
-    return undefined;
+    // buscamos por username, que puede contener el identificador externo
+    const [user] = await db.select().from(users).where(like(users.username, `%${externalId}`));
+    return user || undefined;
   }
 
   async createUser(user: InsertUser): Promise<User> {
@@ -985,7 +985,7 @@ export class DatabaseStorage implements IStorage {
     return updatedUser || undefined;
   }
   
-  async upsertUser(userData: Partial<InsertUser> & { externalId?: string }): Promise<User> {
+  async upsertUser(userData: Partial<InsertUser> & { externalId?: string, firstName?: string, lastName?: string }): Promise<User> {
     // Como no tenemos externalId en la tabla, verificamos por username o email
     let existingUser: User | undefined;
     
@@ -998,39 +998,39 @@ export class DatabaseStorage implements IStorage {
       existingUser = userByEmail;
     }
     
+    // Adaptamos el nombre completo basado en firstName y lastName si están presentes
+    let fullName = userData.fullName;
+    if (!fullName && userData.firstName && userData.lastName) {
+      fullName = `${userData.firstName} ${userData.lastName}`;
+    } else if (!fullName && userData.firstName) {
+      fullName = userData.firstName;
+    } else if (!fullName && userData.lastName) {
+      fullName = userData.lastName;
+    }
+    
+    // Extraer solo los campos que existen en la tabla actual
+    const { 
+      externalId, firstName, lastName, profileImageUrl, ...validFields 
+    } = userData;
+    
+    const dataToUse = {
+      ...validFields,
+      fullName: fullName || null
+    };
+    
     if (existingUser) {
       // Actualizar usuario existente
-      // Eliminamos campos que no existen en la tabla actual
-      const { externalId, firstName, lastName, profileImageUrl, ...updateData } = userData;
-      
-      // Adaptamos los campos según la estructura de la tabla actual
-      const fullName = firstName && lastName ? `${firstName} ${lastName}` : undefined;
-      
-      const dataToUpdate: any = {
-        ...updateData
-      };
-      
-      if (fullName) {
-        dataToUpdate.fullName = fullName;
-      }
-      
-      const updatedUser = await this.updateUser(existingUser.id, dataToUpdate);
+      const updatedUser = await this.updateUser(existingUser.id, dataToUse);
       return updatedUser!;
     } else {
-      // Crear nuevo usuario adaptado a la estructura actual
-      const { externalId, firstName, lastName, profileImageUrl, ...createData } = userData;
-      
-      // Adaptamos los campos según la estructura de la tabla
-      const fullName = firstName && lastName ? `${firstName} ${lastName}` : null;
-      
+      // Crear nuevo usuario
       const newUserData = {
-        ...createData,
-        username: createData.username || `user_${Date.now()}`,
-        email: createData.email || null,
-        password: createData.password || '',
-        fullName: fullName,
-        role: createData.role || 'user',
-        municipalityId: createData.municipalityId || null
+        ...dataToUse,
+        username: dataToUse.username || (externalId ? `user-${externalId}` : `user_${Date.now()}`),
+        email: dataToUse.email || null,
+        password: dataToUse.password || '',
+        role: dataToUse.role || 'user',
+        municipalityId: dataToUse.municipalityId || null
       };
       
       const newUser = await this.createUser(newUserData as InsertUser);
