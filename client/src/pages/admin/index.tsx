@@ -100,13 +100,13 @@ const AdminDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{parks.length}</div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <div className="flex items-center text-xs text-muted-foreground mt-1">
                   <Badge variant="outline" className="text-emerald-500 bg-emerald-50">
                     <ArrowUp className="h-3 w-3 mr-1" />
                     +4.5%
                   </Badge>
                   <span className="ml-1">desde el mes pasado</span>
-                </p>
+                </div>
               </CardContent>
             </Card>
             
