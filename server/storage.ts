@@ -186,7 +186,8 @@ export class MemStorage implements IStorage {
     this.createUser({
       username: "admin",
       password: "admin123", // In a real app, this would be hashed
-      fullName: "Admin User",
+      firstName: "Admin",
+      lastName: "User",
       email: "admin@parquesmx.com",
       role: "admin",
       municipalityId: undefined
@@ -195,7 +196,8 @@ export class MemStorage implements IStorage {
     this.createUser({
       username: "guadalajara",
       password: "parks123", // In a real app, this would be hashed
-      fullName: "Municipio de Guadalajara",
+      firstName: "Municipio",
+      lastName: "de Guadalajara",
       email: "parques@guadalajara.gob.mx",
       role: "municipality",
       municipalityId: guadalajara.id
@@ -357,6 +359,41 @@ export class MemStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(user => user.username === username);
+  }
+  
+  async getUserByExternalId(externalId: string): Promise<User | undefined> {
+    const userId = this.externalIdToUserId.get(externalId);
+    if (userId) {
+      return this.users.get(userId);
+    }
+    return undefined;
+  }
+  
+  async upsertUser(userData: Partial<InsertUser> & { externalId: string }): Promise<User> {
+    // Verificar si el usuario ya existe por su ID externo
+    const existingUser = await this.getUserByExternalId(userData.externalId);
+    
+    if (existingUser) {
+      // Actualizar usuario existente
+      const { externalId, ...updateData } = userData;
+      const updatedUser = await this.updateUser(existingUser.id, updateData);
+      return updatedUser!;
+    } else {
+      // Crear nuevo usuario
+      const newUserData = {
+        externalId: userData.externalId,
+        username: userData.username || `user-${userData.externalId.substring(0, 8)}`,
+        email: userData.email || null,
+        password: userData.password || '',
+        firstName: userData.firstName || null,
+        lastName: userData.lastName || null,
+        profileImageUrl: userData.profileImageUrl || null,
+        role: userData.role || 'user',
+        municipalityId: userData.municipalityId || null
+      };
+      
+      return await this.createUser(newUserData as InsertUser);
+    }
   }
 
   async createUser(user: InsertUser): Promise<User> {
@@ -1365,40 +1402,6 @@ export class DatabaseStorage implements IStorage {
 }
 
 // Use database storage
-// Agregar métodos faltantes en MemStorage
-MemStorage.prototype.getUserByExternalId = async function(externalId: string): Promise<User | undefined> {
-  const userId = this.externalIdToUserId.get(externalId);
-  if (userId) {
-    return this.users.get(userId);
-  }
-  return undefined;
-};
 
-MemStorage.prototype.upsertUser = async function(userData: Partial<InsertUser> & { externalId: string }): Promise<User> {
-  // Verificar si el usuario ya existe por su ID externo
-  const existingUser = await this.getUserByExternalId(userData.externalId);
-  
-  if (existingUser) {
-    // Actualizar usuario existente
-    const { externalId, ...updateData } = userData;
-    const updatedUser = await this.updateUser(existingUser.id, updateData);
-    return updatedUser!;
-  } else {
-    // Crear nuevo usuario
-    const newUserData = {
-      externalId: userData.externalId,
-      username: userData.username || `user-${userData.externalId.substring(0, 8)}`,
-      email: userData.email || null,
-      password: userData.password || '',
-      firstName: userData.firstName || null,
-      lastName: userData.lastName || null,
-      profileImageUrl: userData.profileImageUrl || null,
-      role: userData.role || 'user',
-      municipalityId: userData.municipalityId || null
-    };
-    
-    return await this.createUser(newUserData as InsertUser);
-  }
-};
 
 export const storage = new DatabaseStorage();
