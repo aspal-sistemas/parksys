@@ -1,227 +1,446 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { MessageSquare, CheckCircle, XCircle, Trash2, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { 
+  MessageSquare, 
+  Check, 
+  Trash, 
+  Search, 
+  X, 
+  Loader,
+  ArrowUpDown,
+  User
+} from 'lucide-react';
+import AdminLayout from '@/components/AdminLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-
-import AdminLayout from '@/components/AdminLayout';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { queryClient } from '@/lib/queryClient';
+import { Comment, Park } from '@shared/schema';
 
-interface Comment {
-  id: number;
-  parkId: number;
-  name: string;
-  email: string | null;
-  content: string;
-  rating: number | null;
-  isApproved: boolean | null;
-  createdAt: string;
-}
-
-interface Park {
-  id: number;
-  name: string;
-}
-
-const AdminComments: React.FC = () => {
+const AdminComments = () => {
+  const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterPark, setFilterPark] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
+  const [sortField, setSortField] = useState<string>('createdAt');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
   // Fetch all comments
-  const { data: comments, isLoading, error } = useQuery({
-    queryKey: ['/api/comments/all'],
-    queryFn: async () => {
-      const response = await fetch('/api/comments/all');
-      if (!response.ok) {
-        throw new Error('Error al cargar comentarios');
-      }
-      return response.json() as Promise<Comment[]>;
-    }
+  const { 
+    data: comments = [], 
+    isLoading: isLoadingComments,
+    isError: isErrorComments,
+    refetch: refetchComments
+  } = useQuery({
+    queryKey: ['/api/comments'],
   });
-  
-  // Fetch all parks for reference
-  const { data: parks } = useQuery({
+
+  // Fetch parks for filter
+  const { 
+    data: parks = [], 
+    isLoading: isLoadingParks 
+  } = useQuery({
     queryKey: ['/api/parks'],
-    queryFn: async () => {
-      const response = await fetch('/api/parks');
-      if (!response.ok) {
-        throw new Error('Error al cargar parques');
-      }
-      return response.json() as Promise<Park[]>;
-    }
   });
-  
-  const getParkName = (parkId: number) => {
-    const park = parks?.find(p => p.id === parkId);
-    return park ? park.name : 'Parque desconocido';
+
+  // Format date
+  const formatDate = (date: Date) => {
+    return format(new Date(date), "dd/MM/yyyy HH:mm", { locale: es });
   };
-  
-  const handleApprove = async (id: number) => {
-    try {
-      const response = await fetch(`/api/comments/${id}/approve`, {
+
+  // Approve comment mutation
+  const approveMutation = useMutation({
+    mutationFn: async (commentId: number) => {
+      const response = await fetch(`/api/comments/${commentId}/approve`, {
         method: 'PUT',
       });
       
-      if (response.ok) {
-        toast({
-          title: 'Comentario aprobado',
-          description: 'El comentario ha sido aprobado exitosamente',
-        });
-        
-        // Invalidate queries to refresh the data
-        queryClient.invalidateQueries({ queryKey: ['/api/comments/all'] });
-      } else {
-        toast({
-          title: 'Error',
-          description: 'No se pudo aprobar el comentario',
-          variant: 'destructive',
-        });
+      if (!response.ok) {
+        throw new Error('Error al aprobar el comentario');
       }
-    } catch (error) {
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidate comments query
+      queryClient.invalidateQueries({ queryKey: ['/api/comments'] });
+      
+      // Show success toast
       toast({
-        title: 'Error',
-        description: 'Ocurrió un error al aprobar el comentario',
-        variant: 'destructive',
+        title: "Comentario aprobado",
+        description: "El comentario ha sido aprobado exitosamente.",
+      });
+    },
+    onError: (error) => {
+      // Show error toast
+      toast({
+        title: "Error",
+        description: "No se pudo aprobar el comentario. Intente nuevamente.",
+        variant: "destructive",
       });
     }
+  });
+
+  // Filter and sort comments
+  const filteredComments = React.useMemo(() => {
+    return [...comments].filter(comment => {
+      // Apply search filter
+      if (searchQuery && 
+          !comment.text.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          !comment.authorName.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      
+      // Apply park filter
+      if (filterPark && comment.parkId.toString() !== filterPark) {
+        return false;
+      }
+      
+      // Apply status filter
+      if (filterStatus === 'approved' && !comment.approved) {
+        return false;
+      } else if (filterStatus === 'pending' && comment.approved) {
+        return false;
+      }
+      
+      return true;
+    }).sort((a, b) => {
+      // Apply sorting
+      if (sortField === 'authorName') {
+        return sortDirection === 'asc' 
+          ? a.authorName.localeCompare(b.authorName) 
+          : b.authorName.localeCompare(a.authorName);
+      }
+      
+      if (sortField === 'createdAt') {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+      
+      // Default sort by date
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateB - dateA;
+    });
+  }, [comments, searchQuery, filterPark, filterStatus, sortField, sortDirection]);
+
+  // Get park name by ID
+  const getParkName = (parkId: number) => {
+    const park = parks.find(p => p.id === parkId);
+    return park ? park.name : 'Desconocido';
   };
-  
-  const handleDelete = async (id: number) => {
-    if (!confirm('¿Estás seguro de eliminar este comentario?')) {
-      return;
-    }
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!commentToDelete) return;
     
     try {
-      const response = await fetch(`/api/comments/${id}`, {
+      await fetch(`/api/comments/${commentToDelete.id}`, {
         method: 'DELETE',
       });
       
-      if (response.ok) {
-        toast({
-          title: 'Comentario eliminado',
-          description: 'El comentario ha sido eliminado exitosamente',
-        });
-        
-        // Invalidate queries to refresh the data
-        queryClient.invalidateQueries({ queryKey: ['/api/comments/all'] });
-      } else {
-        toast({
-          title: 'Error',
-          description: 'No se pudo eliminar el comentario',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
+      // Refetch comments
+      refetchComments();
+      
+      // Show success toast
       toast({
-        title: 'Error',
-        description: 'Ocurrió un error al eliminar el comentario',
-        variant: 'destructive',
+        title: "Comentario eliminado",
+        description: "El comentario ha sido eliminado exitosamente.",
+      });
+      
+      // Close dialog and reset state
+      setShowDeleteDialog(false);
+      setCommentToDelete(null);
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      
+      // Show error toast
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el comentario. Intente nuevamente.",
+        variant: "destructive",
       });
     }
   };
-  
-  // Render stars for rating
-  const renderStars = (rating: number | null) => {
-    if (rating === null) return null;
-    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+
+  // Handle opening delete dialog
+  const handleDeleteClick = (comment: Comment) => {
+    setCommentToDelete(comment);
+    setShowDeleteDialog(true);
   };
-  
+
+  // Handle approve comment
+  const handleApproveClick = (commentId: number) => {
+    approveMutation.mutate(commentId);
+  };
+
+  // Handle sort toggle
+  const handleSortToggle = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Handle clearing filters
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setFilterPark('');
+    setFilterStatus('');
+  };
+
   return (
-    <AdminLayout>
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
+    <AdminLayout title="Administración de Comentarios">
+      <div className="space-y-6">
+        {/* Header with info */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Comentarios</h1>
-            <p className="text-gray-500">Gestiona comentarios de usuarios sobre los parques</p>
+            <h2 className="text-2xl font-semibold text-gray-800">Comentarios</h2>
+            <p className="text-gray-500 text-sm mt-1">
+              Gestione los comentarios de usuarios sobre los parques
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className="bg-gray-100">
+              Total: {comments.length}
+            </Badge>
+            <Badge variant="outline" className="bg-green-100 text-green-700">
+              Aprobados: {comments.filter(c => c.approved).length}
+            </Badge>
+            <Badge variant="outline" className="bg-yellow-100 text-yellow-700">
+              Pendientes: {comments.filter(c => !c.approved).length}
+            </Badge>
           </div>
         </div>
         
-        {isLoading ? (
-          <div className="flex justify-center p-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+        {/* Search and filter bar */}
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-3 bg-white p-4 rounded-lg shadow-sm">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Buscar comentarios..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-        ) : error ? (
-          <div className="text-center p-8 text-red-500">
-            Error al cargar comentarios. Por favor, intenta de nuevo.
-          </div>
-        ) : comments && comments.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {comments.map((comment) => (
-              <Card key={comment.id} className={`overflow-hidden ${comment.isApproved === null ? 'border-yellow-200' : (comment.isApproved ? 'border-green-200' : 'border-red-200')}`}>
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">{comment.name}</CardTitle>
-                      <div className="text-sm text-gray-500">
-                        {comment.email && <p>{comment.email}</p>}
-                        <p>{format(new Date(comment.createdAt), 'PPP', { locale: es })}</p>
-                      </div>
-                    </div>
-                    <Badge className={
-                      comment.isApproved === null 
-                        ? 'bg-yellow-100 text-yellow-800' 
-                        : (comment.isApproved 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800')
-                    }>
-                      {comment.isApproved === null 
-                        ? 'Pendiente' 
-                        : (comment.isApproved 
-                          ? 'Aprobado' 
-                          : 'Rechazado')
-                      }
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700 mb-2">{comment.content}</p>
-                  {comment.rating !== null && (
-                    <div className="text-amber-500 font-medium">
-                      {renderStars(comment.rating)}
-                    </div>
-                  )}
-                  <p className="text-sm text-gray-500 mt-2">
-                    <strong>Parque:</strong> {getParkName(comment.parkId)}
-                  </p>
-                </CardContent>
-                <Separator />
-                <CardFooter className="flex justify-between py-3">
-                  {comment.isApproved === null && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                      onClick={() => handleApprove(comment.id)}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      Aprobar
-                    </Button>
-                  )}
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => handleDelete(comment.id)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Eliminar
+          
+          <Select value={filterPark} onValueChange={setFilterPark}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Parque" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Todos los parques</SelectItem>
+              {parks.map(park => (
+                <SelectItem key={park.id} value={park.id.toString()}>
+                  {park.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Todos los estados</SelectItem>
+              <SelectItem value="approved">Aprobados</SelectItem>
+              <SelectItem value="pending">Pendientes</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          {(searchQuery || filterPark || filterStatus) && (
+            <Button variant="ghost" onClick={handleClearFilters} aria-label="Limpiar filtros">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        
+        {/* Comments table */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          {isLoadingComments ? (
+            <div className="py-32 flex justify-center">
+              <div className="flex flex-col items-center">
+                <Loader className="h-8 w-8 text-primary animate-spin mb-2" />
+                <p className="text-gray-500">Cargando comentarios...</p>
+              </div>
+            </div>
+          ) : isErrorComments ? (
+            <div className="py-32 flex justify-center">
+              <div className="text-center">
+                <p className="text-red-500 mb-2">Error al cargar los comentarios</p>
+                <Button variant="outline" onClick={() => refetchComments()}>
+                  Reintentar
+                </Button>
+              </div>
+            </div>
+          ) : filteredComments.length === 0 ? (
+            <div className="py-32 flex justify-center">
+              <div className="text-center">
+                <p className="text-gray-500 mb-2">No se encontraron comentarios</p>
+                {(searchQuery || filterPark || filterStatus) && (
+                  <Button variant="outline" onClick={handleClearFilters}>
+                    Limpiar filtros
                   </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center p-8 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-            <MessageSquare className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-            <h3 className="text-lg font-medium text-gray-900 mb-1">No hay comentarios</h3>
-            <p className="text-gray-500 mb-4">Aún no hay comentarios de visitantes al sitio.</p>
-          </div>
-        )}
+                )}
+              </div>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]">ID</TableHead>
+                  <TableHead>
+                    <button 
+                      className="flex items-center"
+                      onClick={() => handleSortToggle('authorName')}
+                    >
+                      Autor
+                      {sortField === 'authorName' && (
+                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'rotate-0' : 'rotate-180'}`} />
+                      )}
+                    </button>
+                  </TableHead>
+                  <TableHead className="w-[300px]">Comentario</TableHead>
+                  <TableHead>
+                    <button 
+                      className="flex items-center"
+                      onClick={() => handleSortToggle('createdAt')}
+                    >
+                      Fecha
+                      {sortField === 'createdAt' && (
+                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'rotate-0' : 'rotate-180'}`} />
+                      )}
+                    </button>
+                  </TableHead>
+                  <TableHead>Parque</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead className="w-[100px] text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredComments.map(comment => (
+                  <TableRow key={comment.id}>
+                    <TableCell className="font-medium">{comment.id}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
+                          <User className="h-4 w-4 text-gray-500" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{comment.authorName}</p>
+                          {comment.authorEmail && (
+                            <p className="text-xs text-gray-500">{comment.authorEmail}</p>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="max-w-md">
+                        <p className="text-sm line-clamp-2">{comment.text}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>{formatDate(comment.createdAt)}</TableCell>
+                    <TableCell>{getParkName(comment.parkId)}</TableCell>
+                    <TableCell>
+                      {comment.approved ? (
+                        <Badge variant="outline" className="bg-green-100 text-green-700">
+                          Aprobado
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-yellow-100 text-yellow-700">
+                          Pendiente
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right space-x-1">
+                      {!comment.approved && (
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="h-8 w-8"
+                          onClick={() => handleApproveClick(comment.id)}
+                          disabled={approveMutation.isPending}
+                        >
+                          <Check className="h-4 w-4 text-green-500" />
+                        </Button>
+                      )}
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => handleDeleteClick(comment)}
+                      >
+                        <Trash className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
       </div>
+      
+      {/* Delete confirmation dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirmar eliminación</DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <p>
+              ¿Está seguro que desea eliminar el comentario de <span className="font-semibold">{commentToDelete?.authorName}</span>?
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Esta acción no se puede deshacer.
+            </p>
+          </div>
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancelar</Button>
+            </DialogClose>
+            <Button variant="destructive" onClick={handleDeleteConfirm}>
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };

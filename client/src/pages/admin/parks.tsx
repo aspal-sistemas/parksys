@@ -1,243 +1,361 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'wouter';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  MapPin, 
-  Edit, 
-  Trash2, 
-  CalendarDays, 
-  FileText,
-  MoreVertical
-} from 'lucide-react';
-import { 
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from '@/components/ui/input';
+import { Plus, Pencil, Trash, Filter, Map, ArrowUpDown, X, Search, Loader } from 'lucide-react';
+import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import AdminSidebar from '@/components/AdminSidebar';
-import { Park, PARK_TYPES } from '@shared/schema';
+import { useToast } from '@/hooks/use-toast';
+import { Park, Municipality } from '@shared/schema';
 
-const AdminParks: React.FC = () => {
+const AdminParks = () => {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // Fetch parks
-  const { data: parks = [], isLoading } = useQuery<Park[]>({
+  const [filterMunicipality, setFilterMunicipality] = useState<string>('');
+  const [filterParkType, setFilterParkType] = useState<string>('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [parkToDelete, setParkToDelete] = useState<Park | null>(null);
+  const [sortField, setSortField] = useState<string>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  // Fetch all parks
+  const { 
+    data: parks = [], 
+    isLoading: isLoadingParks,
+    isError: isErrorParks,
+    refetch: refetchParks
+  } = useQuery({
     queryKey: ['/api/parks'],
   });
-  
-  // Filter parks based on search query
-  const filteredParks = parks.filter(park => 
-    park.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    park.address.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
-  // Get park type label
-  const getParkTypeLabel = (type: string) => {
-    const parkType = PARK_TYPES.find(pt => pt.value === type);
-    return parkType ? parkType.label : type;
-  };
-  
-  // Get badge color based on park type
-  const getParkTypeBadgeClass = (type: string) => {
-    const typeColorMap: Record<string, string> = {
-      'metropolitano': 'bg-primary-100 text-primary-800',
-      'barrial': 'bg-yellow-100 text-yellow-800',
-      'vecinal': 'bg-orange-100 text-orange-800',
-      'lineal': 'bg-blue-100 text-blue-800',
-      'ecologico': 'bg-green-100 text-green-800',
-      'botanico': 'bg-emerald-100 text-emerald-800',
-      'deportivo': 'bg-purple-100 text-purple-800'
-    };
-    return typeColorMap[type] || 'bg-gray-100 text-gray-800';
-  };
-  
-  return (
-    <div className="flex h-screen overflow-hidden">
-      <AdminSidebar />
+
+  // Fetch municipalities for filter
+  const { 
+    data: municipalities = [], 
+    isLoading: isLoadingMunicipalities 
+  } = useQuery({
+    queryKey: ['/api/municipalities'],
+  });
+
+  // Filter and sort parks
+  const filteredParks = React.useMemo(() => {
+    return [...parks].filter(park => {
+      // Apply search filter
+      if (searchQuery && !park.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
       
-      <div className="flex-1 flex flex-col overflow-y-auto">
-        <div className="p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight mb-1">Parques</h1>
-              <p className="text-muted-foreground">
-                Administra los parques y espacios verdes en el sistema
-              </p>
-            </div>
-            <div className="mt-4 md:mt-0">
-              <Link href="/admin/parks/new">
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Agregar Parque
-                </Button>
-              </Link>
-            </div>
+      // Apply municipality filter
+      if (filterMunicipality && park.municipalityId.toString() !== filterMunicipality) {
+        return false;
+      }
+      
+      // Apply park type filter
+      if (filterParkType && park.parkType !== filterParkType) {
+        return false;
+      }
+      
+      return true;
+    }).sort((a, b) => {
+      // Apply sorting
+      if (sortField === 'name') {
+        return sortDirection === 'asc' 
+          ? a.name.localeCompare(b.name) 
+          : b.name.localeCompare(a.name);
+      }
+      
+      if (sortField === 'parkType') {
+        return sortDirection === 'asc' 
+          ? a.parkType.localeCompare(b.parkType) 
+          : b.parkType.localeCompare(a.parkType);
+      }
+      
+      // Default sort by name
+      return a.name.localeCompare(b.name);
+    });
+  }, [parks, searchQuery, filterMunicipality, filterParkType, sortField, sortDirection]);
+
+  // Get municipality name by ID
+  const getMunicipalityName = (municipalityId: number) => {
+    const municipality = municipalities.find(m => m.id === municipalityId);
+    return municipality ? municipality.name : 'Desconocido';
+  };
+
+  // Get park type display label
+  const getParkTypeLabel = (type: string) => {
+    const typeMap: Record<string, string> = {
+      'metropolitano': 'Metropolitano',
+      'barrial': 'Barrial',
+      'vecinal': 'Vecinal',
+      'lineal': 'Lineal',
+      'ecologico': 'Ecológico',
+      'botanico': 'Botánico',
+      'deportivo': 'Deportivo'
+    };
+    return typeMap[type] || type;
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!parkToDelete) return;
+    
+    try {
+      await fetch(`/api/parks/${parkToDelete.id}`, {
+        method: 'DELETE',
+      });
+      
+      // Refetch parks
+      refetchParks();
+      
+      // Show success toast
+      toast({
+        title: "Parque eliminado",
+        description: `El parque ${parkToDelete.name} ha sido eliminado exitosamente.`,
+      });
+      
+      // Close dialog and reset state
+      setShowDeleteDialog(false);
+      setParkToDelete(null);
+    } catch (error) {
+      console.error('Error deleting park:', error);
+      
+      // Show error toast
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el parque. Intente nuevamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle opening delete dialog
+  const handleDeleteClick = (park: Park) => {
+    setParkToDelete(park);
+    setShowDeleteDialog(true);
+  };
+
+  // Handle sort toggle
+  const handleSortToggle = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Handle clearing filters
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setFilterMunicipality('');
+    setFilterParkType('');
+  };
+
+  return (
+    <AdminLayout title="Administración de Parques">
+      <div className="space-y-6">
+        {/* Header with actions */}
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-semibold text-gray-800">Parques</h2>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Agregar Parque
+          </Button>
+        </div>
+        
+        {/* Search and filter bar */}
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-3 bg-white p-4 rounded-lg shadow-sm">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Buscar parques..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
           
-          {/* Search and filters */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
-            <Card className="col-span-2">
-              <CardHeader className="pb-3">
-                <CardTitle>Buscar parques</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    placeholder="Buscar por nombre o dirección"
-                    className="pl-10"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle>Filtros</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" className="w-full" disabled>
-                  <Filter className="mr-2 h-4 w-4" />
-                  Aplicar filtros
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          <Select value={filterMunicipality} onValueChange={setFilterMunicipality}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Municipio" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Todos los municipios</SelectItem>
+              {municipalities.map(municipality => (
+                <SelectItem key={municipality.id} value={municipality.id.toString()}>
+                  {municipality.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           
-          {/* Parks table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Lista de Parques</CardTitle>
-              <Separator />
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="py-10 text-center">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
-                  <p className="mt-2 text-muted-foreground">Cargando parques...</p>
-                </div>
-              ) : filteredParks.length === 0 ? (
-                <div className="py-10 text-center">
-                  <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h2 className="text-lg font-medium mb-1">No se encontraron parques</h2>
-                  <p className="text-muted-foreground mb-4">
-                    {searchQuery 
-                      ? "No hay parques que coincidan con tu búsqueda" 
-                      : "Aún no has agregado ningún parque al sistema"}
-                  </p>
-                  {searchQuery ? (
-                    <Button onClick={() => setSearchQuery('')} variant="outline">
-                      Limpiar búsqueda
-                    </Button>
-                  ) : (
-                    <Link href="/admin/parks/new">
-                      <Button>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Agregar Primer Parque
+          <Select value={filterParkType} onValueChange={setFilterParkType}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Tipo de parque" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Todos los tipos</SelectItem>
+              <SelectItem value="metropolitano">Metropolitano</SelectItem>
+              <SelectItem value="barrial">Barrial</SelectItem>
+              <SelectItem value="vecinal">Vecinal</SelectItem>
+              <SelectItem value="lineal">Lineal</SelectItem>
+              <SelectItem value="ecologico">Ecológico</SelectItem>
+              <SelectItem value="botanico">Botánico</SelectItem>
+              <SelectItem value="deportivo">Deportivo</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          {(searchQuery || filterMunicipality || filterParkType) && (
+            <Button variant="ghost" onClick={handleClearFilters} aria-label="Limpiar filtros">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        
+        {/* Parks table */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          {isLoadingParks ? (
+            <div className="py-32 flex justify-center">
+              <div className="flex flex-col items-center">
+                <Loader className="h-8 w-8 text-primary animate-spin mb-2" />
+                <p className="text-gray-500">Cargando parques...</p>
+              </div>
+            </div>
+          ) : isErrorParks ? (
+            <div className="py-32 flex justify-center">
+              <div className="text-center">
+                <p className="text-red-500 mb-2">Error al cargar los parques</p>
+                <Button variant="outline" onClick={() => refetchParks()}>
+                  Reintentar
+                </Button>
+              </div>
+            </div>
+          ) : filteredParks.length === 0 ? (
+            <div className="py-32 flex justify-center">
+              <div className="text-center">
+                <p className="text-gray-500 mb-2">No se encontraron parques</p>
+                {(searchQuery || filterMunicipality || filterParkType) && (
+                  <Button variant="outline" onClick={handleClearFilters}>
+                    Limpiar filtros
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]">ID</TableHead>
+                  <TableHead>
+                    <button 
+                      className="flex items-center"
+                      onClick={() => handleSortToggle('name')}
+                    >
+                      Nombre
+                      {sortField === 'name' && (
+                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'rotate-0' : 'rotate-180'}`} />
+                      )}
+                    </button>
+                  </TableHead>
+                  <TableHead>
+                    <button 
+                      className="flex items-center"
+                      onClick={() => handleSortToggle('parkType')}
+                    >
+                      Tipo
+                      {sortField === 'parkType' && (
+                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'rotate-0' : 'rotate-180'}`} />
+                      )}
+                    </button>
+                  </TableHead>
+                  <TableHead>Municipio</TableHead>
+                  <TableHead className="w-[100px] text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredParks.map(park => (
+                  <TableRow key={park.id}>
+                    <TableCell className="font-medium">{park.id}</TableCell>
+                    <TableCell>{park.name}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="bg-gray-100">
+                        {getParkTypeLabel(park.parkType)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{getMunicipalityName(park.municipalityId)}</TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Button variant="outline" size="icon" className="h-8 w-8">
+                        <Map className="h-4 w-4 text-blue-500" />
                       </Button>
-                    </Link>
-                  )}
-                </div>
-              ) : (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead className="hidden md:table-cell">Ubicación</TableHead>
-                        <TableHead className="hidden lg:table-cell">Superficie</TableHead>
-                        <TableHead className="text-right">Acciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredParks.map((park) => (
-                        <TableRow key={park.id}>
-                          <TableCell className="font-medium">
-                            <Link href={`/parks/${park.id}`}>
-                              <span className="cursor-pointer hover:text-primary">
-                                {park.name}
-                              </span>
-                            </Link>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getParkTypeBadgeClass(park.parkType)}>
-                              {getParkTypeLabel(park.parkType)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            <div className="flex items-center">
-                              <MapPin className="h-4 w-4 mr-1 text-muted-foreground" />
-                              <span className="truncate max-w-xs">{park.address}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="hidden lg:table-cell">
-                            {park.area || '-'}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <MoreVertical className="h-4 w-4" />
-                                  <span className="sr-only">Acciones</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                  <Link href={`/admin/parks/${park.id}`}>
-                                    <div className="flex items-center">
-                                      <Edit className="mr-2 h-4 w-4" />
-                                      <span>Editar</span>
-                                    </div>
-                                  </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <FileText className="mr-2 h-4 w-4" />
-                                  <span>Documentos</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <CalendarDays className="mr-2 h-4 w-4" />
-                                  <span>Actividades</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-red-600">
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  <span>Eliminar</span>
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                      <Button variant="outline" size="icon" className="h-8 w-8">
+                        <Pencil className="h-4 w-4 text-yellow-500" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => handleDeleteClick(park)}
+                      >
+                        <Trash className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </div>
       </div>
-    </div>
+      
+      {/* Delete confirmation dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirmar eliminación</DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <p>
+              ¿Está seguro que desea eliminar el parque <span className="font-semibold">{parkToDelete?.name}</span>?
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Esta acción no se puede deshacer y eliminará toda la información, imágenes y documentos asociados a este parque.
+            </p>
+          </div>
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancelar</Button>
+            </DialogClose>
+            <Button variant="destructive" onClick={handleDeleteConfirm}>
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </AdminLayout>
   );
 };
 
