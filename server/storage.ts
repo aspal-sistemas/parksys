@@ -958,8 +958,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    try {
+      console.log("Buscando usuario con username:", username);
+      // Una consulta más simple, evitando posibles referencias internas a external_id
+      const result = await db.execute(sql`SELECT * FROM users WHERE username = ${username}`);
+      console.log("Resultado de consulta:", result.rows);
+      
+      if (result.rows.length > 0) {
+        return result.rows[0] as User;
+      }
+      return undefined;
+    } catch (error) {
+      console.error("Error en getUserByUsername:", error);
+      return undefined;
+    }
   }
   
   async getUserByExternalId(externalId: string): Promise<User | undefined> {

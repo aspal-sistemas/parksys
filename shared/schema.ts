@@ -16,10 +16,10 @@ export const sessions = pgTable(
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
-  password: text("password"),
-  email: text("email").unique(),
-  role: text("role").notNull().default("user"),
-  fullName: text("full_name"),
+  password: text("password").notNull(),
+  email: text("email").notNull(),
+  role: text("role").notNull().default("admin"),
+  fullName: text("full_name").notNull(),
   municipalityId: integer("municipality_id")
 });
 
