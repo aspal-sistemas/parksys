@@ -244,7 +244,7 @@ const AdminDocuments = () => {
               <SelectValue placeholder="Parque" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos los parques</SelectItem>
+              <SelectItem value="all">Todos los parques</SelectItem>
               {parks.map(park => (
                 <SelectItem key={park.id} value={park.id.toString()}>
                   {park.name}
@@ -258,7 +258,7 @@ const AdminDocuments = () => {
               <SelectValue placeholder="Tipo de archivo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos los tipos</SelectItem>
+              <SelectItem value="all">Todos los tipos</SelectItem>
               {fileTypes.map(type => (
                 <SelectItem key={type} value={type}>
                   {getFileTypeLabel(type)}

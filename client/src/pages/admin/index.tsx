@@ -120,13 +120,13 @@ const AdminDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">25</div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <div className="flex items-center text-xs text-muted-foreground mt-1">
                   <Badge variant="outline" className="text-emerald-500 bg-emerald-50">
                     <ArrowUp className="h-3 w-3 mr-1" />
                     +12%
                   </Badge>
                   <span className="ml-1">desde el mes pasado</span>
-                </p>
+                </div>
               </CardContent>
             </Card>
             
@@ -140,13 +140,13 @@ const AdminDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">36</div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <div className="flex items-center text-xs text-muted-foreground mt-1">
                   <Badge variant="outline" className="text-rose-500 bg-rose-50">
                     <ArrowDown className="h-3 w-3 mr-1" />
                     -2.5%
                   </Badge>
                   <span className="ml-1">desde el mes pasado</span>
-                </p>
+                </div>
               </CardContent>
             </Card>
             
@@ -160,13 +160,13 @@ const AdminDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">12</div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <div className="flex items-center text-xs text-muted-foreground mt-1">
                   <Badge variant="outline" className="text-rose-500 bg-rose-50">
                     <ArrowUp className="h-3 w-3 mr-1" />
                     +8%
                   </Badge>
                   <span className="ml-1">desde el mes pasado</span>
-                </p>
+                </div>
               </CardContent>
             </Card>
           </div>
