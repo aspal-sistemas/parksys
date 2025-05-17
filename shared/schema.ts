@@ -20,8 +20,7 @@ export const users = pgTable("users", {
   email: text("email").unique(),
   role: text("role").notNull().default("user"),
   fullName: text("full_name"),
-  municipalityId: integer("municipality_id"),
-  // No incluimos created_at y updated_at porque no existen en la tabla actual
+  municipalityId: integer("municipality_id")
 });
 
 export const municipalities = pgTable("municipalities", {

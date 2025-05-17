@@ -63,29 +63,33 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
-  // Buscar si el usuario ya existe
-  const existingUser = await storage.getUserByExternalId(claims["sub"]);
+  // Intentamos buscar al usuario por email si está disponible
+  let existingUser = null;
+  if (claims["email"]) {
+    const [userByEmail] = await db.select().from(users).where(eq(users.email, claims["email"]));
+    existingUser = userByEmail;
+  }
+  
+  // Creamos un nombre completo combinando first_name y last_name
+  const fullName = claims["first_name"] && claims["last_name"] 
+    ? `${claims["first_name"]} ${claims["last_name"]}` 
+    : claims["first_name"] || claims["last_name"] || "Usuario";
   
   if (existingUser) {
     // Actualizar información si ya existe
     return await storage.updateUser(existingUser.id, {
       email: claims["email"],
-      firstName: claims["first_name"] || existingUser.firstName,
-      lastName: claims["last_name"] || existingUser.lastName,
-      profileImageUrl: claims["profile_image_url"] || existingUser.profileImageUrl,
+      fullName: fullName
     });
   } else {
     // Crear nuevo usuario si no existe
     return await storage.createUser({
-      externalId: claims["sub"],
-      username: claims["email"] ? claims["email"].split('@')[0] : `user-${claims["sub"]}`,
+      username: claims["email"] ? claims["email"].split('@')[0] : `user-${Date.now()}`,
       email: claims["email"],
       password: "", // No password for OAuth users
-      firstName: claims["first_name"] || null,
-      lastName: claims["last_name"] || null,
-      profileImageUrl: claims["profile_image_url"] || null,
+      fullName: fullName,
       role: "user", // Default role
-      municipalityId: null, // Sin municipio asignado por defecto
+      municipalityId: null // Sin municipio asignado por defecto
     });
   }
 }

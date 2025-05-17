@@ -1003,7 +1003,7 @@ export class DatabaseStorage implements IStorage {
       // Eliminamos campos que no existen en la tabla actual
       const { externalId, firstName, lastName, profileImageUrl, ...updateData } = userData;
       
-      // Adaptamos los campos según la estructura de la tabla
+      // Adaptamos los campos según la estructura de la tabla actual
       const fullName = firstName && lastName ? `${firstName} ${lastName}` : undefined;
       
       const dataToUpdate: any = {
