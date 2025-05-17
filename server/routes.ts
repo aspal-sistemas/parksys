@@ -381,6 +381,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error reporting incident" });
     }
   });
+  
+  // Get all incidents
+  apiRouter.get("/incidents", async (req: Request, res: Response) => {
+    try {
+      const parkId = req.query.parkId ? Number(req.query.parkId) : undefined;
+      const incidents = parkId 
+        ? await storage.getParkIncidents(parkId)
+        : await storage.getAllIncidents();
+      
+      res.json(incidents);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching incidents" });
+    }
+  });
+  
+  // Get incidents for a specific park
+  apiRouter.get("/parks/:id/incidents", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const incidents = await storage.getParkIncidents(parkId);
+      
+      res.json(incidents);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching park incidents" });
+    }
+  });
 
   // Get all municipalities
   apiRouter.get("/municipalities", async (_req: Request, res: Response) => {

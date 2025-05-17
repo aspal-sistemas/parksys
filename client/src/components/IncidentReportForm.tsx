@@ -75,7 +75,7 @@ export function IncidentReportForm({
 
   const mutation = useMutation({
     mutationFn: (values: IncidentFormValues) => {
-      return apiRequest(`/api/parks/${parkId}/incidents`, "POST", values);
+      return apiRequest("POST", `/api/parks/${parkId}/incidents`, values);
     },
     onSuccess: () => {
       toast({
@@ -129,7 +129,15 @@ export function IncidentReportForm({
                 <FormItem>
                   <FormLabel>Correo electrónico</FormLabel>
                   <FormControl>
-                    <Input placeholder="correo@ejemplo.com" {...field} />
+                    <Input 
+                      placeholder="correo@ejemplo.com" 
+                      value={field.value || ''} 
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      disabled={field.disabled}
+                      name={field.name}
+                      ref={field.ref}
+                    />
                   </FormControl>
                   <FormDescription>
                     Para dar seguimiento a su reporte (opcional)
@@ -146,7 +154,15 @@ export function IncidentReportForm({
                 <FormItem>
                   <FormLabel>Teléfono</FormLabel>
                   <FormControl>
-                    <Input placeholder="10 dígitos" {...field} />
+                    <Input 
+                      placeholder="10 dígitos" 
+                      value={field.value || ''} 
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      disabled={field.disabled}
+                      name={field.name}
+                      ref={field.ref}
+                    />
                   </FormControl>
                   <FormDescription>
                     Número de contacto (opcional)

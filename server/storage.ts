@@ -101,6 +101,7 @@ export interface IStorage {
   // Incident operations
   getIncident(id: number): Promise<Incident | undefined>;
   getParkIncidents(parkId: number): Promise<Incident[]>;
+  getAllIncidents(): Promise<Incident[]>;
   createIncident(incident: InsertIncident): Promise<Incident>;
   updateIncidentStatus(id: number, status: string): Promise<Incident | undefined>;
 }
