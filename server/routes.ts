@@ -460,12 +460,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
-      // In a real app, we'd create a session and set cookies
-      // For now, just return the user without the password
+      // En una aplicación real, crearíamos una sesión y cookies seguras
+      // Si el usuario pertenece a un municipio, incluimos su información
+      let municipalityData = null;
+      if (user.municipalityId) {
+        const municipality = await storage.getMunicipality(user.municipalityId);
+        if (municipality) {
+          municipalityData = {
+            id: municipality.id,
+            name: municipality.name,
+            state: municipality.state,
+            logoUrl: municipality.logoUrl
+          };
+        }
+      }
+      
+      // Return the user without the password
       const { password: _, ...userWithoutPassword } = user;
       
       res.json({
-        user: userWithoutPassword,
+        user: {
+          ...userWithoutPassword,
+          municipality: municipalityData
+        },
         token: 'dummy-token-for-testing'
       });
     } catch (error) {
