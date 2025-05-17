@@ -469,7 +469,7 @@ const AdminIncidents = () => {
               <SelectValue placeholder="Parque" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos los parques</SelectItem>
+              <SelectItem value="all">Todos los parques</SelectItem>
               {parks.map(park => (
                 <SelectItem key={park.id} value={park.id.toString()}>
                   {park.name}
@@ -483,7 +483,7 @@ const AdminIncidents = () => {
               <SelectValue placeholder="Estado" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos los estados</SelectItem>
+              <SelectItem value="all">Todos los estados</SelectItem>
               <SelectItem value="pending">Pendientes</SelectItem>
               <SelectItem value="in_progress">En proceso</SelectItem>
               <SelectItem value="resolved">Resueltos</SelectItem>
@@ -496,7 +496,7 @@ const AdminIncidents = () => {
               <SelectValue placeholder="Categoría" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas las categorías</SelectItem>
+              <SelectItem value="all">Todas las categorías</SelectItem>
               {categories.map(category => (
                 <SelectItem key={category} value={category}>
                   {getCategoryLabel(category)}

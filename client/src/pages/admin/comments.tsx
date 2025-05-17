@@ -276,7 +276,7 @@ const AdminComments = () => {
               <SelectValue placeholder="Estado" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos los estados</SelectItem>
+              <SelectItem value="all">Todos los estados</SelectItem>
               <SelectItem value="approved">Aprobados</SelectItem>
               <SelectItem value="pending">Pendientes</SelectItem>
             </SelectContent>
