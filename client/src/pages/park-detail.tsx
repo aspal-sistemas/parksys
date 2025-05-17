@@ -17,11 +17,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { IncidentReportForm } from '@/components/IncidentReportForm';
 import AmenityIcon from '@/components/ui/amenity-icon';
 
 const ParkDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   
   // Fetch park details
   const { data: park, isLoading, error } = useQuery<ExtendedPark>({
@@ -355,12 +358,36 @@ const ParkDetail: React.FC = () => {
               <div className="p-4">
                 <h3 className="font-medium text-lg mb-2">¿Encontraste un problema?</h3>
                 <p className="text-gray-600 text-sm mb-4">Ayúdanos a mejorar reportando incidentes o problemas en el parque.</p>
-                <Button className="w-full" variant="default">
+                <Button 
+                  className="w-full" 
+                  variant="default"
+                  onClick={() => setIsReportDialogOpen(true)}
+                >
                   <AlertCircle className="h-4 w-4 mr-2" />
                   Reportar un incidente
                 </Button>
               </div>
             </div>
+            
+            {/* Incident Report Dialog */}
+            <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle>Reportar incidente en {park.name}</DialogTitle>
+                  <DialogDescription>
+                    Ayúdanos a mantener el parque en buen estado informando sobre problemas o incidentes que hayas encontrado.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <IncidentReportForm
+                    parkId={Number(id)}
+                    parkName={park.name}
+                    onSuccess={() => setIsReportDialogOpen(false)}
+                    onCancel={() => setIsReportDialogOpen(false)}
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>

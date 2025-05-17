@@ -726,6 +726,11 @@ export class MemStorage implements IStorage {
       .filter(incident => incident.parkId === parkId)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
+  
+  async getAllIncidents(): Promise<Incident[]> {
+    return Array.from(this.incidents.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
 
   async createIncident(incidentData: InsertIncident): Promise<Incident> {
     const id = this.incidentIdCounter++;
@@ -1276,6 +1281,12 @@ export class DatabaseStorage implements IStorage {
     return await db.select()
       .from(incidents)
       .where(eq(incidents.parkId, parkId))
+      .orderBy(desc(incidents.createdAt));
+  }
+  
+  async getAllIncidents(): Promise<Incident[]> {
+    return await db.select()
+      .from(incidents)
       .orderBy(desc(incidents.createdAt));
   }
 
