@@ -156,73 +156,79 @@ export class MemStorage implements IStorage {
     this.commentIdCounter = 1;
     this.incidentIdCounter = 1;
     
-    // Inicializar los datos por defecto
-    this.initializeDefaultData();
+    // Inicializar los datos por defecto de forma sincrónica
+    this.initializeDefaultDataSync();
   }
 
-  private initializeDefaultData() {
-    // Crear municipios por defecto
-    const guadalajaraPromise = this.createMunicipality({
-      name: "Guadalajara",
-      state: "Jalisco",
-      active: true
-    });
-    
-    const zapopanPromise = this.createMunicipality({
-      name: "Zapopan",
-      state: "Jalisco",
-      active: true
-    });
-    
-    // Resolver promesas para obtener los IDs
+  private initializeDefaultDataSync() {
+    // Crear municipios por defecto directamente
     const guadalajara = {
-      id: this.municipalityIdCounter - 1,
+      id: this.municipalityIdCounter++,
       name: "Guadalajara",
       state: "Jalisco",
       active: true,
-      createdAt: new Date()
+      createdAt: new Date(),
+      logoUrl: null
     };
+    this.municipalities.set(guadalajara.id, guadalajara);
     
     const zapopan = {
-      id: this.municipalityIdCounter - 1,
+      id: this.municipalityIdCounter++,
       name: "Zapopan",
       state: "Jalisco",
       active: true,
-      createdAt: new Date()
+      createdAt: new Date(),
+      logoUrl: null
     };
+    this.municipalities.set(zapopan.id, zapopan);
     
-    // Create default amenities
+    // Crear amenidades por defecto directamente
     DEFAULT_AMENITIES.forEach(amenity => {
-      this.createAmenity({
+      const newAmenity = {
+        id: this.amenityIdCounter++,
         name: amenity.name,
         icon: amenity.icon,
         category: amenity.category
-      });
+      };
+      this.amenities.set(newAmenity.id, newAmenity);
     });
     
-    // Create default users
-    this.createUser({
+    // Crear usuarios por defecto directamente
+    const adminUser = {
+      id: this.userIdCounter++,
       username: "admin",
-      password: "admin123", // In a real app, this would be hashed
+      password: "admin123", // En una app real, esto estaría hasheado
       firstName: "Admin",
       lastName: "User",
       email: "admin@parquesmx.com",
       role: "admin",
-      municipalityId: undefined
-    });
+      municipalityId: null,
+      externalId: null,
+      profileImageUrl: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.users.set(adminUser.id, adminUser);
     
-    this.createUser({
+    const guadalajaraUser = {
+      id: this.userIdCounter++,
       username: "guadalajara",
-      password: "parks123", // In a real app, this would be hashed
+      password: "parks123", // En una app real, esto estaría hasheado
       firstName: "Municipio",
       lastName: "de Guadalajara",
       email: "parques@guadalajara.gob.mx",
       role: "municipality",
-      municipalityId: guadalajara.id
-    });
+      municipalityId: guadalajara.id,
+      externalId: null,
+      profileImageUrl: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.users.set(guadalajaraUser.id, guadalajaraUser);
 
-    // Crear parques de muestra
-    const parqueMetropolitanoPromise = this.createPark({
+    // Crear parques de muestra directamente
+    const parqueMetropolitano = {
+      id: this.parkIdCounter++,
       name: "Parque Metropolitano",
       municipalityId: zapopan.id,
       parkType: "metropolitano",
@@ -235,12 +241,17 @@ export class MemStorage implements IStorage {
       foundationYear: 1997,
       administrator: "Dirección de Parques y Jardines",
       conservationStatus: "Bueno",
+      regulationUrl: "https://transparencia.zapopan.gob.mx/normatividad/reglamento-parque-metropolitano.pdf",
       openingHours: "6:00 - 20:00 hrs",
       contactEmail: "contacto@parquemetropolitano.com",
-      contactPhone: "(33) 3633-4550"
-    });
+      contactPhone: "(33) 3633-4550",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.parks.set(parqueMetropolitano.id, parqueMetropolitano);
     
-    const bosqueColomosPromise = this.createPark({
+    const bosqueColomos = {
+      id: this.parkIdCounter++,
       name: "Bosque Los Colomos",
       municipalityId: guadalajara.id,
       parkType: "botanico",
@@ -253,12 +264,17 @@ export class MemStorage implements IStorage {
       foundationYear: 1967,
       administrator: "Patronato Bosque Los Colomos",
       conservationStatus: "Excelente",
+      regulationUrl: "https://transparencia.guadalajara.gob.mx/normatividad/reglamento-bosque-colomos.pdf",
       openingHours: "6:00 - 18:00 hrs",
       contactEmail: "info@bosquecolomos.org",
-      contactPhone: "(33) 3641-3804"
-    });
+      contactPhone: "(33) 3641-3804",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.parks.set(bosqueColomos.id, bosqueColomos);
     
-    const parqueIndependenciaPromise = this.createPark({
+    const parqueIndependencia = {
+      id: this.parkIdCounter++,
       name: "Parque Deportivo Independencia",
       municipalityId: guadalajara.id,
       parkType: "deportivo",
@@ -271,91 +287,157 @@ export class MemStorage implements IStorage {
       foundationYear: 1978,
       administrator: "Dirección de Deportes",
       conservationStatus: "Regular",
+      regulationUrl: "https://transparencia.guadalajara.gob.mx/normatividad/reglamento-parques-municipales.pdf",
       openingHours: "6:00 - 21:00 hrs",
       contactEmail: "deportes@guadalajara.gob.mx",
-      contactPhone: "(33) 3614-7538"
-    });
-    
-    // Usar valores directos para evitar problemas con las promesas
-    const parqueMetropolitano = {
-      id: this.parkIdCounter - 3,
-      name: "Parque Metropolitano", 
-      municipalityId: zapopan.id,
-      parkType: "metropolitano",
+      contactPhone: "(33) 3614-7538",
       createdAt: new Date(),
       updatedAt: new Date()
     };
+    this.parks.set(parqueIndependencia.id, parqueIndependencia);
     
-    const bosqueColomos = {
-      id: this.parkIdCounter - 2,
-      name: "Bosque Los Colomos",
-      municipalityId: guadalajara.id,
-      parkType: "botanico",
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    const parqueIndependencia = {
-      id: this.parkIdCounter - 1,
-      name: "Parque Deportivo Independencia",
-      municipalityId: guadalajara.id,
-      parkType: "deportivo",
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    // Add images to parks
-    this.createParkImage({
+    // Agregar imágenes a los parques directamente
+    const parkImage1 = {
+      id: this.parkImageIdCounter++,
       parkId: parqueMetropolitano.id,
       imageUrl: "https://pixabay.com/get/g991fbf8f2f31bcb25f227ef704adbd6ac218ce6e6a98f2364dc571ffab2b0b5e9ffdac41cf017ce0e188fb28b0fe621a03fe5e901395ecc5aab10f3989175463_1280.jpg",
       caption: "Vista principal",
-      isPrimary: true
-    });
+      isPrimary: true,
+      createdAt: new Date()
+    };
+    this.parkImages.set(parkImage1.id, parkImage1);
     
-    this.createParkImage({
+    const parkImage2 = {
+      id: this.parkImageIdCounter++,
       parkId: parqueMetropolitano.id,
       imageUrl: "https://pixabay.com/get/g28bcc1617b2aee45fa695f3f39350cfc44e733b3b321023d0eb7a5fcffab38049a3ae2eca3f9a0843a7c7ac35b7a25be22402e2f880e3bef638106b0413b83bc_1280.jpg",
       caption: "Lago del parque",
-      isPrimary: false
-    });
+      isPrimary: false,
+      createdAt: new Date()
+    };
+    this.parkImages.set(parkImage2.id, parkImage2);
     
-    this.createParkImage({
+    const parkImage3 = {
+      id: this.parkImageIdCounter++,
       parkId: parqueMetropolitano.id,
       imageUrl: "https://pixabay.com/get/g102b9fdfd7907a95a67da8932558d5d27f04d1e028446121be7f0a1268ea6defa582513b03d8aec2b9f7fd06abd09b330baeb6f150375aa52eacc72ceef523ee_1280.jpg",
       caption: "Sendero para correr",
-      isPrimary: false
-    });
+      isPrimary: false,
+      createdAt: new Date()
+    };
+    this.parkImages.set(parkImage3.id, parkImage3);
     
-    this.createParkImage({
+    const parkImage4 = {
+      id: this.parkImageIdCounter++,
       parkId: bosqueColomos.id,
       imageUrl: "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600",
       caption: "Vista principal",
-      isPrimary: true
-    });
+      isPrimary: true,
+      createdAt: new Date()
+    };
+    this.parkImages.set(parkImage4.id, parkImage4);
     
-    this.createParkImage({
+    const parkImage5 = {
+      id: this.parkImageIdCounter++,
       parkId: parqueIndependencia.id,
       imageUrl: "https://images.unsplash.com/photo-1573155993874-d5d48af862ba?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600",
       caption: "Vista principal",
-      isPrimary: true
-    });
+      isPrimary: true,
+      createdAt: new Date()
+    };
+    this.parkImages.set(parkImage5.id, parkImage5);
     
-    // Add amenities to parks
-    this.addAmenityToPark({ parkId: parqueMetropolitano.id, amenityId: 1 }); // Juegos infantiles
-    this.addAmenityToPark({ parkId: parqueMetropolitano.id, amenityId: 2 }); // Baños públicos
-    this.addAmenityToPark({ parkId: parqueMetropolitano.id, amenityId: 3 }); // Canchas deportivas
-    this.addAmenityToPark({ parkId: parqueMetropolitano.id, amenityId: 4 }); // Ciclovías
-    this.addAmenityToPark({ parkId: parqueMetropolitano.id, amenityId: 7 }); // Senderos para caminar
-    this.addAmenityToPark({ parkId: parqueMetropolitano.id, amenityId: 8 }); // Estacionamiento
-    this.addAmenityToPark({ parkId: parqueMetropolitano.id, amenityId: 9 }); // Áreas de picnic
+    // Agregar amenidades a parques directamente
+    const parkAmenity1 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: parqueMetropolitano.id,
+      amenityId: 1 // Juegos infantiles
+    };
+    this.parkAmenities.set(parkAmenity1.id, parkAmenity1);
     
-    this.addAmenityToPark({ parkId: bosqueColomos.id, amenityId: 2 }); // Baños públicos
-    this.addAmenityToPark({ parkId: bosqueColomos.id, amenityId: 5 }); // Zona para mascotas
-    this.addAmenityToPark({ parkId: bosqueColomos.id, amenityId: 7 }); // Senderos para caminar
+    const parkAmenity2 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: parqueMetropolitano.id,
+      amenityId: 2 // Baños públicos
+    };
+    this.parkAmenities.set(parkAmenity2.id, parkAmenity2);
     
-    this.addAmenityToPark({ parkId: parqueIndependencia.id, amenityId: 3 }); // Canchas deportivas
-    this.addAmenityToPark({ parkId: parqueIndependencia.id, amenityId: 8 }); // Estacionamiento
-    this.addAmenityToPark({ parkId: parqueIndependencia.id, amenityId: 12 }); // Iluminación
+    const parkAmenity3 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: parqueMetropolitano.id,
+      amenityId: 3 // Canchas deportivas
+    };
+    this.parkAmenities.set(parkAmenity3.id, parkAmenity3);
+    
+    const parkAmenity4 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: parqueMetropolitano.id,
+      amenityId: 4 // Ciclovías
+    };
+    this.parkAmenities.set(parkAmenity4.id, parkAmenity4);
+    
+    const parkAmenity5 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: parqueMetropolitano.id,
+      amenityId: 7 // Senderos para caminar
+    };
+    this.parkAmenities.set(parkAmenity5.id, parkAmenity5);
+    
+    const parkAmenity6 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: parqueMetropolitano.id,
+      amenityId: 8 // Estacionamiento
+    };
+    this.parkAmenities.set(parkAmenity6.id, parkAmenity6);
+    
+    const parkAmenity7 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: parqueMetropolitano.id,
+      amenityId: 9 // Áreas de picnic
+    };
+    this.parkAmenities.set(parkAmenity7.id, parkAmenity7);
+    
+    const parkAmenity8 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: bosqueColomos.id,
+      amenityId: 2 // Baños públicos
+    };
+    this.parkAmenities.set(parkAmenity8.id, parkAmenity8);
+    
+    const parkAmenity9 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: bosqueColomos.id,
+      amenityId: 5 // Zona para mascotas
+    };
+    this.parkAmenities.set(parkAmenity9.id, parkAmenity9);
+    
+    const parkAmenity10 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: bosqueColomos.id,
+      amenityId: 7 // Senderos para caminar
+    };
+    this.parkAmenities.set(parkAmenity10.id, parkAmenity10);
+    
+    const parkAmenity11 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: parqueIndependencia.id,
+      amenityId: 3 // Canchas deportivas
+    };
+    this.parkAmenities.set(parkAmenity11.id, parkAmenity11);
+    
+    const parkAmenity12 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: parqueIndependencia.id,
+      amenityId: 8 // Estacionamiento
+    };
+    this.parkAmenities.set(parkAmenity12.id, parkAmenity12);
+    
+    const parkAmenity13 = {
+      id: this.parkAmenityIdCounter++,
+      parkId: parqueIndependencia.id,
+      amenityId: 12 // Iluminación
+    };
+    this.parkAmenities.set(parkAmenity13.id, parkAmenity13);
     
     // Add documents to parks
     this.createDocument({
