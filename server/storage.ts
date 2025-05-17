@@ -361,8 +361,19 @@ export class MemStorage implements IStorage {
 
   async createUser(user: InsertUser): Promise<User> {
     const id = this.userIdCounter++;
-    const newUser = { ...user, id };
+    const newUser = { 
+      ...user, 
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
     this.users.set(id, newUser);
+    
+    // Si tiene ID externo, mantener el mapeo
+    if (user.externalId) {
+      this.externalIdToUserId.set(user.externalId, id);
+    }
+    
     return newUser;
   }
 
@@ -1354,4 +1365,40 @@ export class DatabaseStorage implements IStorage {
 }
 
 // Use database storage
+// Agregar métodos faltantes en MemStorage
+MemStorage.prototype.getUserByExternalId = async function(externalId: string): Promise<User | undefined> {
+  const userId = this.externalIdToUserId.get(externalId);
+  if (userId) {
+    return this.users.get(userId);
+  }
+  return undefined;
+};
+
+MemStorage.prototype.upsertUser = async function(userData: Partial<InsertUser> & { externalId: string }): Promise<User> {
+  // Verificar si el usuario ya existe por su ID externo
+  const existingUser = await this.getUserByExternalId(userData.externalId);
+  
+  if (existingUser) {
+    // Actualizar usuario existente
+    const { externalId, ...updateData } = userData;
+    const updatedUser = await this.updateUser(existingUser.id, updateData);
+    return updatedUser!;
+  } else {
+    // Crear nuevo usuario
+    const newUserData = {
+      externalId: userData.externalId,
+      username: userData.username || `user-${userData.externalId.substring(0, 8)}`,
+      email: userData.email || null,
+      password: userData.password || '',
+      firstName: userData.firstName || null,
+      lastName: userData.lastName || null,
+      profileImageUrl: userData.profileImageUrl || null,
+      role: userData.role || 'user',
+      municipalityId: userData.municipalityId || null
+    };
+    
+    return await this.createUser(newUserData as InsertUser);
+  }
+};
+
 export const storage = new DatabaseStorage();
