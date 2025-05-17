@@ -439,45 +439,61 @@ export class MemStorage implements IStorage {
     };
     this.parkAmenities.set(parkAmenity13.id, parkAmenity13);
     
-    // Add documents to parks
-    this.createDocument({
+    // Agregar documentos a parques directamente
+    const document1 = {
+      id: this.documentIdCounter++,
       parkId: parqueMetropolitano.id,
       title: "Reglamento interno.pdf",
       fileUrl: "/documents/reglamento-metropolitano.pdf",
       fileSize: "356 KB",
-      fileType: "application/pdf"
-    });
+      fileType: "application/pdf",
+      createdAt: new Date()
+    };
+    this.documents.set(document1.id, document1);
     
-    this.createDocument({
+    const document2 = {
+      id: this.documentIdCounter++,
       parkId: parqueMetropolitano.id,
       title: "Plan maestro.pdf",
       fileUrl: "/documents/plan-maestro-metropolitano.pdf",
       fileSize: "2.4 MB",
-      fileType: "application/pdf"
-    });
+      fileType: "application/pdf",
+      createdAt: new Date()
+    };
+    this.documents.set(document2.id, document2);
     
-    // Add activities to parks
+    // Agregar actividades a parques directamente
     const now = new Date();
     const futureDate1 = new Date();
     futureDate1.setDate(now.getDate() + 15);
     const futureDate2 = new Date();
     futureDate2.setDate(now.getDate() + 7);
     
-    this.createActivity({
+    const activity1 = {
+      id: this.activityIdCounter++,
       parkId: parqueMetropolitano.id,
       title: "Maratón Verde 10K",
       description: "Carrera anual por los senderos del parque. Inscripciones abiertas.",
       startDate: futureDate1,
-      category: "Deportivo"
-    });
+      endDate: null,
+      category: "Deportivo",
+      location: null,
+      createdAt: new Date()
+    };
+    this.activities.set(activity1.id, activity1);
     
-    this.createActivity({
+    const activity2 = {
+      id: this.activityIdCounter++,
       parkId: parqueMetropolitano.id,
       title: "Taller de Huertos Urbanos",
       description: "Aprende a crear tu propio huerto en casa. Cupo limitado.",
       startDate: futureDate2,
-      category: "Educativo"
-    });
+      endDate: null,
+      category: "Educativo",
+      location: null,
+      createdAt: new Date()
+    };
+    this.activities.set(activity2.id, activity2);
   }
 
   // User operations
