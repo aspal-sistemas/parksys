@@ -368,9 +368,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete a document from a park (admin/municipality only)
-  apiRouter.delete("/parks/:parkId/documents/:documentId", async (req: Request, res: Response) => {
+  apiRouter.delete("/parks/:parkId/documents/:documentId", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      const parkId = Number(req.params.parkId);
       const documentId = Number(req.params.documentId);
+      
+      // Verificamos primero que el usuario tenga acceso al parque
+      if (req.user.role !== 'super_admin') {
+        const park = await storage.getPark(parkId);
+        if (!park) {
+          return res.status(404).json({ message: "Park not found" });
+        }
+        
+        if (park.municipalityId !== req.user.municipalityId) {
+          return res.status(403).json({ 
+            message: "No tiene permisos para administrar documentos de este parque" 
+          });
+        }
+      }
+      
+      // Verificamos que el documento pertenezca al parque especificado
+      const document = await storage.getDocument(documentId);
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+      
+      if (document.parkId !== parkId) {
+        return res.status(400).json({ 
+          message: "El documento no pertenece al parque especificado" 
+        });
+      }
       
       const result = await storage.deleteDocument(documentId);
       
@@ -398,7 +425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add an activity to a park (admin/municipality only)
-  apiRouter.post("/parks/:id/activities", async (req: Request, res: Response) => {
+  apiRouter.post("/parks/:id/activities", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
       const activityData = { ...req.body, parkId };
