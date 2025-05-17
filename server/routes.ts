@@ -2,6 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { isAuthenticated, hasMunicipalityAccess, hasParkAccess } from "./middleware/auth";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
   insertActivitySchema, insertDocumentSchema, insertParkImageSchema,
@@ -65,9 +66,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create a new park (admin/municipality only)
-  apiRouter.post("/parks", async (req: Request, res: Response) => {
+  apiRouter.post("/parks", isAuthenticated, hasMunicipalityAccess(), async (req: Request, res: Response) => {
     try {
+      // Si el usuario está autenticado y no es super_admin, forzamos que el parque sea de su municipio
+      if (req.user.role !== 'super_admin' && req.user.municipalityId) {
+        req.body.municipalityId = req.user.municipalityId;
+      }
+      
       const parkData = insertParkSchema.parse(req.body);
+      
+      // Verificar que el usuario tenga permisos para el municipio del parque
+      if (req.user.role !== 'super_admin' && parkData.municipalityId !== req.user.municipalityId) {
+        return res.status(403).json({ 
+          message: "No tiene permisos para crear parques en este municipio" 
+        });
+      }
+      
       const newPark = await storage.createPark(parkData);
       res.status(201).json(newPark);
     } catch (error) {
@@ -81,9 +95,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update an existing park (admin/municipality only)
-  apiRouter.put("/parks/:id", async (req: Request, res: Response) => {
+  apiRouter.put("/parks/:id", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
+      
+      // Impedir que se modifique el municipalityId del parque
+      if (req.body.municipalityId !== undefined) {
+        const park = await storage.getPark(parkId);
+        if (park && park.municipalityId !== req.body.municipalityId) {
+          return res.status(403).json({ 
+            message: "No se permite cambiar el municipio de un parque existente" 
+          });
+        }
+      }
+      
       // Partial validation is fine for updates
       const parkData = req.body;
       
@@ -101,7 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete a park (admin/municipality only)
-  apiRouter.delete("/parks/:id", async (req: Request, res: Response) => {
+  apiRouter.delete("/parks/:id", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
       const result = await storage.deletePark(parkId);
@@ -192,7 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add an image to a park (admin/municipality only)
-  apiRouter.post("/parks/:id/images", async (req: Request, res: Response) => {
+  apiRouter.post("/parks/:id/images", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
       const imageData = { ...req.body, parkId };
@@ -212,9 +237,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete an image from a park (admin/municipality only)
-  apiRouter.delete("/parks/:parkId/images/:imageId", async (req: Request, res: Response) => {
+  apiRouter.delete("/parks/:parkId/images/:imageId", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      const parkId = Number(req.params.parkId);
       const imageId = Number(req.params.imageId);
+      
+      // Verificamos primero que el usuario tenga acceso al parque
+      if (req.user.role !== 'super_admin') {
+        const park = await storage.getPark(parkId);
+        if (!park) {
+          return res.status(404).json({ message: "Park not found" });
+        }
+        
+        if (park.municipalityId !== req.user.municipalityId) {
+          return res.status(403).json({ 
+            message: "No tiene permisos para administrar imágenes de este parque" 
+          });
+        }
+      }
+      
+      // Verificamos que la imagen pertenezca al parque especificado
+      const image = await storage.getParkImage(imageId);
+      if (!image) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+      
+      if (image.parkId !== parkId) {
+        return res.status(400).json({ 
+          message: "La imagen no pertenece al parque especificado" 
+        });
+      }
       
       const result = await storage.deleteParkImage(imageId);
       
@@ -230,10 +282,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Set an image as primary for a park (admin/municipality only)
-  apiRouter.put("/parks/:parkId/images/:imageId/set-primary", async (req: Request, res: Response) => {
+  apiRouter.put("/parks/:parkId/images/:imageId/set-primary", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.parkId);
       const imageId = Number(req.params.imageId);
+      
+      // Verificamos que el usuario tenga acceso al parque
+      if (req.user.role !== 'super_admin') {
+        const park = await storage.getPark(parkId);
+        if (!park) {
+          return res.status(404).json({ message: "Park not found" });
+        }
+        
+        if (park.municipalityId !== req.user.municipalityId) {
+          return res.status(403).json({ 
+            message: "No tiene permisos para administrar imágenes de este parque" 
+          });
+        }
+      }
+      
+      // Verificamos que la imagen pertenezca al parque
+      const image = await storage.getParkImage(imageId);
+      if (!image) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+      
+      if (image.parkId !== parkId) {
+        return res.status(400).json({ 
+          message: "La imagen no pertenece al parque especificado" 
+        });
+      }
       
       // First, reset all images for this park to non-primary
       const parkImages = await storage.getParkImages(parkId);
@@ -270,7 +348,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add a document to a park (admin/municipality only)
-  apiRouter.post("/parks/:id/documents", async (req: Request, res: Response) => {
+  apiRouter.post("/parks/:id/documents", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
       const documentData = { ...req.body, parkId };
