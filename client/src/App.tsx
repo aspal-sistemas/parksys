@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -11,13 +11,20 @@ import Activities from "@/pages/activities";
 import AdminDashboard from "@/pages/admin";
 import AdminParks from "@/pages/admin/parks";
 import AdminParkEdit from "@/pages/admin/park-edit";
+import AdminActivities from "@/pages/admin/activities";
+import AdminDocuments from "@/pages/admin/documents";
+import AdminComments from "@/pages/admin/comments";
+import AdminIncidents from "@/pages/admin/incidents";
 import AdminLogin from "@/pages/admin/login";
 import Header from "@/components/Header";
 
 function Router() {
+  const [location] = useLocation();
+  const isAdminRoute = location.startsWith('/admin');
+  
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
+      {!isAdminRoute && <Header />}
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/parks" component={Parks} />
@@ -27,6 +34,10 @@ function Router() {
         <Route path="/admin/parks" component={AdminParks} />
         <Route path="/admin/parks/new" component={AdminParkEdit} />
         <Route path="/admin/parks/:id" component={AdminParkEdit} />
+        <Route path="/admin/activities" component={AdminActivities} />
+        <Route path="/admin/documents" component={AdminDocuments} />
+        <Route path="/admin/comments" component={AdminComments} />
+        <Route path="/admin/incidents" component={AdminIncidents} />
         <Route path="/admin/login" component={AdminLogin} />
         <Route component={NotFound} />
       </Switch>
