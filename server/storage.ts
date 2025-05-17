@@ -13,9 +13,11 @@ export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByExternalId(externalId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
   deleteUser(id: number): Promise<boolean>;
+  upsertUser(userData: Partial<InsertUser> & { externalId: string }): Promise<User>;
   
   // Municipality operations
   getMunicipality(id: number): Promise<Municipality | undefined>;
