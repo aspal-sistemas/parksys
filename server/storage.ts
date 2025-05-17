@@ -156,22 +156,40 @@ export class MemStorage implements IStorage {
     this.commentIdCounter = 1;
     this.incidentIdCounter = 1;
     
+    // Inicializar los datos por defecto
     this.initializeDefaultData();
   }
 
   private initializeDefaultData() {
-    // Create default municipalities
-    const guadalajara = this.createMunicipality({
+    // Crear municipios por defecto
+    const guadalajaraPromise = this.createMunicipality({
       name: "Guadalajara",
       state: "Jalisco",
       active: true
     });
     
-    const zapopan = this.createMunicipality({
+    const zapopanPromise = this.createMunicipality({
       name: "Zapopan",
       state: "Jalisco",
       active: true
     });
+    
+    // Resolver promesas para obtener los IDs
+    const guadalajara = {
+      id: this.municipalityIdCounter - 1,
+      name: "Guadalajara",
+      state: "Jalisco",
+      active: true,
+      createdAt: new Date()
+    };
+    
+    const zapopan = {
+      id: this.municipalityIdCounter - 1,
+      name: "Zapopan",
+      state: "Jalisco",
+      active: true,
+      createdAt: new Date()
+    };
     
     // Create default amenities
     DEFAULT_AMENITIES.forEach(amenity => {
@@ -203,8 +221,8 @@ export class MemStorage implements IStorage {
       municipalityId: guadalajara.id
     });
 
-    // Create sample parks
-    const parqueMetropolitano = this.createPark({
+    // Crear parques de muestra
+    const parqueMetropolitanoPromise = this.createPark({
       name: "Parque Metropolitano",
       municipalityId: zapopan.id,
       parkType: "metropolitano",
@@ -222,7 +240,7 @@ export class MemStorage implements IStorage {
       contactPhone: "(33) 3633-4550"
     });
     
-    const bosqueColomos = this.createPark({
+    const bosqueColomosPromise = this.createPark({
       name: "Bosque Los Colomos",
       municipalityId: guadalajara.id,
       parkType: "botanico",
@@ -240,7 +258,7 @@ export class MemStorage implements IStorage {
       contactPhone: "(33) 3641-3804"
     });
     
-    const parqueIndependencia = this.createPark({
+    const parqueIndependenciaPromise = this.createPark({
       name: "Parque Deportivo Independencia",
       municipalityId: guadalajara.id,
       parkType: "deportivo",
@@ -257,6 +275,34 @@ export class MemStorage implements IStorage {
       contactEmail: "deportes@guadalajara.gob.mx",
       contactPhone: "(33) 3614-7538"
     });
+    
+    // Usar valores directos para evitar problemas con las promesas
+    const parqueMetropolitano = {
+      id: this.parkIdCounter - 3,
+      name: "Parque Metropolitano", 
+      municipalityId: zapopan.id,
+      parkType: "metropolitano",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const bosqueColomos = {
+      id: this.parkIdCounter - 2,
+      name: "Bosque Los Colomos",
+      municipalityId: guadalajara.id,
+      parkType: "botanico",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const parqueIndependencia = {
+      id: this.parkIdCounter - 1,
+      name: "Parque Deportivo Independencia",
+      municipalityId: guadalajara.id,
+      parkType: "deportivo",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
     
     // Add images to parks
     this.createParkImage({
