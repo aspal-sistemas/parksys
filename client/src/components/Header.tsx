@@ -113,24 +113,22 @@ const Header: React.FC = () => {
               Inicio
             </Link>
             
-            <Link href="/parks">
-              <a className={`block px-3 py-2 rounded-md text-base font-medium ${
+            <Link href="/parks"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
                 location === '/parks' 
                   ? 'bg-primary-50 text-primary-700' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}>
-                Parques
-              </a>
+              Parques
             </Link>
             
-            <Link href="/activities">
-              <a className={`block px-3 py-2 rounded-md text-base font-medium ${
+            <Link href="/activities"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
                 location === '/activities' 
                   ? 'bg-primary-50 text-primary-700' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}>
-                Actividades
-              </a>
+              Actividades
             </Link>
             
             <a href="#" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50">
