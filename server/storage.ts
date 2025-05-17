@@ -110,6 +110,7 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
+  private externalIdToUserId: Map<string, number>; // Mapeo de ID externo a ID de usuario
   private municipalities: Map<number, Municipality>;
   private parks: Map<number, Park>;
   private parkImages: Map<number, ParkImage>;
@@ -133,6 +134,7 @@ export class MemStorage implements IStorage {
 
   constructor() {
     this.users = new Map();
+    this.externalIdToUserId = new Map();
     this.municipalities = new Map();
     this.parks = new Map();
     this.parkImages = new Map();
@@ -767,6 +769,11 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user || undefined;
   }
+  
+  async getUserByExternalId(externalId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.externalId, externalId));
+    return user || undefined;
+  }
 
   async createUser(user: InsertUser): Promise<User> {
     const [newUser] = await db.insert(users).values(user).returning();
@@ -775,10 +782,41 @@ export class DatabaseStorage implements IStorage {
 
   async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
     const [updatedUser] = await db.update(users)
-      .set(userData)
+      .set({
+        ...userData,
+        updatedAt: new Date()
+      })
       .where(eq(users.id, id))
       .returning();
     return updatedUser || undefined;
+  }
+  
+  async upsertUser(userData: Partial<InsertUser> & { externalId: string }): Promise<User> {
+    // Verificar si el usuario ya existe por su ID externo
+    const existingUser = await this.getUserByExternalId(userData.externalId);
+    
+    if (existingUser) {
+      // Actualizar usuario existente
+      const { externalId, ...updateData } = userData;
+      const updatedUser = await this.updateUser(existingUser.id, updateData);
+      return updatedUser!;
+    } else {
+      // Crear nuevo usuario
+      const newUserData = {
+        externalId: userData.externalId,
+        username: userData.username || `user-${userData.externalId.substring(0, 8)}`,
+        email: userData.email || null,
+        password: userData.password || '',
+        firstName: userData.firstName || null,
+        lastName: userData.lastName || null,
+        profileImageUrl: userData.profileImageUrl || null,
+        role: userData.role || 'user',
+        municipalityId: userData.municipalityId || null
+      };
+      
+      const newUser = await this.createUser(newUserData as InsertUser);
+      return newUser;
+    }
   }
 
   async deleteUser(id: number): Promise<boolean> {
