@@ -963,8 +963,10 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getUserByExternalId(externalId: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.externalId, externalId));
-    return user || undefined;
+    // Como no existe la columna externalId en la base de datos,
+    // este método simplemente devuelve undefined por el momento
+    console.log(`Intento fallido de getUserByExternalId con id: ${externalId}`);
+    return undefined;
   }
 
   async createUser(user: InsertUser): Promise<User> {
@@ -983,27 +985,52 @@ export class DatabaseStorage implements IStorage {
     return updatedUser || undefined;
   }
   
-  async upsertUser(userData: Partial<InsertUser> & { externalId: string }): Promise<User> {
-    // Verificar si el usuario ya existe por su ID externo
-    const existingUser = await this.getUserByExternalId(userData.externalId);
+  async upsertUser(userData: Partial<InsertUser> & { externalId?: string }): Promise<User> {
+    // Como no tenemos externalId en la tabla, verificamos por username o email
+    let existingUser: User | undefined;
+    
+    if (userData.username) {
+      existingUser = await this.getUserByUsername(userData.username);
+    }
+    
+    if (!existingUser && userData.email) {
+      const [userByEmail] = await db.select().from(users).where(eq(users.email, userData.email));
+      existingUser = userByEmail;
+    }
     
     if (existingUser) {
       // Actualizar usuario existente
-      const { externalId, ...updateData } = userData;
-      const updatedUser = await this.updateUser(existingUser.id, updateData);
+      // Eliminamos campos que no existen en la tabla actual
+      const { externalId, firstName, lastName, profileImageUrl, ...updateData } = userData;
+      
+      // Adaptamos los campos según la estructura de la tabla
+      const fullName = firstName && lastName ? `${firstName} ${lastName}` : undefined;
+      
+      const dataToUpdate: any = {
+        ...updateData
+      };
+      
+      if (fullName) {
+        dataToUpdate.fullName = fullName;
+      }
+      
+      const updatedUser = await this.updateUser(existingUser.id, dataToUpdate);
       return updatedUser!;
     } else {
-      // Crear nuevo usuario
+      // Crear nuevo usuario adaptado a la estructura actual
+      const { externalId, firstName, lastName, profileImageUrl, ...createData } = userData;
+      
+      // Adaptamos los campos según la estructura de la tabla
+      const fullName = firstName && lastName ? `${firstName} ${lastName}` : null;
+      
       const newUserData = {
-        externalId: userData.externalId,
-        username: userData.username || `user-${userData.externalId.substring(0, 8)}`,
-        email: userData.email || null,
-        password: userData.password || '',
-        firstName: userData.firstName || null,
-        lastName: userData.lastName || null,
-        profileImageUrl: userData.profileImageUrl || null,
-        role: userData.role || 'user',
-        municipalityId: userData.municipalityId || null
+        ...createData,
+        username: createData.username || `user_${Date.now()}`,
+        email: createData.email || null,
+        password: createData.password || '',
+        fullName: fullName,
+        role: createData.role || 'user',
+        municipalityId: createData.municipalityId || null
       };
       
       const newUser = await this.createUser(newUserData as InsertUser);

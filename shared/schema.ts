@@ -15,17 +15,13 @@ export const sessions = pgTable(
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  externalId: text("external_id").unique(), // ID externo para autenticación con Replit
   username: text("username").notNull().unique(),
   password: text("password"),
   email: text("email").unique(),
-  firstName: text("first_name"),
-  lastName: text("last_name"),
-  profileImageUrl: text("profile_image_url"),
   role: text("role").notNull().default("user"),
+  fullName: text("full_name"),
   municipalityId: integer("municipality_id"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  // No incluimos created_at y updated_at porque no existen en la tabla actual
 });
 
 export const municipalities = pgTable("municipalities", {
