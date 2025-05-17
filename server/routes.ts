@@ -645,33 +645,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username, password } = req.body;
       
-      const user = await storage.getUserByUsername(username);
+      // Consulta SQL directa para evitar problemas con columnas inexistentes
+      const result = await db.execute(sql`
+        SELECT id, username, email, full_name, role, municipality_id 
+        FROM users 
+        WHERE username = ${username} AND password = ${password}
+      `);
       
-      if (!user || user.password !== password) {
+      if (result.rows.length === 0) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
+      
+      const userData = result.rows[0];
       
       // En una aplicación real, crearíamos una sesión y cookies seguras
       // Si el usuario pertenece a un municipio, incluimos su información
       let municipalityData = null;
-      if (user.municipalityId) {
-        const municipality = await storage.getMunicipality(user.municipalityId);
-        if (municipality) {
+      if (userData.municipality_id) {
+        const municipalityResult = await db.execute(sql`
+          SELECT id, name, state, logo_url 
+          FROM municipalities 
+          WHERE id = ${userData.municipality_id}
+        `);
+        
+        if (municipalityResult.rows.length > 0) {
+          const municipality = municipalityResult.rows[0];
           municipalityData = {
             id: municipality.id,
             name: municipality.name,
             state: municipality.state,
-            logoUrl: municipality.logoUrl
+            logoUrl: municipality.logo_url
           };
         }
       }
       
-      // Return the user without the password
-      const { password: _, ...userWithoutPassword } = user;
+      // Convertimos a formato camelCase para mantener consistencia
+      const user = {
+        id: userData.id,
+        username: userData.username,
+        email: userData.email,
+        fullName: userData.full_name,
+        role: userData.role,
+        municipalityId: userData.municipality_id
+      };
       
       res.json({
         user: {
-          ...userWithoutPassword,
+          ...user,
           municipality: municipalityData
         },
         token: 'dummy-token-for-testing'
