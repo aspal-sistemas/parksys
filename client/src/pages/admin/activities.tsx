@@ -216,7 +216,7 @@ const AdminActivities = () => {
               <SelectValue placeholder="Parque" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos los parques</SelectItem>
+              <SelectItem value="all">Todos los parques</SelectItem>
               {parks.map(park => (
                 <SelectItem key={park.id} value={park.id.toString()}>
                   {park.name}
@@ -230,7 +230,7 @@ const AdminActivities = () => {
               <SelectValue placeholder="Categoría" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas las categorías</SelectItem>
+              <SelectItem value="all">Todas las categorías</SelectItem>
               {categories.map(category => (
                 <SelectItem key={category} value={category}>
                   {category}
