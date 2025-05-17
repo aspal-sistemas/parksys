@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ParkImageManager } from '@/components/ParkImageManager';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
@@ -144,6 +145,7 @@ const ParkDetail: React.FC = () => {
                 <TabsTrigger value="amenities">Amenidades</TabsTrigger>
                 <TabsTrigger value="activities">Actividades</TabsTrigger>
                 <TabsTrigger value="documents">Documentos</TabsTrigger>
+                <TabsTrigger value="images">Imágenes</TabsTrigger>
               </TabsList>
               
               <TabsContent value="info" className="mt-4">
@@ -299,6 +301,10 @@ const ParkDetail: React.FC = () => {
                     <p className="text-gray-500">No hay documentos disponibles para este parque.</p>
                   </div>
                 )}
+              </TabsContent>
+              
+              <TabsContent value="images" className="mt-4">
+                <ParkImageManager parkId={Number(id)} />
               </TabsContent>
             </Tabs>
           </div>

@@ -228,6 +228,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error removing image from park" });
     }
   });
+  
+  // Set an image as primary for a park (admin/municipality only)
+  apiRouter.put("/parks/:parkId/images/:imageId/set-primary", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const imageId = Number(req.params.imageId);
+      
+      // First, reset all images for this park to non-primary
+      const parkImages = await storage.getParkImages(parkId);
+      for (const image of parkImages) {
+        if (image.isPrimary) {
+          await storage.updateParkImage(image.id, { isPrimary: false });
+        }
+      }
+      
+      // Then set the selected image as primary
+      const updatedImage = await storage.updateParkImage(imageId, { isPrimary: true });
+      
+      if (!updatedImage) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+      
+      res.json(updatedImage);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error setting image as primary" });
+    }
+  });
 
   // Get documents for a specific park
   apiRouter.get("/parks/:id/documents", async (req: Request, res: Response) => {
