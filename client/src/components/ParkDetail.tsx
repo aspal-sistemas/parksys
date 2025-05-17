@@ -177,7 +177,7 @@ const ParkDetail: React.FC<ParkDetailProps> = ({
                       <iframe
                         title={`Mapa de ${park.name}`}
                         className="w-full h-full"
-                        src={`https://www.google.com/maps/embed/v1/place?key=${process.env.GOOGLE_MAPS_API_KEY || ''}&q=${park.latitude},${park.longitude}`}
+                        src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=${park.latitude},${park.longitude}`}
                         allowFullScreen
                       ></iframe>
                     </div>
