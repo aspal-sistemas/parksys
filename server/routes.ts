@@ -553,9 +553,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get all incidents
-  apiRouter.get("/incidents", async (req: Request, res: Response) => {
+  apiRouter.get("/incidents", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const parkId = req.query.parkId ? Number(req.query.parkId) : undefined;
+      
+      // Si no es super_admin, filtramos por municipio
+      if (req.user.role !== 'super_admin') {
+        // Si se especificó un parque, verificamos permisos
+        if (parkId) {
+          const park = await storage.getPark(parkId);
+          if (!park) {
+            return res.status(404).json({ message: "Park not found" });
+          }
+          
+          if (park.municipalityId !== req.user.municipalityId) {
+            return res.status(403).json({ 
+              message: "No tiene permisos para ver incidentes de este parque" 
+            });
+          }
+          
+          const incidents = await storage.getParkIncidents(parkId);
+          return res.json(incidents);
+        }
+        
+        // Si no se especificó un parque, pero no es super_admin
+        // obtenemos todos los parques del municipio y sus incidentes
+        const allParks = await storage.getParks({ municipalityId: req.user.municipalityId });
+        const allIncidents = [];
+        
+        for (const park of allParks) {
+          const parkIncidents = await storage.getParkIncidents(park.id);
+          allIncidents.push(...parkIncidents);
+        }
+        
+        return res.json(allIncidents);
+      }
+      
+      // Para super_admin, devolvemos todos los incidentes o filtramos por parque
       const incidents = parkId 
         ? await storage.getParkIncidents(parkId)
         : await storage.getAllIncidents();
@@ -568,9 +602,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get incidents for a specific park
-  apiRouter.get("/parks/:id/incidents", async (req: Request, res: Response) => {
+  apiRouter.get("/parks/:id/incidents", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
+      
+      // Verificamos que el usuario tenga acceso al parque si no es super_admin
+      if (req.user.role !== 'super_admin') {
+        const park = await storage.getPark(parkId);
+        if (!park) {
+          return res.status(404).json({ message: "Park not found" });
+        }
+        
+        if (park.municipalityId !== req.user.municipalityId) {
+          return res.status(403).json({ 
+            message: "No tiene permisos para ver incidentes de este parque" 
+          });
+        }
+      }
+      
       const incidents = await storage.getParkIncidents(parkId);
       
       res.json(incidents);
