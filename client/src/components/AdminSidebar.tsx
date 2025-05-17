@@ -25,7 +25,7 @@ interface NavItemProps {
 const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active }) => {
   return (
     <Link href={href}>
-      <a className={`flex items-center pl-3 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${
+      <div className={`flex items-center pl-3 pr-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${
         active 
           ? 'bg-primary text-primary-foreground' 
           : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
@@ -34,7 +34,7 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active }) => {
           {icon}
         </span>
         {children}
-      </a>
+      </div>
     </Link>
   );
 };
