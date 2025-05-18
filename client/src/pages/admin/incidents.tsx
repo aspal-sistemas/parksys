@@ -234,6 +234,22 @@ const AdminIncidents = () => {
     refetch: refetchIncidents
   } = useQuery({
     queryKey: ['/api/incidents'],
+    queryFn: async () => {
+      const response = await fetch('/api/incidents', {
+        headers: {
+          'Authorization': 'Bearer direct-token-admin',
+          'X-User-Id': '1'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error al obtener incidencias (${response.status}): ${errorText}`);
+        throw new Error(`Error al obtener incidencias: ${response.statusText}`);
+      }
+      
+      return response.json();
+    }
   });
 
   // Fetch parks for filter
