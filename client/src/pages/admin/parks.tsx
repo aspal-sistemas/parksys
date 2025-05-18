@@ -306,10 +306,20 @@ const AdminParks = () => {
                     </TableCell>
                     <TableCell>{getMunicipalityName(park.municipalityId)}</TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button variant="outline" size="icon" className="h-8 w-8">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => window.open(`/parks/${park.id}`, '_blank')}
+                      >
                         <Map className="h-4 w-4 text-blue-500" />
                       </Button>
-                      <Button variant="outline" size="icon" className="h-8 w-8">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => window.open(`/admin/parks/edit/${park.id}`, '_blank')}
+                      >
                         <Pencil className="h-4 w-4 text-yellow-500" />
                       </Button>
                       <Button 
