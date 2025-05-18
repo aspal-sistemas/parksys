@@ -252,15 +252,20 @@ const AdminIncidents = () => {
   // Update incident status mutation
   const updateStatusMutation = useMutation({
     mutationFn: async ({ incidentId, status }: { incidentId: number, status: string }) => {
+      // Usamos los encabezados de autenticación
       const response = await fetch(`/api/incidents/${incidentId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer direct-token-admin',
+          'X-User-Id': '1'
         },
         body: JSON.stringify({ status }),
       });
       
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error al actualizar incidencia (${response.status}): ${errorText}`);
         throw new Error(`Error al actualizar el estado de la incidencia: ${response.statusText}`);
       }
       

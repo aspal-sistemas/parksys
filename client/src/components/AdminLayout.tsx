@@ -115,19 +115,17 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
             <ul className="space-y-1">
               {navItems.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href}>
-                    <a 
-                      className={`
-                        flex items-center px-6 py-3 text-sm font-medium rounded-md
-                        ${isLinkActive(item.href) 
-                          ? 'bg-primary/10 text-primary' 
-                          : 'text-gray-700 hover:bg-gray-100'
-                        }
-                      `}
-                    >
-                      {item.icon}
-                      {item.label}
-                    </a>
+                  <Link href={item.href} 
+                    className={`
+                      flex items-center px-6 py-3 text-sm font-medium rounded-md
+                      ${isLinkActive(item.href) 
+                        ? 'bg-primary/10 text-primary' 
+                        : 'text-gray-700 hover:bg-gray-100'
+                      }
+                    `}
+                  >
+                    {item.icon}
+                    {item.label}
                   </Link>
                 </li>
               ))}
