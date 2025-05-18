@@ -110,7 +110,7 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
             <div>
               <span className="text-sm text-gray-500">ID de incidencia: {incident.id}</span>
-              <h3 className="text-lg font-semibold mt-1">{incident.title}</h3>
+              <h3 className="text-lg font-semibold mt-1">Incidencia en Parque</h3>
             </div>
             {getStatusBadge(incident.status)}
           </div>
@@ -118,8 +118,8 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
           {/* Incident meta */}
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-gray-500">Categoría</p>
-              <p className="font-medium">{getCategoryLabel(incident.category)}</p>
+              <p className="text-gray-500">Parque ID</p>
+              <p className="font-medium">{incident.parkId}</p>
             </div>
             <div>
               <p className="text-gray-500">Fecha de reporte</p>
@@ -133,18 +133,7 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
             <p className="mt-1 text-gray-800 bg-gray-50 p-3 rounded-md text-sm">{incident.description}</p>
           </div>
           
-          {/* Location */}
-          {(incident.latitude && incident.longitude) && (
-            <div>
-              <p className="text-gray-500 text-sm">Ubicación</p>
-              <div className="h-[150px] bg-gray-100 rounded-md mt-1 flex items-center justify-center">
-                <MapPin className="h-6 w-6 text-red-500 mr-2" />
-                <span className="text-sm">
-                  {incident.latitude}, {incident.longitude}
-                </span>
-              </div>
-            </div>
-          )}
+          {/* Location - Podría implementarse en el futuro */}
           
           {/* Reporter info */}
           <div>
@@ -168,7 +157,43 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
             {incident.status !== 'rejected' && (
               <Button 
                 variant="destructive" 
-                onClick={() => onStatusChange(incident.id, 'rejected')}
+                onClick={() => {
+                  console.log("Rechazando incidencia:", incident.id);
+                  fetch(`/api/incidents/${incident.id}/status`, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': 'Bearer direct-token-admin',
+                      'X-User-Id': '1'
+                    },
+                    body: JSON.stringify({ status: 'rejected' }),
+                  })
+                  .then(response => {
+                    if (response.ok) {
+                      console.log("Incidencia rechazada correctamente");
+                      toast({
+                        title: "Estado actualizado",
+                        description: "La incidencia ha sido rechazada",
+                      });
+                      setTimeout(() => onClose(), 1000);
+                    } else {
+                      console.error("Error al rechazar incidencia");
+                      toast({
+                        title: "Error",
+                        description: "No se pudo rechazar la incidencia",
+                        variant: "destructive",
+                      });
+                    }
+                  })
+                  .catch(error => {
+                    console.error("Error al procesar la solicitud:", error);
+                    toast({
+                      title: "Error",
+                      description: "Error de conexión",
+                      variant: "destructive",
+                    });
+                  });
+                }}
                 disabled={isUpdating}
                 className="sm:flex-1"
               >
@@ -180,7 +205,43 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
             {incident.status !== 'in_progress' && incident.status !== 'resolved' && (
               <Button 
                 variant="default" 
-                onClick={() => onStatusChange(incident.id, 'in_progress')}
+                onClick={() => {
+                  console.log("Cambiando a En proceso:", incident.id);
+                  fetch(`/api/incidents/${incident.id}/status`, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': 'Bearer direct-token-admin',
+                      'X-User-Id': '1'
+                    },
+                    body: JSON.stringify({ status: 'in_progress' }),
+                  })
+                  .then(response => {
+                    if (response.ok) {
+                      console.log("Incidencia actualizada a En proceso");
+                      toast({
+                        title: "Estado actualizado",
+                        description: "La incidencia está ahora En proceso",
+                      });
+                      setTimeout(() => onClose(), 1000);
+                    } else {
+                      console.error("Error al actualizar incidencia");
+                      toast({
+                        title: "Error",
+                        description: "No se pudo actualizar la incidencia",
+                        variant: "destructive",
+                      });
+                    }
+                  })
+                  .catch(error => {
+                    console.error("Error al procesar la solicitud:", error);
+                    toast({
+                      title: "Error",
+                      description: "Error de conexión",
+                      variant: "destructive",
+                    });
+                  });
+                }}
                 disabled={isUpdating}
                 className="sm:flex-1"
               >
@@ -192,7 +253,46 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
             {incident.status !== 'resolved' && (
               <Button 
                 variant="default" 
-                onClick={() => onStatusChange(incident.id, 'resolved')}
+                onClick={() => {
+                  console.log("Marcando como Resuelta:", incident.id);
+                  fetch(`/api/incidents/${incident.id}/status`, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': 'Bearer direct-token-admin',
+                      'X-User-Id': '1'
+                    },
+                    body: JSON.stringify({ status: 'resolved' }),
+                  })
+                  .then(response => {
+                    if (response.ok) {
+                      console.log("Incidencia marcada como resuelta");
+                      const { toast } = useToast();
+                      toast({
+                        title: "Estado actualizado",
+                        description: "La incidencia ha sido resuelta",
+                      });
+                      setTimeout(() => onClose(), 1000);
+                    } else {
+                      console.error("Error al resolver incidencia");
+                      const { toast } = useToast();
+                      toast({
+                        title: "Error",
+                        description: "No se pudo marcar la incidencia como resuelta",
+                        variant: "destructive",
+                      });
+                    }
+                  })
+                  .catch(error => {
+                    console.error("Error al procesar la solicitud:", error);
+                    const { toast } = useToast();
+                    toast({
+                      title: "Error",
+                      description: "Error de conexión",
+                      variant: "destructive",
+                    });
+                  });
+                }}
                 disabled={isUpdating}
                 className="sm:flex-1 bg-green-600 hover:bg-green-700"
               >
