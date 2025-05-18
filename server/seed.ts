@@ -3,7 +3,7 @@ import {
   users, municipalities, parks, amenities, parkAmenities, activities, parkImages, documents,
   DEFAULT_AMENITIES, type InsertPark, type InsertParkImage, type InsertActivity, type InsertDocument
 } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 /**
  * Carga datos específicos para Guadalajara, Jalisco
@@ -42,8 +42,7 @@ async function seedGuadalajaraData() {
         email: "admin@guadalajara.gob.mx",
         role: "admin",
         municipalityId: guadalajara.id,
-        firstName: "Admin",
-        lastName: "Guadalajara"
+        fullName: "Admin Guadalajara"
       });
       
       console.log("Usuario administrador para Guadalajara creado correctamente.");
@@ -776,8 +775,7 @@ export async function seedDatabase() {
       password: "admin123", // En producción usar bcrypt
       email: "admin@parquesmx.com",
       role: "admin",
-      firstName: "Admin",
-      lastName: "System"
+      fullName: "Admin System"
     });
     
     console.log("Usuario administrador general creado correctamente.");
