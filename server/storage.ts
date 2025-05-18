@@ -936,13 +936,19 @@ export class MemStorage implements IStorage {
     this.incidents.set(id, incident);
     return incident;
   }
-
+  
   async updateIncidentStatus(id: number, status: string): Promise<Incident | undefined> {
     const incident = this.incidents.get(id);
-    if (!incident) return undefined;
+    if (!incident) {
+      return undefined;
+    }
     
-    const updatedAt = new Date();
-    const updatedIncident = { ...incident, status, updatedAt };
+    const updatedIncident = { 
+      ...incident, 
+      status, 
+      updatedAt: new Date() 
+    };
+    
     this.incidents.set(id, updatedIncident);
     return updatedIncident;
   }
