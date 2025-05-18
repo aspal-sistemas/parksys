@@ -268,6 +268,8 @@ const AdminIncidents = () => {
   // Update incident status mutation
   const updateStatusMutation = useMutation({
     mutationFn: async ({ incidentId, status }: { incidentId: number, status: string }) => {
+      console.log(`Actualizando incidencia ${incidentId} a estado ${status}`);
+      
       // Usamos los encabezados de autenticación
       const response = await fetch(`/api/incidents/${incidentId}/status`, {
         method: 'PUT',
@@ -286,11 +288,26 @@ const AdminIncidents = () => {
         throw new Error(`Error al actualizar el estado de la incidencia: ${response.statusText}`);
       }
       
-      return response.json();
+      const updatedIncident = await response.json();
+      console.log("Incidencia actualizada:", updatedIncident);
+      return updatedIncident;
     },
-    onSuccess: () => {
+    onSuccess: (updatedIncident) => {
+      console.log("Actualización exitosa, actualizando UI");
+      
       // Invalidate incidents query
       queryClient.invalidateQueries({ queryKey: ['/api/incidents'] });
+      
+      // Actualizar la incidencia seleccionada directamente en la interfaz
+      // y forzar un cierre de la ventana de detalles para mostrar cambios
+      if (selectedIncident && selectedIncident.id === updatedIncident.id) {
+        setSelectedIncident({...updatedIncident});
+        // Cerramos la ventana de detalles después de un breve retraso
+        setTimeout(() => {
+          setSelectedIncident(null);
+          refetchIncidents();
+        }, 1500);
+      }
       
       // Show success toast
       toast({
