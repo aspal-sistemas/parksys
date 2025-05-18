@@ -88,6 +88,7 @@ export interface IStorage {
   
   // Activity operations
   getActivity(id: number): Promise<Activity | undefined>;
+  getAllActivities(): Promise<Activity[]>;
   getParkActivities(parkId: number): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
   updateActivity(id: number, activity: Partial<InsertActivity>): Promise<Activity | undefined>;
@@ -847,6 +848,11 @@ export class MemStorage implements IStorage {
   // Activity operations
   async getActivity(id: number): Promise<Activity | undefined> {
     return this.activities.get(id);
+  }
+
+  async getAllActivities(): Promise<Activity[]> {
+    return Array.from(this.activities.values())
+      .sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   }
 
   async getParkActivities(parkId: number): Promise<Activity[]> {
