@@ -266,6 +266,7 @@ const AdminIncidents = () => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Error al actualizar incidencia (${response.status}): ${errorText}`);
+        alert(`Error: ${errorText}`); // Mostramos un alerta para depuración
         throw new Error(`Error al actualizar el estado de la incidencia: ${response.statusText}`);
       }
       
