@@ -1511,6 +1511,12 @@ export class DatabaseStorage implements IStorage {
     return activity || undefined;
   }
 
+  async getAllActivities(): Promise<Activity[]> {
+    return await db.select()
+      .from(activities)
+      .orderBy(activities.startDate);
+  }
+
   async getParkActivities(parkId: number): Promise<Activity[]> {
     return await db.select()
       .from(activities)
