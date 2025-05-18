@@ -603,6 +603,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Actualizar estado de una incidencia
+  apiRouter.put("/incidents/:id/status", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      const { status } = req.body;
+      
+      if (!status || !["pending", "in_progress", "resolved", "rejected"].includes(status)) {
+        return res.status(400).json({ message: "Estado de incidencia inválido" });
+      }
+      
+      // Verificamos si la incidencia existe en la base de datos
+      const incident = await storage.getIncident(incidentId);
+      if (!incident) {
+        return res.status(404).json({ message: "Incidencia no encontrada" });
+      }
+      
+      // Actualizamos el estado de la incidencia
+      const updatedIncident = await storage.updateIncidentStatus(incidentId, status);
+      
+      res.json(updatedIncident);
+    } catch (error) {
+      console.error("Error al actualizar incidencia:", error);
+      res.status(500).json({ message: "Error al actualizar el estado de la incidencia" });
+    }
+  });
+  
   // Get incidents for a specific park
   apiRouter.get("/parks/:id/incidents", isAuthenticated, async (req: Request, res: Response) => {
     try {
