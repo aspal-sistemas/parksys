@@ -12,9 +12,16 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Añadimos un token de autenticación para desarrollo
+  const headers: Record<string, string> = {
+    ...data ? { "Content-Type": "application/json" } : {},
+    "Authorization": "Bearer direct-token-admin",
+    "X-User-Id": "1" // Este es el ID del usuario admin
+  };
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -29,8 +36,15 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    // Añadimos encabezados de autenticación para desarrollo
+    const headers: Record<string, string> = {
+      "Authorization": "Bearer direct-token-admin",
+      "X-User-Id": "1" // Este es el ID del usuario admin
+    };
+
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
+      headers
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
