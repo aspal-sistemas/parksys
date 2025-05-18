@@ -58,9 +58,9 @@ const Header: React.FC = () => {
                   Actividades
                 </Link>
                 
-                <a href="#" className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 px-1 pt-1 pb-3 text-sm font-medium">
+                <button onClick={() => window.scrollTo(0, document.body.scrollHeight)} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 px-1 pt-1 pb-3 text-sm font-medium">
                   Acerca de
-                </a>
+                </button>
               </nav>
             )}
           </div>
