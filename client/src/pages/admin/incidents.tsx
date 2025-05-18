@@ -171,27 +171,17 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
                   .then(response => {
                     if (response.ok) {
                       console.log("Incidencia rechazada correctamente");
-                      toast({
-                        title: "Estado actualizado",
-                        description: "La incidencia ha sido rechazada",
-                      });
-                      setTimeout(() => onClose(), 1000);
+                      // Actualizamos la página para reflejar los cambios
+                      window.location.reload();
+                      setTimeout(() => onClose(), 500);
                     } else {
                       console.error("Error al rechazar incidencia");
-                      toast({
-                        title: "Error",
-                        description: "No se pudo rechazar la incidencia",
-                        variant: "destructive",
-                      });
+                      alert("Error: No se pudo rechazar la incidencia");
                     }
                   })
                   .catch(error => {
                     console.error("Error al procesar la solicitud:", error);
-                    toast({
-                      title: "Error",
-                      description: "Error de conexión",
-                      variant: "destructive",
-                    });
+                    alert("Error de conexión");
                   });
                 }}
                 disabled={isUpdating}
@@ -219,27 +209,17 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
                   .then(response => {
                     if (response.ok) {
                       console.log("Incidencia actualizada a En proceso");
-                      toast({
-                        title: "Estado actualizado",
-                        description: "La incidencia está ahora En proceso",
-                      });
-                      setTimeout(() => onClose(), 1000);
+                      // Actualizamos la página para reflejar los cambios
+                      window.location.reload();
+                      setTimeout(() => onClose(), 500);
                     } else {
                       console.error("Error al actualizar incidencia");
-                      toast({
-                        title: "Error",
-                        description: "No se pudo actualizar la incidencia",
-                        variant: "destructive",
-                      });
+                      alert("Error: No se pudo actualizar la incidencia");
                     }
                   })
                   .catch(error => {
                     console.error("Error al procesar la solicitud:", error);
-                    toast({
-                      title: "Error",
-                      description: "Error de conexión",
-                      variant: "destructive",
-                    });
+                    alert("Error de conexión");
                   });
                 }}
                 disabled={isUpdating}
@@ -267,30 +247,17 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
                   .then(response => {
                     if (response.ok) {
                       console.log("Incidencia marcada como resuelta");
-                      const { toast } = useToast();
-                      toast({
-                        title: "Estado actualizado",
-                        description: "La incidencia ha sido resuelta",
-                      });
-                      setTimeout(() => onClose(), 1000);
+                      // Actualizamos la página para reflejar los cambios
+                      window.location.reload();
+                      setTimeout(() => onClose(), 500);
                     } else {
                       console.error("Error al resolver incidencia");
-                      const { toast } = useToast();
-                      toast({
-                        title: "Error",
-                        description: "No se pudo marcar la incidencia como resuelta",
-                        variant: "destructive",
-                      });
+                      alert("Error: No se pudo marcar la incidencia como resuelta");
                     }
                   })
                   .catch(error => {
                     console.error("Error al procesar la solicitud:", error);
-                    const { toast } = useToast();
-                    toast({
-                      title: "Error",
-                      description: "Error de conexión",
-                      variant: "destructive",
-                    });
+                    alert("Error de conexión");
                   });
                 }}
                 disabled={isUpdating}
