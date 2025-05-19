@@ -35,7 +35,8 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
   // Fetch park activities
   const { data: parkActivities = [] } = useQuery({
     queryKey: [`/api/parks/${parkId}/activities`],
-    enabled: isActivitiesDialogOpen
+    enabled: isActivitiesDialogOpen,
+    placeholderData: []
   });
 
   const formatDate = (date: Date) => {
@@ -50,13 +51,19 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
     e.preventDefault();
     
     try {
-      await apiRequest(`/api/parks/${parkId}/comments`, {
+      const endpoint = `/api/parks/${parkId}/comments`;
+      const data = {
+        name: commentName,
+        email: commentEmail,
+        comment: comment,
+      };
+      
+      await fetch(endpoint, {
         method: 'POST',
-        data: {
-          name: commentName,
-          email: commentEmail,
-          comment: comment,
-        }
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
       
       toast({
@@ -138,7 +145,7 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
             <DialogTitle>Próximas actividades en {parkName}</DialogTitle>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto">
-            {parkActivities && parkActivities.length > 0 ? (
+            {Array.isArray(parkActivities) && parkActivities.length > 0 ? (
               <div className="space-y-4">
                 {parkActivities.map((activity: any) => (
                   <div key={activity.id} className="border rounded-lg p-3">
@@ -211,4 +218,5 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
   );
 };
 
+export { ParkQuickActions };
 export default ParkQuickActions;
