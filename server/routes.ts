@@ -821,7 +821,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Verificamos que el usuario tenga permisos (es admin o pertenece al municipio del parque)
-      if (req.user.role !== 'super_admin') {
+      if (req.user && req.user.role !== 'super_admin') {
         const park = await storage.getPark(comment.parkId);
         if (!park || park.municipalityId !== req.user.municipalityId) {
           return res.status(403).json({ 
@@ -844,6 +844,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error approving comment" });
+    }
+  });
+  
+  // Delete a comment (admin/municipality only)
+  apiRouter.delete("/comments/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const commentId = Number(req.params.id);
+      
+      // Verificamos que el comentario exista
+      const comment = await storage.getComment(commentId);
+      
+      if (!comment) {
+        return res.status(404).json({ message: "Comentario no encontrado" });
+      }
+      
+      // Verificamos que el usuario tenga permisos (es admin o pertenece al municipio del parque)
+      if (req.user && req.user.role !== 'super_admin') {
+        const park = await storage.getPark(comment.parkId);
+        if (!park || park.municipalityId !== req.user.municipalityId) {
+          return res.status(403).json({ 
+            message: "No tiene permisos para eliminar este comentario" 
+          });
+        }
+      }
+      
+      // Eliminamos el comentario de la base de datos
+      await storage.deleteComment(commentId);
+      
+      // Respondemos con confirmación de eliminación
+      res.json({ success: true, message: "Comentario eliminado correctamente" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error eliminando comentario" });
     }
   });
 
