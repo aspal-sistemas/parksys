@@ -1507,8 +1507,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(parkAmenities.amenityId, id));
     return result.count > 0;
   }
-    return newAmenity;
-  }
 
   async getParkAmenities(parkId: number): Promise<Amenity[]> {
     const parkAmenitiesData = await db.select()

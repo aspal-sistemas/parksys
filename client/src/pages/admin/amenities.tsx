@@ -100,8 +100,10 @@ const AdminAmenitiesPage: React.FC = () => {
 
   // Creación de nueva amenidad
   const createAmenity = useMutation({
-    mutationFn: (data: AmenityFormData) => 
-      apiRequest('/api/amenities', { method: 'POST', data }),
+    mutationFn: async (data: AmenityFormData) => {
+      const response = await apiRequest('POST', '/api/amenities', data);
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/amenities'] });
       toast({ title: "Amenidad creada", description: "La amenidad ha sido creada correctamente" });
@@ -119,8 +121,14 @@ const AdminAmenitiesPage: React.FC = () => {
 
   // Actualización de amenidad
   const updateAmenity = useMutation({
-    mutationFn: (data: AmenityFormData & { id: number }) => 
-      apiRequest(`/api/amenities/${data.id}`, { method: 'PUT', data: { name: data.name, icon: data.icon, category: data.category } }),
+    mutationFn: async (data: AmenityFormData & { id: number }) => {
+      const response = await apiRequest(
+        'PUT', 
+        `/api/amenities/${data.id}`, 
+        { name: data.name, icon: data.icon, category: data.category }
+      );
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/amenities'] });
       toast({ title: "Amenidad actualizada", description: "La amenidad ha sido actualizada correctamente" });
@@ -138,8 +146,10 @@ const AdminAmenitiesPage: React.FC = () => {
 
   // Eliminación de amenidad
   const deleteAmenity = useMutation({
-    mutationFn: (id: number) => 
-      apiRequest(`/api/amenities/${id}`, { method: 'DELETE' }),
+    mutationFn: async (id: number) => {
+      await apiRequest('DELETE', `/api/amenities/${id}`);
+      return true;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/amenities'] });
       toast({ title: "Amenidad eliminada", description: "La amenidad ha sido eliminada correctamente" });

@@ -1,61 +1,93 @@
 import React from 'react';
 import {
-  Accessibility, 
-  Bike, 
-  Droplet, 
-  LucideProps,
-  ParkingCircle, 
-  Dog, 
-  PlaySquare, 
-  ShieldCheck, 
-  Theater, 
-  BadgeDollarSign, 
-  UtensilsCrossed, 
-  Wifi,
+  Bike,
+  Tree,
+  Theater,
+  Utensils,
+  Dumbbell,
+  Droplets,
+  Dog,
   Car,
-  LucideIcon,
-  GalleryHorizontalEnd,
+  Lightbulb,
+  Shield,
+  Wifi,
   Footprints,
-  Lamp
+  CircleUser,
+  Soccer,
+  Waves,
+  PenTool, // Usamos PenTool en vez de Skateboard que no existe
+  Accessibility,
+  BatteryCharging,
+  Move,
+  Info,
+  Bath,
+  Gamepad2 
 } from 'lucide-react';
 
-type IconProps = {
+interface AmenityIconProps {
   name: string;
-  size?: number | string;
+  size?: number;
   className?: string;
-};
+}
 
-// Mapping de nombres de iconos a componentes de Lucide
-const iconMap: Record<string, LucideIcon> = {
-  playground: PlaySquare,
-  toilet: BadgeDollarSign,
-  sportsCourt: GalleryHorizontalEnd,
-  bicycle: Bike,
-  pets: Dog,
-  accessibility: Accessibility,
-  hiking: Footprints,
-  parking: ParkingCircle,
-  restaurant: UtensilsCrossed,
-  water: Droplet,
-  theater: Theater,
-  lightbulb: Lamp,
-  security: ShieldCheck,
-  wifi: Wifi,
-  bikeParking: Car
-};
+const AmenityIcon: React.FC<AmenityIconProps> = ({ 
+  name, 
+  size = 24, 
+  className = "" 
+}) => {
+  const iconProps = {
+    size,
+    className: `amenity-icon ${className}`,
+  };
 
-const AmenityIcon: React.FC<IconProps> = ({ name, size = 24, className = '' }) => {
-  // Obtener el componente del icono según el nombre
-  const IconComponent = iconMap[name];
-  
-  // Si no se encuentra el icono, mostrar un mensaje de alerta y devolver un icono genérico
-  if (!IconComponent) {
-    console.warn(`Icon '${name}' not found in icon map`);
-    return <Wifi size={size} className={className} />;
+  switch (name) {
+    case 'playground':
+      return <Gamepad2 {...iconProps} />;
+    case 'toilet':
+      return <Bath {...iconProps} />;
+    case 'sportsCourt':
+      return <Soccer {...iconProps} />;
+    case 'bicycle':
+      return <Bike {...iconProps} />;
+    case 'pets':
+      return <Dog {...iconProps} />;
+    case 'accessibility':
+      return <Accessibility {...iconProps} />;
+    case 'hiking':
+      return <Footprints {...iconProps} />;
+    case 'parking':
+      return <Car {...iconProps} />;
+    case 'restaurant':
+      return <Utensils {...iconProps} />;
+    case 'water':
+      return <Droplets {...iconProps} />;
+    case 'theater':
+      return <Theater {...iconProps} />;
+    case 'lightbulb':
+      return <Lightbulb {...iconProps} />;
+    case 'security':
+      return <Shield {...iconProps} />;
+    case 'wifi':
+      return <Wifi {...iconProps} />;
+    case 'bikeParking':
+      return <BatteryCharging {...iconProps} />;
+    case 'gym':
+      return <Dumbbell {...iconProps} />;
+    case 'running':
+      return <Move {...iconProps} />;
+    case 'basketball':
+      return <CircleUser {...iconProps} />;
+    case 'soccer':
+      return <Soccer {...iconProps} />;
+    case 'tennis':
+      return <Soccer {...iconProps} />;
+    case 'pool':
+      return <Waves {...iconProps} />;
+    case 'skate':
+      return <Skateboard {...iconProps} />;
+    default:
+      return <Info {...iconProps} />;
   }
-  
-  // Renderizar el icono
-  return <IconComponent size={size} className={className} />;
 };
 
 export default AmenityIcon;
