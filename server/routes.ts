@@ -876,7 +876,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get basic park data - limited information for public consumption
   publicApiRouter.get("/parks", async (_req: Request, res: Response) => {
     try {
-      const parks = await storage.getParks();
+      // Asegurarnos de excluir parques eliminados
+      const parks = await storage.getParks({ includeDeleted: false });
       // Return only basic data needed for integration
       const simplifiedParks = parks.map(park => ({
         id: park.id,
