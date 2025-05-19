@@ -122,10 +122,14 @@ const AdminParkEdit: React.FC = () => {
         description: 'Los cambios se han guardado correctamente'
       });
       
-      // Navegar a la lista de parques después de un breve retraso
-      setTimeout(() => {
-        window.location.href = '/admin/parks';
-      }, 500);
+      // Añadimos una variable de estado para controlar la redirección
+      // No redirigiremos automáticamente si estamos gestionando amenidades
+      if (!window.managingAmenities) {
+        // Navegar a la lista de parques después de un breve retraso
+        setTimeout(() => {
+          window.location.href = '/admin/parks';
+        }, 500);
+      }
     },
     onError: (error) => {
       toast({
