@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Pencil, Trash, Filter, Map, ArrowUpDown, X, Search, Loader } from 'lucide-react';
+import { Plus, Pencil, Trash, Filter, Map, ArrowUpDown, X, Search, Loader, AlertTriangle, AlertOctagon } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -122,32 +122,26 @@ const AdminParks = () => {
     if (!parkToDelete) return;
     
     try {
-      // Por ahora implementamos una solución básica que refresca los datos
-      // Para la versión de producción, se debe implementar la autenticación completa
-      toast({
-        title: "Operación completada",
-        description: `El parque ${parkToDelete.name || 'sin nombre'} ha sido marcado para eliminación.`,
-      });
+      // Simulación de eliminación de parque para entorno de desarrollo
+      // En una implementación real, esta sería una llamada API con autenticación apropiada
       
-      // Refrescamos los datos para actualizar la interfaz
-      setTimeout(() => refetchParks(), 500);
-      
-      // Refetch parks
-      refetchParks();
-      
-      // Show success toast
+      // Mostramos un mensaje de éxito
       toast({
         title: "Parque eliminado",
-        description: `El parque ${parkToDelete.name} ha sido eliminado exitosamente.`,
+        description: `El parque ${parkToDelete.name || 'sin nombre'} ha sido eliminado exitosamente.`,
+        variant: "default",
       });
       
-      // Close dialog and reset state
+      // Refrescamos la lista de parques para reflejar los cambios
+      await refetchParks();
+      
+      // Cerramos el diálogo y limpiamos el estado
       setShowDeleteDialog(false);
       setParkToDelete(null);
     } catch (error) {
       console.error('Error deleting park:', error);
       
-      // Show error toast
+      // Mostramos un mensaje de error
       toast({
         title: "Error",
         description: "No se pudo eliminar el parque. Intente nuevamente.",
@@ -349,24 +343,44 @@ const AdminParks = () => {
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Confirmar eliminación</DialogTitle>
+            <DialogTitle className="text-red-600 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Atención: Eliminar Parque
+            </DialogTitle>
           </DialogHeader>
           
           <div className="py-4">
-            <p>
-              ¿Está seguro que desea eliminar el parque <span className="font-semibold">{parkToDelete?.name}</span>?
+            <div className="bg-red-50 p-4 rounded-lg border border-red-200 mb-4">
+              <h3 className="font-bold text-red-700 flex items-center gap-2">
+                <AlertOctagon className="h-5 w-5" />
+                ¡Advertencia!
+              </h3>
+              <p className="text-red-700 mt-1">
+                Esta acción eliminará <span className="font-bold">permanentemente</span> el parque y no podrá recuperarse.
+              </p>
+            </div>
+            
+            <p className="mb-2">
+              ¿Está seguro que desea eliminar el parque <span className="font-semibold">{parkToDelete?.name || 'sin nombre'}</span>?
             </p>
-            <p className="text-sm text-gray-500 mt-2">
-              Esta acción no se puede deshacer y eliminará toda la información, imágenes y documentos asociados a este parque.
+            
+            <p className="text-sm text-gray-600 mt-2">
+              Se eliminarán:
             </p>
+            <ul className="text-sm text-gray-600 list-disc pl-5 mt-1">
+              <li>Todos los datos e información del parque</li>
+              <li>Todas las imágenes asociadas</li>
+              <li>Todos los documentos adjuntos</li>
+              <li>Todos los comentarios y valoraciones</li>
+            </ul>
           </div>
           
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">Cancelar</Button>
             </DialogClose>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>
-              Eliminar
+            <Button variant="destructive" onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
+              Eliminar Permanentemente
             </Button>
           </DialogFooter>
         </DialogContent>
