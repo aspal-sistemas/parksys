@@ -61,31 +61,58 @@ const Parks: React.FC = () => {
     setModalOpen(true);
   };
   
+  const [mapExpanded, setMapExpanded] = useState(false);
+
+  const toggleMapExpansion = () => {
+    setMapExpanded(!mapExpanded);
+  };
+
   return (
-    <main className="flex-1 flex flex-col md:flex-row">
-      {/* Filter sidebar */}
-      <FilterSidebar onApplyFilters={handleApplyFilters} />
-      
-      {/* Map and Results area */}
-      <div className="flex-1 flex flex-col">
-        {/* Map view */}
-        <ParksMap 
-          parks={parks}
-          selectedParkId={selectedParkId || undefined}
-          onSelectPark={handleSelectPark}
-          isLoading={isLoading}
-        />
+    <main className="flex-1 flex flex-col">
+      {/* Control para expandir/contraer el mapa */}
+      <div className="bg-white border-b p-2 flex justify-between items-center">
+        <h1 className="text-lg font-semibold text-gray-800">Parques y Espacios Públicos</h1>
+        <button 
+          onClick={toggleMapExpansion}
+          className="flex items-center px-3 py-1 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded transition-all"
+        >
+          {mapExpanded ? 'Contraer mapa' : 'Expandir mapa'} 
+          <span className="ml-2">{mapExpanded ? '↓' : '↑'}</span>
+        </button>
+      </div>
+
+      {/* Contenedor principal con disposición flexible */}
+      <div className={`flex flex-col md:flex-row flex-1 ${mapExpanded ? 'flex-col' : ''}`}>
+        {/* Sección de mapa - ahora más pequeña por defecto */}
+        <div className={`${mapExpanded ? 'w-full h-[70vh]' : 'md:w-1/3 lg:w-1/3 h-[30vh] md:h-auto'} transition-all duration-300 ${mapExpanded ? 'order-first' : 'md:order-last'}`}>
+          <ParksMap 
+            parks={parks}
+            selectedParkId={selectedParkId || undefined}
+            onSelectPark={handleSelectPark}
+            isLoading={isLoading}
+          />
+        </div>
         
-        {/* Results list */}
-        <ParksList 
-          parks={parks}
-          isLoading={isLoading}
-          totalCount={parks.length}
-          currentPage={1}
-        />
+        {/* Área de búsqueda y resultados - ahora más prominente */}
+        <div className={`${mapExpanded ? 'w-full' : 'md:w-2/3 lg:w-2/3'} flex flex-col transition-all duration-300`}>
+          {/* Sección de filtros - ahora más visible y amplio */}
+          <div className="border-b md:border-r">
+            <FilterSidebar onApplyFilters={handleApplyFilters} />
+          </div>
+          
+          {/* Lista de resultados */}
+          <div className="flex-1 overflow-auto">
+            <ParksList 
+              parks={parks}
+              isLoading={isLoading}
+              totalCount={parks.length}
+              currentPage={1}
+            />
+          </div>
+        </div>
       </div>
       
-      {/* Park detail modal */}
+      {/* Modal de detalle del parque */}
       {selectedPark && (
         <ParkDetail 
           park={selectedPark}
