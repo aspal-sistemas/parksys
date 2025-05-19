@@ -50,7 +50,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         parkType,
         postalCode,
         amenities,
-        search
+        search,
+        includeDeleted: false // Asegurarnos de excluir parques eliminados
       });
       
       res.json(parks);
