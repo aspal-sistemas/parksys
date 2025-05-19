@@ -602,16 +602,41 @@ const AdminParkEdit: React.FC = () => {
                               <div className="flex flex-col items-center justify-center h-40">
                                 <ImagePlus className="h-10 w-10 text-gray-400 mb-2" />
                                 <p className="text-sm text-gray-500">Agregar imagen</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  JPEG, PNG o WebP • Máximo 5MB
+                                </p>
                                 <input
                                   type="file"
                                   className="hidden"
-                                  accept="image/*"
+                                  accept="image/jpeg,image/png,image/webp"
                                   onChange={async (e) => {
                                     if (!e.target.files || !e.target.files[0] || !id) return;
                                     
                                     const file = e.target.files[0];
+                                    
+                                    // Verificar tamaño del archivo
+                                    if (file.size > 5 * 1024 * 1024) { // 5MB
+                                      toast({
+                                        title: "Archivo demasiado grande",
+                                        description: "El tamaño máximo permitido es 5MB. Por favor selecciona una imagen más pequeña.",
+                                        variant: "destructive"
+                                      });
+                                      return;
+                                    }
+                                    
+                                    // Verificar tipo de archivo
+                                    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                                      toast({
+                                        title: "Formato no permitido",
+                                        description: "Sólo se permiten imágenes en formato JPEG, PNG o WebP.",
+                                        variant: "destructive"
+                                      });
+                                      return;
+                                    }
+                                    
                                     const formData = new FormData();
                                     formData.append('image', file);
+                                    formData.append('caption', 'Imagen del parque'); // Descripción predeterminada
                                     
                                     toast({
                                       title: "Subiendo imagen...",
@@ -619,8 +644,7 @@ const AdminParkEdit: React.FC = () => {
                                     });
                                     
                                     try {
-                                      // Usar la ruta especial de desarrollo que no requiere permisos
-                                      await fetch(`/api/parks/${id}/images`, {
+                                      const response = await fetch(`/api/parks/${id}/images`, {
                                         method: 'POST',
                                         body: formData,
                                         headers: {
@@ -628,25 +652,27 @@ const AdminParkEdit: React.FC = () => {
                                         }
                                       });
                                       
+                                      if (!response.ok) {
+                                        const errorData = await response.json();
+                                        throw new Error(errorData.error || errorData.message || 'Error desconocido');
+                                      }
+                                      
                                       toast({
                                         title: "Imagen subida correctamente",
                                         description: "La imagen ha sido añadida al parque.",
                                       });
                                       
                                       // Recargar para mostrar la imagen
-                                      if (id) {
-                                        const response = await fetch(`/api/parks/${id}/images`);
-                                        if (response.ok) {
-                                          const images = await response.json();
-                                          // Aquí actualizaríamos el estado para mostrar las imágenes
-                                          setParkImages(images);
-                                        }
+                                      const imagesResponse = await fetch(`/api/parks/${id}/images`);
+                                      if (imagesResponse.ok) {
+                                        const images = await imagesResponse.json();
+                                        setParkImages(images);
                                       }
-                                    } catch (error) {
+                                    } catch (error: any) {
                                       console.error('Error al subir imagen:', error);
                                       toast({
                                         title: "Error al subir imagen",
-                                        description: "Ocurrió un error al subir la imagen. Por favor intenta de nuevo.",
+                                        description: error.message || "Ocurrió un error al subir la imagen. Por favor intenta de nuevo.",
                                         variant: "destructive"
                                       });
                                     }

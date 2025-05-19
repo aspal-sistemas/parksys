@@ -419,23 +419,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add an image to a park (admin/municipality only)
-  apiRouter.post("/parks/:id/images", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
-    try {
-      const parkId = Number(req.params.id);
-      const imageData = { ...req.body, parkId };
-      
-      const data = insertParkImageSchema.parse(imageData);
-      const result = await storage.createParkImage(data);
-      
-      res.status(201).json(result);
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const validationError = fromZodError(error);
-        return res.status(400).json({ message: validationError.message });
+  apiRouter.post("/parks/:id/images", isAuthenticated, hasParkAccess, (req: Request, res: Response, next: Function) => {
+    // Usar el manejador de carga de imágenes
+    const { uploadParkImage, handleImageUploadErrors } = require('./api/imageUpload');
+    
+    // Aplicar manejo de errores
+    uploadParkImage(req, res, (err: any) => {
+      if (err) {
+        return handleImageUploadErrors(err, req, res, next);
       }
-      console.error(error);
-      res.status(500).json({ message: "Error adding image to park" });
-    }
+      
+      // Si no hay errores, procesar la imagen
+      const { uploadParkImageHandler } = require('./api/imageUpload');
+      return uploadParkImageHandler(req, res);
+    });
   });
 
   // Delete an image from a park (admin/municipality only)
