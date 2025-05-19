@@ -114,8 +114,8 @@ const AdminComments = () => {
     return [...comments].filter(comment => {
       // Apply search filter
       if (searchQuery && 
-          !comment.text.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !comment.authorName.toLowerCase().includes(searchQuery.toLowerCase())) {
+          !comment.content?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          !comment.name?.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
       
@@ -125,9 +125,9 @@ const AdminComments = () => {
       }
       
       // Apply status filter
-      if (filterStatus === 'approved' && !comment.approved) {
+      if (filterStatus === 'approved' && !comment.isApproved) {
         return false;
-      } else if (filterStatus === 'pending' && comment.approved) {
+      } else if (filterStatus === 'pending' && comment.isApproved) {
         return false;
       }
       
@@ -136,8 +136,8 @@ const AdminComments = () => {
       // Apply sorting
       if (sortField === 'authorName') {
         return sortDirection === 'asc' 
-          ? a.authorName.localeCompare(b.authorName) 
-          : b.authorName.localeCompare(a.authorName);
+          ? (a.name || '').localeCompare(b.name || '') 
+          : (b.name || '').localeCompare(a.name || '');
       }
       
       if (sortField === 'createdAt') {
@@ -361,22 +361,22 @@ const AdminComments = () => {
                           <User className="h-4 w-4 text-gray-500" />
                         </div>
                         <div>
-                          <p className="font-medium text-sm">{comment.authorName}</p>
-                          {comment.authorEmail && (
-                            <p className="text-xs text-gray-500">{comment.authorEmail}</p>
+                          <p className="font-medium text-sm">{comment.name}</p>
+                          {comment.email && (
+                            <p className="text-xs text-gray-500">{comment.email}</p>
                           )}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="max-w-md">
-                        <p className="text-sm line-clamp-2">{comment.text}</p>
+                        <p className="text-sm line-clamp-2">{comment.content}</p>
                       </div>
                     </TableCell>
                     <TableCell>{formatDate(comment.createdAt)}</TableCell>
                     <TableCell>{getParkName(comment.parkId)}</TableCell>
                     <TableCell>
-                      {comment.approved ? (
+                      {comment.isApproved ? (
                         <Badge variant="outline" className="bg-green-100 text-green-700">
                           Aprobado
                         </Badge>
@@ -387,7 +387,7 @@ const AdminComments = () => {
                       )}
                     </TableCell>
                     <TableCell className="text-right space-x-1">
-                      {!comment.approved && (
+                      {!comment.isApproved && (
                         <Button 
                           variant="outline" 
                           size="icon" 
