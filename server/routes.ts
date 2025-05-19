@@ -414,6 +414,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all documents
+  apiRouter.get("/documents", async (_req: Request, res: Response) => {
+    try {
+      const documents = await storage.getAllDocuments();
+      res.json(documents);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching documents" });
+    }
+  });
+
   // Get all activities
   apiRouter.get("/activities", async (_req: Request, res: Response) => {
     try {

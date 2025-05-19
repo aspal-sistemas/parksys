@@ -1489,6 +1489,12 @@ export class DatabaseStorage implements IStorage {
     return document || undefined;
   }
 
+  async getAllDocuments(): Promise<Document[]> {
+    return await db.select()
+      .from(documents)
+      .orderBy(documents.title);
+  }
+
   async getParkDocuments(parkId: number): Promise<Document[]> {
     return await db.select()
       .from(documents)
