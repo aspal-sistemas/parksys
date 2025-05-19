@@ -67,6 +67,11 @@ const AdminParkEdit: React.FC = () => {
   
   const [activeTab, setActiveTab] = useState('basic');
   
+  // Estados para multimedia
+  const [parkImages, setParkImages] = useState<any[]>([]);
+  const [parkDocuments, setParkDocuments] = useState<any[]>([]);
+  const [parkAmenities, setParkAmenities] = useState<any[]>([]);
+  
   // Fetch park data if editing - con clave para forzar actualización
   const { data: park, isLoading, refetch } = useQuery<Park>({
     queryKey: [isEdit ? `/api/parks/${id}` : ''],
@@ -151,8 +156,40 @@ const AdminParkEdit: React.FC = () => {
       }, {} as Record<string, any>);
       
       form.reset(formValues);
+      
+      // Cargar recursos multimedia
+      const loadMultimediaResources = async () => {
+        if (id) {
+          try {
+            // Cargar imágenes
+            const imagesResponse = await fetch(`/api/parks/${id}/images`);
+            if (imagesResponse.ok) {
+              const images = await imagesResponse.json();
+              setParkImages(images);
+            }
+            
+            // Cargar documentos
+            const documentsResponse = await fetch(`/api/parks/${id}/documents`);
+            if (documentsResponse.ok) {
+              const documents = await documentsResponse.json();
+              setParkDocuments(documents);
+            }
+            
+            // Cargar amenidades
+            const amenitiesResponse = await fetch(`/api/parks/${id}/amenities`);
+            if (amenitiesResponse.ok) {
+              const amenities = await amenitiesResponse.json();
+              setParkAmenities(amenities);
+            }
+          } catch (error) {
+            console.error('Error cargando recursos multimedia:', error);
+          }
+        }
+      };
+      
+      loadMultimediaResources();
     }
-  }, [park, isEdit, form]);
+  }, [park, isEdit, form, id]);
   
   const onSubmit = (values: ParkFormValues) => {
     mutation.mutate(values);
@@ -721,23 +758,143 @@ const AdminParkEdit: React.FC = () => {
                         
                         <div>
                           <h3 className="text-lg font-medium mb-4">Documentos</h3>
-                          <Button 
-                            type="button"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              toast({
-                                title: "Funcionalidad en desarrollo",
-                                description: "La carga de documentos se implementará próximamente.",
-                              });
-                            }}
-                          >
-                            <Upload className="mr-2 h-4 w-4" />
-                            Subir documento
-                          </Button>
+                          <label>
+                            <Button 
+                              type="button"
+                              variant="outline"
+                              className="mb-4"
+                              onClick={() => {
+                                // El click real se maneja por el input oculto
+                              }}
+                            >
+                              <Upload className="mr-2 h-4 w-4" />
+                              Subir documento
+                            </Button>
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                              onChange={async (e) => {
+                                if (!e.target.files || !e.target.files[0] || !id) return;
+                                
+                                const file = e.target.files[0];
+                                const formData = new FormData();
+                                formData.append('document', file);
+                                formData.append('documentName', file.name);
+                                formData.append('documentType', file.type);
+                                
+                                toast({
+                                  title: "Subiendo documento...",
+                                  description: "Por favor espera mientras el documento se sube.",
+                                });
+                                
+                                try {
+                                  await fetch(`/api/parks/${id}/documents`, {
+                                    method: 'POST',
+                                    body: formData,
+                                    headers: {
+                                      'Authorization': 'Bearer direct-token-1'
+                                    }
+                                  });
+                                  
+                                  toast({
+                                    title: "Documento subido correctamente",
+                                    description: "El documento ha sido añadido al parque.",
+                                  });
+                                  
+                                  // Recargar para mostrar el documento
+                                  const response = await fetch(`/api/parks/${id}/documents`);
+                                  if (response.ok) {
+                                    const documents = await response.json();
+                                    setParkDocuments(documents);
+                                  }
+                                } catch (error) {
+                                  console.error('Error al subir documento:', error);
+                                  toast({
+                                    title: "Error al subir documento",
+                                    description: "Ocurrió un error al subir el documento. Por favor intenta de nuevo.",
+                                    variant: "destructive"
+                                  });
+                                }
+                              }}
+                            />
+                          </label>
                           
-                          {/* This section would show uploaded documents */}
-                          {/* UI for managing documents would go here */}
+                          {/* Mostrar documentos existentes */}
+                          <div className="mt-4">
+                            {parkDocuments && parkDocuments.length > 0 ? (
+                              <div className="space-y-2">
+                                {parkDocuments.map((doc: any) => (
+                                  <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                    <div className="flex items-center">
+                                      <div className="ml-3">
+                                        <p className="font-medium">{doc.documentName}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                          {new Date(doc.createdAt).toLocaleDateString()}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex space-x-2">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm"
+                                        onClick={() => {
+                                          window.open(doc.documentUrl, '_blank');
+                                        }}
+                                      >
+                                        Ver
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm"
+                                        className="text-destructive"
+                                        onClick={async () => {
+                                          if (!id) return;
+                                          if (confirm('¿Estás seguro de eliminar este documento?')) {
+                                            try {
+                                              await fetch(`/api/parks/${id}/documents/${doc.id}`, {
+                                                method: 'DELETE',
+                                                headers: {
+                                                  'Authorization': 'Bearer direct-token-1'
+                                                }
+                                              });
+                                              
+                                              // Recargar documentos
+                                              const response = await fetch(`/api/parks/${id}/documents`);
+                                              if (response.ok) {
+                                                const documents = await response.json();
+                                                setParkDocuments(documents);
+                                              }
+                                              
+                                              toast({
+                                                title: "Documento eliminado",
+                                                description: "El documento ha sido eliminado correctamente"
+                                              });
+                                            } catch (error) {
+                                              console.error('Error al eliminar documento:', error);
+                                              toast({
+                                                title: "Error",
+                                                description: "No se pudo eliminar el documento",
+                                                variant: "destructive"
+                                              });
+                                            }
+                                          }
+                                        }}
+                                      >
+                                        <Trash className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-center py-4 border border-dashed rounded-lg">
+                                <p className="text-muted-foreground">
+                                  No hay documentos asociados a este parque
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -764,11 +921,81 @@ const AdminParkEdit: React.FC = () => {
                             <h3 className="text-lg font-medium">Amenidades Disponibles</h3>
                             <Button 
                               type="button" 
-                              onClick={() => {
-                                toast({
-                                  title: "Funcionalidad en desarrollo",
-                                  description: "La gestión de amenidades se implementará próximamente.",
-                                });
+                              onClick={async () => {
+                                if (!id) {
+                                  toast({
+                                    title: "Guarda el parque primero",
+                                    description: "Debes guardar el parque antes de agregar amenidades.",
+                                    variant: "destructive"
+                                  });
+                                  return;
+                                }
+                                
+                                // Cargar todas las amenidades disponibles
+                                try {
+                                  const response = await fetch('/api/amenities');
+                                  if (response.ok) {
+                                    const allAmenities = await response.json();
+                                    
+                                    // Filtrar las amenidades que ya están asignadas al parque
+                                    const availableAmenities = allAmenities.filter((amenity: any) => {
+                                      return !parkAmenities.some((parkAmenity: any) => 
+                                        parkAmenity.id === amenity.id
+                                      );
+                                    });
+                                    
+                                    if (availableAmenities.length === 0) {
+                                      toast({
+                                        title: "No hay más amenidades disponibles",
+                                        description: "Ya has agregado todas las amenidades disponibles a este parque."
+                                      });
+                                      return;
+                                    }
+                                    
+                                    // Simplemente agregamos la primera amenidad disponible como ejemplo
+                                    // En una implementación completa, esto mostraría un modal de selección
+                                    const amenityToAdd = availableAmenities[0];
+                                    
+                                    // Añadir amenidad al parque
+                                    const addResponse = await fetch(`/api/parks/${id}/amenities`, {
+                                      method: 'POST',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': 'Bearer direct-token-1'
+                                      },
+                                      body: JSON.stringify({
+                                        amenityId: amenityToAdd.id
+                                      })
+                                    });
+                                    
+                                    if (addResponse.ok) {
+                                      // Recargar amenidades
+                                      const reloadResponse = await fetch(`/api/parks/${id}/amenities`);
+                                      if (reloadResponse.ok) {
+                                        const updatedAmenities = await reloadResponse.json();
+                                        setParkAmenities(updatedAmenities);
+                                        
+                                        toast({
+                                          title: "Amenidad agregada",
+                                          description: `Se ha agregado ${amenityToAdd.name} al parque.`
+                                        });
+                                      }
+                                    } else {
+                                      toast({
+                                        title: "Error",
+                                        description: "No se pudo agregar la amenidad al parque.",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }
+                                } catch (error) {
+                                  console.error('Error al cargar amenidades:', error);
+                                  toast({
+                                    title: "Error",
+                                    description: "No se pudieron cargar las amenidades disponibles.",
+                                    variant: "destructive"
+                                  });
+                                }
                               }}
                             >
                               <PlusCircle className="mr-2 h-4 w-4" />
@@ -776,12 +1003,86 @@ const AdminParkEdit: React.FC = () => {
                             </Button>
                           </div>
                           
-                          {/* Amenities selection UI would go here */}
-                          <div className="text-center py-10 border border-dashed rounded-lg">
-                            <p className="text-muted-foreground">
-                              Aquí podrás gestionar las amenidades del parque después de crearlo
-                            </p>
-                          </div>
+                          {/* Mostrar amenidades del parque */}
+                          {parkAmenities && parkAmenities.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {parkAmenities.map((amenity: any) => (
+                                <div 
+                                  key={amenity.id} 
+                                  className="flex items-center justify-between p-4 border rounded-lg"
+                                >
+                                  <div className="flex items-center">
+                                    <div className="bg-gray-100 p-2 rounded-full mr-3">
+                                      {amenity.icon && (
+                                        <div className="w-6 h-6 flex items-center justify-center">
+                                          <img 
+                                            src={amenity.customIconUrl || `/icons/${amenity.icon}.svg`} 
+                                            alt={amenity.name}
+                                            className="w-6 h-6 object-contain"
+                                          />
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className="font-medium">{amenity.name}</p>
+                                      <p className="text-xs text-muted-foreground capitalize">
+                                        {amenity.category}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    className="text-destructive"
+                                    onClick={async () => {
+                                      if (!id) return;
+                                      if (confirm(`¿Estás seguro de quitar la amenidad "${amenity.name}" del parque?`)) {
+                                        try {
+                                          const response = await fetch(`/api/parks/${id}/amenities/${amenity.id}`, {
+                                            method: 'DELETE',
+                                            headers: {
+                                              'Authorization': 'Bearer direct-token-1'
+                                            }
+                                          });
+                                          
+                                          if (response.ok) {
+                                            // Actualizar la lista de amenidades en el estado
+                                            setParkAmenities(parkAmenities.filter((a: any) => a.id !== amenity.id));
+                                            
+                                            toast({
+                                              title: "Amenidad eliminada",
+                                              description: `Se ha quitado ${amenity.name} del parque.`
+                                            });
+                                          } else {
+                                            toast({
+                                              title: "Error",
+                                              description: "No se pudo eliminar la amenidad del parque.",
+                                              variant: "destructive"
+                                            });
+                                          }
+                                        } catch (error) {
+                                          console.error('Error al eliminar amenidad:', error);
+                                          toast({
+                                            title: "Error",
+                                            description: "No se pudo procesar la solicitud.",
+                                            variant: "destructive"
+                                          });
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-10 border border-dashed rounded-lg">
+                              <p className="text-muted-foreground">
+                                Este parque no tiene amenidades asociadas. Haz clic en "Agregar Amenidad" para añadir características.
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>
