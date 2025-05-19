@@ -6,6 +6,12 @@ import { isAuthenticated, hasMunicipalityAccess, hasParkAccess } from "./middlew
 import { db, pool } from "./db";
 import { sql } from "drizzle-orm";
 import { 
+  uploadParkFile, 
+  handleMulterErrors, 
+  generateImportTemplate, 
+  processImportFile 
+} from "./api/parksImport";
+import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
   insertActivitySchema, insertDocumentSchema, insertParkImageSchema,
   insertParkAmenitySchema, ExtendedPark, Park, Municipality, Amenity, Activity
@@ -95,6 +101,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error creating park" });
     }
   });
+  
+  // Import parks from Excel/CSV
+  apiRouter.post("/parks/import", isAuthenticated, hasMunicipalityAccess(), uploadParkFile, handleMulterErrors, processImportFile);
+  
+  // Download import template
+  apiRouter.get("/parks/import-template", isAuthenticated, generateImportTemplate);
 
   // Update an existing park (admin/municipality only)
   apiRouter.put("/parks/:id", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
