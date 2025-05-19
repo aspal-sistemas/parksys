@@ -111,27 +111,32 @@ const AdminParkEdit: React.FC = () => {
   // Cargar los datos del parque en el formulario cuando estén disponibles
   useEffect(() => {
     if (park && isEdit) {
-      form.reset({
-        name: park.name,
-        municipalityId: park.municipalityId,
-        parkType: park.parkType,
-        address: park.address,
-        description: park.description,
-        postalCode: park.postalCode,
-        latitude: park.latitude,
-        longitude: park.longitude,
-        area: park.area,
-        foundationYear: park.foundationYear,
-        hasAccessibility: park.hasAccessibility,
-        hasSportsAreas: park.hasSportsAreas,
-        hasPlayground: park.hasPlayground,
-        hasRestrooms: park.hasRestrooms,
-        openingHours: park.openingHours,
-        administrator: park.administrator,
-        contactPhone: park.contactPhone,
-        contactEmail: park.contactEmail,
-        videoUrl: park.videoUrl,
-      });
+      console.log("Datos del parque cargados:", park);
+      
+      // Crear un objeto con los valores por defecto en caso de que falten propiedades
+      const formValues = {
+        name: park.name || '',
+        municipalityId: park.municipalityId || 0,
+        parkType: park.parkType || '',
+        address: park.address || '',
+        description: park.description || '',
+        postalCode: park.postalCode || '',
+        latitude: park.latitude || '',
+        longitude: park.longitude || '',
+        area: park.area || '',
+        foundationYear: park.foundationYear || undefined,
+        hasAccessibility: !!park.hasAccessibility,
+        hasSportsAreas: !!park.hasSportsAreas,
+        hasPlayground: !!park.hasPlayground,
+        hasRestrooms: !!park.hasRestrooms,
+        openingHours: park.openingHours || '',
+        administrator: park.administrator || '',
+        contactPhone: park.contactPhone || '',
+        contactEmail: park.contactEmail || '',
+        videoUrl: park.videoUrl || '',
+      };
+      
+      form.reset(formValues);
       
       // Cargar recursos multimedia si están disponibles
       const loadMultimediaResources = async () => {
