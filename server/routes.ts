@@ -701,6 +701,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           reporterName: "Ana López",
           reporterEmail: "ana@example.com",
           location: "Área de juegos",
+          category: "damage",
           createdAt: new Date("2023-08-15"),
           updatedAt: new Date("2023-08-15"),
           park: {
@@ -718,6 +719,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           reporterName: "Carlos Mendoza",
           reporterEmail: "carlos@example.com",
           location: "Sendero norte",
+          category: "safety",
           createdAt: new Date("2023-09-02"),
           updatedAt: new Date("2023-09-05"),
           park: {
@@ -735,6 +737,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           reporterName: "María Sánchez",
           reporterEmail: "maria@example.com",
           location: "Área de picnic",
+          category: "maintenance",
           createdAt: new Date("2023-07-20"),
           updatedAt: new Date("2023-07-28"),
           park: {

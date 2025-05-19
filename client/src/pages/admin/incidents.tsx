@@ -302,6 +302,7 @@ const AdminIncidents = () => {
   } = useQuery({
     queryKey: ['/api/incidents'],
     queryFn: async () => {
+      console.log("Iniciando petición de incidencias...");
       const response = await fetch('/api/incidents', {
         headers: {
           'Authorization': 'Bearer direct-token-admin',
@@ -315,7 +316,9 @@ const AdminIncidents = () => {
         throw new Error(`Error al obtener incidencias: ${response.statusText}`);
       }
       
-      return response.json();
+      const data = await response.json();
+      console.log("Datos de incidencias recibidos:", data);
+      return data;
     }
   });
 
