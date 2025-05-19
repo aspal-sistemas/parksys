@@ -183,14 +183,14 @@ const UserDetail: React.FC<{
           <div className="space-y-2">
             <label htmlFor="municipality" className="text-sm font-medium">Municipio</label>
             <Select
-              value={userData.municipalityId?.toString() || ''}
-              onValueChange={(value) => handleChange('municipalityId', value ? parseInt(value) : null)}
+              value={userData.municipalityId?.toString() || 'null'}
+              onValueChange={(value) => handleChange('municipalityId', value === 'null' ? null : parseInt(value))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar municipio" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Ninguno</SelectItem>
+                <SelectItem value="null">Ninguno</SelectItem>
                 {municipalities.map((municipality: any) => (
                   <SelectItem key={municipality.id} value={municipality.id.toString()}>
                     {municipality.name}
