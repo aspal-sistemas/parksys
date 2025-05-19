@@ -642,8 +642,14 @@ export class MemStorage implements IStorage {
     postalCode: string;
     amenities: number[];
     search: string;
+    includeDeleted?: boolean; // Añadimos soporte para este filtro también en memoria
   }>): Promise<Park[]> {
     let parks = Array.from(this.parks.values());
+    
+    // Por defecto, excluimos parques eliminados
+    if (!filters?.includeDeleted) {
+      parks = parks.filter(park => !park.isDeleted);
+    }
     
     if (filters) {
       // Apply municipal filter
@@ -693,6 +699,7 @@ export class MemStorage implements IStorage {
     postalCode: string;
     amenities: number[];
     search: string;
+    includeDeleted?: boolean; // Añadimos soporte para este filtro en memoria también aquí
   }>): Promise<ExtendedPark[]> {
     const parks = await this.getParks(filters);
     
