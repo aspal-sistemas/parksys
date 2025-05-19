@@ -194,7 +194,13 @@ const AdminParkEdit: React.FC = () => {
             }
             
             // Cargar documentos
-            const documentsResponse = await fetch(`/api/parks/${id}/documents`);
+            const documentsResponse = await fetch(`/api/parks/${id}/documents`, {
+              headers: {
+                'Authorization': 'Bearer direct-token-admin',
+                'X-User-Id': '1',
+                'X-User-Role': 'super_admin'
+              }
+            });
             if (documentsResponse.ok) {
               const documents = await documentsResponse.json();
               setParkDocuments(documents);
@@ -1027,7 +1033,9 @@ const AdminParkEdit: React.FC = () => {
                                     method: 'POST',
                                     body: formData,
                                     headers: {
-                                      'Authorization': 'Bearer direct-token-1'
+                                      'Authorization': 'Bearer direct-token-admin',
+                                      'X-User-Id': '1',
+                                      'X-User-Role': 'super_admin'
                                     }
                                   });
                                   
@@ -1089,12 +1097,20 @@ const AdminParkEdit: React.FC = () => {
                                               await fetch(`/api/parks/${id}/documents/${doc.id}`, {
                                                 method: 'DELETE',
                                                 headers: {
-                                                  'Authorization': 'Bearer direct-token-1'
+                                                  'Authorization': 'Bearer direct-token-admin',
+                                                  'X-User-Id': '1',
+                                                  'X-User-Role': 'super_admin'
                                                 }
                                               });
                                               
                                               // Recargar documentos
-                                              const response = await fetch(`/api/parks/${id}/documents`);
+                                              const response = await fetch(`/api/parks/${id}/documents`, {
+                                                headers: {
+                                                  'Authorization': 'Bearer direct-token-admin',
+                                                  'X-User-Id': '1',
+                                                  'X-User-Role': 'super_admin'
+                                                }
+                                              });
                                               if (response.ok) {
                                                 const documents = await response.json();
                                                 setParkDocuments(documents);
