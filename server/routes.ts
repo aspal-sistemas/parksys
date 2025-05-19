@@ -143,33 +143,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // RUTA ESPECIAL PARA DESARROLLO - Sin verificación de permisos
+  // RUTA ESPECIAL PARA DESARROLLO - Sin verificación de permisos y con actualización directa a BD
   apiRouter.put("/dev/parks/:id", async (req: Request, res: Response) => {
     try {
-      console.log("DESARROLLO - Actualizando parque sin verificación de permisos");
+      console.log("DESARROLLO - Actualizando parque directamente en base de datos");
       
       const parkId = Number(req.params.id);
       
-      // Obtenemos el parque para verificar que existe
+      // Verificamos que existe el parque
       const existingPark = await storage.getPark(parkId);
       if (!existingPark) {
         return res.status(404).json({ message: "Parque no encontrado" });
       }
       
-      // Actualizamos directamente sin ninguna validación
-      const updatedPark = await storage.updatePark(parkId, req.body);
-      
-      if (!updatedPark) {
-        return res.status(500).json({ message: "Error al actualizar el parque" });
+      // Actualizamos directamente en la base de datos usando SQL para evitar problemas
+      try {
+        // Primero extraemos solo los campos válidos que vamos a actualizar
+        const {
+          name, description, address, postalCode, latitude, longitude,
+          area, parkType, openingHours, contactPhone, contactEmail,
+          administrator, conservationStatus, regulationUrl, foundationYear
+        } = req.body;
+        
+        // Creamos un objeto con solo las propiedades que no son null o undefined
+        const fieldsToUpdate: any = {};
+        if (name !== undefined) fieldsToUpdate.name = name;
+        if (description !== undefined) fieldsToUpdate.description = description;
+        if (address !== undefined) fieldsToUpdate.address = address;
+        if (postalCode !== undefined) fieldsToUpdate.postal_code = postalCode;
+        if (latitude !== undefined) fieldsToUpdate.latitude = latitude;
+        if (longitude !== undefined) fieldsToUpdate.longitude = longitude;
+        if (area !== undefined) fieldsToUpdate.area = area;
+        if (parkType !== undefined) fieldsToUpdate.park_type = parkType;
+        if (openingHours !== undefined) fieldsToUpdate.opening_hours = openingHours;
+        if (contactPhone !== undefined) fieldsToUpdate.contact_phone = contactPhone;
+        if (contactEmail !== undefined) fieldsToUpdate.contact_email = contactEmail;
+        if (administrator !== undefined) fieldsToUpdate.administrator = administrator;
+        if (conservationStatus !== undefined) fieldsToUpdate.conservation_status = conservationStatus;
+        if (regulationUrl !== undefined) fieldsToUpdate.regulation_url = regulationUrl;
+        if (foundationYear !== undefined) fieldsToUpdate.foundation_year = foundationYear;
+        
+        // Agregamos la fecha de actualización
+        fieldsToUpdate.updated_at = new Date();
+        
+        // Construimos el SQL para la actualización
+        if (Object.keys(fieldsToUpdate).length > 0) {
+          // Actualizamos el parque directamente
+          const result = await db.update(parks)
+            .set(fieldsToUpdate)
+            .where(eq(parks.id, parkId))
+            .returning();
+          
+          if (result.length > 0) {
+            console.log("Parque actualizado con éxito (SQL directo):", result[0]);
+            res.json(result[0]);
+          } else {
+            throw new Error("No se pudo actualizar el parque");
+          }
+        } else {
+          // Si no hay campos para actualizar, devolvemos el parque existente
+          console.log("No hay campos para actualizar");
+          res.json(existingPark);
+        }
+      } catch (dbError) {
+        console.error("Error en actualización directa:", dbError);
+        throw new Error(`Error al actualizar en base de datos: ${dbError.message}`);
       }
-      
-      console.log("Parque actualizado con éxito:", updatedPark);
-      res.json(updatedPark);
     } catch (error) {
       console.error("Error detallado al actualizar parque:", error);
       res.status(500).json({ 
         message: "Error updating park",
-        details: error.message || "Unknown error" 
+        details: error instanceof Error ? error.message : "Unknown error" 
       });
     }
   });
