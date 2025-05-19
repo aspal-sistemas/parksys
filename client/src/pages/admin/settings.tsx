@@ -360,7 +360,7 @@ const AdminSettings = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">Ninguno</SelectItem>
+                            <SelectItem value="none">Ninguno</SelectItem>
                             {municipalities.map((municipality: any) => (
                               <SelectItem
                                 key={municipality.id}

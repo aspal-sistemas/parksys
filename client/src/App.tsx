@@ -16,6 +16,7 @@ import AdminDocuments from "@/pages/admin/documents";
 import AdminComments from "@/pages/admin/comments";
 import AdminIncidents from "@/pages/admin/incidents";
 import AdminUsers from "@/pages/admin/users";
+import AdminSettings from "@/pages/admin/settings";
 import AdminLogin from "@/pages/admin/login";
 import Header from "@/components/Header";
 
@@ -40,6 +41,7 @@ function Router() {
         <Route path="/admin/comments" component={AdminComments} />
         <Route path="/admin/incidents" component={AdminIncidents} />
         <Route path="/admin/users" component={AdminUsers} />
+        <Route path="/admin/settings" component={AdminSettings} />
         <Route path="/admin/login" component={AdminLogin} />
         <Route component={NotFound} />
       </Switch>
