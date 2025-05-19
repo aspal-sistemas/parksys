@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Calendar, Video, FileText, MessageSquare } from 'lucide-react';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface ParkQuickActionsProps {
   parkId: number;
@@ -24,29 +25,22 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
   regulationUrl,
   activities = []
 }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
   const [isActivitiesDialogOpen, setIsActivitiesDialogOpen] = useState(false);
   const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
   const [comment, setComment] = useState("");
   const [commentName, setCommentName] = useState("");
   const [commentEmail, setCommentEmail] = useState("");
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  // Fetch park activities
-  const { data: parkActivities = [] } = useQuery({
-    queryKey: [`/api/parks/${parkId}/activities`],
-    enabled: isActivitiesDialogOpen,
-    placeholderData: []
-  });
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('es-MX', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+  
+  // Formatear fecha
+  const formatDate = (date: string | Date) => {
+    return format(new Date(date), "d 'de' MMMM 'de' yyyy, HH:mm", {
+      locale: es
     });
   };
-
+  
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -58,7 +52,7 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
         comment: comment,
       };
       
-      await fetch(endpoint, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,18 +60,22 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
         body: JSON.stringify(data),
       });
       
-      toast({
-        title: "Comentario enviado",
-        description: "Tu comentario ha sido enviado para revisión.",
-      });
-      
-      setComment("");
-      setCommentName("");
-      setCommentEmail("");
-      setIsCommentDialogOpen(false);
-      
-      // Invalidate the comments query to refresh data
-      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/comments`] });
+      if (response.ok) {
+        toast({
+          title: "Comentario enviado",
+          description: "Tu comentario ha sido enviado para revisión.",
+        });
+        
+        setComment("");
+        setCommentName("");
+        setCommentEmail("");
+        setIsCommentDialogOpen(false);
+        
+        // Invalidate the comments query to refresh data
+        queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/comments`] });
+      } else {
+        throw new Error('Error al enviar el comentario');
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -91,41 +89,40 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mb-6">
       <div className="p-4">
         <h3 className="font-medium text-lg mb-4">Acciones rápidas</h3>
-        <div className="space-y-3">
-          <Button 
-            variant="outline" 
-            className="w-full justify-start"
-            onClick={() => setIsActivitiesDialogOpen(true)}
-          >
-            <Calendar className="h-4 w-4 mr-2" />
-            Ver próximas actividades
-          </Button>
-          
+        
+        <div className="grid grid-cols-2 gap-3">
           {videoUrl && (
             <Button 
               variant="outline" 
-              className="w-full justify-start"
-              onClick={() => window.open(String(videoUrl), '_blank')}
+              className="w-full justify-start" 
+              onClick={() => window.open(videoUrl, '_blank')}
             >
               <Video className="h-4 w-4 mr-2" />
-              Ver video del parque
+              Ver video
             </Button>
           )}
           
-          <Button 
-            variant="outline" 
-            className="w-full justify-start"
-            onClick={() => regulationUrl 
-              ? window.open(String(regulationUrl), '_blank') 
-              : toast({
-                  title: "Reglamento no disponible",
-                  description: "El reglamento no está disponible para este parque."
-                })
-            }
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Descargar reglamento
-          </Button>
+          {regulationUrl && (
+            <Button 
+              variant="outline" 
+              className="w-full justify-start" 
+              onClick={() => window.open(regulationUrl, '_blank')}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Reglamento
+            </Button>
+          )}
+          
+          {activities && activities.length > 0 && (
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={() => setIsActivitiesDialogOpen(true)}
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Actividades
+            </Button>
+          )}
           
           <Button 
             variant="outline" 
@@ -133,11 +130,11 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
             onClick={() => setIsCommentDialogOpen(true)}
           >
             <MessageSquare className="h-4 w-4 mr-2" />
-            Dejar un comentario
+            Dejar comentario
           </Button>
         </div>
       </div>
-
+      
       {/* Activities Dialog */}
       <Dialog open={isActivitiesDialogOpen} onOpenChange={setIsActivitiesDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -145,11 +142,11 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
             <DialogTitle>Próximas actividades en {parkName}</DialogTitle>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto">
-            {Array.isArray(parkActivities) && parkActivities.length > 0 ? (
-              <div className="space-y-4">
-                {parkActivities.map((activity: any) => (
+            <div className="space-y-4">
+              {activities && activities.length > 0 ? (
+                activities.map((activity: any) => (
                   <div key={activity.id} className="border rounded-lg p-3">
-                    <h4 className="font-medium text-lg">{activity.name}</h4>
+                    <h4 className="font-medium text-lg">{activity.name || activity.title}</h4>
                     <p className="text-sm text-gray-500">
                       {formatDate(activity.startDate)} - {formatDate(activity.endDate)}
                     </p>
@@ -160,13 +157,13 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
                       </p>
                     )}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <p>No hay actividades programadas para este parque.</p>
-              </div>
-            )}
+                ))
+              ) : (
+                <div className="text-center py-6">
+                  <p>No hay actividades programadas para este parque.</p>
+                </div>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -175,42 +172,58 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
       <Dialog open={isCommentDialogOpen} onOpenChange={setIsCommentDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Dejar un comentario sobre {parkName}</DialogTitle>
+            <DialogTitle>Dejar un comentario</DialogTitle>
+            <DialogDescription>
+              Comparte tu experiencia en {parkName}
+            </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleCommentSubmit} className="space-y-4 my-4">
+          
+          <form onSubmit={handleCommentSubmit} className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Nombre</Label>
+              <Label htmlFor="comment-name">Tu nombre</Label>
               <Input 
-                id="name" 
+                id="comment-name"
                 value={commentName}
                 onChange={(e) => setCommentName(e.target.value)}
-                placeholder="Tu nombre" 
-                required 
+                placeholder="Ingresa tu nombre"
+                required
               />
             </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
+              <Label htmlFor="comment-email">Correo electrónico</Label>
               <Input 
-                id="email" 
-                type="email" 
+                id="comment-email"
+                type="email"
                 value={commentEmail}
                 onChange={(e) => setCommentEmail(e.target.value)}
-                placeholder="ejemplo@correo.com" 
-                required 
+                placeholder="Ingresa tu correo electrónico"
+                required
               />
             </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="comment">Comentario</Label>
+              <Label htmlFor="comment-text">Comentario</Label>
               <Textarea 
-                id="comment" 
+                id="comment-text"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Escribe tu comentario..." 
-                className="h-24"
-                required 
+                placeholder="Escribe tu comentario o experiencia en el parque"
+                rows={4}
+                required
               />
             </div>
-            <Button type="submit" className="w-full">Enviar comentario</Button>
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button 
+                type="button" 
+                variant="ghost"
+                onClick={() => setIsCommentDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit">Enviar comentario</Button>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
@@ -218,5 +231,4 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
   );
 };
 
-export { ParkQuickActions };
 export default ParkQuickActions;

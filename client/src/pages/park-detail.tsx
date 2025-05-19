@@ -16,7 +16,7 @@ import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { IncidentReportForm } from '@/components/IncidentReportForm';
-import AmenityIcon from '@/components/ui/amenity-icon';
+import AmenityIcon from '@/components/AmenityIcon';
 import ParkQuickActions from '@/components/ParkQuickActions';
 
 const ParkDetail: React.FC = () => {
