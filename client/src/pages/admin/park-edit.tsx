@@ -548,7 +548,10 @@ const AdminParkEdit: React.FC = () => {
                           <h3 className="text-lg font-medium mb-4">Imágenes</h3>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {/* Image upload placeholder */}
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 cursor-pointer">
+                            <div 
+                              className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 cursor-pointer"
+                              onClick={() => window.location.href = `/admin/images/park/${id}`}
+                            >
                               <div className="flex flex-col items-center justify-center h-40">
                                 <ImagePlus className="h-10 w-10 text-gray-400 mb-2" />
                                 <p className="text-sm text-gray-500">Agregar imagen</p>
@@ -595,7 +598,7 @@ const AdminParkEdit: React.FC = () => {
                         <div>
                           <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-medium">Amenidades Disponibles</h3>
-                            <Button>
+                            <Button onClick={() => window.location.href = `/admin/amenities/park/${id}`}>
                               <PlusCircle className="mr-2 h-4 w-4" />
                               Agregar Amenidad
                             </Button>
