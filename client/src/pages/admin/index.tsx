@@ -25,7 +25,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminLayout from '@/components/AdminLayout';
-import { OriginalSections } from '@/components/AdminSidebarOriginal';
 
 // Simplified modular dashboard component
 const AdminDashboard: React.FC = () => {
@@ -137,388 +136,104 @@ const AdminDashboard: React.FC = () => {
         </Card>
       </div>
       
-      {/* Module Access Cards */}
-      <h2 className="text-xl font-semibold mb-4">Módulos del Sistema</h2>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
-        {/* Espacios Verdes Module */}
-        <Card className="border-l-4 border-l-green-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                <Layers className="h-5 w-5 text-green-600" />
+      {/* Nueva Estructura de Menú */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4">Nueva Estructura del Menú</h2>
+        <Card className="p-4">
+          <CardContent>
+            <p className="text-sm text-gray-600 mb-4">Se ha implementado una nueva estructura de menú con los siguientes módulos y submódulos:</p>
+            
+            <div className="space-y-4">
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">1. Módulo - Usuarios del Sistema</h3>
+                <p className="text-sm text-gray-600">Submódulos: Lista, Usuarios</p>
               </div>
-              <div>
-                <CardTitle>Espacios Verdes</CardTitle>
-                <CardDescription>Gestión de parques y amenidades</CardDescription>
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">2. Módulo - Programación y Actividades</h3>
+                <p className="text-sm text-gray-600">Submódulos: Organizador de Actividades, Actividades, Reportes</p>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <div className="flex flex-col items-center bg-gray-50 p-2 rounded-md">
-                <MapPin className="h-4 w-4 text-muted-foreground mb-1" />
-                <span className="text-xs font-medium">{parks.length} Parques</span>
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">3. Módulo - Gestión Operativa e Infraestructura</h3>
+                <p className="text-sm text-gray-600">Submódulos: Inventario de Parques, Inventario de Activos, Incidencias, Proyectos de Capital, Reportes</p>
               </div>
-              <div className="flex flex-col items-center bg-gray-50 p-2 rounded-md">
-                <Tag className="h-4 w-4 text-muted-foreground mb-1" />
-                <span className="text-xs font-medium">28 Amenidades</span>
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">4. Módulo - Finanzas y Presupuesto</h3>
+                <p className="text-sm text-gray-600">Submódulos: Egresos, Ingresos, Flujo de Efectivo, Calculadora de recuperación de costos, Indicadores clave</p>
               </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between pt-0">
-            <Link href="/admin/parks">
-              <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700 hover:bg-green-50">
-                Ver parques
-              </Button>
-            </Link>
-            <Link href="/admin/amenities">
-              <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700 hover:bg-green-50">
-                Ver amenidades
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-        
-        {/* Eventos Module */}
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-blue-600" />
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">5. Módulo - Comunicación y Marketing</h3>
+                <p className="text-sm text-gray-600">Submódulos: Eventos, Encuestas, Patrocinios, Reportes</p>
               </div>
-              <div>
-                <CardTitle>Eventos y Reportes</CardTitle>
-                <CardDescription>Actividades e incidentes</CardDescription>
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">6. Módulo - Voluntariado</h3>
+                <p className="text-sm text-gray-600">Submódulos: Gestión de Voluntarios, Actividades, Capacitación, Reportes</p>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <div className="flex flex-col items-center bg-gray-50 p-2 rounded-md">
-                <Calendar className="h-4 w-4 text-muted-foreground mb-1" />
-                <span className="text-xs font-medium">36 Actividades</span>
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">7. Módulo - Concesiones y Espacios Comerciales</h3>
+                <p className="text-sm text-gray-600">Submódulos: Registro Concesionarios, Contratos, Formatos, Reportes</p>
               </div>
-              <div className="flex flex-col items-center bg-gray-50 p-2 rounded-md">
-                <AlertTriangle className="h-4 w-4 text-muted-foreground mb-1" />
-                <span className="text-xs font-medium">12 Incidentes</span>
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">8. Módulo - Recursos Humanos del Parque</h3>
+                <p className="text-sm text-gray-600">Submódulos: Registro Personal, Roles y Turnos, Historial de Formación, Evaluación y Seguimiento, Perfiles de Puesto, Organigrama</p>
+              </div>
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">9. Módulo - Análisis y Reportes</h3>
+                <p className="text-sm text-gray-600">Submódulos: Dashboard Analítico, Exportar Reportes</p>
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between pt-0">
-            <Link href="/admin/activities">
-              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
-                Ver actividades
-              </Button>
-            </Link>
-            <Link href="/admin/incidents">
-              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
-                Ver incidentes
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-        
-        {/* Media Module */}
-        <Card className="border-l-4 border-l-purple-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                <FileText className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <CardTitle>Contenido Multimedia</CardTitle>
-                <CardDescription>Documentos, imágenes y videos</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <div className="flex flex-col items-center bg-gray-50 p-2 rounded-md">
-                <FileText className="h-4 w-4 text-muted-foreground mb-1" />
-                <span className="text-xs font-medium">45 Documentos</span>
-              </div>
-              <div className="flex flex-col items-center bg-gray-50 p-2 rounded-md">
-                <Users className="h-4 w-4 text-muted-foreground mb-1" />
-                <span className="text-xs font-medium">120 Imágenes</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between pt-0">
-            <Link href="/admin/documents">
-              <Button variant="ghost" size="sm" className="text-purple-600 hover:text-purple-700 hover:bg-purple-50">
-                Ver documentos
-              </Button>
-            </Link>
-            <Link href="/admin/images">
-              <Button variant="ghost" size="sm" className="text-purple-600 hover:text-purple-700 hover:bg-purple-50">
-                Ver imágenes
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-        
-        {/* Community Module */}
-        <Card className="border-l-4 border-l-amber-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                <MessageSquare className="h-5 w-5 text-amber-600" />
-              </div>
-              <div>
-                <CardTitle>Comunidad</CardTitle>
-                <CardDescription>Comentarios y usuarios</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <div className="flex flex-col items-center bg-gray-50 p-2 rounded-md">
-                <MessageSquare className="h-4 w-4 text-muted-foreground mb-1" />
-                <span className="text-xs font-medium">138 Comentarios</span>
-              </div>
-              <div className="flex flex-col items-center bg-gray-50 p-2 rounded-md">
-                <Users className="h-4 w-4 text-muted-foreground mb-1" />
-                <span className="text-xs font-medium">25 Usuarios</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between pt-0">
-            <Link href="/admin/comments">
-              <Button variant="ghost" size="sm" className="text-amber-600 hover:text-amber-700 hover:bg-amber-50">
-                Ver comentarios
-              </Button>
-            </Link>
-            <Link href="/admin/users">
-              <Button variant="ghost" size="sm" className="text-amber-600 hover:text-amber-700 hover:bg-amber-50">
-                Ver usuarios
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-        
-        {/* Analytics Module */}
-        <Card className="border-l-4 border-l-indigo-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                <BarChart className="h-5 w-5 text-indigo-600" />
-              </div>
-              <div>
-                <CardTitle>Análisis y Reportes</CardTitle>
-                <CardDescription>Estadísticas y exportación</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <div className="flex flex-col items-center bg-gray-50 p-2 rounded-md">
-                <BarChart className="h-4 w-4 text-muted-foreground mb-1" />
-                <span className="text-xs font-medium">5 Reportes</span>
-              </div>
-              <div className="flex flex-col items-center bg-gray-50 p-2 rounded-md">
-                <ArrowDown className="h-4 w-4 text-muted-foreground mb-1" />
-                <span className="text-xs font-medium">12 Descargas</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between pt-0">
-            <Link href="/admin/analytics">
-              <Button variant="ghost" size="sm" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
-                Ver analytics
-              </Button>
-            </Link>
-            <Link href="/admin/reports">
-              <Button variant="ghost" size="sm" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
-                Ver reportes
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-        
-        {/* System Module */}
-        <Card className="border-l-4 border-l-slate-500">
-          <CardHeader className="pb-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
-                <Settings className="h-5 w-5 text-slate-600" />
-              </div>
-              <div>
-                <CardTitle>Sistema</CardTitle>
-                <CardDescription>Configuración y administración</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <div className="flex flex-col items-center bg-gray-50 p-2 rounded-md">
-                <Building className="h-4 w-4 text-muted-foreground mb-1" />
-                <span className="text-xs font-medium">5 Municipios</span>
-              </div>
-              <div className="flex flex-col items-center bg-gray-50 p-2 rounded-md">
-                <Settings className="h-4 w-4 text-muted-foreground mb-1" />
-                <span className="text-xs font-medium">Configuración</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between pt-0">
-            <Link href="/admin/municipalities">
-              <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-700 hover:bg-slate-50">
-                Ver municipios
-              </Button>
-            </Link>
-            <Link href="/admin/settings">
-              <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-700 hover:bg-slate-50">
-                Configuración
-              </Button>
-            </Link>
-          </CardFooter>
         </Card>
       </div>
       
-      {/* Estructura del Menú */}
-      <h2 className="text-xl font-semibold mb-4">Estructura del Menú</h2>
-      <Tabs defaultValue="new" className="mb-6">
-        <TabsList>
-          <TabsTrigger value="new">Nueva Estructura</TabsTrigger>
-          <TabsTrigger value="original">Estructura Original</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="new" className="space-y-4">
-          <div className="space-y-4">
-            <div className="border rounded-lg p-4">
-              <h3 className="font-medium text-lg mb-3">Nueva Estructura de Módulos</h3>
-              <p className="text-sm text-slate-600 mb-4">Esta es la estructura de menú con las 8 categorías principales que solicitaste:</p>
+      {/* Estructura Anterior */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4">Estructura Original del Menú</h2>
+        <Card className="p-4">
+          <CardContent>
+            <p className="text-sm text-gray-600 mb-4">Esta es la estructura original que teníamos antes:</p>
+            
+            <div className="space-y-4">
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">Módulo de Espacios Verdes</h3>
+                <p className="text-sm text-gray-600">Submódulos: Parques, Amenidades, Municipios</p>
+              </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="border rounded-lg p-3 bg-white">
-                  <h4 className="font-medium mb-2 flex items-center">
-                    <Users className="h-4 w-4 mr-2 text-blue-500" />
-                    Módulo - Usuarios del Sistema
-                  </h4>
-                  <ul className="text-sm space-y-1 pl-6">
-                    <li>• Lista</li>
-                    <li>• Usuarios</li>
-                  </ul>
-                </div>
-                
-                <div className="border rounded-lg p-3 bg-white">
-                  <h4 className="font-medium mb-2 flex items-center">
-                    <Calendar className="h-4 w-4 mr-2 text-blue-500" />
-                    Módulo - Programación y Actividades
-                  </h4>
-                  <ul className="text-sm space-y-1 pl-6">
-                    <li>• Organizador de Actividades</li>
-                    <li>• Actividades</li>
-                    <li>• Reportes</li>
-                  </ul>
-                </div>
-                
-                <div className="border rounded-lg p-3 bg-white">
-                  <h4 className="font-medium mb-2 flex items-center">
-                    <Building className="h-4 w-4 mr-2 text-blue-500" />
-                    Módulo - Gestión Operativa e Infraestructura
-                  </h4>
-                  <ul className="text-sm space-y-1 pl-6">
-                    <li>• Inventario de Parques</li>
-                    <li>• Inventario de Activos</li>
-                    <li>• Incidencias</li>
-                    <li>• Proyectos de Capital</li>
-                    <li>• Reportes</li>
-                  </ul>
-                </div>
-                
-                <div className="border rounded-lg p-3 bg-white">
-                  <h4 className="font-medium mb-2 flex items-center">
-                    <DollarSign className="h-4 w-4 mr-2 text-blue-500" />
-                    Módulo - Finanzas y Presupuesto
-                  </h4>
-                  <ul className="text-sm space-y-1 pl-6">
-                    <li>• Egresos</li>
-                    <li>• Ingresos</li>
-                    <li>• Flujo de Efectivo</li>
-                    <li>• Calculadora de recuperación de costos</li>
-                    <li>• Indicadores clave</li>
-                  </ul>
-                </div>
-                
-                <div className="border rounded-lg p-3 bg-white">
-                  <h4 className="font-medium mb-2 flex items-center">
-                    <MessageSquare className="h-4 w-4 mr-2 text-blue-500" />
-                    Módulo - Comunicación y Marketing
-                  </h4>
-                  <ul className="text-sm space-y-1 pl-6">
-                    <li>• Eventos</li>
-                    <li>• Encuestas</li>
-                    <li>• Patrocinios</li>
-                    <li>• Reportes</li>
-                  </ul>
-                </div>
-                
-                <div className="border rounded-lg p-3 bg-white">
-                  <h4 className="font-medium mb-2 flex items-center">
-                    <HeartHandshake className="h-4 w-4 mr-2 text-blue-500" />
-                    Módulo - Voluntariado
-                  </h4>
-                  <ul className="text-sm space-y-1 pl-6">
-                    <li>• Gestión de Voluntarios</li>
-                    <li>• Actividades</li>
-                    <li>• Capacitación</li>
-                    <li>• Reportes</li>
-                  </ul>
-                </div>
-                
-                <div className="border rounded-lg p-3 bg-white">
-                  <h4 className="font-medium mb-2 flex items-center">
-                    <Store className="h-4 w-4 mr-2 text-blue-500" />
-                    Módulo - Concesiones y Espacios Comerciales
-                  </h4>
-                  <ul className="text-sm space-y-1 pl-6">
-                    <li>• Registro Concesionarios</li>
-                    <li>• Contratos</li>
-                    <li>• Formatos</li>
-                    <li>• Reportes</li>
-                  </ul>
-                </div>
-                
-                <div className="border rounded-lg p-3 bg-white">
-                  <h4 className="font-medium mb-2 flex items-center">
-                    <Users className="h-4 w-4 mr-2 text-blue-500" />
-                    Módulo - Recursos Humanos del Parque
-                  </h4>
-                  <ul className="text-sm space-y-1 pl-6">
-                    <li>• Registro Personal</li>
-                    <li>• Roles y Turnos</li>
-                    <li>• Historial de Formación</li>
-                    <li>• Evaluación y Seguimiento</li>
-                    <li>• Perfiles de Puesto</li>
-                    <li>• Organigrama</li>
-                  </ul>
-                </div>
-                
-                <div className="border rounded-lg p-3 bg-white">
-                  <h4 className="font-medium mb-2 flex items-center">
-                    <BarChart className="h-4 w-4 mr-2 text-blue-500" />
-                    Módulo - Análisis y Reportes
-                  </h4>
-                  <ul className="text-sm space-y-1 pl-6">
-                    <li>• Dashboard Analítico</li>
-                    <li>• Exportar Reportes</li>
-                  </ul>
-                </div>
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">Módulo de Actividades y Eventos</h3>
+                <p className="text-sm text-gray-600">Submódulos: Actividades, Incidentes</p>
+              </div>
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">Módulo de Contenidos Multimedia</h3>
+                <p className="text-sm text-gray-600">Submódulos: Documentos, Imágenes, Videos</p>
+              </div>
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">Módulo de Comunidad</h3>
+                <p className="text-sm text-gray-600">Submódulos: Comentarios, Usuarios</p>
+              </div>
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">Módulo de Análisis y Reportes</h3>
+                <p className="text-sm text-gray-600">Submódulos: Dashboard Analítico, Exportar Reportes</p>
+              </div>
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <h3 className="font-medium mb-2">Módulo de Sistema</h3>
+                <p className="text-sm text-gray-600">Submódulos: Configuración</p>
               </div>
             </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="original">
-          <div className="border rounded-lg p-4 bg-white">
-            <h3 className="font-medium text-lg mb-3">Estructura Original</h3>
-            <p className="text-sm text-slate-600 mb-4">Esta es la estructura de menú original que teníamos antes:</p>
-            
-            <OriginalSections />
-          </div>
-        </TabsContent>
-      </Tabs>
+          </CardContent>
+        </Card>
+      </div>
       
       {/* Recent activity */}
       <h2 className="text-xl font-semibold mb-4">Actividad Reciente</h2>
