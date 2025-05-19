@@ -1025,6 +1025,9 @@ const AdminParkEdit: React.FC = () => {
                                       if (!id) return;
                                       if (confirm(`¿Estás seguro de quitar la amenidad "${amenity.name}" del parque?`)) {
                                         try {
+                                          // Establecemos una variable global para prevenir la redirección
+                                          window.preventParkRedirect = true;
+                                          
                                           const response = await fetch(`/api/parks/${id}/amenities/${amenity.id}`, {
                                             method: 'DELETE',
                                             headers: {
@@ -1042,6 +1045,11 @@ const AdminParkEdit: React.FC = () => {
                                               title: "Amenidad eliminada",
                                               description: `Se ha quitado ${amenity.name} del parque.`
                                             });
+                                            
+                                            // Restauramos la variable después de un tiempo
+                                            setTimeout(() => {
+                                              window.preventParkRedirect = false;
+                                            }, 1000);
                                           } else {
                                             toast({
                                               title: "Error",
