@@ -870,36 +870,35 @@ const AdminParkEdit: React.FC = () => {
                                 onClick={() => {
                                   const videoUrl = form.getValues().videoUrl;
                                   if (videoUrl && id) {
-                                    // Guarda el cambio inmediatamente
-                                    fetch(`/api/dev/parks/${id}`, {
-                                      method: 'PUT',
+                                    // Primero guardamos localmente para la experiencia de usuario
+                                    form.setValue('videoUrl', videoUrl);
+                                    
+                                    // Usamos SQL directamente para evitar problemas
+                                    fetch('/api/execute-sql', {
+                                      method: 'POST',
                                       headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': 'Bearer direct-token-1'
+                                        'Content-Type': 'application/json'
                                       },
-                                      body: JSON.stringify({ videoUrl })
+                                      body: JSON.stringify({
+                                        query: `UPDATE parks SET video_url = '${videoUrl.replace(/'/g, "''")}' WHERE id = ${id};`
+                                      })
                                     })
                                     .then(response => {
                                       if (!response.ok) {
-                                        throw new Error('No se pudo guardar la URL del video');
+                                        throw new Error('Error al guardar en base de datos');
                                       }
-                                      return response.json();
-                                    })
-                                    .then(data => {
-                                      // Actualiza el campo en tiempo real para evitar recargar la página
-                                      form.setValue('videoUrl', videoUrl); 
+                                      toast({
+                                        title: "URL de video guardada",
+                                        description: "El enlace al video ha sido actualizado correctamente."
+                                      });
                                     })
                                     .catch(error => {
-                                      console.error('Error:', error);
+                                      console.error('Error al guardar URL:', error);
                                       toast({
                                         title: "Error",
                                         description: "No se pudo guardar la URL. Por favor intenta nuevamente.",
                                         variant: "destructive"
                                       });
-                                    });
-                                    toast({
-                                      title: "URL de video guardada",
-                                      description: "El enlace al video ha sido actualizado correctamente."
                                     });
                                   } else if (!videoUrl) {
                                     toast({
@@ -930,25 +929,25 @@ const AdminParkEdit: React.FC = () => {
                                         // Simplemente actualizar el estado del formulario
                                         form.setValue('videoUrl', '');
                                         
-                                        // Actualizar en la base de datos
-                                        fetch(`/api/dev/parks/${id}`, {
-                                          method: 'PUT',
+                                        // Actualizar en la base de datos usando SQL directo
+                                        fetch('/api/execute-sql', {
+                                          method: 'POST',
                                           headers: {
-                                            'Content-Type': 'application/json',
-                                            'Authorization': 'Bearer direct-token-1'
+                                            'Content-Type': 'application/json'
                                           },
-                                          body: JSON.stringify({ videoUrl: '' })
+                                          body: JSON.stringify({
+                                            query: `UPDATE parks SET video_url = '' WHERE id = ${id};`
+                                          })
                                         })
                                         .then(response => {
                                           if (!response.ok) {
-                                            throw new Error('No se pudo eliminar la URL del video');
+                                            throw new Error('Error al eliminar en base de datos');
                                           }
-                                          return response.json();
                                         })
                                         .catch(error => {
-                                          console.error('Error:', error);
-                                          // Restaurar el valor anterior
-                                          const prevValue = data?.videoUrl || '';
+                                          console.error('Error al eliminar URL:', error);
+                                          // Restaurar el valor anterior si ocurre un error
+                                          const prevValue = form.getValues().videoUrl || '';
                                           form.setValue('videoUrl', prevValue);
                                           
                                           toast({
