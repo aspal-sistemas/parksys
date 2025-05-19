@@ -182,7 +182,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = {
         name: req.body.name,
         icon: req.body.icon,
-        category: req.body.category
+        category: req.body.category,
+        iconType: req.body.iconType || 'system',
+        customIconUrl: req.body.customIconUrl || null
       };
       
       const newAmenity = await storage.createAmenity(data);
@@ -205,7 +207,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = {
         name: req.body.name,
         icon: req.body.icon,
-        category: req.body.category
+        category: req.body.category,
+        iconType: req.body.iconType || 'system',
+        customIconUrl: req.body.customIconUrl || null
       };
       
       const updatedAmenity = await storage.updateAmenity(id, data);
