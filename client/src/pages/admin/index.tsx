@@ -150,7 +150,7 @@ const AdminDashboard: React.FC = () => {
               </div>
               
               <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">2. Módulo - Programación y Actividades</h3>
+                <h3 className="font-medium mb-2">2. Módulo - Actividades</h3>
                 <p className="text-sm text-gray-600">Submódulos: Organizador de Actividades, Actividades, Reportes</p>
               </div>
               

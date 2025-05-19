@@ -178,9 +178,9 @@ const AdminSidebarModular: React.FC = () => {
                 </NavItem>
               </ModuleNav>
               
-              {/* Módulo - Programación y Actividades */}
+              {/* Módulo - Actividades */}
               <ModuleNav 
-                title="Programación y Actividades" 
+                title="Actividades" 
                 icon={<Calendar className="h-5 w-5" />} 
                 value="programming"
               >
