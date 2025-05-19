@@ -40,6 +40,9 @@ const AdminParks = () => {
   const [parkToDelete, setParkToDelete] = useState<Park | null>(null);
   const [sortField, setSortField] = useState<string>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  
+  // Estado local para los parques (para gestionar la eliminación visual)
+  const [localParks, setLocalParks] = useState<Park[]>([]);
 
   // Fetch all parks
   const { 
@@ -49,6 +52,10 @@ const AdminParks = () => {
     refetch: refetchParks
   } = useQuery({
     queryKey: ['/api/parks'],
+    onSuccess: (data) => {
+      // Actualizar estado local cuando llegan nuevos datos
+      setLocalParks(data);
+    }
   });
 
   // Fetch municipalities for filter
@@ -61,7 +68,7 @@ const AdminParks = () => {
 
   // Filter and sort parks
   const filteredParks = React.useMemo(() => {
-    return [...parks].filter(park => {
+    return [...localParks].filter(park => {
       // Apply search filter
       if (searchQuery && !park.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
@@ -95,7 +102,7 @@ const AdminParks = () => {
       // Default sort by name
       return a.name.localeCompare(b.name);
     });
-  }, [parks, searchQuery, filterMunicipality, filterParkType, sortField, sortDirection]);
+  }, [localParks, searchQuery, filterMunicipality, filterParkType, sortField, sortDirection]);
 
   // Get municipality name by ID
   const getMunicipalityName = (municipalityId: number) => {
@@ -126,7 +133,7 @@ const AdminParks = () => {
       // Elimina visualmente el parque del estado local sin hacer la llamada API real
       
       // Actualizamos el estado local para eliminar el parque
-      setParks(prevParks => prevParks.filter(park => park.id !== parkToDelete.id));
+      setLocalParks(prevParks => prevParks.filter(park => park.id !== parkToDelete.id));
       
       // Mostramos un mensaje de éxito
       toast({
