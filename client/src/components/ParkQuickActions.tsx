@@ -49,7 +49,7 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
       const data = {
         name: commentName,
         email: commentEmail,
-        comment: comment,
+        content: comment,  // Cambiado de 'comment' a 'content' según el esquema
       };
       
       const response = await fetch(endpoint, {
