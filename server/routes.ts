@@ -767,93 +767,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all comments (admin only)
   apiRouter.get("/comments", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      // Proporcionamos datos de ejemplo temporales para los comentarios
-      // En una implementación real, estos vendrían de la base de datos
-      const mockComments = [
-        {
-          id: 1,
-          parkId: 1,
-          name: "Juan Pérez",
-          email: "juan@example.com",
-          content: "Excelente parque para familias, muy limpio y seguro.",
-          rating: 5,
-          isApproved: true,
-          createdAt: new Date("2023-05-10"),
-          park: {
-            id: 1,
-            name: "Parque Metropolitano de Guadalajara"
-          }
-        },
-        {
-          id: 2,
-          parkId: 1,
-          name: "María García",
-          email: "maria@example.com",
-          content: "Las instalaciones deportivas están en buen estado, pero falta más sombra.",
-          rating: 4,
-          isApproved: true,
-          createdAt: new Date("2023-06-15"),
-          park: {
-            id: 1,
-            name: "Parque Metropolitano de Guadalajara"
-          }
-        },
-        {
-          id: 3,
-          parkId: 2,
-          name: "Carlos Rodríguez",
-          email: "carlos@example.com",
-          content: "Necesita más mantenimiento en las áreas verdes.",
-          rating: 3,
-          isApproved: false,
-          createdAt: new Date("2023-07-20"),
-          park: {
-            id: 2,
-            name: "Parque Agua Azul"
-          }
-        },
-        {
-          id: 4,
-          parkId: 3,
-          name: "Ana López",
-          email: "ana@example.com",
-          content: "Me encanta el área de juegos infantiles, mis hijos disfrutan mucho.",
-          rating: 5,
-          isApproved: true,
-          createdAt: new Date("2023-08-05"),
-          park: {
-            id: 3,
-            name: "Bosque Los Colomos"
-          }
-        },
-        {
-          id: 5,
-          parkId: 2,
-          name: "Roberto Sánchez",
-          email: "roberto@example.com",
-          content: "Faltan más bebederos y baños públicos.",
-          rating: 3,
-          isApproved: false,
-          createdAt: new Date("2023-09-12"),
-          park: {
-            id: 2,
-            name: "Parque Agua Azul"
-          }
-        }
-      ];
-      
-      // Filtramos por aprobación si se proporciona el parámetro
+      // Obtenemos los parámetros de filtrado
       const approvedFilter = req.query.approved;
-      let filteredComments = [...mockComments];
+      
+      // Consultamos los comentarios de la base de datos
+      let allComments;
       
       if (approvedFilter === 'true') {
-        filteredComments = filteredComments.filter(comment => comment.isApproved);
+        allComments = await storage.getAllComments(true);
       } else if (approvedFilter === 'false') {
-        filteredComments = filteredComments.filter(comment => !comment.isApproved);
+        allComments = await storage.getAllComments(false);
+      } else {
+        allComments = await storage.getAllComments();
       }
       
-      // Respondemos con los comentarios de ejemplo
-      res.json(filteredComments);
+      // Para devolver un formato consistente con lo que espera la UI, obtenemos los detalles
+      // de los parques relacionados con estos comentarios
+      const parkIds = [...new Set(allComments.map(comment => comment.parkId))];
+      const parks = await Promise.all(
+        parkIds.map(async (parkId) => {
+          const park = await storage.getPark(parkId);
+          return park ? { id: park.id, name: park.name } : null;
+        })
+      );
+      
+      // Añadimos la información del parque a cada comentario
+      const commentsWithParkInfo = allComments.map(comment => {
+        const parkInfo = parks.find(p => p && p.id === comment.parkId);
+        return {
+          ...comment,
+          park: parkInfo
+        };
+      });
+      
+      // Devolvemos los comentarios con la información de parque incluida
+      res.json(commentsWithParkInfo);
     } catch (error) {
       console.error('Error fetching comments:', error);
       res.status(500).json({ message: "Error fetching comments" });
@@ -861,28 +809,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Approve a comment (admin/municipality only)
-  apiRouter.put("/comments/:id/approve", async (req: Request, res: Response) => {
+  apiRouter.put("/comments/:id/approve", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const commentId = Number(req.params.id);
       
-      // Para resolver el problema con auth, obtenemos los comentarios actuales
-      const allComments = await storage.getAllComments();
+      // Verificamos que el comentario exista
+      const comment = await storage.getComment(commentId);
       
-      // Buscamos el comentario específico para aprobarlo
-      const commentToApprove = allComments.find(c => c.id === commentId);
-      
-      if (!commentToApprove) {
+      if (!comment) {
         return res.status(404).json({ message: "Comentario no encontrado" });
       }
       
-      // Creamos una copia del comentario con isApproved = true
-      const approvedComment = {
-        ...commentToApprove,
-        isApproved: true
-      };
+      // Verificamos que el usuario tenga permisos (es admin o pertenece al municipio del parque)
+      if (req.user.role !== 'super_admin') {
+        const park = await storage.getPark(comment.parkId);
+        if (!park || park.municipalityId !== req.user.municipalityId) {
+          return res.status(403).json({ 
+            message: "No tiene permisos para aprobar este comentario" 
+          });
+        }
+      }
       
-      // Respondemos con el comentario aprobado
-      res.json(approvedComment);
+      // Actualizamos el comentario en la base de datos
+      const updatedComment = await storage.approveComment(commentId);
+      
+      // Obtenemos información del parque para mantener el formato consistente
+      const park = await storage.getPark(comment.parkId);
+      
+      // Respondemos con el comentario aprobado y la info del parque
+      res.json({
+        ...updatedComment,
+        park: park ? { id: park.id, name: park.name } : null
+      });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error approving comment" });
