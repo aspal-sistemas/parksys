@@ -27,7 +27,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const apiRouter = express.Router();
   
   // Template download routes (must be defined before conflicting routes)
-  app.get('/api/template/parks-import', isAuthenticated, generateImportTemplate);
+  app.get('/api/template/parks-import', generateImportTemplate);
   
   app.use('/api', apiRouter);
 
