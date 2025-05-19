@@ -16,14 +16,57 @@ import {
 } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Download, Filter, Users, Map, Activity, AlertTriangle, MessageSquare, BarChart, PieChart, LineChart } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Calendar, Download, Filter, Users, Map, Activity, AlertTriangle, MessageSquare, BarChart, PieChart, LineChart, CalendarIcon, Check } from 'lucide-react';
 
 const AnalyticsDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('uso');
+  const [showFilterDialog, setShowFilterDialog] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [dateRange, setDateRange] = useState<{from?: Date; to?: Date}>({});
+  const [filterMunicipality, setFilterMunicipality] = useState('all');
+  const [filterParkType, setFilterParkType] = useState('all');
+  const [exportFormat, setExportFormat] = useState('excel');
   
-  const handleExportData = (reportType: string) => {
-    // TODO: Implement actual export functionality
-    alert(`Exportando datos de ${reportType}...`);
+  const handleExportData = () => {
+    // Para demostración mostraremos un diálogo de exportación
+    setShowExportDialog(true);
+  };
+  
+  const executeExport = () => {
+    // En una implementación real, aquí se generaría y descargaría el archivo
+    alert(`Exportando datos de ${activeTab} en formato ${exportFormat}`);
+    setShowExportDialog(false);
+  };
+  
+  const openFilterDialog = () => {
+    setShowFilterDialog(true);
+  };
+  
+  const applyFilters = () => {
+    // En una implementación real, aquí se aplicarían los filtros seleccionados
+    const fromDate = dateRange.from ? dateRange.from.toLocaleDateString() : 'no seleccionada';
+    const toDate = dateRange.to ? dateRange.to.toLocaleDateString() : 'no seleccionada';
+    
+    alert(`Filtros aplicados:\nMunicipio: ${filterMunicipality}\nTipo de Parque: ${filterParkType}\nFecha inicio: ${fromDate}\nFecha fin: ${toDate}`);
+    setShowFilterDialog(false);
   };
   
   return (
@@ -37,14 +80,154 @@ const AnalyticsDashboard: React.FC = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => handleExportData(activeTab)}>
+            <Button variant="outline" onClick={handleExportData}>
               <Download className="mr-2 h-4 w-4" />
               Exportar Datos
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={openFilterDialog}>
               <Filter className="mr-2 h-4 w-4" />
               Filtrar
             </Button>
+            
+            {/* Diálogo de Filtros */}
+            <Dialog open={showFilterDialog} onOpenChange={setShowFilterDialog}>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Filtrar Datos</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="municipality" className="text-right">
+                      Municipio
+                    </Label>
+                    <Select
+                      value={filterMunicipality}
+                      onValueChange={setFilterMunicipality}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Seleccionar Municipio" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="1">Ciudad de México</SelectItem>
+                        <SelectItem value="2">Guadalajara</SelectItem>
+                        <SelectItem value="3">Monterrey</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="parkType" className="text-right">
+                      Tipo de Parque
+                    </Label>
+                    <Select
+                      value={filterParkType}
+                      onValueChange={setFilterParkType}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Seleccionar Tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="urbano">Urbano</SelectItem>
+                        <SelectItem value="lineal">Lineal</SelectItem>
+                        <SelectItem value="bosque">Bosque</SelectItem>
+                        <SelectItem value="bolsillo">De Bolsillo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="dateFrom" className="text-right">
+                      Desde
+                    </Label>
+                    <div className="col-span-3 flex gap-2 items-center">
+                      <Input
+                        id="dateFrom"
+                        type="date"
+                        className="col-span-3"
+                        onChange={(e) => {
+                          const date = e.target.value ? new Date(e.target.value) : undefined;
+                          setDateRange((prev) => ({ ...prev, from: date }));
+                        }}
+                      />
+                      <CalendarIcon className="h-4 w-4 opacity-50" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="dateTo" className="text-right">
+                      Hasta
+                    </Label>
+                    <div className="col-span-3 flex gap-2 items-center">
+                      <Input
+                        id="dateTo"
+                        type="date"
+                        className="col-span-3"
+                        onChange={(e) => {
+                          const date = e.target.value ? new Date(e.target.value) : undefined;
+                          setDateRange((prev) => ({ ...prev, to: date }));
+                        }}
+                      />
+                      <CalendarIcon className="h-4 w-4 opacity-50" />
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowFilterDialog(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={applyFilters}>Aplicar Filtros</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            
+            {/* Diálogo de Exportación */}
+            <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Exportar Datos</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="exportFormat" className="text-right">
+                      Formato
+                    </Label>
+                    <Select
+                      value={exportFormat}
+                      onValueChange={setExportFormat}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Seleccionar Formato" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="excel">Excel (.xlsx)</SelectItem>
+                        <SelectItem value="csv">CSV (.csv)</SelectItem>
+                        <SelectItem value="pdf">PDF (.pdf)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">
+                      Datos
+                    </Label>
+                    <div className="col-span-3">
+                      {activeTab === 'uso' && <div>Estadísticas de uso de parques</div>}
+                      {activeTab === 'actividades' && <div>Estadísticas de actividades</div>}
+                      {activeTab === 'incidencias' && <div>Estadísticas de incidencias</div>}
+                      {activeTab === 'mantenimiento' && <div>Estadísticas de mantenimiento</div>}
+                      {activeTab === 'participacion' && <div>Estadísticas de participación</div>}
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowExportDialog(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={executeExport}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Exportar
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
         
