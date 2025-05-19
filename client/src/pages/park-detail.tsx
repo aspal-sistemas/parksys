@@ -495,47 +495,13 @@ const ParkDetail: React.FC = () => {
             </div>
             
             {/* Quick actions */}
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mb-6">
-              <div className="p-4">
-                <h3 className="font-medium text-lg mb-4">Acciones rápidas</h3>
-                <div className="space-y-3">
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start"
-                    onClick={() => setIsActivitiesDialogOpen(true)}
-                  >
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Ver próximas actividades
-                  </Button>
-                  {park.videoUrl && (
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start"
-                      onClick={() => window.open(String(park.videoUrl), '_blank')}
-                    >
-                      <Video className="h-4 w-4 mr-2" />
-                      Ver video del parque
-                    </Button>
-                  )}
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start"
-                    onClick={() => park.regulationUrl ? window.open(String(park.regulationUrl), '_blank') : alert('El reglamento no está disponible para este parque.')}
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Descargar reglamento
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start"
-                    onClick={() => setIsCommentDialogOpen(true)}
-                  >
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Dejar un comentario
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <ParkQuickActions 
+              parkId={Number(id)}
+              parkName={park.name}
+              videoUrl={park.videoUrl}
+              regulationUrl={park.regulationUrl}
+              activities={park.activities}
+            />
             
             {/* Report issues */}
             <div className="bg-primary-50 border border-primary-100 rounded-lg overflow-hidden mb-6">
