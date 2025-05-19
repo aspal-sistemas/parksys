@@ -52,12 +52,60 @@ const AnalyticsDashboard: React.FC = () => {
   };
   
   const executeExport = () => {
-    // Simulamos la preparación del archivo para exportación
-    const fileName = `reporte_${activeTab}_${new Date().toISOString().split('T')[0]}.${exportFormat === 'excel' ? 'xlsx' : exportFormat}`;
+    // Determinamos el tipo de contenido y extensión según el formato seleccionado
+    let mimeType = 'text/plain';
+    let fileExt = exportFormat;
+    let content = 'Datos simulados de exportación';
+    
+    if (exportFormat === 'excel') {
+      mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      fileExt = 'xlsx';
+      content = 'Datos de Excel simulados';
+    } else if (exportFormat === 'csv') {
+      mimeType = 'text/csv';
+      fileExt = 'csv';
+      content = 'campo1,campo2,campo3\nvalor1,valor2,valor3';
+    } else if (exportFormat === 'pdf') {
+      // Para PDF usamos un formato diferente que garantiza su descarga
+      mimeType = 'application/pdf';
+      
+      // Generamos un PDF simple (un blob vacío para simular)
+      // En una implementación real, aquí generaríamos un PDF real
+      // Para esta simulación, solo creamos un archivo vacío
+      const blob = new Blob(['%PDF-1.4\n1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n2 0 obj\n<</Type/Pages/Kids[3 0 R]/Count 1>>\nendobj\n3 0 obj\n<</Type/Page/MediaBox[0 0 612 792]/Parent 2 0 R/Resources<<>>>>\nendobj\nxref\n0 4\n0000000000 65535 f\n0000000010 00000 n\n0000000053 00000 n\n0000000102 00000 n\ntrailer\n<</Size 4/Root 1 0 R>>\nstartxref\n178\n%%EOF'], { type: mimeType });
+      
+      const fileName = `reporte_${activeTab}_${new Date().toISOString().split('T')[0]}.${fileExt}`;
+      const url = URL.createObjectURL(blob);
+      
+      // Creamos un elemento para descargar
+      const element = document.createElement('a');
+      element.href = url;
+      element.download = fileName;
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      
+      // Mostramos un mensaje al usuario
+      alert(`Exportando datos de ${activeTab} en formato ${exportFormat}\nArchivo: ${fileName}`);
+      
+      // Descargamos
+      element.click();
+      
+      // Limpiamos
+      setTimeout(() => {
+        document.body.removeChild(element);
+        URL.revokeObjectURL(url);
+      }, 100);
+      
+      setShowExportDialog(false);
+      return;
+    }
+    
+    // Para formatos que no son PDF
+    const fileName = `reporte_${activeTab}_${new Date().toISOString().split('T')[0]}.${fileExt}`;
     
     // Creamos un elemento temporal para simular la descarga
     const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent('Datos simulados de exportación'));
+    element.setAttribute('href', `data:${mimeType};charset=utf-8,` + encodeURIComponent(content));
     element.setAttribute('download', fileName);
     element.style.display = 'none';
     document.body.appendChild(element);
