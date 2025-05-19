@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { IncidentReportForm } from '@/components/IncidentReportForm';
 import AmenityIcon from '@/components/ui/amenity-icon';
+import ParkQuickActions from '@/components/ParkQuickActions';
 
 const ParkDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +30,9 @@ const ParkDetail: React.FC = () => {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
   const [isActivitiesDialogOpen, setIsActivitiesDialogOpen] = useState(false);
+  const [comment, setComment] = useState("");
+  const [commentName, setCommentName] = useState("");
+  const [commentEmail, setCommentEmail] = useState("");
   
   // Fetch park details
   const { data: park, isLoading, error } = useQuery<ExtendedPark>({
@@ -86,9 +90,11 @@ const ParkDetail: React.FC = () => {
   const additionalImages = park.images?.filter(img => !img.isPrimary).map(img => img.imageUrl) || [];
   
   // Formulario para comentarios
-  const [comment, setComment] = useState("");
-  const [commentName, setCommentName] = useState("");
-  const [commentEmail, setCommentEmail] = useState("");
+  const [commentFormData, setCommentFormData] = useState({
+    text: "",
+    name: "",
+    email: ""
+  });
 
   // Manejar envío de comentario
   const handleCommentSubmit = async (e: React.FormEvent) => {
