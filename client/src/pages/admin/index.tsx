@@ -165,7 +165,7 @@ const AdminDashboard: React.FC = () => {
               </div>
               
               <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">5. Módulo - Comunicación y Marketing</h3>
+                <h3 className="font-medium mb-2">5. Módulo - Marketing</h3>
                 <p className="text-sm text-gray-600">Submódulos: Eventos, Encuestas, Patrocinios, Reportes</p>
               </div>
               
@@ -175,7 +175,7 @@ const AdminDashboard: React.FC = () => {
               </div>
               
               <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">7. Módulo - Concesiones y Espacios Comerciales</h3>
+                <h3 className="font-medium mb-2">7. Módulo - Concesiones</h3>
                 <p className="text-sm text-gray-600">Submódulos: Registro Concesionarios, Contratos, Formatos, Reportes</p>
               </div>
               

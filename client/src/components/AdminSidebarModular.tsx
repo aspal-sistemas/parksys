@@ -303,9 +303,9 @@ const AdminSidebarModular: React.FC = () => {
                 </NavItem>
               </ModuleNav>
               
-              {/* Módulo - Comunicación y Marketing */}
+              {/* Módulo - Marketing */}
               <ModuleNav 
-                title="Comunicación y Marketing" 
+                title="Marketing" 
                 icon={<MessageSquare className="h-5 w-5" />} 
                 value="communication"
               >
@@ -381,9 +381,9 @@ const AdminSidebarModular: React.FC = () => {
                 </NavItem>
               </ModuleNav>
               
-              {/* Módulo - Concesiones y Espacios Comerciales */}
+              {/* Módulo - Concesiones */}
               <ModuleNav 
-                title="Concesiones y Espacios Comerciales" 
+                title="Concesiones" 
                 icon={<Store className="h-5 w-5" />} 
                 value="concessions"
               >
@@ -420,9 +420,9 @@ const AdminSidebarModular: React.FC = () => {
                 </NavItem>
               </ModuleNav>
               
-              {/* Módulo - Recursos Humanos del Parque */}
+              {/* Módulo - RH */}
               <ModuleNav 
-                title="Recursos Humanos del Parque" 
+                title="RH" 
                 icon={<Users className="h-5 w-5" />} 
                 value="hr"
               >
