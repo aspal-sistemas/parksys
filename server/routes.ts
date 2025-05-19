@@ -113,7 +113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/parks/import", isAuthenticated, hasMunicipalityAccess(), uploadParkFile, handleMulterErrors, processImportFile);
 
   // Update an existing park (admin/municipality only)
-  apiRouter.put("/parks/:id", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
+  apiRouter.put("/parks/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
       
