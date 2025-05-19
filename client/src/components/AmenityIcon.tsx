@@ -12,16 +12,16 @@ import {
   Shield,
   Wifi,
   Footprints,
-  CircleUser,
-  Soccer,
+  CircleUser, 
   Waves,
-  PenTool, // Usamos PenTool en vez de Skateboard que no existe
+  PenTool,
   Accessibility,
   BatteryCharging,
   Move,
   Info,
   Bath,
-  Gamepad2 
+  Gamepad2,
+  Ball 
 } from 'lucide-react';
 
 interface AmenityIconProps {
@@ -46,7 +46,7 @@ const AmenityIcon: React.FC<AmenityIconProps> = ({
     case 'toilet':
       return <Bath {...iconProps} />;
     case 'sportsCourt':
-      return <Soccer {...iconProps} />;
+      return <Ball {...iconProps} />;
     case 'bicycle':
       return <Bike {...iconProps} />;
     case 'pets':
@@ -78,13 +78,13 @@ const AmenityIcon: React.FC<AmenityIconProps> = ({
     case 'basketball':
       return <CircleUser {...iconProps} />;
     case 'soccer':
-      return <Soccer {...iconProps} />;
+      return <Ball {...iconProps} />;
     case 'tennis':
-      return <Soccer {...iconProps} />;
+      return <Ball {...iconProps} />;
     case 'pool':
       return <Waves {...iconProps} />;
     case 'skate':
-      return <Skateboard {...iconProps} />;
+      return <PenTool {...iconProps} />;
     default:
       return <Info {...iconProps} />;
   }
