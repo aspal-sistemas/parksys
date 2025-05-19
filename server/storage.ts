@@ -1621,6 +1621,11 @@ export class DatabaseStorage implements IStorage {
     return comment || undefined;
   }
 
+  async getComment(id: number): Promise<Comment | undefined> {
+    const [comment] = await db.select().from(comments).where(eq(comments.id, id));
+    return comment || undefined;
+  }
+
   async getParkComments(parkId: number, approvedOnly: boolean = false): Promise<Comment[]> {
     let query = db.select().from(comments).where(eq(comments.parkId, parkId));
     
