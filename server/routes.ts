@@ -640,21 +640,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const commentId = Number(req.params.id);
       
-      // Obtenemos el comentario de nuestros datos de ejemplo
-      // Simulamos un comentario aprobado
+      // Para resolver el problema con auth, obtenemos los comentarios actuales
+      const allComments = await storage.getAllComments();
+      
+      // Buscamos el comentario específico para aprobarlo
+      const commentToApprove = allComments.find(c => c.id === commentId);
+      
+      if (!commentToApprove) {
+        return res.status(404).json({ message: "Comentario no encontrado" });
+      }
+      
+      // Creamos una copia del comentario con isApproved = true
       const approvedComment = {
-        id: commentId,
-        parkId: 2,
-        name: "Carlos Rodríguez",
-        email: "carlos@example.com",
-        content: "Necesita más mantenimiento en las áreas verdes.",
-        rating: 3,
-        isApproved: true, // Lo marcamos como aprobado
-        createdAt: new Date("2023-07-20"),
-        park: {
-          id: 2,
-          name: "Parque Agua Azul"
-        }
+        ...commentToApprove,
+        isApproved: true
       };
       
       // Respondemos con el comentario aprobado

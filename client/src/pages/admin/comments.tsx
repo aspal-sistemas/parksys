@@ -79,11 +79,16 @@ const AdminComments = () => {
   // Approve comment mutation
   const approveMutation = useMutation({
     mutationFn: async (commentId: number) => {
+      console.log("Aprobando comentario:", commentId);
       const response = await fetch(`/api/comments/${commentId}/approve`, {
         method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       
       if (!response.ok) {
+        console.error("Error al aprobar comentario:", await response.text());
         throw new Error('Error al aprobar el comentario');
       }
       
