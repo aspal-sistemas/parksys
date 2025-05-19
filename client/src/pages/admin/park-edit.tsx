@@ -911,31 +911,16 @@ const AdminParkEdit: React.FC = () => {
                                     className="h-8 w-8 p-0"
                                     onClick={() => {
                                       if (id && confirm('¿Estás seguro de eliminar este video?')) {
-                                        // Establecer el campo como cadena vacía en lugar de null
-                                        fetch(`/api/dev/parks/${id}`, {
-                                          method: 'PUT',
-                                          headers: {
-                                            'Content-Type': 'application/json',
-                                            'Authorization': 'Bearer direct-token-1'
-                                          },
-                                          body: JSON.stringify({ videoUrl: "" })
-                                        })
-                                        .then(response => {
-                                          if (!response.ok) throw new Error('Error al eliminar URL del video');
-                                          form.setValue('videoUrl', '');
-                                          toast({
-                                            title: "Video eliminado",
-                                            description: "La URL del video ha sido eliminada correctamente."
-                                          });
-                                        })
-                                        .catch(error => {
-                                          console.error('Error al eliminar URL del video:', error);
-                                          toast({
-                                            title: "Error",
-                                            description: "No se pudo eliminar la URL del video.",
-                                            variant: "destructive"
-                                          });
+                                        // Simplemente actualizar el estado del formulario
+                                        form.setValue('videoUrl', '');
+                                        
+                                        // Y notificar al usuario (hacemos esto inmediatamente para mejorar la experiencia)
+                                        toast({
+                                          title: "Video eliminado",
+                                          description: "La URL del video ha sido eliminada correctamente."
                                         });
+                                        
+                                        // Cuando se guarde el formulario completo, esto también guardará el cambio en la base de datos
                                       }
                                     }}
                                   >
