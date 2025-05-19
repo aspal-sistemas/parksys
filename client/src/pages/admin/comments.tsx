@@ -242,10 +242,10 @@ const AdminComments = () => {
               Total: {comments.length}
             </Badge>
             <Badge variant="outline" className="bg-green-100 text-green-700">
-              Aprobados: {comments.filter(c => c.approved).length}
+              Aprobados: {comments.filter(c => c.isApproved).length}
             </Badge>
             <Badge variant="outline" className="bg-yellow-100 text-yellow-700">
-              Pendientes: {comments.filter(c => !c.approved).length}
+              Pendientes: {comments.filter(c => !c.isApproved).length}
             </Badge>
           </div>
         </div>
@@ -429,7 +429,7 @@ const AdminComments = () => {
           
           <div className="py-4">
             <p>
-              ¿Está seguro que desea eliminar el comentario de <span className="font-semibold">{commentToDelete?.authorName}</span>?
+              ¿Está seguro que desea eliminar el comentario de <span className="font-semibold">{commentToDelete?.name}</span>?
             </p>
             <p className="text-sm text-gray-500 mt-2">
               Esta acción no se puede deshacer.
