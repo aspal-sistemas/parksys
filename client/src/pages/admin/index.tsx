@@ -23,7 +23,9 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminLayout from '@/components/AdminLayout';
+import { OriginalSections } from '@/components/AdminSidebarOriginal';
 
 // Simplified modular dashboard component
 const AdminDashboard: React.FC = () => {
@@ -372,6 +374,151 @@ const AdminDashboard: React.FC = () => {
           </CardFooter>
         </Card>
       </div>
+      
+      {/* Estructura del Menú */}
+      <h2 className="text-xl font-semibold mb-4">Estructura del Menú</h2>
+      <Tabs defaultValue="new" className="mb-6">
+        <TabsList>
+          <TabsTrigger value="new">Nueva Estructura</TabsTrigger>
+          <TabsTrigger value="original">Estructura Original</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="new" className="space-y-4">
+          <div className="space-y-4">
+            <div className="border rounded-lg p-4">
+              <h3 className="font-medium text-lg mb-3">Nueva Estructura de Módulos</h3>
+              <p className="text-sm text-slate-600 mb-4">Esta es la estructura de menú con las 8 categorías principales que solicitaste:</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="border rounded-lg p-3 bg-white">
+                  <h4 className="font-medium mb-2 flex items-center">
+                    <Users className="h-4 w-4 mr-2 text-blue-500" />
+                    Módulo - Usuarios del Sistema
+                  </h4>
+                  <ul className="text-sm space-y-1 pl-6">
+                    <li>• Lista</li>
+                    <li>• Usuarios</li>
+                  </ul>
+                </div>
+                
+                <div className="border rounded-lg p-3 bg-white">
+                  <h4 className="font-medium mb-2 flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-blue-500" />
+                    Módulo - Programación y Actividades
+                  </h4>
+                  <ul className="text-sm space-y-1 pl-6">
+                    <li>• Organizador de Actividades</li>
+                    <li>• Actividades</li>
+                    <li>• Reportes</li>
+                  </ul>
+                </div>
+                
+                <div className="border rounded-lg p-3 bg-white">
+                  <h4 className="font-medium mb-2 flex items-center">
+                    <Building className="h-4 w-4 mr-2 text-blue-500" />
+                    Módulo - Gestión Operativa e Infraestructura
+                  </h4>
+                  <ul className="text-sm space-y-1 pl-6">
+                    <li>• Inventario de Parques</li>
+                    <li>• Inventario de Activos</li>
+                    <li>• Incidencias</li>
+                    <li>• Proyectos de Capital</li>
+                    <li>• Reportes</li>
+                  </ul>
+                </div>
+                
+                <div className="border rounded-lg p-3 bg-white">
+                  <h4 className="font-medium mb-2 flex items-center">
+                    <DollarSign className="h-4 w-4 mr-2 text-blue-500" />
+                    Módulo - Finanzas y Presupuesto
+                  </h4>
+                  <ul className="text-sm space-y-1 pl-6">
+                    <li>• Egresos</li>
+                    <li>• Ingresos</li>
+                    <li>• Flujo de Efectivo</li>
+                    <li>• Calculadora de recuperación de costos</li>
+                    <li>• Indicadores clave</li>
+                  </ul>
+                </div>
+                
+                <div className="border rounded-lg p-3 bg-white">
+                  <h4 className="font-medium mb-2 flex items-center">
+                    <MessageSquare className="h-4 w-4 mr-2 text-blue-500" />
+                    Módulo - Comunicación y Marketing
+                  </h4>
+                  <ul className="text-sm space-y-1 pl-6">
+                    <li>• Eventos</li>
+                    <li>• Encuestas</li>
+                    <li>• Patrocinios</li>
+                    <li>• Reportes</li>
+                  </ul>
+                </div>
+                
+                <div className="border rounded-lg p-3 bg-white">
+                  <h4 className="font-medium mb-2 flex items-center">
+                    <HeartHandshake className="h-4 w-4 mr-2 text-blue-500" />
+                    Módulo - Voluntariado
+                  </h4>
+                  <ul className="text-sm space-y-1 pl-6">
+                    <li>• Gestión de Voluntarios</li>
+                    <li>• Actividades</li>
+                    <li>• Capacitación</li>
+                    <li>• Reportes</li>
+                  </ul>
+                </div>
+                
+                <div className="border rounded-lg p-3 bg-white">
+                  <h4 className="font-medium mb-2 flex items-center">
+                    <Store className="h-4 w-4 mr-2 text-blue-500" />
+                    Módulo - Concesiones y Espacios Comerciales
+                  </h4>
+                  <ul className="text-sm space-y-1 pl-6">
+                    <li>• Registro Concesionarios</li>
+                    <li>• Contratos</li>
+                    <li>• Formatos</li>
+                    <li>• Reportes</li>
+                  </ul>
+                </div>
+                
+                <div className="border rounded-lg p-3 bg-white">
+                  <h4 className="font-medium mb-2 flex items-center">
+                    <Users className="h-4 w-4 mr-2 text-blue-500" />
+                    Módulo - Recursos Humanos del Parque
+                  </h4>
+                  <ul className="text-sm space-y-1 pl-6">
+                    <li>• Registro Personal</li>
+                    <li>• Roles y Turnos</li>
+                    <li>• Historial de Formación</li>
+                    <li>• Evaluación y Seguimiento</li>
+                    <li>• Perfiles de Puesto</li>
+                    <li>• Organigrama</li>
+                  </ul>
+                </div>
+                
+                <div className="border rounded-lg p-3 bg-white">
+                  <h4 className="font-medium mb-2 flex items-center">
+                    <BarChart className="h-4 w-4 mr-2 text-blue-500" />
+                    Módulo - Análisis y Reportes
+                  </h4>
+                  <ul className="text-sm space-y-1 pl-6">
+                    <li>• Dashboard Analítico</li>
+                    <li>• Exportar Reportes</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="original">
+          <div className="border rounded-lg p-4 bg-white">
+            <h3 className="font-medium text-lg mb-3">Estructura Original</h3>
+            <p className="text-sm text-slate-600 mb-4">Esta es la estructura de menú original que teníamos antes:</p>
+            
+            <OriginalSections />
+          </div>
+        </TabsContent>
+      </Tabs>
       
       {/* Recent activity */}
       <h2 className="text-xl font-semibold mb-4">Actividad Reciente</h2>
