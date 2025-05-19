@@ -636,7 +636,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Approve a comment (admin/municipality only)
-  apiRouter.put("/comments/:id/approve", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.put("/comments/:id/approve", async (req: Request, res: Response) => {
     try {
       const commentId = Number(req.params.id);
       
