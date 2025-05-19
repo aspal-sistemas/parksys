@@ -156,64 +156,62 @@ const ParkDetail: React.FC = () => {
                   </div>
                 )}
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <h2 className="text-xl font-semibold mb-2">Información general</h2>
-                    <div className="space-y-2">
-                      {park.area && (
-                        <div className="flex justify-between border-b pb-2">
-                          <span className="text-gray-600">Superficie:</span>
-                          <span className="font-medium">{park.area}</span>
-                        </div>
-                      )}
-                      
-                      {park.foundationYear && (
-                        <div className="flex justify-between border-b pb-2">
-                          <span className="text-gray-600">Año de fundación:</span>
-                          <span className="font-medium">{park.foundationYear}</span>
-                        </div>
-                      )}
-                      
-                      {park.openingHours && (
-                        <div className="flex justify-between border-b pb-2">
-                          <span className="text-gray-600">Horario:</span>
-                          <span className="font-medium">{park.openingHours}</span>
-                        </div>
-                      )}
-                      
-                      {park.conservationStatus && (
-                        <div className="flex justify-between border-b pb-2">
-                          <span className="text-gray-600">Estado de conservación:</span>
-                          <span className="font-medium">{park.conservationStatus}</span>
-                        </div>
-                      )}
-                    </div>
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-2">Información general</h2>
+                  <div className="space-y-2">
+                    {park.area && (
+                      <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-600">Superficie:</span>
+                        <span className="font-medium">{park.area}</span>
+                      </div>
+                    )}
+                    
+                    {park.foundationYear && (
+                      <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-600">Año de fundación:</span>
+                        <span className="font-medium">{park.foundationYear}</span>
+                      </div>
+                    )}
+                    
+                    {park.openingHours && (
+                      <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-600">Horario:</span>
+                        <span className="font-medium">{park.openingHours}</span>
+                      </div>
+                    )}
+                    
+                    {park.conservationStatus && (
+                      <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-600">Estado de conservación:</span>
+                        <span className="font-medium">{park.conservationStatus}</span>
+                      </div>
+                    )}
                   </div>
-                  
-                  <div>
-                    <h2 className="text-xl font-semibold mb-2">Contacto</h2>
-                    <div className="space-y-2">
-                      {park.administrator && (
-                        <div className="flex justify-between border-b pb-2">
-                          <span className="text-gray-600">Administrador:</span>
-                          <span className="font-medium">{park.administrator}</span>
-                        </div>
-                      )}
-                      
-                      {park.contactPhone && (
-                        <div className="flex justify-between border-b pb-2">
-                          <span className="text-gray-600">Teléfono:</span>
-                          <span className="font-medium">{park.contactPhone}</span>
-                        </div>
-                      )}
-                      
-                      {park.contactEmail && (
-                        <div className="flex justify-between border-b pb-2">
-                          <span className="text-gray-600">Email:</span>
-                          <span className="font-medium">{park.contactEmail}</span>
-                        </div>
-                      )}
-                    </div>
+                </div>
+                
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-2">Contacto</h2>
+                  <div className="space-y-2">
+                    {park.administrator && (
+                      <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-600">Administrador:</span>
+                        <span className="font-medium">{park.administrator}</span>
+                      </div>
+                    )}
+                    
+                    {park.contactPhone && (
+                      <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-600">Teléfono:</span>
+                        <span className="font-medium">{park.contactPhone}</span>
+                      </div>
+                    )}
+                    
+                    {park.contactEmail && (
+                      <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-600">Email:</span>
+                        <span className="font-medium">{park.contactEmail}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </TabsContent>
