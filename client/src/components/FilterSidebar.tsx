@@ -185,15 +185,15 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
               </div>
             </div>
 
-            {/* Amenity Category Tabs - Más grandes y visibles */}
-            <div className="flex overflow-x-auto space-x-1 mb-3 pb-2 scrollbar-hide">
+            {/* Amenity Category Tabs - Con estilos más simples y seguros */}
+            <div className="flex flex-wrap gap-2 mb-3">
               {sortedCategories.map(category => (
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-full whitespace-nowrap ${
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md ${
                     activeCategory === category 
-                      ? 'bg-secondary-500 text-white shadow-sm' 
+                      ? 'bg-secondary-500 text-white' 
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -210,20 +210,20 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => toggleAmenity(amenity.id)}
-                        className={`flex flex-col items-center justify-center p-2 rounded-lg border ${
+                        className={`flex flex-col items-center justify-center p-2 rounded-lg border w-full min-h-[80px] ${
                           selectedAmenities.includes(amenity.id)
                             ? 'border-secondary-500 bg-secondary-50 shadow-sm'
                             : 'border-gray-200 hover:bg-gray-50'
                         }`}
                       >
-                        <div className={`p-2 rounded-full ${
+                        <div className={`p-2 rounded-full mb-1 ${
                           selectedAmenities.includes(amenity.id)
                             ? 'bg-secondary-100 text-secondary-700'
                             : 'bg-gray-100 text-gray-600'
                         }`}>
-                          <AmenityIcon name={amenity.icon} size={20} />
+                          <AmenityIcon name={amenity.icon} size={24} />
                         </div>
-                        <span className="text-xs text-center mt-1 line-clamp-1">
+                        <span className="text-xs text-center mt-1 font-medium">
                           {amenity.name}
                         </span>
                       </button>
