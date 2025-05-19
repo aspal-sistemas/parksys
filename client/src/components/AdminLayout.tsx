@@ -11,7 +11,8 @@ import {
   LogOut,
   Menu,
   X,
-  Home
+  Home,
+  BarChart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -56,6 +57,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
       label: 'Actividades', 
       icon: <Calendar className="h-5 w-5 mr-3" />, 
       href: '/admin/activities' 
+    },
+    { 
+      label: 'Análisis y Reportes', 
+      icon: <BarChart className="h-5 w-5 mr-3" />, 
+      href: '/admin/analytics' 
     },
     { 
       label: 'Documentos', 

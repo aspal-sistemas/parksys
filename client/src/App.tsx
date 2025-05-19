@@ -13,6 +13,7 @@ import AdminParks from "@/pages/admin/parks";
 import AdminParkEdit from "@/pages/admin/park-edit";
 import AdminParksImport from "@/pages/admin/parks-import";
 import AdminActivities from "@/pages/admin/activities";
+import AdminAnalytics from "@/pages/admin/analytics";
 import AdminDocuments from "@/pages/admin/documents";
 import AdminComments from "@/pages/admin/comments";
 import AdminIncidents from "@/pages/admin/incidents";
@@ -39,6 +40,7 @@ function Router() {
         <Route path="/admin/parks/new" component={AdminParkEdit} />
         <Route path="/admin/parks/:id" component={AdminParkEdit} />
         <Route path="/admin/activities" component={AdminActivities} />
+        <Route path="/admin/analytics" component={AdminAnalytics} />
         <Route path="/admin/documents" component={AdminDocuments} />
         <Route path="/admin/comments" component={AdminComments} />
         <Route path="/admin/incidents" component={AdminIncidents} />
