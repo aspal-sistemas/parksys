@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Pencil, Trash, Filter, Map, ArrowUpDown, X, Search, Loader, AlertTriangle, AlertOctagon } from 'lucide-react';
+import { Plus, Pencil, Trash, Filter, Map, ArrowUpDown, X, Search, Loader, AlertTriangle, AlertOctagon, FileUp } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -199,10 +199,16 @@ const AdminParks = () => {
         {/* Header with actions */}
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-800">Parques</h2>
-          <Button onClick={() => window.location.href = "/admin/parks/new"}>
-            <Plus className="h-4 w-4 mr-2" />
-            Agregar Parque
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => window.location.href = "/admin/parks-import"}>
+              <FileUp className="h-4 w-4 mr-2" />
+              Importar Parques
+            </Button>
+            <Button onClick={() => window.location.href = "/admin/parks/new"}>
+              <Plus className="h-4 w-4 mr-2" />
+              Agregar Parque
+            </Button>
+          </div>
         </div>
         
         {/* Search and filter bar */}

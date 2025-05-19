@@ -1,265 +1,276 @@
 import React, { useState } from 'react';
-import { useLocation } from 'wouter';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, FileUp, Download, Upload, AlertTriangle, Check } from 'lucide-react';
+import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { FileUp, AlertCircle, CheckCircle2, Download } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import AdminLayout from '@/components/AdminLayout';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Municipality } from '@shared/schema';
 
-const ParkImportPage: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [importResults, setImportResults] = useState<{
-    success: number;
-    errors: number;
-    details?: string[];
-  } | null>(null);
+const ParksImport = () => {
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [importResult, setImportResult] = useState<{
+    success: boolean;
+    message: string;
+    parksImported?: number;
+    errors?: string[];
+  } | null>(null);
+  const [selectedMunicipality, setSelectedMunicipality] = useState<string>('');
+
+  // Fetch municipalities
+  const { data: municipalities, isLoading: loadingMunicipalities } = useQuery<Municipality[]>({
+    queryKey: ['/api/municipalities'],
+  });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const selectedFile = e.target.files[0];
-      // Validar que sea Excel o CSV
-      if (selectedFile.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-          selectedFile.type === 'application/vnd.ms-excel' ||
-          selectedFile.type === 'text/csv' ||
-          selectedFile.name.endsWith('.xlsx') ||
-          selectedFile.name.endsWith('.xls') ||
-          selectedFile.name.endsWith('.csv')) {
-        setFile(selectedFile);
-      } else {
-        toast({
-          title: "Formato no válido",
-          description: "Por favor, sube un archivo Excel (.xlsx, .xls) o CSV (.csv)",
-          variant: "destructive",
-        });
-        e.target.value = '';
-      }
+      setSelectedFile(e.target.files[0]);
+      setImportResult(null);
     }
   };
 
-  const handleImport = async () => {
-    if (!file) {
+  const downloadTemplate = async () => {
+    try {
+      const response = await fetch('/api/parks/import-template');
+      
+      if (!response.ok) {
+        throw new Error('Error al descargar la plantilla');
+      }
+      
+      // Obtener el blob del archivo
+      const blob = await response.blob();
+      
+      // Crear URL para descargar
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'plantilla_importacion_parques.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      
+      // Limpiar
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
       toast({
-        title: "No hay archivo seleccionado",
-        description: "Por favor, selecciona un archivo para importar",
+        title: "Plantilla descargada",
+        description: "La plantilla ha sido descargada correctamente.",
+      });
+    } catch (error) {
+      console.error('Error al descargar la plantilla:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo descargar la plantilla. Intente nuevamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedFile) {
+      toast({
+        title: "Error",
+        description: "Debe seleccionar un archivo para importar.",
         variant: "destructive",
       });
       return;
     }
 
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-
+    if (!selectedMunicipality) {
+      toast({
+        title: "Error",
+        description: "Debe seleccionar un municipio.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
+      setUploading(true);
+      setImportResult(null);
+      
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('municipalityId', selectedMunicipality);
+      
       const response = await fetch('/api/parks/import', {
         method: 'POST',
         body: formData,
       });
-
-      if (!response.ok) {
-        throw new Error('Error en la importación');
-      }
-
+      
       const result = await response.json();
-      setImportResults({
-        success: result.imported || 0,
-        errors: result.errors || 0,
-        details: result.errorDetails || [],
-      });
-
-      toast({
-        title: "Importación completada",
-        description: `Se importaron ${result.imported} parques correctamente${result.errors ? `, con ${result.errors} errores` : ''}`,
-        variant: result.errors ? "default" : "default",
-      });
+      
+      if (response.ok) {
+        setImportResult({
+          success: true,
+          message: result.message || 'Parques importados correctamente',
+          parksImported: result.parksImported,
+        });
+        
+        toast({
+          title: "Importación exitosa",
+          description: `Se han importado ${result.parksImported} parques correctamente.`,
+        });
+      } else {
+        setImportResult({
+          success: false,
+          message: result.message || 'Error al importar parques',
+          errors: result.errors,
+        });
+        
+        toast({
+          title: "Error en la importación",
+          description: result.message || 'Hubo errores durante la importación.',
+          variant: "destructive",
+        });
+      }
     } catch (error) {
-      console.error('Error importing parks:', error);
+      console.error('Error al importar parques:', error);
+      setImportResult({
+        success: false,
+        message: 'Error al procesar la solicitud',
+      });
+      
       toast({
-        title: "Error en la importación",
-        description: "No se pudieron importar los parques. Por favor, verifica el formato del archivo e intenta nuevamente.",
+        title: "Error",
+        description: "No se pudo procesar la solicitud. Intente nuevamente.",
         variant: "destructive",
       });
     } finally {
-      setIsUploading(false);
+      setUploading(false);
     }
-  };
-
-  const downloadTemplate = () => {
-    // En una aplicación real, esto debería apuntar a un archivo de plantilla real
-    window.location.href = '/api/parks/import-template';
   };
 
   return (
     <AdminLayout title="Importación de Parques">
-      <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Importación Masiva de Parques</h1>
-            <p className="text-muted-foreground">
-              Importa múltiples parques desde un archivo Excel o CSV
-            </p>
-          </div>
-          <Button variant="outline" onClick={() => setLocation('/admin/parks')}>
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.location.href = "/admin/parks"}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Volver a Parques
           </Button>
+          <h2 className="text-2xl font-semibold text-gray-800">Importación Masiva de Parques</h2>
         </div>
 
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {/* Instrucciones */}
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle>Instrucciones</CardTitle>
-              <CardDescription>
-                Cómo importar parques masivamente
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-medium mb-1">1. Descarga la plantilla</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Utiliza nuestra plantilla con los campos requeridos para asegurar una importación exitosa.
-                </p>
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
-                  className="w-full" 
-                  onClick={downloadTemplate}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Descargar Plantilla
-                </Button>
-              </div>
-              
-              <div>
-                <h3 className="font-medium mb-1">2. Completa los datos</h3>
-                <p className="text-sm text-muted-foreground">
-                  Llena la plantilla con la información de tus parques. Los campos marcados con * son obligatorios.
-                </p>
-              </div>
-              
-              <div>
-                <h3 className="font-medium mb-1">3. Importa el archivo</h3>
-                <p className="text-sm text-muted-foreground">
-                  Sube el archivo completado en el formulario de la derecha y haz clic en "Importar Parques".
-                </p>
-              </div>
-              
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Importante</AlertTitle>
-                <AlertDescription>
-                  Asegúrate de que los datos sean correctos antes de importar. Las coordenadas deben estar en formato decimal (ej: 20.123456).
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Instrucciones de Importación</CardTitle>
+            <CardDescription>
+              Siga estos pasos para importar múltiples parques mediante una hoja de cálculo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Descargue la plantilla de Excel para importación.</li>
+              <li>Complete la información de los parques siguiendo la estructura del archivo.</li>
+              <li>Guarde el archivo y súbalo utilizando el formulario a continuación.</li>
+              <li>Verifique el resultado de la importación y corrija errores si es necesario.</li>
+            </ol>
+            
+            <Button onClick={downloadTemplate} variant="outline" className="mt-4">
+              <Download className="h-4 w-4 mr-2" />
+              Descargar Plantilla
+            </Button>
+          </CardContent>
+        </Card>
 
-          {/* Formulario de importación */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Subir Archivo</CardTitle>
-              <CardDescription>
-                Sube un archivo Excel (.xlsx, .xls) o CSV (.csv)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
-                  <FileUp className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Arrastra y suelta el archivo aquí, o
-                  </p>
-                  <label className="inline-block">
-                    <Input 
-                      type="file" 
-                      accept=".xlsx,.xls,.csv" 
-                      className="hidden" 
-                      onChange={handleFileChange} 
-                    />
-                    <Button variant="secondary" size="sm" asChild>
-                      <span>Seleccionar Archivo</span>
-                    </Button>
-                  </label>
-                </div>
-                
-                {file && (
-                  <div className="bg-muted p-3 rounded flex items-center justify-between">
-                    <div className="flex items-center">
-                      <FileUp className="h-4 w-4 mr-2 text-primary" />
-                      <div>
-                        <p className="text-sm font-medium">{file.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {(file.size / 1024).toFixed(2)} KB
-                        </p>
-                      </div>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setFile(null)}
-                    >
-                      Eliminar
-                    </Button>
-                  </div>
-                )}
-                
-                {importResults && (
-                  <div className={`border p-4 rounded-lg ${importResults.errors > 0 ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'}`}>
-                    <div className="flex items-start">
-                      {importResults.errors > 0 ? (
-                        <AlertCircle className="h-5 w-5 text-amber-600 mr-2 mt-0.5" />
-                      ) : (
-                        <CheckCircle2 className="h-5 w-5 text-emerald-600 mr-2 mt-0.5" />
-                      )}
-                      <div>
-                        <h4 className="font-medium">Resultados de la importación</h4>
-                        <p className="text-sm mt-1">
-                          {importResults.success} parques importados exitosamente
-                          {importResults.errors > 0 && `, ${importResults.errors} con errores`}
-                        </p>
-                        
-                        {importResults.errors > 0 && importResults.details && importResults.details.length > 0 && (
-                          <div className="mt-2">
-                            <h5 className="text-sm font-medium mb-1">Detalles de los errores:</h5>
-                            <ul className="text-xs space-y-1 max-h-32 overflow-y-auto">
-                              {importResults.details.map((error, i) => (
-                                <li key={i} className="text-amber-700">{error}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
+        <Card>
+          <CardHeader>
+            <CardTitle>Subir Archivo de Importación</CardTitle>
+            <CardDescription>
+              Seleccione el archivo Excel/CSV con los datos de los parques a importar.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="municipality">Municipio</Label>
+                <Select value={selectedMunicipality} onValueChange={setSelectedMunicipality}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleccione un municipio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {municipalities?.map(municipality => (
+                      <SelectItem key={municipality.id} value={municipality.id.toString()}>
+                        {municipality.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                onClick={handleImport} 
-                disabled={!file || isUploading}
-                className="w-full"
-              >
-                {isUploading ? 'Importando...' : 'Importar Parques'}
+              
+              <div className="space-y-2">
+                <Label htmlFor="file">Archivo de Importación</Label>
+                <Input
+                  id="file"
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileChange}
+                  className="cursor-pointer"
+                />
+                <p className="text-sm text-gray-500">
+                  Formatos aceptados: Excel (.xlsx, .xls) o CSV (.csv)
+                </p>
+              </div>
+
+              <Button type="submit" disabled={!selectedFile || uploading || !selectedMunicipality} className="w-full">
+                {uploading ? (
+                  <>
+                    <FileUp className="h-4 w-4 mr-2 animate-pulse" />
+                    Procesando...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Importar Parques
+                  </>
+                )}
               </Button>
-            </CardFooter>
-          </Card>
-        </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        {importResult && (
+          <Alert variant={importResult.success ? "default" : "destructive"}>
+            <div className="flex items-center gap-2">
+              {importResult.success ? (
+                <Check className="h-5 w-5" />
+              ) : (
+                <AlertTriangle className="h-5 w-5" />
+              )}
+              <AlertTitle>{importResult.success ? 'Importación Exitosa' : 'Error en la Importación'}</AlertTitle>
+            </div>
+            <AlertDescription className="mt-2">
+              {importResult.message}
+              
+              {importResult.parksImported && (
+                <p className="mt-1">Parques importados: {importResult.parksImported}</p>
+              )}
+              
+              {importResult.errors && importResult.errors.length > 0 && (
+                <div className="mt-3">
+                  <p className="font-medium">Errores encontrados:</p>
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    {importResult.errors.map((error, index) => (
+                      <li key={index} className="text-sm">{error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
     </AdminLayout>
   );
 };
 
-export default ParkImportPage;
+export default ParksImport;

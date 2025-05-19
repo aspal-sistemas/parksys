@@ -1,237 +1,364 @@
 import { Request, Response } from 'express';
 import multer from 'multer';
+import * as XLSX from 'xlsx';
 import path from 'path';
 import fs from 'fs';
-import XLSX from 'xlsx';
+import { insertParkSchema } from '@shared/schema';
 import { storage } from '../storage';
-import { z } from 'zod';
-import { createInsertSchema } from 'drizzle-zod';
-import { parks } from '@shared/schema';
+import { ZodError } from 'zod';
+import { fromZodError } from 'zod-validation-error';
 
-// Configuración de Multer para el almacenamiento temporal de archivos
+// Configurar multer para almacenar archivos temporalmente
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      const uploadDir = path.join(__dirname, '../../uploads');
-      
-      // Crear el directorio si no existe
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
+      const tempDir = path.join(__dirname, '../../temp');
+      // Crear directorio temp si no existe
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
       }
-      
-      cb(null, uploadDir);
+      cb(null, tempDir);
     },
     filename: (req, file, cb) => {
-      // Generar un nombre único para el archivo
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, 'parksimport-' + uniqueSuffix + path.extname(file.originalname));
+      const ext = path.extname(file.originalname);
+      cb(null, 'parks-import-' + uniqueSuffix + ext);
     }
   }),
   limits: {
-    fileSize: 5 * 1024 * 1024, // Limitar a 5MB
+    fileSize: 5 * 1024 * 1024, // 5MB límite
   },
   fileFilter: (req, file, cb) => {
-    // Validar tipos de archivo permitidos
-    const filetypes = /xlsx|xls|csv/;
-    const mimetype = filetypes.test(file.mimetype);
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const allowedMimes = [
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/csv',
+      'application/csv'
+    ];
     
-    if (mimetype && extname) {
-      return cb(null, true);
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Formato de archivo no válido. Sólo se permiten archivos Excel (.xls, .xlsx) o CSV (.csv)'));
     }
-    
-    cb(new Error('Solo se permiten archivos Excel (.xlsx, .xls) o CSV (.csv)'));
-  },
+  }
 });
 
-// Manejar errores de multer
+// Manejador de errores para multer
 export const handleMulterErrors = (err: any, req: Request, res: Response, next: any) => {
   if (err instanceof multer.MulterError) {
+    // Error de multer
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
-        error: 'El archivo es demasiado grande. Tamaño máximo: 5MB',
+        message: 'El archivo es demasiado grande. El tamaño máximo permitido es 5MB.'
       });
     }
+    return res.status(400).json({ message: err.message });
   } else if (err) {
-    return res.status(400).json({ error: err.message });
+    // Otro tipo de error
+    return res.status(400).json({ message: err.message });
   }
   next();
 };
 
-// Esquema para validar los datos de parques
-const ParkImportSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido"),
-  municipalityId: z.coerce.number().int().positive("ID de municipio inválido"),
-  parkType: z.string().min(1, "El tipo de parque es requerido"),
-  description: z.string().nullable().optional(),
-  address: z.string().min(1, "La dirección es requerida"),
-  postalCode: z.string().nullable().optional(),
-  latitude: z.string().min(1, "La latitud es requerida"),
-  longitude: z.string().min(1, "La longitud es requerida"),
-  area: z.string().nullable().optional(),
-  yearFounded: z.string().nullable().optional(),
-  openingTime: z.string().nullable().optional(),
-  closingTime: z.string().nullable().optional(),
-  maintenanceSchedule: z.string().nullable().optional(), 
-  accessibilityFeatures: z.string().nullable().optional(),
-  contactEmail: z.string().nullable().optional(),
-  contactPhone: z.string().nullable().optional(),
-});
-
-// Middleware para manejar la subida de archivos
+// Middleware para subir un único archivo
 export const uploadParkFile = upload.single('file');
 
-// Controlador para generar la plantilla de importación
+// Genera una plantilla Excel para importación de parques
 export const generateImportTemplate = (req: Request, res: Response) => {
   try {
-    // Crear un libro de trabajo y una hoja
+    // Crear un libro de trabajo nuevo
     const wb = XLSX.utils.book_new();
     
-    // Definir las columnas de la plantilla
-    const templateHeaders = [
-      { header: "name", key: "name", width: 20, note: "Obligatorio: Nombre del parque" },
-      { header: "municipalityId", key: "municipalityId", width: 15, note: "Obligatorio: ID del municipio (número)" },
-      { header: "parkType", key: "parkType", width: 15, note: "Obligatorio: Tipo de parque" },
-      { header: "address", key: "address", width: 30, note: "Obligatorio: Dirección completa" },
-      { header: "latitude", key: "latitude", width: 15, note: "Obligatorio: Latitud (formato decimal)" },
-      { header: "longitude", key: "longitude", width: 15, note: "Obligatorio: Longitud (formato decimal)" },
-      { header: "description", key: "description", width: 30, note: "Opcional: Descripción del parque" },
-      { header: "postalCode", key: "postalCode", width: 15, note: "Opcional: Código postal" },
-      { header: "area", key: "area", width: 15, note: "Opcional: Área en m² o hectáreas" },
-      { header: "yearFounded", key: "yearFounded", width: 15, note: "Opcional: Año de fundación" },
-      { header: "openingTime", key: "openingTime", width: 15, note: "Opcional: Hora de apertura (formato 24h)" },
-      { header: "closingTime", key: "closingTime", width: 15, note: "Opcional: Hora de cierre (formato 24h)" },
-      { header: "maintenanceSchedule", key: "maintenanceSchedule", width: 20, note: "Opcional: Calendario de mantenimiento" },
-      { header: "accessibilityFeatures", key: "accessibilityFeatures", width: 20, note: "Opcional: Características de accesibilidad" },
-      { header: "contactEmail", key: "contactEmail", width: 20, note: "Opcional: Email de contacto" },
-      { header: "contactPhone", key: "contactPhone", width: 20, note: "Opcional: Teléfono de contacto" }
+    // Crear una hoja de datos con encabezados y ejemplos
+    const headers = [
+      'nombre',
+      'tipo_parque',
+      'direccion',
+      'latitud',
+      'longitud',
+      'codigo_postal',
+      'descripcion',
+      'area',
+      'horario',
+      'estacionamiento',
+      'telefono_contacto',
+      'email_contacto',
+      'website'
     ];
     
-    // Crear la hoja con los encabezados
-    const ws = XLSX.utils.aoa_to_sheet([templateHeaders.map(h => h.header)]);
+    // Datos de ejemplo
+    const exampleData = [
+      {
+        nombre: 'Parque Ejemplo',
+        tipo_parque: 'Urbano',
+        direccion: 'Av. Ejemplo 123, Col. Centro',
+        latitud: '20.659698',
+        longitud: '-103.349609',
+        codigo_postal: '44100',
+        descripcion: 'Descripción detallada del parque ejemplo',
+        area: '12000',
+        horario: 'Lunes a Domingo de 6:00 a 22:00',
+        estacionamiento: 'Sí',
+        telefono_contacto: '3331234567',
+        email_contacto: 'parque@ejemplo.com',
+        website: 'https://www.parqueejemplo.mx'
+      },
+      {
+        nombre: 'Parque Modelo',
+        tipo_parque: 'Lineal',
+        direccion: 'Calle Modelo 456, Col. Moderna',
+        latitud: '20.670000',
+        longitud: '-103.350000',
+        codigo_postal: '44190',
+        descripcion: 'Parque lineal con ciclovía y áreas verdes',
+        area: '5000',
+        horario: 'Abierto 24 horas',
+        estacionamiento: 'No',
+        telefono_contacto: '',
+        email_contacto: '',
+        website: ''
+      }
+    ];
     
-    // Añadir comentarios/notas a las celdas
-    if (!ws.A1) ws.A1 = { t: 's', v: 'name' };
-    if (!ws.A1.c) ws.A1.c = [];
-    templateHeaders.forEach((h, idx) => {
-      // Crear la celda si no existe
-      const cellRef = XLSX.utils.encode_cell({ r: 0, c: idx });
-      if (!ws[cellRef]) ws[cellRef] = { t: 's', v: h.header };
-      
-      // Añadir el comentario
-      if (!ws[cellRef].c) ws[cellRef].c = [];
-      ws[cellRef].c.push({ a: 'Sistema', t: h.note });
+    // Crear estructura de worksheet
+    const ws_data = [headers];
+    
+    // Agregar datos de ejemplo
+    exampleData.forEach(example => {
+      const row = headers.map(header => {
+        // Usar nombres de campo en inglés para mapear a los nombres en español
+        const fieldMapping: { [key: string]: string } = {
+          'nombre': 'name',
+          'tipo_parque': 'parkType',
+          'direccion': 'address',
+          'latitud': 'latitude',
+          'longitud': 'longitude',
+          'codigo_postal': 'postalCode',
+          'descripcion': 'description',
+          'area': 'area',
+          'horario': 'hours',
+          'estacionamiento': 'hasParking',
+          'telefono_contacto': 'contactPhone',
+          'email_contacto': 'contactEmail',
+          'website': 'website'
+        };
+        
+        const fieldName = fieldMapping[header] || header;
+        return example[header as keyof typeof example] || '';
+      });
+      ws_data.push(row);
     });
     
-    // Añadir la hoja al libro
-    XLSX.utils.book_append_sheet(wb, ws, "PlanillaParques");
+    // Añadir información sobre los tipos de parque válidos
+    const parkTypesInfo = [
+      [''],
+      ['Tipos de parque válidos:'],
+      ['Urbano'],
+      ['Lineal'],
+      ['Bosque Urbano'],
+      ['Jardín'],
+      ['Unidad Deportiva'],
+      ['Otro']
+    ];
     
-    // Establecer anchos de columna
-    const colWidths = templateHeaders.map(h => h.width);
-    ws['!cols'] = colWidths.map(width => ({ width }));
+    // Añadir información sobre los campos obligatorios
+    const requiredFieldsInfo = [
+      [''],
+      ['Campos obligatorios:'],
+      ['nombre'],
+      ['tipo_parque'],
+      ['direccion'],
+      ['latitud'],
+      ['longitud']
+    ];
     
-    // Añadir un ejemplo de datos
-    XLSX.utils.sheet_add_aoa(ws, [
-      [
-        "Parque Central", // name
-        "1", // municipalityId
-        "Urbano", // parkType
-        "Av. Principal #123, Colonia Centro", // address
-        "20.123456", // latitude
-        "-99.123456", // longitude
-        "Hermoso parque con áreas verdes y juegos infantiles", // description
-        "44100", // postalCode
-        "5000", // area
-        "1985", // yearFounded
-        "06:00", // openingTime
-        "22:00", // closingTime
-        "Lunes y jueves", // maintenanceSchedule
-        "Rampas, baños adaptados", // accessibilityFeatures
-        "contacto@parque.mx", // contactEmail
-        "555-123-4567" // contactPhone
-      ]
-    ], { origin: { r: 1, c: 0 } });
+    // Crear worksheet con los datos
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
     
-    // Convertir a buffer
+    // Agregar información adicional en columnas separadas
+    XLSX.utils.sheet_add_aoa(ws, parkTypesInfo, { origin: { r: 0, c: headers.length + 2 } });
+    XLSX.utils.sheet_add_aoa(ws, requiredFieldsInfo, { origin: { r: 0, c: headers.length + 4 } });
+    
+    // Agregar el worksheet al workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Plantilla Parques');
+    
+    // Generar el archivo Excel
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
     
-    // Enviar el archivo
-    res.setHeader('Content-Disposition', 'attachment; filename="plantilla_importacion_parques.xlsx"');
+    // Enviar respuesta
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    return res.send(excelBuffer);
+    res.setHeader('Content-Disposition', 'attachment; filename=plantilla_importacion_parques.xlsx');
+    res.send(excelBuffer);
   } catch (error) {
-    console.error("Error generating template:", error);
-    return res.status(500).json({ error: "Error al generar la plantilla de importación" });
+    console.error('Error al generar plantilla:', error);
+    res.status(500).json({ message: 'Error al generar la plantilla de importación' });
   }
 };
 
-// Controlador para procesar la importación de parques
+// Procesa el archivo de importación
 export const processImportFile = async (req: Request, res: Response) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: "No se recibió ningún archivo" });
+      return res.status(400).json({ message: 'No se ha subido ningún archivo' });
     }
-
+    
+    if (!req.body.municipalityId) {
+      return res.status(400).json({ message: 'Debe seleccionar un municipio' });
+    }
+    
+    const municipalityId = parseInt(req.body.municipalityId);
     const filePath = req.file.path;
+    
+    // Verificar que el municipio existe
+    const municipality = await storage.getMunicipality(municipalityId);
+    if (!municipality) {
+      return res.status(404).json({ message: 'El municipio seleccionado no existe' });
+    }
+    
+    // Cargar el workbook
     const workbook = XLSX.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     
     // Convertir a JSON
-    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+    const rawData = XLSX.utils.sheet_to_json(worksheet, { raw: true }) as any[];
     
-    if (jsonData.length === 0) {
-      return res.status(400).json({ error: "El archivo no contiene datos" });
+    if (rawData.length === 0) {
+      return res.status(400).json({ message: 'El archivo está vacío o no contiene datos válidos' });
     }
-
-    // Procesar cada fila
-    const results = {
-      imported: 0,
-      errors: 0,
-      errorDetails: [] as string[]
+    
+    // Mapeo de nombres de columnas en español a inglés
+    const fieldMappings: { [key: string]: string } = {
+      'nombre': 'name',
+      'tipo_parque': 'parkType',
+      'direccion': 'address',
+      'latitud': 'latitude',
+      'longitud': 'longitude',
+      'codigo_postal': 'postalCode',
+      'descripcion': 'description',
+      'area': 'area',
+      'horario': 'hours',
+      'estacionamiento': 'hasParking',
+      'telefono_contacto': 'contactPhone',
+      'email_contacto': 'contactEmail',
+      'website': 'website'
     };
-
-    for (let i = 0; i < jsonData.length; i++) {
-      const row = jsonData[i] as any;
-      const rowNumber = i + 2; // +2 porque i empieza en 0 y hay una fila de encabezados
+    
+    // Mapear tipos de parque en español a inglés
+    const parkTypeMappings: { [key: string]: string } = {
+      'Urbano': 'Urban',
+      'Lineal': 'Linear',
+      'Bosque Urbano': 'Urban Forest',
+      'Jardín': 'Garden',
+      'Unidad Deportiva': 'Sports Unit',
+      'Otro': 'Other'
+    };
+    
+    // Transformar datos
+    const parksData = rawData.map((row, index) => {
+      const transformedData: any = {
+        municipalityId: municipalityId
+      };
       
+      // Mapear campos según los nombres en español
+      Object.keys(row).forEach(key => {
+        const normalizedKey = key.toLowerCase().trim();
+        let englishKey = fieldMappings[normalizedKey];
+        
+        if (englishKey) {
+          let value = row[key];
+          
+          // Convertir 'estacionamiento' a booleano
+          if (englishKey === 'hasParking') {
+            if (typeof value === 'string') {
+              value = value.toLowerCase() === 'sí' || value.toLowerCase() === 'si' || value.toLowerCase() === 'yes' || value === '1' || value === 'true';
+            } else if (typeof value === 'number') {
+              value = value === 1;
+            }
+          }
+          
+          // Mapear tipo de parque
+          if (englishKey === 'parkType' && typeof value === 'string') {
+            value = parkTypeMappings[value] || value;
+          }
+          
+          transformedData[englishKey] = value;
+        }
+      });
+      
+      return transformedData;
+    });
+    
+    // Validar y filtrar parques válidos
+    const validParks = [];
+    const errors = [];
+    
+    for (const [index, parkData] of parksData.entries()) {
       try {
-        // Validar los datos con el esquema
-        const validatedData = ParkImportSchema.parse(row);
-        
-        // Crear el parque en la base de datos
-        await storage.createPark({
-          ...validatedData,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
-        
-        results.imported++;
+        const validatedPark = insertParkSchema.parse(parkData);
+        validParks.push(validatedPark);
       } catch (error) {
-        results.errors++;
-        if (error instanceof z.ZodError) {
-          error.errors.forEach(err => {
-            results.errorDetails.push(`Fila ${rowNumber}: ${err.path.join('.')} - ${err.message}`);
-          });
-        } else if (error instanceof Error) {
-          results.errorDetails.push(`Fila ${rowNumber}: ${error.message}`);
+        if (error instanceof ZodError) {
+          const rowNumber = index + 2; // +2 porque el índice empieza en 0 y hay un encabezado
+          const validationError = fromZodError(error);
+          errors.push(`Fila ${rowNumber}: ${validationError.message}`);
         } else {
-          results.errorDetails.push(`Fila ${rowNumber}: Error desconocido`);
+          errors.push(`Error en la fila ${index + 2}: ${(error as Error).message}`);
         }
       }
     }
-
-    // Eliminar el archivo temporal
+    
+    // Si no hay parques válidos, retornar error
+    if (validParks.length === 0) {
+      return res.status(400).json({
+        message: 'No se encontraron parques válidos para importar',
+        errors
+      });
+    }
+    
+    // Crear parques en la base de datos
+    let createdCount = 0;
+    const importErrors = [];
+    
+    for (const [index, parkData] of validParks.entries()) {
+      try {
+        await storage.createPark(parkData);
+        createdCount++;
+      } catch (error) {
+        const rowNumber = index + 2;
+        importErrors.push(`Error al importar parque en fila ${rowNumber}: ${(error as Error).message}`);
+      }
+    }
+    
+    // Eliminar archivo temporal
     fs.unlinkSync(filePath);
     
-    return res.json(results);
+    // Preparar respuesta
+    const hasErrors = errors.length > 0 || importErrors.length > 0;
+    const allErrors = [...errors, ...importErrors];
+    
+    return res.status(hasErrors && createdCount === 0 ? 400 : 200).json({
+      success: createdCount > 0,
+      parksImported: createdCount,
+      message: createdCount > 0 
+        ? `Se importaron ${createdCount} parques correctamente${hasErrors ? ', con algunos errores' : ''}.`
+        : 'No se pudo importar ningún parque.',
+      errors: allErrors,
+      totalErrors: allErrors.length,
+      totalProcessed: parksData.length
+    });
+    
   } catch (error) {
-    console.error("Error processing import file:", error);
-    // Si hay un archivo, intentar eliminarlo
+    // Si hay algún error en el proceso, eliminar el archivo temporal
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
     
-    return res.status(500).json({ error: "Error al procesar el archivo de importación" });
+    console.error('Error al procesar archivo de importación:', error);
+    return res.status(500).json({ 
+      message: 'Error al procesar el archivo de importación',
+      error: (error as Error).message
+    });
   }
 };
