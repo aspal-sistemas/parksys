@@ -21,7 +21,7 @@ import {
   Info,
   Bath,
   Gamepad2,
-  Ball 
+  Circle 
 } from 'lucide-react';
 
 interface AmenityIconProps {
@@ -46,7 +46,7 @@ const AmenityIcon: React.FC<AmenityIconProps> = ({
     case 'toilet':
       return <Bath {...iconProps} />;
     case 'sportsCourt':
-      return <Ball {...iconProps} />;
+      return <Circle {...iconProps} />;
     case 'bicycle':
       return <Bike {...iconProps} />;
     case 'pets':
@@ -78,9 +78,9 @@ const AmenityIcon: React.FC<AmenityIconProps> = ({
     case 'basketball':
       return <CircleUser {...iconProps} />;
     case 'soccer':
-      return <Ball {...iconProps} />;
+      return <Circle {...iconProps} />;
     case 'tennis':
-      return <Ball {...iconProps} />;
+      return <Circle {...iconProps} />;
     case 'pool':
       return <Waves {...iconProps} />;
     case 'skate':
