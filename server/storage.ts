@@ -1118,13 +1118,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPark(id: number): Promise<Park | undefined> {
-    const [park] = await db.select().from(parks).where(eq(parks.id, id));
+    const [park] = await db.select().from(parks).where(
+      and(
+        eq(parks.id, id),
+        eq(parks.isDeleted, false) // Solo incluir parques no eliminados
+      )
+    );
     return park || undefined;
   }
 
   async getExtendedPark(id: number): Promise<ExtendedPark | undefined> {
     const park = await this.getPark(id);
-    if (!park) return undefined;
+    // No devolver el parque si no existe o si está marcado como eliminado
+    if (!park || park.isDeleted) return undefined;
 
     const parkAmenities = await this.getParkAmenities(id);
     const parkImages = await this.getParkImages(id);
@@ -1169,11 +1175,17 @@ export class DatabaseStorage implements IStorage {
     foundedAfter?: number;
     conservationStatus?: string;
     nearLocation?: {latitude: string, longitude: string, maxDistance: number};
+    includeDeleted?: boolean; // Añadimos este nuevo filtro opcional
   }>): Promise<Park[]> {
     let query = db.select().from(parks);
     
     if (filters) {
       const whereConditions = [];
+      
+      // Por defecto, excluimos los parques marcados como eliminados
+      if (filters.includeDeleted !== true) {
+        whereConditions.push(eq(parks.isDeleted, false));
+      }
       
       if (filters.municipalityId !== undefined) {
         whereConditions.push(eq(parks.municipalityId, filters.municipalityId));
@@ -1379,8 +1391,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deletePark(id: number): Promise<boolean> {
-    const result = await db.delete(parks).where(eq(parks.id, id));
-    return result.rowCount > 0;
+    // Implementamos borrado lógico en lugar de borrado físico
+    const result = await db.update(parks)
+      .set({ 
+        isDeleted: true,
+        updatedAt: new Date() 
+      })
+      .where(eq(parks.id, id))
+      .returning();
+    return result.length > 0;
   }
 
   async getParkImage(id: number): Promise<ParkImage | undefined> {

@@ -50,6 +50,7 @@ export const parks = pgTable("parks", {
   openingHours: text("opening_hours"),
   contactEmail: text("contact_email"),
   contactPhone: text("contact_phone"),
+  isDeleted: boolean("is_deleted").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
