@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/command";
 import { toast } from '@/hooks/use-toast';
 import { Check, Loader } from 'lucide-react';
+import AmenityIcon from '@/components/AmenityIcon';
 
 interface AmenitySelectorProps {
   parkId: string | undefined;
@@ -140,10 +141,11 @@ const AmenitySelector: React.FC<AmenitySelectorProps> = ({
             <div className="bg-gray-100 p-2 rounded-full mr-3">
               {amenity.icon && (
                 <div className="w-5 h-5 flex items-center justify-center">
-                  <img 
-                    src={amenity.customIconUrl || `/icons/${amenity.icon}.svg`} 
-                    alt={amenity.name}
-                    className="w-5 h-5 object-contain"
+                  <AmenityIcon 
+                    name={amenity.icon}
+                    size={20}
+                    iconType={amenity.iconType || 'system'}
+                    customIconUrl={amenity.customIconUrl}
                   />
                 </div>
               )}
