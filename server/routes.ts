@@ -4,7 +4,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { isAuthenticated, hasMunicipalityAccess, hasParkAccess } from "./middleware/auth";
 import { db, pool } from "./db";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
+import * as schema from "@shared/schema";
 import { 
   uploadParkFile, 
   handleMulterErrors, 
@@ -189,9 +190,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Construimos el SQL para la actualización
         if (Object.keys(fieldsToUpdate).length > 0) {
           // Actualizamos el parque directamente
-          const result = await db.update(parks)
+          const result = await db.update(schema.parks)
             .set(fieldsToUpdate)
-            .where(eq(parks.id, parkId))
+            .where(eq(schema.parks.id, parkId))
             .returning();
           
           if (result.length > 0) {
