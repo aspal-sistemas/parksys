@@ -221,6 +221,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Endpoint para subir iconos personalizados
+  apiRouter.post("/upload/icon", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar que el usuario sea administrador
+      if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
+        return res.status(403).json({ message: "Solo administradores pueden subir iconos" });
+      }
+      
+      const { uploadIcon, handleIconUploadErrors, uploadIconHandler } = await import('./api/iconUpload');
+      
+      // Usar el middleware de multer para procesar la carga
+      uploadIcon(req, res, (err: any) => {
+        if (err) {
+          return handleIconUploadErrors(err, req, res, () => {});
+        }
+        // Si no hay errores, manejar la respuesta
+        return uploadIconHandler(req, res);
+      });
+    } catch (error) {
+      console.error("Error al subir icono:", error);
+      res.status(500).json({ error: "Error al subir icono" });
+    }
+  });
+
   // Delete an amenity (admin only)
   apiRouter.delete("/amenities/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {

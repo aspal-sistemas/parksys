@@ -79,6 +79,8 @@ interface AmenityFormData {
   name: string;
   icon: string;
   category: string;
+  iconType: 'system' | 'custom';
+  customIconUrl: string | null;
 }
 
 const AdminAmenitiesPage: React.FC = () => {
@@ -91,8 +93,14 @@ const AdminAmenitiesPage: React.FC = () => {
   const [formData, setFormData] = useState<AmenityFormData>({
     name: '',
     icon: '',
-    category: ''
+    category: '',
+    iconType: 'system',
+    customIconUrl: null
   });
+  
+  // Estado para manejar la carga de archivos
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const { data: amenities = [], isLoading } = useQuery<Amenity[]>({
     queryKey: ['/api/amenities'],
@@ -164,12 +172,52 @@ const AdminAmenitiesPage: React.FC = () => {
     }
   });
 
+  // Función para manejar la carga de iconos personalizados
+  const handleIconUpload = async () => {
+    if (!uploadedFile) return null;
+    
+    setIsUploading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('icon', uploadedFile);
+      
+      const response = await fetch('/api/upload/icon', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          // No establecer Content-Type para que el navegador configure el boundary correcto
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al subir el icono');
+      }
+      
+      const data = await response.json();
+      return data.url; // URL del icono subido
+    } catch (error: any) {
+      toast({ 
+        title: "Error", 
+        description: error.message || "No se pudo subir el icono", 
+        variant: "destructive" 
+      });
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  
   const resetForm = () => {
     setFormData({
       name: '',
       icon: '',
-      category: ''
+      category: '',
+      iconType: 'system',
+      customIconUrl: null
     });
+    setUploadedFile(null);
     setCurrentAmenity(null);
   };
 
