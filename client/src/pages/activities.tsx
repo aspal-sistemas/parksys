@@ -180,11 +180,24 @@ const ActivityCard = ({
               variant="outline" 
               size="sm"
               className="flex items-center gap-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit && onEdit(activity);
+              }}
             >
               <CalendarDays className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Ver calendario</span>
             </Button>
-            <Button variant="outline" size="sm">Ver detalles</Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onEdit) handleCalendarView(activity);
+              }}
+            >
+              Ver detalles
+            </Button>
           </div>
         </div>
       </CardContent>
@@ -414,6 +427,8 @@ const Activities: React.FC = () => {
               key={activity.id} 
               activity={activity}
               parkName={activity.parkName}
+              onEdit={handleEditActivity}
+              onDelete={handleDeleteActivity}
             />
           ))}
         </div>
