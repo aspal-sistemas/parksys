@@ -39,9 +39,17 @@ import { z } from 'zod';
 const documentFormSchema = z.object({
   parkId: z.string().min(1, 'Seleccione un parque'),
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres'),
-  fileUrl: z.string().url('Ingrese una URL válida'),
-  fileSize: z.string().min(1, 'Ingrese el tamaño del archivo'),
-  fileType: z.string().min(1, 'Seleccione un tipo de archivo'),
+  // Permitimos que fileUrl sea opcional cuando se carga un archivo
+  fileUrl: z.string().url('Ingrese una URL válida').optional(),
+  // Campo para cargar archivo
+  file: z
+    .instanceof(File, { message: "Por favor, seleccione un archivo" })
+    .optional(),
+  fileSize: z.string().min(1, 'Ingrese el tamaño del archivo').optional(),
+  fileType: z.string().min(1, 'Seleccione un tipo de archivo').optional(),
+}).refine(data => data.fileUrl || data.file, {
+  message: "Debe proporcionar una URL de archivo o cargar un archivo",
+  path: ["file"], // mensaje de error en el campo 'file'
 });
 
 // Tipos para el formulario
@@ -58,6 +66,7 @@ const AdminDocuments = () => {
   const [sortField, setSortField] = useState<string>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Fetch all documents
   const { 
@@ -245,9 +254,62 @@ const AdminDocuments = () => {
     },
   });
   
+  // Función para subir un archivo al servidor
+  const uploadFile = async (file: File): Promise<string> => {
+    try {
+      // Crear un FormData para enviar el archivo
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      // Implementación simulada - En producción, integrar con servicio de almacenamiento real
+      // Simular una URL temporal para fines de demostración
+      // NOTA: Esta es una simulación para la demostración. En un entorno real,
+      // se utilizaría un servicio de almacenamiento como AWS S3, Google Cloud Storage, etc.
+      return `https://storage.example.com/documents/${file.name}`;
+      
+      /* Ejemplo de código real para subir a un servicio de almacenamiento:
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al subir el archivo');
+      }
+      
+      const result = await response.json();
+      return result.fileUrl;
+      */
+    } catch (error) {
+      console.error('Error al subir el archivo:', error);
+      throw new Error('No se pudo subir el archivo. Intente nuevamente.');
+    }
+  };
+
   // Manejar submit del formulario
   const handleSubmit = async (data: DocumentFormValues) => {
     try {
+      let fileUrl = data.fileUrl;
+      
+      // Si se seleccionó un archivo para cargar, lo subimos primero
+      if (data.file) {
+        setIsUploading(true);
+        try {
+          fileUrl = await uploadFile(data.file);
+        } catch (error) {
+          console.error('Error al subir el archivo:', error);
+          toast({
+            title: 'Error',
+            description: 'No se pudo subir el archivo. Intente nuevamente.',
+            variant: 'destructive',
+          });
+          setIsUploading(false);
+          return;
+        }
+        setIsUploading(false);
+      }
+      
+      // Una vez que tenemos la URL (cargada o ingresada), creamos el documento
       const response = await fetch(`/api/parks/${data.parkId}/documents`, {
         method: 'POST',
         headers: {
@@ -255,7 +317,7 @@ const AdminDocuments = () => {
         },
         body: JSON.stringify({
           title: data.title,
-          fileUrl: data.fileUrl,
+          fileUrl: fileUrl,
           fileSize: data.fileSize,
           fileType: data.fileType,
         }),
@@ -541,19 +603,64 @@ const AdminDocuments = () => {
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="fileUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL del archivo</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/documento.pdf" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Seleccione una opción:</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="fileUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>URL del archivo (opcional)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="https://example.com/documento.pdf" 
+                            {...field} 
+                            value={field.value || ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="- o -">
+                    <div className="flex items-center">
+                      <div className="flex-grow h-px bg-gray-200"></div>
+                      <span className="px-2 text-sm text-gray-400">O</span>
+                      <div className="flex-grow h-px bg-gray-200"></div>
+                    </div>
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="file"
+                    render={({ field: { onChange, value, ...fieldProps } }) => (
+                      <FormItem>
+                        <FormLabel>Cargar archivo (opcional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            {...fieldProps}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                onChange(file);
+                                // Auto-detectar el tipo de archivo
+                                form.setValue('fileType', file.type);
+                                // Auto-detectar el tamaño del archivo
+                                const fileSizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+                                form.setValue('fileSize', `${fileSizeInMB} MB`);
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
               
               <FormField
                 control={form.control}
@@ -601,7 +708,16 @@ const AdminDocuments = () => {
                 <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit">Guardar</Button>
+                <Button type="submit" disabled={isUploading}>
+                  {isUploading ? (
+                    <>
+                      <Loader className="w-4 h-4 mr-2 animate-spin" />
+                      Subiendo...
+                    </>
+                  ) : (
+                    'Guardar'
+                  )}
+                </Button>
               </DialogFooter>
             </form>
           </Form>
