@@ -263,10 +263,30 @@ const AdminParks = () => {
             <div className="py-32 flex justify-center">
               <div className="text-center">
                 <p className="text-gray-500 mb-2">No se encontraron parques</p>
-                {(searchQuery || filterMunicipality || filterParkType) && (
+                {(searchQuery || filterMunicipality || filterParkType) ? (
                   <Button variant="outline" onClick={handleClearFilters}>
                     Limpiar filtros
                   </Button>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <p className="text-sm text-yellow-600 mb-2">
+                      Se han eliminado todos los parques de la vista actual
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        refetchParks();
+                        toast({
+                          title: "Lista actualizada",
+                          description: "La lista de parques ha sido refrescada desde el servidor",
+                        });
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <Loader className="h-4 w-4" />
+                      Refrescar lista desde el servidor
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
