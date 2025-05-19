@@ -1705,8 +1705,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteComment(id: number): Promise<boolean> {
-    const result = await db.delete(comments).where(eq(comments.id, id));
-    return result.rowCount > 0;
+    try {
+      await db.delete(comments).where(eq(comments.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error al eliminar comentario en la BD:', error);
+      return false;
+    }
   }
 
   async getIncident(id: number): Promise<Incident | undefined> {
