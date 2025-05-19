@@ -985,7 +985,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   publicApiRouter.get("/municipalities/:id/parks", async (req: Request, res: Response) => {
     try {
       const municipalityId = Number(req.params.id);
-      const parks = await storage.getParks({ municipalityId });
+      const parks = await storage.getParks({ municipalityId, includeDeleted: false });
       
       const simplifiedParks = parks.map(park => ({
         id: park.id,
@@ -1013,7 +1013,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get upcoming activities across all parks - for calendar integration
   publicApiRouter.get("/activities", async (req: Request, res: Response) => {
     try {
-      const allParks = await storage.getParks();
+      const allParks = await storage.getParks({ includeDeleted: false });
       let allActivities: Activity[] = [];
       
       // Collect activities from all parks
@@ -1121,7 +1121,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Advanced search endpoint for parks
   publicApiRouter.get("/search/parks", async (req: Request, res: Response) => {
     try {
-      const filters: any = {};
+      const filters: any = {
+        includeDeleted: false // Asegurarnos de excluir parques eliminados
+      };
       
       // Basic filters
       if (req.query.municipalityId) filters.municipalityId = Number(req.query.municipalityId);
