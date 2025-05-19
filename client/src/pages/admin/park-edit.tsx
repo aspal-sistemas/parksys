@@ -11,7 +11,8 @@ import {
   Upload, 
   Trash, 
   PlusCircle, 
-  ImagePlus 
+  ImagePlus,
+  Plus
 } from 'lucide-react';
 import { 
   Form, 
@@ -48,9 +49,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import AdminSidebar from '@/components/AdminSidebar';
+import AmenitySelector from '@/components/AmenitySelector';
 import { Park, insertParkSchema, PARK_TYPES } from '@shared/schema';
 
 const parkSchema = insertParkSchema.extend({
@@ -945,88 +960,30 @@ const AdminParkEdit: React.FC = () => {
                         <div>
                           <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-medium">Amenidades Disponibles</h3>
-                            <Button 
-                              type="button" 
-                              onClick={async () => {
-                                if (!id) {
-                                  toast({
-                                    title: "Guarda el parque primero",
-                                    description: "Debes guardar el parque antes de agregar amenidades.",
-                                    variant: "destructive"
-                                  });
-                                  return;
-                                }
-                                
-                                // Cargar todas las amenidades disponibles
-                                try {
-                                  const response = await fetch('/api/amenities');
-                                  if (response.ok) {
-                                    const allAmenities = await response.json();
-                                    
-                                    // Filtrar las amenidades que ya están asignadas al parque
-                                    const availableAmenities = allAmenities.filter((amenity: any) => {
-                                      return !parkAmenities.some((parkAmenity: any) => 
-                                        parkAmenity.id === amenity.id
-                                      );
-                                    });
-                                    
-                                    if (availableAmenities.length === 0) {
-                                      toast({
-                                        title: "No hay más amenidades disponibles",
-                                        description: "Ya has agregado todas las amenidades disponibles a este parque."
-                                      });
-                                      return;
-                                    }
-                                    
-                                    // Simplemente agregamos la primera amenidad disponible como ejemplo
-                                    // En una implementación completa, esto mostraría un modal de selección
-                                    const amenityToAdd = availableAmenities[0];
-                                    
-                                    // Añadir amenidad al parque
-                                    const addResponse = await fetch(`/api/parks/${id}/amenities`, {
-                                      method: 'POST',
-                                      headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': 'Bearer direct-token-1'
-                                      },
-                                      body: JSON.stringify({
-                                        amenityId: amenityToAdd.id
-                                      })
-                                    });
-                                    
-                                    if (addResponse.ok) {
-                                      // Recargar amenidades
-                                      const reloadResponse = await fetch(`/api/parks/${id}/amenities`);
-                                      if (reloadResponse.ok) {
-                                        const updatedAmenities = await reloadResponse.json();
-                                        setParkAmenities(updatedAmenities);
-                                        
-                                        toast({
-                                          title: "Amenidad agregada",
-                                          description: `Se ha agregado ${amenityToAdd.name} al parque.`
-                                        });
-                                      }
-                                    } else {
-                                      toast({
-                                        title: "Error",
-                                        description: "No se pudo agregar la amenidad al parque.",
-                                        variant: "destructive"
-                                      });
-                                    }
-                                  }
-                                } catch (error) {
-                                  console.error('Error al cargar amenidades:', error);
-                                  toast({
-                                    title: "Error",
-                                    description: "No se pudieron cargar las amenidades disponibles.",
-                                    variant: "destructive"
-                                  });
-                                }
-                              }}
-                            >
-                              <PlusCircle className="mr-2 h-4 w-4" />
-                              Agregar Amenidad
-                            </Button>
+                            
+                            {/* Menú desplegable para agregar amenidades */}
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button type="button">
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Agregar Amenidad
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-80 p-0" align="end">
+                                <Command>
+                                  <CommandInput placeholder="Buscar amenidad..." />
+                                  <CommandList>
+                                    <AmenitySelector 
+                                      parkId={id} 
+                                      existingAmenities={parkAmenities}
+                                      onAmenityAdded={(newAmenities) => {
+                                        setParkAmenities(newAmenities);
+                                      }}
+                                    />
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
                           </div>
                           
                           {/* Mostrar amenidades del parque */}
