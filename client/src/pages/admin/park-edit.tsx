@@ -1084,15 +1084,17 @@ const AdminParkEdit: React.FC = () => {
                                         variant="ghost" 
                                         size="sm"
                                         onClick={() => {
-                                          // Verifica si la URL es de example.com (datos de prueba)
-                                          if (doc.documentUrl?.includes('example.com')) {
-                                            toast({
-                                              title: "URL de ejemplo",
-                                              description: "Este es un documento de ejemplo que no existe en la web real.",
-                                              variant: "warning"
-                                            });
-                                          } else {
+                                          // En cualquier caso, mostramos un mensaje de información para los documentos de ejemplo
+                                          toast({
+                                            title: "Documento",
+                                            description: `Documento: ${doc.documentName || doc.title || 'Documento'} - URL: ${doc.documentUrl}`,
+                                          });
+                                          
+                                          // Intentamos abrir de todas formas, puede que funcione o no
+                                          try {
                                             window.open(doc.documentUrl, '_blank');
+                                          } catch (error) {
+                                            console.error("Error al abrir el documento:", error);
                                           }
                                         }}
                                       >
@@ -1103,22 +1105,10 @@ const AdminParkEdit: React.FC = () => {
                                         variant="ghost" 
                                         size="sm"
                                         onClick={() => {
-                                          // Verifica si la URL es de example.com (datos de prueba)
-                                          if (doc.documentUrl?.includes('example.com')) {
-                                            toast({
-                                              title: "URL de ejemplo",
-                                              description: "Este es un documento de ejemplo que no puede descargarse.",
-                                              variant: "warning"
-                                            });
-                                          } else {
-                                            // Crear un enlace temporal para la descarga
-                                            const link = document.createElement('a');
-                                            link.href = doc.documentUrl;
-                                            link.download = doc.documentName || 'documento';
-                                            document.body.appendChild(link);
-                                            link.click();
-                                            document.body.removeChild(link);
-                                          }
+                                          toast({
+                                            title: "Documento de prueba",
+                                            description: "Esta es una URL de muestra. Los documentos reales se podrán descargar cuando se implementen.",
+                                          });
                                         }}
                                       >
                                         <Download className="h-4 w-4 mr-1" />
@@ -1128,9 +1118,10 @@ const AdminParkEdit: React.FC = () => {
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => {
-                                          // Mostrar un diálogo modal para editar el documento
-                                          // Por ahora, solo mostraremos una alerta
-                                          alert('Funcionalidad de edición en desarrollo');
+                                          toast({
+                                            title: "Editar documento",
+                                            description: "La funcionalidad de edición de documentos está en desarrollo.",
+                                          });
                                         }}
                                       >
                                         <Edit className="h-4 w-4 mr-1" />
