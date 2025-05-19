@@ -873,14 +873,14 @@ const AdminParkEdit: React.FC = () => {
                                     // Primero guardamos localmente para la experiencia de usuario
                                     form.setValue('videoUrl', videoUrl);
                                     
-                                    // Usamos SQL directamente para evitar problemas
-                                    fetch('/api/execute-sql', {
+                                    // Usamos el nuevo endpoint especializado para videos
+                                    fetch(`/api/videos/update/${id}`, {
                                       method: 'POST',
                                       headers: {
                                         'Content-Type': 'application/json'
                                       },
                                       body: JSON.stringify({
-                                        query: `UPDATE parks SET video_url = '${videoUrl.replace(/'/g, "''")}' WHERE id = ${id};`
+                                        videoUrl: videoUrl
                                       })
                                     })
                                     .then(response => {
@@ -929,14 +929,14 @@ const AdminParkEdit: React.FC = () => {
                                         // Simplemente actualizar el estado del formulario
                                         form.setValue('videoUrl', '');
                                         
-                                        // Actualizar en la base de datos usando SQL directo
-                                        fetch('/api/execute-sql', {
+                                        // Actualizar en la base de datos usando el endpoint especializado
+                                        fetch(`/api/videos/update/${id}`, {
                                           method: 'POST',
                                           headers: {
                                             'Content-Type': 'application/json'
                                           },
                                           body: JSON.stringify({
-                                            query: `UPDATE parks SET video_url = '' WHERE id = ${id};`
+                                            videoUrl: ''
                                           })
                                         })
                                         .then(response => {
