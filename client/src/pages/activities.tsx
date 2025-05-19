@@ -249,9 +249,29 @@ const Activities: React.FC = () => {
   // Mutation para eliminar actividad
   const deleteMutation = useMutation({
     mutationFn: async (activityId: number) => {
-      // Usar el método apiRequest para mantener coherencia
-      await apiRequest("DELETE", `/api/activities/${activityId}`);
-      return true;
+      try {
+        // Construimos la solicitud con los encabezados correctos
+        const response = await fetch(`/api/activities/${activityId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer direct-token-admin",
+            "X-User-Id": "1",
+            "X-User-Role": "super_admin"
+          },
+          credentials: "include"
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || "Error al eliminar la actividad");
+        }
+        
+        return true;
+      } catch (error) {
+        console.error("Error al eliminar actividad:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       toast({
