@@ -70,7 +70,7 @@ import {
 } from "@/components/ui/command";
 import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import AdminSidebar from '@/components/AdminSidebar';
+import AdminLayout from '@/components/AdminLayout';
 import AmenitySelector from '@/components/AmenitySelector';
 import { Park, insertParkSchema, PARK_TYPES } from '@shared/schema';
 import {
@@ -242,21 +242,30 @@ const AdminParkEdit: React.FC = () => {
   
   if (isLoading && isEdit) {
     return (
-      <div className="flex h-screen">
-        <AdminSidebar />
-        <div className="flex-1 flex items-center justify-center">
+      <AdminLayout title="Cargando parque...">
+        <div className="flex items-center justify-center h-full">
           <Loader className="h-12 w-12 text-primary animate-spin" />
         </div>
-      </div>
+      </AdminLayout>
     );
   }
   
   return (
-    <div className="flex h-screen overflow-hidden">
-      <AdminSidebar />
-      
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
+    <AdminLayout 
+      title={isEdit ? `Editar parque: ${park?.name || ''}` : 'Nuevo parque'} 
+      subtitle={isEdit ? "Actualiza la información del parque" : "Ingresa la información para crear un nuevo parque"}
+    >
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setLocation('/admin/parks')}
+          className="mb-2"
+        >
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          Volver a la lista
+        </Button>
+      </div>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <div>
               <Button
