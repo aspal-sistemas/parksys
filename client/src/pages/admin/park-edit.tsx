@@ -1131,8 +1131,24 @@ const AdminParkEdit: React.FC = () => {
                                           if (!id) return;
                                           if (confirm('¿Estás seguro de eliminar este documento?')) {
                                             try {
-                                              await fetch(`/api/parks/${id}/documents/${doc.id}`, {
+                                              // Usar apiRequest para mantener consistencia en las solicitudes API
+                                              const response = await fetch(`/api/parks/${id}/documents/${doc.id}`, {
                                                 method: 'DELETE',
+                                                headers: {
+                                                  'Authorization': 'Bearer direct-token-admin',
+                                                  'X-User-Id': '1',
+                                                  'X-User-Role': 'super_admin',
+                                                  'Content-Type': 'application/json'
+                                                }
+                                              });
+                                              
+                                              if (!response.ok) {
+                                                const errorData = await response.text();
+                                                throw new Error(`Error al eliminar: ${response.status} ${errorData}`);
+                                              }
+                                              
+                                              // Recargar documentos
+                                              const documentsResponse = await fetch(`/api/parks/${id}/documents`, {
                                                 headers: {
                                                   'Authorization': 'Bearer direct-token-admin',
                                                   'X-User-Id': '1',
@@ -1140,16 +1156,8 @@ const AdminParkEdit: React.FC = () => {
                                                 }
                                               });
                                               
-                                              // Recargar documentos
-                                              const response = await fetch(`/api/parks/${id}/documents`, {
-                                                headers: {
-                                                  'Authorization': 'Bearer direct-token-admin',
-                                                  'X-User-Id': '1',
-                                                  'X-User-Role': 'super_admin'
-                                                }
-                                              });
-                                              if (response.ok) {
-                                                const documents = await response.json();
+                                              if (documentsResponse.ok) {
+                                                const documents = await documentsResponse.json();
                                                 setParkDocuments(documents);
                                               }
                                               
