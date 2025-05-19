@@ -75,6 +75,19 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ parks, activity, onSuccess,
   const mutation = useMutation({
     mutationFn: async (data: InsertActivity) => {
       try {
+        // Asegurarnos de que las fechas sean objetos Date, no cadenas
+        // startDate es obligatorio
+        if (!(data.startDate instanceof Date)) {
+          data.startDate = new Date(data.startDate);
+        }
+        
+        // endDate es opcional pero si existe debe ser Date
+        if (data.endDate && !(data.endDate instanceof Date)) {
+          data.endDate = new Date(data.endDate);
+        }
+        
+        console.log("Datos a enviar:", JSON.stringify(data));
+        
         if (activity) {
           // Si existe, actualizar con autenticación
           const response = await fetch(`/api/activities/${activity.id}`, {
