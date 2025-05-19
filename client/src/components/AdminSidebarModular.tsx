@@ -209,9 +209,9 @@ const AdminSidebarModular: React.FC = () => {
                 </NavItem>
               </ModuleNav>
               
-              {/* Módulo - Gestión Operativa e Infraestructura */}
+              {/* Módulo - Operaciones */}
               <ModuleNav 
-                title="Gestión Operativa e Infraestructura" 
+                title="Operaciones" 
                 icon={<Building className="h-5 w-5" />} 
                 value="operations"
               >
