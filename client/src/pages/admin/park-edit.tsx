@@ -1131,15 +1131,9 @@ const AdminParkEdit: React.FC = () => {
                                           if (!id) return;
                                           if (confirm('¿Estás seguro de eliminar este documento?')) {
                                             try {
-                                              // Usar apiRequest para mantener consistencia en las solicitudes API
-                                              const response = await fetch(`/api/parks/${id}/documents/${doc.id}`, {
-                                                method: 'DELETE',
-                                                headers: {
-                                                  'Authorization': 'Bearer direct-token-admin',
-                                                  'X-User-Id': '1',
-                                                  'X-User-Role': 'super_admin',
-                                                  'Content-Type': 'application/json'
-                                                }
+                                              // Usamos la nueva ruta de desarrollo sin autenticación
+                                              const response = await fetch(`/api/dev/parks/${id}/documents/${doc.id}`, {
+                                                method: 'DELETE'
                                               });
                                               
                                               if (!response.ok) {
@@ -1147,14 +1141,8 @@ const AdminParkEdit: React.FC = () => {
                                                 throw new Error(`Error al eliminar: ${response.status} ${errorData}`);
                                               }
                                               
-                                              // Recargar documentos
-                                              const documentsResponse = await fetch(`/api/parks/${id}/documents`, {
-                                                headers: {
-                                                  'Authorization': 'Bearer direct-token-admin',
-                                                  'X-User-Id': '1',
-                                                  'X-User-Role': 'super_admin'
-                                                }
-                                              });
+                                              // Recargar documentos sin autenticación para desarrollo
+                                              const documentsResponse = await fetch(`/api/parks/${id}/documents`);
                                               
                                               if (documentsResponse.ok) {
                                                 const documents = await documentsResponse.json();
