@@ -170,6 +170,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error fetching amenities" });
     }
   });
+  
+  // Create a new amenity (admin only)
+  apiRouter.post("/amenities", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar que el usuario sea administrador
+      if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
+        return res.status(403).json({ message: "Solo administradores pueden gestionar amenidades" });
+      }
+      
+      const data = {
+        name: req.body.name,
+        icon: req.body.icon,
+        category: req.body.category
+      };
+      
+      const newAmenity = await storage.createAmenity(data);
+      res.status(201).json(newAmenity);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error creating amenity" });
+    }
+  });
+  
+  // Update an amenity (admin only)
+  apiRouter.put("/amenities/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar que el usuario sea administrador
+      if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
+        return res.status(403).json({ message: "Solo administradores pueden gestionar amenidades" });
+      }
+      
+      const id = Number(req.params.id);
+      const data = {
+        name: req.body.name,
+        icon: req.body.icon,
+        category: req.body.category
+      };
+      
+      const updatedAmenity = await storage.updateAmenity(id, data);
+      
+      if (!updatedAmenity) {
+        return res.status(404).json({ message: "Amenidad no encontrada" });
+      }
+      
+      res.json(updatedAmenity);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error updating amenity" });
+    }
+  });
+  
+  // Delete an amenity (admin only)
+  apiRouter.delete("/amenities/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar que el usuario sea administrador
+      if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
+        return res.status(403).json({ message: "Solo administradores pueden gestionar amenidades" });
+      }
+      
+      const id = Number(req.params.id);
+      
+      // Verificar si la amenidad está siendo utilizada por algún parque
+      const inUse = await storage.isAmenityInUse(id);
+      if (inUse) {
+        return res.status(400).json({ 
+          message: "No se puede eliminar esta amenidad porque está siendo utilizada por uno o más parques" 
+        });
+      }
+      
+      const result = await storage.deleteAmenity(id);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Amenidad no encontrada" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error deleting amenity" });
+    }
+  });
 
   // Get amenities for a specific park
   apiRouter.get("/parks/:id/amenities", async (req: Request, res: Response) => {
