@@ -1029,9 +1029,11 @@ const AdminParkEdit: React.FC = () => {
                                           });
                                           
                                           if (response.ok) {
-                                            // Actualizar la lista de amenidades en el estado
+                                            // Actualizar la lista de amenidades en el estado localmente
+                                            // sin hacer una redirección completa
                                             setParkAmenities(parkAmenities.filter((a: any) => a.id !== amenity.id));
                                             
+                                            // Evitamos cualquier actualización global del queryClient
                                             toast({
                                               title: "Amenidad eliminada",
                                               description: `Se ha quitado ${amenity.name} del parque.`
