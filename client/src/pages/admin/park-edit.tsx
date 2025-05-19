@@ -91,11 +91,20 @@ const AdminParkEdit: React.FC = () => {
           : 'El parque ha sido creado exitosamente',
       });
       
-      // Invalidate relevant queries
+      // Invalidate all relevant queries to asegurar que los cambios se reflejen
+      // Invalidamos tanto la lista de parques como el parque específico
       await queryClient.invalidateQueries({ queryKey: ['/api/parks'] });
       
-      // Redirect to parks list
-      setLocation('/admin/parks');
+      if (isEdit && id) {
+        // Invalidar la consulta específica del parque que acabamos de editar
+        await queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}`] });
+      }
+      
+      // Esperar un momento antes de redirigir
+      setTimeout(() => {
+        // Redirect to parks list
+        setLocation('/admin/parks');
+      }, 300);
     },
     onError: (error) => {
       toast({
