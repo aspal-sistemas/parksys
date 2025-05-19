@@ -83,20 +83,22 @@ const Parks: React.FC = () => {
 
       {/* Contenedor principal con disposición flexible */}
       <div className={`flex flex-col md:flex-row flex-1 ${mapExpanded ? 'flex-col' : ''}`}>
-        {/* Sección de mapa - ajustada para coincidir con la altura de búsqueda */}
-        <div className={`${mapExpanded ? 'w-full h-[70vh]' : 'md:w-1/3 lg:w-1/3 h-[250px]'} transition-all duration-300 ${mapExpanded ? 'order-first' : 'md:order-last md:flex md:h-auto'}`}>
-          <div className="w-full h-full">
-            <ParksMap 
-              parks={parks}
-              selectedParkId={selectedParkId || undefined}
-              onSelectPark={handleSelectPark}
-              isLoading={isLoading}
-            />
+        {/* Temporalmente oculto el mapa para evaluar el diseño */}
+        {false && (
+          <div className={`${mapExpanded ? 'w-full h-[70vh]' : 'md:w-1/3 lg:w-1/3 h-[250px]'} transition-all duration-300 ${mapExpanded ? 'order-first' : 'md:order-last md:flex md:h-auto'}`}>
+            <div className="w-full h-full">
+              <ParksMap 
+                parks={parks}
+                selectedParkId={selectedParkId || undefined}
+                onSelectPark={handleSelectPark}
+                isLoading={isLoading}
+              />
+            </div>
           </div>
-        </div>
+        )}
         
-        {/* Área de búsqueda y resultados - ahora más prominente */}
-        <div className={`${mapExpanded ? 'w-full' : 'md:w-2/3 lg:w-2/3'} flex flex-col transition-all duration-300`}>
+        {/* Área de búsqueda y resultados - ahora a pantalla completa */}
+        <div className="w-full flex flex-col transition-all duration-300">
           {/* Sección de filtros - ahora más visible y amplio */}
           <div className="border-b md:border-r">
             <FilterSidebar onApplyFilters={handleApplyFilters} />
