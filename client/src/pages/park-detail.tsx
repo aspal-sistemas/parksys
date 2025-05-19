@@ -188,11 +188,29 @@ const ParkDetail: React.FC = () => {
               <TabsContent value="images">
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold mb-4">Imágenes</h2>
-                  <ParkImageManager 
-                    mainImage={mainImage}
-                    additionalImages={additionalImages}
-                    readOnly={true}
-                  />
+                  {/* Mostrar imágenes del parque */}
+                  {mainImage && (
+                    <div className="mb-4">
+                      <img 
+                        src={mainImage} 
+                        alt={`Vista principal de ${park.name}`}
+                        className="w-full h-auto rounded-lg"
+                      />
+                    </div>
+                  )}
+                  {additionalImages && additionalImages.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {additionalImages.map((img, index) => (
+                        <div key={index} className="aspect-square overflow-hidden rounded-lg">
+                          <img
+                            src={img}
+                            alt={`Vista de ${park.name} ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
               
@@ -207,7 +225,8 @@ const ParkDetail: React.FC = () => {
                           <div className="flex-shrink-0 w-8 h-8 mr-3 flex items-center justify-center">
                             <AmenityIcon 
                               name={amenity.icon || ''} 
-                              customUrl={amenity.customIconUrl || ''} 
+                              customIconUrl={amenity.customIconUrl || null} 
+                              iconType={amenity.customIconUrl ? 'custom' : 'system'}
                               className="w-6 h-6 text-primary"
                             />
                           </div>
@@ -260,6 +279,7 @@ const ParkDetail: React.FC = () => {
           </DialogHeader>
           <IncidentReportForm 
             parkId={Number(id)} 
+            parkName={park.name}
             onSuccess={() => setIsReportDialogOpen(false)}
           />
         </DialogContent>
