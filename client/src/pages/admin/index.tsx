@@ -379,9 +379,11 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
                   
-                  <Button variant="outline" className="w-full mt-2">
-                    Ver todos los comentarios
-                  </Button>
+                  <Link href="/admin/comments">
+                    <Button variant="outline" className="w-full mt-2">
+                      Ver todos los comentarios
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -442,9 +444,11 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
                   
-                  <Button variant="outline" className="w-full mt-2">
-                    Ver todos los incidentes
-                  </Button>
+                  <Link href="/admin/incidents">
+                    <Button variant="outline" className="w-full mt-2">
+                      Ver todos los incidentes
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
