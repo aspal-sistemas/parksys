@@ -871,12 +871,31 @@ const AdminParkEdit: React.FC = () => {
                                   const videoUrl = form.getValues().videoUrl;
                                   if (videoUrl && id) {
                                     // Guarda el cambio inmediatamente
-                                    fetch(`/api/parks/${id}`, {
+                                    fetch(`/api/dev/parks/${id}`, {
                                       method: 'PUT',
                                       headers: {
                                         'Content-Type': 'application/json',
+                                        'Authorization': 'Bearer direct-token-1'
                                       },
                                       body: JSON.stringify({ videoUrl })
+                                    })
+                                    .then(response => {
+                                      if (!response.ok) {
+                                        throw new Error('No se pudo guardar la URL del video');
+                                      }
+                                      return response.json();
+                                    })
+                                    .then(data => {
+                                      // Actualiza el campo en tiempo real para evitar recargar la página
+                                      form.setValue('videoUrl', videoUrl); 
+                                    })
+                                    .catch(error => {
+                                      console.error('Error:', error);
+                                      toast({
+                                        title: "Error",
+                                        description: "No se pudo guardar la URL. Por favor intenta nuevamente.",
+                                        variant: "destructive"
+                                      });
                                     });
                                     toast({
                                       title: "URL de video guardada",
@@ -912,12 +931,31 @@ const AdminParkEdit: React.FC = () => {
                                         form.setValue('videoUrl', '');
                                         
                                         // Actualizar en la base de datos
-                                        fetch(`/api/parks/${id}`, {
+                                        fetch(`/api/dev/parks/${id}`, {
                                           method: 'PUT',
                                           headers: {
                                             'Content-Type': 'application/json',
+                                            'Authorization': 'Bearer direct-token-1'
                                           },
                                           body: JSON.stringify({ videoUrl: '' })
+                                        })
+                                        .then(response => {
+                                          if (!response.ok) {
+                                            throw new Error('No se pudo eliminar la URL del video');
+                                          }
+                                          return response.json();
+                                        })
+                                        .catch(error => {
+                                          console.error('Error:', error);
+                                          // Restaurar el valor anterior
+                                          const prevValue = data?.videoUrl || '';
+                                          form.setValue('videoUrl', prevValue);
+                                          
+                                          toast({
+                                            title: "Error",
+                                            description: "No se pudo eliminar la URL. Por favor intenta nuevamente.",
+                                            variant: "destructive"
+                                          });
                                         });
                                         
                                         // Y notificar al usuario
