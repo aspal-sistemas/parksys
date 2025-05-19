@@ -255,11 +255,6 @@ const ActivitiesPage = () => {
           <h1 className="text-2xl font-bold">Actividades</h1>
           {parkName && <span className="text-muted-foreground">- {parkName}</span>}
         </div>
-        
-        <Button onClick={() => setIsAddActivityOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Agregar Actividad
-        </Button>
       </div>
       
       <Card className="mb-8">
@@ -382,21 +377,7 @@ const ActivitiesPage = () => {
         </Table>
       </div>
 
-      {/* Diálogos y modales */}
-      <Dialog open={isAddActivityOpen} onOpenChange={setIsAddActivityOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Agregar Nueva Actividad</DialogTitle>
-          </DialogHeader>
-          <NewActivityForm
-            parkId={parkId || 0}
-            parkName={parkName}
-            onSuccess={() => setIsAddActivityOpen(false)}
-            onCancel={() => setIsAddActivityOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
+      {/* Diálogo de edición */}
       <Dialog open={isEditActivityOpen} onOpenChange={setIsEditActivityOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>

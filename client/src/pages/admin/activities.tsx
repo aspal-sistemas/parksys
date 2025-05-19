@@ -32,6 +32,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Activity, Park } from '@shared/schema';
+import NewActivityForm from '@/components/NewActivityForm';
 
 const AdminActivities = () => {
   const { toast } = useToast();
@@ -39,6 +40,9 @@ const AdminActivities = () => {
   const [filterPark, setFilterPark] = useState<string>('');
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [activityToDelete, setActivityToDelete] = useState<Activity | null>(null);
   const [sortField, setSortField] = useState<string>('startDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -130,6 +134,15 @@ const AdminActivities = () => {
     const park = parks.find(p => p.id === parkId);
     return park ? park.name : 'Desconocido';
   };
+  
+  // Handle view activity details
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [detailActivity, setDetailActivity] = useState<Activity | null>(null);
+  
+  const handleViewDetails = (activity: Activity) => {
+    setDetailActivity(activity);
+    setShowDetailDialog(true);
+  };
 
   // Handle delete confirmation
   const handleDeleteConfirm = async () => {
@@ -193,7 +206,7 @@ const AdminActivities = () => {
         {/* Header with actions */}
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-800">Actividades</h2>
-          <Button>
+          <Button onClick={() => setShowAddDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Agregar Actividad
           </Button>
@@ -334,10 +347,23 @@ const AdminActivities = () => {
                     </TableCell>
                     <TableCell>{getParkName(activity.parkId)}</TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button variant="outline" size="icon" className="h-8 w-8">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => handleViewDetails(activity)}
+                      >
                         <Calendar className="h-4 w-4 text-blue-500" />
                       </Button>
-                      <Button variant="outline" size="icon" className="h-8 w-8">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => {
+                          setSelectedActivity(activity);
+                          setShowEditDialog(true);
+                        }}
+                      >
                         <Pencil className="h-4 w-4 text-yellow-500" />
                       </Button>
                       <Button 
@@ -356,6 +382,79 @@ const AdminActivities = () => {
           )}
         </div>
       </div>
+      
+      {/* Add activity dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Agregar Nueva Actividad</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <Select 
+              value={filterPark} 
+              onValueChange={setFilterPark}
+            >
+              <SelectTrigger className="w-full mb-6">
+                <SelectValue placeholder="Seleccione un parque" />
+              </SelectTrigger>
+              <SelectContent>
+                {parks.map(park => (
+                  <SelectItem key={park.id} value={park.id.toString()}>
+                    {park.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {filterPark && (
+              <NewActivityForm
+                parkId={parseInt(filterPark)}
+                parkName={getParkName(parseInt(filterPark))}
+                onSuccess={() => {
+                  setShowAddDialog(false);
+                  refetchActivities();
+                  toast({
+                    title: "Actividad creada",
+                    description: "La actividad ha sido creada exitosamente.",
+                  });
+                }}
+                onCancel={() => setShowAddDialog(false)}
+              />
+            )}
+            
+            {!filterPark && (
+              <p className="text-center text-gray-500 py-4">
+                Seleccione un parque para crear una actividad
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit activity dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Editar Actividad</DialogTitle>
+          </DialogHeader>
+          {selectedActivity && (
+            <NewActivityForm
+              parkId={selectedActivity.parkId}
+              parkName={getParkName(selectedActivity.parkId)}
+              onSuccess={() => {
+                setShowEditDialog(false);
+                refetchActivities();
+                toast({
+                  title: "Actividad actualizada",
+                  description: "La actividad ha sido actualizada exitosamente.",
+                });
+              }}
+              onCancel={() => setShowEditDialog(false)}
+              existingActivity={selectedActivity}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
       
       {/* Delete confirmation dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
