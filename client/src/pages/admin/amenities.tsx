@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Dialog,
   DialogContent,
@@ -133,7 +134,13 @@ const AdminAmenitiesPage: React.FC = () => {
       const response = await apiRequest(
         'PUT', 
         `/api/amenities/${data.id}`, 
-        { name: data.name, icon: data.icon, category: data.category }
+        { 
+          name: data.name, 
+          icon: data.icon, 
+          category: data.category,
+          iconType: data.iconType,
+          customIconUrl: data.customIconUrl
+        }
       );
       return response.json();
     },
@@ -226,7 +233,9 @@ const AdminAmenitiesPage: React.FC = () => {
     setFormData({
       name: amenity.name,
       icon: amenity.icon,
-      category: amenity.category
+      category: amenity.category,
+      iconType: amenity.iconType || 'system',
+      customIconUrl: amenity.customIconUrl || null
     });
     setIsEditDialogOpen(true);
   };
@@ -236,15 +245,48 @@ const AdminAmenitiesPage: React.FC = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleCreateSubmit = (e: React.FormEvent) => {
+  const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    createAmenity.mutate(formData);
+    
+    // Si es un icono personalizado y hay un archivo para subir
+    if (formData.iconType === 'custom' && uploadedFile) {
+      // Primero subir el icono
+      const iconUrl = await handleIconUpload();
+      if (iconUrl) {
+        // Si se subió correctamente, actualizar la URL en el form y crear la amenidad
+        createAmenity.mutate({
+          ...formData,
+          customIconUrl: iconUrl
+        });
+      }
+    } else {
+      // Si es un icono del sistema, crear la amenidad normal
+      createAmenity.mutate(formData);
+    }
   };
 
-  const handleEditSubmit = (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentAmenity) {
-      updateAmenity.mutate({ ...formData, id: currentAmenity.id });
+    if (!currentAmenity) return;
+    
+    // Si es un icono personalizado y hay un archivo para subir
+    if (formData.iconType === 'custom' && uploadedFile) {
+      // Primero subir el icono
+      const iconUrl = await handleIconUpload();
+      if (iconUrl) {
+        // Si se subió correctamente, actualizar la URL en el form y actualizar la amenidad
+        updateAmenity.mutate({
+          ...formData,
+          customIconUrl: iconUrl,
+          id: currentAmenity.id
+        });
+      }
+    } else {
+      // Si es un icono del sistema o no hay un nuevo archivo a subir
+      updateAmenity.mutate({
+        ...formData,
+        id: currentAmenity.id
+      });
     }
   };
 
@@ -311,29 +353,89 @@ const AdminAmenitiesPage: React.FC = () => {
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="icon">Icono</Label>
-                  <Select 
-                    value={formData.icon} 
-                    onValueChange={(value) => setFormData({ ...formData, icon: value })}
-                    required
+                  <Label htmlFor="iconType">Tipo de Icono</Label>
+                  <RadioGroup 
+                    className="flex flex-row gap-4 mt-2"
+                    value={formData.iconType}
+                    onValueChange={(value) => setFormData({
+                      ...formData, 
+                      iconType: value as 'system' | 'custom',
+                      // Si cambia a system, resetear el icon customizado
+                      customIconUrl: value === 'system' ? null : formData.customIconUrl
+                    })}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un icono" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {AVAILABLE_ICONS.map((icon) => (
-                        <SelectItem key={icon.name} value={icon.name}>
-                          <div className="flex items-center">
-                            <div className="mr-2">
-                              <AmenityIcon name={icon.name} size={16} />
-                            </div>
-                            {icon.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="system" id="system" />
+                      <Label htmlFor="system">Icono del sistema</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="custom" id="custom" />
+                      <Label htmlFor="custom">Icono personalizado</Label>
+                    </div>
+                  </RadioGroup>
                 </div>
+                
+                {formData.iconType === 'system' ? (
+                  <div className="grid gap-2">
+                    <Label htmlFor="icon">Icono</Label>
+                    <Select 
+                      value={formData.icon} 
+                      onValueChange={(value) => setFormData({ ...formData, icon: value })}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un icono" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AVAILABLE_ICONS.map((icon) => (
+                          <SelectItem key={icon.name} value={icon.name}>
+                            <div className="flex items-center">
+                              <div className="mr-2">
+                                <AmenityIcon name={icon.name} size={16} />
+                              </div>
+                              {icon.label}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div className="grid gap-2">
+                    <Label htmlFor="customIcon">Cargar icono personalizado (JPG o PNG)</Label>
+                    <div className="flex items-start gap-4 mt-2">
+                      <Input
+                        id="customIcon"
+                        type="file"
+                        accept=".jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setUploadedFile(file);
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      {(formData.customIconUrl || uploadedFile) && (
+                        <div className="flex flex-col items-center">
+                          <div className="w-16 h-16 rounded-md bg-gray-50 flex items-center justify-center overflow-hidden border">
+                            {uploadedFile ? (
+                              <span className="text-xs text-gray-500">Nuevo archivo seleccionado</span>
+                            ) : formData.customIconUrl ? (
+                              <img 
+                                src={formData.customIconUrl} 
+                                alt="Icono personalizado" 
+                                className="max-w-full max-h-full object-contain"
+                              />
+                            ) : null}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Vista previa</p>
+                        </div>
+                      )}
+                    </div>
+                    {isUploading && <p className="text-sm text-blue-500 mt-1">Subiendo icono...</p>}
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <Button variant="outline" type="button" onClick={() => setIsCreateDialogOpen(false)}>
@@ -377,7 +479,12 @@ const AdminAmenitiesPage: React.FC = () => {
                 <TableRow key={amenity.id}>
                   <TableCell>
                     <div className="p-2 bg-gray-100 rounded-md inline-flex">
-                      <AmenityIcon name={amenity.icon} size={24} />
+                      <AmenityIcon 
+                        name={amenity.icon} 
+                        size={24} 
+                        iconType={amenity.iconType as 'system' | 'custom'} 
+                        customIconUrl={amenity.customIconUrl}
+                      />
                     </div>
                   </TableCell>
                   <TableCell>{amenity.name}</TableCell>
@@ -453,29 +560,88 @@ const AdminAmenitiesPage: React.FC = () => {
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="edit-icon">Icono</Label>
-                <Select 
-                  value={formData.icon} 
-                  onValueChange={(value) => setFormData({ ...formData, icon: value })}
-                  required
+                <Label htmlFor="edit-iconType">Tipo de Icono</Label>
+                <RadioGroup 
+                  className="flex flex-row gap-4 mt-2"
+                  value={formData.iconType}
+                  onValueChange={(value) => setFormData({
+                    ...formData, 
+                    iconType: value as 'system' | 'custom',
+                    customIconUrl: value === 'system' ? null : formData.customIconUrl
+                  })}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un icono" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AVAILABLE_ICONS.map((icon) => (
-                      <SelectItem key={icon.name} value={icon.name}>
-                        <div className="flex items-center">
-                          <div className="mr-2">
-                            <AmenityIcon name={icon.name} size={16} />
-                          </div>
-                          {icon.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="system" id="edit-system" />
+                    <Label htmlFor="edit-system">Icono del sistema</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="custom" id="edit-custom" />
+                    <Label htmlFor="edit-custom">Icono personalizado</Label>
+                  </div>
+                </RadioGroup>
               </div>
+
+              {formData.iconType === 'system' ? (
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-icon">Icono</Label>
+                  <Select 
+                    value={formData.icon} 
+                    onValueChange={(value) => setFormData({ ...formData, icon: value })}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un icono" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AVAILABLE_ICONS.map((icon) => (
+                        <SelectItem key={icon.name} value={icon.name}>
+                          <div className="flex items-center">
+                            <div className="mr-2">
+                              <AmenityIcon name={icon.name} size={16} />
+                            </div>
+                            {icon.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-customIcon">Cargar icono personalizado (JPG o PNG)</Label>
+                  <div className="flex items-start gap-4 mt-2">
+                    <Input
+                      id="edit-customIcon"
+                      type="file"
+                      accept=".jpg,.jpeg,.png"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setUploadedFile(file);
+                        }
+                      }}
+                      className="flex-1"
+                    />
+                    {(formData.customIconUrl || uploadedFile) && (
+                      <div className="flex flex-col items-center">
+                        <div className="w-16 h-16 rounded-md bg-gray-50 flex items-center justify-center overflow-hidden border">
+                          {uploadedFile ? (
+                            <span className="text-xs text-gray-500">Nuevo archivo seleccionado</span>
+                          ) : formData.customIconUrl ? (
+                            <img 
+                              src={formData.customIconUrl} 
+                              alt="Icono personalizado" 
+                              className="max-w-full max-h-full object-contain"
+                            />
+                          ) : null}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Vista previa</p>
+                      </div>
+                    )}
+                  </div>
+                  {isUploading && <p className="text-sm text-blue-500 mt-1">Subiendo icono...</p>}
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => setIsEditDialogOpen(false)}>
