@@ -21,6 +21,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
   DialogFooter,
   DialogClose
@@ -51,8 +52,24 @@ const AnalyticsDashboard: React.FC = () => {
   };
   
   const executeExport = () => {
-    // En una implementación real, aquí se generaría y descargaría el archivo
-    alert(`Exportando datos de ${activeTab} en formato ${exportFormat}`);
+    // Simulamos la preparación del archivo para exportación
+    const fileName = `reporte_${activeTab}_${new Date().toISOString().split('T')[0]}.${exportFormat === 'excel' ? 'xlsx' : exportFormat}`;
+    
+    // Creamos un elemento temporal para simular la descarga
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent('Datos simulados de exportación'));
+    element.setAttribute('download', fileName);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    
+    // Mostramos un mensaje al usuario
+    alert(`Exportando datos de ${activeTab} en formato ${exportFormat}\nArchivo: ${fileName}`);
+    
+    // Simulamos el clic para descargar
+    element.click();
+    
+    // Limpiamos
+    document.body.removeChild(element);
     setShowExportDialog(false);
   };
   
@@ -60,12 +77,36 @@ const AnalyticsDashboard: React.FC = () => {
     setShowFilterDialog(true);
   };
   
+  const [filteredStatus, setFilteredStatus] = useState<string | null>(null);
+  
   const applyFilters = () => {
-    // En una implementación real, aquí se aplicarían los filtros seleccionados
+    // Representamos los nombres de municipios
+    const municipalityNames = {
+      'all': 'Todos',
+      '1': 'Ciudad de México',
+      '2': 'Guadalajara',
+      '3': 'Monterrey'
+    };
+    
+    // Representamos nombres de tipos de parques
+    const parkTypes = {
+      'all': 'Todos',
+      'urbano': 'Urbano',
+      'lineal': 'Lineal',
+      'bosque': 'Bosque',
+      'bolsillo': 'De Bolsillo'
+    };
+    
     const fromDate = dateRange.from ? dateRange.from.toLocaleDateString() : 'no seleccionada';
     const toDate = dateRange.to ? dateRange.to.toLocaleDateString() : 'no seleccionada';
     
-    alert(`Filtros aplicados:\nMunicipio: ${filterMunicipality}\nTipo de Parque: ${filterParkType}\nFecha inicio: ${fromDate}\nFecha fin: ${toDate}`);
+    // Creamos un texto para mostrar el estado de los filtros
+    const filterStatus = `Filtros aplicados: ${municipalityNames[filterMunicipality as keyof typeof municipalityNames]}, ${parkTypes[filterParkType as keyof typeof parkTypes]}, Desde: ${fromDate}, Hasta: ${toDate}`;
+    
+    // Actualizamos el estado con los filtros aplicados
+    setFilteredStatus(filterStatus);
+    
+    // Cerramos el diálogo
     setShowFilterDialog(false);
   };
   
@@ -78,13 +119,23 @@ const AnalyticsDashboard: React.FC = () => {
             <p className="text-muted-foreground">
               Visualiza estadísticas y genera reportes para la gestión y toma de decisiones
             </p>
+            {filteredStatus && (
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm flex items-center">
+                <Filter className="h-4 w-4 mr-2 text-blue-500" />
+                <span>{filteredStatus}</span>
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleExportData}>
               <Download className="mr-2 h-4 w-4" />
               Exportar Datos
             </Button>
-            <Button variant="outline" onClick={openFilterDialog}>
+            <Button 
+              variant={filteredStatus ? "default" : "outline"} 
+              onClick={openFilterDialog}
+              className={filteredStatus ? "bg-blue-600 hover:bg-blue-700" : ""}
+            >
               <Filter className="mr-2 h-4 w-4" />
               Filtrar
             </Button>
@@ -94,6 +145,9 @@ const AnalyticsDashboard: React.FC = () => {
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle>Filtrar Datos</DialogTitle>
+                  <DialogDescription>
+                    Selecciona los criterios para filtrar la información mostrada
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -184,6 +238,9 @@ const AnalyticsDashboard: React.FC = () => {
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle>Exportar Datos</DialogTitle>
+                  <DialogDescription>
+                    Selecciona el formato para exportar los datos del reporte actual
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
