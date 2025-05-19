@@ -28,6 +28,7 @@ import {
   Award,
   List,
   CalendarDays,
+  CheckSquare as SquareCheck,
   Wrench,
   DollarSign,
   ArrowDown,
@@ -229,6 +230,14 @@ const AdminSidebarModular: React.FC = () => {
                   active={location.startsWith('/admin/assets')}
                 >
                   Activos
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/amenities" 
+                  icon={<SquareCheck className="h-4 w-4" />}
+                  active={location.startsWith('/admin/amenities')}
+                >
+                  Amenidades
                 </NavItem>
                 
                 <NavItem 
