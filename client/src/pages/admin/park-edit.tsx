@@ -67,10 +67,12 @@ const AdminParkEdit: React.FC = () => {
   
   const [activeTab, setActiveTab] = useState('basic');
   
-  // Fetch park data if editing
-  const { data: park, isLoading } = useQuery<Park>({
+  // Fetch park data if editing - con clave para forzar actualización
+  const { data: park, isLoading, refetch } = useQuery<Park>({
     queryKey: [isEdit ? `/api/parks/${id}` : ''],
     enabled: isEdit,
+    staleTime: 0, // Siempre considerar los datos obsoletos
+    cacheTime: 0, // No guardar en caché
   });
   
   // Mutation for creating or updating a park
@@ -91,20 +93,19 @@ const AdminParkEdit: React.FC = () => {
           : 'El parque ha sido creado exitosamente',
       });
       
-      // Invalidate all relevant queries to asegurar que los cambios se reflejen
-      // Invalidamos tanto la lista de parques como el parque específico
-      await queryClient.invalidateQueries({ queryKey: ['/api/parks'] });
+      // Forzar actualización de todas las consultas relacionadas
+      await queryClient.resetQueries();
       
-      if (isEdit && id) {
-        // Invalidar la consulta específica del parque que acabamos de editar
-        await queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}`] });
-      }
+      // Mostrar feedback al usuario
+      toast({
+        title: 'Datos actualizados',
+        description: 'Los cambios se han guardado correctamente'
+      });
       
-      // Esperar un momento antes de redirigir
+      // Navegar a la lista de parques después de un breve retraso
       setTimeout(() => {
-        // Redirect to parks list
-        setLocation('/admin/parks');
-      }, 300);
+        window.location.href = '/admin/parks';
+      }, 500);
     },
     onError: (error) => {
       toast({
