@@ -69,10 +69,76 @@ const AnalyticsDashboard: React.FC = () => {
       // Para PDF usamos un formato diferente que garantiza su descarga
       mimeType = 'application/pdf';
       
-      // Generamos un PDF simple (un blob vacío para simular)
-      // En una implementación real, aquí generaríamos un PDF real
-      // Para esta simulación, solo creamos un archivo vacío
-      const blob = new Blob(['%PDF-1.4\n1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n2 0 obj\n<</Type/Pages/Kids[3 0 R]/Count 1>>\nendobj\n3 0 obj\n<</Type/Page/MediaBox[0 0 612 792]/Parent 2 0 R/Resources<<>>>>\nendobj\nxref\n0 4\n0000000000 65535 f\n0000000010 00000 n\n0000000053 00000 n\n0000000102 00000 n\ntrailer\n<</Size 4/Root 1 0 R>>\nstartxref\n178\n%%EOF'], { type: mimeType });
+      // En una implementación real, se integraría con una biblioteca de generación de PDF
+      // Como jsPDF o similar para generar un PDF con el contenido real
+      
+      // Para esta demo, vamos a crear un PDF con elementos para mostrar el contenido básico
+      // Nota: Este es un PDF muy básico pero visible con estructura válida
+      const pdfContent = `
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog
+   /Pages 2 0 R
+>>
+endobj
+2 0 obj
+<< /Type /Pages
+   /Kids [3 0 R]
+   /Count 1
+>>
+endobj
+3 0 obj
+<< /Type /Page
+   /Parent 2 0 R
+   /MediaBox [0 0 612 792]
+   /Resources << /Font << /F1 4 0 R >> >>
+   /Contents 5 0 R
+>>
+endobj
+4 0 obj
+<< /Type /Font
+   /Subtype /Type1
+   /BaseFont /Helvetica
+>>
+endobj
+5 0 obj
+<< /Length 172 >>
+stream
+BT
+/F1 24 Tf
+50 700 Td
+(Reporte de ${activeTab === 'uso' ? 'Uso de Parques' : 
+             activeTab === 'actividades' ? 'Actividades' : 
+             activeTab === 'incidencias' ? 'Incidencias' : 
+             activeTab === 'mantenimiento' ? 'Mantenimiento' : 'Participación Ciudadana'}) Tj
+/F1 12 Tf
+0 -50 Td
+(Fecha: ${new Date().toLocaleDateString()}) Tj
+0 -20 Td
+(Este es un reporte generado desde el sistema ParquesMX) Tj
+0 -20 Td
+(Para más información, contacte al administrador del sistema) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f
+0000000009 00000 n
+0000000063 00000 n
+0000000124 00000 n
+0000000247 00000 n
+0000000315 00000 n
+trailer
+<< /Size 6
+   /Root 1 0 R
+>>
+startxref
+541
+%%EOF
+`;
+      
+      const blob = new Blob([pdfContent], { type: mimeType });
       
       const fileName = `reporte_${activeTab}_${new Date().toISOString().split('T')[0]}.${fileExt}`;
       const url = URL.createObjectURL(blob);
