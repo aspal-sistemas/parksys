@@ -962,9 +962,15 @@ const AdminParkEdit: React.FC = () => {
                         </div>
                       </div>
                     </CardContent>
-                    <CardFooter>
-                      <Button variant="outline" onClick={() => setActiveTab('contact')}>
+                    <CardFooter className="flex justify-between">
+                      <Button variant="outline" onClick={() => setActiveTab('details')}>
                         Anterior
+                      </Button>
+                      <Button 
+                        type="button" 
+                        onClick={() => setActiveTab('amenities')}
+                      >
+                        Siguiente
                       </Button>
                     </CardFooter>
                   </Card>
@@ -1105,9 +1111,16 @@ const AdminParkEdit: React.FC = () => {
                         </div>
                       </div>
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="flex justify-between">
                       <Button variant="outline" onClick={() => setActiveTab('media')}>
                         Anterior
+                      </Button>
+                      <Button 
+                        type="submit"
+                        disabled={mutation.isPending}
+                      >
+                        {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                        {isEdit ? 'Actualizar Parque' : 'Crear Parque'}
                       </Button>
                     </CardFooter>
                   </Card>
