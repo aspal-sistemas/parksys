@@ -122,9 +122,10 @@ const AdminParkEdit: React.FC = () => {
         description: 'Los cambios se han guardado correctamente'
       });
       
-      // Verificamos si debemos prevenir la redirección
-      // La variable preventParkRedirect se establece al eliminar amenidades
-      if (!window.preventParkRedirect) {
+      // Solo redirigir si el botón de guardar fue presionado directamente
+      // y no a través de otra acción como eliminar una amenidad
+      // Esta condición verifica si una actualización no fue desencadenada por la eliminación de amenidades
+      if ((!document.querySelector('[data-amenity-operation="true"]'))) {
         // Navegar a la lista de parques después de un breve retraso
         setTimeout(() => {
           window.location.href = '/admin/parks';
@@ -1025,35 +1026,38 @@ const AdminParkEdit: React.FC = () => {
                                       if (!id) return;
                                       if (confirm(`¿Estás seguro de quitar la amenidad "${amenity.name}" del parque?`)) {
                                         try {
-                                          // Establecemos una variable global para prevenir la redirección
-                                          window.preventParkRedirect = true;
-                                          
-                                          const response = await fetch(`/api/parks/${id}/amenities/${amenity.id}`, {
-                                            method: 'DELETE',
-                                            headers: {
-                                              'Authorization': 'Bearer direct-token-1'
-                                            }
-                                          });
-                                          
-                                          if (response.ok) {
-                                            // Actualizar la lista de amenidades en el estado localmente
-                                            // sin hacer una redirección completa
-                                            setParkAmenities(parkAmenities.filter((a: any) => a.id !== amenity.id));
-                                            
-                                            // Evitamos cualquier actualización global del queryClient
-                                            toast({
-                                              title: "Amenidad eliminada",
-                                              description: `Se ha quitado ${amenity.name} del parque.`
+                                          try {
+                                            // Hacemos la petición manual sin usar hooks de TanStack Query
+                                            const response = await fetch(`/api/parks/${id}/amenities/${amenity.id}`, {
+                                              method: 'DELETE',
+                                              headers: {
+                                                'Authorization': 'Bearer direct-token-1'
+                                              }
                                             });
                                             
-                                            // Restauramos la variable después de un tiempo
-                                            setTimeout(() => {
-                                              window.preventParkRedirect = false;
-                                            }, 1000);
-                                          } else {
+                                            if (response.ok) {
+                                              // Actualizar la lista de amenidades en el estado localmente
+                                              setParkAmenities(parkAmenities.filter((a: any) => a.id !== amenity.id));
+                                              
+                                              // Evitar que se invaliden consultas
+                                              // Usar directamente el estado local
+                                              
+                                              // Mostrar mensaje de éxito sin actualizar el parque
+                                              toast({
+                                                title: "Amenidad eliminada",
+                                                description: `Se ha quitado ${amenity.name} del parque.`
+                                              });
+                                            } else {
+                                              toast({
+                                                title: "Error",
+                                                description: "No se pudo eliminar la amenidad del parque.",
+                                                variant: "destructive"
+                                              });
+                                            }
+                                          } catch (error) {
                                             toast({
                                               title: "Error",
-                                              description: "No se pudo eliminar la amenidad del parque.",
+                                              description: "Ocurrió un error al eliminar la amenidad.",
                                               variant: "destructive"
                                             });
                                           }
