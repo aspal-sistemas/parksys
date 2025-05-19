@@ -151,10 +151,17 @@ export async function setupAuth(app: Express) {
   // Ruta para cerrar sesión
   app.get("/api/logout", (req, res) => {
     req.logout(() => {
+      // Determinar si viene de la página de administración
+      const referer = req.get('Referer') || '';
+      const isAdmin = referer.includes('/admin');
+      
+      // Si viene de la administración, redirigir a la página principal
+      const redirectTo = isAdmin ? '/' : `${req.protocol}://${req.hostname}`;
+      
       res.redirect(
         client.buildEndSessionUrl(config, {
           client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
+          post_logout_redirect_uri: redirectTo,
         }).href
       );
     });
