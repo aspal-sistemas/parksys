@@ -37,7 +37,7 @@ const ParksImport = () => {
 
   const downloadTemplate = async () => {
     try {
-      const response = await fetch('/api/parks/import-template');
+      const response = await fetch('/api/template/parks-import');
       
       if (!response.ok) {
         throw new Error('Error al descargar la plantilla');

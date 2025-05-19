@@ -57,6 +57,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get a specific park by ID with all related data
+
+  
   apiRouter.get("/parks/:id", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
@@ -104,9 +106,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Import parks from Excel/CSV
   apiRouter.post("/parks/import", isAuthenticated, hasMunicipalityAccess(), uploadParkFile, handleMulterErrors, processImportFile);
-  
-  // Download import template
-  apiRouter.get("/parks/import-template", isAuthenticated, generateImportTemplate);
 
   // Update an existing park (admin/municipality only)
   apiRouter.put("/parks/:id", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
