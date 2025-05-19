@@ -385,7 +385,7 @@ const AdminParks = () => {
                         variant="outline" 
                         size="icon" 
                         className="h-8 w-8"
-                        onClick={() => window.open(`/admin/parks/edit/${park.id}`, '_blank')}
+                        onClick={() => window.location.href = `/admin/parks/${park.id}`}
                       >
                         <Pencil className="h-4 w-4 text-yellow-500" />
                       </Button>
