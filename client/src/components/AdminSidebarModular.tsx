@@ -220,7 +220,7 @@ const AdminSidebarModular: React.FC = () => {
                   icon={<Map className="h-4 w-4" />}
                   active={location === '/admin/parks'}
                 >
-                  Inventario de Parques
+                  Parques
                 </NavItem>
                 
                 <NavItem 
@@ -228,7 +228,7 @@ const AdminSidebarModular: React.FC = () => {
                   icon={<Tag className="h-4 w-4" />}
                   active={location.startsWith('/admin/assets')}
                 >
-                  Inventario de Activos
+                  Activos
                 </NavItem>
                 
                 <NavItem 
