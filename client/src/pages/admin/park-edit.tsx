@@ -122,9 +122,9 @@ const AdminParkEdit: React.FC = () => {
         description: 'Los cambios se han guardado correctamente'
       });
       
-      // Añadimos una variable de estado para controlar la redirección
-      // No redirigiremos automáticamente si estamos gestionando amenidades
-      if (!window.managingAmenities) {
+      // Verificamos si debemos prevenir la redirección
+      // La variable preventParkRedirect se establece al eliminar amenidades
+      if (!window.preventParkRedirect) {
         // Navegar a la lista de parques después de un breve retraso
         setTimeout(() => {
           window.location.href = '/admin/parks';
