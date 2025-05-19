@@ -10,7 +10,8 @@ import {
   ArrowUp, 
   ArrowDown, 
   ArrowRight,
-  Plus
+  Plus,
+  Upload
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -78,11 +79,17 @@ const AdminDashboard: React.FC = () => {
                 Bienvenido al panel de administración de ParquesMX
               </p>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <Link href="/admin/parks/new">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
                   Agregar Parque
+                </Button>
+              </Link>
+              <Link href="/admin/parks-import">
+                <Button variant="outline">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Importar Parques
                 </Button>
               </Link>
             </div>
