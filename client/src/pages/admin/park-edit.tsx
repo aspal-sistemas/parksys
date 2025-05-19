@@ -17,7 +17,8 @@ import {
   ExternalLink,
   Eye,
   Download,
-  Edit
+  Edit,
+  AlertTriangle
 } from 'lucide-react';
 import { 
   Form, 
@@ -1089,64 +1090,39 @@ const AdminParkEdit: React.FC = () => {
                                         </p>
                                       </div>
                                     </div>
-                                    {doc.documentUrl?.includes('example.com') ? (
-                                      <div className="text-sm flex items-start bg-amber-50 border border-amber-200 rounded-md p-2 text-amber-700">
-                                        <div className="mr-2">
-                                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-amber-500">
+                                    
+                                    <div className="flex space-x-2">
+                                      {doc.documentUrl?.includes('example.com') ? (
+                                        <div className="text-sm flex items-start bg-amber-50 border border-amber-200 rounded-md p-2 text-amber-700">
+                                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 mr-2 text-amber-500">
                                             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                                             <line x1="12" y1="9" x2="12" y2="13"></line>
                                             <line x1="12" y1="17" x2="12.01" y2="17"></line>
                                           </svg>
+                                          <div>
+                                            <span className="font-medium text-xs">Documento de muestra</span>
+                                          </div>
                                         </div>
-                                        <div>
-                                          <span className="font-medium block">Documento de demostración</span>
-                                          <span className="text-xs block mt-1">Este documento es solo un ejemplo y no puede abrirse ni descargarse.</span>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <div className="flex space-x-2">
-                                        <Button 
-                                          variant="ghost" 
-                                          size="sm"
-                                          onClick={() => {
-                                            window.open(doc.documentUrl, '_blank');
-                                          }}
-                                        >
-                                          <Eye className="h-4 w-4 mr-1" />
-                                          Ver
-                                        </Button>
-                                        
-                                        <Button 
-                                          variant="ghost" 
-                                          size="sm"
-                                          onClick={() => {
+                                      ) : (
+                                        <>
+                                          <Button variant="ghost" size="sm" onClick={() => window.open(doc.documentUrl, '_blank')}>
+                                            <Eye className="h-4 w-4 mr-1" />
+                                            Ver
+                                          </Button>
+                                          <Button variant="ghost" size="sm" onClick={() => {
                                             const link = document.createElement('a');
                                             link.href = doc.documentUrl;
                                             link.download = doc.documentName || 'documento';
                                             document.body.appendChild(link);
                                             link.click();
                                             document.body.removeChild(link);
-                                          }}
-                                        >
-                                          <Download className="h-4 w-4 mr-1" />
-                                          Descargar
-                                        </Button>
-                                        
-                                        <Button 
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => {
-                                            toast({
-                                              title: "Función en desarrollo",
-                                              description: "La edición de documentos estará disponible próximamente.",
-                                            });
-                                          }}
-                                        >
-                                          <Edit className="h-4 w-4 mr-1" />
-                                          Editar
-                                        </Button>
-                                      </div>
-                                    )}
+                                          }}>
+                                            <Download className="h-4 w-4 mr-1" />
+                                            Descargar
+                                          </Button>
+                                        </>
+                                      )}
+                                      
                                       <Button 
                                         variant="ghost" 
                                         size="sm"
