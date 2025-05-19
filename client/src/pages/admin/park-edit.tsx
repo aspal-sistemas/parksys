@@ -73,7 +73,8 @@ const AdminParkEdit: React.FC = () => {
   const { data: park, isLoading } = useQuery({
     queryKey: ['/api/parks', id],
     enabled: isEdit,
-    cacheTime: 0
+    gcTime: 0,
+    staleTime: 0
   });
   
   // Consulta la lista de municipios
