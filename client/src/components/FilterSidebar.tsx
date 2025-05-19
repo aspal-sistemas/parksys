@@ -128,10 +128,12 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
     </TooltipProvider>
   );
 
-  // Prepara las amenidades a mostrar según la categoría seleccionada
-  const amenityItems = activeCategory === 'todas' 
-    ? Object.values(amenitiesByCategory).flat() 
-    : (activeCategory && amenitiesByCategory[activeCategory]) || [];
+  // Mostramos todas las amenidades siempre
+  const amenityItems = Object.values(amenitiesByCategory).flat();
+  
+  // Función para verificar si una amenidad está en la categoría activa
+  const isInActiveCategory = (amenity: Amenity) => 
+    activeCategory === 'todas' || amenity.category === activeCategory;
 
   return (
     <div className="w-full bg-white overflow-y-auto pb-4">
@@ -252,7 +254,44 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
 
             {/* Amenity Icons Grid - Más grande y mejor visible */}
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-2">
-              {amenityItems.map(renderAmenityItem)}
+              {amenityItems.map(amenity => (
+                <TooltipProvider key={amenity.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => toggleAmenity(amenity.id)}
+                        className={`flex flex-col items-center justify-center p-2 rounded-lg border w-full min-h-[80px] ${
+                          selectedAmenities.includes(amenity.id)
+                            ? 'border-secondary-500 bg-secondary-50 shadow-sm' 
+                            : isInActiveCategory(amenity) 
+                              ? 'border-gray-200 hover:bg-gray-50' 
+                              : 'border-gray-100 opacity-50 hover:opacity-70'
+                        }`}
+                      >
+                        <div className={`p-2 rounded-full mb-1 ${
+                          selectedAmenities.includes(amenity.id)
+                            ? 'bg-secondary-100 text-secondary-700'
+                            : isInActiveCategory(amenity)
+                              ? 'bg-gray-100 text-gray-600'
+                              : 'bg-gray-50 text-gray-400'
+                        }`}>
+                          <AmenityIcon name={amenity.icon} size={24} />
+                        </div>
+                        <span className={`text-xs text-center mt-1 font-medium ${
+                          !isInActiveCategory(amenity) && !selectedAmenities.includes(amenity.id) 
+                            ? 'text-gray-400' 
+                            : ''
+                        }`}>
+                          {amenity.name}
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs">{amenity.name}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ))}
             </div>
 
             {/* Selected Amenities Count */}
