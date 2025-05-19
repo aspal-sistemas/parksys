@@ -1474,9 +1474,39 @@ export class DatabaseStorage implements IStorage {
   async getAmenities(): Promise<Amenity[]> {
     return await db.select().from(amenities).orderBy(amenities.name);
   }
-
-  async createAmenity(amenityData: InsertAmenity): Promise<Amenity> {
-    const [newAmenity] = await db.insert(amenities).values(amenityData).returning();
+  
+  async getAmenity(id: number): Promise<Amenity | undefined> {
+    const [amenity] = await db.select().from(amenities).where(eq(amenities.id, id));
+    return amenity;
+  }
+  
+  async createAmenity(data: { name: string; icon: string; category: string }): Promise<Amenity> {
+    const [newAmenity] = await db.insert(amenities)
+      .values(data)
+      .returning();
+    return newAmenity;
+  }
+  
+  async updateAmenity(id: number, data: { name: string; icon: string; category: string }): Promise<Amenity | undefined> {
+    const [updatedAmenity] = await db.update(amenities)
+      .set(data)
+      .where(eq(amenities.id, id))
+      .returning();
+    return updatedAmenity;
+  }
+  
+  async deleteAmenity(id: number): Promise<boolean> {
+    const result = await db.delete(amenities)
+      .where(eq(amenities.id, id));
+    return result.rowCount > 0;
+  }
+  
+  async isAmenityInUse(id: number): Promise<boolean> {
+    const [result] = await db.select({ count: sql<number>`count(*)` })
+      .from(parkAmenities)
+      .where(eq(parkAmenities.amenityId, id));
+    return result.count > 0;
+  }
     return newAmenity;
   }
 

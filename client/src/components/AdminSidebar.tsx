@@ -9,7 +9,8 @@ import {
   Bell, 
   Users, 
   Settings, 
-  LogOut 
+  LogOut,
+  Tag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -111,6 +112,14 @@ const AdminSidebar: React.FC = () => {
             active={location.startsWith('/admin/users')}
           >
             Usuarios
+          </NavItem>
+          
+          <NavItem 
+            href="/admin/amenities" 
+            icon={<Tag className="h-5 w-5" />}
+            active={location.startsWith('/admin/amenities')}
+          >
+            Amenidades
           </NavItem>
         </nav>
       </ScrollArea>
