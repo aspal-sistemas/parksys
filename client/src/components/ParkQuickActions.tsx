@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Calendar, Video, FileText, MessageSquare } from 'lucide-react';
+import { Calendar, Video, FileText, MessageSquare, Loader } from 'lucide-react';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -30,9 +30,23 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
   
   const [isActivitiesDialogOpen, setIsActivitiesDialogOpen] = useState(false);
   const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
+  const [isCommentsListOpen, setIsCommentsListOpen] = useState(false);
   const [comment, setComment] = useState("");
   const [commentName, setCommentName] = useState("");
   const [commentEmail, setCommentEmail] = useState("");
+  
+  // Consultar comentarios existentes
+  const { data: comments, isLoading: isLoadingComments } = useQuery({
+    queryKey: [`/api/parks/${parkId}/comments`],
+    queryFn: async () => {
+      const response = await fetch(`/api/parks/${parkId}/comments?approvedOnly=true`);
+      if (!response.ok) {
+        throw new Error('Error al cargar comentarios');
+      }
+      return response.json();
+    },
+    enabled: isCommentsListOpen, // Solo cargar cuando se abra el diálogo
+  });
   
   // Formatear fecha
   const formatDate = (date: string | Date) => {
@@ -127,10 +141,10 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
           <Button 
             variant="outline" 
             className="w-full justify-start"
-            onClick={() => setIsCommentDialogOpen(true)}
+            onClick={() => setIsCommentsListOpen(true)}
           >
             <MessageSquare className="h-4 w-4 mr-2" />
-            Dejar comentario
+            Comentarios
           </Button>
         </div>
       </div>
@@ -168,7 +182,62 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* Comment Dialog */}
+      {/* Comments List Dialog */}
+      <Dialog open={isCommentsListOpen} onOpenChange={setIsCommentsListOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Comentarios sobre {parkName}</DialogTitle>
+            <DialogDescription>
+              Opiniones y experiencias de visitantes
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-2">
+            {isLoadingComments ? (
+              <div className="flex justify-center items-center py-10">
+                <Loader className="h-8 w-8 text-primary animate-spin" />
+              </div>
+            ) : (
+              <>
+                {comments && comments.length > 0 ? (
+                  <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    {comments.map((comment: any) => (
+                      <div key={comment.id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex justify-between mb-2">
+                          <h4 className="font-medium">{comment.name}</h4>
+                          <span className="text-xs text-gray-500">
+                            {comment.createdAt && formatDate(comment.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-gray-700">{comment.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-gray-500 mb-4">No hay comentarios aún para este parque.</p>
+                  </div>
+                )}
+                
+                <div className="mt-6 pt-4 border-t">
+                  <Button 
+                    className="w-full" 
+                    onClick={() => {
+                      setIsCommentsListOpen(false);
+                      setTimeout(() => setIsCommentDialogOpen(true), 100);
+                    }}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Dejar un nuevo comentario
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* New Comment Dialog */}
       <Dialog open={isCommentDialogOpen} onOpenChange={setIsCommentDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
