@@ -10,9 +10,14 @@ import { ExtendedPark } from '@shared/schema';
 
 const Home: React.FC = () => {
   // Fetch a few featured parks
-  const { data: featuredParks = [], isLoading } = useQuery<ExtendedPark[]>({
+  const { data: allParks = [], isLoading } = useQuery<ExtendedPark[]>({
     queryKey: ['/api/parks'],
   });
+  
+  // Filtrar parques sin nombre o marcados como eliminados
+  const featuredParks = allParks.filter(park => 
+    park.name.trim() !== '' && !park.isDeleted
+  );
   
   return (
     <main className="flex-1">
