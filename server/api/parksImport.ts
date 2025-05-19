@@ -291,10 +291,10 @@ export const processImportFile = async (req: Request, res: Response) => {
     });
     
     // Validar y filtrar parques válidos
-    const validParks = [];
-    const errors = [];
+    const validParks: any[] = [];
+    const errors: string[] = [];
     
-    for (const [index, parkData] of parksData.entries()) {
+    parksData.forEach((parkData, index) => {
       try {
         const validatedPark = insertParkSchema.parse(parkData);
         validParks.push(validatedPark);
@@ -307,7 +307,7 @@ export const processImportFile = async (req: Request, res: Response) => {
           errors.push(`Error en la fila ${index + 2}: ${(error as Error).message}`);
         }
       }
-    }
+    });
     
     // Si no hay parques válidos, retornar error
     if (validParks.length === 0) {
@@ -319,17 +319,20 @@ export const processImportFile = async (req: Request, res: Response) => {
     
     // Crear parques en la base de datos
     let createdCount = 0;
-    const importErrors = [];
+    const importErrors: string[] = [];
     
-    for (const [index, parkData] of validParks.entries()) {
-      try {
-        await storage.createPark(parkData);
-        createdCount++;
-      } catch (error) {
-        const rowNumber = index + 2;
-        importErrors.push(`Error al importar parque en fila ${rowNumber}: ${(error as Error).message}`);
-      }
-    }
+    // Usar Promise.all para crear todos los parques en paralelo
+    await Promise.all(
+      validParks.map(async (parkData, index) => {
+        try {
+          await storage.createPark(parkData);
+          createdCount++;
+        } catch (error) {
+          const rowNumber = index + 2;
+          importErrors.push(`Error al importar parque en fila ${rowNumber}: ${(error as Error).message}`);
+        }
+      })
+    );
     
     // Eliminar archivo temporal
     fs.unlinkSync(filePath);

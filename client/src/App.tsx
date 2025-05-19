@@ -11,6 +11,7 @@ import Activities from "@/pages/activities";
 import AdminDashboard from "@/pages/admin";
 import AdminParks from "@/pages/admin/parks";
 import AdminParkEdit from "@/pages/admin/park-edit";
+import AdminParksImport from "@/pages/admin/parks-import";
 import AdminActivities from "@/pages/admin/activities";
 import AdminDocuments from "@/pages/admin/documents";
 import AdminComments from "@/pages/admin/comments";
@@ -34,6 +35,7 @@ function Router() {
         <Route path="/activities" component={Activities} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/parks" component={AdminParks} />
+        <Route path="/admin/parks-import" component={AdminParksImport} />
         <Route path="/admin/parks/new" component={AdminParkEdit} />
         <Route path="/admin/parks/:id" component={AdminParkEdit} />
         <Route path="/admin/activities" component={AdminActivities} />
