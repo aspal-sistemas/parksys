@@ -698,7 +698,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/parks/:id/activities", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
-      const activityData = { ...req.body, parkId };
+      console.log("Datos recibidos en POST /parks/:id/activities:", req.body);
+      
+      // Extraer los datos
+      const { startDate, endDate, ...otherData } = req.body;
+      
+      // Convertir las fechas explícitamente a objetos Date
+      let parsedStartDate: Date;
+      let parsedEndDate: Date | undefined;
+      
+      try {
+        parsedStartDate = new Date(startDate);
+        if (endDate) {
+          parsedEndDate = new Date(endDate);
+        }
+      } catch (e) {
+        console.error("Error al convertir fechas:", e);
+        return res.status(400).json({ message: "Formato de fecha inválido" });
+      }
+      
+      // Verificar que la fecha de inicio es válida
+      if (isNaN(parsedStartDate.getTime())) {
+        return res.status(400).json({ message: "La fecha de inicio no es válida" });
+      }
+      
+      // Verificar que la fecha de fin es válida (si existe)
+      if (parsedEndDate && isNaN(parsedEndDate.getTime())) {
+        return res.status(400).json({ message: "La fecha de fin no es válida" });
+      }
+      
+      // Crear el objeto con los datos procesados
+      const activityData = { 
+        ...otherData, 
+        parkId,
+        startDate: parsedStartDate,
+        ...(parsedEndDate && { endDate: parsedEndDate })
+      };
+      
+      console.log("Datos procesados:", activityData);
       
       const data = insertActivitySchema.parse(activityData);
       const result = await storage.createActivity(data);
@@ -707,9 +744,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof ZodError) {
         const validationError = fromZodError(error);
+        console.error("Error de validación Zod:", error);
         return res.status(400).json({ message: validationError.message });
       }
-      console.error(error);
+      console.error("Error al crear actividad:", error);
       res.status(500).json({ message: "Error adding activity to park" });
     }
   });
@@ -718,6 +756,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.put("/activities/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const activityId = Number(req.params.id);
+      console.log("Datos recibidos en PUT /activities/:id:", req.body);
       
       // Verificar si la actividad existe
       const existingActivity = await storage.getActivity(activityId);
@@ -728,16 +767,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // En desarrollo, permitimos actualizar cualquier actividad
       // TODO: Implementar verificación de permisos más estricta en producción
       
-      const activityData = req.body;
-      // No permitimos cambiar el parkId desde esta ruta
-      delete activityData.parkId;
+      // Extraer los datos
+      const { startDate, endDate, parkId, ...otherData } = req.body;
+      
+      // Convertir las fechas explícitamente a objetos Date
+      let parsedStartDate: Date;
+      let parsedEndDate: Date | undefined;
+      
+      try {
+        parsedStartDate = new Date(startDate);
+        if (endDate) {
+          parsedEndDate = new Date(endDate);
+        }
+      } catch (e) {
+        console.error("Error al convertir fechas:", e);
+        return res.status(400).json({ message: "Formato de fecha inválido" });
+      }
+      
+      // Verificar que la fecha de inicio es válida
+      if (isNaN(parsedStartDate.getTime())) {
+        return res.status(400).json({ message: "La fecha de inicio no es válida" });
+      }
+      
+      // Verificar que la fecha de fin es válida (si existe)
+      if (parsedEndDate && isNaN(parsedEndDate.getTime())) {
+        return res.status(400).json({ message: "La fecha de fin no es válida" });
+      }
+      
+      // Crear el objeto con los datos procesados
+      const activityData = { 
+        ...otherData,
+        startDate: parsedStartDate,
+        ...(parsedEndDate && { endDate: parsedEndDate })
+      };
+      
+      console.log("Datos procesados para actualización:", activityData);
       
       // Validar los datos
       const result = await storage.updateActivity(activityId, activityData);
       
       res.json(result);
     } catch (error) {
-      console.error(error);
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        console.error("Error de validación Zod:", error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      console.error("Error al actualizar actividad:", error);
       res.status(500).json({ message: "Error actualizando actividad" });
     }
   });
