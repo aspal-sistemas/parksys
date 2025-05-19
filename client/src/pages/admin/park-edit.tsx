@@ -14,7 +14,10 @@ import {
   ImagePlus,
   Plus,
   Video,
-  ExternalLink
+  ExternalLink,
+  Eye,
+  Download,
+  Edit
 } from 'lucide-react';
 import { 
   Form, 
@@ -1084,7 +1087,36 @@ const AdminParkEdit: React.FC = () => {
                                           window.open(doc.documentUrl, '_blank');
                                         }}
                                       >
+                                        <Eye className="h-4 w-4 mr-1" />
                                         Ver
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm"
+                                        onClick={() => {
+                                          // Crear un enlace temporal para la descarga
+                                          const link = document.createElement('a');
+                                          link.href = doc.documentUrl;
+                                          link.download = doc.documentName || 'documento';
+                                          document.body.appendChild(link);
+                                          link.click();
+                                          document.body.removeChild(link);
+                                        }}
+                                      >
+                                        <Download className="h-4 w-4 mr-1" />
+                                        Descargar
+                                      </Button>
+                                      <Button 
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          // Mostrar un diálogo modal para editar el documento
+                                          // Por ahora, solo mostraremos una alerta
+                                          alert('Funcionalidad de edición en desarrollo');
+                                        }}
+                                      >
+                                        <Edit className="h-4 w-4 mr-1" />
+                                        Editar
                                       </Button>
                                       <Button 
                                         variant="ghost" 
