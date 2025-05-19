@@ -697,7 +697,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           title: "Juegos infantiles dañados",
           description: "Los columpios están rotos y son peligrosos para los niños",
           status: "pending",
-          severity: "high",
+          severity: "high", 
           reporterName: "Ana López",
           reporterEmail: "ana@example.com",
           location: "Área de juegos",
@@ -744,35 +744,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       ];
       
+      console.log("Enviando incidentes de muestra:", sampleIncidents.length);
+      
       // Si se especificó un parkId, filtramos los incidentes por ese parque
       if (parkId) {
         const filteredIncidents = sampleIncidents.filter(inc => inc.parkId === parkId);
+        console.log(`Filtrando incidentes por parque ${parkId}:`, filteredIncidents.length);
         return res.json(filteredIncidents);
       }
       
       // Respondemos con todos los incidentes de muestra
       return res.json(sampleIncidents);
-        // obtenemos todos los parques del municipio y sus incidentes
-        const allParks = await storage.getParks({ municipalityId: req.user.municipalityId });
-        const allIncidents = [];
-        
-        for (const park of allParks) {
-          const parkIncidents = await storage.getParkIncidents(park.id);
-          allIncidents.push(...parkIncidents);
-        }
-        
-        return res.json(allIncidents);
-      }
-      
-      // Para super_admin, devolvemos todos los incidentes o filtramos por parque
-      const incidents = parkId 
-        ? await storage.getParkIncidents(parkId)
-        : await storage.getAllIncidents();
-      
-      res.json(incidents);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Error fetching incidents" });
+      console.error("Error obteniendo incidentes:", error);
+      return res.status(500).json({ message: "Error al obtener incidentes" });
     }
   });
   
