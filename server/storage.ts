@@ -745,7 +745,17 @@ export class MemStorage implements IStorage {
   }
 
   async deletePark(id: number): Promise<boolean> {
-    return this.parks.delete(id);
+    // Implementamos borrado lógico en lugar de borrado físico para MemStorage también
+    const park = this.parks.get(id);
+    if (!park) return false;
+    
+    const updatedPark = { 
+      ...park, 
+      isDeleted: true, 
+      updatedAt: new Date() 
+    };
+    this.parks.set(id, updatedPark);
+    return true;
   }
 
   // Park Image operations
