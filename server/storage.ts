@@ -1480,14 +1480,14 @@ export class DatabaseStorage implements IStorage {
     return amenity;
   }
   
-  async createAmenity(data: { name: string; icon: string; category: string }): Promise<Amenity> {
+  async createAmenity(data: { name: string; icon: string; category: string; iconType: string; customIconUrl: string | null }): Promise<Amenity> {
     const [newAmenity] = await db.insert(amenities)
       .values(data)
       .returning();
     return newAmenity;
   }
   
-  async updateAmenity(id: number, data: { name: string; icon: string; category: string }): Promise<Amenity | undefined> {
+  async updateAmenity(id: number, data: { name: string; icon: string; category: string; iconType: string; customIconUrl: string | null }): Promise<Amenity | undefined> {
     const [updatedAmenity] = await db.update(amenities)
       .set(data)
       .where(eq(amenities.id, id))
