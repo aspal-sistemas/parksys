@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Activity, Park } from '@shared/schema';
 import { 
   CalendarDays, MapPin, Clock, Tag, Filter, Search, Plus 
@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 // Formato para fechas
@@ -57,9 +58,84 @@ const getRelativeTime = (dateString: string | Date) => {
 };
 
 // Componente de card para actividad
-const ActivityCard = ({ activity, parkName }: { activity: any, parkName?: string }) => {
+const ActivityCard = ({ 
+  activity, 
+  parkName, 
+  onEdit, 
+  onDelete 
+}: { 
+  activity: any, 
+  parkName?: string,
+  onEdit?: (activity: any) => void,
+  onDelete?: (activity: any) => void
+}) => {
+  const [showActions, setShowActions] = useState(false);
+  
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md">
+    <Card 
+      className="overflow-hidden transition-all hover:shadow-md relative"
+      onMouseEnter={() => setShowActions(true)}
+      onMouseLeave={() => setShowActions(false)}
+    >
+      {/* Menú de acciones flotante - visible al pasar el mouse */}
+      {showActions && onEdit && onDelete && (
+        <div className="absolute top-2 right-2 bg-white rounded-md shadow-md flex z-10">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 w-8 p-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(activity);
+            }}
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              className="text-blue-500"
+            >
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+              <path d="m15 5 4 4"/>
+            </svg>
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 w-8 p-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(activity);
+            }}
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              className="text-red-500"
+            >
+              <path d="M3 6h18"/>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+              <line x1="10" x2="10" y1="11" y2="17"/>
+              <line x1="14" x2="14" y1="11" y2="17"/>
+            </svg>
+          </Button>
+        </div>
+      )}
+      
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
@@ -99,7 +175,17 @@ const ActivityCard = ({ activity, parkName }: { activity: any, parkName?: string
           )}>
             {getRelativeTime(activity.startDate)}
           </Badge>
-          <Button variant="outline" size="sm">Ver detalles</Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="flex items-center gap-1"
+            >
+              <CalendarDays className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Ver calendario</span>
+            </Button>
+            <Button variant="outline" size="sm">Ver detalles</Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -121,13 +207,23 @@ const diffTimeClass = (dateString: string | Date) => {
 
 // Componente principal de Actividades
 const Activities: React.FC = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [viewType, setViewType] = useState<'upcoming' | 'all' | 'past'>('upcoming');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<any>(null);
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   
   // Fetch activities
-  const { data: activities = [], isLoading: isLoadingActivities } = useQuery<any[]>({
+  const { 
+    data: activities = [], 
+    isLoading: isLoadingActivities,
+    refetch: refetchActivities
+  } = useQuery<any[]>({
     queryKey: ['/api/activities'],
   });
   
@@ -135,6 +231,68 @@ const Activities: React.FC = () => {
   const { data: parks = [], isLoading: isLoadingParks } = useQuery<Park[]>({
     queryKey: ['/api/parks'],
   });
+  
+  // Mutation para eliminar actividad
+  const deleteMutation = useMutation({
+    mutationFn: async (activityId: number) => {
+      const response = await fetch(`/api/activities/${activityId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(errorData || 'Error al eliminar la actividad');
+      }
+      
+      return true;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Actividad eliminada",
+        description: "La actividad ha sido eliminada correctamente.",
+      });
+      
+      // Cerrar diálogo de confirmación
+      setIsDeleteDialogOpen(false);
+      setSelectedActivity(null);
+      
+      // Actualizar datos
+      refetchActivities();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: `No se pudo eliminar la actividad: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Manejar edición de actividad
+  const handleEditActivity = (activity: any) => {
+    setSelectedActivity(activity);
+    setIsEditModalOpen(true);
+  };
+  
+  // Manejar eliminación de actividad
+  const handleDeleteActivity = (activity: any) => {
+    setSelectedActivity(activity);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  // Manejar calendario de actividad
+  const handleCalendarView = (activity: any) => {
+    setSelectedActivity(activity);
+    setIsCalendarModalOpen(true);
+  };
+  
+  // Confirmar eliminación de actividad
+  const handleConfirmDelete = () => {
+    if (selectedActivity) {
+      deleteMutation.mutate(selectedActivity.id);
+    }
+  };
   
   // Filtrar actividades
   const filteredActivities = activities.filter(activity => {
@@ -283,6 +441,8 @@ const Activities: React.FC = () => {
         </div>
       )}
       
+
+      
       {/* Modal de creación de actividad */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent className="sm:max-w-[600px]">
@@ -308,6 +468,169 @@ const Activities: React.FC = () => {
                 <Skeleton className="h-10 w-full mb-4" />
                 <Skeleton className="h-4 w-full mb-2" />
                 <Skeleton className="h-4 w-2/3 mb-4" />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modal de edición de actividad */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Editar actividad</DialogTitle>
+            <DialogDescription>
+              Modifica los detalles de la actividad
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            {selectedActivity && !isLoadingParks && parks.length > 0 ? (
+              <ActivityForm
+                parks={parks}
+                activity={selectedActivity}
+                onSuccess={() => {
+                  setIsEditModalOpen(false);
+                  setSelectedActivity(null);
+                }}
+                onCancel={() => {
+                  setIsEditModalOpen(false);
+                  setSelectedActivity(null);
+                }}
+              />
+            ) : (
+              <div className="text-center py-6">
+                <Skeleton className="h-8 w-3/4 mx-auto mb-4" />
+                <Skeleton className="h-6 w-1/2 mx-auto mb-2" />
+                <Skeleton className="h-10 w-full mb-4" />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Diálogo de confirmación de eliminación */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirmar eliminación</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que deseas eliminar esta actividad?
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            {selectedActivity && (
+              <div className="border border-gray-200 rounded-md p-3 mb-4">
+                <h4 className="font-medium">{selectedActivity.title}</h4>
+                <p className="text-sm text-gray-500">
+                  {formatDate(selectedActivity.startDate)}
+                </p>
+                {selectedActivity.location && (
+                  <p className="text-sm mt-1">
+                    <span className="font-medium">Ubicación:</span> {selectedActivity.location}
+                  </p>
+                )}
+              </div>
+            )}
+            <p className="text-sm text-gray-500">
+              Esta acción no se puede deshacer.
+            </p>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                setSelectedActivity(null);
+              }}
+              disabled={deleteMutation.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleConfirmDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modal de vista de calendario */}
+      <Dialog open={isCalendarModalOpen} onOpenChange={setIsCalendarModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Detalles del evento</DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            {selectedActivity && (
+              <div className="space-y-4">
+                <div className="flex flex-col md:flex-row justify-between gap-2">
+                  <h3 className="font-medium text-lg">{selectedActivity.title}</h3>
+                  <Badge className="w-fit bg-primary-50 text-primary border-0">
+                    {selectedActivity.category || 'General'}
+                  </Badge>
+                </div>
+                
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 text-gray-600" />
+                    <div>
+                      <p className="font-medium">Fecha de inicio</p>
+                      <p className="text-sm">{formatDate(selectedActivity.startDate)}</p>
+                    </div>
+                  </div>
+                  
+                  {selectedActivity.endDate && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-gray-600" />
+                      <div>
+                        <p className="font-medium">Fecha de finalización</p>
+                        <p className="text-sm">{formatDate(selectedActivity.endDate)}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {selectedActivity.location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-gray-600" />
+                      <div>
+                        <p className="font-medium">Ubicación</p>
+                        <p className="text-sm">{selectedActivity.location}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div>
+                  <h4 className="font-medium mb-2">Descripción</h4>
+                  <p className="text-sm">{selectedActivity.description}</p>
+                </div>
+                
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsCalendarModalOpen(false);
+                      setSelectedActivity(null);
+                    }}
+                  >
+                    Cerrar
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setIsCalendarModalOpen(false);
+                      handleEditActivity(selectedActivity);
+                    }}
+                  >
+                    Editar evento
+                  </Button>
+                </div>
               </div>
             )}
           </div>
