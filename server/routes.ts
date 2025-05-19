@@ -112,15 +112,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import parks from Excel/CSV
   apiRouter.post("/parks/import", isAuthenticated, hasMunicipalityAccess(), uploadParkFile, handleMulterErrors, processImportFile);
 
-  // Update an existing park - Permiso para todos (modo desarrollo)
-  apiRouter.put("/parks/:id", async (req: Request, res: Response) => {
+  // Ruta normal para actualizar un parque (con verificación de permisos)
+  apiRouter.put("/parks/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      console.log("Actualizando parque - INFO: ", { 
-        user: req.user, 
-        headers: req.headers,
-        parkId: req.params.id,
-        body: req.body
-      });
+      const parkId = Number(req.params.id);
+      
+      // Impedir que se modifique el municipalityId del parque
+      if (req.body.municipalityId !== undefined) {
+        const park = await storage.getPark(parkId);
+        if (park && park.municipalityId !== req.body.municipalityId) {
+          return res.status(403).json({ 
+            message: "No se permite cambiar el municipio de un parque existente" 
+          });
+        }
+      }
+      
+      // Partial validation is fine for updates
+      const parkData = req.body;
+      
+      const updatedPark = await storage.updatePark(parkId, parkData);
+      
+      if (!updatedPark) {
+        return res.status(404).json({ message: "Park not found" });
+      }
+      
+      res.json(updatedPark);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error updating park" });
+    }
+  });
+  
+  // RUTA ESPECIAL PARA DESARROLLO - Sin verificación de permisos
+  apiRouter.put("/dev/parks/:id", async (req: Request, res: Response) => {
+    try {
+      console.log("DESARROLLO - Actualizando parque sin verificación de permisos");
       
       const parkId = Number(req.params.id);
       
@@ -130,14 +156,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Parque no encontrado" });
       }
       
-      // Partial validation is fine for updates
-      const parkData = req.body;
-      
-      // Actualizamos el parque sin validaciones adicionales (para desarrollo)
-      const updatedPark = await storage.updatePark(parkId, parkData);
+      // Actualizamos directamente sin ninguna validación
+      const updatedPark = await storage.updatePark(parkId, req.body);
       
       if (!updatedPark) {
-        return res.status(404).json({ message: "Error al actualizar el parque" });
+        return res.status(500).json({ message: "Error al actualizar el parque" });
       }
       
       console.log("Parque actualizado con éxito:", updatedPark);
