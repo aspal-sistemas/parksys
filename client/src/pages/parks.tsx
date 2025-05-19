@@ -69,20 +69,16 @@ const Parks: React.FC = () => {
 
   return (
     <main className="flex-1 flex flex-col">
-      {/* Control para expandir/contraer el mapa */}
-      <div className="bg-white border-b p-2 flex justify-between items-center">
-        <h1 className="text-lg font-semibold text-gray-800">Parques y Espacios Públicos</h1>
-        <button 
-          onClick={toggleMapExpansion}
-          className="flex items-center px-3 py-1 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded transition-all"
-        >
-          {mapExpanded ? 'Contraer mapa' : 'Expandir mapa'} 
-          <span className="ml-2">{mapExpanded ? '↓' : '↑'}</span>
-        </button>
+      {/* Cabecera simplificada sin controles de mapa */}
+      <div className="bg-white border-b p-4 flex justify-between items-center">
+        <h1 className="text-xl font-semibold text-gray-800">Parques y Espacios Públicos</h1>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-500">{parks.length} parques encontrados</span>
+        </div>
       </div>
 
-      {/* Contenedor principal con disposición flexible */}
-      <div className={`flex flex-col md:flex-row flex-1 ${mapExpanded ? 'flex-col' : ''}`}>
+      {/* Contenedor principal con diseño simplificado */}
+      <div className="flex flex-col flex-1">
         {/* Temporalmente oculto el mapa para evaluar el diseño */}
         {false && (
           <div className={`${mapExpanded ? 'w-full h-[70vh]' : 'md:w-1/3 lg:w-1/3 h-[250px]'} transition-all duration-300 ${mapExpanded ? 'order-first' : 'md:order-last md:flex md:h-auto'}`}>

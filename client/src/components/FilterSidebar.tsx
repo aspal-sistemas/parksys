@@ -96,6 +96,43 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
     }
   }, [sortedCategories, activeCategory]);
 
+  // Renderiza un ítem de amenidad individual
+  const renderAmenityItem = (amenity: Amenity) => (
+    <TooltipProvider key={amenity.id}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => toggleAmenity(amenity.id)}
+            className={`flex flex-col items-center justify-center p-2 rounded-lg border w-full min-h-[80px] ${
+              selectedAmenities.includes(amenity.id)
+                ? 'border-secondary-500 bg-secondary-50 shadow-sm'
+                : 'border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <div className={`p-2 rounded-full mb-1 ${
+              selectedAmenities.includes(amenity.id)
+                ? 'bg-secondary-100 text-secondary-700'
+                : 'bg-gray-100 text-gray-600'
+            }`}>
+              <AmenityIcon name={amenity.icon} size={24} />
+            </div>
+            <span className="text-xs text-center mt-1 font-medium">
+              {amenity.name}
+            </span>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="text-xs">{amenity.name}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+
+  // Prepara las amenidades a mostrar según la categoría seleccionada
+  const amenityItems = activeCategory === 'todas' 
+    ? Object.values(amenitiesByCategory).flat() 
+    : (activeCategory && amenitiesByCategory[activeCategory]) || [];
+
   return (
     <div className="w-full bg-white overflow-y-auto pb-4">
       <div className="p-4 bg-gradient-to-r from-primary-100 to-primary-50 border-b border-primary-200">
@@ -185,8 +222,19 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
               </div>
             </div>
 
-            {/* Amenity Category Tabs - Con estilos más simples y seguros */}
+            {/* Amenity Category Tabs con botón para ver todas */}
             <div className="flex flex-wrap gap-2 mb-3">
+              <button
+                onClick={() => setActiveCategory('todas')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md ${
+                  activeCategory === 'todas' 
+                    ? 'bg-primary-500 text-white font-semibold' 
+                    : 'bg-primary-100 text-primary-700 hover:bg-primary-200 font-semibold'
+                }`}
+              >
+                Ver todas las amenidades
+              </button>
+              
               {sortedCategories.map(category => (
                 <button
                   key={category}
@@ -204,36 +252,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
 
             {/* Amenity Icons Grid - Más grande y mejor visible */}
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-2">
-              {activeCategory && amenitiesByCategory[activeCategory]?.map((amenity) => (
-                <TooltipProvider key={amenity.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => toggleAmenity(amenity.id)}
-                        className={`flex flex-col items-center justify-center p-2 rounded-lg border w-full min-h-[80px] ${
-                          selectedAmenities.includes(amenity.id)
-                            ? 'border-secondary-500 bg-secondary-50 shadow-sm'
-                            : 'border-gray-200 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className={`p-2 rounded-full mb-1 ${
-                          selectedAmenities.includes(amenity.id)
-                            ? 'bg-secondary-100 text-secondary-700'
-                            : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          <AmenityIcon name={amenity.icon} size={24} />
-                        </div>
-                        <span className="text-xs text-center mt-1 font-medium">
-                          {amenity.name}
-                        </span>
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-xs">{amenity.name}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ))}
+              {amenityItems.map(renderAmenityItem)}
             </div>
 
             {/* Selected Amenities Count */}
