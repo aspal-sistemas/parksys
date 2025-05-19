@@ -117,8 +117,9 @@ export const hasParkAccess = async (req: Request, res: Response, next: NextFunct
     return res.status(401).json({ message: 'No autorizado' });
   }
 
-  // Si el usuario es super admin, tiene acceso a todos los parques
-  if (req.user.role === 'super_admin') {
+  // Si el usuario es super admin o admin, tiene acceso a todos los parques
+  // Modificado para permitir acceso a usuarios admin para desarrollo
+  if (req.user.role === 'super_admin' || req.user.role === 'admin') {
     return next();
   }
 
