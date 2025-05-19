@@ -11,11 +11,21 @@ import {
   Settings, 
   LogOut,
   Tag,
-  BarChart
+  BarChart,
+  CheckSquare,
+  Building,
+  Wrench,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 interface NavItemProps {
   href: string;

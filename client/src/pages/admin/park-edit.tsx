@@ -1356,9 +1356,8 @@ const AdminParkEdit: React.FC = () => {
               </Tabs>
             </form>
           </Form>
-        </div>
-      </div>
-    </div>
+        </Form>
+    </AdminLayout>
   );
 };
 
