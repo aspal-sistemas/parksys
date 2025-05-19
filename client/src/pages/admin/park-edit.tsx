@@ -278,8 +278,8 @@ const AdminParkEdit: React.FC = () => {
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="mb-4">
                   <TabsTrigger value="basic">Información Básica</TabsTrigger>
-                  <TabsTrigger value="details">Detalles</TabsTrigger>
                   <TabsTrigger value="contact">Contacto</TabsTrigger>
+                  <TabsTrigger value="details">Detalles</TabsTrigger>
                   <TabsTrigger value="media">Multimedia</TabsTrigger>
                   <TabsTrigger value="amenities">Amenidades</TabsTrigger>
                 </TabsList>
@@ -386,7 +386,7 @@ const AdminParkEdit: React.FC = () => {
                       </Button>
                       <Button 
                         type="button" 
-                        onClick={() => setActiveTab('details')}
+                        onClick={() => setActiveTab('contact')}
                       >
                         Siguiente
                       </Button>
@@ -538,12 +538,12 @@ const AdminParkEdit: React.FC = () => {
                       />
                     </CardContent>
                     <CardFooter className="flex justify-between">
-                      <Button variant="outline" onClick={() => setActiveTab('basic')}>
+                      <Button variant="outline" onClick={() => setActiveTab('contact')}>
                         Anterior
                       </Button>
                       <Button 
                         type="button" 
-                        onClick={() => setActiveTab('contact')}
+                        onClick={() => setActiveTab('media')}
                       >
                         Siguiente
                       </Button>
@@ -607,15 +607,14 @@ const AdminParkEdit: React.FC = () => {
                       {/* Additional contact fields could go here */}
                     </CardContent>
                     <CardFooter className="flex justify-between">
-                      <Button variant="outline" onClick={() => setActiveTab('details')}>
+                      <Button variant="outline" onClick={() => setActiveTab('basic')}>
                         Anterior
                       </Button>
                       <Button 
-                        type="submit"
-                        disabled={mutation.isPending}
+                        type="button"
+                        onClick={() => setActiveTab('details')}
                       >
-                        {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                        {isEdit ? 'Actualizar Parque' : 'Crear Parque'}
+                        Siguiente
                       </Button>
                     </CardFooter>
                   </Card>
