@@ -10,7 +10,8 @@ import {
   FileText, 
   MessageSquare, 
   Share2, 
-  AlertCircle 
+  AlertCircle,
+  Video
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -345,6 +346,16 @@ const ParkDetail: React.FC = () => {
                     <Calendar className="h-4 w-4 mr-2" />
                     Ver próximas actividades
                   </Button>
+                  {park.videoUrl && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => window.open(String(park.videoUrl), '_blank')}
+                    >
+                      <Video className="h-4 w-4 mr-2" />
+                      Ver video del parque
+                    </Button>
+                  )}
                   <Button variant="outline" className="w-full justify-start">
                     <FileText className="h-4 w-4 mr-2" />
                     Descargar reglamento
