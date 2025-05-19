@@ -12,7 +12,9 @@ import {
   Trash, 
   PlusCircle, 
   ImagePlus,
-  Plus
+  Plus,
+  Video,
+  ExternalLink
 } from 'lucide-react';
 import { 
   Form, 
@@ -832,6 +834,130 @@ const AdminParkEdit: React.FC = () => {
                                 </div>
                               </div>
                             ))}
+                          </div>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div>
+                          <h3 className="text-lg font-medium mb-4">Video del Parque</h3>
+                          <div className="mb-6">
+                            <div className="flex items-start space-x-4">
+                              <div className="flex-1">
+                                <Input 
+                                  placeholder="URL del video de YouTube (ej. https://www.youtube.com/watch?v=XXXX)" 
+                                  value={form.getValues().videoUrl || ''}
+                                  onChange={(e) => {
+                                    form.setValue('videoUrl', e.target.value);
+                                  }}
+                                  className="mb-2"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                  Ingresa una URL válida de YouTube para mostrar el video en la página del parque
+                                </p>
+                              </div>
+                              <Button 
+                                variant="outline"
+                                onClick={() => {
+                                  const videoUrl = form.getValues().videoUrl;
+                                  if (videoUrl && id) {
+                                    // Guarda el cambio inmediatamente
+                                    fetch(`/api/dev/parks/${id}`, {
+                                      method: 'PUT',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': 'Bearer direct-token-1'
+                                      },
+                                      body: JSON.stringify({ videoUrl })
+                                    })
+                                    .then(response => {
+                                      if (!response.ok) throw new Error('Error al guardar URL del video');
+                                      toast({
+                                        title: "URL de video guardada",
+                                        description: "El enlace al video ha sido actualizado correctamente."
+                                      });
+                                    })
+                                    .catch(error => {
+                                      console.error('Error al guardar URL del video:', error);
+                                      toast({
+                                        title: "Error",
+                                        description: "No se pudo guardar la URL del video.",
+                                        variant: "destructive"
+                                      });
+                                    });
+                                  } else if (!videoUrl) {
+                                    toast({
+                                      title: "URL inválida",
+                                      description: "Por favor ingresa una URL de YouTube válida.",
+                                      variant: "destructive"
+                                    });
+                                  }
+                                }}
+                              >
+                                Guardar URL
+                              </Button>
+                            </div>
+                            
+                            {form.getValues().videoUrl && (
+                              <div className="mt-4 border rounded-lg overflow-hidden">
+                                <div className="bg-gray-50 p-3 border-b flex justify-between items-center">
+                                  <div className="flex items-center gap-2">
+                                    <Video className="h-4 w-4 text-primary" />
+                                    <span className="text-sm font-medium">Video Actual</span>
+                                  </div>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => {
+                                      if (id && confirm('¿Estás seguro de eliminar este video?')) {
+                                        fetch(`/api/dev/parks/${id}`, {
+                                          method: 'PUT',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': 'Bearer direct-token-1'
+                                          },
+                                          body: JSON.stringify({ videoUrl: null })
+                                        })
+                                        .then(response => {
+                                          if (!response.ok) throw new Error('Error al eliminar URL del video');
+                                          form.setValue('videoUrl', '');
+                                          toast({
+                                            title: "Video eliminado",
+                                            description: "La URL del video ha sido eliminada correctamente."
+                                          });
+                                        })
+                                        .catch(error => {
+                                          console.error('Error al eliminar URL del video:', error);
+                                          toast({
+                                            title: "Error",
+                                            description: "No se pudo eliminar la URL del video.",
+                                            variant: "destructive"
+                                          });
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                <div className="p-3">
+                                  <p className="text-sm break-all">{form.getValues().videoUrl}</p>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="mt-2"
+                                    onClick={() => {
+                                      const url = form.getValues().videoUrl;
+                                      if (url) window.open(url, '_blank');
+                                    }}
+                                  >
+                                    <ExternalLink className="h-4 w-4 mr-2" />
+                                    Ver video
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                         
