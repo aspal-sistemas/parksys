@@ -4,6 +4,7 @@ import { Activity, Park } from '@shared/schema';
 import { 
   CalendarDays, MapPin, Clock, Tag, Filter, Search, Plus 
 } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
 import ActivityForm from '@/components/ActivityForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
