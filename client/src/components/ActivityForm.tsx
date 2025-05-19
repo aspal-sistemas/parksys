@@ -84,7 +84,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ parks, activity, onSuccess,
     },
     onSuccess: () => {
       // Invalidar consultas para recargar datos
-      queryClient.invalidateQueries({ queryKey: ["activities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api/parks"] });
       
       toast({
