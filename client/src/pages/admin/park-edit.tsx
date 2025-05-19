@@ -844,17 +844,26 @@ const AdminParkEdit: React.FC = () => {
                           <div className="mb-6">
                             <div className="flex items-start space-x-4">
                               <div className="flex-1">
-                                <Input 
-                                  placeholder="URL del video de YouTube (ej. https://www.youtube.com/watch?v=XXXX)" 
-                                  value={form.getValues().videoUrl || ''}
-                                  onChange={(e) => {
-                                    form.setValue('videoUrl', e.target.value);
-                                  }}
-                                  className="mb-2"
+                                <FormField
+                                  control={form.control}
+                                  name="videoUrl"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormControl>
+                                        <Input 
+                                          placeholder="URL del video de YouTube (ej. https://www.youtube.com/watch?v=XXXX)" 
+                                          {...field}
+                                          className="mb-2"
+                                          value={field.value || ''}
+                                        />
+                                      </FormControl>
+                                      <FormDescription className="text-xs">
+                                        Ingresa una URL válida de YouTube para mostrar el video en la página del parque
+                                      </FormDescription>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
                                 />
-                                <p className="text-xs text-muted-foreground">
-                                  Ingresa una URL válida de YouTube para mostrar el video en la página del parque
-                                </p>
                               </div>
                               <Button 
                                 variant="outline"
@@ -862,28 +871,16 @@ const AdminParkEdit: React.FC = () => {
                                   const videoUrl = form.getValues().videoUrl;
                                   if (videoUrl && id) {
                                     // Guarda el cambio inmediatamente
-                                    fetch(`/api/dev/parks/${id}`, {
+                                    fetch(`/api/parks/${id}`, {
                                       method: 'PUT',
                                       headers: {
                                         'Content-Type': 'application/json',
-                                        'Authorization': 'Bearer direct-token-1'
                                       },
                                       body: JSON.stringify({ videoUrl })
-                                    })
-                                    .then(response => {
-                                      if (!response.ok) throw new Error('Error al guardar URL del video');
-                                      toast({
-                                        title: "URL de video guardada",
-                                        description: "El enlace al video ha sido actualizado correctamente."
-                                      });
-                                    })
-                                    .catch(error => {
-                                      console.error('Error al guardar URL del video:', error);
-                                      toast({
-                                        title: "Error",
-                                        description: "No se pudo guardar la URL del video.",
-                                        variant: "destructive"
-                                      });
+                                    });
+                                    toast({
+                                      title: "URL de video guardada",
+                                      description: "El enlace al video ha sido actualizado correctamente."
                                     });
                                   } else if (!videoUrl) {
                                     toast({
@@ -898,7 +895,7 @@ const AdminParkEdit: React.FC = () => {
                               </Button>
                             </div>
                             
-                            {form.getValues().videoUrl && (
+                            {form.watch("videoUrl") && (
                               <div className="mt-4 border rounded-lg overflow-hidden">
                                 <div className="bg-gray-50 p-3 border-b flex justify-between items-center">
                                   <div className="flex items-center gap-2">
@@ -914,13 +911,20 @@ const AdminParkEdit: React.FC = () => {
                                         // Simplemente actualizar el estado del formulario
                                         form.setValue('videoUrl', '');
                                         
-                                        // Y notificar al usuario (hacemos esto inmediatamente para mejorar la experiencia)
+                                        // Actualizar en la base de datos
+                                        fetch(`/api/parks/${id}`, {
+                                          method: 'PUT',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                          },
+                                          body: JSON.stringify({ videoUrl: '' })
+                                        });
+                                        
+                                        // Y notificar al usuario
                                         toast({
                                           title: "Video eliminado",
                                           description: "La URL del video ha sido eliminada correctamente."
                                         });
-                                        
-                                        // Cuando se guarde el formulario completo, esto también guardará el cambio en la base de datos
                                       }
                                     }}
                                   >
@@ -928,13 +932,13 @@ const AdminParkEdit: React.FC = () => {
                                   </Button>
                                 </div>
                                 <div className="p-3">
-                                  <p className="text-sm break-all">{form.getValues().videoUrl}</p>
+                                  <p className="text-sm break-all">{form.watch("videoUrl")}</p>
                                   <Button 
                                     variant="outline" 
                                     size="sm" 
                                     className="mt-2"
                                     onClick={() => {
-                                      const url = form.getValues().videoUrl;
+                                      const url = form.watch("videoUrl");
                                       if (url) window.open(url, '_blank');
                                     }}
                                   >
