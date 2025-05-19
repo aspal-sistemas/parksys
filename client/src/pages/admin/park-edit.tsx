@@ -573,7 +573,17 @@ const AdminParkEdit: React.FC = () => {
                         
                         <div>
                           <h3 className="text-lg font-medium mb-4">Documentos</h3>
-                          <Button variant="outline">
+                          <Button 
+                            type="button"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toast({
+                                title: "Funcionalidad en desarrollo",
+                                description: "La carga de documentos se implementará próximamente.",
+                              });
+                            }}
+                          >
                             <Upload className="mr-2 h-4 w-4" />
                             Subir documento
                           </Button>
