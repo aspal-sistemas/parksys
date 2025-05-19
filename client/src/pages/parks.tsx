@@ -83,8 +83,8 @@ const Parks: React.FC = () => {
 
       {/* Contenedor principal con disposición flexible */}
       <div className={`flex flex-col md:flex-row flex-1 ${mapExpanded ? 'flex-col' : ''}`}>
-        {/* Sección de mapa - con altura mínima */}
-        <div className={`${mapExpanded ? 'w-full h-[70vh]' : 'md:w-1/3 lg:w-1/3 h-[250px] md:h-[350px]'} transition-all duration-300 ${mapExpanded ? 'order-first' : 'md:order-last'}`}>
+        {/* Sección de mapa - ajustada para coincidir con la altura de búsqueda */}
+        <div className={`${mapExpanded ? 'w-full h-[70vh]' : 'md:w-1/3 lg:w-1/3 h-[250px]'} transition-all duration-300 ${mapExpanded ? 'order-first' : 'md:order-last md:flex md:h-auto'}`}>
           <div className="w-full h-full">
             <ParksMap 
               parks={parks}
