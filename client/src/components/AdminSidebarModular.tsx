@@ -25,7 +25,28 @@ import {
   Database,
   Building,
   MapPin,
-  Award
+  Award,
+  List,
+  CalendarDays,
+  Wrench,
+  DollarSign,
+  ArrowDown,
+  ArrowUp,
+  LineChart,
+  Calculator,
+  ClipboardList,
+  HeartHandshake,
+  CalendarClock,
+  GraduationCap,
+  Store,
+  Clipboard,
+  FileSignature,
+  UserCircle,
+  Clock,
+  History,
+  ClipboardCheck,
+  FileText as FileDescription,
+  Network
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -134,49 +155,80 @@ const AdminSidebarModular: React.FC = () => {
           
           <div className="pt-3 pb-1">
             <Accordion type="multiple" defaultValue={getDefaultAccordionValue()} className="space-y-1">
-              {/* Módulo de Espacios Verdes */}
+              {/* Módulo - Usuarios del Sistema */}
               <ModuleNav 
-                title="Espacios Verdes" 
-                icon={<Layers className="h-5 w-5" />} 
-                value="spaces"
+                title="Usuarios del Sistema" 
+                icon={<Users className="h-5 w-5" />} 
+                value="users"
+              >
+                <NavItem 
+                  href="/admin/users/list" 
+                  icon={<List className="h-4 w-4" />}
+                  active={location.startsWith('/admin/users/list')}
+                >
+                  Lista
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/users" 
+                  icon={<Users className="h-4 w-4" />}
+                  active={location === '/admin/users'}
+                >
+                  Usuarios
+                </NavItem>
+              </ModuleNav>
+              
+              {/* Módulo - Programación y Actividades */}
+              <ModuleNav 
+                title="Programación y Actividades" 
+                icon={<Calendar className="h-5 w-5" />} 
+                value="programming"
+              >
+                <NavItem 
+                  href="/admin/activities/organizer" 
+                  icon={<CalendarDays className="h-4 w-4" />}
+                  active={location.startsWith('/admin/activities/organizer')}
+                >
+                  Organizador de Actividades
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/activities" 
+                  icon={<Calendar className="h-4 w-4" />}
+                  active={location === '/admin/activities'}
+                >
+                  Actividades
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/activities/reports" 
+                  icon={<FileText className="h-4 w-4" />}
+                  active={location.startsWith('/admin/activities/reports')}
+                >
+                  Reportes
+                </NavItem>
+              </ModuleNav>
+              
+              {/* Módulo - Gestión Operativa e Infraestructura */}
+              <ModuleNav 
+                title="Gestión Operativa e Infraestructura" 
+                icon={<Building className="h-5 w-5" />} 
+                value="operations"
               >
                 <NavItem 
                   href="/admin/parks" 
                   icon={<Map className="h-4 w-4" />}
-                  active={location.startsWith('/admin/parks')}
+                  active={location === '/admin/parks'}
                 >
-                  Parques
+                  Inventario de Parques
                 </NavItem>
                 
                 <NavItem 
-                  href="/admin/amenities" 
+                  href="/admin/assets" 
                   icon={<Tag className="h-4 w-4" />}
-                  active={location.startsWith('/admin/amenities')}
+                  active={location.startsWith('/admin/assets')}
                 >
-                  Amenidades
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/municipalities" 
-                  icon={<Building className="h-4 w-4" />}
-                  active={location.startsWith('/admin/municipalities')}
-                >
-                  Municipios
-                </NavItem>
-              </ModuleNav>
-              
-              {/* Módulo de Actividades y Eventos */}
-              <ModuleNav 
-                title="Eventos y Reportes" 
-                icon={<Calendar className="h-5 w-5" />} 
-                value="activities"
-              >
-                <NavItem 
-                  href="/admin/activities" 
-                  icon={<Calendar className="h-4 w-4" />}
-                  active={location.startsWith('/admin/activities')}
-                >
-                  Actividades
+                  Inventario de Activos
                 </NavItem>
                 
                 <NavItem 
@@ -184,65 +236,246 @@ const AdminSidebarModular: React.FC = () => {
                   icon={<AlertTriangle className="h-4 w-4" />}
                   active={location.startsWith('/admin/incidents')}
                 >
-                  Incidentes
+                  Incidencias
                 </NavItem>
-              </ModuleNav>
-              
-              {/* Módulo de Contenidos Multimedia */}
-              <ModuleNav 
-                title="Contenido Multimedia" 
-                icon={<FileText className="h-5 w-5" />} 
-                value="media"
-              >
+                
                 <NavItem 
-                  href="/admin/documents" 
+                  href="/admin/projects" 
+                  icon={<Wrench className="h-4 w-4" />}
+                  active={location.startsWith('/admin/projects')}
+                >
+                  Proyectos de Capital
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/operations/reports" 
                   icon={<FileText className="h-4 w-4" />}
-                  active={location.startsWith('/admin/documents')}
+                  active={location.startsWith('/admin/operations/reports')}
                 >
-                  Documentos
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/images" 
-                  icon={<Image className="h-4 w-4" />}
-                  active={location.startsWith('/admin/images')}
-                >
-                  Imágenes
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/videos" 
-                  icon={<Video className="h-4 w-4" />}
-                  active={location.startsWith('/admin/videos')}
-                >
-                  Videos
+                  Reportes
                 </NavItem>
               </ModuleNav>
               
-              {/* Módulo de Comunidad */}
+              {/* Módulo - Finanzas y Presupuesto */}
               <ModuleNav 
-                title="Comunidad" 
-                icon={<Users className="h-5 w-5" />} 
-                value="community"
+                title="Finanzas y Presupuesto" 
+                icon={<DollarSign className="h-5 w-5" />} 
+                value="finance"
               >
                 <NavItem 
-                  href="/admin/comments" 
-                  icon={<MessageSquare className="h-4 w-4" />}
-                  active={location.startsWith('/admin/comments')}
+                  href="/admin/finance/expenses" 
+                  icon={<ArrowDown className="h-4 w-4" />}
+                  active={location.startsWith('/admin/finance/expenses')}
                 >
-                  Comentarios
+                  Egresos
                 </NavItem>
                 
                 <NavItem 
-                  href="/admin/users" 
-                  icon={<Users className="h-4 w-4" />}
-                  active={location.startsWith('/admin/users')}
+                  href="/admin/finance/income" 
+                  icon={<ArrowUp className="h-4 w-4" />}
+                  active={location.startsWith('/admin/finance/income')}
                 >
-                  Usuarios
+                  Ingresos
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/finance/cashflow" 
+                  icon={<LineChart className="h-4 w-4" />}
+                  active={location.startsWith('/admin/finance/cashflow')}
+                >
+                  Flujo de Efectivo
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/finance/calculator" 
+                  icon={<Calculator className="h-4 w-4" />}
+                  active={location.startsWith('/admin/finance/calculator')}
+                >
+                  Calculadora de recuperación de costos
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/finance/kpi" 
+                  icon={<Gauge className="h-4 w-4" />}
+                  active={location.startsWith('/admin/finance/kpi')}
+                >
+                  Indicadores clave
                 </NavItem>
               </ModuleNav>
               
-              {/* Módulo de Análisis y Reportes */}
+              {/* Módulo - Comunicación y Marketing */}
+              <ModuleNav 
+                title="Comunicación y Marketing" 
+                icon={<MessageSquare className="h-5 w-5" />} 
+                value="communication"
+              >
+                <NavItem 
+                  href="/admin/marketing/events" 
+                  icon={<Calendar className="h-4 w-4" />}
+                  active={location.startsWith('/admin/marketing/events')}
+                >
+                  Eventos
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/marketing/surveys" 
+                  icon={<ClipboardList className="h-4 w-4" />}
+                  active={location.startsWith('/admin/marketing/surveys')}
+                >
+                  Encuestas
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/marketing/sponsors" 
+                  icon={<Award className="h-4 w-4" />}
+                  active={location.startsWith('/admin/marketing/sponsors')}
+                >
+                  Patrocinios
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/marketing/reports" 
+                  icon={<FileText className="h-4 w-4" />}
+                  active={location.startsWith('/admin/marketing/reports')}
+                >
+                  Reportes
+                </NavItem>
+              </ModuleNav>
+              
+              {/* Módulo - Voluntariado */}
+              <ModuleNav 
+                title="Voluntariado" 
+                icon={<HeartHandshake className="h-5 w-5" />} 
+                value="volunteers"
+              >
+                <NavItem 
+                  href="/admin/volunteers/management" 
+                  icon={<Users className="h-4 w-4" />}
+                  active={location.startsWith('/admin/volunteers/management')}
+                >
+                  Gestión de Voluntarios
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/volunteers/activities" 
+                  icon={<CalendarClock className="h-4 w-4" />}
+                  active={location.startsWith('/admin/volunteers/activities')}
+                >
+                  Actividades
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/volunteers/training" 
+                  icon={<GraduationCap className="h-4 w-4" />}
+                  active={location.startsWith('/admin/volunteers/training')}
+                >
+                  Capacitación
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/volunteers/reports" 
+                  icon={<FileText className="h-4 w-4" />}
+                  active={location.startsWith('/admin/volunteers/reports')}
+                >
+                  Reportes
+                </NavItem>
+              </ModuleNav>
+              
+              {/* Módulo - Concesiones y Espacios Comerciales */}
+              <ModuleNav 
+                title="Concesiones y Espacios Comerciales" 
+                icon={<Store className="h-5 w-5" />} 
+                value="concessions"
+              >
+                <NavItem 
+                  href="/admin/concessions/registry" 
+                  icon={<Clipboard className="h-4 w-4" />}
+                  active={location.startsWith('/admin/concessions/registry')}
+                >
+                  Registro Concesionarios
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/concessions/contracts" 
+                  icon={<FileSignature className="h-4 w-4" />}
+                  active={location.startsWith('/admin/concessions/contracts')}
+                >
+                  Contratos
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/concessions/forms" 
+                  icon={<FileText className="h-4 w-4" />}
+                  active={location.startsWith('/admin/concessions/forms')}
+                >
+                  Formatos
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/concessions/reports" 
+                  icon={<FileText className="h-4 w-4" />}
+                  active={location.startsWith('/admin/concessions/reports')}
+                >
+                  Reportes
+                </NavItem>
+              </ModuleNav>
+              
+              {/* Módulo - Recursos Humanos del Parque */}
+              <ModuleNav 
+                title="Recursos Humanos del Parque" 
+                icon={<Users className="h-5 w-5" />} 
+                value="hr"
+              >
+                <NavItem 
+                  href="/admin/hr/personnel" 
+                  icon={<UserCircle className="h-4 w-4" />}
+                  active={location.startsWith('/admin/hr/personnel')}
+                >
+                  Registro Personal
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/hr/roles" 
+                  icon={<Clock className="h-4 w-4" />}
+                  active={location.startsWith('/admin/hr/roles')}
+                >
+                  Roles y Turnos
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/hr/training" 
+                  icon={<History className="h-4 w-4" />}
+                  active={location.startsWith('/admin/hr/training')}
+                >
+                  Historial de Formación
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/hr/evaluation" 
+                  icon={<ClipboardCheck className="h-4 w-4" />}
+                  active={location.startsWith('/admin/hr/evaluation')}
+                >
+                  Evaluación y Seguimiento
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/hr/profiles" 
+                  icon={<FileDescription className="h-4 w-4" />}
+                  active={location.startsWith('/admin/hr/profiles')}
+                >
+                  Perfiles de Puesto
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/hr/organization" 
+                  icon={<Network className="h-4 w-4" />}
+                  active={location.startsWith('/admin/hr/organization')}
+                >
+                  Organigrama
+                </NavItem>
+              </ModuleNav>
+              
+              {/* Módulo - Análisis y Reportes */}
               <ModuleNav 
                 title="Análisis y Reportes" 
                 icon={<BarChart className="h-5 w-5" />} 
@@ -262,21 +495,6 @@ const AdminSidebarModular: React.FC = () => {
                   active={location.startsWith('/admin/reports')}
                 >
                   Exportar Reportes
-                </NavItem>
-              </ModuleNav>
-              
-              {/* Módulo de Sistema */}
-              <ModuleNav 
-                title="Sistema" 
-                icon={<Settings className="h-5 w-5" />} 
-                value="system"
-              >
-                <NavItem 
-                  href="/admin/settings" 
-                  icon={<Settings className="h-4 w-4" />}
-                  active={location.startsWith('/admin/settings')}
-                >
-                  Configuración
                 </NavItem>
               </ModuleNav>
             </Accordion>
