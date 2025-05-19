@@ -80,16 +80,20 @@ const AdminComments = () => {
   const approveMutation = useMutation({
     mutationFn: async (commentId: number) => {
       console.log("Aprobando comentario:", commentId);
+      
       const response = await fetch(`/api/comments/${commentId}/approve`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
+        // Incluir cookies de sesión automáticamente
+        credentials: 'include'
       });
       
       if (!response.ok) {
-        console.error("Error al aprobar comentario:", await response.text());
-        throw new Error('Error al aprobar el comentario');
+        const errorText = await response.text();
+        console.error("Error al aprobar comentario:", errorText);
+        throw new Error(`Error al aprobar el comentario: ${errorText}`);
       }
       
       return response.json();
@@ -169,9 +173,17 @@ const AdminComments = () => {
     if (!commentToDelete) return;
     
     try {
-      await fetch(`/api/comments/${commentToDelete.id}`, {
+      // Realizar la solicitud de eliminación incluyendo cookies de sesión
+      const response = await fetch(`/api/comments/${commentToDelete.id}`, {
         method: 'DELETE',
+        credentials: 'include' // Incluir cookies de sesión automáticamente
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error eliminando comentario:', errorText);
+        throw new Error(`Error al eliminar el comentario: ${errorText}`);
+      }
       
       // Refetch comments
       refetchComments();
