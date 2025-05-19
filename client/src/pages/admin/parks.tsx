@@ -274,12 +274,30 @@ const AdminParks = () => {
                     </p>
                     <Button 
                       variant="outline" 
-                      onClick={() => {
-                        refetchParks();
-                        toast({
-                          title: "Lista actualizada",
-                          description: "La lista de parques ha sido refrescada desde el servidor",
-                        });
+                      onClick={async () => {
+                        try {
+                          // Realizamos la petición directamente
+                          const response = await fetch('/api/parks');
+                          if (!response.ok) {
+                            throw new Error('Error al obtener parques');
+                          }
+                          const data = await response.json();
+                          
+                          // Actualizamos el estado local
+                          setLocalParks(data);
+                          
+                          toast({
+                            title: "Lista actualizada",
+                            description: `Se han cargado ${data.length} parques desde el servidor`,
+                          });
+                        } catch (error) {
+                          console.error('Error refreshing parks:', error);
+                          toast({
+                            title: "Error",
+                            description: "No se pudieron obtener los parques. Intente nuevamente.",
+                            variant: "destructive",
+                          });
+                        }
                       }}
                       className="flex items-center gap-2"
                     >
