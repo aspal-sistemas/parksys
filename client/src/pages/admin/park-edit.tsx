@@ -550,7 +550,8 @@ const AdminParkEdit: React.FC = () => {
                             {/* Image upload placeholder */}
                             <div 
                               className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 cursor-pointer"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.preventDefault(); // Prevenir cualquier comportamiento por defecto
                                 toast({
                                   title: "Funcionalidad en desarrollo",
                                   description: "La carga de imágenes se implementará próximamente.",
@@ -603,12 +604,15 @@ const AdminParkEdit: React.FC = () => {
                         <div>
                           <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-medium">Amenidades Disponibles</h3>
-                            <Button onClick={() => {
-                              toast({
-                                title: "Funcionalidad en desarrollo",
-                                description: "La gestión de amenidades se implementará próximamente.",
-                              });
-                            }}>
+                            <Button 
+                              type="button" 
+                              onClick={() => {
+                                toast({
+                                  title: "Funcionalidad en desarrollo",
+                                  description: "La gestión de amenidades se implementará próximamente.",
+                                });
+                              }}
+                            >
                               <PlusCircle className="mr-2 h-4 w-4" />
                               Agregar Amenidad
                             </Button>
