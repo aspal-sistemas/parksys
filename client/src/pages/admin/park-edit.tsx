@@ -105,7 +105,11 @@ const AdminParkEdit: React.FC = () => {
         return apiRequest('POST', '/api/parks', values);
       }
     },
-    onSuccess: async () => {
+    onSuccess: async (data, variables) => {
+      // Verificar si la acción fue presionada desde el formulario principal
+      // Si es así, mostrar toast de éxito y redirigir
+      const formSubmit = document.activeElement?.getAttribute('type') === 'submit';
+      
       toast({
         title: isEdit ? 'Parque actualizado' : 'Parque creado',
         description: isEdit 
@@ -122,10 +126,9 @@ const AdminParkEdit: React.FC = () => {
         description: 'Los cambios se han guardado correctamente'
       });
       
-      // Solo redirigir si el botón de guardar fue presionado directamente
-      // y no a través de otra acción como eliminar una amenidad
-      // Esta condición verifica si una actualización no fue desencadenada por la eliminación de amenidades
-      if ((!document.querySelector('[data-amenity-operation="true"]'))) {
+      // Solo redirigir si el formulario principal fue quien desencadenó la acción
+      // Esto evitará redirecciones por operaciones como eliminar amenidades
+      if (formSubmit) {
         // Navegar a la lista de parques después de un breve retraso
         setTimeout(() => {
           window.location.href = '/admin/parks';
