@@ -1080,47 +1080,72 @@ const AdminParkEdit: React.FC = () => {
                                       </div>
                                     </div>
                                     <div className="flex space-x-2">
+                                      <Dialog>
+                                        <DialogTrigger asChild>
+                                          <Button variant="ghost" size="sm">
+                                            <Eye className="h-4 w-4 mr-1" />
+                                            Ver detalles
+                                          </Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                          <DialogHeader>
+                                            <DialogTitle>{doc.documentName || doc.title || 'Documento'}</DialogTitle>
+                                            <DialogDescription>
+                                              Información del documento
+                                            </DialogDescription>
+                                          </DialogHeader>
+                                          <div className="grid gap-4 py-4">
+                                            <div className="grid grid-cols-4 items-center gap-4">
+                                              <Label className="text-right">Nombre:</Label>
+                                              <div className="col-span-3 font-medium">{doc.documentName || doc.title || 'Sin nombre'}</div>
+                                            </div>
+                                            <div className="grid grid-cols-4 items-center gap-4">
+                                              <Label className="text-right">Tipo:</Label>
+                                              <div className="col-span-3">{doc.documentType || 'No especificado'}</div>
+                                            </div>
+                                            <div className="grid grid-cols-4 items-center gap-4">
+                                              <Label className="text-right">Fecha:</Label>
+                                              <div className="col-span-3">{new Date(doc.createdAt).toLocaleDateString()}</div>
+                                            </div>
+                                            <div className="grid grid-cols-4 items-start gap-4">
+                                              <Label className="text-right">URL:</Label>
+                                              <div className="col-span-3 break-all text-sm">
+                                                {doc.documentUrl.includes('example.com') ? 
+                                                  <span className="text-amber-600">URL de ejemplo (no es un documento real)</span> : 
+                                                  doc.documentUrl
+                                                }
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <DialogFooter>
+                                            <DialogClose asChild>
+                                              <Button type="button">Cerrar</Button>
+                                            </DialogClose>
+                                          </DialogFooter>
+                                        </DialogContent>
+                                      </Dialog>
+                                      
                                       <Button 
                                         variant="ghost" 
                                         size="sm"
                                         onClick={() => {
-                                          // En cualquier caso, mostramos un mensaje de información para los documentos de ejemplo
                                           toast({
-                                            title: "Documento",
-                                            description: `Documento: ${doc.documentName || doc.title || 'Documento'} - URL: ${doc.documentUrl}`,
-                                          });
-                                          
-                                          // Intentamos abrir de todas formas, puede que funcione o no
-                                          try {
-                                            window.open(doc.documentUrl, '_blank');
-                                          } catch (error) {
-                                            console.error("Error al abrir el documento:", error);
-                                          }
-                                        }}
-                                      >
-                                        <Eye className="h-4 w-4 mr-1" />
-                                        Ver
-                                      </Button>
-                                      <Button 
-                                        variant="ghost" 
-                                        size="sm"
-                                        onClick={() => {
-                                          toast({
-                                            title: "Documento de prueba",
-                                            description: "Esta es una URL de muestra. Los documentos reales se podrán descargar cuando se implementen.",
+                                            title: "Documento de ejemplo",
+                                            description: "Los documentos de ejemplo no se pueden descargar porque no existen realmente.",
                                           });
                                         }}
                                       >
                                         <Download className="h-4 w-4 mr-1" />
                                         Descargar
                                       </Button>
+                                      
                                       <Button 
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => {
                                           toast({
-                                            title: "Editar documento",
-                                            description: "La funcionalidad de edición de documentos está en desarrollo.",
+                                            title: "Información",
+                                            description: "La edición de documentos estará disponible en futuras actualizaciones.",
                                           });
                                         }}
                                       >
