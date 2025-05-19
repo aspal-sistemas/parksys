@@ -193,7 +193,7 @@ const ActivityCard = ({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                if (onEdit) handleCalendarView(activity);
+                if (onEdit) onEdit(activity);
               }}
             >
               Ver detalles
@@ -248,7 +248,13 @@ const Activities: React.FC = () => {
   // Mutation para eliminar actividad
   const deleteMutation = useMutation({
     mutationFn: async (activityId: number) => {
-      const response = await fetch(`/api/activities/${activityId}`, {
+      // Buscar la actividad para obtener el parkId
+      const activity = activities.find(a => a.id === activityId);
+      if (!activity) {
+        throw new Error('Actividad no encontrada');
+      }
+
+      const response = await fetch(`/api/parks/${activity.parkId}/activities/${activityId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
