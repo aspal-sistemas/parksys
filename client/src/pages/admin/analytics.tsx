@@ -69,11 +69,259 @@ const AnalyticsDashboard: React.FC = () => {
       // Para PDF usamos un formato diferente que garantiza su descarga
       mimeType = 'application/pdf';
       
-      // En una implementación real, se integraría con una biblioteca de generación de PDF
-      // Como jsPDF o similar para generar un PDF con el contenido real
+      // En una implementación real, se utilizaría una biblioteca como jsPDF
+      // Aquí simulamos un PDF más elaborado con datos según el tipo de reporte
       
-      // Para esta demo, vamos a crear un PDF con elementos para mostrar el contenido básico
-      // Nota: Este es un PDF muy básico pero visible con estructura válida
+      // Construimos las tablas y datos según el tipo de reporte
+      let reportTitle = "";
+      let tableData = "";
+      let chartDescription = "";
+      let summaryData = "";
+      
+      // Configuramos el contenido según la pestaña seleccionada
+      if (activeTab === 'uso') {
+        reportTitle = "Uso de Parques";
+        tableData = `
+/F1 10 Tf
+50 550 Td
+(Tabla de Uso por Mes) Tj
+/F1 8 Tf
+0 -20 Td
+(Mes         | Visitantes  | Eventos) Tj
+0 -15 Td
+(Enero       | 15,420      | 28) Tj
+0 -15 Td
+(Febrero     | 18,350      | 35) Tj
+0 -15 Td
+(Marzo       | 21,280      | 42) Tj
+0 -15 Td
+(Abril       | 24,150      | 38) Tj
+0 -15 Td
+(Mayo        | 26,780      | 45) Tj
+0 -30 Td
+`;
+        chartDescription = `
+/F1 10 Tf
+(Distribución de Visitantes por Tipo de Parque) Tj
+/F1 8 Tf
+0 -15 Td
+(Parques Urbanos: 45%) Tj
+0 -12 Td
+(Parques Lineales: 25%) Tj
+0 -12 Td
+(Bosques Urbanos: 20%) Tj
+0 -12 Td
+(Parques de Bolsillo: 10%) Tj
+`;
+        summaryData = `
+/F1 10 Tf
+50 300 Td
+(Resumen de Uso) Tj
+/F1 8 Tf
+0 -15 Td
+(Total de Visitantes: 487,520) Tj
+0 -12 Td
+(Promedio Mensual: 40,626) Tj
+0 -12 Td
+(Mes con Mayor Afluencia: Mayo) Tj
+0 -12 Td
+(Incremento vs. Año Anterior: 15.8%) Tj
+`;
+      } else if (activeTab === 'actividades') {
+        reportTitle = "Actividades en Parques";
+        tableData = `
+/F1 10 Tf
+50 550 Td
+(Actividades por Categoría) Tj
+/F1 8 Tf
+0 -20 Td
+(Categoría     | Cantidad   | Participantes) Tj
+0 -15 Td
+(Deportivas    | 42         | 3,580) Tj
+0 -15 Td
+(Culturales    | 35         | 2,850) Tj
+0 -15 Td
+(Educativas    | 28         | 1,920) Tj
+0 -15 Td
+(Recreativas   | 25         | 4,150) Tj
+0 -15 Td
+(Comunitarias  | 23         | 2,750) Tj
+0 -30 Td
+`;
+        chartDescription = `
+/F1 10 Tf
+(Participación por Grupo de Edad) Tj
+/F1 8 Tf
+0 -15 Td
+(Niños (0-12): 28%) Tj
+0 -12 Td
+(Adolescentes (13-18): 15%) Tj
+0 -12 Td
+(Jóvenes (19-35): 30%) Tj
+0 -12 Td
+(Adultos (36-60): 20%) Tj
+0 -12 Td
+(Adultos Mayores (61+): 7%) Tj
+`;
+        summaryData = `
+/F1 10 Tf
+50 300 Td
+(Resumen de Actividades) Tj
+/F1 8 Tf
+0 -15 Td
+(Total de Actividades: 153) Tj
+0 -12 Td
+(Promedio de Participantes: 98) Tj
+0 -12 Td
+(Categoría más Popular: Deportivas) Tj
+0 -12 Td
+(Incremento vs. Año Anterior: 12.5%) Tj
+`;
+      } else if (activeTab === 'incidencias') {
+        reportTitle = "Incidencias Reportadas";
+        tableData = `
+/F1 10 Tf
+50 550 Td
+(Incidencias por Tipo) Tj
+/F1 8 Tf
+0 -20 Td
+(Tipo               | Cantidad  | % Resueltas) Tj
+0 -15 Td
+(Vandalismo         | 45        | 85%) Tj
+0 -15 Td
+(Basura             | 78        | 92%) Tj
+0 -15 Td
+(Iluminación        | 32        | 78%) Tj
+0 -15 Td
+(Mobiliario dañado  | 54        | 65%) Tj
+0 -15 Td
+(Vegetación         | 28        | 89%) Tj
+0 -30 Td
+`;
+        chartDescription = `
+/F1 10 Tf
+(Tiempo de Resolución) Tj
+/F1 8 Tf
+0 -15 Td
+(Menos de 24 horas: 35%) Tj
+0 -12 Td
+(1-3 días: 42%) Tj
+0 -12 Td
+(4-7 días: 15%) Tj
+0 -12 Td
+(Más de 7 días: 8%) Tj
+`;
+        summaryData = `
+/F1 10 Tf
+50 300 Td
+(Resumen de Incidencias) Tj
+/F1 8 Tf
+0 -15 Td
+(Total de Incidencias: 237) Tj
+0 -12 Td
+(Porcentaje Resueltas: 82%) Tj
+0 -12 Td
+(Tiempo Promedio de Resolución: 3.5 días) Tj
+0 -12 Td
+(Parque con Más Incidencias: Parque Metropolitano) Tj
+`;
+      } else if (activeTab === 'mantenimiento') {
+        reportTitle = "Mantenimiento de Parques";
+        tableData = `
+/F1 10 Tf
+50 550 Td
+(Tareas de Mantenimiento) Tj
+/F1 8 Tf
+0 -20 Td
+(Tipo                | Cantidad  | Costo Promedio) Tj
+0 -15 Td
+(Jardinería          | 85        | $15,450) Tj
+0 -15 Td
+(Estructura          | 32        | $28,750) Tj
+0 -15 Td
+(Instalaciones       | 48        | $22,300) Tj
+0 -15 Td
+(Mobiliario          | 65        | $12,580) Tj
+0 -15 Td
+(Iluminación         | 42        | $18,920) Tj
+0 -30 Td
+`;
+        chartDescription = `
+/F1 10 Tf
+(Estado de Tareas) Tj
+/F1 8 Tf
+0 -15 Td
+(Completadas: 68%) Tj
+0 -12 Td
+(En Progreso: 22%) Tj
+0 -12 Td
+(Pendientes: 10%) Tj
+`;
+        summaryData = `
+/F1 10 Tf
+50 300 Td
+(Resumen de Mantenimiento) Tj
+/F1 8 Tf
+0 -15 Td
+(Total de Tareas: 272) Tj
+0 -12 Td
+(Inversión Total: $4,850,000) Tj
+0 -12 Td
+(Costo Promedio por Tarea: $17,830) Tj
+0 -12 Td
+(Parque con Mayor Inversión: Parque Metropolitano) Tj
+`;
+      } else { // participacion
+        reportTitle = "Participación Ciudadana";
+        tableData = `
+/F1 10 Tf
+50 550 Td
+(Interacciones Ciudadanas) Tj
+/F1 8 Tf
+0 -20 Td
+(Tipo               | Cantidad  | % Positivas) Tj
+0 -15 Td
+(Comentarios        | 865       | 78%) Tj
+0 -15 Td
+(Encuestas          | 1,245     | 92%) Tj
+0 -15 Td
+(Propuestas         | 196       | 85%) Tj
+0 -15 Td
+(Votaciones         | 3,580     | 88%) Tj
+0 -15 Td
+(Workshops          | 38        | 95%) Tj
+0 -30 Td
+`;
+        chartDescription = `
+/F1 10 Tf
+(Participación por Canal) Tj
+/F1 8 Tf
+0 -15 Td
+(App Móvil: 45%) Tj
+0 -12 Td
+(Sitio Web: 32%) Tj
+0 -12 Td
+(Presencial: 15%) Tj
+0 -12 Td
+(WhatsApp: 8%) Tj
+`;
+        summaryData = `
+/F1 10 Tf
+50 300 Td
+(Resumen de Participación) Tj
+/F1 8 Tf
+0 -15 Td
+(Total Interacciones: 5,924) Tj
+0 -12 Td
+(Incremento vs. Año Anterior: 28.5%) Tj
+0 -12 Td
+(Valoración Promedio: 4.3/5) Tj
+0 -12 Td
+(Parque con Mayor Participación: Parque Agua Azul) Tj
+`;
+      }
+      
+      // Construimos el PDF con todos los elementos
       const pdfContent = `
 %PDF-1.4
 1 0 obj
@@ -102,22 +350,57 @@ endobj
 >>
 endobj
 5 0 obj
-<< /Length 172 >>
+<< /Length 2500 >>
 stream
 BT
+% Encabezado
+/F1 12 Tf
+50 740 Td
+(ParquesMX - Sistema de Gestión de Parques Urbanos) Tj
+
+% Título del reporte
 /F1 24 Tf
 50 700 Td
-(Reporte de ${activeTab === 'uso' ? 'Uso de Parques' : 
-             activeTab === 'actividades' ? 'Actividades' : 
-             activeTab === 'incidencias' ? 'Incidencias' : 
-             activeTab === 'mantenimiento' ? 'Mantenimiento' : 'Participación Ciudadana'}) Tj
-/F1 12 Tf
-0 -50 Td
-(Fecha: ${new Date().toLocaleDateString()}) Tj
-0 -20 Td
-(Este es un reporte generado desde el sistema ParquesMX) Tj
-0 -20 Td
-(Para más información, contacte al administrador del sistema) Tj
+(Reporte de ${reportTitle}) Tj
+
+% Información del reporte
+/F1 10 Tf
+50 670 Td
+(Fecha de generación: ${new Date().toLocaleDateString()}) Tj
+0 -15 Td
+(Generado por: Usuario Administrador) Tj
+0 -15 Td
+(Periodo: ${new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleDateString()} - ${new Date().toLocaleDateString()}) Tj
+
+% Separador
+0.5 w
+50 630 m
+550 630 l
+S
+
+% Filtros aplicados
+/F1 10 Tf
+50 610 Td
+(Filtros aplicados: ${filterMunicipality === 'all' ? 'Todos los municipios' : 'Municipio específico'}, ${filterParkType === 'all' ? 'Todos los tipos de parque' : 'Tipo específico'}) Tj
+
+% Tablas de datos
+${tableData}
+
+% Gráficos (descripciones textuales)
+${chartDescription}
+
+% Resumen
+${summaryData}
+
+% Pie de página
+/F1 8 Tf
+50 100 Td
+(Nota: Este reporte es un documento oficial del sistema ParquesMX.) Tj
+0 -15 Td
+(Para más información, contacte al administrador del sistema.) Tj
+0 -30 Td
+(© ${new Date().getFullYear()} ParquesMX - Todos los derechos reservados) Tj
+
 ET
 endstream
 endobj
@@ -134,7 +417,7 @@ trailer
    /Root 1 0 R
 >>
 startxref
-541
+2872
 %%EOF
 `;
       
