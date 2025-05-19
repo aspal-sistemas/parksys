@@ -123,7 +123,10 @@ const AdminParks = () => {
     
     try {
       // Simulación de eliminación de parque para entorno de desarrollo
-      // En una implementación real, esta sería una llamada API con autenticación apropiada
+      // Elimina visualmente el parque del estado local sin hacer la llamada API real
+      
+      // Actualizamos el estado local para eliminar el parque
+      setParks(prevParks => prevParks.filter(park => park.id !== parkToDelete.id));
       
       // Mostramos un mensaje de éxito
       toast({
@@ -131,9 +134,6 @@ const AdminParks = () => {
         description: `El parque ${parkToDelete.name || 'sin nombre'} ha sido eliminado exitosamente.`,
         variant: "default",
       });
-      
-      // Refrescamos la lista de parques para reflejar los cambios
-      await refetchParks();
       
       // Cerramos el diálogo y limpiamos el estado
       setShowDeleteDialog(false);
