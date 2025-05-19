@@ -456,6 +456,105 @@ const AdminActivities = () => {
         </DialogContent>
       </Dialog>
       
+      {/* Activity details dialog */}
+      <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Detalles de la Actividad</DialogTitle>
+          </DialogHeader>
+          
+          {detailActivity && (
+            <div className="py-4 space-y-4">
+              <div className="grid grid-cols-4 gap-4">
+                <div className="col-span-4 md:col-span-3">
+                  <h2 className="text-xl font-semibold">{detailActivity.title}</h2>
+                  <p className="text-sm text-gray-500">
+                    ID: {detailActivity.id} | Parque: {getParkName(detailActivity.parkId)}
+                  </p>
+                </div>
+                {detailActivity.category && (
+                  <div className="col-span-4 md:col-span-1 flex justify-start md:justify-end">
+                    <Badge className="bg-primary/10 text-primary hover:bg-primary/20 py-1 px-2">
+                      {detailActivity.category}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+              
+              <div className="pt-2 border-t">
+                <h3 className="text-sm font-medium mb-1">Descripción</h3>
+                <p className="text-gray-700">
+                  {detailActivity.description || "Sin descripción"}
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t">
+                <div>
+                  <h3 className="text-sm font-medium mb-1">Fecha y hora de inicio</h3>
+                  <p className="text-gray-700">
+                    {formatDate(detailActivity.startDate)}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium mb-1">Fecha y hora de fin</h3>
+                  <p className="text-gray-700">
+                    {detailActivity.endDate ? formatDate(detailActivity.endDate) : "No especificado"}
+                  </p>
+                </div>
+              </div>
+              
+              {detailActivity.location && (
+                <div className="pt-2 border-t">
+                  <h3 className="text-sm font-medium mb-1">Ubicación</h3>
+                  <p className="text-gray-700">{detailActivity.location}</p>
+                </div>
+              )}
+              
+              {detailActivity.organizerName && (
+                <div className="pt-2 border-t">
+                  <h3 className="text-sm font-medium mb-1">Organizador</h3>
+                  <p className="text-gray-700">{detailActivity.organizerName}</p>
+                  {detailActivity.organizerContact && (
+                    <p className="text-gray-500 text-sm">
+                      Contacto: {detailActivity.organizerContact}
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              <div className="pt-2 border-t">
+                <h3 className="text-sm font-medium mb-1">Registrado</h3>
+                <p className="text-gray-500 text-sm">
+                  Creado: {new Date(detailActivity.createdAt).toLocaleDateString()}
+                  {detailActivity.updatedAt && detailActivity.updatedAt !== detailActivity.createdAt && (
+                    <> | Actualizado: {new Date(detailActivity.updatedAt).toLocaleDateString()}</>
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDetailDialog(false)}>
+              Cerrar
+            </Button>
+            {detailActivity && (
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSelectedActivity(detailActivity);
+                  setShowDetailDialog(false);
+                  setShowEditDialog(true);
+                }}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Editar
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       {/* Delete confirmation dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="sm:max-w-md">
