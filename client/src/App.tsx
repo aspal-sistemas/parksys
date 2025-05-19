@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Parks from "@/pages/parks";
 import ParkDetail from "@/pages/park-detail";
+import Activities from "@/pages/activities";
 import AdminDashboard from "@/pages/admin";
 import AdminParks from "@/pages/admin/parks";
 import AdminParkEdit from "@/pages/admin/park-edit";
@@ -33,6 +34,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/parks" component={Parks} />
         <Route path="/parks/:id" component={ParkDetail} />
+        <Route path="/activities" component={Activities} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/parks" component={AdminParks} />
         <Route path="/admin/parks-import" component={AdminParksImport} />
