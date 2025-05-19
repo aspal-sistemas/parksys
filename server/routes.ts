@@ -539,6 +539,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all comments (admin only)
+  apiRouter.get("/comments", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Configuramos explícitamente el tipo de contenido para asegurar respuesta JSON
+      res.setHeader('Content-Type', 'application/json');
+      
+      // Opcionalmente filtramos por estado de aprobación
+      const approvedFilter = req.query.approved;
+      let approved: boolean | undefined = undefined;
+      
+      if (approvedFilter === 'true') {
+        approved = true;
+      } else if (approvedFilter === 'false') {
+        approved = false;
+      }
+      
+      // Solo los super_admin pueden ver todos los comentarios
+      // Los usuarios de municipios solo ven los comentarios de sus parques
+      let allComments;
+      if (req.user.role === 'super_admin') {
+        allComments = await storage.getAllComments(approved);
+      } else {
+        // Para usuarios de municipio, solo mostramos comentarios de sus parques
+        const municipalityId = req.user.municipalityId;
+        if (!municipalityId) {
+          return res.status(403).json({ message: "Acceso no autorizado" });
+        }
+        
+        const municipalityParks = await storage.getMunicipalityParks(municipalityId);
+        const parkIds = municipalityParks.map(park => park.id);
+        allComments = await storage.getParkCommentsByIds(parkIds, approved);
+      }
+      
+      res.send(JSON.stringify(allComments));
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      res.status(500)
+         .setHeader('Content-Type', 'application/json')
+         .send(JSON.stringify({ message: "Error fetching comments" }));
+    }
+  });
+  
   // Approve a comment (admin/municipality only)
   apiRouter.put("/comments/:id/approve", isAuthenticated, async (req: Request, res: Response) => {
     try {

@@ -1562,6 +1562,92 @@ export class DatabaseStorage implements IStorage {
     
     return await query.orderBy(desc(comments.createdAt));
   }
+  
+  async getAllComments(approvedFilter?: boolean): Promise<Comment[]> {
+    let query = db.select({
+      id: comments.id,
+      parkId: comments.parkId,
+      username: comments.username,
+      email: comments.email,
+      comment: comments.comment,
+      rating: comments.rating,
+      isApproved: comments.isApproved,
+      createdAt: comments.createdAt
+    }).from(comments);
+    
+    // Si se proporciona un filtro de aprobación, lo aplicamos
+    if (approvedFilter !== undefined) {
+      query = query.where(eq(comments.isApproved, approvedFilter));
+    }
+    
+    // Obtenemos también la información del parque para cada comentario
+    const commentsData = await query.orderBy(desc(comments.createdAt));
+    
+    // Si no hay comentarios, devolvemos array vacío
+    if (!commentsData.length) return [];
+    
+    // Obtenemos los IDs de parques únicos
+    const parkIds = [...new Set(commentsData.map(comment => comment.parkId))];
+    
+    // Obtenemos la información de los parques
+    const parksInfo = await db.select({
+      id: parks.id,
+      name: parks.name,
+      municipalityId: parks.municipalityId
+    }).from(parks).where(inArray(parks.id, parkIds));
+    
+    // Mapeamos la información del parque a cada comentario
+    return commentsData.map(comment => {
+      const park = parksInfo.find(p => p.id === comment.parkId);
+      return {
+        ...comment,
+        park: park || null
+      };
+    });
+  }
+  
+  async getParkCommentsByIds(parkIds: number[], approvedFilter?: boolean): Promise<Comment[]> {
+    if (!parkIds.length) return [];
+    
+    let query = db.select({
+      id: comments.id,
+      parkId: comments.parkId,
+      username: comments.username,
+      email: comments.email,
+      comment: comments.comment,
+      rating: comments.rating,
+      isApproved: comments.isApproved,
+      createdAt: comments.createdAt
+    }).from(comments)
+    .where(inArray(comments.parkId, parkIds));
+    
+    // Si se proporciona un filtro de aprobación, lo aplicamos
+    if (approvedFilter !== undefined) {
+      query = query.where(eq(comments.isApproved, approvedFilter));
+    }
+    
+    // Obtenemos los comentarios con orden por fecha
+    const commentsData = await query.orderBy(desc(comments.createdAt));
+    
+    // Si no hay comentarios, devolvemos array vacío
+    if (!commentsData.length) return [];
+    
+    // Obtenemos la información de los parques para estos comentarios
+    const parksInfo = await db.select({
+      id: parks.id,
+      name: parks.name,
+      municipalityId: parks.municipalityId
+    }).from(parks).where(inArray(parks.id, parkIds));
+    
+    // Mapeamos la información del parque a cada comentario
+    return commentsData.map(comment => {
+      const park = parksInfo.find(p => p.id === comment.parkId);
+      return {
+        ...comment,
+        park: park || null
+      };
+    });
+  }
 
   async createComment(commentData: InsertComment): Promise<Comment> {
     const [newComment] = await db.insert(comments)
