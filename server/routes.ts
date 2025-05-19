@@ -687,10 +687,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all incidents
   apiRouter.get("/incidents", async (req: Request, res: Response) => {
     try {
+      console.log("📣 RECIBIDA PETICIÓN DE INCIDENTES:", req.headers);
       const parkId = req.query.parkId ? Number(req.query.parkId) : undefined;
       
-      // Para desarrollo, generamos incidentes de muestra
-      const sampleIncidents = [
+      // Hard-coded sample incidents for development
+      const hardCodedIncidents = [
         {
           id: 1,
           parkId: 1,
@@ -702,8 +703,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           reporterEmail: "ana@example.com",
           location: "Área de juegos",
           category: "damage",
-          createdAt: new Date("2023-08-15"),
-          updatedAt: new Date("2023-08-15"),
+          createdAt: "2023-08-15T10:30:00.000Z",
+          updatedAt: "2023-08-15T10:30:00.000Z",
           park: {
             id: 1,
             name: "Parque Metropolitano"
@@ -720,8 +721,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           reporterEmail: "carlos@example.com",
           location: "Sendero norte",
           category: "safety",
-          createdAt: new Date("2023-09-02"),
-          updatedAt: new Date("2023-09-05"),
+          createdAt: "2023-09-02T14:20:00.000Z",
+          updatedAt: "2023-09-05T09:15:00.000Z",
           park: {
             id: 2,
             name: "Parque Agua Azul"
@@ -738,8 +739,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           reporterEmail: "maria@example.com",
           location: "Área de picnic",
           category: "maintenance",
-          createdAt: new Date("2023-07-20"),
-          updatedAt: new Date("2023-07-28"),
+          createdAt: "2023-07-20T08:45:00.000Z",
+          updatedAt: "2023-07-28T16:30:00.000Z",
           park: {
             id: 3,
             name: "Parque Colomos"
@@ -747,17 +748,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       ];
       
-      console.log("Enviando incidentes de muestra:", sampleIncidents.length);
+      console.log("⚠️ Enviando incidentes de muestra (hardcoded):", hardCodedIncidents.length);
       
       // Si se especificó un parkId, filtramos los incidentes por ese parque
       if (parkId) {
-        const filteredIncidents = sampleIncidents.filter(inc => inc.parkId === parkId);
-        console.log(`Filtrando incidentes por parque ${parkId}:`, filteredIncidents.length);
+        const filteredIncidents = hardCodedIncidents.filter(inc => inc.parkId === parkId);
+        console.log(`⚠️ Filtrando incidentes por parque ${parkId}:`, filteredIncidents.length);
         return res.json(filteredIncidents);
       }
       
       // Respondemos con todos los incidentes de muestra
-      return res.json(sampleIncidents);
+      return res.json(hardCodedIncidents);
     } catch (error) {
       console.error("Error obteniendo incidentes:", error);
       return res.status(500).json({ message: "Error al obtener incidentes" });
