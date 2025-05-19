@@ -256,9 +256,9 @@ const AdminSidebarModular: React.FC = () => {
                 </NavItem>
               </ModuleNav>
               
-              {/* Módulo - Finanzas y Presupuesto */}
+              {/* Módulo - Finanzas */}
               <ModuleNav 
-                title="Finanzas y Presupuesto" 
+                title="Finanzas" 
                 icon={<DollarSign className="h-5 w-5" />} 
                 value="finance"
               >

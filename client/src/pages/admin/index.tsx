@@ -160,7 +160,7 @@ const AdminDashboard: React.FC = () => {
               </div>
               
               <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">4. Módulo - Finanzas y Presupuesto</h3>
+                <h3 className="font-medium mb-2">4. Módulo - Finanzas</h3>
                 <p className="text-sm text-gray-600">Submódulos: Egresos, Ingresos, Flujo de Efectivo, Calculadora de recuperación de costos, Indicadores clave</p>
               </div>
               
