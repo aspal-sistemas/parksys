@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, useLocation } from 'wouter';
 import { ExtendedPark } from '@shared/schema';
@@ -6,12 +6,7 @@ import {
   ChevronLeft, 
   Loader, 
   MapPin, 
-  Calendar, 
-  FileText, 
-  MessageSquare, 
-  Share2, 
-  AlertCircle,
-  Video
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,7 +14,7 @@ import { ParkImageManager } from '@/components/ParkImageManager';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { IncidentReportForm } from '@/components/IncidentReportForm';
 import AmenityIcon from '@/components/ui/amenity-icon';
 import ParkQuickActions from '@/components/ParkQuickActions';
@@ -28,11 +23,6 @@ const ParkDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
-  const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
-  const [isActivitiesDialogOpen, setIsActivitiesDialogOpen] = useState(false);
-  const [comment, setComment] = useState("");
-  const [commentName, setCommentName] = useState("");
-  const [commentEmail, setCommentEmail] = useState("");
   
   // Fetch park details
   const { data: park, isLoading, error } = useQuery<ExtendedPark>({
@@ -41,32 +31,29 @@ const ParkDetail: React.FC = () => {
   
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center">
-          <Loader className="h-12 w-12 text-primary animate-spin mb-4" />
-          <p className="text-gray-500">Cargando información del parque...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Loader className="h-8 w-8 animate-spin" />
+        <p className="mt-2">Cargando información del parque...</p>
       </div>
     );
   }
   
   if (error || !park) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center max-w-md px-4">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">No se pudo cargar el parque</h2>
-          <p className="text-gray-500 mb-6">Lo sentimos, no pudimos encontrar la información solicitada.</p>
-          <Button onClick={() => setLocation('/parks')}>
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Volver a la lista de parques
-          </Button>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <AlertCircle className="h-8 w-8 text-red-500" />
+        <p className="mt-2">Error al cargar la información del parque. Por favor, intenta nuevamente.</p>
+        <Button 
+          className="mt-4" 
+          variant="outline"
+          onClick={() => setLocation('/')}
+        >
+          Volver a inicio
+        </Button>
       </div>
     );
   }
   
-  // Get park type display name
   const getParkTypeLabel = (type: string) => {
     const typeMap: Record<string, string> = {
       'metropolitano': 'Metropolitano',
@@ -80,7 +67,7 @@ const ParkDetail: React.FC = () => {
     return typeMap[type] || type;
   };
   
-  // Format dates for activities
+  // Format dates
   const formatDate = (date: Date) => {
     return format(new Date(date), "EEEE, d 'de' MMMM 'de' yyyy • h:mm a", { locale: es });
   };
@@ -88,262 +75,86 @@ const ParkDetail: React.FC = () => {
   // Get images
   const mainImage = park.primaryImage || (park.images && park.images.length > 0 ? park.images[0].imageUrl : '');
   const additionalImages = park.images?.filter(img => !img.isPrimary).map(img => img.imageUrl) || [];
-  
-  // Formulario para comentarios
-  const [commentFormData, setCommentFormData] = useState({
-    text: "",
-    name: "",
-    email: ""
-  });
-
-  // Manejar envío de comentario
-  const handleCommentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!comment.trim()) {
-      alert("Por favor ingresa un comentario");
-      return;
-    }
-    
-    try {
-      const response = await fetch(`/api/parks/${id}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          text: comment,
-          name: commentName || "Anónimo",
-          email: commentEmail || undefined
-        })
-      });
-      
-      if (response.ok) {
-        alert("¡Gracias por tu comentario! Será revisado por un administrador.");
-        setComment("");
-        setCommentName("");
-        setCommentEmail("");
-        setIsCommentDialogOpen(false);
-      } else {
-        alert("Hubo un error al enviar tu comentario. Por favor intenta nuevamente.");
-      }
-    } catch (error) {
-      console.error("Error al enviar comentario:", error);
-      alert("No se pudo enviar el comentario debido a un error de conexión.");
-    }
-  };
 
   return (
     <div className="bg-white min-h-screen">
-      {/* Diálogo de actividades */}
-      <Dialog open={isActivitiesDialogOpen} onOpenChange={setIsActivitiesDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Próximas Actividades en {park.name}</DialogTitle>
-            <DialogDescription>
-              Calendario de eventos y actividades programadas
-            </DialogDescription>
-          </DialogHeader>
-          
-          {park.activities && park.activities.length > 0 ? (
-            <div className="space-y-4 my-4">
-              {park.activities.map(activity => (
-                <div 
-                  key={activity.id} 
-                  className="border border-gray-200 rounded-lg p-4"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-lg">{activity.title}</h3>
-                    {activity.category && (
-                      <Badge className="bg-secondary-100 text-secondary-800">
-                        {activity.category}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {formatDate(activity.startDate)}
-                  </p>
-                  <p className="text-gray-700">{activity.description}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-10 bg-gray-50 rounded-lg my-4">
-              <p className="text-gray-500">No hay actividades programadas actualmente.</p>
-            </div>
-          )}
-          
-          <div className="flex justify-end">
-            <Button
-              onClick={() => setIsActivitiesDialogOpen(false)}
-            >
-              Cerrar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Diálogo de comentarios */}
-      <Dialog open={isCommentDialogOpen} onOpenChange={setIsCommentDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Deja tu comentario sobre {park.name}</DialogTitle>
-            <DialogDescription>
-              Tu opinión nos ayuda a mejorar los espacios públicos
-            </DialogDescription>
-          </DialogHeader>
-          
-          <form onSubmit={handleCommentSubmit} className="space-y-4 my-4">
-            <div className="space-y-2">
-              <label htmlFor="comment-name" className="text-sm font-medium">Nombre (opcional)</label>
-              <input 
-                id="comment-name"
-                type="text" 
-                value={commentName} 
-                onChange={(e) => setCommentName(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-                placeholder="Tu nombre"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="comment-email" className="text-sm font-medium">Email (opcional)</label>
-              <input 
-                id="comment-email"
-                type="email" 
-                value={commentEmail} 
-                onChange={(e) => setCommentEmail(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-                placeholder="tu@email.com"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="comment-text" className="text-sm font-medium">Comentario *</label>
-              <textarea 
-                id="comment-text"
-                value={comment} 
-                onChange={(e) => setComment(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[100px]"
-                placeholder="Comparte tu experiencia o sugerencias para este parque"
-                required
-              />
-            </div>
-            
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setIsCommentDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit">
-                Enviar comentario
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Back button */}
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => setLocation('/parks')}
-          className="mb-4"
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Volver a la lista
-        </Button>
-        
-        {/* Park header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold font-heading">{park.name}</h1>
-            <p className="text-gray-600">
-              {park.municipality?.name || ''}, {park.municipality?.state || ''}
-            </p>
-          </div>
-          <div className="mt-2 md:mt-0">
-            <Badge className="bg-primary-100 text-primary-800 font-medium">
-              {getParkTypeLabel(park.parkType)}
-            </Badge>
-          </div>
+      <div className="container mx-auto px-4 py-6">
+        <div className="mb-6">
+          <Button 
+            variant="ghost" 
+            className="pl-0 text-gray-600"
+            onClick={() => setLocation('/parks')}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Volver a parques
+          </Button>
         </div>
         
-        {/* Main content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-          {/* Left column */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            {/* Hero image */}
-            <div className="rounded-lg overflow-hidden mb-4">
-              <img 
-                src={mainImage || 'https://placehold.co/600x400/e2e8f0/64748b?text=Sin+Imagen'} 
-                alt={park.name} 
-                className="w-full h-80 object-cover"
-              />
+            <h1 className="text-3xl font-bold mb-2">{park.name}</h1>
+            
+            <div className="flex items-center text-gray-600 mb-6">
+              <MapPin className="h-4 w-4 mr-1" />
+              <span>{park.address}</span>
             </div>
             
-            {/* Image gallery */}
-            {additionalImages.length > 0 && (
-              <div className="grid grid-cols-5 gap-2 mb-6">
-                {additionalImages.slice(0, 5).map((imageUrl, idx) => (
-                  <img 
-                    key={idx}
-                    src={imageUrl} 
-                    alt={`Vista del parque ${idx + 1}`} 
-                    className="w-full h-20 object-cover rounded"
-                  />
-                ))}
-              </div>
-            )}
-            
-            {/* Tabs */}
-            <Tabs defaultValue="info" className="mt-6">
-              <TabsList>
-                <TabsTrigger value="info">Información</TabsTrigger>
-                <TabsTrigger value="amenities">Amenidades</TabsTrigger>
-                <TabsTrigger value="activities">Actividades</TabsTrigger>
-                <TabsTrigger value="documents">Documentos</TabsTrigger>
+            <Tabs defaultValue="details">
+              <TabsList className="mb-4">
+                <TabsTrigger value="details">Detalles</TabsTrigger>
                 <TabsTrigger value="images">Imágenes</TabsTrigger>
+                <TabsTrigger value="amenities">Servicios</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="info" className="mt-4">
+              <TabsContent value="details" className="space-y-6">
                 {park.description && (
                   <div className="mb-6">
-                    <h2 className="text-xl font-semibold mb-2">Descripción</h2>
-                    <p className="text-gray-700">{park.description}</p>
+                    <h2 className="text-xl font-semibold mb-3">Descripción</h2>
+                    <p className="text-gray-700 whitespace-pre-line">{park.description}</p>
                   </div>
                 )}
                 
                 <div className="mb-6">
-                  <h2 className="text-xl font-semibold mb-2">Información general</h2>
-                  <div className="space-y-2">
-                    {park.area && (
-                      <div className="flex justify-between border-b pb-2">
-                        <span className="text-gray-600">Superficie:</span>
-                        <span className="font-medium">{park.area}</span>
+                  <h2 className="text-xl font-semibold mb-3">Información general</h2>
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between border-b pb-2">
+                          <span className="text-gray-600">Tipo:</span>
+                          <span className="font-medium">{getParkTypeLabel(park.parkType)}</span>
+                        </div>
+                        
+                        {park.area && (
+                          <div className="flex justify-between border-b pb-2">
+                            <span className="text-gray-600">Superficie:</span>
+                            <span className="font-medium">{park.area} m²</span>
+                          </div>
+                        )}
+                        
+                        {park.openingHours && (
+                          <div className="flex justify-between border-b pb-2">
+                            <span className="text-gray-600">Horario:</span>
+                            <span className="font-medium">{park.openingHours}</span>
+                          </div>
+                        )}
+                        
+                        {park.foundationYear && (
+                          <div className="flex justify-between border-b pb-2">
+                            <span className="text-gray-600">Año de fundación:</span>
+                            <span className="font-medium">{park.foundationYear}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    
-                    {park.foundationYear && (
-                      <div className="flex justify-between border-b pb-2">
-                        <span className="text-gray-600">Año de fundación:</span>
-                        <span className="font-medium">{park.foundationYear}</span>
+                      
+                      <div className="space-y-2">
+                        {park.conservationStatus && (
+                          <div className="flex justify-between border-b pb-2">
+                            <span className="text-gray-600">Estado de conservación:</span>
+                            <span className="font-medium">{park.conservationStatus}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    
-                    {park.openingHours && (
-                      <div className="flex justify-between border-b pb-2">
-                        <span className="text-gray-600">Horario:</span>
-                        <span className="font-medium">{park.openingHours}</span>
-                      </div>
-                    )}
-                    
-                    {park.conservationStatus && (
-                      <div className="flex justify-between border-b pb-2">
-                        <span className="text-gray-600">Estado de conservación:</span>
-                        <span className="font-medium">{park.conservationStatus}</span>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 </div>
                 
@@ -374,126 +185,45 @@ const ParkDetail: React.FC = () => {
                 </div>
               </TabsContent>
               
-              <TabsContent value="amenities" className="mt-4">
-                {park.amenities && park.amenities.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {park.amenities.map(amenity => (
-                      <div 
-                        key={amenity.id} 
-                        className="flex items-center p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div className="bg-primary-100 p-2 rounded-full text-primary-600 mr-3">
-                          <AmenityIcon name={amenity.icon} />
-                        </div>
-                        <span>{amenity.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-10 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500">No hay amenidades registradas para este parque.</p>
-                  </div>
-                )}
+              <TabsContent value="images">
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-4">Imágenes</h2>
+                  <ParkImageManager 
+                    mainImage={mainImage}
+                    additionalImages={additionalImages}
+                    readOnly={true}
+                  />
+                </div>
               </TabsContent>
               
-              <TabsContent value="activities" className="mt-4">
-                {park.activities && park.activities.length > 0 ? (
-                  <div className="space-y-4">
-                    {park.activities.map(activity => (
-                      <div 
-                        key={activity.id} 
-                        className="border border-gray-200 rounded-lg p-4"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-lg">{activity.title}</h3>
-                          {activity.category && (
-                            <Badge className="bg-secondary-100 text-secondary-800">
-                              {activity.category}
-                            </Badge>
-                          )}
+              <TabsContent value="amenities">
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-4">Servicios y comodidades</h2>
+                  
+                  {park.amenities && park.amenities.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      {park.amenities.map(amenity => (
+                        <div key={amenity.id} className="flex items-center p-3 border rounded-lg">
+                          <div className="flex-shrink-0 w-8 h-8 mr-3 flex items-center justify-center">
+                            <AmenityIcon 
+                              name={amenity.icon || ''} 
+                              customUrl={amenity.customIconUrl || ''} 
+                              className="w-6 h-6 text-primary"
+                            />
+                          </div>
+                          <span>{amenity.name}</span>
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">
-                          {formatDate(activity.startDate)}
-                        </p>
-                        <p className="text-gray-700">{activity.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-10 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500">No hay actividades programadas actualmente.</p>
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="documents" className="mt-4">
-                {park.documents && park.documents.length > 0 ? (
-                  <div className="space-y-3">
-                    {park.documents.map(document => (
-                      <a 
-                        key={document.id}
-                        href={document.fileUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <FileText className={`h-10 w-10 mr-4 ${
-                          document.fileType?.includes('pdf') ? 'text-red-500' : 'text-blue-500'
-                        }`} />
-                        <div className="flex-1">
-                          <h3 className="font-medium">{document.title}</h3>
-                          {document.fileSize && (
-                            <p className="text-sm text-gray-500">{document.fileSize}</p>
-                          )}
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          Descargar
-                        </Button>
-                      </a>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-10 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500">No hay documentos disponibles para este parque.</p>
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="images" className="mt-4">
-                <ParkImageManager parkId={Number(id)} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No hay servicios registrados para este parque.</p>
+                  )}
+                </div>
               </TabsContent>
             </Tabs>
           </div>
           
-          {/* Right column - sidebar */}
-          <div className="lg:col-span-1">
-            {/* Map card */}
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mb-6">
-              <div className="h-48">
-                <iframe
-                  title={`Mapa de ${park.name}`}
-                  className="w-full h-full"
-                  src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=${park.latitude},${park.longitude}`}
-                  allowFullScreen
-                ></iframe>
-              </div>
-              <div className="p-4">
-                <h3 className="font-medium text-lg mb-2">Ubicación</h3>
-                <p className="text-gray-600 text-sm mb-3">{park.address}</p>
-                
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    Cómo llegar
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Share2 className="h-4 w-4 mr-1" />
-                    Compartir
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
+          <div className="space-y-6">
             {/* Quick actions */}
             <ParkQuickActions 
               parkId={Number(id)}
@@ -514,33 +244,26 @@ const ParkDetail: React.FC = () => {
                   onClick={() => setIsReportDialogOpen(true)}
                 >
                   <AlertCircle className="h-4 w-4 mr-2" />
-                  Reportar un incidente
+                  Reportar un problema
                 </Button>
               </div>
             </div>
-            
-            {/* Incident Report Dialog */}
-            <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
-              <DialogContent className="sm:max-w-[600px]">
-                <DialogHeader>
-                  <DialogTitle>Reportar incidente en {park.name}</DialogTitle>
-                  <DialogDescription>
-                    Ayúdanos a mantener el parque en buen estado informando sobre problemas o incidentes que hayas encontrado.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                  <IncidentReportForm
-                    parkId={Number(id)}
-                    parkName={park.name}
-                    onSuccess={() => setIsReportDialogOpen(false)}
-                    onCancel={() => setIsReportDialogOpen(false)}
-                  />
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
       </div>
+      
+      {/* Diálogo para reportar incidentes */}
+      <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reportar un problema en {park.name}</DialogTitle>
+          </DialogHeader>
+          <IncidentReportForm 
+            parkId={Number(id)} 
+            onSuccess={() => setIsReportDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
