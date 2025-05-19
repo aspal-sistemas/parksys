@@ -489,6 +489,124 @@ const AdminDocuments = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Diálogo para agregar documentos */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Agregar nuevo documento</DialogTitle>
+          </DialogHeader>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="parkId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Parque</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar parque" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {parks.map((park) => (
+                          <SelectItem key={park.id} value={park.id.toString()}>
+                            {park.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Título del documento</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Reglamento Interno" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="fileUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL del archivo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com/documento.pdf" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="fileSize"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tamaño del archivo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="2.5 MB" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="fileType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de archivo</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar tipo de archivo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {fileTypeOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit">Guardar</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
