@@ -911,13 +911,14 @@ const AdminParkEdit: React.FC = () => {
                                     className="h-8 w-8 p-0"
                                     onClick={() => {
                                       if (id && confirm('¿Estás seguro de eliminar este video?')) {
+                                        // Establecer el campo como cadena vacía en lugar de null
                                         fetch(`/api/dev/parks/${id}`, {
                                           method: 'PUT',
                                           headers: {
                                             'Content-Type': 'application/json',
                                             'Authorization': 'Bearer direct-token-1'
                                           },
-                                          body: JSON.stringify({ videoUrl: null })
+                                          body: JSON.stringify({ videoUrl: "" })
                                         })
                                         .then(response => {
                                           if (!response.ok) throw new Error('Error al eliminar URL del video');
