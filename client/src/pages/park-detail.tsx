@@ -6,15 +6,16 @@ import {
   ChevronLeft, 
   Loader, 
   MapPin, 
-  AlertCircle
+  AlertCircle,
+  FileText,
+  Share2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ParkImageManager } from '@/components/ParkImageManager';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { IncidentReportForm } from '@/components/IncidentReportForm';
 import AmenityIcon from '@/components/AmenityIcon';
 import ParkQuickActions from '@/components/ParkQuickActions';
@@ -31,25 +32,29 @@ const ParkDetail: React.FC = () => {
   
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <Loader className="h-8 w-8 animate-spin" />
-        <p className="mt-2">Cargando información del parque...</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center">
+          <Loader className="h-12 w-12 text-primary animate-spin mb-4" />
+          <p className="text-gray-500">Cargando información del parque...</p>
+        </div>
       </div>
     );
   }
   
   if (error || !park) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <AlertCircle className="h-8 w-8 text-red-500" />
-        <p className="mt-2">Error al cargar la información del parque. Por favor, intenta nuevamente.</p>
-        <Button 
-          className="mt-4" 
-          variant="outline"
-          onClick={() => setLocation('/')}
-        >
-          Volver a inicio
-        </Button>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center max-w-md px-4">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">No se pudo cargar el parque</h2>
+          <p className="text-gray-600 mb-4">Ocurrió un error al cargar la información. Por favor, intenta nuevamente más tarde.</p>
+          <Button 
+            variant="default"
+            onClick={() => setLocation('/parks')}
+          >
+            Volver a la lista de parques
+          </Button>
+        </div>
       </div>
     );
   }
@@ -77,12 +82,12 @@ const ParkDetail: React.FC = () => {
   const additionalImages = park.images?.filter(img => !img.isPrimary).map(img => img.imageUrl) || [];
 
   return (
-    <div className="bg-white min-h-screen">
-      <div className="container mx-auto px-4 py-6">
+    <div className="bg-gray-50 min-h-screen">
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <Button 
             variant="ghost" 
-            className="pl-0 text-gray-600"
+            className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             onClick={() => setLocation('/parks')}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
@@ -90,71 +95,95 @@ const ParkDetail: React.FC = () => {
           </Button>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold font-heading">{park.name}</h1>
+            <p className="text-gray-600">
+              {park.municipality?.name || ''}, {park.municipality?.state || ''}
+            </p>
+          </div>
+          <div className="mt-2 md:mt-0">
+            <Badge className="bg-primary-100 text-primary-800 font-medium">
+              {getParkTypeLabel(park.parkType)}
+            </Badge>
+          </div>
+        </div>
+        
+        {/* Main content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+          {/* Left column */}
           <div className="lg:col-span-2">
-            <h1 className="text-3xl font-bold mb-2">{park.name}</h1>
-            
-            <div className="flex items-center text-gray-600 mb-6">
-              <MapPin className="h-4 w-4 mr-1" />
-              <span>{park.address}</span>
+            {/* Hero image */}
+            <div className="rounded-lg overflow-hidden mb-4">
+              <img 
+                src={mainImage || 'https://placehold.co/600x400/e2e8f0/64748b?text=Sin+Imagen'} 
+                alt={park.name} 
+                className="w-full h-80 object-cover"
+              />
             </div>
             
-            <Tabs defaultValue="details">
-              <TabsList className="mb-4">
-                <TabsTrigger value="details">Detalles</TabsTrigger>
+            {/* Image gallery */}
+            {additionalImages.length > 0 && (
+              <div className="grid grid-cols-5 gap-2 mb-6">
+                {additionalImages.slice(0, 5).map((imageUrl, idx) => (
+                  <img 
+                    key={idx}
+                    src={imageUrl} 
+                    alt={`Vista del parque ${idx + 1}`} 
+                    className="w-full h-20 object-cover rounded"
+                  />
+                ))}
+              </div>
+            )}
+            
+            {/* Tabs */}
+            <Tabs defaultValue="info" className="mt-6">
+              <TabsList>
+                <TabsTrigger value="info">Información</TabsTrigger>
+                <TabsTrigger value="amenities">Amenidades</TabsTrigger>
+                <TabsTrigger value="activities">Actividades</TabsTrigger>
+                <TabsTrigger value="documents">Documentos</TabsTrigger>
                 <TabsTrigger value="images">Imágenes</TabsTrigger>
-                <TabsTrigger value="amenities">Servicios</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="details" className="space-y-6">
+              <TabsContent value="info" className="mt-4">
                 {park.description && (
                   <div className="mb-6">
-                    <h2 className="text-xl font-semibold mb-3">Descripción</h2>
-                    <p className="text-gray-700 whitespace-pre-line">{park.description}</p>
+                    <h2 className="text-xl font-semibold mb-2">Descripción</h2>
+                    <p className="text-gray-700">{park.description}</p>
                   </div>
                 )}
                 
                 <div className="mb-6">
-                  <h2 className="text-xl font-semibold mb-3">Información general</h2>
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between border-b pb-2">
-                          <span className="text-gray-600">Tipo:</span>
-                          <span className="font-medium">{getParkTypeLabel(park.parkType)}</span>
-                        </div>
-                        
-                        {park.area && (
-                          <div className="flex justify-between border-b pb-2">
-                            <span className="text-gray-600">Superficie:</span>
-                            <span className="font-medium">{park.area} m²</span>
-                          </div>
-                        )}
-                        
-                        {park.openingHours && (
-                          <div className="flex justify-between border-b pb-2">
-                            <span className="text-gray-600">Horario:</span>
-                            <span className="font-medium">{park.openingHours}</span>
-                          </div>
-                        )}
-                        
-                        {park.foundationYear && (
-                          <div className="flex justify-between border-b pb-2">
-                            <span className="text-gray-600">Año de fundación:</span>
-                            <span className="font-medium">{park.foundationYear}</span>
-                          </div>
-                        )}
+                  <h2 className="text-xl font-semibold mb-2">Información general</h2>
+                  <div className="space-y-2">
+                    {park.area && (
+                      <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-600">Superficie:</span>
+                        <span className="font-medium">{park.area}</span>
                       </div>
-                      
-                      <div className="space-y-2">
-                        {park.conservationStatus && (
-                          <div className="flex justify-between border-b pb-2">
-                            <span className="text-gray-600">Estado de conservación:</span>
-                            <span className="font-medium">{park.conservationStatus}</span>
-                          </div>
-                        )}
+                    )}
+                    
+                    {park.foundationYear && (
+                      <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-600">Año de fundación:</span>
+                        <span className="font-medium">{park.foundationYear}</span>
                       </div>
-                    </div>
+                    )}
+                    
+                    {park.openingHours && (
+                      <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-600">Horario:</span>
+                        <span className="font-medium">{park.openingHours}</span>
+                      </div>
+                    )}
+                    
+                    {park.conservationStatus && (
+                      <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-600">Estado de conservación:</span>
+                        <span className="font-medium">{park.conservationStatus}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -185,38 +214,9 @@ const ParkDetail: React.FC = () => {
                 </div>
               </TabsContent>
               
-              <TabsContent value="images">
+              <TabsContent value="amenities" className="mt-4">
                 <div className="mb-6">
-                  <h2 className="text-xl font-semibold mb-4">Imágenes</h2>
-                  {/* Mostrar imágenes del parque */}
-                  {mainImage && (
-                    <div className="mb-4">
-                      <img 
-                        src={mainImage} 
-                        alt={`Vista principal de ${park.name}`}
-                        className="w-full h-auto rounded-lg"
-                      />
-                    </div>
-                  )}
-                  {additionalImages && additionalImages.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {additionalImages.map((img, index) => (
-                        <div key={index} className="aspect-square overflow-hidden rounded-lg">
-                          <img
-                            src={img}
-                            alt={`Vista de ${park.name} ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="amenities">
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold mb-4">Servicios y comodidades</h2>
+                  <h2 className="text-xl font-semibold mb-2">Servicios y comodidades</h2>
                   
                   {park.amenities && park.amenities.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -239,10 +239,122 @@ const ParkDetail: React.FC = () => {
                   )}
                 </div>
               </TabsContent>
+              
+              <TabsContent value="activities" className="mt-4">
+                {park.activities && park.activities.length > 0 ? (
+                  <div className="space-y-4">
+                    {park.activities.map(activity => (
+                      <div key={activity.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-semibold text-lg">{activity.title}</h3>
+                          {activity.category && (
+                            <Badge className="bg-secondary-100 text-secondary-800">
+                              {activity.category}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {formatDate(activity.startDate)}
+                        </p>
+                        <p className="text-gray-700">{activity.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-10 bg-gray-50 rounded-lg">
+                    <p className="text-gray-500">No hay actividades programadas actualmente.</p>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="documents" className="mt-4">
+                {park.documents && park.documents.length > 0 ? (
+                  <div className="space-y-3">
+                    {park.documents.map(document => (
+                      <a 
+                        key={document.id}
+                        href={document.fileUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <FileText className={`h-10 w-10 mr-4 ${
+                          document.fileType?.includes('pdf') ? 'text-red-500' : 'text-blue-500'
+                        }`} />
+                        <div className="flex-1">
+                          <h3 className="font-medium">{document.title}</h3>
+                          {document.fileSize && (
+                            <p className="text-sm text-gray-500">{document.fileSize}</p>
+                          )}
+                        </div>
+                        <Button variant="ghost" size="sm">
+                          Descargar
+                        </Button>
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-10 bg-gray-50 rounded-lg">
+                    <p className="text-gray-500">No hay documentos disponibles para este parque.</p>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="images" className="mt-4">
+                {/* Galería de imágenes */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {mainImage && (
+                    <div className="col-span-full mb-4">
+                      <img 
+                        src={mainImage} 
+                        alt={`Imagen principal de ${park.name}`}
+                        className="w-full h-auto rounded-lg"
+                      />
+                    </div>
+                  )}
+                  {additionalImages && additionalImages.map((img, index) => (
+                    <div key={index} className="aspect-square overflow-hidden rounded-lg">
+                      <img
+                        src={img}
+                        alt={`Vista de ${park.name} ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </TabsContent>
             </Tabs>
           </div>
           
-          <div className="space-y-6">
+          {/* Right column - sidebar */}
+          <div className="lg:col-span-1">
+            {/* Map card */}
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mb-6">
+              <div className="h-48">
+                <iframe
+                  title={`Mapa de ${park.name}`}
+                  className="w-full h-full"
+                  src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=${park.latitude},${park.longitude}`}
+                  allowFullScreen
+                ></iframe>
+              </div>
+              <div className="p-4">
+                <h3 className="font-medium text-lg mb-2">Ubicación</h3>
+                <p className="text-gray-600 text-sm mb-3">{park.address}</p>
+                
+                <div className="flex space-x-2">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    Cómo llegar
+                  </Button>
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <Share2 className="h-4 w-4 mr-1" />
+                    Compartir
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
             {/* Quick actions */}
             <ParkQuickActions 
               parkId={Number(id)}
@@ -276,6 +388,9 @@ const ParkDetail: React.FC = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Reportar un problema en {park.name}</DialogTitle>
+            <DialogDescription>
+              Cuéntanos qué problema has encontrado y lo revisaremos lo antes posible.
+            </DialogDescription>
           </DialogHeader>
           <IncidentReportForm 
             parkId={Number(id)} 
