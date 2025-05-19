@@ -21,57 +21,16 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AdminLayout from '@/components/AdminLayout';
-import { 
-  BarChart, 
-  Bar, 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  ResponsiveContainer 
-} from 'recharts';
 
-// Modular dashboard component that showcases the new application structure
+// Simplified modular dashboard component
 const AdminDashboard: React.FC = () => {
   // Fetch parks count
   const { data: parks = [] } = useQuery({
     queryKey: ['/api/parks'],
   });
-  
-  const parkData = [
-    { name: "Ene", total: 15 },
-    { name: "Feb", total: 19 },
-    { name: "Mar", total: 24 },
-    { name: "Abr", total: 28 },
-    { name: "May", total: 35 },
-    { name: "Jun", total: 39 },
-    { name: "Jul", total: 42 },
-    { name: "Ago", total: 45 },
-    { name: "Sep", total: 48 },
-    { name: "Oct", total: 52 },
-    { name: "Nov", total: 54 },
-    { name: "Dic", total: parks.length || 56 },
-  ];
-  
-  const activityData = [
-    { name: "Ene", total: 5 },
-    { name: "Feb", total: 8 },
-    { name: "Mar", total: 12 },
-    { name: "Abr", total: 15 },
-    { name: "May", total: 18 },
-    { name: "Jun", total: 21 },
-    { name: "Jul", total: 24 },
-    { name: "Ago", total: 27 },
-    { name: "Sep", total: 30 },
-    { name: "Oct", total: 32 },
-    { name: "Nov", total: 34 },
-    { name: "Dic", total: 36 },
-  ];
   
   return (
     <AdminLayout 
@@ -413,124 +372,6 @@ const AdminDashboard: React.FC = () => {
           </CardFooter>
         </Card>
       </div>
-      
-      {/* Analytics */}
-      <h2 className="text-xl font-semibold mt-8 mb-4">Estadísticas</h2>
-      <Tabs defaultValue="overview" className="mb-6 space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">General</TabsTrigger>
-          <TabsTrigger value="analytics">Análisis</TabsTrigger>
-          <TabsTrigger value="reports">Reportes</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
-              <CardHeader>
-                <CardTitle>Parques Registrados</CardTitle>
-                <CardDescription>
-                  Crecimiento mensual del número de parques en el sistema
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart data={parkData}>
-                    <XAxis
-                      dataKey="name"
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => `${value}`}
-                    />
-                    <Tooltip />
-                    <Bar
-                      dataKey="total"
-                      fill="hsl(var(--primary))"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            
-            <Card className="col-span-3">
-              <CardHeader>
-                <CardTitle>Actividades</CardTitle>
-                <CardDescription>
-                  Actividades programadas por mes
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <ResponsiveContainer width="100%" height={350}>
-                  <LineChart data={activityData}>
-                    <XAxis
-                      dataKey="name"
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => `${value}`}
-                    />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="total"
-                      stroke="hsl(var(--secondary))"
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="analytics" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Análisis</CardTitle>
-              <CardDescription>
-                Análisis detallado de uso y rendimiento
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[350px] flex items-center justify-center text-muted-foreground">
-                Datos de análisis avanzados disponibles próximamente
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="reports" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Reportes</CardTitle>
-              <CardDescription>
-                Reportes y estadísticas del sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[350px] flex items-center justify-center text-muted-foreground">
-                Funcionalidad de reportes disponible próximamente
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
       
       {/* Recent activity */}
       <h2 className="text-xl font-semibold mb-4">Actividad Reciente</h2>
