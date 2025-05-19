@@ -170,7 +170,7 @@ const ParksMap: React.FC<ParksMapProps> = ({
         </div>
       )}
       
-      <div ref={mapRef} className="w-full h-full bg-gray-200"></div>
+      <div ref={mapRef} style={{height: '100%', minHeight: '300px'}} className="w-full bg-gray-200"></div>
       
       {/* Map controls */}
       <div className="absolute top-4 right-4 flex flex-col space-y-2">
