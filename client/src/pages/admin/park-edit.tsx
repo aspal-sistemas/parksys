@@ -246,14 +246,30 @@ const AdminParkEdit: React.FC = () => {
                 <ChevronLeft className="mr-2 h-4 w-4" />
                 Volver a la lista
               </Button>
-              <h1 className="text-2xl font-bold tracking-tight">
-                {isEdit ? 'Editar Parque' : 'Nuevo Parque'}
-              </h1>
-              <p className="text-muted-foreground">
-                {isEdit 
-                  ? 'Actualiza la información del parque existente' 
-                  : 'Ingresa la información para crear un nuevo parque'}
-              </p>
+              {isEdit && park ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold tracking-tight">
+                      {park.name}
+                    </h1>
+                    <span className="bg-primary/10 text-primary px-2 py-1 rounded-md text-xs">
+                      Editando
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground">
+                    Actualiza la información del parque
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-bold tracking-tight">
+                    Nuevo Parque
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Ingresa la información para crear un nuevo parque
+                  </p>
+                </>
+              )}
             </div>
           </div>
           
