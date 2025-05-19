@@ -156,7 +156,7 @@ const AdminDashboard: React.FC = () => {
               
               <div className="border rounded-lg p-4 bg-gray-50">
                 <h3 className="font-medium mb-2">3. Módulo - Gestión Operativa e Infraestructura</h3>
-                <p className="text-sm text-gray-600">Submódulos: Inventario de Parques, Inventario de Activos, Incidencias, Proyectos de Capital, Reportes</p>
+                <p className="text-sm text-gray-600">Submódulos: Parques, Activos, Incidencias, Proyectos de Capital, Reportes</p>
               </div>
               
               <div className="border rounded-lg p-4 bg-gray-50">
