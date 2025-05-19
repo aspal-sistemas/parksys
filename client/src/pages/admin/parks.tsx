@@ -43,6 +43,13 @@ const AdminParks = () => {
   
   // Estado local para los parques (para gestionar la eliminación visual)
   const [localParks, setLocalParks] = useState<Park[]>([]);
+  
+  // Mantener un registro de los IDs de parques eliminados por el usuario
+  const [deletedParkIds, setDeletedParkIds] = useState<number[]>(() => {
+    // Intentar obtener los parques eliminados de localStorage
+    const saved = localStorage.getItem('deletedParkIds');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // Fetch all parks
   const { 
@@ -53,8 +60,10 @@ const AdminParks = () => {
   } = useQuery({
     queryKey: ['/api/parks'],
     onSuccess: (data) => {
+      // Filtrar parques eliminados antes de actualizar el estado local
+      const filteredData = data.filter(park => !deletedParkIds.includes(park.id));
       // Actualizar estado local cuando llegan nuevos datos
-      setLocalParks(data);
+      setLocalParks(filteredData);
     }
   });
 
@@ -129,11 +138,15 @@ const AdminParks = () => {
     if (!parkToDelete) return;
     
     try {
-      // Simulación de eliminación de parque para entorno de desarrollo
-      // Elimina visualmente el parque del estado local sin hacer la llamada API real
-      
       // Actualizamos el estado local para eliminar el parque
       setLocalParks(prevParks => prevParks.filter(park => park.id !== parkToDelete.id));
+      
+      // Actualizamos la lista de parques eliminados
+      const updatedDeletedIds = [...deletedParkIds, parkToDelete.id];
+      setDeletedParkIds(updatedDeletedIds);
+      
+      // Guardamos en localStorage para persistencia
+      localStorage.setItem('deletedParkIds', JSON.stringify(updatedDeletedIds));
       
       // Mostramos un mensaje de éxito
       toast({
@@ -283,12 +296,15 @@ const AdminParks = () => {
                           }
                           const data = await response.json();
                           
+                          // Filtramos los parques eliminados
+                          const filteredData = data.filter(park => !deletedParkIds.includes(park.id));
+                          
                           // Actualizamos el estado local
-                          setLocalParks(data);
+                          setLocalParks(filteredData);
                           
                           toast({
                             title: "Lista actualizada",
-                            description: `Se han cargado ${data.length} parques desde el servidor`,
+                            description: `Se han cargado ${filteredData.length} parques desde el servidor`,
                           });
                         } catch (error) {
                           console.error('Error refreshing parks:', error);
