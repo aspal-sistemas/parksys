@@ -2,10 +2,14 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
+import { activityRouter } from "./activityRoutes";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Registrar las rutas de actividades
+app.use('/api', activityRouter);
 
 // Servir archivos estáticos de la carpeta de uploads
 app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
