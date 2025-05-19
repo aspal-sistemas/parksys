@@ -177,17 +177,13 @@ const AdminParkEdit: React.FC = () => {
   // Mutación para crear o actualizar el parque
   const mutation = useMutation({
     mutationFn: async (values: ParkFormValues) => {
-      if (isEdit) {
-        return await apiRequest(`/api/parks/${id}`, {
-          method: 'PUT',
-          data: values,
-        });
-      } else {
-        return await apiRequest('/api/parks', {
-          method: 'POST',
-          data: values,
-        });
-      }
+      const endpoint = isEdit ? `/api/parks/${id}` : '/api/parks';
+      const method = isEdit ? 'PUT' : 'POST';
+      
+      return await apiRequest(endpoint, {
+        method: method,
+        data: values,
+      });
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/parks'] });

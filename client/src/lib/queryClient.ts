@@ -8,10 +8,15 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
-  method: string,
-  url: string,
-  data?: unknown | undefined,
+  url: string, 
+  options?: {
+    method?: string;
+    data?: unknown;
+  }
 ): Promise<Response> {
+  const method = options?.method || 'GET';
+  const data = options?.data;
+
   // Añadimos un token de autenticación para desarrollo
   const headers: Record<string, string> = {
     ...data ? { "Content-Type": "application/json" } : {},
