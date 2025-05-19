@@ -124,6 +124,10 @@ const AdminParks = () => {
     try {
       await fetch(`/api/parks/${parkToDelete.id}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer direct-token-admin' // Token para simulación
+        }
       });
       
       // Refetch parks
