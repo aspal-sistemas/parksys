@@ -193,8 +193,8 @@ const AdminParkEdit: React.FC = () => {
                   <TabsTrigger value="basic">Información Básica</TabsTrigger>
                   <TabsTrigger value="details">Detalles</TabsTrigger>
                   <TabsTrigger value="contact">Contacto</TabsTrigger>
-                  <TabsTrigger value="media" disabled={!isEdit}>Multimedia</TabsTrigger>
-                  <TabsTrigger value="amenities" disabled={!isEdit}>Amenidades</TabsTrigger>
+                  <TabsTrigger value="media">Multimedia</TabsTrigger>
+                  <TabsTrigger value="amenities">Amenidades</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="basic">
