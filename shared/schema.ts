@@ -69,6 +69,8 @@ export const amenities = pgTable("amenities", {
   name: text("name").notNull().unique(),
   icon: text("icon").notNull(),
   category: text("category").notNull(),
+  iconType: text("icon_type").default("system").notNull(), // "system" o "custom"
+  customIconUrl: text("custom_icon_url"), // URL de la imagen personalizada
 });
 
 export const parkAmenities = pgTable("park_amenities", {

@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Bike,
-  Tree,
+  Trees,
   Theater,
   Utensils,
   Dumbbell,
@@ -21,25 +21,53 @@ import {
   Info,
   Bath,
   Gamepad2,
-  Circle 
+  Circle,
+  Image as ImageIcon 
 } from 'lucide-react';
 
 interface AmenityIconProps {
   name: string;
   size?: number;
   className?: string;
+  iconType?: 'system' | 'custom';
+  customIconUrl?: string | null;
 }
 
 const AmenityIcon: React.FC<AmenityIconProps> = ({ 
   name, 
   size = 24, 
-  className = "" 
+  className = "",
+  iconType = 'system',
+  customIconUrl = null
 }) => {
   const iconProps = {
     size,
     className: `amenity-icon ${className}`,
   };
 
+  // Si es un icono personalizado y tiene URL, mostrar la imagen
+  if (iconType === 'custom' && customIconUrl) {
+    return (
+      <div 
+        className={`custom-icon ${className}`} 
+        style={{ 
+          width: size, 
+          height: size,
+          backgroundImage: `url(${customIconUrl})`,
+          backgroundSize: 'contain',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }} 
+      />
+    );
+  }
+
+  // Si debería ser personalizado pero no tiene URL, mostrar un placeholder
+  if (iconType === 'custom') {
+    return <ImageIcon {...iconProps} />;
+  }
+
+  // Si es un icono del sistema, usar el switch para determinar el componente
   switch (name) {
     case 'playground':
       return <Gamepad2 {...iconProps} />;
