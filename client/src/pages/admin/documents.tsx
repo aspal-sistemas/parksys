@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash, FileText, ArrowUpDown, X, Search, Loader, Download } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -30,9 +30,26 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Document, Park } from '@shared/schema';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+// Esquema de validación para el formulario de documentos
+const documentFormSchema = z.object({
+  parkId: z.string().min(1, 'Seleccione un parque'),
+  title: z.string().min(3, 'El título debe tener al menos 3 caracteres'),
+  fileUrl: z.string().url('Ingrese una URL válida'),
+  fileSize: z.string().min(1, 'Ingrese el tamaño del archivo'),
+  fileType: z.string().min(1, 'Seleccione un tipo de archivo'),
+});
+
+// Tipos para el formulario
+type DocumentFormValues = z.infer<typeof documentFormSchema>;
 
 const AdminDocuments = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPark, setFilterPark] = useState<string>('');
   const [filterType, setFilterType] = useState<string>('');
@@ -40,6 +57,7 @@ const AdminDocuments = () => {
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
   const [sortField, setSortField] = useState<string>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
   // Fetch all documents
   const { 
@@ -214,6 +232,71 @@ const AdminDocuments = () => {
     setFilterPark('');
     setFilterType('');
   };
+  
+  // Crear formulario para agregar documentos
+  const form = useForm<DocumentFormValues>({
+    resolver: zodResolver(documentFormSchema),
+    defaultValues: {
+      parkId: '',
+      title: '',
+      fileUrl: '',
+      fileSize: '',
+      fileType: '',
+    },
+  });
+  
+  // Manejar submit del formulario
+  const handleSubmit = async (data: DocumentFormValues) => {
+    try {
+      const response = await fetch(`/api/parks/${data.parkId}/documents`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: data.title,
+          fileUrl: data.fileUrl,
+          fileSize: data.fileSize,
+          fileType: data.fileType,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al crear el documento');
+      }
+      
+      // Actualizar la lista de documentos
+      queryClient.invalidateQueries({ queryKey: ['/api/documents'] });
+      
+      // Cerrar el diálogo y resetear el formulario
+      setShowAddDialog(false);
+      form.reset();
+      
+      // Mostrar toast de éxito
+      toast({
+        title: 'Documento agregado',
+        description: 'El documento se ha agregado correctamente.',
+      });
+    } catch (error) {
+      console.error('Error al agregar documento:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo agregar el documento. Intente nuevamente.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const fileTypeOptions = [
+    { value: 'application/pdf', label: 'PDF' },
+    { value: 'application/msword', label: 'Word' },
+    { value: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', label: 'Word (DOCX)' },
+    { value: 'application/vnd.ms-excel', label: 'Excel' },
+    { value: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', label: 'Excel (XLSX)' },
+    { value: 'image/jpeg', label: 'Imagen JPEG' },
+    { value: 'image/png', label: 'Imagen PNG' },
+    { value: 'text/plain', label: 'Texto plano' },
+  ];
 
   return (
     <AdminLayout title="Administración de Documentos">
@@ -221,7 +304,7 @@ const AdminDocuments = () => {
         {/* Header with actions */}
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-800">Documentos</h2>
-          <Button>
+          <Button onClick={() => setShowAddDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Agregar Documento
           </Button>

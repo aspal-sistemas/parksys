@@ -417,11 +417,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all documents
   apiRouter.get("/documents", async (_req: Request, res: Response) => {
     try {
+      // Configuramos explícitamente el tipo de contenido para asegurar respuesta JSON
+      res.setHeader('Content-Type', 'application/json');
+      
       const documents = await storage.getAllDocuments();
-      res.json(documents);
+      
+      // Usamos res.send() directamente con el objeto JSON serializado
+      res.send(JSON.stringify(documents));
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Error fetching documents" });
+      console.error('Error fetching documents:', error);
+      
+      // También aseguramos tipo de contenido JSON para errores
+      res.status(500)
+         .setHeader('Content-Type', 'application/json')
+         .send(JSON.stringify({ message: "Error fetching documents" }));
     }
   });
 
