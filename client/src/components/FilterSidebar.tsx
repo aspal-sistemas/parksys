@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Info } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Amenity, PARK_TYPES } from '@shared/schema';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Amenity, PARK_TYPES, AMENITY_CATEGORIES } from '@shared/schema';
+import AmenityIcon from './AmenityIcon';
 
 interface FilterSidebarProps {
   onApplyFilters: (filters: {
@@ -22,7 +23,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
   const [parkType, setParkType] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [selectedAmenities, setSelectedAmenities] = useState<number[]>([]);
-  const [showMoreAmenities, setShowMoreAmenities] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   // Fetch amenities
   const { data: amenities = [] } = useQuery<Amenity[]>({ 
@@ -54,25 +55,46 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
     );
   };
 
-  // Filter amenities for display (recreation & services first)
-  const displayAmenities = amenities
-    .sort((a, b) => {
-      // Prioritize recreation and services categories
-      const categoryOrder = { 
-        "recreación": 1, 
-        "servicios": 2,
-        "deportes": 3,
-        "accesibilidad": 4,
-        "infraestructura": 5,
-        "naturaleza": 6
-      };
-      return (categoryOrder[a.category as keyof typeof categoryOrder] || 99) - 
-             (categoryOrder[b.category as keyof typeof categoryOrder] || 99);
-    });
+  // Agrupamos amenidades por categoría
+  const amenitiesByCategory = amenities.reduce((acc, amenity) => {
+    if (!acc[amenity.category]) {
+      acc[amenity.category] = [];
+    }
+    acc[amenity.category].push(amenity);
+    return acc;
+  }, {} as Record<string, Amenity[]>);
 
-  const visibleAmenities = showMoreAmenities 
-    ? displayAmenities 
-    : displayAmenities.slice(0, 5);
+  // Ordenamos las categorías según el orden predefinido
+  const categoryOrder = { 
+    "recreación": 1, 
+    "servicios": 2,
+    "deportes": 3,
+    "accesibilidad": 4,
+    "infraestructura": 5,
+    "naturaleza": 6
+  };
+
+  const sortedCategories = Object.keys(amenitiesByCategory).sort(
+    (a, b) => (categoryOrder[a as keyof typeof categoryOrder] || 99) - 
+              (categoryOrder[b as keyof typeof categoryOrder] || 99)
+  );
+
+  // Traducción de categorías para la interfaz
+  const categoryTranslation: Record<string, string> = {
+    "recreación": "Recreación",
+    "servicios": "Servicios",
+    "deportes": "Deportes",
+    "accesibilidad": "Accesibilidad",
+    "infraestructura": "Infraestructura",
+    "naturaleza": "Naturaleza"
+  };
+
+  // Si no hay categoría activa y hay categorías disponibles, establecemos la primera por defecto
+  React.useEffect(() => {
+    if (!activeCategory && sortedCategories.length > 0) {
+      setActiveCategory(sortedCategories[0]);
+    }
+  }, [sortedCategories, activeCategory]);
 
   return (
     <div className="w-full md:w-80 bg-white md:sidebar overflow-y-auto pb-6">
@@ -130,61 +152,81 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
           />
         </div>
         
-        {/* Filter: Amenities */}
-        <div className="mb-4">
-          <Label className="block text-sm font-medium text-gray-700 mb-2">Amenidades</Label>
-          <div className="space-y-2">
-            {visibleAmenities.map((amenity) => (
-              <div className="flex items-start" key={amenity.id}>
-                <div className="flex items-center h-5">
-                  <Checkbox
-                    id={`amenity-${amenity.id}`}
-                    checked={selectedAmenities.includes(amenity.id)}
-                    onCheckedChange={() => toggleAmenity(amenity.id)}
-                  />
-                </div>
-                <div className="ml-3 text-sm">
-                  <label
-                    htmlFor={`amenity-${amenity.id}`}
-                    className="font-medium text-gray-700"
-                  >
-                    {amenity.name}
-                  </label>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          {amenities.length > 5 && (
-            <button
-              type="button"
-              className="text-sm text-secondary-600 hover:text-secondary-500 mt-2"
-              onClick={() => setShowMoreAmenities(!showMoreAmenities)}
-            >
-              {showMoreAmenities ? 'Mostrar menos amenidades' : 'Mostrar más amenidades'}
-            </button>
-          )}
-        </div>
-        
-        {/* Filter: Accessibility - can be expanded in future versions */}
-        <div className="mb-4">
-          <Label className="block text-sm font-medium text-gray-700 mb-2">Accesibilidad</Label>
-          <div className="space-y-2">
-            <div className="flex items-start">
-              <div className="flex items-center h-5">
-                <Checkbox 
-                  id="rampas" 
-                  checked={selectedAmenities.includes(6)} // Assuming ID 6 is for accessibility ramps
-                  onCheckedChange={() => toggleAmenity(6)}
-                />
-              </div>
-              <div className="ml-3 text-sm">
-                <label htmlFor="rampas" className="font-medium text-gray-700">
-                  Rampas para sillas de ruedas
-                </label>
-              </div>
+        {/* Filter: Amenities (NEW Visual Interface) */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <Label className="block text-sm font-medium text-gray-700">Amenidades</Label>
+            <div className="flex items-center">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="h-4 w-4 text-gray-400" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">Selecciona las amenidades que buscas en un parque</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
+
+          {/* Amenity Category Tabs */}
+          <div className="flex overflow-x-auto space-x-1 mb-3 pb-1 scrollbar-hide">
+            {sortedCategories.map(category => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
+                  activeCategory === category 
+                    ? 'bg-secondary-500 text-white' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {categoryTranslation[category] || category}
+              </button>
+            ))}
+          </div>
+
+          {/* Amenity Icons Grid */}
+          <div className="grid grid-cols-3 gap-2 mt-2">
+            {activeCategory && amenitiesByCategory[activeCategory]?.map((amenity) => (
+              <TooltipProvider key={amenity.id}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => toggleAmenity(amenity.id)}
+                      className={`flex flex-col items-center justify-center p-2 rounded-lg border ${
+                        selectedAmenities.includes(amenity.id)
+                          ? 'border-secondary-500 bg-secondary-50'
+                          : 'border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className={`p-2 rounded-full ${
+                        selectedAmenities.includes(amenity.id)
+                          ? 'bg-secondary-100 text-secondary-700'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        <AmenityIcon name={amenity.icon} size={18} />
+                      </div>
+                      <span className="text-xs text-center mt-1 line-clamp-1">
+                        {amenity.name}
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">{amenity.name}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ))}
+          </div>
+
+          {/* Selected Amenities Count */}
+          {selectedAmenities.length > 0 && (
+            <div className="mt-2 text-xs text-secondary-600">
+              {selectedAmenities.length} {selectedAmenities.length === 1 ? 'amenidad seleccionada' : 'amenidades seleccionadas'}
+            </div>
+          )}
         </div>
         
         <div className="flex space-x-2 pt-2">
