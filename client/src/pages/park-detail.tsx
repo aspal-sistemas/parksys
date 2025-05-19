@@ -27,6 +27,8 @@ const ParkDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
+  const [isActivitiesDialogOpen, setIsActivitiesDialogOpen] = useState(false);
   
   // Fetch park details
   const { data: park, isLoading, error } = useQuery<ExtendedPark>({
@@ -83,8 +85,157 @@ const ParkDetail: React.FC = () => {
   const mainImage = park.primaryImage || (park.images && park.images.length > 0 ? park.images[0].imageUrl : '');
   const additionalImages = park.images?.filter(img => !img.isPrimary).map(img => img.imageUrl) || [];
   
+  // Formulario para comentarios
+  const [comment, setComment] = useState("");
+  const [commentName, setCommentName] = useState("");
+  const [commentEmail, setCommentEmail] = useState("");
+
+  // Manejar envío de comentario
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!comment.trim()) {
+      alert("Por favor ingresa un comentario");
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/parks/${id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: comment,
+          name: commentName || "Anónimo",
+          email: commentEmail || undefined
+        })
+      });
+      
+      if (response.ok) {
+        alert("¡Gracias por tu comentario! Será revisado por un administrador.");
+        setComment("");
+        setCommentName("");
+        setCommentEmail("");
+        setIsCommentDialogOpen(false);
+      } else {
+        alert("Hubo un error al enviar tu comentario. Por favor intenta nuevamente.");
+      }
+    } catch (error) {
+      console.error("Error al enviar comentario:", error);
+      alert("No se pudo enviar el comentario debido a un error de conexión.");
+    }
+  };
+
   return (
     <div className="bg-white min-h-screen">
+      {/* Diálogo de actividades */}
+      <Dialog open={isActivitiesDialogOpen} onOpenChange={setIsActivitiesDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Próximas Actividades en {park.name}</DialogTitle>
+            <DialogDescription>
+              Calendario de eventos y actividades programadas
+            </DialogDescription>
+          </DialogHeader>
+          
+          {park.activities && park.activities.length > 0 ? (
+            <div className="space-y-4 my-4">
+              {park.activities.map(activity => (
+                <div 
+                  key={activity.id} 
+                  className="border border-gray-200 rounded-lg p-4"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-semibold text-lg">{activity.title}</h3>
+                    {activity.category && (
+                      <Badge className="bg-secondary-100 text-secondary-800">
+                        {activity.category}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {formatDate(activity.startDate)}
+                  </p>
+                  <p className="text-gray-700">{activity.description}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-10 bg-gray-50 rounded-lg my-4">
+              <p className="text-gray-500">No hay actividades programadas actualmente.</p>
+            </div>
+          )}
+          
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setIsActivitiesDialogOpen(false)}
+            >
+              Cerrar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Diálogo de comentarios */}
+      <Dialog open={isCommentDialogOpen} onOpenChange={setIsCommentDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Deja tu comentario sobre {park.name}</DialogTitle>
+            <DialogDescription>
+              Tu opinión nos ayuda a mejorar los espacios públicos
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleCommentSubmit} className="space-y-4 my-4">
+            <div className="space-y-2">
+              <label htmlFor="comment-name" className="text-sm font-medium">Nombre (opcional)</label>
+              <input 
+                id="comment-name"
+                type="text" 
+                value={commentName} 
+                onChange={(e) => setCommentName(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                placeholder="Tu nombre"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="comment-email" className="text-sm font-medium">Email (opcional)</label>
+              <input 
+                id="comment-email"
+                type="email" 
+                value={commentEmail} 
+                onChange={(e) => setCommentEmail(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                placeholder="tu@email.com"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="comment-text" className="text-sm font-medium">Comentario *</label>
+              <textarea 
+                id="comment-text"
+                value={comment} 
+                onChange={(e) => setComment(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[100px]"
+                placeholder="Comparte tu experiencia o sugerencias para este parque"
+                required
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsCommentDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit">
+                Enviar comentario
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+      
       {/* Back button */}
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <Button 
@@ -342,7 +493,11 @@ const ParkDetail: React.FC = () => {
               <div className="p-4">
                 <h3 className="font-medium text-lg mb-4">Acciones rápidas</h3>
                 <div className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => setIsActivitiesDialogOpen(true)}
+                  >
                     <Calendar className="h-4 w-4 mr-2" />
                     Ver próximas actividades
                   </Button>
@@ -356,11 +511,19 @@ const ParkDetail: React.FC = () => {
                       Ver video del parque
                     </Button>
                   )}
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => park.regulationUrl ? window.open(String(park.regulationUrl), '_blank') : alert('El reglamento no está disponible para este parque.')}
+                  >
                     <FileText className="h-4 w-4 mr-2" />
                     Descargar reglamento
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => setIsCommentDialogOpen(true)}
+                  >
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Dejar un comentario
                   </Button>
