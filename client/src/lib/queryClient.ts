@@ -16,7 +16,8 @@ export async function apiRequest(
   const headers: Record<string, string> = {
     ...data ? { "Content-Type": "application/json" } : {},
     "Authorization": "Bearer direct-token-admin",
-    "X-User-Id": "1" // Este es el ID del usuario admin
+    "X-User-Id": "1", // Este es el ID del usuario admin
+    "X-User-Role": "super_admin" // Asignamos rol de super_admin para tener todos los permisos
   };
 
   const res = await fetch(url, {
@@ -39,7 +40,8 @@ export const getQueryFn: <T>(options: {
     // Añadimos encabezados de autenticación para desarrollo
     const headers: Record<string, string> = {
       "Authorization": "Bearer direct-token-admin",
-      "X-User-Id": "1" // Este es el ID del usuario admin
+      "X-User-Id": "1", // Este es el ID del usuario admin
+      "X-User-Role": "super_admin" // Asignamos rol de super_admin para tener todos los permisos
     };
 
     const res = await fetch(queryKey[0] as string, {

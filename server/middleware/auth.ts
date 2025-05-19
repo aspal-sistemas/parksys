@@ -43,10 +43,18 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
         return next();
       }
       
+      // Verificamos si se envió un rol de usuario personalizado en los encabezados
+      const userRole = req.headers['x-user-role'] as string;
+      
       try {
         // Obtenemos el usuario de la base de datos
         const user = await storage.getUser(Number(userId));
         if (user) {
+          // Si se proporcionó un rol personalizado, lo utilizamos (para desarrollo)
+          if (userRole) {
+            user.role = userRole;
+          }
+          
           // Adjuntamos el usuario a la petición para su uso posterior
           req.user = user;
           return next();
@@ -55,12 +63,12 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
         console.error('Error al obtener usuario:', err);
       }
       
-      // Si el usuario no se encuentra, asumimos admin (solo para desarrollo)
+      // Si el usuario no se encuentra, usamos los datos del encabezado (solo para desarrollo)
       req.user = {
         id: 1,
         username: 'admin',
         email: 'admin@parquesmx.com',
-        role: 'admin',
+        role: userRole || 'admin', // Usamos el rol personalizado si se proporciona
         fullName: 'Admin System',
         municipalityId: null
       };
