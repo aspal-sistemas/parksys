@@ -72,6 +72,16 @@ import { apiRequest } from '@/lib/queryClient';
 import AdminSidebar from '@/components/AdminSidebar';
 import AmenitySelector from '@/components/AmenitySelector';
 import { Park, insertParkSchema, PARK_TYPES } from '@shared/schema';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
 
 const parkSchema = insertParkSchema.extend({
   id: z.number().optional(),
@@ -1080,50 +1090,22 @@ const AdminParkEdit: React.FC = () => {
                                       </div>
                                     </div>
                                     <div className="flex space-x-2">
-                                      <Dialog>
-                                        <DialogTrigger asChild>
-                                          <Button variant="ghost" size="sm">
-                                            <Eye className="h-4 w-4 mr-1" />
-                                            Ver detalles
-                                          </Button>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                          <DialogHeader>
-                                            <DialogTitle>{doc.documentName || doc.title || 'Documento'}</DialogTitle>
-                                            <DialogDescription>
-                                              Información del documento
-                                            </DialogDescription>
-                                          </DialogHeader>
-                                          <div className="grid gap-4 py-4">
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                              <Label className="text-right">Nombre:</Label>
-                                              <div className="col-span-3 font-medium">{doc.documentName || doc.title || 'Sin nombre'}</div>
-                                            </div>
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                              <Label className="text-right">Tipo:</Label>
-                                              <div className="col-span-3">{doc.documentType || 'No especificado'}</div>
-                                            </div>
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                              <Label className="text-right">Fecha:</Label>
-                                              <div className="col-span-3">{new Date(doc.createdAt).toLocaleDateString()}</div>
-                                            </div>
-                                            <div className="grid grid-cols-4 items-start gap-4">
-                                              <Label className="text-right">URL:</Label>
-                                              <div className="col-span-3 break-all text-sm">
-                                                {doc.documentUrl.includes('example.com') ? 
-                                                  <span className="text-amber-600">URL de ejemplo (no es un documento real)</span> : 
-                                                  doc.documentUrl
-                                                }
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <DialogFooter>
-                                            <DialogClose asChild>
-                                              <Button type="button">Cerrar</Button>
-                                            </DialogClose>
-                                          </DialogFooter>
-                                        </DialogContent>
-                                      </Dialog>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm"
+                                        onClick={() => {
+                                          // Mostrar toda la información del documento directamente en un toast
+                                          const isExample = doc.documentUrl?.includes('example.com');
+                                          toast({
+                                            title: doc.documentName || doc.title || 'Documento',
+                                            description: `Tipo: ${doc.documentType || 'No especificado'}\nFecha: ${new Date(doc.createdAt).toLocaleDateString()}\nURL: ${isExample ? 'URL de ejemplo (no es un documento real)' : doc.documentUrl}${isExample ? '\n\nEste es un documento de ejemplo que no existe realmente.' : ''}`,
+                                            duration: 5000,
+                                          });
+                                        }}
+                                      >
+                                        <Eye className="h-4 w-4 mr-1" />
+                                        Ver detalles
+                                      </Button>
                                       
                                       <Button 
                                         variant="ghost" 
@@ -1132,6 +1114,7 @@ const AdminParkEdit: React.FC = () => {
                                           toast({
                                             title: "Documento de ejemplo",
                                             description: "Los documentos de ejemplo no se pueden descargar porque no existen realmente.",
+                                            duration: 3000,
                                           });
                                         }}
                                       >
@@ -1146,6 +1129,7 @@ const AdminParkEdit: React.FC = () => {
                                           toast({
                                             title: "Información",
                                             description: "La edición de documentos estará disponible en futuras actualizaciones.",
+                                            duration: 3000,
                                           });
                                         }}
                                       >
