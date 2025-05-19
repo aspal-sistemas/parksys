@@ -1084,7 +1084,16 @@ const AdminParkEdit: React.FC = () => {
                                         variant="ghost" 
                                         size="sm"
                                         onClick={() => {
-                                          window.open(doc.documentUrl, '_blank');
+                                          // Verifica si la URL es de example.com (datos de prueba)
+                                          if (doc.documentUrl?.includes('example.com')) {
+                                            toast({
+                                              title: "URL de ejemplo",
+                                              description: "Este es un documento de ejemplo que no existe en la web real.",
+                                              variant: "warning"
+                                            });
+                                          } else {
+                                            window.open(doc.documentUrl, '_blank');
+                                          }
                                         }}
                                       >
                                         <Eye className="h-4 w-4 mr-1" />
@@ -1094,13 +1103,22 @@ const AdminParkEdit: React.FC = () => {
                                         variant="ghost" 
                                         size="sm"
                                         onClick={() => {
-                                          // Crear un enlace temporal para la descarga
-                                          const link = document.createElement('a');
-                                          link.href = doc.documentUrl;
-                                          link.download = doc.documentName || 'documento';
-                                          document.body.appendChild(link);
-                                          link.click();
-                                          document.body.removeChild(link);
+                                          // Verifica si la URL es de example.com (datos de prueba)
+                                          if (doc.documentUrl?.includes('example.com')) {
+                                            toast({
+                                              title: "URL de ejemplo",
+                                              description: "Este es un documento de ejemplo que no puede descargarse.",
+                                              variant: "warning"
+                                            });
+                                          } else {
+                                            // Crear un enlace temporal para la descarga
+                                            const link = document.createElement('a');
+                                            link.href = doc.documentUrl;
+                                            link.download = doc.documentName || 'documento';
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                          }
                                         }}
                                       >
                                         <Download className="h-4 w-4 mr-1" />
