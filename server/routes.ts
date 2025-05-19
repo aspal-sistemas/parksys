@@ -25,6 +25,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // API routes - all prefixed with /api
   const apiRouter = express.Router();
+  
+  // Template download routes (must be defined before conflicting routes)
+  app.get('/api/template/parks-import', isAuthenticated, generateImportTemplate);
+  
   app.use('/api', apiRouter);
 
   // Get all parks with option to filter
