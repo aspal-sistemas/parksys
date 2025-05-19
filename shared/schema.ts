@@ -47,6 +47,7 @@ export const parks = pgTable("parks", {
   administrator: text("administrator"),
   conservationStatus: text("conservation_status"),
   regulationUrl: text("regulation_url"), // URL to PDF
+  videoUrl: text("video_url"), // URL de YouTube
   openingHours: text("opening_hours"),
   contactEmail: text("contact_email"),
   contactPhone: text("contact_phone"),

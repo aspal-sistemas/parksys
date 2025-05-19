@@ -604,6 +604,23 @@ const AdminParkEdit: React.FC = () => {
                         />
                       </div>
                       
+                      <FormField
+                        control={form.control}
+                        name="videoUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>URL del Video del Parque</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ej. https://youtube.com/watch?v=XXXX" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              Ingresa la URL completa del video de YouTube (ej. https://www.youtube.com/watch?v=XXXX)
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
                       {/* Additional contact fields could go here */}
                     </CardContent>
                     <CardFooter className="flex justify-between">
