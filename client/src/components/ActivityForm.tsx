@@ -76,10 +76,10 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ parks, activity, onSuccess,
     mutationFn: (data: InsertActivity) => {
       if (activity) {
         // Si existe, actualizar
-        return apiRequest(`/api/activities/${activity.id}`, "PUT", data);
+        return apiRequest("PUT", `/api/activities/${activity.id}`, data);
       } else {
         // Si no existe, crear nueva
-        return apiRequest(`/api/parks/${data.parkId}/activities`, "POST", data);
+        return apiRequest("POST", `/api/parks/${data.parkId}/activities`, data);
       }
     },
     onSuccess: () => {

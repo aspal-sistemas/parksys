@@ -248,20 +248,8 @@ const Activities: React.FC = () => {
   // Mutation para eliminar actividad
   const deleteMutation = useMutation({
     mutationFn: async (activityId: number) => {
-      // Usar la nueva ruta de API
-      const response = await fetch(`/api/activities/${activityId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(errorData || 'Error al eliminar la actividad');
-      }
-      
+      // Usar el método apiRequest para mantener coherencia
+      await apiRequest("DELETE", `/api/activities/${activityId}`);
       return true;
     },
     onSuccess: () => {
@@ -276,6 +264,7 @@ const Activities: React.FC = () => {
       
       // Actualizar datos
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/parks'] });
     },
     onError: (error: any) => {
       toast({
