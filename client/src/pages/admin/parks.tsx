@@ -179,7 +179,7 @@ const AdminParks = () => {
         {/* Header with actions */}
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-800">Parques</h2>
-          <Button>
+          <Button onClick={() => window.location.href = "/admin/parks/new"}>
             <Plus className="h-4 w-4 mr-2" />
             Agregar Parque
           </Button>
