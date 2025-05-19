@@ -149,8 +149,13 @@ const AdminActivities = () => {
     if (!activityToDelete) return;
     
     try {
-      await fetch(`/api/parks/${activityToDelete.parkId}/activities/${activityToDelete.id}`, {
+      await fetch(`/api/activities/${activityToDelete.id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer direct-token-admin',
+          'X-User-Id': '1',
+          'X-User-Role': 'super_admin'
+        },
       });
       
       // Refetch activities
