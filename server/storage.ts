@@ -632,6 +632,10 @@ export class MemStorage implements IStorage {
     };
   }
 
+  async getMunicipalityParks(municipalityId: number): Promise<Park[]> {
+    return Array.from(this.parks.values()).filter(park => park.municipalityId === municipalityId);
+  }
+  
   async getParks(filters?: Partial<{
     municipalityId: number;
     parkType: string;
