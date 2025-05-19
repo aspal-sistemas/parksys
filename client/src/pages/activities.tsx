@@ -248,13 +248,8 @@ const Activities: React.FC = () => {
   // Mutation para eliminar actividad
   const deleteMutation = useMutation({
     mutationFn: async (activityId: number) => {
-      // Buscar la actividad para obtener el parkId
-      const activity = activities.find(a => a.id === activityId);
-      if (!activity) {
-        throw new Error('Actividad no encontrada');
-      }
-
-      const response = await fetch(`/api/parks/${activity.parkId}/activities/${activityId}`, {
+      // Ahora usamos la nueva ruta de API directamente
+      const response = await fetch(`/api/activities/${activityId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
