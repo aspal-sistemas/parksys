@@ -420,18 +420,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Add an image to a park (admin/municipality only)
   apiRouter.post("/parks/:id/images", isAuthenticated, hasParkAccess, (req: Request, res: Response, next: Function) => {
-    // Usar el manejador de carga de imágenes
-    const { uploadParkImage, handleImageUploadErrors } = require('./api/imageUpload');
-    
-    // Aplicar manejo de errores
-    uploadParkImage(req, res, (err: any) => {
-      if (err) {
-        return handleImageUploadErrors(err, req, res, next);
-      }
-      
-      // Si no hay errores, procesar la imagen
-      const { uploadParkImageHandler } = require('./api/imageUpload');
-      return uploadParkImageHandler(req, res);
+    // Importar los módulos necesarios usando import dinámico
+    import('./api/imageUpload').then(({ uploadParkImage, handleImageUploadErrors, uploadParkImageHandler }) => {
+      // Aplicar manejo de errores
+      uploadParkImage(req, res, (err: any) => {
+        if (err) {
+          return handleImageUploadErrors(err, req, res, next);
+        }
+        
+        // Si no hay errores, procesar la imagen
+        return uploadParkImageHandler(req, res);
+      });
+    }).catch(error => {
+      console.error("Error al cargar módulo de carga de imágenes:", error);
+      res.status(500).json({ error: "Error interno al procesar la solicitud de carga de imágenes" });
     });
   });
 
