@@ -10,7 +10,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  Home
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -41,6 +42,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
   };
 
   const navItems = [
+    { 
+      label: 'Dashboard', 
+      icon: <Home className="h-5 w-5 mr-3" />, 
+      href: '/admin' 
+    },
     { 
       label: 'Parques', 
       icon: <Map className="h-5 w-5 mr-3" />, 
