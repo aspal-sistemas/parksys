@@ -713,6 +713,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error adding activity to park" });
     }
   });
+  
+  // Update an activity (admin/municipality only)
+  apiRouter.put("/activities/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const activityId = Number(req.params.id);
+      
+      // Verificar si la actividad existe
+      const existingActivity = await storage.getActivity(activityId);
+      if (!existingActivity) {
+        return res.status(404).json({ message: "Actividad no encontrada" });
+      }
+      
+      // En desarrollo, permitimos actualizar cualquier actividad
+      // TODO: Implementar verificación de permisos más estricta en producción
+      
+      const activityData = req.body;
+      // No permitimos cambiar el parkId desde esta ruta
+      delete activityData.parkId;
+      
+      // Validar los datos
+      const result = await storage.updateActivity(activityId, activityData);
+      
+      res.json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error actualizando actividad" });
+    }
+  });
+  
+  // Delete an activity (admin/municipality only)
+  apiRouter.delete("/activities/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const activityId = Number(req.params.id);
+      
+      // Verificar si la actividad existe
+      const existingActivity = await storage.getActivity(activityId);
+      if (!existingActivity) {
+        return res.status(404).json({ message: "Actividad no encontrada" });
+      }
+      
+      // En desarrollo, permitimos eliminar cualquier actividad
+      // TODO: Implementar verificación de permisos más estricta en producción
+      
+      await storage.deleteActivity(activityId);
+      
+      res.status(200).json({ success: true, message: "Actividad eliminada correctamente" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error eliminando actividad" });
+    }
+  });
 
   // Get comments for a specific park
   apiRouter.get("/parks/:id/comments", async (req: Request, res: Response) => {
