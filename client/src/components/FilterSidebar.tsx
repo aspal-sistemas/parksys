@@ -232,7 +232,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
                     : 'bg-primary-100 text-primary-700 hover:bg-primary-200 font-semibold'
                 }`}
               >
-                Ver todas las amenidades
+                Todas las Amenidades
               </button>
               
               {sortedCategories.map(category => (
