@@ -1,4 +1,6 @@
-import { storage } from "./storage";
+import { db } from "./db";
+import { volunteers, parks, volunteerParticipations, volunteerEvaluations, volunteerRecognitions } from "@shared/schema";
+import { eq, and } from "drizzle-orm";
 
 /**
  * Script para agregar voluntarios de muestra
@@ -158,61 +160,68 @@ async function addSampleVolunteers() {
           notes: "Excelente actitud y disposición"
         },
         {
-          volunteerId: allVolunteers[0].id,
-          parkId: allParks[1].id,
-          activityName: "Taller de educación ambiental",
-          activityDate: new Date(new Date().setDate(new Date().getDate() - 8)).toISOString().split('T')[0],
-          hoursContributed: 3,
+          volunteer_id: allVolunteers[0].id,
+          park_id: allParks[1].id,
+          activity_name: "Taller de educación ambiental",
+          activity_date: new Date(new Date().setDate(new Date().getDate() - 8)),
+          hours_contributed: 3,
           notes: "Impartió taller sobre reciclaje"
         },
         {
-          volunteerId: allVolunteers[1].id,
-          parkId: allParks[0].id,
-          activityName: "Mantenimiento de áreas verdes",
-          activityDate: new Date(new Date().setDate(new Date().getDate() - 20)).toISOString().split('T')[0],
-          hoursContributed: 4,
+          volunteer_id: allVolunteers[1].id,
+          park_id: allParks[0].id,
+          activity_name: "Mantenimiento de áreas verdes",
+          activity_date: new Date(new Date().setDate(new Date().getDate() - 20)),
+          hours_contributed: 4,
           notes: "Ayudó con la poda de árboles"
         },
         {
-          volunteerId: allVolunteers[2].id,
-          parkId: allParks[2].id,
-          activityName: "Festival ecológico",
-          activityDate: new Date(new Date().setDate(new Date().getDate() - 5)).toISOString().split('T')[0],
-          hoursContributed: 6,
+          volunteer_id: allVolunteers[2].id,
+          park_id: allParks[2] ? allParks[2].id : allParks[0].id,
+          activity_name: "Festival ecológico",
+          activity_date: new Date(new Date().setDate(new Date().getDate() - 5)),
+          hours_contributed: 6,
           notes: "Coordinó actividades para niños"
         },
         {
-          volunteerId: allVolunteers[3].id,
-          parkId: allParks[1].id,
-          activityName: "Reforestación",
-          activityDate: new Date(new Date().setDate(new Date().getDate() - 12)).toISOString().split('T')[0],
-          hoursContributed: 7,
+          volunteer_id: allVolunteers[3].id,
+          park_id: allParks[1].id,
+          activity_name: "Reforestación",
+          activity_date: new Date(new Date().setDate(new Date().getDate() - 12)),
+          hours_contributed: 7,
           notes: "Participó en la plantación de 20 árboles"
         },
         {
-          volunteerId: allVolunteers[5].id,
-          parkId: allParks[0].id,
-          activityName: "Renovación de área de juegos",
-          activityDate: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
-          hoursContributed: 8,
+          volunteer_id: allVolunteers[5] ? allVolunteers[5].id : allVolunteers[0].id,
+          park_id: allParks[0].id,
+          activity_name: "Renovación de área de juegos",
+          activity_date: new Date(new Date().setDate(new Date().getDate() - 30)),
+          hours_contributed: 8,
           notes: "Ayudó con la instalación de juegos nuevos"
         }
       ];
       
       for (const participation of sampleParticipations) {
-        // Verificar si la participación ya existe para evitar duplicados
-        const existingParticipation = await storage.getVolunteerParticipationByDetails(
-          participation.volunteerId,
-          participation.parkId,
-          participation.activityName,
-          participation.activityDate
-        );
-        
-        if (!existingParticipation) {
-          await storage.createVolunteerParticipation(participation);
-          console.log(`Participación creada para voluntario ${participation.volunteerId} en parque ${participation.parkId}`);
-        } else {
-          console.log(`La participación para voluntario ${participation.volunteerId} en actividad "${participation.activityName}" ya existe.`);
+        try {
+          // Verificar si la participación ya existe para evitar duplicados
+          const [existingParticipation] = await db.select()
+            .from(volunteerParticipations)
+            .where(
+              and(
+                eq(volunteerParticipations.volunteer_id, participation.volunteer_id),
+                eq(volunteerParticipations.park_id, participation.park_id),
+                eq(volunteerParticipations.activity_name, participation.activity_name)
+              )
+            );
+          
+          if (!existingParticipation) {
+            await db.insert(volunteerParticipations).values(participation);
+            console.log(`Participación creada para voluntario ${participation.volunteer_id} en parque ${participation.park_id}`);
+          } else {
+            console.log(`La participación para voluntario ${participation.volunteer_id} en actividad "${participation.activity_name}" ya existe.`);
+          }
+        } catch (error) {
+          console.error(`Error al crear participación:`, error);
         }
       }
     } else {
@@ -221,35 +230,51 @@ async function addSampleVolunteers() {
     
     // Crear algunos reconocimientos de muestra
     if (allVolunteers.length > 0) {
+      // Obtener usuarios para asignar como emisores de los reconocimientos
+      const allUsers = await db.select().from(users);
+      const issuedById = allUsers.length > 0 ? allUsers[0].id : 1;
+      
       const sampleRecognitions = [
         {
-          volunteerId: allVolunteers[0].id,
-          title: "Voluntario del Mes",
-          description: "Por su destacada labor en la limpieza y mantenimiento de áreas verdes",
-          awardDate: new Date(new Date().setDate(new Date().getDate() - 20)),
-          awardType: "mensual"
+          volunteer_id: allVolunteers[0].id,
+          recognition_type: "diploma",
+          level: "gold",
+          reason: "Por su destacada labor en la limpieza y mantenimiento de áreas verdes",
+          hours_completed: 100,
+          issued_at: new Date(new Date().setDate(new Date().getDate() - 20)),
+          issued_by_id: issuedById
         },
         {
-          volunteerId: allVolunteers[2].id,
-          title: "Mención Honorífica",
-          description: "Por su contribución en la organización del festival ecológico",
-          awardDate: new Date(new Date().setDate(new Date().getDate() - 10)),
-          awardType: "especial"
+          volunteer_id: allVolunteers[2] ? allVolunteers[2].id : allVolunteers[0].id,
+          recognition_type: "medal",
+          level: "silver",
+          reason: "Por su contribución en la organización del festival ecológico",
+          hours_completed: 50,
+          issued_at: new Date(new Date().setDate(new Date().getDate() - 10)),
+          issued_by_id: issuedById
         }
       ];
       
       for (const recognition of sampleRecognitions) {
-        const existingRecognition = await storage.getVolunteerRecognitionByDetails(
-          recognition.volunteerId, 
-          recognition.title,
-          recognition.awardDate.toISOString()
-        );
-        
-        if (!existingRecognition) {
-          await storage.createVolunteerRecognition(recognition);
-          console.log(`Reconocimiento creado para voluntario ${recognition.volunteerId}: ${recognition.title}`);
-        } else {
-          console.log(`El reconocimiento "${recognition.title}" para voluntario ${recognition.volunteerId} ya existe.`);
+        try {
+          // Verificar si el reconocimiento ya existe
+          const [existingRecognition] = await db.select()
+            .from(volunteerRecognitions)
+            .where(
+              and(
+                eq(volunteerRecognitions.volunteer_id, recognition.volunteer_id),
+                eq(volunteerRecognitions.recognition_type, recognition.recognition_type)
+              )
+            );
+          
+          if (!existingRecognition) {
+            await db.insert(volunteerRecognitions).values(recognition);
+            console.log(`Reconocimiento creado para voluntario ${recognition.volunteer_id}: ${recognition.recognition_type}`);
+          } else {
+            console.log(`El reconocimiento "${recognition.recognition_type}" para voluntario ${recognition.volunteer_id} ya existe.`);
+          }
+        } catch (error) {
+          console.error(`Error al crear reconocimiento:`, error);
         }
       }
     } else {
