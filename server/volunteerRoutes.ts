@@ -215,14 +215,16 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
 
   // === RUTAS PARA PARTICIPACIONES ===
 
-  // Obtener todas las participaciones
-  apiRouter.get("/volunteers/participations", isAuthenticated, async (_req: Request, res: Response) => {
+  // Obtener todas las participaciones (¡IMPORTANTE: Este endpoint debe ir ANTES que el endpoint con parámetro!)
+  apiRouter.get("/volunteers/participations", async (_req: Request, res: Response) => {
     try {
+      console.log("Obteniendo todas las participaciones");
       const participations = await db
         .select()
         .from(volunteerParticipations)
         .orderBy(desc(volunteerParticipations.activityDate));
         
+      console.log(`Se encontraron ${participations.length} participaciones`);
       res.json(participations);
     } catch (error) {
       console.error(`Error al obtener todas las participaciones:`, error);
