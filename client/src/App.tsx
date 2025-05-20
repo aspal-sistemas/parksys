@@ -70,7 +70,7 @@ function Router() {
         </Route>
         <Route path="/admin/volunteers/dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de voluntariado...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/dashboard')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/dashboard/index')))}
           </Suspense>
         </Route>
         <Route path="/admin/volunteers/:id">
