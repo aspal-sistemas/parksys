@@ -318,7 +318,7 @@ const AdminSidebarModular: React.FC = () => {
                   icon={<Calculator className="h-4 w-4" />}
                   active={location.startsWith('/admin/finance/calculator')}
                 >
-                  Calculadora de recuperación de costos
+                  Calculadora
                 </NavItem>
                 
                 <NavItem 
