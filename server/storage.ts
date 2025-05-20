@@ -16,7 +16,9 @@ import { and, eq, like, inArray, or, desc, isNull, lte, gte } from "drizzle-orm"
 export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
+  getUsers(): Promise<User[]>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   getUserByExternalId(externalId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
