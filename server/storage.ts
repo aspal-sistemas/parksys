@@ -573,8 +573,28 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
+  async getUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
   async getUserByUsername(username: string): Promise<User | undefined> {
+    // Primero intentamos usar el mapa para una búsqueda más eficiente
+    if (this.usernameToUser.has(username)) {
+      return this.usernameToUser.get(username);
+    }
+    
+    // Si no está en el mapa, buscamos manualmente
     return Array.from(this.users.values()).find(user => user.username === username);
+  }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    // Primero intentamos usar el mapa para una búsqueda más eficiente
+    if (this.emailToUser.has(email)) {
+      return this.emailToUser.get(email);
+    }
+    
+    // Si no está en el mapa, buscamos manualmente
+    return Array.from(this.users.values()).find(user => user.email === email);
   }
   
   async getUserByExternalId(externalId: string): Promise<User | undefined> {
@@ -613,6 +633,11 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(user: InsertUser): Promise<User> {
+    console.log("Creando usuario en la base de datos:", {
+      ...user,
+      password: '[REDACTED]'
+    });
+    
     const id = this.userIdCounter++;
     const newUser = { 
       ...user, 
@@ -620,12 +645,31 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
       updatedAt: new Date()
     };
+    
+    // Almacenamos el usuario en los diferentes mapas para acceso rápido
     this.users.set(id, newUser);
+    
+    // Mantenemos actualizados los mapas auxiliares
+    if (user.username) {
+      this.usernameToUser.set(user.username, newUser);
+    }
+    
+    if (user.email) {
+      this.emailToUser.set(user.email, newUser);
+    }
     
     // Si tiene ID externo, mantener el mapeo
     if (user.externalId) {
       this.externalIdToUserId.set(user.externalId, id);
     }
+    
+    console.log("Usuario creado con ID:", id);
+    console.log("Usuario creado exitosamente:", {
+      id: newUser.id,
+      username: newUser.username,
+      email: newUser.email,
+      role: newUser.role
+    });
     
     return newUser;
   }
@@ -634,12 +678,62 @@ export class MemStorage implements IStorage {
     const user = this.users.get(id);
     if (!user) return undefined;
     
-    const updatedUser = { ...user, ...userData };
+    // Si el usuario está cambiando de username, actualizar los mapas
+    if (userData.username && userData.username !== user.username) {
+      // Eliminar el mapeo anterior
+      if (user.username) {
+        this.usernameToUser.delete(user.username);
+      }
+    }
+    
+    // Si el usuario está cambiando de email, actualizar los mapas
+    if (userData.email && userData.email !== user.email) {
+      // Eliminar el mapeo anterior
+      if (user.email) {
+        this.emailToUser.delete(user.email);
+      }
+    }
+    
+    // Actualizar el usuario
+    const updatedUser = { 
+      ...user, 
+      ...userData,
+      updatedAt: new Date()  
+    };
+    
+    // Actualizar en el mapa principal
     this.users.set(id, updatedUser);
+    
+    // Actualizar los mapas auxiliares con los nuevos valores
+    if (updatedUser.username) {
+      this.usernameToUser.set(updatedUser.username, updatedUser);
+    }
+    
+    if (updatedUser.email) {
+      this.emailToUser.set(updatedUser.email, updatedUser);
+    }
+    
     return updatedUser;
   }
 
   async deleteUser(id: number): Promise<boolean> {
+    const user = this.users.get(id);
+    if (!user) return false;
+    
+    // Eliminar de los mapas auxiliares
+    if (user.username) {
+      this.usernameToUser.delete(user.username);
+    }
+    
+    if (user.email) {
+      this.emailToUser.delete(user.email);
+    }
+    
+    if (user.externalId) {
+      this.externalIdToUserId.delete(user.externalId);
+    }
+    
+    // Eliminar del mapa principal
     return this.users.delete(id);
   }
 
