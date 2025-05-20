@@ -28,6 +28,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Label } from "@/components/ui/label";
 import { AlertCircle, Calendar, CheckCircle, ChevronLeft, Save, Trash, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { queryClient } from '@/lib/queryClient';
@@ -362,7 +363,7 @@ const EditVolunteer = () => {
                             name="email"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Correo Electrónico</FormLabel>
+                                <FormLabel>Correo Electrónico *</FormLabel>
                                 <FormControl>
                                   <Input placeholder="Correo electrónico" {...field} value={field.value || ''} />
                                 </FormControl>
@@ -376,7 +377,7 @@ const EditVolunteer = () => {
                             name="phone"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Teléfono</FormLabel>
+                                <FormLabel>Teléfono *</FormLabel>
                                 <FormControl>
                                   <Input placeholder="Número de teléfono" {...field} value={field.value || ''} />
                                 </FormControl>
@@ -457,13 +458,13 @@ const EditVolunteer = () => {
                         <div className="mt-4">
                           <FormField
                             control={form.control}
-                            name="emergencyContact"
+                            name="emergency_contact"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Contacto de Emergencia</FormLabel>
+                                <FormLabel>Nombre de Contacto de Emergencia</FormLabel>
                                 <FormControl>
                                   <Input 
-                                    placeholder="Nombre y teléfono de contacto de emergencia" 
+                                    placeholder="Nombre completo del contacto de emergencia" 
                                     {...field} 
                                     value={field.value || ''}
                                   />
@@ -475,29 +476,102 @@ const EditVolunteer = () => {
                               </FormItem>
                             )}
                           />
-                        </div>
 
-                        <div className="mt-4">
                           <FormField
                             control={form.control}
-                            name="profileImageUrl"
+                            name="emergency_phone"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>URL de Imagen de Perfil</FormLabel>
+                                <FormLabel>Teléfono de Emergencia</FormLabel>
                                 <FormControl>
                                   <Input 
-                                    placeholder="https://ejemplo.com/imagen.jpg" 
+                                    placeholder="Número de teléfono para emergencias" 
                                     {...field} 
                                     value={field.value || ''}
                                   />
                                 </FormControl>
                                 <FormDescription>
-                                  URL de la fotografía del voluntario
+                                  Teléfono del contacto para emergencias
                                 </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
+                        </div>
+
+                        <div className="mt-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="preferred_park_id"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Parque Preferido</FormLabel>
+                                  <Select 
+                                    onValueChange={(value) => field.onChange(parseInt(value))} 
+                                    value={field.value?.toString() || ''}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Seleccionar parque" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {parks.map((park) => (
+                                        <SelectItem key={park.id} value={park.id.toString()}>
+                                          {park.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormDescription>
+                                    Parque donde el voluntario prefiere colaborar
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="legal_consent"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>
+                                      Consentimiento Legal
+                                    </FormLabel>
+                                    <FormDescription>
+                                      El voluntario acepta los términos y condiciones
+                                    </FormDescription>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <div className="mt-4">
+                            <Label>Fotografía del Voluntario</Label>
+                            <div className="mt-2">
+                              <Input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  // Aquí manejaríamos la subida de la foto cuando
+                                  // implementemos esta funcionalidad
+                                }}
+                              />
+                              <p className="text-sm text-gray-500 mt-1">
+                                Sube una foto del voluntario (máx. 5MB, formatos: jpg, jpeg, png)
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
