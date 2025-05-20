@@ -53,6 +53,7 @@ const volunteerFormSchema = z.object({
   previousExperience: z.string().optional(),
   healthConditions: z.string().optional(),
   additionalComments: z.string().optional(),
+  profileImage: z.instanceof(File).optional(),
   termsAccepted: z.boolean().refine(val => val === true, {
     message: 'Debes aceptar los términos y condiciones'
   })
@@ -63,6 +64,8 @@ type VolunteerFormValues = z.infer<typeof volunteerFormSchema>;
 const VolunteerRegistration = () => {
   const { toast } = useToast();
   const [submitted, setSubmitted] = React.useState(false);
+  const [selectedImage, setSelectedImage] = React.useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
 
   // Configuración del formulario
   const form = useForm<VolunteerFormValues>({
@@ -119,8 +122,39 @@ const VolunteerRegistration = () => {
     }
   });
 
+  // Manejador para la subida de imagen
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedImage(file);
+      
+      // Crear URL para previsualizar la imagen
+      const fileUrl = URL.createObjectURL(file);
+      setPreviewUrl(fileUrl);
+      
+      // Actualizar el valor en el formulario
+      form.setValue('profileImage', file);
+    }
+  };
+  
   // Envío del formulario
-  const onSubmit = (data: VolunteerFormValues) => {
+  const onSubmit = async (data: VolunteerFormValues) => {
+    // Crear FormData para enviar datos incluyendo la imagen
+    const formData = new FormData();
+    
+    // Agregar todos los campos de texto
+    Object.keys(data).forEach(key => {
+      if (key !== 'profileImage' && data[key as keyof VolunteerFormValues] !== undefined) {
+        formData.append(key, data[key as keyof VolunteerFormValues] as string);
+      }
+    });
+    
+    // Agregar la imagen si existe
+    if (selectedImage) {
+      formData.append('profileImage', selectedImage);
+    }
+    
+    // Usar el FormData en la mutación
     mutate(data);
   };
 
@@ -405,6 +439,32 @@ const VolunteerRegistration = () => {
                 <Separator />
                 
                 <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Fotografía</h3>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Foto de perfil</label>
+                    <div className="flex flex-col space-y-2">
+                      {previewUrl && (
+                        <div className="relative w-32 h-32 rounded-md overflow-hidden border border-gray-200">
+                          <img 
+                            src={previewUrl} 
+                            alt="Vista previa" 
+                            className="object-cover w-full h-full"
+                          />
+                        </div>
+                      )}
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="max-w-md"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Sube una foto clara para tu identificación como voluntario (opcional)
+                      </p>
+                    </div>
+                  </div>
+                  
                   <h3 className="text-lg font-medium">Información adicional</h3>
                   
                   <FormField

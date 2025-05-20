@@ -53,8 +53,38 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
   });
 
   // Crear nuevo voluntario
+  // Configuración de multer para subida de imágenes de voluntarios
+  const volunteerStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      // Asegurarse de que el directorio existe
+      const uploadDir = './public/uploads/volunteers';
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, 'volunteer-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+
+  const volunteerUpload = multer({ 
+    storage: volunteerStorage,
+    limits: {
+      fileSize: 5 * 1024 * 1024 // Límite de 5MB
+    },
+    fileFilter: function (req, file, cb) {
+      // Aceptar solo imágenes
+      if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+        return cb(new Error('Solo se permiten archivos de imagen'), false);
+      }
+      cb(null, true);
+    }
+  });
+
   // Registro público de voluntarios
-  publicApiRouter.post("/volunteers/register", async (req: Request, res: Response) => {
+  publicApiRouter.post("/volunteers/register", volunteerUpload.single('profileImage'), async (req: Request, res: Response) => {
     try {
       // Campos mínimos requeridos para registro público
       const requiredFields = [
