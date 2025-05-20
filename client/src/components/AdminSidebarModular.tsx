@@ -383,14 +383,7 @@ const AdminSidebarModular: React.FC = () => {
                   Lista de Voluntarios
                 </NavItem>
                 
-                <NavItem 
-                  href="/admin/volunteers/new" 
-                  icon={<UserPlus className="h-4 w-4" />}
-                  active={location === '/admin/volunteers/new'}
-                >
-                  Registrar Voluntario
-                </NavItem>
-                
+
                 <NavItem 
                   href="/admin/volunteers/participations" 
                   icon={<CalendarClock className="h-4 w-4" />}
