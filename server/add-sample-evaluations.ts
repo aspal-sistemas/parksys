@@ -7,9 +7,11 @@ import { volunteerEvaluations } from '@shared/schema';
 export async function addSampleEvaluations() {
   try {
     // Buscamos participaciones existentes para asociar las evaluaciones
+    console.log("Buscando participaciones de voluntarios...");
     const participations = await db.query.volunteerParticipations.findMany({
       limit: 10,
     });
+    console.log(`Encontradas ${participations.length} participaciones:`, participations);
 
     if (participations.length === 0) {
       console.log("No hay participaciones para asignar evaluaciones. Agregue primero participaciones de muestra.");
