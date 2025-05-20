@@ -205,27 +205,13 @@ const AdminSidebarModular: React.FC = () => {
           <div className="pt-3 pb-1">
             <Accordion type="multiple" defaultValue={getDefaultAccordionValue()} className="space-y-1">
               {/* Módulo - Usuarios del Sistema */}
-              <ModuleNav 
-                title="Usuarios del Sistema" 
-                icon={<Users className="h-5 w-5" />} 
-                value="users"
+              <NavItem 
+                href="/admin/users" 
+                icon={<Users className="h-5 w-5" />}
+                active={location.startsWith('/admin/users')}
               >
-                <NavItem 
-                  href="/admin/users/list" 
-                  icon={<List className="h-4 w-4" />}
-                  active={location.startsWith('/admin/users/list')}
-                >
-                  Lista
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/users" 
-                  icon={<Users className="h-4 w-4" />}
-                  active={location === '/admin/users'}
-                >
-                  Usuarios
-                </NavItem>
-              </ModuleNav>
+                Usuarios del Sistema
+              </NavItem>
               
               {/* Módulo - Actividades */}
               <ModuleNav 
