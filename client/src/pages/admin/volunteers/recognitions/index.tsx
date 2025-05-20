@@ -55,6 +55,28 @@ const VolunteerRecognitions: React.FC = () => {
   const { data: recognitions = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/volunteers/recognitions/all'],
   });
+  
+  // Mutation para cargar datos de muestra de reconocimientos
+  const loadSampleData = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', '/api/admin/seed/recognitions');
+    },
+    onSuccess: () => {
+      toast({
+        title: "Datos de muestra cargados",
+        description: "Los reconocimientos de muestra se han cargado correctamente",
+      });
+      refetch();
+    },
+    onError: (error) => {
+      console.error("Error al cargar datos de muestra:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los datos de muestra. Intente nuevamente.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Fetch volunteers data to display names
   const { data: volunteers = [] } = useQuery({
@@ -179,7 +201,25 @@ const VolunteerRecognitions: React.FC = () => {
                   Gestión de reconocimientos otorgados a voluntarios
                 </CardDescription>
               </div>
-              <div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => loadSampleData.mutate()}
+                  variant="secondary" 
+                  className="bg-green-600 text-white hover:bg-green-700"
+                  disabled={loadSampleData.isPending}
+                >
+                  {loadSampleData.isPending ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin h-4 w-4 mr-2 border-2 border-b-0 border-r-0 border-white rounded-full"></div>
+                      Cargando...
+                    </div>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Cargar datos de muestra
+                    </>
+                  )}
+                </Button>
                 <Button variant="default" className="bg-white text-blue-700 hover:bg-gray-100">
                   <Calendar className="h-4 w-4 mr-2" />
                   Nuevo Reconocimiento
