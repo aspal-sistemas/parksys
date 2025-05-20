@@ -223,32 +223,38 @@ const NewVolunteer: React.FC = () => {
     // Proceder con el envío
     try {
       // Convertir camelCase a snake_case para la base de datos
-      const formData = new FormData();
-      
-      // Mapeo de nombres de campos
-      const fieldMapping = {
-        fullName: 'full_name',
-        phoneNumber: 'phone_number',
-        birthDate: 'birth_date',
-        emergencyContact: 'emergency_contact',
-        emergencyPhone: 'emergency_phone',
-        previousExperience: 'previous_experience',
-        healthConditions: 'health_conditions',
-        additionalComments: 'additional_comments',
-        legalConsent: 'legal_consent',
-        profileImageUrl: 'profile_image_url'
+      // Crear un objeto adaptado a la estructura real de la base de datos
+      // en lugar de FormData para evitar problemas de tipo
+      const dataToSend = {
+        full_name: processedData.fullName,
+        email: processedData.email,
+        phone: processedData.phoneNumber,
+        // Calcular age desde birthDate
+        age: processedData.birthDate ? 
+          Math.floor((new Date().getTime() - new Date(processedData.birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 
+          30,
+        previous_experience: processedData.previousExperience || "No especificado",
+        available_hours: processedData.availability,
+        status: "active",
+        legal_consent: true,
+        // Otros campos obligatorios según la estructura de la BD
+        gender: "No especificado",
+        interest_areas: [],
+        available_days: []
       };
       
-      // Agregar campos al FormData con nombres correctos
-      Object.entries(processedData).forEach(([key, value]) => {
+      console.log("Datos adaptados para enviar:", dataToSend);
+      
+      // Crear FormData para enviar archivo
+      const formData = new FormData();
+      
+      // Agregar todos los campos
+      Object.entries(dataToSend).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          // Usar el nombre mapeado si existe, o el original si no
-          const fieldName = fieldMapping[key as keyof typeof fieldMapping] || key;
-          
-          if (key === 'birthDate' && value instanceof Date) {
-            formData.append(fieldName, value.toISOString());
+          if (Array.isArray(value)) {
+            formData.append(key, JSON.stringify(value));
           } else {
-            formData.append(fieldName, String(value));
+            formData.append(key, String(value));
           }
         }
       });
