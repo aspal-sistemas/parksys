@@ -66,6 +66,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Registramos las rutas del módulo de voluntariado
+  registerVolunteerRoutes(app, apiRouter, isAuthenticated);
+  
   app.use('/api', apiRouter);
 
   // Get all parks with option to filter
