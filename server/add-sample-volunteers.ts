@@ -106,14 +106,32 @@ async function addSampleVolunteers() {
     },
   ];
 
-  // Agregamos los parques de muestra
+  // Agregamos los voluntarios de muestra
   for (const volunteerData of sampleVolunteers) {
     try {
-      // Verificamos si el voluntario ya existe (por email)
-      const existingVolunteer = await storage.getVolunteerByEmail(volunteerData.email);
+      // Convertimos los datos al formato esperado por la base de datos
+      const formattedData = {
+        fullName: volunteerData.fullName,
+        email: volunteerData.email,
+        age: Math.floor(Math.random() * 30) + 18, // Edad aleatoria entre 18 y 48
+        gender: Math.random() > 0.5 ? 'M' : 'F',
+        phone: volunteerData.phoneNumber,
+        profileImageUrl: volunteerData.profileImageUrl,
+        availableHours: volunteerData.availability,
+        previousExperience: volunteerData.skills,
+        legalConsent: true,
+        status: volunteerData.status || 'active'
+      };
+      
+      // Buscamos si el voluntario ya existe consultando por email
+      const [existingVolunteer] = await db.select()
+        .from(volunteers)
+        .where(eq(volunteers.email, volunteerData.email));
       
       if (!existingVolunteer) {
-        await storage.createVolunteer(volunteerData);
+        const [newVolunteer] = await db.insert(volunteers)
+          .values(formattedData)
+          .returning();
         console.log(`Voluntario creado: ${volunteerData.fullName}`);
       } else {
         console.log(`El voluntario ${volunteerData.fullName} ya existe en la base de datos.`);
@@ -126,17 +144,17 @@ async function addSampleVolunteers() {
   // Ahora creamos participaciones de muestra
   try {
     // Obtener todos los voluntarios y parques para asignar participaciones
-    const allVolunteers = await storage.getAllVolunteers();
-    const allParks = await storage.getAllParks();
+    const allVolunteers = await db.select().from(volunteers);
+    const allParks = await db.select().from(parks);
     
     if (allVolunteers.length > 0 && allParks.length > 0) {
       const sampleParticipations = [
         {
-          volunteerId: allVolunteers[0].id,
-          parkId: allParks[0].id,
-          activityName: "Jornada de limpieza",
-          activityDate: new Date(new Date().setDate(new Date().getDate() - 15)).toISOString().split('T')[0],
-          hoursContributed: 5,
+          volunteer_id: allVolunteers[0].id,
+          park_id: allParks[0].id,
+          activity_name: "Jornada de limpieza",
+          activity_date: new Date(new Date().setDate(new Date().getDate() - 15)),
+          hours_contributed: 5,
           notes: "Excelente actitud y disposición"
         },
         {
