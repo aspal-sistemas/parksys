@@ -40,6 +40,7 @@ const volunteerFormSchema = z.object({
   email: z.string().min(1, { message: 'El correo electrónico es obligatorio' }).email({ message: 'Correo electrónico inválido' }),
   phoneNumber: z.string().min(10, { message: 'Número de teléfono inválido' }),
   address: z.string().min(5, { message: 'Dirección inválida' }),
+  gender: z.string().min(1, { message: 'El género es obligatorio' }),
   birthDate: z.string().refine(value => {
     const date = new Date(value);
     if (isNaN(date.getTime())) return false;
