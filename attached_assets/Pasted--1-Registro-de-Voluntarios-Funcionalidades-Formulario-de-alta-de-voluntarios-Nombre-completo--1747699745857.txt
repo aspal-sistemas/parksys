@@ -1,0 +1,105 @@
+🧷 1. Registro de Voluntarios
+Funcionalidades:
+
+Formulario de alta de voluntarios:
+
+Nombre completo
+
+Edad
+
+Género
+
+Contacto (email, teléfono)
+
+Fotografía opcional
+
+Parque o región de preferencia
+
+Áreas de interés (educación ambiental, jardinería, eventos, etc.)
+
+Disponibilidad (días y horarios)
+
+Experiencia previa (opcional)
+
+Consentimiento legal y política de datos
+
+Validación de datos:
+
+Validación de correo y teléfono (opcionalmente verificación OTP)
+
+Revisión de edad mínima (por ejemplo, > 15 años)
+
+Asignación automática o manual de número de ID de voluntario
+
+Visualización y edición del perfil por parte del administrador o el mismo voluntario
+
+Estado del voluntario: activo, inactivo, suspendido
+
+📈 2. Seguimiento y Evaluación
+Funcionalidades:
+
+Registro de participación:
+
+Actividades en las que ha participado (nombre, fecha, duración, parque)
+
+Número total de horas voluntariadas
+
+Responsable que valida la asistencia
+
+Evaluación de desempeño:
+
+Evaluación cualitativa por parte de coordinadores
+
+Formulario de retroalimentación post-actividad
+
+Nivel de compromiso (puntualidad, actitud, responsabilidad, etc.)
+
+Historial completo de participación y desempeño
+
+Alertas internas o comentarios para seguimiento (por ejemplo, “destacado”, “necesita supervisión”)
+
+🏅 3. Reconocimiento y Certificados
+Funcionalidades:
+
+Generación automática de reconocimientos:
+
+Por número de horas acumuladas (ej. 50, 100, 250)
+
+Por participación en actividades clave
+
+Tipos de reconocimientos:
+
+Diplomas en PDF (descargables y enviados por email)
+
+Insignias o medallas digitales (dentro del perfil del voluntario)
+
+Niveles de voluntariado (Bronce, Plata, Oro, Platino)
+
+Registro de entregas:
+
+Fecha en que se generó un certificado
+
+Responsable que lo otorgó
+
+Comentario adicional (ej. mención honorífica)
+
+🔐 Roles y accesos recomendados:
+Voluntario: Puede ver y actualizar su perfil, consultar su historial y descargar certificados.
+
+Coordinador de voluntarios: Puede registrar participación, evaluar, generar reconocimientos, editar datos.
+
+Administrador: Acceso total, gestión de reportes y control de usuarios.
+
+📊 Panel de gestión (dashboard):
+Para coordinadores y administradores:
+
+Total de voluntarios activos/inactivos
+
+Voluntarios por parque o zona
+
+Total de horas donadas por periodo
+
+Ranking de voluntarios más activos
+
+Eventos con mayor participación voluntaria
+

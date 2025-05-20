@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, varchar, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json, varchar, jsonb, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -126,7 +126,6 @@ export const incidents = pgTable("incidents", {
 });
 
 // INSERT SCHEMAS
-
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertMunicipalitySchema = createInsertSchema(municipalities).omit({ id: true, createdAt: true });
 export const insertParkSchema = createInsertSchema(parks).omit({ id: true, createdAt: true, updatedAt: true });
@@ -169,6 +168,28 @@ export type InsertComment = z.infer<typeof insertCommentSchema>;
 
 export type Incident = typeof incidents.$inferSelect;
 export type InsertIncident = z.infer<typeof insertIncidentSchema>;
+
+// Tipos para el módulo de voluntariado
+export type Volunteer = typeof volunteers.$inferSelect;
+export type InsertVolunteer = z.infer<typeof insertVolunteerSchema>;
+
+export type VolunteerParticipation = typeof volunteerParticipations.$inferSelect;
+export type InsertVolunteerParticipation = z.infer<typeof insertVolunteerParticipationSchema>;
+
+export type VolunteerEvaluation = typeof volunteerEvaluations.$inferSelect;
+export type InsertVolunteerEvaluation = z.infer<typeof insertVolunteerEvaluationSchema>;
+
+export type VolunteerRecognition = typeof volunteerRecognitions.$inferSelect;
+export type InsertVolunteerRecognition = z.infer<typeof insertVolunteerRecognitionSchema>;
+
+// Tipos extendidos para la interfaz
+export type ExtendedVolunteer = Volunteer & {
+  participations?: VolunteerParticipation[];
+  evaluations?: VolunteerEvaluation[];
+  recognitions?: VolunteerRecognition[];
+  totalHours?: number;
+  preferredPark?: Park;
+};
 
 // PARK TYPES
 export const PARK_TYPES = [
@@ -286,6 +307,71 @@ export const incidentsRelations = relations(incidents, ({ one }) => ({
     references: [parks.id],
   }),
 }));
+
+// TABLES FOR MODULE: VOLUNTEERS
+
+// 1. Tabla de Voluntarios
+export const volunteers = pgTable("volunteers", {
+  id: serial("id").primaryKey(),
+  fullName: text("full_name").notNull(),
+  age: integer("age").notNull(),
+  gender: text("gender").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  profileImageUrl: text("profile_image_url"),
+  preferredParkId: integer("preferred_park_id"),
+  interestAreas: text("interest_areas").array(),
+  availableDays: text("available_days").array(),
+  availableHours: text("available_hours"),
+  previousExperience: text("previous_experience"),
+  legalConsent: boolean("legal_consent").default(false).notNull(),
+  status: text("status").default("active").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// 2. Tabla de Participación de Voluntarios
+export const volunteerParticipations = pgTable("volunteer_participations", {
+  id: serial("id").primaryKey(),
+  volunteerId: integer("volunteer_id").notNull(),
+  activityId: integer("activity_id"),
+  parkId: integer("park_id").notNull(),
+  activityName: text("activity_name").notNull(),
+  activityDate: date("activity_date").notNull(),
+  hoursContributed: integer("hours_contributed").notNull(),
+  supervisorId: integer("supervisor_id"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// 3. Tabla de Evaluaciones de Voluntarios
+export const volunteerEvaluations = pgTable("volunteer_evaluations", {
+  id: serial("id").primaryKey(),
+  participationId: integer("participation_id").notNull(),
+  volunteerId: integer("volunteer_id").notNull(),
+  evaluatorId: integer("evaluator_id").notNull(),
+  punctuality: integer("punctuality").notNull(), // 1-5
+  attitude: integer("attitude").notNull(), // 1-5
+  responsibility: integer("responsibility").notNull(), // 1-5
+  overallPerformance: integer("overall_performance").notNull(), // 1-5
+  comments: text("comments"),
+  followUpRequired: boolean("follow_up_required").default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// 4. Tabla de Reconocimientos
+export const volunteerRecognitions = pgTable("volunteer_recognitions", {
+  id: serial("id").primaryKey(),
+  volunteerId: integer("volunteer_id").notNull(),
+  recognitionType: text("recognition_type").notNull(), // diploma, medal, level-upgrade
+  level: text("level"), // bronze, silver, gold, platinum
+  reason: text("reason").notNull(),
+  hoursCompleted: integer("hours_completed"),
+  certificateUrl: text("certificate_url"),
+  issuedAt: timestamp("issued_at").notNull().defaultNow(),
+  issuedById: integer("issued_by_id").notNull(),
+  additionalComments: text("additional_comments"),
+});
 
 export type ExtendedPark = Park & {
   amenities?: Amenity[];
