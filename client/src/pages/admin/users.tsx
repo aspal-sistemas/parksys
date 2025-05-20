@@ -452,8 +452,14 @@ const AdminUsers = () => {
   });
 
   // Format date
-  const formatDate = (date: Date) => {
-    return format(new Date(date), "dd/MM/yyyy", { locale: es });
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return "N/A";
+    try {
+      return format(new Date(date), "dd/MM/yyyy", { locale: es });
+    } catch (error) {
+      console.error("Error al formatear fecha:", error);
+      return "Fecha inválida";
+    }
   };
 
   // Get role badge
