@@ -71,7 +71,7 @@ const AdminParkEdit: React.FC = () => {
   
   // Consulta los datos del parque si estamos editando
   const { data: park, isLoading } = useQuery({
-    queryKey: ['/api/parks', id],
+    queryKey: [`/api/parks/${id}`],
     enabled: isEdit,
     gcTime: 0,
     staleTime: 0
