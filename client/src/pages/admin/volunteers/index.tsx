@@ -275,20 +275,33 @@ const VolunteersList: React.FC = () => {
                               onClick={() => {
                                 // Mostrar directamente una alerta con la información 
                                 // simulando un dashboard
+                                const reconocimientos = volunteer.recognitions?.length || 0;
+                                const evaluacionPromedio = volunteer.evaluations?.length ? 
+                                  volunteer.evaluations.reduce((total, ev) => total + (ev.overallScore || 0), 0) / volunteer.evaluations.length : 
+                                  'Sin evaluaciones';
+                                
                                 alert(`
-DASHBOARD DE VOLUNTARIO
------------------------
-ID: ${volunteer.id}
-Nombre: ${volunteer.fullName}
-Email: ${volunteer.email || 'N/A'}
-Teléfono: ${volunteer.phoneNumber || 'N/A'}
-Estado: ${volunteer.status}
-Fecha de registro: ${new Date(volunteer.createdAt).toLocaleDateString()}
-Horas acumuladas: ${volunteer.totalHours || 0}
-
-Esta funcionalidad muestra un resumen de la información del voluntario,
-sus actividades recientes, evaluaciones y reconocimientos en una interfaz
-más visual y detallada (en implementación).
+╔════════════════════════════════════════════════════════╗
+║                 DASHBOARD DE VOLUNTARIO                 ║
+╠════════════════════════════════════════════════════════╣
+║ ID: ${volunteer.id}
+║ Nombre: ${volunteer.fullName}
+║ Email: ${volunteer.email || 'N/A'}
+║ Teléfono: ${volunteer.phoneNumber || 'N/A'}
+║ Estado: ${volunteer.status}
+║ 
+║ ESTADÍSTICAS:
+║ ────────────────────────────────────────────────────────
+║ Fecha de registro: ${new Date(volunteer.createdAt).toLocaleDateString()}
+║ Horas acumuladas: ${volunteer.totalHours || 0}
+║ Participaciones: ${volunteer.participations?.length || 'Sin registro'}
+║ Reconocimientos: ${reconocimientos} 
+║ Evaluación promedio: ${evaluacionPromedio}
+║ 
+║ Esta información es un resumen de los datos completos
+║ del voluntario que estarán disponibles en la versión
+║ completa del Dashboard (en implementación).
+╚════════════════════════════════════════════════════════╝
                                 `);
                               }}
                             >
