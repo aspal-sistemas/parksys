@@ -7,6 +7,13 @@ import { eq, and } from "drizzle-orm";
  */
 async function addSampleVolunteers() {
   console.log("Agregando voluntarios de muestra...");
+  // Función de ayuda para loguear errores
+  const logSqlError = (error: any) => {
+    if (error.code) console.log("Error SQL Code:", error.code);
+    if (error.message) console.log("Error Message:", error.message);
+    if (error.detail) console.log("Error Detail:", error.detail);
+    console.error("Error completo:", error);
+  };
   
   // Creamos un array con los datos de los voluntarios de muestra
   const sampleVolunteers = [
@@ -111,6 +118,8 @@ async function addSampleVolunteers() {
   // Agregamos los voluntarios de muestra
   for (const volunteerData of sampleVolunteers) {
     try {
+      console.log(`Intentando crear voluntario: ${volunteerData.fullName}`);
+      
       // Convertimos los datos al formato esperado por la base de datos
       const formattedData = {
         fullName: volunteerData.fullName,
@@ -122,24 +131,36 @@ async function addSampleVolunteers() {
         availableHours: volunteerData.availability,
         previousExperience: volunteerData.skills,
         legalConsent: true,
-        status: volunteerData.status || 'active'
+        status: volunteerData.status || 'active',
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
       
+      console.log("Datos formateados para la inserción:", formattedData);
+      
       // Buscamos si el voluntario ya existe consultando por email
+      console.log(`Verificando si ${volunteerData.email} ya existe...`);
       const [existingVolunteer] = await db.select()
         .from(volunteers)
         .where(eq(volunteers.email, volunteerData.email));
       
       if (!existingVolunteer) {
-        const [newVolunteer] = await db.insert(volunteers)
-          .values(formattedData)
-          .returning();
-        console.log(`Voluntario creado: ${volunteerData.fullName}`);
+        console.log("Voluntario no existe, procediendo a crear...");
+        try {
+          const [newVolunteer] = await db.insert(volunteers)
+            .values(formattedData)
+            .returning();
+          console.log(`Voluntario creado exitosamente: ${volunteerData.fullName}`, newVolunteer);
+        } catch (insertError) {
+          console.log("Error al insertar voluntario en la base de datos:");
+          logSqlError(insertError);
+        }
       } else {
         console.log(`El voluntario ${volunteerData.fullName} ya existe en la base de datos.`);
       }
     } catch (error) {
-      console.error(`Error al crear voluntario ${volunteerData.fullName}:`, error);
+      console.error(`Error al procesar voluntario ${volunteerData.fullName}:`);
+      logSqlError(error);
     }
   }
 
