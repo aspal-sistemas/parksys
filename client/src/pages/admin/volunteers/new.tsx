@@ -62,10 +62,10 @@ const volunteerFormSchema = z.object({
   fullName: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
   email: z.string().email({ message: "Ingrese un correo electrónico válido" }).optional().or(z.literal('')),
   phoneNumber: z.string().min(10, { message: "Ingrese un teléfono válido" }).optional().or(z.literal('')),
-  emergencyContactName: z.string().min(3, { message: "Ingrese el nombre del contacto de emergencia" }).optional().or(z.literal('')),
-  emergencyContactPhone: z.string().min(10, { message: "Ingrese un teléfono válido para emergencias" }).optional().or(z.literal('')),
+  emergencyContact: z.string().min(3, { message: "Ingrese el nombre del contacto de emergencia" }).optional().or(z.literal('')),
+  emergencyPhone: z.string().min(10, { message: "Ingrese un teléfono válido para emergencias" }).optional().or(z.literal('')),
   address: z.string().optional().or(z.literal('')),
-  birthdate: z.date({
+  birthDate: z.date({  // Cambiado 'birthdate' a 'birthDate' para coincidir con el esquema del backend
     required_error: "La fecha de nacimiento es obligatoria",
     invalid_type_error: "La fecha debe ser válida"
   }).refine(
@@ -89,8 +89,8 @@ const NewVolunteer: React.FC = () => {
       fullName: '',
       email: '',
       phoneNumber: '',
-      emergencyContactName: '',
-      emergencyContactPhone: '',
+      emergencyContact: '',
+      emergencyPhone: '',
       address: '',
       skills: '',
       availability: '',
@@ -347,55 +347,128 @@ const NewVolunteer: React.FC = () => {
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
                             <div className="p-3 border-b border-border">
-                              <div className="flex flex-col space-y-2">
-                                <p className="text-sm font-medium">Seleccione el año de nacimiento:</p>
-                                <div className="grid grid-cols-6 gap-1 max-h-[150px] overflow-y-auto">
-                                  {Array.from({ length: 70 }, (_, i) => {
-                                    const year = new Date().getFullYear() - 18 - i;
-                                    return (
+                              <div className="flex flex-col space-y-4">
+                                {/* Selección de año */}
+                                <div>
+                                  <p className="text-sm font-medium mb-1">Año de nacimiento:</p>
+                                  <div className="grid grid-cols-5 gap-1 max-h-[120px] overflow-y-auto">
+                                    {Array.from({ length: 70 }, (_, i) => {
+                                      const year = new Date().getFullYear() - 18 - i;
+                                      return (
+                                        <Button
+                                          key={year}
+                                          variant={field.value && field.value.getFullYear() === year ? "default" : "outline"}
+                                          className="text-sm py-1 px-2"
+                                          onClick={() => {
+                                            // Si ya hay una fecha seleccionada, mantener el mes y día
+                                            if (field.value && !isNaN(field.value.getTime())) {
+                                              const newDate = new Date(field.value);
+                                              newDate.setFullYear(year);
+                                              field.onChange(newDate);
+                                            } else {
+                                              // Si no hay fecha, usar el primer día del año seleccionado
+                                              field.onChange(new Date(year, 0, 1));
+                                            }
+                                          }}
+                                          type="button"
+                                        >
+                                          {year}
+                                        </Button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                                
+                                {/* Selección de mes */}
+                                <div>
+                                  <p className="text-sm font-medium mb-1">Mes:</p>
+                                  <div className="grid grid-cols-4 gap-1">
+                                    {[
+                                      { value: 0, label: "Enero" },
+                                      { value: 1, label: "Febrero" },
+                                      { value: 2, label: "Marzo" },
+                                      { value: 3, label: "Abril" },
+                                      { value: 4, label: "Mayo" },
+                                      { value: 5, label: "Junio" },
+                                      { value: 6, label: "Julio" },
+                                      { value: 7, label: "Agosto" },
+                                      { value: 8, label: "Septiembre" },
+                                      { value: 9, label: "Octubre" },
+                                      { value: 10, label: "Noviembre" },
+                                      { value: 11, label: "Diciembre" }
+                                    ].map((month) => (
                                       <Button
-                                        key={year}
-                                        variant={field.value && field.value.getFullYear() === year ? "default" : "outline"}
+                                        key={month.value}
+                                        variant={field.value && field.value.getMonth() === month.value ? "default" : "outline"}
                                         className="text-sm py-1 px-2"
                                         onClick={() => {
-                                          // Si ya hay una fecha seleccionada, mantener el mes y día
                                           if (field.value && !isNaN(field.value.getTime())) {
                                             const newDate = new Date(field.value);
-                                            newDate.setFullYear(year);
+                                            newDate.setMonth(month.value);
+                                            
+                                            // Ajustar el día si el mes seleccionado tiene menos días
+                                            const lastDayOfMonth = new Date(newDate.getFullYear(), month.value + 1, 0).getDate();
+                                            if (newDate.getDate() > lastDayOfMonth) {
+                                              newDate.setDate(lastDayOfMonth);
+                                            }
+                                            
                                             field.onChange(newDate);
                                           } else {
-                                            // Si no hay fecha, usar el primer día del año seleccionado
-                                            field.onChange(new Date(year, 0, 1));
+                                            // Si no hay fecha, usar el primer día del mes seleccionado en el año actual - 18
+                                            const year = new Date().getFullYear() - 18;
+                                            field.onChange(new Date(year, month.value, 1));
                                           }
                                         }}
                                         type="button"
                                       >
-                                        {year}
+                                        {month.label}
                                       </Button>
-                                    );
-                                  })}
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => {
-                                // Calcular la fecha mínima para 18 años
-                                const today = new Date();
-                                const minAgeDate = new Date(
-                                  today.getFullYear() - 18,
-                                  today.getMonth(),
-                                  today.getDate()
-                                );
-                                
-                                return date > minAgeDate || date < new Date("1940-01-01");
-                              }}
-                              initialFocus
-                              fromYear={1940}
-                              toYear={new Date().getFullYear() - 18}
-                            />
+                            {/* Selección de día */}
+                            <div className="p-4">
+                              <p className="text-sm font-medium mb-2">Día:</p>
+                              <div className="grid grid-cols-7 gap-1">
+                                {Array.from({ length: 31 }, (_, i) => {
+                                  const day = i + 1;
+                                  
+                                  // Establecer año y mes seleccionados, con valores predeterminados en caso de no haber seleccionado fecha
+                                  const selectedYear = field.value?.getFullYear() || new Date().getFullYear() - 18;
+                                  const selectedMonth = field.value?.getMonth() || 0;
+                                  
+                                  // Determinar si el día es válido para el mes y año seleccionados
+                                  const lastDayOfMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+                                  const isValidDay = day <= lastDayOfMonth;
+                                  
+                                  return (
+                                    <Button
+                                      key={day}
+                                      variant={field.value && field.value.getDate() === day ? "default" : "outline"}
+                                      className="text-sm h-8 w-8"
+                                      disabled={!isValidDay}
+                                      onClick={() => {
+                                        // Si ya hay una fecha seleccionada, actualizar solo el día
+                                        if (field.value && !isNaN(field.value.getTime())) {
+                                          const newDate = new Date(field.value);
+                                          newDate.setDate(day);
+                                          field.onChange(newDate);
+                                        } else {
+                                          // Si no hay fecha, crear una con el día seleccionado y año/mes por defecto
+                                          const defaultYear = new Date().getFullYear() - 18;
+                                          field.onChange(new Date(defaultYear, 0, day));
+                                        }
+                                      }}
+                                      type="button"
+                                    >
+                                      {day}
+                                    </Button>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           </PopoverContent>
                         </Popover>
                         <FormDescription>
