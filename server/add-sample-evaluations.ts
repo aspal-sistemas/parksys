@@ -1,5 +1,5 @@
 import { db } from './db';
-import { volunteerEvaluations } from '@shared/schema';
+import * as schema from '@shared/schema';
 
 /**
  * Script para agregar evaluaciones de muestra
@@ -9,7 +9,7 @@ export async function addSampleEvaluations() {
     // Buscamos participaciones existentes para asociar las evaluaciones
     console.log("Buscando participaciones de voluntarios...");
     // Drizzle query no tiene métodos preparados, usamos select directo
-    const participations = await db.select().from(volunteerParticipations).limit(10);
+    const participations = await db.select().from(schema.volunteerParticipations).limit(10);
     console.log(`Encontradas ${participations.length} participaciones:`, participations);
 
     if (participations.length === 0) {
@@ -81,7 +81,7 @@ export async function addSampleEvaluations() {
     try {
       for (const evaluation of sampleEvaluations) {
         console.log("Insertando evaluación:", evaluation);
-        const result = await db.insert(volunteerEvaluations).values({
+        const result = await db.insert(schema.volunteerEvaluations).values({
           ...evaluation,
           createdAt: new Date()
         }).returning();
