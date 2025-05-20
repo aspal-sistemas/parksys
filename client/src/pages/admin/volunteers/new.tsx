@@ -72,17 +72,16 @@ const volunteerFormSchema = z.object({
     isAdult, 
     { message: "El voluntario debe ser mayor de 18 años" }
   ),
-  occupation: z.string().min(1, { message: "La ocupación es obligatoria" }),
+  // Estos campos son opcionales para la administración
+  occupation: z.string().optional().or(z.literal('')),
   availability: z.string().min(1, { message: "La disponibilidad es obligatoria" }),
-  skills: z.string().min(1, { message: "Las habilidades son obligatorias" }),
-  interests: z.string().min(1, { message: "Los intereses son obligatorios" }),
-  previousExperience: z.string().min(1, { message: "La experiencia previa es obligatoria" }),
-  healthConditions: z.string().min(1, { message: "Las condiciones de salud son obligatorias" }),
-  additionalComments: z.string().optional(),
-  legalConsent: z.boolean().refine(val => val === true, {
-    message: "Debe aceptar el consentimiento legal"
-  }),
-  status: z.string().default("pending"),
+  skills: z.string().optional().or(z.literal('')),
+  interests: z.string().optional().or(z.literal('')),
+  previousExperience: z.string().optional().or(z.literal('')),
+  healthConditions: z.string().optional().or(z.literal('')),
+  additionalComments: z.string().optional().or(z.literal('')),
+  legalConsent: z.boolean().optional(),
+  status: z.string().default("active"),
 });
 
 type VolunteerFormValues = z.infer<typeof volunteerFormSchema>;
@@ -195,6 +194,20 @@ const NewVolunteer: React.FC = () => {
   const onSubmit = (data: VolunteerFormValues) => {
     console.log("Enviando datos del formulario:", data);
     
+    // Completar campos obligatorios que estén vacíos con valores predeterminados
+    const processedData = {
+      ...data,
+      occupation: data.occupation || "No especificado",
+      interests: data.interests || "No especificado",
+      previousExperience: data.previousExperience || "No especificado",
+      healthConditions: data.healthConditions || "No especificado",
+      additionalComments: data.additionalComments || "",
+      legalConsent: true, // Asumimos aceptación de términos para el backend
+      status: "active" // El admin puede crear voluntarios activos
+    };
+    
+    console.log("Datos procesados:", processedData);
+    
     // Verificar si hay errores en la validación del formulario
     if (Object.keys(form.formState.errors).length > 0) {
       console.error("Errores en el formulario:", form.formState.errors);
@@ -208,8 +221,12 @@ const NewVolunteer: React.FC = () => {
     
     // Proceder con el envío
     try {
-      mutation.mutate(data);
+      mutation.mutate(processedData);
       console.log("Mutación iniciada con éxito");
+      toast({
+        title: "Procesando formulario",
+        description: "Enviando datos del voluntario...",
+      });
     } catch (error) {
       console.error("Error al iniciar la mutación:", error);
     }
