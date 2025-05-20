@@ -195,6 +195,7 @@ const NewVolunteer: React.FC = () => {
     console.log("Enviando datos del formulario:", data);
     
     // Completar campos obligatorios que estén vacíos con valores predeterminados
+    // y asegurarse de que los nombres de campo coincidan con los de la base de datos (camelCase vs snake_case)
     const processedData = {
       ...data,
       occupation: data.occupation || "No especificado",
@@ -221,7 +222,44 @@ const NewVolunteer: React.FC = () => {
     
     // Proceder con el envío
     try {
-      mutation.mutate(processedData);
+      // Convertir camelCase a snake_case para la base de datos
+      const formData = new FormData();
+      
+      // Mapeo de nombres de campos
+      const fieldMapping = {
+        fullName: 'full_name',
+        phoneNumber: 'phone_number',
+        birthDate: 'birth_date',
+        emergencyContact: 'emergency_contact',
+        emergencyPhone: 'emergency_phone',
+        previousExperience: 'previous_experience',
+        healthConditions: 'health_conditions',
+        additionalComments: 'additional_comments',
+        legalConsent: 'legal_consent',
+        profileImageUrl: 'profile_image_url'
+      };
+      
+      // Agregar campos al FormData con nombres correctos
+      Object.entries(processedData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          // Usar el nombre mapeado si existe, o el original si no
+          const fieldName = fieldMapping[key as keyof typeof fieldMapping] || key;
+          
+          if (key === 'birthDate' && value instanceof Date) {
+            formData.append(fieldName, value.toISOString());
+          } else {
+            formData.append(fieldName, String(value));
+          }
+        }
+      });
+      
+      // Agregar la imagen si existe
+      if (profileImage) {
+        formData.append('profileImage', profileImage);
+      }
+      
+      // Enviar los datos con el formato correcto
+      mutation.mutate(formData);
       console.log("Mutación iniciada con éxito");
       toast({
         title: "Procesando formulario",
