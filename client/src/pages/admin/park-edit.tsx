@@ -14,13 +14,17 @@ import {
   Calendar,
   BadgeCheck,
   Building,
-  Upload
+  Upload,
+  Star,
+  Trash,
+  Download
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -68,6 +72,11 @@ const AdminParkEdit: React.FC = () => {
   const isEdit = !!id;
   const [activeTab, setActiveTab] = useState('basic');
   const { toast } = useToast();
+  
+  // Estados para recursos multimedia y amenidades
+  const [parkImages, setParkImages] = useState<any[]>([]);
+  const [parkDocuments, setParkDocuments] = useState<any[]>([]);
+  const [parkAmenities, setParkAmenities] = useState<any[]>([]);
   
   // Consulta los datos del parque si estamos editando
   const { data: park, isLoading } = useQuery({
@@ -145,21 +154,21 @@ const AdminParkEdit: React.FC = () => {
           const imagesResponse = await fetch(`/api/parks/${id}/images`);
           if (imagesResponse.ok) {
             const images = await imagesResponse.json();
-            // Update images state...
+            setParkImages(images);
           }
           
           // Documentos
           const documentsResponse = await fetch(`/api/parks/${id}/documents`);
           if (documentsResponse.ok) {
             const documents = await documentsResponse.json();
-            // Update documents state...
+            setParkDocuments(documents);
           }
           
           // Amenidades
           const amenitiesResponse = await fetch(`/api/parks/${id}/amenities`);
           if (amenitiesResponse.ok) {
             const amenities = await amenitiesResponse.json();
-            // Update amenities state...
+            setParkAmenities(amenities);
           }
         } catch (error) {
           console.error('Error cargando recursos multimedia:', error);
@@ -622,17 +631,45 @@ const AdminParkEdit: React.FC = () => {
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="text-sm font-medium">Imágenes</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Las imágenes podrán ser subidas después de crear el parque.
-                    </p>
+                    {parkImages.length > 0 ? (
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {parkImages.map((image: any) => (
+                          <div key={image.id} className="relative group">
+                            <img 
+                              src={image.imageUrl} 
+                              alt={`Imagen del parque ${park?.name || ''}`} 
+                              className="h-40 w-full object-cover rounded-md"
+                            />
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex space-x-2">
+                                {image.isPrimary ? (
+                                  <Badge variant="default" className="absolute top-2 right-2">
+                                    Principal
+                                  </Badge>
+                                ) : (
+                                  <Button type="button" size="sm" variant="outline" className="bg-white">
+                                    <Star className="h-4 w-4 mr-1" />
+                                    Principal
+                                  </Button>
+                                )}
+                                <Button type="button" size="sm" variant="destructive">
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No hay imágenes disponibles. Puede subir imágenes después de crear el parque.
+                      </p>
+                    )}
                     {isEdit && (
-                      <Button type="button" variant="outline" className="w-full h-32 border-dashed" disabled>
+                      <Button type="button" variant="outline" className="w-full h-32 border-dashed">
                         <div className="flex flex-col items-center">
                           <Upload className="h-10 w-10 text-muted-foreground mb-2" />
                           <span>Subir imágenes</span>
-                          <span className="text-xs text-muted-foreground mt-1">
-                            (Disponible después de guardar)
-                          </span>
                         </div>
                       </Button>
                     )}
