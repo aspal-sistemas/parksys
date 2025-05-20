@@ -14,6 +14,7 @@ import {
   generateImportTemplate, 
   processImportFile 
 } from "./api/parksImport";
+import { registerUserRoutes } from "./userRoutes";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
   insertActivitySchema, insertDocumentSchema, insertParkImageSchema,
@@ -68,6 +69,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de voluntariado
   registerVolunteerRoutes(app, apiRouter, null, isAuthenticated);
+  
+  // Registramos las rutas del módulo de usuarios
+  registerUserRoutes(app, apiRouter);
   
   app.use('/api', apiRouter);
 
