@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { 
   Form, 
@@ -41,6 +41,7 @@ const volunteerFormSchema = z.object({
   phoneNumber: z.string().min(10, { message: 'Número de teléfono inválido' }),
   address: z.string().min(5, { message: 'Dirección inválida' }),
   gender: z.string().min(1, { message: 'El género es obligatorio' }),
+  preferredParkId: z.number().optional(),
   birthDate: z.string().refine(value => {
     const date = new Date(value);
     if (isNaN(date.getTime())) return false;
@@ -66,6 +67,9 @@ const volunteerFormSchema = z.object({
   profileImage: z.instanceof(File).optional(),
   termsAccepted: z.boolean().refine(val => val === true, {
     message: 'Debes aceptar los términos y condiciones'
+  }),
+  legalConsent: z.boolean().refine(val => val === true, {
+    message: 'Debes aceptar el consentimiento legal para voluntariado'
   })
 });
 
@@ -76,6 +80,11 @@ const VolunteerRegistration = () => {
   const [submitted, setSubmitted] = React.useState(false);
   const [selectedImage, setSelectedImage] = React.useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+  
+  // Obtener la lista de parques para el selector
+  const { data: parks } = useQuery({
+    queryKey: ['/api/parks'],
+  });
 
   // Configuración del formulario
   const form = useForm<VolunteerFormValues>({
@@ -95,7 +104,10 @@ const VolunteerRegistration = () => {
       previousExperience: '',
       healthConditions: '',
       additionalComments: '',
-      termsAccepted: false
+      termsAccepted: false,
+      legalConsent: false,
+      gender: '',
+      preferredParkId: undefined
     }
   });
 
@@ -347,6 +359,42 @@ const VolunteerRegistration = () => {
                   />
                 </div>
                 
+                <Separator />
+                
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Parque Preferido</h3>
+                  <FormField
+                    control={form.control}
+                    name="preferredParkId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Parque preferido</FormLabel>
+                        <Select 
+                          onValueChange={(value) => field.onChange(parseInt(value))} 
+                          value={field.value?.toString() || ''}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar parque" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {parks?.map((park) => (
+                              <SelectItem key={park.id} value={park.id.toString()}>
+                                {park.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Selecciona el parque donde prefieres realizar tus actividades como voluntario
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <Separator />
                 
                 <div className="space-y-4">
