@@ -224,7 +224,12 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      const participations = await storage.getVolunteerParticipations(volunteerId);
+      const participations = await db
+        .select()
+        .from(volunteerParticipations)
+        .where(eq(volunteerParticipations.volunteerId, volunteerId))
+        .orderBy(desc(volunteerParticipations.activityDate));
+        
       res.json(participations);
     } catch (error) {
       console.error(`Error al obtener participaciones del voluntario ${req.params.id}:`, error);
@@ -244,7 +249,8 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
       // Aseguramos que el volunteerId en el cuerpo coincida con el de la URL
       const participationData = {
         ...req.body,
-        volunteerId
+        volunteerId,
+        createdAt: new Date()
       };
       
       const validationResult = insertVolunteerParticipationSchema.safeParse(participationData);
@@ -256,7 +262,12 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         });
       }
       
-      const newParticipation = await storage.createVolunteerParticipation(validationResult.data);
+      // Insertamos la nueva participación en la base de datos
+      const [newParticipation] = await db
+        .insert(volunteerParticipations)
+        .values(validationResult.data)
+        .returning();
+        
       res.status(201).json(newParticipation);
     } catch (error) {
       console.error(`Error al crear participación para voluntario ${req.params.id}:`, error);
@@ -275,7 +286,12 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      const evaluations = await storage.getVolunteerEvaluations(volunteerId);
+      const evaluations = await db
+        .select()
+        .from(volunteerEvaluations)
+        .where(eq(volunteerEvaluations.volunteerId, volunteerId))
+        .orderBy(desc(volunteerEvaluations.createdAt));
+        
       res.json(evaluations);
     } catch (error) {
       console.error(`Error al obtener evaluaciones del voluntario ${req.params.id}:`, error);
@@ -293,7 +309,10 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
       }
       
       // Verificar que existe la participación
-      const participation = await storage.getParticipationById(participationId);
+      const [participation] = await db
+        .select()
+        .from(volunteerParticipations)
+        .where(eq(volunteerParticipations.id, participationId));
       
       if (!participation) {
         return res.status(404).json({ message: "Participación no encontrada" });
@@ -305,8 +324,10 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         participationId,
         // Tomamos el ID del voluntario de la participación
         volunteerId: participation.volunteerId,
-        // El evaluador es el usuario autenticado
-        evaluatorId: req.user.id || req.body.evaluatorId,
+        // El evaluador es el usuario autenticado o el proporcionado en el cuerpo
+        evaluatorId: req.user?.id || req.body.evaluatorId,
+        // Agregamos la fecha de creación
+        createdAt: new Date()
       };
       
       const validationResult = insertVolunteerEvaluationSchema.safeParse(evaluationData);
@@ -318,7 +339,12 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         });
       }
       
-      const newEvaluation = await storage.createVolunteerEvaluation(validationResult.data);
+      // Insertamos la nueva evaluación en la base de datos
+      const [newEvaluation] = await db
+        .insert(volunteerEvaluations)
+        .values(validationResult.data)
+        .returning();
+        
       res.status(201).json(newEvaluation);
     } catch (error) {
       console.error(`Error al crear evaluación para participación ${req.params.id}:`, error);
