@@ -220,30 +220,30 @@ const VolunteersList: React.FC = () => {
                         <TableCell>
                           <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                              {volunteer.profileImageUrl ? (
+                              {volunteer.profile_image_url ? (
                                 <img 
-                                  src={volunteer.profileImageUrl} 
-                                  alt={volunteer.fullName} 
+                                  src={volunteer.profile_image_url} 
+                                  alt={volunteer.full_name || 'Voluntario'} 
                                   className="w-10 h-10 rounded-full object-cover"
                                 />
                               ) : (
                                 <span className="text-lg font-bold">
-                                  {volunteer.fullName?.charAt(0) || '?'}
+                                  {(volunteer.full_name || '?').charAt(0)}
                                 </span>
                               )}
                             </div>
                             <div>
-                              <div className="font-medium">{volunteer.fullName}</div>
+                              <div className="font-medium">{volunteer.full_name || 'Sin nombre'}</div>
                               <div className="text-sm text-gray-500">
-                                {new Date(volunteer.createdAt).toLocaleDateString()}
+                                {volunteer.created_at ? new Date(volunteer.created_at).toLocaleDateString() : 'Fecha desconocida'}
                               </div>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            <div>{volunteer.email}</div>
-                            <div>{volunteer.phoneNumber}</div>
+                            <div>{volunteer.email || 'Sin email'}</div>
+                            <div>{volunteer.phone || 'Sin teléfono'}</div>
                           </div>
                         </TableCell>
                         <TableCell>
