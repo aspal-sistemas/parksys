@@ -269,17 +269,25 @@ const VolunteersList: React.FC = () => {
                         <TableCell>
                           <div className="flex justify-center gap-2">
                             <Button 
-                              variant="default" 
+                              variant="destructive" 
                               size="sm" 
-                              className="bg-blue-600 hover:bg-blue-700"
                               onClick={() => {
-                                // Redireccionar a la página de edición de voluntario
-                                const url = `/admin/volunteers/${volunteer.id}`;
-                                window.location.href = url;
+                                alert(`
+DASHBOARD DE VOLUNTARIO (${volunteer.fullName})
+------------------------------------------
+ID: ${volunteer.id}
+Estado: ${volunteer.status}
+Email: ${volunteer.email || 'N/A'}
+Teléfono: ${volunteer.phoneNumber || 'N/A'}
+Horas totales: ${volunteer.totalHours || 0}
+Fecha de registro: ${new Date(volunteer.createdAt).toLocaleDateString()}
+
+Funcionalidad en desarrollo.
+                                `);
                               }}
                             >
                               <BarChart3 className="h-3 w-3 mr-1" />
-                              Ver perfil
+                              Dashboard
                             </Button>
                             <Link href={`/admin/volunteers/${volunteer.id}`}>
                               <Button variant="outline" size="sm">
