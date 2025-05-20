@@ -62,7 +62,8 @@ const volunteerFormSchema = z.object({
   fullName: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
   email: z.string().email({ message: "Ingrese un correo electrónico válido" }).optional().or(z.literal('')),
   phoneNumber: z.string().min(10, { message: "Ingrese un teléfono válido" }).optional().or(z.literal('')),
-  emergencyContact: z.string().min(10, { message: "Ingrese un contacto de emergencia válido" }).optional().or(z.literal('')),
+  emergencyContactName: z.string().min(3, { message: "Ingrese el nombre del contacto de emergencia" }).optional().or(z.literal('')),
+  emergencyContactPhone: z.string().min(10, { message: "Ingrese un teléfono válido para emergencias" }).optional().or(z.literal('')),
   address: z.string().optional().or(z.literal('')),
   birthdate: z.date({
     required_error: "La fecha de nacimiento es obligatoria",
@@ -88,7 +89,8 @@ const NewVolunteer: React.FC = () => {
       fullName: '',
       email: '',
       phoneNumber: '',
-      emergencyContact: '',
+      emergencyContactName: '',
+      emergencyContactPhone: '',
       address: '',
       skills: '',
       availability: '',
@@ -292,12 +294,26 @@ const NewVolunteer: React.FC = () => {
 
                   <FormField
                     control={form.control}
-                    name="emergencyContact"
+                    name="emergencyContactName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Contacto de emergencia</FormLabel>
+                        <FormLabel>Nombre de contacto de emergencia</FormLabel>
                         <FormControl>
-                          <Input placeholder="Nombre y teléfono" {...field} />
+                          <Input placeholder="Nombre del contacto" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="emergencyContactPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Teléfono de contacto de emergencia</FormLabel>
+                        <FormControl>
+                          <Input placeholder="+52 123 456 7890" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -331,30 +347,34 @@ const NewVolunteer: React.FC = () => {
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
                             <div className="p-3 border-b border-border">
-                              <div className="flex justify-between items-center">
-                                <Select
-                                  onValueChange={(value) => {
-                                    const currentDate = field.value || new Date();
-                                    const newDate = new Date(currentDate);
-                                    newDate.setFullYear(parseInt(value));
-                                    field.onChange(newDate);
-                                  }}
-                                  defaultValue={(field.value?.getFullYear() || new Date().getFullYear() - 25).toString()}
-                                >
-                                  <SelectTrigger className="w-[120px]">
-                                    <SelectValue placeholder="Año" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {Array.from({ length: 70 }, (_, i) => {
-                                      const year = new Date().getFullYear() - 18 - i;
-                                      return (
-                                        <SelectItem key={year} value={year.toString()}>
-                                          {year}
-                                        </SelectItem>
-                                      );
-                                    })}
-                                  </SelectContent>
-                                </Select>
+                              <div className="flex flex-col space-y-2">
+                                <p className="text-sm font-medium">Seleccione el año de nacimiento:</p>
+                                <div className="grid grid-cols-6 gap-1 max-h-[150px] overflow-y-auto">
+                                  {Array.from({ length: 70 }, (_, i) => {
+                                    const year = new Date().getFullYear() - 18 - i;
+                                    return (
+                                      <Button
+                                        key={year}
+                                        variant={field.value && field.value.getFullYear() === year ? "default" : "outline"}
+                                        className="text-sm py-1 px-2"
+                                        onClick={() => {
+                                          // Si ya hay una fecha seleccionada, mantener el mes y día
+                                          if (field.value && !isNaN(field.value.getTime())) {
+                                            const newDate = new Date(field.value);
+                                            newDate.setFullYear(year);
+                                            field.onChange(newDate);
+                                          } else {
+                                            // Si no hay fecha, usar el primer día del año seleccionado
+                                            field.onChange(new Date(year, 0, 1));
+                                          }
+                                        }}
+                                        type="button"
+                                      >
+                                        {year}
+                                      </Button>
+                                    );
+                                  })}
+                                </div>
                               </div>
                             </div>
                             <Calendar
