@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { 
   UserPlus, Search, Filter, RefreshCw, Download, ArrowUpDown,
-  Check, X, Clock, AlertCircle, Award, FileEdit
+  Check, X, Clock, AlertCircle, Award, FileEdit, BarChart3
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Volunteer } from '@/types';
