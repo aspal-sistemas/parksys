@@ -1,5 +1,5 @@
 import { db } from './db';
-import { evaluations } from '@shared/schema';
+import { volunteerEvaluations } from '@shared/schema';
 
 /**
  * Script para agregar evaluaciones de muestra
