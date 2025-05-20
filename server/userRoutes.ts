@@ -108,17 +108,35 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
       // En este caso, no hasheamos la contraseña para facilitar las pruebas
       const hashedPassword = userData.password;
       
-      // Crear el usuario
-      const newUser = await storage.createUser({
+      // Crear el usuario con logging detallado
+      console.log("Datos que se enviarán a createUser:", {
         ...userData,
-        password: hashedPassword,
+        password: "[REDACTED]",
         fullName: `${userData.firstName} ${userData.lastName}`
       });
       
-      // No enviamos la contraseña en la respuesta
-      const { password, ...userWithoutPassword } = newUser;
-      
-      res.status(201).json(userWithoutPassword);
+      try {
+        const newUser = await storage.createUser({
+          ...userData,
+          password: hashedPassword,
+          fullName: `${userData.firstName} ${userData.lastName}`
+        });
+        
+        console.log("Usuario creado exitosamente:", {
+          id: newUser.id,
+          username: newUser.username,
+          email: newUser.email,
+          role: newUser.role
+        });
+        
+        // No enviamos la contraseña en la respuesta
+        const { password, ...userWithoutPassword } = newUser;
+        
+        res.status(201).json(userWithoutPassword);
+      } catch (dbError) {
+        console.error("Error específico al crear usuario en la base de datos:", dbError);
+        res.status(500).json({ message: 'Error al crear usuario en la base de datos', details: dbError.message });
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
