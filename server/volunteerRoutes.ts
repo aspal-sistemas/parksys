@@ -523,8 +523,8 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
 
   // === RUTAS PARA RECONOCIMIENTOS ===
   
-  // Obtener todos los reconocimientos
-  apiRouter.get("/volunteers/recognitions", isAuthenticated, async (_req: Request, res: Response) => {
+  // Obtener todos los reconocimientos (importante colocar las rutas más específicas primero)
+  apiRouter.get("/volunteers/recognitions/all", isAuthenticated, async (_req: Request, res: Response) => {
     try {
       console.log("Obteniendo todos los reconocimientos");
       const recognitions = await db
