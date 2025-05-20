@@ -615,7 +615,156 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
   
   // === RUTAS PARA ESTADÍSTICAS ===
   
-  // Obtener estadísticas del dashboard de voluntarios
+  // Obtener estadísticas del dashboard de un voluntario específico
+  apiRouter.get("/volunteers/dashboard", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const volunteerId = req.query.id;
+      
+      if (!volunteerId) {
+        return res.status(400).json({ message: "ID de voluntario no proporcionado" });
+      }
+      
+      // Obtener información básica del voluntario
+      const [volunteerInfo] = await db
+        .select({
+          id: volunteers.id,
+          fullName: volunteers.fullName,
+          email: volunteers.email,
+          status: volunteers.status,
+          totalHours: sql<number>`COALESCE(
+            (SELECT SUM(hours_contributed) FROM volunteer_participations WHERE volunteer_id = ${volunteers.id}), 0
+          )::int`,
+          joinDate: volunteers.createdAt,
+          profileImage: volunteers.profileImageUrl
+        })
+        .from(volunteers)
+        .where(eq(volunteers.id, Number(volunteerId)));
+        
+      if (!volunteerInfo) {
+        return res.status(404).json({ message: "Voluntario no encontrado" });
+      }
+      
+      // Participaciones del voluntario
+      const participations = await db
+        .select({
+          id: volunteerParticipations.id,
+          activityName: volunteerParticipations.activityName,
+          activityDate: volunteerParticipations.activityDate,
+          hoursContributed: volunteerParticipations.hoursContributed,
+          parkId: volunteerParticipations.parkId,
+          role: sql<string>`'Voluntario'::text`,
+          status: sql<string>`'Completado'::text`
+        })
+        .from(volunteerParticipations)
+        .where(eq(volunteerParticipations.volunteerId, Number(volunteerId)))
+        .orderBy(desc(volunteerParticipations.activityDate))
+        .limit(5);
+        
+      // Obtener nombres de parques
+      const parkIds = participations.map(p => p.parkId);
+      let parkNames: { id: number, name: string }[] = [];
+      
+      if (parkIds.length > 0) {
+        parkNames = await db
+          .select({
+            id: parks.id,
+            name: parks.name
+          })
+          .from(parks)
+          .where(sql`${parks.id} = ANY(${parkIds})`);
+      }
+      
+      const participationsWithParkNames = participations.map(p => {
+        const park = parkNames.find(park => park.id === p.parkId);
+        return {
+          ...p,
+          parkName: park ? park.name : 'Parque desconocido'
+        };
+      });
+      
+      // Evaluaciones del voluntario
+      const evaluations = await db
+        .select({
+          id: volunteerEvaluations.id,
+          evaluationDate: volunteerEvaluations.createdAt,
+          punctuality: volunteerEvaluations.punctuality,
+          attitude: volunteerEvaluations.attitude,
+          responsibility: volunteerEvaluations.responsibility,
+          overallPerformance: volunteerEvaluations.overallPerformance,
+          comments: volunteerEvaluations.comments
+        })
+        .from(volunteerEvaluations)
+        .where(eq(volunteerEvaluations.volunteerId, Number(volunteerId)))
+        .orderBy(desc(volunteerEvaluations.createdAt))
+        .limit(5);
+        
+      // Reconocimientos del voluntario
+      const recognitions = await db
+        .select({
+          id: volunteerRecognitions.id,
+          recognitionType: volunteerRecognitions.recognitionType,
+          achievementDate: volunteerRecognitions.date,
+          description: volunteerRecognitions.notes,
+          createdAt: sql<Date>`NOW()`
+        })
+        .from(volunteerRecognitions)
+        .where(eq(volunteerRecognitions.volunteerId, Number(volunteerId)))
+        .orderBy(desc(volunteerRecognitions.date))
+        .limit(5);
+        
+      // Estadísticas básicas
+      const [hoursStats] = await db
+        .select({
+          totalHours: sql<number>`sum(${volunteerParticipations.hoursContributed})::int`,
+          avgHoursPerActivity: sql<number>`avg(${volunteerParticipations.hoursContributed})::float`,
+          participationCount: sql<number>`count(*)::int`
+        })
+        .from(volunteerParticipations)
+        .where(eq(volunteerParticipations.volunteerId, Number(volunteerId)));
+        
+      // Promedio de evaluaciones
+      const [avgEvaluation] = await db
+        .select({
+          avgPunctuality: sql<number>`avg(${volunteerEvaluations.punctuality})::float`,
+          avgAttitude: sql<number>`avg(${volunteerEvaluations.attitude})::float`,
+          avgResponsibility: sql<number>`avg(${volunteerEvaluations.responsibility})::float`,
+          avgOverall: sql<number>`avg(${volunteerEvaluations.overallPerformance})::float`
+        })
+        .from(volunteerEvaluations)
+        .where(eq(volunteerEvaluations.volunteerId, Number(volunteerId)));
+        
+      // Devolver todos los datos en formato dashboard
+      res.json({
+        volunteerInfo,
+        stats: {
+          participations: {
+            count: hoursStats?.participationCount || 0,
+            totalHours: hoursStats?.totalHours || 0,
+            avgHoursPerActivity: hoursStats?.avgHoursPerActivity || 0
+          },
+          evaluations: {
+            avgPunctuality: avgEvaluation?.avgPunctuality || 0,
+            avgAttitude: avgEvaluation?.avgAttitude || 0,
+            avgResponsibility: avgEvaluation?.avgResponsibility || 0,
+            avgOverall: avgEvaluation?.avgOverall || 0
+          },
+          recognitions: {
+            count: recognitions.length
+          }
+        },
+        recentActivity: {
+          participations: participationsWithParkNames,
+          evaluations,
+          recognitions
+        }
+      });
+    } catch (error) {
+      console.error(`Error al obtener dashboard del voluntario:`, error);
+      res.status(500).json({ message: "Error al obtener dashboard del voluntario" });
+    }
+  });
+  
+  // Obtener estadísticas generales del dashboard de voluntarios
   apiRouter.get("/volunteers/stats/dashboard", isAuthenticated, async (req: Request, res: Response) => {
     try {
       // Conteo total de voluntarios por estado
