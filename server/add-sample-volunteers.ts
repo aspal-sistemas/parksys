@@ -6,7 +6,10 @@ import { eq, and } from "drizzle-orm";
  * Script para agregar voluntarios de muestra
  */
 async function addSampleVolunteers() {
-  console.log("Agregando voluntarios de muestra...");
+  // Agregamos un console.log más visible para asegurar que se ejecuta
+  console.log("\n==========================================");
+  console.log("INICIANDO SCRIPT DE VOLUNTARIOS DE MUESTRA");
+  console.log("==========================================\n");
   // Función de ayuda para loguear errores
   const logSqlError = (error: any) => {
     if (error.code) console.log("Error SQL Code:", error.code);
@@ -346,5 +349,12 @@ async function addSampleVolunteers() {
 
   console.log("Proceso de creación de datos de muestra para voluntarios completado");
 }
+
+// Ejecutar la función principal inmediatamente cuando se
+// importa este archivo desde tsx o similar
+console.log("Ejecutando script directamente");
+addSampleVolunteers()
+  .then(() => console.log("Script completado exitosamente"))
+  .catch(err => console.error("Error al ejecutar script:", err));
 
 export { addSampleVolunteers };
