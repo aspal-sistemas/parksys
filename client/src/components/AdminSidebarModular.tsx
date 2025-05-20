@@ -224,7 +224,7 @@ const AdminSidebarModular: React.FC = () => {
                   icon={<CalendarDays className="h-4 w-4" />}
                   active={location.startsWith('/admin/activities/organizer')}
                 >
-                  Organizador de Actividades
+                  Organizador
                 </NavItem>
                 
                 <NavItem 
