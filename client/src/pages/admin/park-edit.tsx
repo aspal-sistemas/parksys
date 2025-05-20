@@ -714,10 +714,35 @@ const AdminParkEdit: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <h3 className="text-sm font-medium">Amenidades</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Las amenidades podrán ser agregadas después de crear el parque.
-                    </p>
+                    <h3 className="text-sm font-medium">Amenidades del parque</h3>
+                    {parkAmenities.length > 0 ? (
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {parkAmenities.map((amenity: any) => (
+                          <div key={amenity.id} className="flex items-center p-3 border rounded-md">
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{amenity.name}</p>
+                              <p className="text-xs text-muted-foreground capitalize">{amenity.category}</p>
+                            </div>
+                            <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-700">
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No hay amenidades asociadas a este parque.
+                      </p>
+                    )}
+                    
+                    {isEdit && (
+                      <div className="mt-4">
+                        <Button type="button" variant="outline" className="w-full">
+                          <Tag className="h-4 w-4 mr-2" />
+                          Agregar amenidades
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-between">
