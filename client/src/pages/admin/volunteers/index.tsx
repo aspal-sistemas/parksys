@@ -273,40 +273,13 @@ const VolunteersList: React.FC = () => {
                               size="sm" 
                               className="bg-blue-600 hover:bg-blue-700"
                               onClick={() => {
-                                // Mostrar directamente una alerta con la información 
-                                // simulando un dashboard
-                                const reconocimientos = volunteer.recognitions?.length || 0;
-                                const evaluacionPromedio = volunteer.evaluations?.length ? 
-                                  volunteer.evaluations.reduce((total, ev) => total + (ev.overallScore || 0), 0) / volunteer.evaluations.length : 
-                                  'Sin evaluaciones';
-                                
-                                alert(`
-╔════════════════════════════════════════════════════════╗
-║                 DASHBOARD DE VOLUNTARIO                 ║
-╠════════════════════════════════════════════════════════╣
-║ ID: ${volunteer.id}
-║ Nombre: ${volunteer.fullName}
-║ Email: ${volunteer.email || 'N/A'}
-║ Teléfono: ${volunteer.phoneNumber || 'N/A'}
-║ Estado: ${volunteer.status}
-║ 
-║ ESTADÍSTICAS:
-║ ────────────────────────────────────────────────────────
-║ Fecha de registro: ${new Date(volunteer.createdAt).toLocaleDateString()}
-║ Horas acumuladas: ${volunteer.totalHours || 0}
-║ Participaciones: ${volunteer.participations?.length || 'Sin registro'}
-║ Reconocimientos: ${reconocimientos} 
-║ Evaluación promedio: ${evaluacionPromedio}
-║ 
-║ Esta información es un resumen de los datos completos
-║ del voluntario que estarán disponibles en la versión
-║ completa del Dashboard (en implementación).
-╚════════════════════════════════════════════════════════╝
-                                `);
+                                // Redireccionar a la página de edición de voluntario
+                                const url = `/admin/volunteers/${volunteer.id}`;
+                                window.location.href = url;
                               }}
                             >
                               <BarChart3 className="h-3 w-3 mr-1" />
-                              Dashboard
+                              Ver perfil
                             </Button>
                             <Link href={`/admin/volunteers/${volunteer.id}`}>
                               <Button variant="outline" size="sm">
