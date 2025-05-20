@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { 
   UserPlus, Search, Filter, RefreshCw, Download, ArrowUpDown,
-  Check, X, Clock, AlertCircle, Award
+  Check, X, Clock, AlertCircle, Award, FileEdit
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Volunteer } from '@/types';
@@ -269,7 +269,8 @@ const VolunteersList: React.FC = () => {
                           <div className="flex justify-center">
                             <Link href={`/admin/volunteers/${volunteer.id}`}>
                               <Button variant="outline" size="sm">
-                                Editar
+                                <FileEdit className="h-3 w-3 mr-1" />
+                                Ver / Editar
                               </Button>
                             </Link>
                           </div>

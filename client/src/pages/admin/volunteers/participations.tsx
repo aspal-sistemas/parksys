@@ -251,14 +251,9 @@ const ParticipationsList: React.FC = () => {
                         <TableCell>
                           <div className="flex space-x-2">
                             <Link href={`/admin/volunteers/participations/${participation.id}`}>
-                              <Button variant="ghost" size="sm">
-                                Ver
-                              </Button>
-                            </Link>
-                            <Link href={`/admin/volunteers/participations/${participation.id}`}>
                               <Button variant="outline" size="sm">
                                 <FileEdit className="h-3 w-3 mr-1" />
-                                Editar
+                                Ver / Editar
                               </Button>
                             </Link>
                           </div>
