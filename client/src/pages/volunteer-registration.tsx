@@ -101,13 +101,21 @@ const VolunteerRegistration = () => {
   // Mutación para enviar datos
   const { mutate, isPending, isError, error } = useMutation({
     mutationFn: async (data: VolunteerFormValues) => {
+      console.log("Enviando datos:", data);
+      
+      // Convertir la fecha a un formato de string para enviarla
+      const formattedData = {
+        ...data,
+        termsAccepted: data.termsAccepted ? 'true' : 'false'
+      };
+      
       // Crear FormData para enviar datos incluyendo la imagen
       const formData = new FormData();
       
       // Agregar todos los campos de texto
-      Object.keys(data).forEach(key => {
-        if (key !== 'profileImage' && data[key as keyof VolunteerFormValues] !== undefined) {
-          formData.append(key, String(data[key as keyof VolunteerFormValues]));
+      Object.entries(formattedData).forEach(([key, value]) => {
+        if (key !== 'profileImage' && value !== undefined) {
+          formData.append(key, String(value));
         }
       });
       
@@ -116,16 +124,28 @@ const VolunteerRegistration = () => {
         formData.append('profileImage', selectedImage);
       }
       
-      const response = await fetch('/api/volunteers/register', {
-        method: 'POST',
-        // No incluimos Content-Type para que el navegador establezca el boundary correcto para FormData
-        body: formData
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al procesar el registro');
+      console.log("FormData preparado para envío");
+      
+      try {
+        const response = await fetch('/api/volunteers/register', {
+          method: 'POST',
+          // No incluimos Content-Type para que el navegador establezca el boundary correcto para FormData
+          body: formData
+        });
+        
+        console.log("Respuesta recibida:", response.status);
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Error del servidor:", errorData);
+          throw new Error(errorData.message || 'Error al procesar el registro');
+        }
+        
+        return await response.json();
+      } catch (err) {
+        console.error("Error en la solicitud:", err);
+        throw err;
       }
-      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/volunteers'] });
@@ -523,10 +543,11 @@ const VolunteerRegistration = () => {
                             className="h-4 w-4 mt-1"
                             checked={field.value}
                             onChange={field.onChange}
+                            id="termsAccepted"
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
-                          <FormLabel>
+                          <FormLabel htmlFor="termsAccepted">
                             Acepto los términos y condiciones *
                           </FormLabel>
                           <FormDescription>
@@ -540,8 +561,18 @@ const VolunteerRegistration = () => {
                   />
                 </div>
                 
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={isPending}>
+                <div className="flex justify-between items-center">
+                  <p className="text-sm text-muted-foreground">
+                    * Campos obligatorios
+                  </p>
+                  <Button 
+                    type="submit" 
+                    disabled={isPending}
+                    onClick={() => {
+                      console.log('Formulario enviado', form.getValues());
+                      console.log('Errores:', form.formState.errors);
+                    }}
+                  >
                     {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Enviar solicitud
                   </Button>
