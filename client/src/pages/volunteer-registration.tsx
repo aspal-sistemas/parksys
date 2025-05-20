@@ -317,6 +317,32 @@ const VolunteerRegistration = () => {
                     
                     <FormField
                       control={form.control}
+                      name="gender"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Género *</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona tu género" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="masculino">Masculino</SelectItem>
+                              <SelectItem value="femenino">Femenino</SelectItem>
+                              <SelectItem value="otro">Otro</SelectItem>
+                              <SelectItem value="prefiero_no_decir">Prefiero no decir</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
                       name="birthDate"
                       render={({ field }) => (
                         <FormItem>
@@ -602,6 +628,34 @@ const VolunteerRegistration = () => {
                           <FormDescription>
                             Al marcar esta casilla, confirmo que la información proporcionada es correcta
                             y acepto los términos del programa de voluntariado.
+                          </FormDescription>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="legalConsent"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 mt-1"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            id="legalConsent"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel htmlFor="legalConsent">
+                            Consentimiento legal para voluntariado *
+                          </FormLabel>
+                          <FormDescription>
+                            Autorizo el uso de mis datos personales para los fines del programa de voluntariado 
+                            y acepto ser contactado para actividades relacionadas.
                           </FormDescription>
                           <FormMessage />
                         </div>
