@@ -10,7 +10,7 @@ import {
   type ExtendedVolunteer
 } from "@shared/schema";
 import { db } from "./db";
-import { and, eq, like, inArray, or, desc, isNull, lte, gte } from "drizzle-orm";
+import { and, eq, like, inArray, or, desc, isNull, lte, gte, sql } from "drizzle-orm";
 
 // Storage interface for all CRUD operations
 export interface IStorage {
@@ -1443,14 +1443,21 @@ export class DatabaseStorage implements IStorage {
   async getUserByUsername(username: string): Promise<User | undefined> {
     try {
       console.log("Buscando usuario con username:", username);
-      // Una consulta más simple, evitando posibles referencias internas a external_id
-      const result = await db.execute(sql`SELECT * FROM users WHERE username = ${username}`);
-      console.log("Resultado de consulta:", result.rows);
+      // Usamos la sintaxis de Drizzle con el operador 'eq' para una búsqueda exacta
+      const [user] = await db.select().from(users).where(eq(users.username, username));
       
-      if (result.rows.length > 0) {
-        return result.rows[0] as User;
+      if (user) {
+        console.log("Usuario encontrado:", {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role
+        });
+      } else {
+        console.log("No se encontró ningún usuario con el username:", username);
       }
-      return undefined;
+      
+      return user;
     } catch (error) {
       console.error("Error en getUserByUsername:", error);
       return undefined;
@@ -1458,25 +1465,25 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getUserByExternalId(externalId: string): Promise<User | undefined> {
-    // Como no existe la columna externalId en la base de datos, usamos SQL directo
+    // Como no existe la columna externalId en la base de datos, buscamos por username similar
     try {
       console.log("Buscando usuario con externalId:", externalId);
-      const result = await db.execute(sql`SELECT * FROM users WHERE username LIKE ${`%${externalId}%`}`);
       
-      if (result.rows.length > 0) {
-        // Convertimos a nuestro formato esperado
-        const userData = result.rows[0];
-        return {
-          id: userData.id,
-          username: userData.username,
-          password: userData.password,
-          email: userData.email,
-          role: userData.role,
-          fullName: userData.full_name,
-          municipalityId: userData.municipality_id
-        };
+      // Usamos like para buscar un patrón en el username
+      const [user] = await db.select().from(users).where(like(users.username, `%${externalId}%`));
+      
+      if (user) {
+        console.log("Usuario encontrado por externalId:", {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role
+        });
+      } else {
+        console.log("No se encontró ningún usuario con el externalId:", externalId);
       }
-      return undefined;
+      
+      return user;
     } catch (error) {
       console.error("Error en getUserByExternalId:", error);
       return undefined;
