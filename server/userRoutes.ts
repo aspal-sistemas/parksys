@@ -23,6 +23,18 @@ const updateUserSchema = createUserSchema.partial().extend({
 export function registerUserRoutes(app: any, apiRouter: Router) {
   // Middleware para verificar si el usuario es administrador
   const isAdmin = (req: Request, res: Response, next: Function) => {
+    // En desarrollo, omitimos la verificación de autenticación para facilitar las pruebas
+    if (process.env.NODE_ENV === 'development') {
+      // Agregamos un usuario admin simulado para pruebas
+      req.user = {
+        id: 1,
+        username: 'admin',
+        role: 'admin'
+      };
+      return next();
+    }
+    
+    // En producción, verificamos la autenticación
     if (!req.user) {
       return res.status(401).json({ message: "Authentication required" });
     }
