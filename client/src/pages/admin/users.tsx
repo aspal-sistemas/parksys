@@ -344,11 +344,24 @@ const AdminUsers = () => {
         userData = dataWithoutPassword as UserFormData;
       }
 
-      // Simulamos la API en desarrollo
+      // Mostramos en consola para depuración
       console.log(`${method} usuario:`, userData);
       
-      // En producción, usaríamos la API real
-      return { id: selectedUser?.id || Math.random(), ...userData };
+      // Realizamos la llamada a la API
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error al procesar la solicitud');
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       // Invalidar la consulta de usuarios para refrescar la lista
