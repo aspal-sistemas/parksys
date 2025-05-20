@@ -78,11 +78,18 @@ export async function addSampleEvaluations() {
     ];
 
     // Insertar las evaluaciones en la base de datos
-    for (const evaluation of sampleEvaluations) {
-      await db.insert(volunteerEvaluations).values({
-        ...evaluation,
-        createdAt: new Date()
-      });
+    console.log("Intentando insertar evaluaciones...");
+    try {
+      for (const evaluation of sampleEvaluations) {
+        console.log("Insertando evaluación:", evaluation);
+        const result = await db.insert(volunteerEvaluations).values({
+          ...evaluation,
+          createdAt: new Date()
+        }).returning();
+        console.log("Resultado de inserción:", result);
+      }
+    } catch (insertError) {
+      console.error("Error específico al insertar:", insertError);
     }
 
     console.log(`${sampleEvaluations.length} evaluaciones de muestra agregadas exitosamente.`);
