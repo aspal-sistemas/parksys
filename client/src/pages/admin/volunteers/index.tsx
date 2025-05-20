@@ -272,18 +272,8 @@ const VolunteersList: React.FC = () => {
                               size="sm" 
                               className="bg-blue-600 hover:bg-blue-700"
                               onClick={() => {
-                                alert(`
-Dashboard de Voluntario (Demostración)
----------------------------------------
-ID: ${volunteer.id}
-Nombre: ${volunteer.fullName}
-Status: ${volunteer.status}
-Email: ${volunteer.email || 'N/A'}
-Horas totales: ${volunteer.totalHours || 0}
-Fecha de registro: ${new Date(volunteer.createdAt).toLocaleDateString()}
-
-Esta funcionalidad está en desarrollo.
-                                `);
+                                const url = `/admin/volunteers/dashboard/${volunteer.id}`;
+                                setLocation(url);
                               }}
                             >
                               <BarChart3 className="h-3 w-3 mr-1" />

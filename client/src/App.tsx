@@ -28,7 +28,7 @@ import AdminVolunteerParticipations from "@/pages/admin/volunteers/participation
 import AdminParticipationEdit from "@/pages/admin/volunteers/participations/edit";
 import AdminVolunteerEvaluations from "@/pages/admin/volunteers/evaluations";
 import AdminEvaluationEdit from "@/pages/admin/volunteers/evaluations/edit";
-import AdminVolunteerDashboard from "@/pages/admin/volunteers/dashboard";
+import DashboardPage from "@/pages/admin/volunteers/dashboard-page";
 import Header from "@/components/Header";
 
 function Router() {
@@ -68,11 +68,7 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/recognitions')))}
           </Suspense>
         </Route>
-        <Route path="/admin/volunteers/dashboard/:id">
-          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de voluntario...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/dashboard-demo')))}
-          </Suspense>
-        </Route>
+        <Route path="/admin/volunteers/dashboard/:id" component={DashboardPage} />
         <Route path="/admin/volunteers/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando editor de voluntarios...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/edit')))}
