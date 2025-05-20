@@ -53,14 +53,17 @@ const AdminLogin: React.FC = () => {
       
       const result = await response.json();
       
-      if (result.data && result.data.user) {
+      console.log("Respuesta del servidor:", result);
+      
+      // El servidor devuelve directamente los datos del usuario
+      if (result && result.user) {
         // Guardar información del usuario (en una app real usaríamos un estado global)
-        localStorage.setItem('user', JSON.stringify(result.data.user));
-        localStorage.setItem('token', result.data.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+        localStorage.setItem('token', result.token);
         
         toast({
           title: 'Inicio de sesión exitoso',
-          description: `Bienvenido, ${result.data.user.fullName || result.data.user.username}`,
+          description: `Bienvenido, ${result.user.fullName || result.user.username}`,
         });
         
         // Redirigir al dashboard
