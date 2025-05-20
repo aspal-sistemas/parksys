@@ -36,21 +36,27 @@ import { useToast } from '@/hooks/use-toast';
 
 // Schema de validación para edición de voluntario
 const volunteerFormSchema = z.object({
-  fullName: z.string().min(3, 'El nombre completo es obligatorio'),
-  status: z.string(),
-  email: z.string().email('Correo electrónico inválido').optional().nullable(),
-  phone: z.string().optional().nullable(),
-  address: z.string().optional().nullable(),
+  // Información personal - homologado con el formulario de registro
+  full_name: z.string().min(3, 'El nombre completo es obligatorio'),
+  email: z.string().email('Correo electrónico inválido').min(1, 'El correo electrónico es obligatorio'),
+  phone: z.string().min(10, 'El teléfono debe tener al menos 10 dígitos'),
+  status: z.string().default('active'),
   gender: z.string().optional().nullable(),
   age: z.number().int().min(16).max(99).optional().nullable(),
-  profileImageUrl: z.string().url('URL de imagen inválida').optional().nullable(),
-  availableHours: z.string().optional().nullable(),
-  previousExperience: z.string().optional().nullable(),
-  emergencyContact: z.string().optional().nullable(),
-  preferredParkId: z.number().int().optional().nullable(),
-  interestAreas: z.string().optional().nullable(),
-  availableDays: z.string().optional().nullable(),
-  legalConsent: z.boolean().default(true),
+  
+  // Información de contacto de emergencia
+  emergency_contact: z.string().optional().nullable(),
+  emergency_phone: z.string().optional().nullable(),
+  
+  // Disponibilidad y experiencia
+  available_hours: z.string().optional().nullable(),
+  available_days: z.array(z.string()).optional().default([]),
+  previous_experience: z.string().optional().nullable(),
+  interest_areas: z.array(z.string()).optional().default([]),
+  
+  // Preferencias y consentimiento
+  preferred_park_id: z.number().int().optional().nullable(),
+  legal_consent: z.boolean().default(true),
 });
 
 type VolunteerFormValues = z.infer<typeof volunteerFormSchema>;
@@ -75,38 +81,36 @@ const EditVolunteer = () => {
   const form = useForm<VolunteerFormValues>({
     resolver: zodResolver(volunteerFormSchema),
     defaultValues: {
-      fullName: volunteer?.fullName || '',
-      email: volunteer?.email || '',
-      phone: volunteer?.phone || '',
-      address: volunteer?.address || '',
-      gender: volunteer?.gender || '',
-      age: volunteer?.age || null,
-      status: volunteer?.status || 'active',
-      profileImageUrl: volunteer?.profileImageUrl || '',
-      availableHours: volunteer?.availableHours || '',
-      previousExperience: volunteer?.previousExperience || '',
-      emergencyContact: volunteer?.emergencyContact || '',
-      preferredParkId: volunteer?.preferredParkId || null,
-      interestAreas: volunteer?.interestAreas || '',
-      availableDays: volunteer?.availableDays || '',
-      legalConsent: volunteer?.legalConsent !== false,
+      full_name: '',
+      email: '',
+      phone: '',
+      gender: '',
+      age: null,
+      status: 'active',
+      emergency_contact: '',
+      emergency_phone: '',
+      available_hours: '',
+      previous_experience: '',
+      preferred_park_id: null,
+      interest_areas: [],
+      available_days: [],
+      legal_consent: true,
     },
     values: volunteer ? {
-      fullName: volunteer.fullName || '',
+      full_name: volunteer.full_name || '',
       email: volunteer.email || '',
       phone: volunteer.phone || '',
-      address: volunteer.address || '',
       gender: volunteer.gender || '',
       age: volunteer.age || null,
       status: volunteer.status || 'active',
-      profileImageUrl: volunteer.profileImageUrl || '',
-      availableHours: volunteer.availableHours || '',
-      previousExperience: volunteer.previousExperience || '',
-      emergencyContact: volunteer.emergencyContact || '',
-      preferredParkId: volunteer.preferredParkId || null,
-      interestAreas: volunteer.interestAreas || '',
-      availableDays: volunteer.availableDays || '',
-      legalConsent: volunteer.legalConsent !== false,
+      emergency_contact: volunteer.emergency_contact || '',
+      emergency_phone: volunteer.emergency_phone || '',
+      available_hours: volunteer.available_hours || '',
+      previous_experience: volunteer.previous_experience || '',
+      preferred_park_id: volunteer.preferred_park_id || null,
+      interest_areas: Array.isArray(volunteer.interest_areas) ? volunteer.interest_areas : [],
+      available_days: Array.isArray(volunteer.available_days) ? volunteer.available_days : [],
+      legal_consent: volunteer.legal_consent !== false,
     } : undefined,
   });
 
@@ -296,12 +300,12 @@ const EditVolunteer = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex flex-col md:flex-row gap-4">
-                      {volunteer?.profileImageUrl && (
+                      {volunteer?.profile_image_url && (
                         <div className="md:w-1/4 flex flex-col items-center">
                           <div className="rounded-lg overflow-hidden w-48 h-48 mb-2">
                             <img 
-                              src={volunteer.profileImageUrl} 
-                              alt={volunteer.fullName} 
+                              src={volunteer.profile_image_url} 
+                              alt={volunteer.full_name || 'Voluntario'} 
                               className="w-full h-full object-cover"
                             />
                           </div>
@@ -309,11 +313,11 @@ const EditVolunteer = () => {
                         </div>
                       )}
                       
-                      <div className={volunteer?.profileImageUrl ? "md:w-3/4" : "w-full"}>
+                      <div className={volunteer?.profile_image_url ? "md:w-3/4" : "w-full"}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
-                            name="fullName"
+                            name="full_name"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Nombre Completo *</FormLabel>
