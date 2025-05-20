@@ -4,7 +4,7 @@ import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface AdminLayoutProps {
-  title: string;
+  title?: string;
   children: React.ReactNode;
   subtitle?: string;
 }

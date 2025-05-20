@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { 
   Form,
   FormControl,
@@ -58,7 +58,7 @@ type VolunteerFormValues = z.infer<typeof volunteerFormSchema>;
 
 const NewVolunteer: React.FC = () => {
   const { toast } = useToast();
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
 
   const form = useForm<VolunteerFormValues>({
     resolver: zodResolver(volunteerFormSchema),
@@ -86,7 +86,7 @@ const NewVolunteer: React.FC = () => {
         title: "Voluntario registrado",
         description: "El voluntario ha sido registrado con éxito.",
       });
-      navigate("/admin/volunteers");
+      setLocation("/admin/volunteers");
     },
     onError: (error) => {
       toast({
@@ -108,7 +108,7 @@ const NewVolunteer: React.FC = () => {
           <Button 
             variant="outline"
             size="sm"
-            onClick={() => navigate("/admin/volunteers")}
+            onClick={() => setLocation("/admin/volunteers")}
             className="mr-4"
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
@@ -312,7 +312,7 @@ const NewVolunteer: React.FC = () => {
                   <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => navigate("/admin/volunteers")}
+                    onClick={() => setLocation("/admin/volunteers")}
                   >
                     Cancelar
                   </Button>
