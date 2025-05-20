@@ -50,6 +50,11 @@ function Router() {
         <Route path="/admin/parks/new" component={AdminParkEdit} />
         <Route path="/admin/parks/:id" component={AdminParkEdit} />
         <Route path="/admin/activities" component={AdminActivities} />
+        <Route path="/admin/activities/catalog">
+          <Suspense fallback={<div className="p-8 text-center">Cargando catálogo de actividades...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/activities/catalog')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/analytics" component={AdminAnalytics} />
         <Route path="/admin/documents" component={AdminDocuments} />
         <Route path="/admin/comments" component={AdminComments} />

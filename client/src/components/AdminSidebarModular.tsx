@@ -49,7 +49,9 @@ import {
   History,
   ClipboardCheck,
   FileText as FileDescription,
-  Network
+  Network,
+  ListChecks,
+  ListTodo
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
