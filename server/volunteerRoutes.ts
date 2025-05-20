@@ -361,6 +361,23 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
 
   // === RUTAS PARA EVALUACIONES ===
 
+  // Obtener todas las evaluaciones
+  apiRouter.get("/volunteers/evaluations", isAuthenticated, async (_req: Request, res: Response) => {
+    try {
+      console.log("Obteniendo todas las evaluaciones");
+      const evaluations = await db
+        .select()
+        .from(volunteerEvaluations)
+        .orderBy(desc(volunteerEvaluations.createdAt));
+        
+      console.log(`Se encontraron ${evaluations.length} evaluaciones`);
+      res.json(evaluations);
+    } catch (error) {
+      console.error("Error al obtener evaluaciones:", error);
+      res.status(500).json({ message: "Error al obtener evaluaciones" });
+    }
+  });
+
   // Obtener evaluaciones de un voluntario
   apiRouter.get("/volunteers/:id/evaluations", isAuthenticated, async (req: Request, res: Response) => {
     try {
