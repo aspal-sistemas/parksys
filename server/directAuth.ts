@@ -1,12 +1,15 @@
+import { storage } from "./storage";
+
 /**
- * Función que autentica al usuario directamente sin usar el ORM
+ * Función que autentica al usuario directamente
  * para simplificar la autenticación en el entorno de desarrollo
  */
 export async function authenticateUser(username: string, password: string) {
   try {
-    // Verificación de credenciales para desarrollo - en memoria
-    // Esto es solo para desarrollo, en producción se usaría una verificación adecuada
-    const users = [
+    console.log(`Intentando autenticar al usuario: ${username}`);
+    
+    // Verificar si es uno de los usuarios de prueba preconfigurados
+    const testUsers = [
       {
         id: 1,
         username: 'admin',
@@ -27,8 +30,36 @@ export async function authenticateUser(username: string, password: string) {
       }
     ];
 
-    // Buscar usuario por credenciales
-    const user = users.find(u => u.username === username && u.password === password);
+    // Primero buscar en usuarios de prueba
+    let user = testUsers.find(u => u.username === username && u.password === password);
+    
+    // Si no se encuentra en los usuarios de prueba, buscar en la base de datos
+    if (!user) {
+      console.log("Usuario no encontrado en la lista de prueba, buscando en la base de datos...");
+      
+      // Intentar buscar por nombre de usuario
+      let dbUser = await storage.getUserByUsername(username);
+      
+      // Si no se encuentra por nombre de usuario, intentar buscar por email
+      if (!dbUser) {
+        console.log("Usuario no encontrado por username, intentando con email...");
+        dbUser = await storage.getUserByEmail(username);
+      }
+      
+      if (dbUser) {
+        console.log("Usuario encontrado en la base de datos:", dbUser.username);
+        
+        // Verificar si la contraseña coincide
+        if (dbUser.password === password) {
+          console.log("Contraseña correcta, autenticación exitosa");
+          user = dbUser;
+        } else {
+          console.log("La contraseña no coincide");
+        }
+      } else {
+        console.log("Usuario no encontrado en la base de datos");
+      }
+    }
 
     if (!user) {
       console.log('Credenciales inválidas:', username);

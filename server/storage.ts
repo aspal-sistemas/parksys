@@ -156,6 +156,8 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
+  private usernameToUser: Map<string, User>; // Mapeo de username a usuario
+  private emailToUser: Map<string, User>; // Mapeo de email a usuario
   private externalIdToUserId: Map<string, number>; // Mapeo de ID externo a ID de usuario
   private municipalities: Map<number, Municipality>;
   private parks: Map<number, Park>;
@@ -188,6 +190,8 @@ export class MemStorage implements IStorage {
 
   constructor() {
     this.users = new Map();
+    this.usernameToUser = new Map();
+    this.emailToUser = new Map();
     this.externalIdToUserId = new Map();
     this.municipalities = new Map();
     this.parks = new Map();
@@ -268,9 +272,12 @@ export class MemStorage implements IStorage {
       externalId: null,
       profileImageUrl: null,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      fullName: "Administrador"
     };
     this.users.set(adminUser.id, adminUser);
+    this.usernameToUser.set(adminUser.username, adminUser);
+    this.emailToUser.set(adminUser.email, adminUser);
     
     const guadalajaraUser = {
       id: this.userIdCounter++,
@@ -284,9 +291,12 @@ export class MemStorage implements IStorage {
       externalId: null,
       profileImageUrl: null,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      fullName: "Municipio de Guadalajara"
     };
     this.users.set(guadalajaraUser.id, guadalajaraUser);
+    this.usernameToUser.set(guadalajaraUser.username, guadalajaraUser);
+    this.emailToUser.set(guadalajaraUser.email, guadalajaraUser);
 
     // Crear parques de muestra directamente
     const parqueMetropolitano = {
