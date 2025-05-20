@@ -114,7 +114,9 @@ export interface IStorage {
 
   // Volunteer operations
   getVolunteerById(id: number): Promise<Volunteer | undefined>;
+  getVolunteerByEmail(email: string): Promise<Volunteer | undefined>;
   getAllVolunteers(): Promise<Volunteer[]>;
+  getAllParks(): Promise<Park[]>;
   getExtendedVolunteer(id: number): Promise<ExtendedVolunteer | undefined>;
   createVolunteer(volunteer: InsertVolunteer): Promise<Volunteer>;
   updateVolunteer(id: number, volunteer: Partial<InsertVolunteer>): Promise<Volunteer | undefined>;
@@ -123,6 +125,7 @@ export interface IStorage {
   // Volunteer Participation operations
   getParticipationById(id: number): Promise<VolunteerParticipation | undefined>;
   getVolunteerParticipations(volunteerId: number): Promise<VolunteerParticipation[]>;
+  getVolunteerParticipationByDetails(volunteerId: number, parkId: number, activityName: string, activityDate: string): Promise<VolunteerParticipation | undefined>;
   createVolunteerParticipation(participation: InsertVolunteerParticipation): Promise<VolunteerParticipation>;
   updateVolunteerParticipation(id: number, participation: Partial<InsertVolunteerParticipation>): Promise<VolunteerParticipation | undefined>;
   deleteVolunteerParticipation(id: number): Promise<boolean>;
@@ -137,6 +140,7 @@ export interface IStorage {
   // Volunteer Recognition operations
   getRecognitionById(id: number): Promise<VolunteerRecognition | undefined>;
   getVolunteerRecognitions(volunteerId: number): Promise<VolunteerRecognition[]>;
+  getVolunteerRecognitionByDetails(volunteerId: number, title: string, awardDate: string): Promise<VolunteerRecognition | undefined>;
   createVolunteerRecognition(recognition: InsertVolunteerRecognition): Promise<VolunteerRecognition>;
   updateVolunteerRecognition(id: number, recognition: Partial<InsertVolunteerRecognition>): Promise<VolunteerRecognition | undefined>;
   deleteVolunteerRecognition(id: number): Promise<boolean>;
@@ -1033,6 +1037,271 @@ export class MemStorage implements IStorage {
     
     this.incidents.set(id, updatedIncident);
     return updatedIncident;
+  }
+  
+  // Volunteer operations
+  async getVolunteerById(id: number): Promise<Volunteer | undefined> {
+    return this.volunteers.get(id);
+  }
+  
+  async getVolunteerByEmail(email: string): Promise<Volunteer | undefined> {
+    return Array.from(this.volunteers.values()).find(volunteer => volunteer.email === email);
+  }
+  
+  async getAllVolunteers(): Promise<Volunteer[]> {
+    return Array.from(this.volunteers.values())
+      .sort((a, b) => a.fullName.localeCompare(b.fullName));
+  }
+  
+  async getAllParks(): Promise<Park[]> {
+    return Array.from(this.parks.values());
+  }
+  
+  async getExtendedVolunteer(id: number): Promise<ExtendedVolunteer | undefined> {
+    const volunteer = this.volunteers.get(id);
+    if (!volunteer) return undefined;
+    
+    // Obtener participaciones del voluntario
+    const participations = Array.from(this.volunteerParticipations.values())
+      .filter(p => p.volunteerId === id);
+      
+    // Obtener evaluaciones del voluntario
+    const evaluations = Array.from(this.volunteerEvaluations.values())
+      .filter(e => e.volunteerId === id);
+      
+    // Obtener reconocimientos del voluntario
+    const recognitions = Array.from(this.volunteerRecognitions.values())
+      .filter(r => r.volunteerId === id);
+      
+    // Calcular estadísticas
+    const totalHours = participations.reduce((sum, p) => sum + p.hoursContributed, 0);
+    const averageRating = evaluations.length > 0 
+      ? evaluations.reduce((sum, e) => sum + e.rating, 0) / evaluations.length 
+      : null;
+      
+    // Crear el objeto extendido
+    const extendedVolunteer: ExtendedVolunteer = {
+      ...volunteer,
+      participations,
+      evaluations,
+      recognitions,
+      statistics: {
+        totalActivities: participations.length,
+        totalHours,
+        averageRating,
+        totalRecognitions: recognitions.length
+      }
+    };
+    
+    return extendedVolunteer;
+  }
+  
+  async createVolunteer(volunteerData: InsertVolunteer): Promise<Volunteer> {
+    const id = this.volunteerIdCounter++;
+    const createdAt = new Date();
+    const updatedAt = new Date();
+    const volunteer = { ...volunteerData, id, createdAt, updatedAt };
+    this.volunteers.set(id, volunteer);
+    return volunteer;
+  }
+  
+  async updateVolunteer(id: number, volunteerData: Partial<InsertVolunteer>): Promise<Volunteer | undefined> {
+    const volunteer = this.volunteers.get(id);
+    if (!volunteer) return undefined;
+    
+    const updatedVolunteer = { 
+      ...volunteer, 
+      ...volunteerData, 
+      updatedAt: new Date() 
+    };
+    
+    this.volunteers.set(id, updatedVolunteer);
+    return updatedVolunteer;
+  }
+  
+  async updateVolunteerStatus(id: number, status: string): Promise<Volunteer | undefined> {
+    const volunteer = this.volunteers.get(id);
+    if (!volunteer) return undefined;
+    
+    const updatedVolunteer = { 
+      ...volunteer, 
+      status, 
+      updatedAt: new Date() 
+    };
+    
+    this.volunteers.set(id, updatedVolunteer);
+    return updatedVolunteer;
+  }
+  
+  // Volunteer Participation operations
+  async getParticipationById(id: number): Promise<VolunteerParticipation | undefined> {
+    return this.volunteerParticipations.get(id);
+  }
+  
+  async getVolunteerParticipations(volunteerId: number): Promise<VolunteerParticipation[]> {
+    return Array.from(this.volunteerParticipations.values())
+      .filter(p => p.volunteerId === volunteerId)
+      .sort((a, b) => new Date(b.activityDate).getTime() - new Date(a.activityDate).getTime());
+  }
+  
+  async getVolunteerParticipationByDetails(
+    volunteerId: number, 
+    parkId: number, 
+    activityName: string, 
+    activityDate: string
+  ): Promise<VolunteerParticipation | undefined> {
+    return Array.from(this.volunteerParticipations.values())
+      .find(p => 
+        p.volunteerId === volunteerId && 
+        p.parkId === parkId && 
+        p.activityName === activityName && 
+        p.activityDate === activityDate
+      );
+  }
+  
+  async createVolunteerParticipation(participationData: InsertVolunteerParticipation): Promise<VolunteerParticipation> {
+    const id = this.volunteerParticipationIdCounter++;
+    const createdAt = new Date();
+    const participation = { ...participationData, id, createdAt };
+    this.volunteerParticipations.set(id, participation);
+    return participation;
+  }
+  
+  async updateVolunteerParticipation(
+    id: number, 
+    participationData: Partial<InsertVolunteerParticipation>
+  ): Promise<VolunteerParticipation | undefined> {
+    const participation = this.volunteerParticipations.get(id);
+    if (!participation) return undefined;
+    
+    const updatedParticipation = { ...participation, ...participationData };
+    this.volunteerParticipations.set(id, updatedParticipation);
+    return updatedParticipation;
+  }
+  
+  async deleteVolunteerParticipation(id: number): Promise<boolean> {
+    return this.volunteerParticipations.delete(id);
+  }
+  
+  // Volunteer Evaluation operations
+  async getEvaluationById(id: number): Promise<VolunteerEvaluation | undefined> {
+    return this.volunteerEvaluations.get(id);
+  }
+  
+  async getVolunteerEvaluations(volunteerId: number): Promise<VolunteerEvaluation[]> {
+    return Array.from(this.volunteerEvaluations.values())
+      .filter(e => e.volunteerId === volunteerId)
+      .sort((a, b) => b.evaluationDate.getTime() - a.evaluationDate.getTime());
+  }
+  
+  async createVolunteerEvaluation(evaluationData: InsertVolunteerEvaluation): Promise<VolunteerEvaluation> {
+    const id = this.volunteerEvaluationIdCounter++;
+    const createdAt = new Date();
+    const evaluation = { ...evaluationData, id, createdAt };
+    this.volunteerEvaluations.set(id, evaluation);
+    return evaluation;
+  }
+  
+  async updateVolunteerEvaluation(
+    id: number, 
+    evaluationData: Partial<InsertVolunteerEvaluation>
+  ): Promise<VolunteerEvaluation | undefined> {
+    const evaluation = this.volunteerEvaluations.get(id);
+    if (!evaluation) return undefined;
+    
+    const updatedEvaluation = { ...evaluation, ...evaluationData };
+    this.volunteerEvaluations.set(id, updatedEvaluation);
+    return updatedEvaluation;
+  }
+  
+  async deleteVolunteerEvaluation(id: number): Promise<boolean> {
+    return this.volunteerEvaluations.delete(id);
+  }
+  
+  // Volunteer Recognition operations
+  async getRecognitionById(id: number): Promise<VolunteerRecognition | undefined> {
+    return this.volunteerRecognitions.get(id);
+  }
+  
+  async getVolunteerRecognitions(volunteerId: number): Promise<VolunteerRecognition[]> {
+    return Array.from(this.volunteerRecognitions.values())
+      .filter(r => r.volunteerId === volunteerId)
+      .sort((a, b) => b.awardDate.getTime() - a.awardDate.getTime());
+  }
+  
+  async getVolunteerRecognitionByDetails(
+    volunteerId: number, 
+    title: string, 
+    awardDate: string
+  ): Promise<VolunteerRecognition | undefined> {
+    return Array.from(this.volunteerRecognitions.values())
+      .find(r => 
+        r.volunteerId === volunteerId && 
+        r.title === title && 
+        r.awardDate.toISOString() === awardDate
+      );
+  }
+  
+  async createVolunteerRecognition(recognitionData: InsertVolunteerRecognition): Promise<VolunteerRecognition> {
+    const id = this.volunteerRecognitionIdCounter++;
+    const createdAt = new Date();
+    const recognition = { ...recognitionData, id, createdAt };
+    this.volunteerRecognitions.set(id, recognition);
+    return recognition;
+  }
+  
+  async updateVolunteerRecognition(
+    id: number, 
+    recognitionData: Partial<InsertVolunteerRecognition>
+  ): Promise<VolunteerRecognition | undefined> {
+    const recognition = this.volunteerRecognitions.get(id);
+    if (!recognition) return undefined;
+    
+    const updatedRecognition = { ...recognition, ...recognitionData };
+    this.volunteerRecognitions.set(id, updatedRecognition);
+    return updatedRecognition;
+  }
+  
+  async deleteVolunteerRecognition(id: number): Promise<boolean> {
+    return this.volunteerRecognitions.delete(id);
+  }
+  
+  // Volunteer Statistics operations
+  async countVolunteersByStatus(status: string): Promise<number> {
+    return Array.from(this.volunteers.values())
+      .filter(v => v.status === status)
+      .length;
+  }
+  
+  async getTotalVolunteerHours(): Promise<number> {
+    return Array.from(this.volunteerParticipations.values())
+      .reduce((sum, p) => sum + p.hoursContributed, 0);
+  }
+  
+  async getTopVolunteers(limit: number): Promise<ExtendedVolunteer[]> {
+    // Obtener todos los voluntarios con sus horas acumuladas
+    const volunteerHours = new Map<number, number>();
+    
+    // Calcular las horas para cada voluntario
+    Array.from(this.volunteerParticipations.values()).forEach(p => {
+      const currentHours = volunteerHours.get(p.volunteerId) || 0;
+      volunteerHours.set(p.volunteerId, currentHours + p.hoursContributed);
+    });
+    
+    // Convertir el mapa a un array y ordenarlo
+    const sortedVolunteers = Array.from(volunteerHours.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit)
+      .map(([volunteerId]) => this.getExtendedVolunteer(volunteerId));
+    
+    // Resolver las promesas
+    return Promise.all(sortedVolunteers.filter(Boolean) as Promise<ExtendedVolunteer>[]);
+  }
+  
+  async getRecentVolunteerActivities(limit: number): Promise<VolunteerParticipation[]> {
+    return Array.from(this.volunteerParticipations.values())
+      .sort((a, b) => new Date(b.activityDate).getTime() - new Date(a.activityDate).getTime())
+      .slice(0, limit);
   }
 }
 
