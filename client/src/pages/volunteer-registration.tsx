@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
-import { queryClient, apiRequest } from '@/lib/queryClient';
+import { queryClient } from '@/lib/queryClient';
 import { 
   Form, 
   FormControl, 
@@ -88,11 +88,19 @@ const VolunteerRegistration = () => {
 
   // Mutación para enviar datos
   const { mutate, isPending, isError, error } = useMutation({
-    mutationFn: (data: VolunteerFormValues) => 
-      apiRequest('/api/volunteers/register', {
+    mutationFn: async (data: VolunteerFormValues) => {
+      const response = await fetch('/api/public/volunteers/register', {
         method: 'POST',
-        data
-      }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        throw new Error('Error al procesar el registro');
+      }
+      return await response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/volunteers'] });
       setSubmitted(true);
