@@ -7,6 +7,9 @@ import {
   insertVolunteerRecognitionSchema
 } from "@shared/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { volunteers, volunteerParticipations, volunteerEvaluations, volunteerRecognitions, users, parks } from "@shared/schema";
 
 /**
@@ -119,6 +122,8 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         additionalComments: req.body.additionalComments || null,
         status: 'pending', // Los voluntarios registrados inician con estado pendiente
         totalHours: 0,
+        // Si hay archivo de imagen, guardar la ruta
+        profileImageUrl: req.file ? `/uploads/volunteers/${req.file.filename}` : null,
         createdAt: new Date(),
         updatedAt: new Date()
       };
