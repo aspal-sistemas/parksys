@@ -203,22 +203,33 @@ async function addSampleVolunteers() {
       
       for (const participation of sampleParticipations) {
         try {
+          // Convertimos los datos al formato esperado por la base de datos
+          const formattedParticipation = {
+            volunteerId: participation.volunteer_id,
+            parkId: participation.park_id,
+            activityName: participation.activity_name,
+            activityDate: participation.activity_date,
+            hoursContributed: participation.hours_contributed,
+            notes: participation.notes,
+            createdAt: new Date()
+          };
+          
           // Verificar si la participación ya existe para evitar duplicados
           const [existingParticipation] = await db.select()
             .from(volunteerParticipations)
             .where(
               and(
-                eq(volunteerParticipations.volunteer_id, participation.volunteer_id),
-                eq(volunteerParticipations.park_id, participation.park_id),
-                eq(volunteerParticipations.activity_name, participation.activity_name)
+                eq(volunteerParticipations.volunteerId, formattedParticipation.volunteerId),
+                eq(volunteerParticipations.parkId, formattedParticipation.parkId),
+                eq(volunteerParticipations.activityName, formattedParticipation.activityName)
               )
             );
           
           if (!existingParticipation) {
-            await db.insert(volunteerParticipations).values(participation);
-            console.log(`Participación creada para voluntario ${participation.volunteer_id} en parque ${participation.park_id}`);
+            await db.insert(volunteerParticipations).values(formattedParticipation);
+            console.log(`Participación creada para voluntario ${formattedParticipation.volunteerId} en parque ${formattedParticipation.parkId}`);
           } else {
-            console.log(`La participación para voluntario ${participation.volunteer_id} en actividad "${participation.activity_name}" ya existe.`);
+            console.log(`La participación para voluntario ${formattedParticipation.volunteerId} en actividad "${formattedParticipation.activityName}" ya existe.`);
           }
         } catch (error) {
           console.error(`Error al crear participación:`, error);
@@ -257,21 +268,33 @@ async function addSampleVolunteers() {
       
       for (const recognition of sampleRecognitions) {
         try {
+          // Convertimos los datos al formato esperado por la base de datos
+          const formattedRecognition = {
+            volunteerId: recognition.volunteer_id,
+            recognitionType: recognition.recognition_type,
+            level: recognition.level,
+            reason: recognition.reason,
+            hoursCompleted: recognition.hours_completed,
+            issuedAt: recognition.issued_at,
+            issuedById: recognition.issued_by_id,
+            createdAt: new Date()
+          };
+          
           // Verificar si el reconocimiento ya existe
           const [existingRecognition] = await db.select()
             .from(volunteerRecognitions)
             .where(
               and(
-                eq(volunteerRecognitions.volunteer_id, recognition.volunteer_id),
-                eq(volunteerRecognitions.recognition_type, recognition.recognition_type)
+                eq(volunteerRecognitions.volunteerId, formattedRecognition.volunteerId),
+                eq(volunteerRecognitions.recognitionType, formattedRecognition.recognitionType)
               )
             );
           
           if (!existingRecognition) {
-            await db.insert(volunteerRecognitions).values(recognition);
-            console.log(`Reconocimiento creado para voluntario ${recognition.volunteer_id}: ${recognition.recognition_type}`);
+            await db.insert(volunteerRecognitions).values(formattedRecognition);
+            console.log(`Reconocimiento creado para voluntario ${formattedRecognition.volunteerId}: ${formattedRecognition.recognitionType}`);
           } else {
-            console.log(`El reconocimiento "${recognition.recognition_type}" para voluntario ${recognition.volunteer_id} ya existe.`);
+            console.log(`El reconocimiento "${formattedRecognition.recognitionType}" para voluntario ${formattedRecognition.volunteerId} ya existe.`);
           }
         } catch (error) {
           console.error(`Error al crear reconocimiento:`, error);
