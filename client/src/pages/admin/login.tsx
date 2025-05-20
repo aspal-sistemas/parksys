@@ -36,20 +36,40 @@ const AdminLogin: React.FC = () => {
     try {
       setIsLoading(true);
       
-      const response = await apiRequest('POST', '/api/login', data);
+      // Usar directamente la URL completa para evitar cualquier problema de ruta
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+        credentials: 'include'
+      });
+      
+      // Verificar si la respuesta es exitosa
+      if (!response.ok) {
+        throw new Error('Credenciales incorrectas');
+      }
+      
       const result = await response.json();
       
-      if (result.user) {
+      if (result.data && result.data.user) {
+        // Guardar información del usuario (en una app real usaríamos un estado global)
+        localStorage.setItem('user', JSON.stringify(result.data.user));
+        localStorage.setItem('token', result.data.token);
+        
         toast({
           title: 'Inicio de sesión exitoso',
-          description: `Bienvenido, ${result.user.fullName || result.user.username}`,
+          description: `Bienvenido, ${result.data.user.fullName || result.data.user.username}`,
         });
         
-        // In a real app, you'd store the token and user info
-        // For now, just redirect to admin dashboard
+        // Redirigir al dashboard
         setLocation('/admin');
+      } else {
+        throw new Error('Respuesta de inicio de sesión inválida');
       }
     } catch (error) {
+      console.error('Error de inicio de sesión:', error);
       toast({
         title: 'Error al iniciar sesión',
         description: 'Usuario o contraseña incorrectos',

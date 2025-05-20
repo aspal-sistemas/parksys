@@ -8,22 +8,24 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
+  method: string, 
   url: string, 
-  options?: {
-    method?: string;
-    data?: unknown;
-  }
+  data?: unknown
 ): Promise<Response> {
-  const method = options?.method || 'GET';
-  const data = options?.data;
-
-  // Añadimos un token de autenticación para desarrollo
+  // Para la ruta de inicio de sesión no queremos enviar credenciales predeterminadas
+  const isLoginRequest = url === '/api/login';
+  
+  // Añadimos un token de autenticación para desarrollo excepto para login
   const headers: Record<string, string> = {
-    ...data ? { "Content-Type": "application/json" } : {},
-    "Authorization": "Bearer direct-token-admin",
-    "X-User-Id": "1", // Este es el ID del usuario admin
-    "X-User-Role": "super_admin" // Asignamos rol de super_admin para tener todos los permisos
+    ...(data ? { "Content-Type": "application/json" } : {})
   };
+  
+  // Solo agregamos las cabeceras de autorización si no es una petición de login
+  if (!isLoginRequest) {
+    headers["Authorization"] = "Bearer direct-token-admin";
+    headers["X-User-Id"] = "1"; // Este es el ID del usuario admin
+    headers["X-User-Role"] = "super_admin"; // Asignamos rol de super_admin para tener todos los permisos
+  }
 
   const res = await fetch(url, {
     method,
@@ -32,7 +34,10 @@ export async function apiRequest(
     credentials: "include",
   });
 
-  await throwIfResNotOk(res);
+  // No lanzamos errores para peticiones de login, permitimos manejarlas en el componente
+  if (!isLoginRequest) {
+    await throwIfResNotOk(res);
+  }
   return res;
 }
 
