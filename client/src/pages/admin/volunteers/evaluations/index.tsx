@@ -60,10 +60,7 @@ const VolunteerEvaluations: React.FC = () => {
   // Mutation para cargar datos de muestra de evaluaciones
   const loadSampleData = useMutation({
     mutationFn: async () => {
-      return await apiRequest({
-        url: '/api/admin/seed/evaluations',
-        method: 'POST',
-      });
+      return await apiRequest('POST', '/api/admin/seed/evaluations');
     },
     onSuccess: () => {
       toast({
