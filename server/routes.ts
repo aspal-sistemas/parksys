@@ -1569,5 +1569,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Ruta para agregar datos de muestra de voluntarios
+  apiRouter.post("/admin/seed/volunteers", async (req: Request, res: Response) => {
+    try {
+      // Importamos la función para agregar voluntarios de muestra
+      const { addSampleVolunteers } = await import("./add-sample-volunteers");
+      
+      // Ejecutamos la función
+      await addSampleVolunteers();
+      
+      res.status(200).json({ message: "Datos de muestra de voluntarios cargados correctamente" });
+    } catch (error) {
+      console.error("Error al cargar datos de muestra de voluntarios:", error);
+      res.status(500).json({ message: "Error al cargar datos de muestra de voluntarios" });
+    }
+  });
+  
   return httpServer;
 }
