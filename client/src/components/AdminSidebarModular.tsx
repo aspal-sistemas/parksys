@@ -595,11 +595,17 @@ const AdminSidebarModular: React.FC = () => {
       <div className="p-4 border-t">
         <div className="flex items-center mb-4">
           <div className="bg-gray-200 rounded-full h-10 w-10 flex items-center justify-center text-gray-600">
-            <span className="font-medium">AD</span>
+            <span className="font-medium">
+              {currentUser ? (currentUser.fullName || currentUser.username || 'User').substring(0, 2).toUpperCase() : 'AD'}
+            </span>
           </div>
           <div className="ml-3">
-            <p className="text-sm font-medium text-gray-900">Admin</p>
-            <p className="text-xs text-gray-500">admin@parquesmx.com</p>
+            <p className="text-sm font-medium text-gray-900">
+              {currentUser ? (currentUser.fullName || currentUser.username) : 'Usuario'}
+            </p>
+            <p className="text-xs text-gray-500">
+              {currentUser ? currentUser.email || 'Sin correo' : 'Sin información'}
+            </p>
           </div>
         </div>
         
@@ -609,12 +615,15 @@ const AdminSidebarModular: React.FC = () => {
             Cuenta
           </Button>
           
-          <Link href="/admin/login">
-            <Button variant="ghost" size="sm" className="flex-1 text-red-500 hover:bg-red-50 hover:text-red-600">
-              <LogOut className="h-4 w-4 mr-1" />
-              Salir
-            </Button>
-          </Link>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex-1 text-red-500 hover:bg-red-50 hover:text-red-600"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4 mr-1" />
+            Salir
+          </Button>
         </div>
       </div>
     </div>
