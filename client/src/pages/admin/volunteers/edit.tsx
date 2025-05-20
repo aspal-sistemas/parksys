@@ -572,7 +572,7 @@ const EditVolunteer = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">Sin parque preferido</SelectItem>
+                              <SelectItem value="none">Sin parque preferido</SelectItem>
                               {parks.map((park: any) => (
                                 <SelectItem key={park.id} value={park.id.toString()}>
                                   {park.name}
