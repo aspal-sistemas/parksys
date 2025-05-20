@@ -255,7 +255,7 @@ const ParticipationsList: React.FC = () => {
                                 Ver
                               </Button>
                             </Link>
-                            <Link href={`/admin/volunteers/participations/${participation.id}/edit`}>
+                            <Link href={`/admin/volunteers/participations/${participation.id}`}>
                               <Button variant="outline" size="sm">
                                 <FileEdit className="h-3 w-3 mr-1" />
                                 Editar

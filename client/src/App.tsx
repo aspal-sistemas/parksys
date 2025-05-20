@@ -57,6 +57,7 @@ function Router() {
         <Route path="/admin/volunteers" component={AdminVolunteers} />
         <Route path="/admin/volunteers/new" component={AdminVolunteerNew} />
         <Route path="/admin/volunteers/participations" component={AdminVolunteerParticipations} />
+        <Route path="/admin/volunteers/participations/:id" component={AdminParticipationEdit} />
         <Route path="/admin/volunteers/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando editor de voluntarios...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/edit')))}
