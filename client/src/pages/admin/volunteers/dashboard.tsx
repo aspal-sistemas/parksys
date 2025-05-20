@@ -144,8 +144,19 @@ export default function VolunteerDashboard() {
     queryKey: ['/api/volunteers/dashboard', volunteerId],
     queryFn: async () => {
       if (!volunteerId) throw new Error('No se proporcionó ID de voluntario');
-      const response = await fetch(`/api/volunteers/dashboard?id=${volunteerId}`);
+      
+      // Obtenemos el token de autenticación del storage local
+      const authToken = JSON.parse(localStorage.getItem('auth') || '{}')?.token;
+      
+      const response = await fetch(`/api/volunteers/dashboard?id=${volunteerId}`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
       if (!response.ok) {
+        console.error('Error en la respuesta:', await response.text());
         throw new Error('Error al cargar el dashboard');
       }
       return response.json();

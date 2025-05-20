@@ -626,6 +626,16 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
       
       console.log("Consultando dashboard para voluntario ID:", volunteerId);
       
+      // Manejar el ID del voluntario de manera más robusta
+      const numVolunteerId = parseInt(volunteerId as string, 10);
+      
+      if (isNaN(numVolunteerId)) {
+        console.error("ID de voluntario no válido:", volunteerId);
+        return res.status(400).json({ message: "ID de voluntario no válido" });
+      }
+      
+      console.log("Buscando voluntario con ID:", numVolunteerId);
+      
       // Obtener información básica del voluntario
       const [volunteerInfo] = await db
         .select({
@@ -640,7 +650,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
           profileImage: volunteers.profileImageUrl
         })
         .from(volunteers)
-        .where(eq(volunteers.id, Number(volunteerId)));
+        .where(eq(volunteers.id, numVolunteerId));
         
       if (!volunteerInfo) {
         return res.status(404).json({ message: "Voluntario no encontrado" });
