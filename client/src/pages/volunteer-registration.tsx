@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -25,337 +25,310 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   AlertCircle, 
   CheckCircle, 
   Heart, 
-  Loader2
+  Loader2,
+  Calendar,
+  UserPlus
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
 
 // Esquema de validación
 const volunteerFormSchema = z.object({
-  fullName: z.string().min(3, { message: 'El nombre debe tener al menos 3 caracteres' }),
+  full_name: z.string().min(3, { message: 'El nombre debe tener al menos 3 caracteres' }),
   email: z.string().min(1, { message: 'El correo electrónico es obligatorio' }).email({ message: 'Correo electrónico inválido' }),
-  phoneNumber: z.string().min(10, { message: 'Número de teléfono inválido' }),
+  phone: z.string().min(10, { message: 'Número de teléfono inválido' }),
   address: z.string().min(5, { message: 'Dirección inválida' }),
   gender: z.string().min(1, { message: 'El género es obligatorio' }),
-  preferredParkId: z.number().optional(),
-  birthDate: z.string().refine(value => {
-    const date = new Date(value);
-    if (isNaN(date.getTime())) return false;
-    
-    // Validar que sea mayor de 18 años
-    const today = new Date();
-    const minAgeDate = new Date(
-      today.getFullYear() - 18,
-      today.getMonth(),
-      today.getDate()
-    );
-    return date <= minAgeDate;
-  }, { message: 'Debes ser mayor de 18 años para registrarte' }),
-  emergencyContact: z.string().min(3, { message: 'Contacto de emergencia inválido' }),
-  emergencyPhone: z.string().min(10, { message: 'Teléfono de emergencia inválido' }),
-  occupation: z.string().min(1, { message: 'La ocupación es obligatoria' }),
-  availability: z.string().min(1, { message: 'Debes seleccionar tu disponibilidad' }),
-  skills: z.string().min(1, { message: 'Las habilidades son obligatorias' }),
-  interests: z.string().min(1, { message: 'Los intereses son obligatorios' }),
-  previousExperience: z.string().min(1, { message: 'La experiencia previa es obligatoria' }),
-  healthConditions: z.string().min(1, { message: 'Las condiciones de salud son obligatorias' }),
-  additionalComments: z.string().optional(),
-  profileImage: z.instanceof(File).optional(),
-  termsAccepted: z.boolean().refine(val => val === true, {
-    message: 'Debes aceptar los términos y condiciones'
+  age: z.number().min(18, { message: 'Debes ser mayor de 18 años' }).optional().nullable(),
+  preferred_park_id: z.number().optional().nullable(),
+  emergency_contact: z.string().min(3, { message: 'El contacto de emergencia es obligatorio' }),
+  emergency_phone: z.string().min(10, { message: 'El teléfono de emergencia es obligatorio' }),
+  available_hours: z.string().optional(),
+  available_days: z.array(z.string()).or(z.string()).optional(),
+  interest_areas: z.array(z.string()).or(z.string()).optional(),
+  previous_experience: z.string().optional(),
+  legal_consent: z.boolean().refine(val => val === true, {
+    message: 'Debes aceptar el consentimiento legal para registrarte',
   }),
-  legalConsent: z.boolean().refine(val => val === true, {
-    message: 'Debes aceptar el consentimiento legal para voluntariado'
-  })
+  status: z.string().default("activo")
 });
 
-type VolunteerFormValues = z.infer<typeof volunteerFormSchema>;
+type VolunteerFormData = z.infer<typeof volunteerFormSchema>;
 
-const VolunteerRegistration = () => {
+export default function VolunteerRegistration() {
   const { toast } = useToast();
-  const [submitted, setSubmitted] = React.useState(false);
-  const [selectedImage, setSelectedImage] = React.useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
-  
-  // Obtener la lista de parques para el selector
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Obtener parques para el select
   const { data: parks } = useQuery({
     queryKey: ['/api/parks'],
+    retry: false,
   });
 
-  // Configuración del formulario
-  const form = useForm<VolunteerFormValues>({
+  // Definir el formulario
+  const form = useForm<VolunteerFormData>({
     resolver: zodResolver(volunteerFormSchema),
     defaultValues: {
-      fullName: '',
+      full_name: '',
       email: '',
-      phoneNumber: '',
+      phone: '',
       address: '',
-      birthDate: '',
-      emergencyContact: '',
-      emergencyPhone: '',
-      occupation: '',
-      availability: '',
-      skills: '',
-      interests: '',
-      previousExperience: '',
-      healthConditions: '',
-      additionalComments: '',
-      termsAccepted: false,
-      legalConsent: false,
       gender: '',
-      preferredParkId: undefined
+      age: null,
+      preferred_park_id: null,
+      emergency_contact: '',
+      emergency_phone: '',
+      available_hours: '',
+      available_days: [],
+      interest_areas: [],
+      previous_experience: '',
+      legal_consent: false,
+      status: 'activo'
     }
   });
 
-  // Mutación para enviar datos
-  const { mutate, isPending, isError, error } = useMutation({
-    mutationFn: async (data: VolunteerFormValues) => {
-      console.log("Enviando datos:", data);
-      
-      // Convertir la fecha a un formato de string para enviarla
-      const formattedData = {
-        ...data,
-        termsAccepted: data.termsAccepted ? 'true' : 'false'
-      };
-      
-      // Crear FormData para enviar datos incluyendo la imagen
-      const formData = new FormData();
-      
-      // Agregar todos los campos de texto
-      Object.entries(formattedData).forEach(([key, value]) => {
-        if (key !== 'profileImage' && value !== undefined) {
-          formData.append(key, String(value));
-        }
-      });
-      
-      // Agregar la imagen si existe
-      if (selectedImage) {
-        formData.append('profileImage', selectedImage);
-      }
-      
-      console.log("FormData preparado para envío");
+  const registerVolunteer = useMutation({
+    mutationFn: async (data: VolunteerFormData) => {
+      setIsSubmitting(true);
+      setError(null);
       
       try {
-        const response = await fetch('/api/volunteers/register', {
-          method: 'POST',
-          // No incluimos Content-Type para que el navegador establezca el boundary correcto para FormData
-          body: formData
-        });
+        const formData = new FormData();
         
-        console.log("Respuesta recibida:", response.status);
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Error del servidor:", errorData);
-          throw new Error(errorData.message || 'Error al procesar el registro');
+        // Añadir todos los campos al FormData
+        for (const [key, value] of Object.entries(data)) {
+          if (value !== null && value !== undefined) {
+            if (Array.isArray(value)) {
+              formData.append(key, JSON.stringify(value));
+            } else if (typeof value === 'object') {
+              formData.append(key, JSON.stringify(value));
+            } else {
+              formData.append(key, String(value));
+            }
+          }
         }
         
+        const response = await fetch('/api/volunteers', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Error al registrar voluntario');
+        }
+
         return await response.json();
-      } catch (err) {
-        console.error("Error en la solicitud:", err);
+      } catch (err: any) {
+        setError(err.message || 'Error al registrar voluntario');
         throw err;
+      } finally {
+        setIsSubmitting(false);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/volunteers'] });
-      setSubmitted(true);
+      setSuccess(true);
       toast({
         title: "Registro exitoso",
-        description: "Tu solicitud ha sido enviada. Te contactaremos pronto.",
+        description: "Te has registrado como voluntario correctamente.",
         variant: "default",
       });
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ['/api/volunteers'] });
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         title: "Error en el registro",
-        description: "Hubo un problema al enviar tu solicitud. Intenta nuevamente.",
+        description: error.message || "No se pudo completar el registro. Intenta nuevamente.",
         variant: "destructive",
       });
     }
   });
 
-  // Manejador para la subida de imagen
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedImage(file);
-      
-      // Crear URL para previsualizar la imagen
-      const fileUrl = URL.createObjectURL(file);
-      setPreviewUrl(fileUrl);
-      
-      // Actualizar el valor en el formulario
-      form.setValue('profileImage', file);
-    }
-  };
-  
-  // Envío del formulario
-  const onSubmit = async (data: VolunteerFormValues) => {
-    // Directamente usamos los datos del formulario en la mutación
-    mutate(data);
+  const onSubmit = (data: VolunteerFormData) => {
+    registerVolunteer.mutate(data);
   };
 
-  if (submitted) {
+  if (success) {
     return (
-      <div className="container mx-auto py-12 px-4 md:px-6">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle className="text-center text-2xl text-green-600 flex items-center justify-center">
-              <CheckCircle className="mr-2 h-6 w-6" />
-              ¡Registro Completado!
-            </CardTitle>
+      <div className="container max-w-4xl mx-auto py-10 px-4">
+        <Card>
+          <CardHeader className="bg-green-50 dark:bg-green-900/20">
+            <div className="flex items-center">
+              <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-500 mr-2" />
+              <CardTitle>¡Registro exitoso!</CardTitle>
+            </div>
+            <CardDescription>Gracias por registrarte como voluntario</CardDescription>
           </CardHeader>
-          <CardContent className="text-center">
-            <p className="mb-4">Gracias por registrarte como voluntario. Hemos recibido tu solicitud y la estamos procesando.</p>
-            <p className="mb-4">En breve, un miembro de nuestro equipo se pondrá en contacto contigo para continuar con el proceso.</p>
-            
-            <div className="mt-8 p-4 bg-green-50 rounded-lg">
-              <h3 className="font-medium text-green-800 mb-2">¿Qué sigue?</h3>
-              <ol className="list-decimal list-inside text-left text-green-700">
-                <li className="mb-2">Recibirás un correo de confirmación</li>
-                <li className="mb-2">Te contactaremos para una breve entrevista</li>
-                <li className="mb-2">Asistirás a una orientación</li>
-                <li>¡Comenzarás a participar en actividades!</li>
-              </ol>
+          <CardContent className="pt-6">
+            <div className="text-center py-6">
+              <div className="flex justify-center">
+                <Heart className="h-16 w-16 text-green-600 dark:text-green-500 mb-4" />
+              </div>
+              <h3 className="text-xl font-medium mb-2">Tu solicitud ha sido recibida</h3>
+              <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                Gracias por tu interés en ser parte de nuestro programa de voluntariado. Te contactaremos pronto para los siguientes pasos.
+              </p>
+              <Button 
+                onClick={() => {
+                  setSuccess(false);
+                  form.reset();
+                }}
+                className="mt-4"
+              >
+                Registrar otro voluntario
+              </Button>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button 
-              variant="outline" 
-              onClick={() => window.location.href = '/'}
-            >
-              Volver al inicio
-            </Button>
-          </CardFooter>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-12 px-4 md:px-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Registro de Voluntarios</h1>
-          <p className="text-gray-600">Únete a nuestro programa de voluntariado y ayuda a mejorar los parques públicos de tu ciudad</p>
-        </div>
-
-        {isError && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>
-              {error instanceof Error ? error.message : 'Hubo un problema al procesar tu solicitud. Por favor intenta nuevamente.'}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Heart className="mr-2 h-5 w-5 text-red-500" />
-              Formulario de Registro
-            </CardTitle>
-            <CardDescription>
-              Completa todos los campos obligatorios para registrarte como voluntario.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="space-y-4">
+    <div className="container max-w-4xl mx-auto py-10 px-4">
+      <Card>
+        <CardHeader className="bg-primary/10">
+          <CardTitle className="flex items-center text-2xl">
+            <UserPlus className="h-6 w-6 mr-2" />
+            Registro de Voluntarios
+          </CardTitle>
+          <CardDescription>
+            Regístrate como voluntario para contribuir en nuestros parques
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-6">
+                <div>
                   <h3 className="text-lg font-medium">Información Personal</h3>
+                  <p className="text-sm text-muted-foreground">Proporciona tu información básica de contacto</p>
+                </div>
+                <Separator />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="full_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre completo *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nombre y apellidos" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Tu nombre completo como aparece en tu identificación oficial
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="fullName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nombre completo *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ingresa tu nombre completo" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Correo electrónico *</FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="tu@email.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Correo electrónico *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="tu@email.com" 
+                            type="email" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Tu dirección de correo electrónico para comunicaciones importantes
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="phoneNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Número de teléfono *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ej. 55 1234 5678" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="gender"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Género *</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecciona tu género" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="masculino">Masculino</SelectItem>
-                              <SelectItem value="femenino">Femenino</SelectItem>
-                              <SelectItem value="otro">Otro</SelectItem>
-                              <SelectItem value="prefiero_no_decir">Prefiero no decir</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Teléfono *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Número de teléfono" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Tu número telefónico principal de contacto
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="birthDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Fecha de nacimiento *</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="gender"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Género *</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
-                            <Input type="date" {...field} />
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar género" />
+                            </SelectTrigger>
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                          <SelectContent>
+                            <SelectItem value="M">Masculino</SelectItem>
+                            <SelectItem value="F">Femenino</SelectItem>
+                            <SelectItem value="O">Otro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   
+                  <FormField
+                    control={form.control}
+                    name="age"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Edad *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="Edad" 
+                            {...field} 
+                            value={field.value === null ? '' : field.value}
+                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="mt-4">
                   <FormField
                     control={form.control}
                     name="address"
@@ -363,21 +336,11 @@ const VolunteerRegistration = () => {
                       <FormItem>
                         <FormLabel>Dirección *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Dirección completa" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="occupation"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ocupación</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Estudiante, profesionista, etc." {...field} />
+                          <Textarea 
+                            placeholder="Dirección completa" 
+                            {...field} 
+                            className="min-h-[80px]"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -385,57 +348,74 @@ const VolunteerRegistration = () => {
                   />
                 </div>
                 
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Parque Preferido</h3>
+                <div className="mt-4">
+                  <h3 className="text-lg font-medium">Información de Emergencia</h3>
+                  <p className="text-sm text-muted-foreground">Contacto en caso de emergencia</p>
+                  <Separator className="my-4" />
+                  
                   <FormField
                     control={form.control}
-                    name="preferredParkId"
+                    name="emergency_contact"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Parque preferido</FormLabel>
-                        <Select 
-                          onValueChange={(value) => field.onChange(parseInt(value))} 
-                          value={field.value?.toString() || ''}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar parque" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {parks?.map((park) => (
-                              <SelectItem key={park.id} value={park.id.toString()}>
-                                {park.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormLabel>Nombre de Contacto de Emergencia *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Nombre completo del contacto de emergencia" 
+                            {...field} 
+                          />
+                        </FormControl>
                         <FormDescription>
-                          Selecciona el parque donde prefieres realizar tus actividades como voluntario
+                          Persona a contactar en caso de emergencia
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="emergency_phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Teléfono de Emergencia *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Número de teléfono para emergencias" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Teléfono del contacto para emergencias
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-
-                <Separator />
                 
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Contacto de emergencia</h3>
+                <div className="mt-4">
+                  <h3 className="text-lg font-medium">Preferencias y Experiencia</h3>
+                  <p className="text-sm text-muted-foreground">Información sobre tu experiencia y disponibilidad</p>
+                  <Separator className="my-4" />
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-6">
                     <FormField
                       control={form.control}
-                      name="emergencyContact"
+                      name="available_hours"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nombre de contacto *</FormLabel>
+                          <FormLabel>Horas Disponibles</FormLabel>
                           <FormControl>
-                            <Input placeholder="Nombre completo" {...field} />
+                            <Textarea 
+                              placeholder="Ej: Tardes de lunes a viernes, fines de semana completos" 
+                              {...field} 
+                              className="min-h-[80px]"
+                            />
                           </FormControl>
+                          <FormDescription>
+                            Descripción de las horas disponibles para voluntariado
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -443,250 +423,150 @@ const VolunteerRegistration = () => {
                     
                     <FormField
                       control={form.control}
-                      name="emergencyPhone"
+                      name="interest_areas"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Teléfono de emergencia *</FormLabel>
+                          <FormLabel>Áreas de Interés</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ej. 55 1234 5678" {...field} />
+                            <Textarea 
+                              placeholder="Ej: Educación ambiental, jardinería, atención a visitantes" 
+                              {...field} 
+                              value={Array.isArray(field.value) ? field.value.join(', ') : field.value || ''}
+                              className="min-h-[80px]"
+                            />
                           </FormControl>
+                          <FormDescription>
+                            Áreas o actividades de interés para el voluntariado
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="previous_experience"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Experiencia Previa</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Experiencia previa en actividades similares o habilidades relevantes" 
+                              {...field} 
+                              className="min-h-[120px]"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Detalle cualquier experiencia previa en actividades relevantes
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Información para el voluntariado</h3>
                   
-                  <FormField
-                    control={form.control}
-                    name="availability"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Disponibilidad de tiempo *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecciona tu disponibilidad" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="fines_de_semana">Fines de semana</SelectItem>
-                            <SelectItem value="dias_semana">Días entre semana</SelectItem>
-                            <SelectItem value="mananas">Mañanas</SelectItem>
-                            <SelectItem value="tardes">Tardes</SelectItem>
-                            <SelectItem value="flexible">Horario flexible</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="skills"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Habilidades y capacidades</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Describe tus habilidades (jardinería, educación ambiental, primeros auxilios, etc.)" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="interests"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Áreas de interés</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="¿En qué áreas te gustaría participar? (mantenimiento, eventos, educación, etc.)" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="previousExperience"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Experiencia previa en voluntariado</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Cuéntanos si has participado antes en actividades de voluntariado" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Fotografía</h3>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Foto de perfil</label>
-                    <div className="flex flex-col space-y-2">
-                      {previewUrl && (
-                        <div className="relative w-32 h-32 rounded-md overflow-hidden border border-gray-200">
-                          <img 
-                            src={previewUrl} 
-                            alt="Vista previa" 
-                            className="object-cover w-full h-full"
-                          />
-                        </div>
-                      )}
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="max-w-md"
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    {parks && parks.length > 0 && (
+                      <FormField
+                        control={form.control}
+                        name="preferred_park_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Parque Preferido</FormLabel>
+                            <Select 
+                              onValueChange={(value) => field.onChange(parseInt(value))} 
+                              value={field.value?.toString() || ''}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccionar parque" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {parks.map((park: any) => (
+                                  <SelectItem key={park.id} value={park.id.toString()}>
+                                    {park.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Parque donde prefieres realizar actividades de voluntariado
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                      <p className="text-xs text-gray-500">
-                        Sube una foto clara para tu identificación como voluntario (opcional)
-                      </p>
+                    )}
+                    
+                    <div>
+                      <Label>Fotografía del Voluntario</Label>
+                      <div className="mt-2">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            // Función para subir imagen (implementación posterior)
+                          }}
+                        />
+                        <p className="text-sm text-gray-500 mt-1">
+                          Sube una foto para tu perfil de voluntario (máx. 5MB, formatos: jpg, jpeg, png)
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  
-                  <h3 className="text-lg font-medium">Información adicional</h3>
-                  
-                  <FormField
-                    control={form.control}
-                    name="healthConditions"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Condiciones de salud</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Alergias, condiciones médicas o limitaciones físicas que debamos conocer" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Esta información es confidencial y solo será utilizada en caso de emergencia.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="additionalComments"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Comentarios adicionales</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Cualquier información adicional que quieras compartir" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="termsAccepted"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md">
-                        <FormControl>
-                          <input
-                            type="checkbox"
-                            className="h-4 w-4 mt-1"
-                            checked={field.value}
-                            onChange={field.onChange}
-                            id="termsAccepted"
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel htmlFor="termsAccepted">
-                            Acepto los términos y condiciones *
-                          </FormLabel>
-                          <FormDescription>
-                            Al marcar esta casilla, confirmo que la información proporcionada es correcta
-                            y acepto los términos del programa de voluntariado.
-                          </FormDescription>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="legalConsent"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md">
-                        <FormControl>
-                          <input
-                            type="checkbox"
-                            className="h-4 w-4 mt-1"
-                            checked={field.value}
-                            onChange={field.onChange}
-                            id="legalConsent"
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel htmlFor="legalConsent">
-                            Consentimiento legal para voluntariado *
-                          </FormLabel>
-                          <FormDescription>
-                            Autorizo el uso de mis datos personales para los fines del programa de voluntariado 
-                            y acepto ser contactado para actividades relacionadas.
-                          </FormDescription>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-muted-foreground">
-                    * Campos obligatorios
-                  </p>
-                  <Button 
-                    type="submit" 
-                    disabled={isPending}
-                    onClick={() => {
-                      console.log('Formulario enviado', form.getValues());
-                      console.log('Errores:', form.formState.errors);
-                    }}
-                  >
-                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Enviar solicitud
-                  </Button>
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium">Términos y Consentimiento</h3>
+                  <p className="text-sm text-muted-foreground">Aceptación de términos y consentimiento legal</p>
+                  <Separator className="my-4" />
+                  
+                  <FormField
+                    control={form.control}
+                    name="legal_consent"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            Consentimiento Legal *
+                          </FormLabel>
+                          <FormDescription>
+                            Acepto los términos y condiciones del programa de voluntariado. Autorizo el uso de mis datos personales para los fines del programa y acepto ser contactado para actividades relacionadas.
+                          </FormDescription>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
                 </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
+              </div>
+              
+              <CardFooter className="flex justify-between border-t pt-6 px-0">
+                <Button variant="outline" type="button" onClick={() => form.reset()}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    'Registrarme como voluntario'
+                  )}
+                </Button>
+              </CardFooter>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default VolunteerRegistration;
+}
