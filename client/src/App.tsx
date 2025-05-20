@@ -25,6 +25,7 @@ import AdminLogin from "@/pages/admin/login";
 import AdminVolunteers from "@/pages/admin/volunteers";
 import AdminVolunteerNew from "@/pages/admin/volunteers/new";
 import AdminVolunteerParticipations from "@/pages/admin/volunteers/participations";
+import AdminParticipationEdit from "@/pages/admin/volunteers/participations/edit";
 import Header from "@/components/Header";
 
 function Router() {

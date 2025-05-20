@@ -292,6 +292,72 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
       res.status(500).json({ message: "Error al registrar participación" });
     }
   });
+  
+  // Obtener una participación específica por ID
+  apiRouter.get("/participations/:id", async (req: Request, res: Response) => {
+    try {
+      const participationId = parseInt(req.params.id);
+      
+      if (isNaN(participationId)) {
+        return res.status(400).json({ message: "ID de participación no válido" });
+      }
+      
+      const [participation] = await db
+        .select()
+        .from(volunteerParticipations)
+        .where(eq(volunteerParticipations.id, participationId));
+      
+      if (!participation) {
+        return res.status(404).json({ message: "Participación no encontrada" });
+      }
+      
+      res.json(participation);
+    } catch (error) {
+      console.error(`Error al obtener participación ${req.params.id}:`, error);
+      res.status(500).json({ message: "Error al obtener datos de la participación" });
+    }
+  });
+  
+  // Actualizar una participación
+  apiRouter.put("/participations/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const participationId = parseInt(req.params.id);
+      
+      if (isNaN(participationId)) {
+        return res.status(400).json({ message: "ID de participación no válido" });
+      }
+      
+      // Verificar si la participación existe
+      const [existingParticipation] = await db
+        .select()
+        .from(volunteerParticipations)
+        .where(eq(volunteerParticipations.id, participationId));
+      
+      if (!existingParticipation) {
+        return res.status(404).json({ message: "Participación no encontrada" });
+      }
+      
+      // Combinar los datos existentes con los nuevos, respetando los campos inmutables
+      const updateData = {
+        ...req.body,
+        id: participationId,
+        volunteerId: existingParticipation.volunteerId, // El voluntario no se puede cambiar
+        createdAt: existingParticipation.createdAt // La fecha de creación no se puede cambiar
+      };
+      
+      // Actualizar la participación en la base de datos
+      const [updatedParticipation] = await db
+        .update(volunteerParticipations)
+        .set(updateData)
+        .where(eq(volunteerParticipations.id, participationId))
+        .returning();
+        
+      res.json(updatedParticipation);
+    } catch (error) {
+      console.error(`Error al actualizar participación ${req.params.id}:`, error);
+      res.status(500).json({ message: "Error al actualizar participación" });
+    }
+  });
 
   // === RUTAS PARA EVALUACIONES ===
 
