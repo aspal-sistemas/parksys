@@ -7,7 +7,7 @@ import { volunteerEvaluations } from '@shared/schema';
 export async function addSampleEvaluations() {
   try {
     // Buscamos participaciones existentes para asociar las evaluaciones
-    const participations = await db.query.participations.findMany({
+    const participations = await db.query.volunteerParticipations.findMany({
       limit: 10,
     });
 
@@ -77,7 +77,7 @@ export async function addSampleEvaluations() {
 
     // Insertar las evaluaciones en la base de datos
     for (const evaluation of sampleEvaluations) {
-      await db.insert(evaluations).values({
+      await db.insert(volunteerEvaluations).values({
         ...evaluation,
         createdAt: new Date()
       });
