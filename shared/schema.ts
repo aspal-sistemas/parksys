@@ -169,27 +169,7 @@ export type InsertComment = z.infer<typeof insertCommentSchema>;
 export type Incident = typeof incidents.$inferSelect;
 export type InsertIncident = z.infer<typeof insertIncidentSchema>;
 
-// Tipos para el módulo de voluntariado
-export type Volunteer = typeof volunteers.$inferSelect;
-export type InsertVolunteer = z.infer<typeof insertVolunteerSchema>;
-
-export type VolunteerParticipation = typeof volunteerParticipations.$inferSelect;
-export type InsertVolunteerParticipation = z.infer<typeof insertVolunteerParticipationSchema>;
-
-export type VolunteerEvaluation = typeof volunteerEvaluations.$inferSelect;
-export type InsertVolunteerEvaluation = z.infer<typeof insertVolunteerEvaluationSchema>;
-
-export type VolunteerRecognition = typeof volunteerRecognitions.$inferSelect;
-export type InsertVolunteerRecognition = z.infer<typeof insertVolunteerRecognitionSchema>;
-
-// Tipos extendidos para la interfaz
-export type ExtendedVolunteer = Volunteer & {
-  participations?: VolunteerParticipation[];
-  evaluations?: VolunteerEvaluation[];
-  recognitions?: VolunteerRecognition[];
-  totalHours?: number;
-  preferredPark?: Park;
-};
+// Estos tipos se definirán más abajo después de crear los esquemas de inserción
 
 // PARK TYPES
 export const PARK_TYPES = [
@@ -372,6 +352,111 @@ export const volunteerRecognitions = pgTable("volunteer_recognitions", {
   issuedById: integer("issued_by_id").notNull(),
   additionalComments: text("additional_comments"),
 });
+
+// Definición de relaciones para voluntarios
+export const volunteersRelations = relations(volunteers, ({ one, many }) => ({
+  preferredPark: one(parks, {
+    fields: [volunteers.preferredParkId],
+    references: [parks.id],
+  }),
+  participations: many(volunteerParticipations),
+  evaluations: many(volunteerEvaluations),
+  recognitions: many(volunteerRecognitions),
+}));
+
+export const volunteerParticipationsRelations = relations(volunteerParticipations, ({ one }) => ({
+  volunteer: one(volunteers, {
+    fields: [volunteerParticipations.volunteerId],
+    references: [volunteers.id],
+  }),
+  activity: one(activities, {
+    fields: [volunteerParticipations.activityId],
+    references: [activities.id],
+    relationName: "activityParticipation",
+  }),
+  park: one(parks, {
+    fields: [volunteerParticipations.parkId],
+    references: [parks.id],
+  }),
+  supervisor: one(users, {
+    fields: [volunteerParticipations.supervisorId],
+    references: [users.id],
+    relationName: "participationSupervisor",
+  }),
+}));
+
+export const volunteerEvaluationsRelations = relations(volunteerEvaluations, ({ one }) => ({
+  participation: one(volunteerParticipations, {
+    fields: [volunteerEvaluations.participationId],
+    references: [volunteerParticipations.id],
+  }),
+  volunteer: one(volunteers, {
+    fields: [volunteerEvaluations.volunteerId],
+    references: [volunteers.id],
+  }),
+  evaluator: one(users, {
+    fields: [volunteerEvaluations.evaluatorId],
+    references: [users.id],
+    relationName: "evaluator",
+  }),
+}));
+
+export const volunteerRecognitionsRelations = relations(volunteerRecognitions, ({ one }) => ({
+  volunteer: one(volunteers, {
+    fields: [volunteerRecognitions.volunteerId],
+    references: [volunteers.id],
+  }),
+  issuedBy: one(users, {
+    fields: [volunteerRecognitions.issuedById],
+    references: [users.id],
+    relationName: "recognitionIssuer",
+  }),
+}));
+
+// Esquemas de inserción para el módulo de voluntariado
+export const insertVolunteerSchema = createInsertSchema(volunteers).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true, 
+  status: true 
+});
+
+export const insertVolunteerParticipationSchema = createInsertSchema(volunteerParticipations).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export const insertVolunteerEvaluationSchema = createInsertSchema(volunteerEvaluations).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export const insertVolunteerRecognitionSchema = createInsertSchema(volunteerRecognitions).omit({ 
+  id: true, 
+  issuedAt: true 
+});
+
+// Tipos para el módulo de voluntariado
+export type Volunteer = typeof volunteers.$inferSelect;
+export type InsertVolunteer = z.infer<typeof insertVolunteerSchema>;
+
+export type VolunteerParticipation = typeof volunteerParticipations.$inferSelect;
+export type InsertVolunteerParticipation = z.infer<typeof insertVolunteerParticipationSchema>;
+
+export type VolunteerEvaluation = typeof volunteerEvaluations.$inferSelect;
+export type InsertVolunteerEvaluation = z.infer<typeof insertVolunteerEvaluationSchema>;
+
+export type VolunteerRecognition = typeof volunteerRecognitions.$inferSelect;
+export type InsertVolunteerRecognition = z.infer<typeof insertVolunteerRecognitionSchema>;
+
+// Tipos extendidos para la interfaz
+export type ExtendedVolunteer = Volunteer & {
+  participations?: VolunteerParticipation[];
+  evaluations?: VolunteerEvaluation[];
+  recognitions?: VolunteerRecognition[];
+  totalHours?: number;
+  preferredPark?: Park;
+};
 
 export type ExtendedPark = Park & {
   amenities?: Amenity[];
