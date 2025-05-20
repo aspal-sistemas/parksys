@@ -42,16 +42,16 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      const [volunteer] = await db
-        .select()
-        .from(volunteers)
-        .where(eq(volunteers.id, volunteerId));
+      // Usar consulta SQL directa para evitar problemas de esquema
+      const result = await db.execute(
+        sql`SELECT * FROM volunteers WHERE id = ${volunteerId}`
+      );
       
-      if (!volunteer) {
+      if (!result.rows || result.rows.length === 0) {
         return res.status(404).json({ message: "Voluntario no encontrado" });
       }
       
-      res.json(volunteer);
+      res.json(result.rows[0]);
     } catch (error) {
       console.error(`Error al obtener voluntario ${req.params.id}:`, error);
       res.status(500).json({ message: "Error al obtener datos del voluntario" });
