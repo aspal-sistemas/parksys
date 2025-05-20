@@ -30,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Calendar, CheckCircle, ChevronLeft, Save, Trash, User } from 'lucide-react';
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from '@/components/ui/badge';
 import { queryClient } from '@/lib/queryClient';
 import { apiRequest } from '@/lib/queryClient';
@@ -591,7 +592,7 @@ const EditVolunteer = () => {
                   <CardContent className="space-y-4">
                     <FormField
                       control={form.control}
-                      name="availableHours"
+                      name="available_hours"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Horas Disponibles</FormLabel>
@@ -613,7 +614,7 @@ const EditVolunteer = () => {
 
                     <FormField
                       control={form.control}
-                      name="availableDays"
+                      name="available_days"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Días Disponibles</FormLabel>
@@ -621,7 +622,7 @@ const EditVolunteer = () => {
                             <Textarea 
                               placeholder="Ej: Lunes, Miércoles y Sábados" 
                               {...field} 
-                              value={field.value || ''}
+                              value={Array.isArray(field.value) ? field.value.join(', ') : field.value || ''}
                               className="min-h-[80px]"
                             />
                           </FormControl>
