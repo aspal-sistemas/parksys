@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { Plus, Pencil, Trash, Filter, Map, ArrowUpDown, X, Search, Loader, AlertTriangle, AlertOctagon, FileUp } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ import { Park, Municipality } from '@shared/schema';
 
 const AdminParks = () => {
   const { toast } = useToast();
+  const [location, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMunicipality, setFilterMunicipality] = useState<string>('');
   const [filterParkType, setFilterParkType] = useState<string>('');
@@ -385,7 +387,7 @@ const AdminParks = () => {
                         variant="outline" 
                         size="icon" 
                         className="h-8 w-8"
-                        onClick={() => window.location.href = `/admin/parks/${park.id}`}
+                        onClick={() => setLocation(`/admin/parks/${park.id}`)}
                       >
                         <Pencil className="h-4 w-4 text-yellow-500" />
                       </Button>
