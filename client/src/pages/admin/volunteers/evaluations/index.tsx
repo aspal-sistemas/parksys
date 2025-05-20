@@ -87,16 +87,22 @@ const VolunteerEvaluations: React.FC = () => {
   // Get volunteer name by ID
   const getVolunteerName = (volunteerId: number) => {
     const volunteer = volunteers.find((v: any) => v.id === volunteerId);
-    return volunteer ? volunteer.fullName : `Voluntario ID: ${volunteerId}`;
+    // Verificamos si encontramos al voluntario y si tiene la propiedad full_name o fullName
+    if (volunteer) {
+      if (volunteer.full_name) return volunteer.full_name;
+      if (volunteer.fullName) return volunteer.fullName;
+    }
+    return `Voluntario ID: ${volunteerId}`;
   };
 
   // Filter evaluations based on search term and performance filter
   const filteredEvaluations = evaluations.filter((evaluation: Evaluation) => {
-    const volunteerName = getVolunteerName(evaluation.volunteerId).toLowerCase();
+    const volunteerName = getVolunteerName(evaluation.volunteerId) || '';
+    const volunteerNameLower = volunteerName.toLowerCase();
     
     const matchesSearch = 
       searchTerm === '' || 
-      volunteerName.includes(searchTerm.toLowerCase()) ||
+      volunteerNameLower.includes(searchTerm.toLowerCase()) ||
       (evaluation.comments && evaluation.comments.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesPerformance = 
