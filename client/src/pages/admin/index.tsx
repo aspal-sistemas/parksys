@@ -18,7 +18,8 @@ import {
   BarChart,
   Settings,
   Building,
-  AlertTriangle
+  AlertTriangle,
+  HeartHandshake
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,6 +52,32 @@ const AdminDashboard: React.FC = () => {
             Importar Parques
           </Button>
         </Link>
+        <Button 
+          variant="outline" 
+          className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-200"
+          onClick={async () => {
+            try {
+              const response = await fetch('/api/admin/seed/volunteers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+              });
+              
+              if (response.ok) {
+                // Mostrar notificación de éxito
+                alert("Datos de voluntarios cargados correctamente");
+                // En un proyecto real usaríamos toast para notificaciones
+              } else {
+                throw new Error('Error al cargar datos');
+              }
+            } catch (error) {
+              console.error('Error:', error);
+              alert("Error al cargar datos de voluntarios");
+            }
+          }}
+        >
+          <HeartHandshake className="mr-2 h-4 w-4" />
+          Cargar Datos de Voluntarios
+        </Button>
       </div>
       
       {/* Stats overview */}
