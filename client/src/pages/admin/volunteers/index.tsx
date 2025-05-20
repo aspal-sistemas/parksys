@@ -266,12 +266,7 @@ const VolunteersList: React.FC = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex space-x-2">
-                            <Link href={`/admin/volunteers/${volunteer.id}`}>
-                              <Button variant="ghost" size="sm">
-                                Ver
-                              </Button>
-                            </Link>
+                          <div className="flex justify-center">
                             <Link href={`/admin/volunteers/${volunteer.id}`}>
                               <Button variant="outline" size="sm">
                                 Editar
