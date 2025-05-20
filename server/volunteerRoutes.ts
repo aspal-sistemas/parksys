@@ -151,9 +151,15 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
     }
   });
 
-  apiRouter.post("/volunteers", async (req: Request, res: Response) => {
+  apiRouter.post("/volunteers", volunteerUpload.single('profileImage'), async (req: Request, res: Response) => {
     try {
-      const validationResult = insertVolunteerSchema.safeParse(req.body);
+      // Preparar datos incluyendo la imagen si se subió
+      const formData = {
+        ...req.body,
+        profileImageUrl: req.file ? `/uploads/volunteers/${req.file.filename}` : req.body.profileImageUrl || null
+      };
+      
+      const validationResult = insertVolunteerSchema.safeParse(formData);
       
       if (!validationResult.success) {
         return res.status(400).json({ 

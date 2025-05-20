@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
@@ -24,6 +24,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -37,7 +39,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
-import { CalendarIcon, ChevronLeft, Save } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, Save, Upload, User } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import AdminLayout from '@/components/AdminLayout';
 
@@ -74,11 +76,67 @@ const NewVolunteer: React.FC = () => {
     },
   });
 
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Manejar la selección de la imagen
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
+    const file = e.target.files?.[0];
+    
+    if (!file) return;
+    
+    // Validar tipo de archivo
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setUploadError('El archivo debe ser una imagen (JPG, PNG, GIF o WebP)');
+      return;
+    }
+    
+    // Validar tamaño (5MB máximo)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('La imagen no puede superar los 5MB');
+      return;
+    }
+    
+    setProfileImage(file);
+    
+    // Crear URL de vista previa
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const mutation = useMutation({
     mutationFn: (data: VolunteerFormValues) => {
+      // Usar FormData para poder enviar el archivo
+      const formData = new FormData();
+      
+      // Agregar todos los campos del formulario
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          if (key === 'birthdate' && value instanceof Date) {
+            formData.append(key, value.toISOString());
+          } else {
+            formData.append(key, String(value));
+          }
+        }
+      });
+      
+      // Agregar la imagen si existe
+      if (profileImage) {
+        formData.append('profileImage', profileImage);
+      }
+      
       return apiRequest('/api/volunteers', {
         method: 'POST',
-        data,
+        headers: {
+          // No establecer Content-Type para que el navegador establezca el boundary correcto para FormData
+        },
+        data: formData,
       });
     },
     onSuccess: () => {
@@ -128,6 +186,48 @@ const NewVolunteer: React.FC = () => {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Sección para subir fotografía */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Fotografía de perfil</label>
+                    <div className="flex flex-col items-center space-y-4">
+                      {/* Previsualización de la imagen */}
+                      <div className="w-32 h-32 border-2 border-dashed rounded-full border-gray-300 flex items-center justify-center overflow-hidden">
+                        {previewUrl ? (
+                          <img 
+                            src={previewUrl} 
+                            alt="Vista previa" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="h-12 w-12 text-gray-400" />
+                        )}
+                      </div>
+                      
+                      {/* Input de archivo (oculto) + botón personalizado */}
+                      <div className="flex flex-col items-center">
+                        <label htmlFor="profile-image" className="cursor-pointer">
+                          <div className="flex items-center bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded text-sm">
+                            <Upload className="h-4 w-4 mr-2" />
+                            {profileImage ? 'Cambiar imagen' : 'Subir imagen'}
+                          </div>
+                          <input
+                            id="profile-image"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleImageChange}
+                          />
+                        </label>
+                        {uploadError && (
+                          <p className="text-red-500 text-xs mt-1">{uploadError}</p>
+                        )}
+                        {profileImage && (
+                          <p className="text-xs text-gray-500 mt-1">{profileImage.name}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
                   <FormField
                     control={form.control}
                     name="fullName"
