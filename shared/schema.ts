@@ -420,12 +420,31 @@ export const volunteerRecognitionsRelations = relations(volunteerRecognitions, (
 }));
 
 // Esquemas de inserción para el módulo de voluntariado
-export const insertVolunteerSchema = createInsertSchema(volunteers).omit({ 
-  id: true, 
-  createdAt: true, 
-  updatedAt: true, 
-  status: true 
-});
+export const insertVolunteerSchema = createInsertSchema(volunteers)
+  .omit({ 
+    id: true, 
+    createdAt: true, 
+    updatedAt: true, 
+    status: true 
+  })
+  .extend({
+    fullName: z.string().min(1, "El nombre completo es obligatorio"),
+    email: z.string().min(1, "El correo electrónico es obligatorio").email("Ingrese un correo electrónico válido"),
+    phoneNumber: z.string().min(1, "El número de teléfono es obligatorio"),
+    address: z.string().min(1, "La dirección es obligatoria"),
+    birthDate: z.date({required_error: "La fecha de nacimiento es obligatoria"}),
+    emergencyContact: z.string().min(1, "El contacto de emergencia es obligatorio"),
+    emergencyPhone: z.string().min(1, "El teléfono de emergencia es obligatorio"),
+    occupation: z.string().min(1, "La ocupación es obligatoria"),
+    availability: z.string().min(1, "La disponibilidad es obligatoria"),
+    skills: z.string().min(1, "Las habilidades son obligatorias"),
+    interests: z.string().min(1, "Los intereses son obligatorios"),
+    previousExperience: z.string().min(1, "La experiencia previa es obligatoria"),
+    healthConditions: z.string().min(1, "Las condiciones de salud son obligatorias"),
+    legalConsent: z.boolean().refine(val => val === true, {
+      message: "Debe aceptar el consentimiento legal"
+    })
+  });
 
 export const insertVolunteerParticipationSchema = createInsertSchema(volunteerParticipations).omit({ 
   id: true, 

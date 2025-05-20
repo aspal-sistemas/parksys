@@ -60,20 +60,28 @@ const isAdult = (birthDate: Date) => {
 // Definir el esquema de validación del formulario
 const volunteerFormSchema = z.object({
   fullName: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
-  email: z.string().email({ message: "Ingrese un correo electrónico válido" }).optional().or(z.literal('')),
-  phoneNumber: z.string().min(10, { message: "Ingrese un teléfono válido" }).optional().or(z.literal('')),
-  emergencyContact: z.string().min(3, { message: "Ingrese el nombre del contacto de emergencia" }).optional().or(z.literal('')),
-  emergencyPhone: z.string().min(10, { message: "Ingrese un teléfono válido para emergencias" }).optional().or(z.literal('')),
-  address: z.string().optional().or(z.literal('')),
-  birthDate: z.date({  // Cambiado 'birthdate' a 'birthDate' para coincidir con el esquema del backend
+  email: z.string().min(1, { message: "El correo electrónico es obligatorio" }).email({ message: "Ingrese un correo electrónico válido" }),
+  phoneNumber: z.string().min(10, { message: "Ingrese un teléfono válido con al menos 10 dígitos" }),
+  emergencyContact: z.string().min(3, { message: "Ingrese el nombre del contacto de emergencia" }),
+  emergencyPhone: z.string().min(10, { message: "Ingrese un teléfono válido para emergencias con al menos 10 dígitos" }),
+  address: z.string().min(1, { message: "La dirección es obligatoria" }),
+  birthDate: z.date({
     required_error: "La fecha de nacimiento es obligatoria",
     invalid_type_error: "La fecha debe ser válida"
   }).refine(
     isAdult, 
     { message: "El voluntario debe ser mayor de 18 años" }
   ),
-  skills: z.string().optional().or(z.literal('')),
-  availability: z.string().optional().or(z.literal('')),
+  occupation: z.string().min(1, { message: "La ocupación es obligatoria" }),
+  availability: z.string().min(1, { message: "La disponibilidad es obligatoria" }),
+  skills: z.string().min(1, { message: "Las habilidades son obligatorias" }),
+  interests: z.string().min(1, { message: "Los intereses son obligatorios" }),
+  previousExperience: z.string().min(1, { message: "La experiencia previa es obligatoria" }),
+  healthConditions: z.string().min(1, { message: "Las condiciones de salud son obligatorias" }),
+  additionalComments: z.string().optional(),
+  legalConsent: z.boolean().refine(val => val === true, {
+    message: "Debe aceptar el consentimiento legal"
+  }),
   status: z.string().default("pending"),
 });
 
@@ -92,8 +100,14 @@ const NewVolunteer: React.FC = () => {
       emergencyContact: '',
       emergencyPhone: '',
       address: '',
+      occupation: '',
       skills: '',
       availability: '',
+      interests: '',
+      previousExperience: '',
+      healthConditions: '',
+      additionalComments: '',
+      legalConsent: false,
       status: 'pending',
       birthDate: undefined,
     },

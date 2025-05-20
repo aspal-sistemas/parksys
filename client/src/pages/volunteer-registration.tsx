@@ -37,21 +37,30 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 // Esquema de validación
 const volunteerFormSchema = z.object({
   fullName: z.string().min(3, { message: 'El nombre debe tener al menos 3 caracteres' }),
-  email: z.string().email({ message: 'Correo electrónico inválido' }),
+  email: z.string().min(1, { message: 'El correo electrónico es obligatorio' }).email({ message: 'Correo electrónico inválido' }),
   phoneNumber: z.string().min(10, { message: 'Número de teléfono inválido' }),
   address: z.string().min(5, { message: 'Dirección inválida' }),
   birthDate: z.string().refine(value => {
     const date = new Date(value);
-    return !isNaN(date.getTime());
-  }, { message: 'Fecha de nacimiento inválida' }),
+    if (isNaN(date.getTime())) return false;
+    
+    // Validar que sea mayor de 18 años
+    const today = new Date();
+    const minAgeDate = new Date(
+      today.getFullYear() - 18,
+      today.getMonth(),
+      today.getDate()
+    );
+    return date <= minAgeDate;
+  }, { message: 'Debes ser mayor de 18 años para registrarte' }),
   emergencyContact: z.string().min(3, { message: 'Contacto de emergencia inválido' }),
   emergencyPhone: z.string().min(10, { message: 'Teléfono de emergencia inválido' }),
-  occupation: z.string().optional(),
-  availability: z.string(),
-  skills: z.string().optional(),
-  interests: z.string().optional(),
-  previousExperience: z.string().optional(),
-  healthConditions: z.string().optional(),
+  occupation: z.string().min(1, { message: 'La ocupación es obligatoria' }),
+  availability: z.string().min(1, { message: 'Debes seleccionar tu disponibilidad' }),
+  skills: z.string().min(1, { message: 'Las habilidades son obligatorias' }),
+  interests: z.string().min(1, { message: 'Los intereses son obligatorios' }),
+  previousExperience: z.string().min(1, { message: 'La experiencia previa es obligatoria' }),
+  healthConditions: z.string().min(1, { message: 'Las condiciones de salud son obligatorias' }),
   additionalComments: z.string().optional(),
   profileImage: z.instanceof(File).optional(),
   termsAccepted: z.boolean().refine(val => val === true, {
