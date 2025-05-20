@@ -66,6 +66,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // API Router público (para endpoints que no requieren autenticación)
+  const publicApiRouter = express.Router();
+  app.use('/api/public', publicApiRouter);
+  
   // Registramos las rutas del módulo de voluntariado
   registerVolunteerRoutes(app, apiRouter, publicApiRouter, isAuthenticated);
   
