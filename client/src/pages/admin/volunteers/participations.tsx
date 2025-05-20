@@ -38,7 +38,7 @@ const ParticipationsList: React.FC = () => {
 
   // Fetch all participations
   const { data: participations = [], isLoading, isError, refetch } = useQuery({
-    queryKey: ['/api/volunteers/participations'],
+    queryKey: ['/api/participations/all'],
   });
 
   // Fetch parks for filter

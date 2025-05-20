@@ -215,8 +215,9 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
 
   // === RUTAS PARA PARTICIPACIONES ===
 
-  // Obtener todas las participaciones (¡IMPORTANTE: Este endpoint debe ir ANTES que el endpoint con parámetro!)
-  apiRouter.get("/volunteers/participations", async (_req: Request, res: Response) => {
+  // Obtener todas las participaciones 
+  // Usamos un nombre diferente para el endpoint para evitar conflictos con la ruta parametrizada
+  apiRouter.get("/participations/all", async (_req: Request, res: Response) => {
     try {
       console.log("Obteniendo todas las participaciones");
       const participations = await db
