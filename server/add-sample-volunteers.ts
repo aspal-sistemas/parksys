@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { volunteers, parks, volunteerParticipations, volunteerEvaluations, volunteerRecognitions } from "@shared/schema";
+import { volunteers, parks, volunteerParticipations, volunteerEvaluations, volunteerRecognitions, users } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
 /**
@@ -226,7 +226,10 @@ async function addSampleVolunteers() {
             );
           
           if (!existingParticipation) {
-            await db.insert(volunteerParticipations).values(formattedParticipation);
+            // Insertamos la participación y obtenemos el resultado
+            const [newParticipation] = await db.insert(volunteerParticipations)
+              .values(formattedParticipation)
+              .returning();
             console.log(`Participación creada para voluntario ${formattedParticipation.volunteerId} en parque ${formattedParticipation.parkId}`);
           } else {
             console.log(`La participación para voluntario ${formattedParticipation.volunteerId} en actividad "${formattedParticipation.activityName}" ya existe.`);
@@ -241,9 +244,18 @@ async function addSampleVolunteers() {
     
     // Crear algunos reconocimientos de muestra
     if (allVolunteers.length > 0) {
-      // Obtener usuarios para asignar como emisores de los reconocimientos
-      const allUsers = await db.select().from(users);
-      const issuedById = allUsers.length > 0 ? allUsers[0].id : 1;
+      // Usar un ID por defecto para el emisor de reconocimientos si no podemos obtener usuarios
+      let issuedById = 1;
+      
+      try {
+        // Intentar obtener usuarios, pero manejar el caso donde la tabla no existe
+        const allUsers = await db.select().from(users);
+        if (allUsers && allUsers.length > 0) {
+          issuedById = allUsers[0].id;
+        }
+      } catch (error) {
+        console.log("No se pudo obtener usuarios, usando ID por defecto:", error);
+      }
       
       const sampleRecognitions = [
         {
@@ -291,7 +303,10 @@ async function addSampleVolunteers() {
             );
           
           if (!existingRecognition) {
-            await db.insert(volunteerRecognitions).values(formattedRecognition);
+            // Insertamos el reconocimiento y obtenemos el resultado
+            const [newRecognition] = await db.insert(volunteerRecognitions)
+              .values(formattedRecognition)
+              .returning();
             console.log(`Reconocimiento creado para voluntario ${formattedRecognition.volunteerId}: ${formattedRecognition.recognitionType}`);
           } else {
             console.log(`El reconocimiento "${formattedRecognition.recognitionType}" para voluntario ${formattedRecognition.volunteerId} ya existe.`);
