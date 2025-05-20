@@ -66,12 +66,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // API Router público (para endpoints que no requieren autenticación)
-  const publicApiRouter = express.Router();
-  app.use('/api/public', publicApiRouter);
-  
   // Registramos las rutas del módulo de voluntariado
-  registerVolunteerRoutes(app, apiRouter, publicApiRouter, isAuthenticated);
+  registerVolunteerRoutes(app, apiRouter, null, isAuthenticated);
   
   app.use('/api', apiRouter);
 
@@ -1194,11 +1190,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Public API feature for connecting with other municipal applications
   // This creates endpoints that other municipal apps can use
-  const publicApiRouter = express.Router();
-  app.use('/public-api', publicApiRouter);
+  const publicRouter = express.Router();
+  app.use('/public-api', publicRouter);
   
   // Get basic park data - limited information for public consumption
-  publicApiRouter.get("/parks", async (_req: Request, res: Response) => {
+  publicRouter.get("/parks", async (_req: Request, res: Response) => {
     try {
       // Asegurarnos de excluir parques eliminados
       const parks = await storage.getParks({ includeDeleted: false });
@@ -1227,7 +1223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get detailed information about a specific park
-  publicApiRouter.get("/parks/:id", async (req: Request, res: Response) => {
+  publicRouter.get("/parks/:id", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
       const park = await storage.getExtendedPark(parkId);
@@ -1306,7 +1302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get parks by municipality ID - for inter-municipal integration
-  publicApiRouter.get("/municipalities/:id/parks", async (req: Request, res: Response) => {
+  publicRouter.get("/municipalities/:id/parks", async (req: Request, res: Response) => {
     try {
       const municipalityId = Number(req.params.id);
       const parks = await storage.getParks({ municipalityId, includeDeleted: false });
@@ -1335,7 +1331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get upcoming activities across all parks - for calendar integration
-  publicApiRouter.get("/activities", async (req: Request, res: Response) => {
+  publicRouter.get("/activities", async (req: Request, res: Response) => {
     try {
       const allParks = await storage.getParks({ includeDeleted: false });
       let allActivities: Activity[] = [];
@@ -1384,7 +1380,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get amenities for a specific park - for external applications
-  publicApiRouter.get("/parks/:id/amenities", async (req: Request, res: Response) => {
+  publicRouter.get("/parks/:id/amenities", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
       const amenities = await storage.getParkAmenities(parkId);
@@ -1412,7 +1408,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get activities for a specific park - for external applications
-  publicApiRouter.get("/parks/:id/activities", async (req: Request, res: Response) => {
+  publicRouter.get("/parks/:id/activities", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
       const activities = await storage.getParkActivities(parkId);
@@ -1443,7 +1439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Advanced search endpoint for parks
-  publicApiRouter.get("/search/parks", async (req: Request, res: Response) => {
+  publicRouter.get("/search/parks", async (req: Request, res: Response) => {
     try {
       const filters: any = {
         includeDeleted: false // Asegurarnos de excluir parques eliminados

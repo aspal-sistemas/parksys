@@ -86,8 +86,8 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
     }
   });
 
-  // Registro público de voluntarios
-  publicApiRouter.post("/volunteers/register", volunteerUpload.single('profileImage'), async (req: Request, res: Response) => {
+  // Registro público de voluntarios - Utilizamos directamente apiRouter en lugar de publicApiRouter
+  apiRouter.post("/volunteers/register", volunteerUpload.single('profileImage'), async (req: Request, res: Response) => {
     try {
       // Campos mínimos requeridos para registro público
       const requiredFields = [
