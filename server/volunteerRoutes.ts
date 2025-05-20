@@ -12,7 +12,7 @@ import { volunteers, volunteerParticipations, volunteerEvaluations, volunteerRec
 /**
  * Función que registra las rutas relacionadas con el módulo de voluntariado
  */
-export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticated: any) {
+export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRouter: any, isAuthenticated: any) {
   
   // === RUTAS PARA VOLUNTARIOS ===
   
@@ -53,6 +53,69 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
   });
 
   // Crear nuevo voluntario
+  // Registro público de voluntarios
+  publicApiRouter.post("/volunteers/register", async (req: Request, res: Response) => {
+    try {
+      // Campos mínimos requeridos para registro público
+      const requiredFields = [
+        'fullName', 'email', 'phoneNumber', 'address', 'birthDate', 
+        'emergencyContact', 'emergencyPhone', 'availability'
+      ];
+      
+      // Validar que todos los campos obligatorios estén presentes
+      for (const field of requiredFields) {
+        if (!req.body[field]) {
+          return res.status(400).json({ 
+            message: `El campo '${field}' es obligatorio` 
+          });
+        }
+      }
+      
+      // Preparar datos para inserción con status 'pending' por defecto
+      const volunteerData = {
+        fullName: req.body.fullName,
+        email: req.body.email,
+        phoneNumber: req.body.phoneNumber,
+        address: req.body.address,
+        birthDate: new Date(req.body.birthDate),
+        emergencyContact: req.body.emergencyContact,
+        emergencyPhone: req.body.emergencyPhone,
+        occupation: req.body.occupation || null,
+        availability: req.body.availability,
+        skills: req.body.skills || null,
+        interests: req.body.interests || null,
+        previousExperience: req.body.previousExperience || null,
+        healthConditions: req.body.healthConditions || null,
+        additionalComments: req.body.additionalComments || null,
+        status: 'pending', // Los voluntarios registrados inician con estado pendiente
+        totalHours: 0,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      // Insertar en la base de datos
+      const [newVolunteer] = await db
+        .insert(volunteers)
+        .values(volunteerData)
+        .returning();
+      
+      // Responder con éxito y datos básicos del voluntario
+      res.status(201).json({
+        id: newVolunteer.id,
+        fullName: newVolunteer.fullName,
+        email: newVolunteer.email,
+        status: newVolunteer.status,
+        message: "Solicitud de registro enviada exitosamente. En breve nos pondremos en contacto contigo."
+      });
+    } catch (error) {
+      console.error("Error en registro público de voluntario:", error);
+      res.status(400).json({ 
+        message: "Error al procesar la solicitud de registro", 
+        error: error instanceof Error ? error.message : "Error desconocido" 
+      });
+    }
+  });
+
   apiRouter.post("/volunteers", async (req: Request, res: Response) => {
     try {
       const validationResult = insertVolunteerSchema.safeParse(req.body);
