@@ -174,7 +174,10 @@ const UserDetail: React.FC<{
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="admin">Administrador</SelectItem>
+                <SelectItem value="director">Director</SelectItem>
                 <SelectItem value="manager">Gestor</SelectItem>
+                <SelectItem value="citizen">Ciudadano</SelectItem>
+                <SelectItem value="volunteer">Voluntario</SelectItem>
                 <SelectItem value="user">Usuario</SelectItem>
               </SelectContent>
             </Select>
@@ -458,8 +461,14 @@ const AdminUsers = () => {
     switch (role) {
       case 'admin':
         return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">Administrador</Badge>;
+      case 'director':
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Director</Badge>;
       case 'manager':
         return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Gestor</Badge>;
+      case 'citizen':
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Ciudadano</Badge>;
+      case 'volunteer':
+        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Voluntario</Badge>;
       case 'user':
         return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Usuario</Badge>;
       default:
