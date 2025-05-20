@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { storage } from "./storage";
+import { db } from "./db";
 import { 
   insertVolunteerSchema,
   insertVolunteerParticipationSchema,
@@ -7,7 +7,7 @@ import {
   insertVolunteerRecognitionSchema
 } from "@shared/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
-import { volunteers, volunteerParticipations, volunteerEvaluations, volunteerRecognitions } from "@shared/schema";
+import { volunteers, volunteerParticipations, volunteerEvaluations, volunteerRecognitions, users, parks } from "@shared/schema";
 
 /**
  * Función que registra las rutas relacionadas con el módulo de voluntariado
@@ -19,7 +19,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
   // Obtener todos los voluntarios
   apiRouter.get("/volunteers", isAuthenticated, async (_req: Request, res: Response) => {
     try {
-      const allVolunteers = await storage.getAllVolunteers();
+      const allVolunteers = await db.select().from(volunteers);
       res.json(allVolunteers);
     } catch (error) {
       console.error("Error al obtener voluntarios:", error);
@@ -36,7 +36,10 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      const volunteer = await storage.getVolunteerById(volunteerId);
+      const [volunteer] = await db
+        .select()
+        .from(volunteers)
+        .where(eq(volunteers.id, volunteerId));
       
       if (!volunteer) {
         return res.status(404).json({ message: "Voluntario no encontrado" });
@@ -61,7 +64,19 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         });
       }
       
-      const newVolunteer = await storage.createVolunteer(validationResult.data);
+      // Aseguramos los valores predeterminados
+      const volunteerData = {
+        ...validationResult.data,
+        status: "active",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      const [newVolunteer] = await db
+        .insert(volunteers)
+        .values(volunteerData)
+        .returning();
+        
       res.status(201).json(newVolunteer);
     } catch (error) {
       console.error("Error al crear voluntario:", error);
@@ -78,7 +93,11 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      const existingVolunteer = await storage.getVolunteerById(volunteerId);
+      // Verificar si el voluntario existe
+      const [existingVolunteer] = await db
+        .select()
+        .from(volunteers)
+        .where(eq(volunteers.id, volunteerId));
       
       if (!existingVolunteer) {
         return res.status(404).json({ message: "Voluntario no encontrado" });
@@ -89,10 +108,12 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         ...existingVolunteer,
         ...req.body,
         id: volunteerId,
+        updatedAt: new Date()
       };
       
-      // Validamos los datos actualizados
-      const validationResult = insertVolunteerSchema.safeParse(updatedData);
+      // Validamos los datos actualizados (omitimos algunos campos que no son necesarios validar)
+      const { id, createdAt, updatedAt, ...dataToValidate } = updatedData;
+      const validationResult = insertVolunteerSchema.safeParse(dataToValidate);
       
       if (!validationResult.success) {
         return res.status(400).json({ 
@@ -101,7 +122,13 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         });
       }
       
-      const updatedVolunteer = await storage.updateVolunteer(volunteerId, validationResult.data);
+      // Actualizamos el voluntario
+      const [updatedVolunteer] = await db
+        .update(volunteers)
+        .set(updatedData)
+        .where(eq(volunteers.id, volunteerId))
+        .returning();
+        
       res.json(updatedVolunteer);
     } catch (error) {
       console.error(`Error al actualizar voluntario ${req.params.id}:`, error);
@@ -120,17 +147,30 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
       
       const { status } = req.body;
       
-      if (!status || !["active", "inactive", "suspended"].includes(status)) {
-        return res.status(400).json({ message: "Estado no válido. Debe ser 'active', 'inactive' o 'suspended'" });
+      if (!status || !["active", "inactive", "suspended", "pending"].includes(status)) {
+        return res.status(400).json({ message: "Estado no válido. Debe ser 'active', 'inactive', 'pending' o 'suspended'" });
       }
       
-      const existingVolunteer = await storage.getVolunteerById(volunteerId);
+      // Verificar si el voluntario existe
+      const [existingVolunteer] = await db
+        .select()
+        .from(volunteers)
+        .where(eq(volunteers.id, volunteerId));
       
       if (!existingVolunteer) {
         return res.status(404).json({ message: "Voluntario no encontrado" });
       }
       
-      const updatedVolunteer = await storage.updateVolunteerStatus(volunteerId, status);
+      // Actualizar el estado del voluntario
+      const [updatedVolunteer] = await db
+        .update(volunteers)
+        .set({ 
+          status,
+          updatedAt: new Date()
+        })
+        .where(eq(volunteers.id, volunteerId))
+        .returning();
+        
       res.json(updatedVolunteer);
     } catch (error) {
       console.error(`Error al actualizar estado del voluntario ${req.params.id}:`, error);
@@ -147,13 +187,25 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      const existingVolunteer = await storage.getVolunteerById(volunteerId);
+      // Verificar si el voluntario existe
+      const [existingVolunteer] = await db
+        .select()
+        .from(volunteers)
+        .where(eq(volunteers.id, volunteerId));
       
       if (!existingVolunteer) {
         return res.status(404).json({ message: "Voluntario no encontrado" });
       }
       
-      await storage.updateVolunteerStatus(volunteerId, "inactive");
+      // Realizamos un soft delete cambiando el estado a "inactive"
+      await db
+        .update(volunteers)
+        .set({ 
+          status: "inactive",
+          updatedAt: new Date()
+        })
+        .where(eq(volunteers.id, volunteerId));
+        
       res.json({ message: "Voluntario inactivado correctamente" });
     } catch (error) {
       console.error(`Error al eliminar voluntario ${req.params.id}:`, error);
