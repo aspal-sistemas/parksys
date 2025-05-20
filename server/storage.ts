@@ -160,6 +160,10 @@ export class MemStorage implements IStorage {
   private activities: Map<number, Activity>;
   private comments: Map<number, Comment>;
   private incidents: Map<number, Incident>;
+  private volunteers: Map<number, Volunteer>;
+  private volunteerParticipations: Map<number, VolunteerParticipation>;
+  private volunteerEvaluations: Map<number, VolunteerEvaluation>;
+  private volunteerRecognitions: Map<number, VolunteerRecognition>;
   
   private userIdCounter: number;
   private municipalityIdCounter: number;
@@ -171,6 +175,10 @@ export class MemStorage implements IStorage {
   private activityIdCounter: number;
   private commentIdCounter: number;
   private incidentIdCounter: number;
+  private volunteerIdCounter: number;
+  private volunteerParticipationIdCounter: number;
+  private volunteerEvaluationIdCounter: number;
+  private volunteerRecognitionIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -184,6 +192,10 @@ export class MemStorage implements IStorage {
     this.activities = new Map();
     this.comments = new Map();
     this.incidents = new Map();
+    this.volunteers = new Map();
+    this.volunteerParticipations = new Map();
+    this.volunteerEvaluations = new Map();
+    this.volunteerRecognitions = new Map();
     
     this.userIdCounter = 1;
     this.municipalityIdCounter = 1;
@@ -195,6 +207,10 @@ export class MemStorage implements IStorage {
     this.activityIdCounter = 1;
     this.commentIdCounter = 1;
     this.incidentIdCounter = 1;
+    this.volunteerIdCounter = 1;
+    this.volunteerParticipationIdCounter = 1;
+    this.volunteerEvaluationIdCounter = 1;
+    this.volunteerRecognitionIdCounter = 1;
     
     // Inicializar los datos por defecto de forma sincrónica
     this.initializeDefaultDataSync();
@@ -1791,6 +1807,257 @@ export class DatabaseStorage implements IStorage {
       .where(eq(incidents.id, id))
       .returning();
     return updatedIncident || undefined;
+  }
+
+  // === Funciones para el módulo de voluntariado ===
+
+  // Operaciones de Voluntarios
+  async getVolunteerById(id: number): Promise<Volunteer | undefined> {
+    const [volunteer] = await db.select().from(volunteers).where(eq(volunteers.id, id));
+    return volunteer;
+  }
+
+  async getAllVolunteers(): Promise<Volunteer[]> {
+    return db.select().from(volunteers);
+  }
+
+  async getExtendedVolunteer(id: number): Promise<ExtendedVolunteer | undefined> {
+    const volunteer = await this.getVolunteerById(id);
+    if (!volunteer) return undefined;
+
+    const participations = await this.getVolunteerParticipations(id);
+    const evaluations = await this.getVolunteerEvaluations(id);
+    const recognitions = await this.getVolunteerRecognitions(id);
+    
+    // Calcular horas totales
+    const totalHours = participations.reduce((sum, participation) => {
+      return sum + (participation.hours || 0);
+    }, 0);
+    
+    // Obtener datos del parque preferido si existe
+    let preferredPark = undefined;
+    if (volunteer.preferredParkId) {
+      preferredPark = await this.getPark(volunteer.preferredParkId);
+    }
+
+    return {
+      ...volunteer,
+      participations,
+      evaluations,
+      recognitions,
+      totalHours,
+      preferredPark
+    };
+  }
+
+  async createVolunteer(volunteerData: InsertVolunteer): Promise<Volunteer> {
+    const newVolunteer = {
+      ...volunteerData,
+      status: "pending", // Estado inicial siempre es 'pending'
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const [volunteer] = await db.insert(volunteers).values(newVolunteer).returning();
+    return volunteer;
+  }
+
+  async updateVolunteer(id: number, volunteerData: Partial<InsertVolunteer>): Promise<Volunteer | undefined> {
+    const [updatedVolunteer] = await db
+      .update(volunteers)
+      .set({
+        ...volunteerData,
+        updatedAt: new Date()
+      })
+      .where(eq(volunteers.id, id))
+      .returning();
+    return updatedVolunteer;
+  }
+
+  async updateVolunteerStatus(id: number, status: string): Promise<Volunteer | undefined> {
+    if (!["pending", "active", "inactive", "suspended"].includes(status)) {
+      throw new Error("Estado no válido para voluntario");
+    }
+    
+    const [updatedVolunteer] = await db
+      .update(volunteers)
+      .set({
+        status,
+        updatedAt: new Date()
+      })
+      .where(eq(volunteers.id, id))
+      .returning();
+    return updatedVolunteer;
+  }
+
+  // Operaciones de Participaciones de Voluntarios
+  async getParticipationById(id: number): Promise<VolunteerParticipation | undefined> {
+    const [participation] = await db.select()
+      .from(volunteerParticipations)
+      .where(eq(volunteerParticipations.id, id));
+    return participation;
+  }
+
+  async getVolunteerParticipations(volunteerId: number): Promise<VolunteerParticipation[]> {
+    return db.select()
+      .from(volunteerParticipations)
+      .where(eq(volunteerParticipations.volunteerId, volunteerId))
+      .orderBy(desc(volunteerParticipations.date));
+  }
+
+  async createVolunteerParticipation(participationData: InsertVolunteerParticipation): Promise<VolunteerParticipation> {
+    const [participation] = await db.insert(volunteerParticipations)
+      .values({
+        ...participationData,
+        createdAt: new Date()
+      })
+      .returning();
+    return participation;
+  }
+
+  async updateVolunteerParticipation(id: number, participationData: Partial<InsertVolunteerParticipation>): Promise<VolunteerParticipation | undefined> {
+    const [updatedParticipation] = await db
+      .update(volunteerParticipations)
+      .set(participationData)
+      .where(eq(volunteerParticipations.id, id))
+      .returning();
+    return updatedParticipation;
+  }
+
+  async deleteVolunteerParticipation(id: number): Promise<boolean> {
+    await db.delete(volunteerParticipations).where(eq(volunteerParticipations.id, id));
+    return true;
+  }
+
+  // Operaciones de Evaluaciones de Voluntarios
+  async getEvaluationById(id: number): Promise<VolunteerEvaluation | undefined> {
+    const [evaluation] = await db.select()
+      .from(volunteerEvaluations)
+      .where(eq(volunteerEvaluations.id, id));
+    return evaluation;
+  }
+
+  async getVolunteerEvaluations(volunteerId: number): Promise<VolunteerEvaluation[]> {
+    return db.select()
+      .from(volunteerEvaluations)
+      .where(eq(volunteerEvaluations.volunteerId, volunteerId))
+      .orderBy(desc(volunteerEvaluations.createdAt));
+  }
+
+  async createVolunteerEvaluation(evaluationData: InsertVolunteerEvaluation): Promise<VolunteerEvaluation> {
+    const [evaluation] = await db.insert(volunteerEvaluations)
+      .values({
+        ...evaluationData,
+        createdAt: new Date()
+      })
+      .returning();
+    return evaluation;
+  }
+
+  async updateVolunteerEvaluation(id: number, evaluationData: Partial<InsertVolunteerEvaluation>): Promise<VolunteerEvaluation | undefined> {
+    const [updatedEvaluation] = await db
+      .update(volunteerEvaluations)
+      .set(evaluationData)
+      .where(eq(volunteerEvaluations.id, id))
+      .returning();
+    return updatedEvaluation;
+  }
+
+  async deleteVolunteerEvaluation(id: number): Promise<boolean> {
+    await db.delete(volunteerEvaluations).where(eq(volunteerEvaluations.id, id));
+    return true;
+  }
+
+  // Operaciones de Reconocimientos de Voluntarios
+  async getRecognitionById(id: number): Promise<VolunteerRecognition | undefined> {
+    const [recognition] = await db.select()
+      .from(volunteerRecognitions)
+      .where(eq(volunteerRecognitions.id, id));
+    return recognition;
+  }
+
+  async getVolunteerRecognitions(volunteerId: number): Promise<VolunteerRecognition[]> {
+    return db.select()
+      .from(volunteerRecognitions)
+      .where(eq(volunteerRecognitions.volunteerId, volunteerId))
+      .orderBy(desc(volunteerRecognitions.issuedAt));
+  }
+
+  async createVolunteerRecognition(recognitionData: InsertVolunteerRecognition): Promise<VolunteerRecognition> {
+    const [recognition] = await db.insert(volunteerRecognitions)
+      .values({
+        ...recognitionData,
+        issuedAt: new Date()
+      })
+      .returning();
+    return recognition;
+  }
+
+  async updateVolunteerRecognition(id: number, recognitionData: Partial<InsertVolunteerRecognition>): Promise<VolunteerRecognition | undefined> {
+    const [updatedRecognition] = await db
+      .update(volunteerRecognitions)
+      .set(recognitionData)
+      .where(eq(volunteerRecognitions.id, id))
+      .returning();
+    return updatedRecognition;
+  }
+
+  async deleteVolunteerRecognition(id: number): Promise<boolean> {
+    await db.delete(volunteerRecognitions).where(eq(volunteerRecognitions.id, id));
+    return true;
+  }
+
+  // Estadísticas de Voluntarios
+  async countVolunteersByStatus(status: string): Promise<number> {
+    const [result] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(volunteers)
+      .where(eq(volunteers.status, status));
+    return result.count;
+  }
+
+  async getTotalVolunteerHours(): Promise<number> {
+    const [result] = await db
+      .select({ 
+        totalHours: sql<number>`SUM(COALESCE(${volunteerParticipations.hours}, 0))` 
+      })
+      .from(volunteerParticipations);
+    return result.totalHours || 0;
+  }
+
+  async getTopVolunteers(limit: number): Promise<ExtendedVolunteer[]> {
+    // Primero obtenemos los IDs de los voluntarios con más horas
+    const topVolunteerIds = await db
+      .select({ 
+        volunteerId: volunteerParticipations.volunteerId,
+        totalHours: sql<number>`SUM(COALESCE(${volunteerParticipations.hours}, 0))` 
+      })
+      .from(volunteerParticipations)
+      .groupBy(volunteerParticipations.volunteerId)
+      .orderBy(desc(sql`SUM(COALESCE(${volunteerParticipations.hours}, 0))`))
+      .limit(limit);
+    
+    // Luego obtenemos los datos completos de esos voluntarios
+    const extendedVolunteers: ExtendedVolunteer[] = [];
+    for (const { volunteerId, totalHours } of topVolunteerIds) {
+      const volunteer = await this.getExtendedVolunteer(volunteerId);
+      if (volunteer) {
+        extendedVolunteers.push({
+          ...volunteer,
+          totalHours: Number(totalHours)
+        });
+      }
+    }
+    
+    return extendedVolunteers;
+  }
+
+  async getRecentVolunteerActivities(limit: number): Promise<VolunteerParticipation[]> {
+    // Obtenemos las participaciones más recientes
+    return db.select()
+      .from(volunteerParticipations)
+      .orderBy(desc(volunteerParticipations.date))
+      .limit(limit);
   }
 }
 
