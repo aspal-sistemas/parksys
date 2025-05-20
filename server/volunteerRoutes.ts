@@ -92,7 +92,9 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       // Campos mínimos requeridos para registro público
       const requiredFields = [
         'fullName', 'email', 'phoneNumber', 'address', 'birthDate', 
-        'emergencyContact', 'emergencyPhone', 'availability'
+        'emergencyContact', 'emergencyPhone', 'availability', 'skills',
+        'interests', 'previousExperience', 'healthConditions', 'occupation',
+        'termsAccepted'
       ];
       
       // Validar que todos los campos obligatorios estén presentes
@@ -104,21 +106,51 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         }
       }
       
+      // Validar fecha de nacimiento (mayor de 18 años)
+      const birthDate = new Date(req.body.birthDate);
+      
+      if (isNaN(birthDate.getTime())) {
+        return res.status(400).json({ 
+          message: "Fecha de nacimiento no válida" 
+        });
+      }
+      
+      // Validar que sea mayor de 18 años
+      const today = new Date();
+      const minAgeDate = new Date(
+        today.getFullYear() - 18,
+        today.getMonth(),
+        today.getDate()
+      );
+      
+      if (birthDate > minAgeDate) {
+        return res.status(400).json({ 
+          message: "Debes ser mayor de 18 años para registrarte" 
+        });
+      }
+      
+      // Validar aceptación de términos
+      if (req.body.termsAccepted !== 'true') {
+        return res.status(400).json({ 
+          message: "Debes aceptar los términos y condiciones" 
+        });
+      }
+      
       // Preparar datos para inserción con status 'pending' por defecto
       const volunteerData = {
         fullName: req.body.fullName,
         email: req.body.email,
         phoneNumber: req.body.phoneNumber,
         address: req.body.address,
-        birthDate: new Date(req.body.birthDate),
+        birthDate: birthDate,
         emergencyContact: req.body.emergencyContact,
         emergencyPhone: req.body.emergencyPhone,
-        occupation: req.body.occupation || null,
+        occupation: req.body.occupation,
         availability: req.body.availability,
-        skills: req.body.skills || null,
-        interests: req.body.interests || null,
-        previousExperience: req.body.previousExperience || null,
-        healthConditions: req.body.healthConditions || null,
+        skills: req.body.skills,
+        interests: req.body.interests,
+        previousExperience: req.body.previousExperience,
+        healthConditions: req.body.healthConditions,
         additionalComments: req.body.additionalComments || null,
         status: 'pending', // Los voluntarios registrados inician con estado pendiente
         totalHours: 0,
