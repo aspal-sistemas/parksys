@@ -40,13 +40,10 @@ import { apiRequest } from '@/lib/queryClient';
 
 // Categorías para actividades
 const ACTIVITY_CATEGORIES = [
-  { value: "deportiva", label: "Deportiva" },
-  { value: "cultural", label: "Cultural" },
-  { value: "educativa", label: "Educativa" },
-  { value: "recreativa", label: "Recreativa" },
-  { value: "comunitaria", label: "Comunitaria" },
-  { value: "ambiental", label: "Ambiental" },
-  { value: "salud", label: "Salud y Bienestar" }
+  { value: "artecultura", label: "Arte y Cultura" },
+  { value: "recreacionbienestar", label: "Recreación y Bienestar" },
+  { value: "temporada", label: "Eventos de Temporada" },
+  { value: "naturalezaciencia", label: "Naturaleza, Ciencia y Conservación" }
 ];
 
 interface ActivityCatalogItem {
@@ -96,7 +93,7 @@ const AdminActivityCatalogPage: React.FC = () => {
       id: 1,
       name: "Clase de Yoga",
       description: "Sesión de yoga para todos los niveles con instructor",
-      category: "salud",
+      category: "recreacionbienestar",
       duration: 60,
       capacity: 20,
       materials: "Tapetes de yoga, bloques, mantas",
@@ -107,7 +104,7 @@ const AdminActivityCatalogPage: React.FC = () => {
       id: 2,
       name: "Taller de Pintura",
       description: "Taller creativo de pintura para niños y adultos",
-      category: "cultural",
+      category: "artecultura",
       duration: 120,
       capacity: 15,
       materials: "Lienzos, pinturas, pinceles, caballetes",
@@ -116,14 +113,25 @@ const AdminActivityCatalogPage: React.FC = () => {
     },
     {
       id: 3,
-      name: "Torneo de Fútbol",
-      description: "Torneo deportivo para equipos locales",
-      category: "deportiva",
-      duration: 180,
-      capacity: 100,
-      materials: "Balones, conos, silbatos, petos",
-      staffRequired: 5,
+      name: "Festival de Primavera",
+      description: "Evento familiar con actividades temáticas de la estación",
+      category: "temporada",
+      duration: 240,
+      capacity: 200,
+      materials: "Decoraciones, stands, equipos de sonido",
+      staffRequired: 8,
       isRecurring: false
+    },
+    {
+      id: 4,
+      name: "Taller de Identificación de Plantas Nativas",
+      description: "Actividad educativa para conocer y conservar especies locales",
+      category: "naturalezaciencia",
+      duration: 120,
+      capacity: 30,
+      materials: "Guías de identificación, lupas, libretas",
+      staffRequired: 2,
+      isRecurring: true
     }
   ];
 
