@@ -374,35 +374,59 @@ const AdminSidebarModular: React.FC = () => {
                 value="volunteers"
               >
                 <NavItem 
-                  href="/admin/volunteers/management" 
+                  href="/admin/volunteers" 
                   icon={<Users className="h-4 w-4" />}
-                  active={location.startsWith('/admin/volunteers/management')}
+                  active={location === '/admin/volunteers'}
                 >
-                  Gestión de Voluntarios
+                  Lista de Voluntarios
                 </NavItem>
                 
                 <NavItem 
-                  href="/admin/volunteers/activities" 
+                  href="/admin/volunteers/new" 
+                  icon={<UserPlus className="h-4 w-4" />}
+                  active={location === '/admin/volunteers/new'}
+                >
+                  Registrar Voluntario
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/volunteers/participations" 
                   icon={<CalendarClock className="h-4 w-4" />}
-                  active={location.startsWith('/admin/volunteers/activities')}
+                  active={location.startsWith('/admin/volunteers/participations')}
                 >
-                  Actividades
+                  Participaciones
                 </NavItem>
                 
                 <NavItem 
-                  href="/admin/volunteers/training" 
-                  icon={<GraduationCap className="h-4 w-4" />}
-                  active={location.startsWith('/admin/volunteers/training')}
+                  href="/admin/volunteers/evaluations" 
+                  icon={<CheckSquare className="h-4 w-4" />}
+                  active={location.startsWith('/admin/volunteers/evaluations')}
                 >
-                  Capacitación
+                  Evaluaciones
                 </NavItem>
                 
                 <NavItem 
-                  href="/admin/volunteers/reports" 
-                  icon={<FileText className="h-4 w-4" />}
-                  active={location.startsWith('/admin/volunteers/reports')}
+                  href="/admin/volunteers/recognitions" 
+                  icon={<Award className="h-4 w-4" />}
+                  active={location.startsWith('/admin/volunteers/recognitions')}
                 >
-                  Reportes
+                  Reconocimientos
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/volunteers/dashboard" 
+                  icon={<BarChart className="h-4 w-4" />}
+                  active={location === '/admin/volunteers/dashboard'}
+                >
+                  Dashboard
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/volunteers/settings" 
+                  icon={<Settings className="h-4 w-4" />}
+                  active={location === '/admin/volunteers/settings'}
+                >
+                  Configuración
                 </NavItem>
               </ModuleNav>
               
