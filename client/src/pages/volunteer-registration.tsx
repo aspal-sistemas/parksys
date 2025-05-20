@@ -101,15 +101,29 @@ const VolunteerRegistration = () => {
   // Mutación para enviar datos
   const { mutate, isPending, isError, error } = useMutation({
     mutationFn: async (data: VolunteerFormValues) => {
-      const response = await fetch('/api/public/volunteers/register', {
+      // Crear FormData para enviar datos incluyendo la imagen
+      const formData = new FormData();
+      
+      // Agregar todos los campos de texto
+      Object.keys(data).forEach(key => {
+        if (key !== 'profileImage' && data[key as keyof VolunteerFormValues] !== undefined) {
+          formData.append(key, String(data[key as keyof VolunteerFormValues]));
+        }
+      });
+      
+      // Agregar la imagen si existe
+      if (selectedImage) {
+        formData.append('profileImage', selectedImage);
+      }
+      
+      const response = await fetch('/api/volunteers/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
+        // No incluimos Content-Type para que el navegador establezca el boundary correcto para FormData
+        body: formData
       });
       if (!response.ok) {
-        throw new Error('Error al procesar el registro');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al procesar el registro');
       }
       return await response.json();
     },
@@ -148,22 +162,7 @@ const VolunteerRegistration = () => {
   
   // Envío del formulario
   const onSubmit = async (data: VolunteerFormValues) => {
-    // Crear FormData para enviar datos incluyendo la imagen
-    const formData = new FormData();
-    
-    // Agregar todos los campos de texto
-    Object.keys(data).forEach(key => {
-      if (key !== 'profileImage' && data[key as keyof VolunteerFormValues] !== undefined) {
-        formData.append(key, data[key as keyof VolunteerFormValues] as string);
-      }
-    });
-    
-    // Agregar la imagen si existe
-    if (selectedImage) {
-      formData.append('profileImage', selectedImage);
-    }
-    
-    // Usar el FormData en la mutación
+    // Directamente usamos los datos del formulario en la mutación
     mutate(data);
   };
 
