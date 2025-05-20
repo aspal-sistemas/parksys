@@ -272,7 +272,7 @@ const VolunteersList: React.FC = () => {
                                 Ver
                               </Button>
                             </Link>
-                            <Link href={`/admin/volunteers/${volunteer.id}/edit`}>
+                            <Link href={`/admin/volunteers/${volunteer.id}`}>
                               <Button variant="outline" size="sm">
                                 Editar
                               </Button>
