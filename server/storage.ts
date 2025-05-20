@@ -1,9 +1,13 @@
 import {
   users, municipalities, parks, parkImages, amenities, parkAmenities, documents, activities, comments, incidents,
+  volunteers, volunteerParticipations, volunteerEvaluations, volunteerRecognitions,
   type User, type InsertUser, type Municipality, type InsertMunicipality, type Park, type InsertPark, 
   type ParkImage, type InsertParkImage, type Amenity, type InsertAmenity, type ParkAmenity, type InsertParkAmenity,
   type Document, type InsertDocument, type Activity, type InsertActivity, type Comment, type InsertComment, 
-  type Incident, type InsertIncident, type ExtendedPark, PARK_TYPES, DEFAULT_AMENITIES
+  type Incident, type InsertIncident, type ExtendedPark, PARK_TYPES, DEFAULT_AMENITIES,
+  type Volunteer, type InsertVolunteer, type VolunteerParticipation, type InsertVolunteerParticipation,
+  type VolunteerEvaluation, type InsertVolunteerEvaluation, type VolunteerRecognition, type InsertVolunteerRecognition,
+  type ExtendedVolunteer
 } from "@shared/schema";
 import { db } from "./db";
 import { and, eq, like, inArray, or, desc, isNull, lte, gte } from "drizzle-orm";
@@ -107,6 +111,41 @@ export interface IStorage {
   getAllIncidents(): Promise<Incident[]>;
   createIncident(incident: InsertIncident): Promise<Incident>;
   updateIncidentStatus(id: number, status: string): Promise<Incident | undefined>;
+
+  // Volunteer operations
+  getVolunteerById(id: number): Promise<Volunteer | undefined>;
+  getAllVolunteers(): Promise<Volunteer[]>;
+  getExtendedVolunteer(id: number): Promise<ExtendedVolunteer | undefined>;
+  createVolunteer(volunteer: InsertVolunteer): Promise<Volunteer>;
+  updateVolunteer(id: number, volunteer: Partial<InsertVolunteer>): Promise<Volunteer | undefined>;
+  updateVolunteerStatus(id: number, status: string): Promise<Volunteer | undefined>;
+  
+  // Volunteer Participation operations
+  getParticipationById(id: number): Promise<VolunteerParticipation | undefined>;
+  getVolunteerParticipations(volunteerId: number): Promise<VolunteerParticipation[]>;
+  createVolunteerParticipation(participation: InsertVolunteerParticipation): Promise<VolunteerParticipation>;
+  updateVolunteerParticipation(id: number, participation: Partial<InsertVolunteerParticipation>): Promise<VolunteerParticipation | undefined>;
+  deleteVolunteerParticipation(id: number): Promise<boolean>;
+  
+  // Volunteer Evaluation operations
+  getEvaluationById(id: number): Promise<VolunteerEvaluation | undefined>;
+  getVolunteerEvaluations(volunteerId: number): Promise<VolunteerEvaluation[]>;
+  createVolunteerEvaluation(evaluation: InsertVolunteerEvaluation): Promise<VolunteerEvaluation>;
+  updateVolunteerEvaluation(id: number, evaluation: Partial<InsertVolunteerEvaluation>): Promise<VolunteerEvaluation | undefined>;
+  deleteVolunteerEvaluation(id: number): Promise<boolean>;
+  
+  // Volunteer Recognition operations
+  getRecognitionById(id: number): Promise<VolunteerRecognition | undefined>;
+  getVolunteerRecognitions(volunteerId: number): Promise<VolunteerRecognition[]>;
+  createVolunteerRecognition(recognition: InsertVolunteerRecognition): Promise<VolunteerRecognition>;
+  updateVolunteerRecognition(id: number, recognition: Partial<InsertVolunteerRecognition>): Promise<VolunteerRecognition | undefined>;
+  deleteVolunteerRecognition(id: number): Promise<boolean>;
+  
+  // Volunteer Statistics operations
+  countVolunteersByStatus(status: string): Promise<number>;
+  getTotalVolunteerHours(): Promise<number>;
+  getTopVolunteers(limit: number): Promise<ExtendedVolunteer[]>;
+  getRecentVolunteerActivities(limit: number): Promise<VolunteerParticipation[]>;
 }
 
 export class MemStorage implements IStorage {
