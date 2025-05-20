@@ -8,16 +8,21 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
-  method: string, 
   url: string, 
-  data?: unknown
+  options: {
+    method?: string;
+    data?: unknown;
+    headers?: Record<string, string>;
+  } = {}
 ): Promise<Response> {
   // Para la ruta de inicio de sesión no queremos enviar credenciales predeterminadas
   const isLoginRequest = url === '/api/login';
+  const method = options.method || 'GET';
+  const data = options.data;
   
   // Añadimos un token de autenticación para desarrollo excepto para login
-  const headers: Record<string, string> = {
-    ...(data ? { "Content-Type": "application/json" } : {})
+  let headers: Record<string, string> = {
+    ...options.headers
   };
   
   // Solo agregamos las cabeceras de autorización si no es una petición de login
@@ -26,11 +31,26 @@ export async function apiRequest(
     headers["X-User-Id"] = "1"; // Este es el ID del usuario admin
     headers["X-User-Role"] = "super_admin"; // Asignamos rol de super_admin para tener todos los permisos
   }
+  
+  // Solo añadimos Content-Type JSON si no es FormData
+  if (data && !(data instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  // Preparamos el cuerpo de la petición
+  let body = undefined;
+  if (data) {
+    if (data instanceof FormData) {
+      body = data;
+    } else {
+      body = JSON.stringify(data);
+    }
+  }
 
   const res = await fetch(url, {
     method,
     headers,
-    body: data ? JSON.stringify(data) : undefined,
+    body,
     credentials: "include",
   });
 

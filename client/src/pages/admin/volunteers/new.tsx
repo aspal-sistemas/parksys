@@ -43,6 +43,20 @@ import { CalendarIcon, ChevronLeft, Save, Upload, User } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import AdminLayout from '@/components/AdminLayout';
 
+// Función para validar edad mínima
+const isAdult = (birthdate: Date) => {
+  if (!birthdate) return false;
+  
+  const today = new Date();
+  const minAgeDate = new Date(
+    today.getFullYear() - 18,
+    today.getMonth(),
+    today.getDate()
+  );
+  
+  return birthdate <= minAgeDate;
+};
+
 // Definir el esquema de validación del formulario
 const volunteerFormSchema = z.object({
   fullName: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
@@ -50,7 +64,13 @@ const volunteerFormSchema = z.object({
   phoneNumber: z.string().min(10, { message: "Ingrese un teléfono válido" }).optional().or(z.literal('')),
   emergencyContact: z.string().min(10, { message: "Ingrese un contacto de emergencia válido" }).optional().or(z.literal('')),
   address: z.string().optional().or(z.literal('')),
-  birthdate: z.date().optional(),
+  birthdate: z.date({
+    required_error: "La fecha de nacimiento es obligatoria",
+    invalid_type_error: "La fecha debe ser válida"
+  }).refine(
+    isAdult, 
+    { message: "El voluntario debe ser mayor de 18 años" }
+  ),
   skills: z.string().optional().or(z.literal('')),
   availability: z.string().optional().or(z.literal('')),
   status: z.string().default("pending"),
@@ -119,7 +139,10 @@ const NewVolunteer: React.FC = () => {
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           if (key === 'birthdate' && value instanceof Date) {
-            formData.append(key, value.toISOString());
+            // Verificar si es fecha válida antes de convertir a ISO
+            if (!isNaN(value.getTime())) {
+              formData.append(key, value.toISOString());
+            }
           } else {
             formData.append(key, String(value));
           }
@@ -133,9 +156,6 @@ const NewVolunteer: React.FC = () => {
       
       return apiRequest('/api/volunteers', {
         method: 'POST',
-        headers: {
-          // No establecer Content-Type para que el navegador establezca el boundary correcto para FormData
-        },
         data: formData,
       });
     },
@@ -289,7 +309,7 @@ const NewVolunteer: React.FC = () => {
                     name="birthdate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>Fecha de nacimiento</FormLabel>
+                        <FormLabel>Fecha de nacimiento *</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -301,7 +321,7 @@ const NewVolunteer: React.FC = () => {
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP", { locale: es })
+                                  format(field.value, "dd/MM/yyyy", { locale: es })
                                 ) : (
                                   <span>Seleccionar fecha</span>
                                 )}
@@ -310,17 +330,57 @@ const NewVolunteer: React.FC = () => {
                             </FormControl>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
+                            <div className="p-3 border-b border-border">
+                              <div className="flex justify-between items-center">
+                                <Select
+                                  onValueChange={(value) => {
+                                    const currentDate = field.value || new Date();
+                                    const newDate = new Date(currentDate);
+                                    newDate.setFullYear(parseInt(value));
+                                    field.onChange(newDate);
+                                  }}
+                                  defaultValue={(field.value?.getFullYear() || new Date().getFullYear() - 25).toString()}
+                                >
+                                  <SelectTrigger className="w-[120px]">
+                                    <SelectValue placeholder="Año" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {Array.from({ length: 70 }, (_, i) => {
+                                      const year = new Date().getFullYear() - 18 - i;
+                                      return (
+                                        <SelectItem key={year} value={year.toString()}>
+                                          {year}
+                                        </SelectItem>
+                                      );
+                                    })}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
                             <Calendar
                               mode="single"
                               selected={field.value}
                               onSelect={field.onChange}
-                              disabled={(date) =>
-                                date > new Date() || date < new Date("1940-01-01")
-                              }
+                              disabled={(date) => {
+                                // Calcular la fecha mínima para 18 años
+                                const today = new Date();
+                                const minAgeDate = new Date(
+                                  today.getFullYear() - 18,
+                                  today.getMonth(),
+                                  today.getDate()
+                                );
+                                
+                                return date > minAgeDate || date < new Date("1940-01-01");
+                              }}
                               initialFocus
+                              fromYear={1940}
+                              toYear={new Date().getFullYear() - 18}
                             />
                           </PopoverContent>
                         </Popover>
+                        <FormDescription>
+                          Los voluntarios deben ser mayores de 18 años.
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
