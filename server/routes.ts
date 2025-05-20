@@ -1585,5 +1585,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Ruta para agregar datos de muestra de evaluaciones
+  apiRouter.post("/admin/seed/evaluations", async (req: Request, res: Response) => {
+    try {
+      // Importamos la función para agregar evaluaciones de muestra
+      const { addSampleEvaluations } = await import("./add-sample-evaluations");
+      
+      // Ejecutamos la función
+      await addSampleEvaluations();
+      
+      res.status(200).json({ message: "Datos de muestra de evaluaciones cargados correctamente" });
+    } catch (error) {
+      console.error("Error al cargar datos de muestra de evaluaciones:", error);
+      res.status(500).json({ message: "Error al cargar datos de muestra de evaluaciones" });
+    }
+  });
+  
   return httpServer;
 }

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
+import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,8 +26,9 @@ import {
 } from "@/components/ui/select";
 import { 
   Search, Filter, RefreshCw, FileEdit, Star, StarHalf, AlertTriangle,
-  Clock, User
+  Clock, User, Database, Loader2
 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/AdminLayout';
 
 // Tipo para la evaluación de voluntarios
@@ -53,6 +55,30 @@ const VolunteerEvaluations: React.FC = () => {
   // Fetch all evaluations
   const { data: evaluations = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/volunteers/evaluations/all'],
+  });
+  
+  // Mutation para cargar datos de muestra de evaluaciones
+  const loadSampleData = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('/api/admin/seed/evaluations', {
+        method: 'POST',
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Datos de muestra cargados",
+        description: "Las evaluaciones de muestra se han cargado correctamente",
+      });
+      refetch();
+    },
+    onError: (error) => {
+      console.error("Error al cargar datos de muestra:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los datos de muestra. Intente nuevamente.",
+        variant: "destructive",
+      });
+    },
   });
 
   // Fetch volunteers data to display names
@@ -157,6 +183,25 @@ const VolunteerEvaluations: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Evaluaciones de Voluntarios</h1>
           <div className="flex gap-2">
+            {evaluations.length === 0 && (
+              <Button 
+                variant="outline" 
+                onClick={() => loadSampleData.mutate()}
+                disabled={loadSampleData.isPending}
+              >
+                {loadSampleData.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Cargando...
+                  </>
+                ) : (
+                  <>
+                    <Database className="h-4 w-4 mr-2" />
+                    Cargar datos de muestra
+                  </>
+                )}
+              </Button>
+            )}
             <Button variant="outline" onClick={() => refetch()}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Actualizar
