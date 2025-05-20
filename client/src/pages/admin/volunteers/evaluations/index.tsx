@@ -52,7 +52,7 @@ const VolunteerEvaluations: React.FC = () => {
 
   // Fetch all evaluations
   const { data: evaluations = [], isLoading, isError, refetch } = useQuery({
-    queryKey: ['/api/volunteers/evaluations'],
+    queryKey: ['/api/volunteers/evaluations/all'],
   });
 
   // Fetch volunteers data to display names

@@ -27,6 +27,7 @@ import AdminVolunteerNew from "@/pages/admin/volunteers/new";
 import AdminVolunteerParticipations from "@/pages/admin/volunteers/participations";
 import AdminParticipationEdit from "@/pages/admin/volunteers/participations/edit";
 import AdminVolunteerEvaluations from "@/pages/admin/volunteers/evaluations";
+import AdminEvaluationEdit from "@/pages/admin/volunteers/evaluations/edit";
 import Header from "@/components/Header";
 
 function Router() {
@@ -60,6 +61,7 @@ function Router() {
         <Route path="/admin/volunteers/participations" component={AdminVolunteerParticipations} />
         <Route path="/admin/volunteers/participations/:id" component={AdminParticipationEdit} />
         <Route path="/admin/volunteers/evaluations" component={AdminVolunteerEvaluations} />
+        <Route path="/admin/volunteers/evaluations/:id" component={AdminEvaluationEdit} />
         <Route path="/admin/volunteers/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando editor de voluntarios...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/edit')))}

@@ -362,7 +362,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
   // === RUTAS PARA EVALUACIONES ===
 
   // Obtener todas las evaluaciones
-  apiRouter.get("/volunteers/evaluations", isAuthenticated, async (_req: Request, res: Response) => {
+  apiRouter.get("/volunteers/evaluations/all", isAuthenticated, async (_req: Request, res: Response) => {
     try {
       console.log("Obteniendo todas las evaluaciones");
       const evaluations = await db
@@ -375,6 +375,74 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
     } catch (error) {
       console.error("Error al obtener evaluaciones:", error);
       res.status(500).json({ message: "Error al obtener evaluaciones" });
+    }
+  });
+  
+  // Obtener una evaluación específica por ID
+  apiRouter.get("/volunteers/evaluations/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const evaluationId = parseInt(req.params.id);
+      
+      if (isNaN(evaluationId)) {
+        return res.status(400).json({ message: "ID de evaluación inválido" });
+      }
+      
+      const [evaluation] = await db
+        .select()
+        .from(volunteerEvaluations)
+        .where(eq(volunteerEvaluations.id, evaluationId));
+        
+      if (!evaluation) {
+        return res.status(404).json({ message: "Evaluación no encontrada" });
+      }
+      
+      res.json(evaluation);
+    } catch (error) {
+      console.error("Error al obtener evaluación:", error);
+      res.status(500).json({ message: "Error al obtener evaluación" });
+    }
+  });
+  
+  // Actualizar una evaluación
+  apiRouter.put("/volunteers/evaluations/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const evaluationId = parseInt(req.params.id);
+      
+      if (isNaN(evaluationId)) {
+        return res.status(400).json({ message: "ID de evaluación inválido" });
+      }
+      
+      const { punctuality, attitude, responsibility, overallPerformance, comments, followUpRequired } = req.body;
+      
+      // Validar los campos requeridos
+      if (punctuality === undefined || attitude === undefined || 
+          responsibility === undefined || overallPerformance === undefined) {
+        return res.status(400).json({ message: "Faltan campos requeridos" });
+      }
+      
+      // Actualizar la evaluación
+      const [updatedEvaluation] = await db
+        .update(volunteerEvaluations)
+        .set({
+          punctuality,
+          attitude,
+          responsibility,
+          overallPerformance,
+          comments,
+          followUpRequired,
+          updatedAt: new Date(),
+        })
+        .where(eq(volunteerEvaluations.id, evaluationId))
+        .returning();
+      
+      if (!updatedEvaluation) {
+        return res.status(404).json({ message: "Evaluación no encontrada" });
+      }
+      
+      res.json(updatedEvaluation);
+    } catch (error) {
+      console.error("Error al actualizar evaluación:", error);
+      res.status(500).json({ message: "Error al actualizar evaluación" });
     }
   });
 
