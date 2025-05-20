@@ -155,7 +155,7 @@ const NewVolunteer: React.FC = () => {
       // Agregar todos los campos del formulario
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          if (key === 'birthdate' && value instanceof Date) {
+          if (key === 'birthDate' && value instanceof Date) {
             // Verificar si es fecha válida antes de convertir a ISO
             if (!isNaN(value.getTime())) {
               formData.append(key, value.toISOString());
@@ -193,7 +193,26 @@ const NewVolunteer: React.FC = () => {
   });
 
   const onSubmit = (data: VolunteerFormValues) => {
-    mutation.mutate(data);
+    console.log("Enviando datos del formulario:", data);
+    
+    // Verificar si hay errores en la validación del formulario
+    if (Object.keys(form.formState.errors).length > 0) {
+      console.error("Errores en el formulario:", form.formState.errors);
+      toast({
+        title: "Formulario incompleto",
+        description: "Por favor, completa todos los campos obligatorios correctamente.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Proceder con el envío
+    try {
+      mutation.mutate(data);
+      console.log("Mutación iniciada con éxito");
+    } catch (error) {
+      console.error("Error al iniciar la mutación:", error);
+    }
   };
 
   return (
@@ -486,6 +505,12 @@ const NewVolunteer: React.FC = () => {
                     type="submit" 
                     disabled={mutation.isPending}
                     className="gap-1"
+                    onClick={() => {
+                      console.log("Botón Guardar clickeado");
+                      const formData = form.getValues();
+                      console.log("Datos actuales del formulario:", formData);
+                      form.handleSubmit(onSubmit)();
+                    }}
                   >
                     {mutation.isPending ? (
                       <>
