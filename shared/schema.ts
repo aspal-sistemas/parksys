@@ -294,26 +294,33 @@ export const incidentsRelations = relations(incidents, ({ one }) => ({
 export const volunteers = pgTable("volunteers", {
   id: serial("id").primaryKey(),
   fullName: text("full_name").notNull(),
-  phoneNumber: text("phone_number"),
+  // Actualizado para reflejar la estructura real de la DB
+  phoneNumber: text("phone"),
   address: text("address"),
-  birthDate: timestamp("birth_date"),
-  emergencyContact: text("emergency_contact"),
-  emergencyPhone: text("emergency_phone"),
+  // birthDate reemplazado por age
+  age: integer("age"),
+  // Estos campos no existen en la DB actual
+  // emergencyContact: text("emergency_contact"),
+  // emergencyPhone: text("emergency_phone"),
   email: text("email").notNull(),
-  occupation: text("occupation"),
-  availability: text("availability"),
-  skills: text("skills"),
-  interests: text("interests"),
+  // occupation: text("occupation"),
+  availability: text("available_hours"),
+  // skills: text("skills"),
+  // interests: text("interests"),
   previousExperience: text("previous_experience"),
-  healthConditions: text("health_conditions"),
-  additionalComments: text("additional_comments"),
+  // healthConditions: text("health_conditions"),
+  // additionalComments: text("additional_comments"),
   status: text("status").default("pending").notNull(),
-  totalHours: integer("total_hours").default(0),
+  // totalHours: integer("total_hours").default(0),
   profileImageUrl: text("profile_image_url"),
   preferredParkId: integer("preferred_park_id"),
   legalConsent: boolean("legal_consent").default(false).notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  // Campos adicionales que existen en la DB
+  gender: text("gender"),
+  interestAreas: text("interest_areas").array(),
+  availableDays: text("available_days").array(),
 });
 
 // 2. Tabla de Participación de Voluntarios
