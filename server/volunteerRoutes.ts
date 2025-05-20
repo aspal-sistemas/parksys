@@ -522,8 +522,25 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
   });
 
   // === RUTAS PARA RECONOCIMIENTOS ===
+  
+  // Obtener todos los reconocimientos
+  apiRouter.get("/volunteers/recognitions", isAuthenticated, async (_req: Request, res: Response) => {
+    try {
+      console.log("Obteniendo todos los reconocimientos");
+      const recognitions = await db
+        .select()
+        .from(volunteerRecognitions)
+        .orderBy(desc(volunteerRecognitions.issuedAt));
+        
+      console.log(`Se encontraron ${recognitions.length} reconocimientos`);
+      res.json(recognitions);
+    } catch (error) {
+      console.error("Error al obtener reconocimientos:", error);
+      res.status(500).json({ message: "Error al obtener reconocimientos" });
+    }
+  });
 
-  // Obtener reconocimientos de un voluntario
+  // Obtener reconocimientos de un voluntario específico
   apiRouter.get("/volunteers/:id/recognitions", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const volunteerId = parseInt(req.params.id);
