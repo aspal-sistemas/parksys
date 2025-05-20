@@ -8,9 +8,8 @@ export async function addSampleEvaluations() {
   try {
     // Buscamos participaciones existentes para asociar las evaluaciones
     console.log("Buscando participaciones de voluntarios...");
-    const participations = await db.query.volunteerParticipations.findMany({
-      limit: 10,
-    });
+    // Drizzle query no tiene métodos preparados, usamos select directo
+    const participations = await db.select().from(volunteerParticipations).limit(10);
     console.log(`Encontradas ${participations.length} participaciones:`, participations);
 
     if (participations.length === 0) {
