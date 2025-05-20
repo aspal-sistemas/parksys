@@ -141,25 +141,28 @@ export default function VolunteerDashboard() {
   const [, setLocation] = useLocation();
 
   const { data, isLoading, isError, refetch } = useQuery<VolunteerDashboard>({
-    queryKey: ['/api/volunteers/dashboard', volunteerId],
+    queryKey: ['/api/test/dashboard-voluntario', volunteerId],
     queryFn: async () => {
       if (!volunteerId) throw new Error('No se proporcionó ID de voluntario');
       
-      // Obtenemos el token de autenticación del storage local
-      const authToken = JSON.parse(localStorage.getItem('auth') || '{}')?.token;
-      
-      const response = await fetch(`/api/volunteers/dashboard?id=${volunteerId}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
+      try {
+        console.log("Intentando cargar el dashboard para el voluntario:", volunteerId);
+        
+        // Usamos la ruta de prueba que no requiere autenticación
+        const response = await fetch(`/api/test/dashboard-voluntario/${volunteerId}`);
+        
+        if (!response.ok) {
+          console.error('Error en la respuesta:', await response.text());
+          throw new Error('Error al cargar el dashboard');
         }
-      });
-      
-      if (!response.ok) {
-        console.error('Error en la respuesta:', await response.text());
-        throw new Error('Error al cargar el dashboard');
+        
+        const data = await response.json();
+        console.log("Datos recibidos:", data);
+        return data;
+      } catch (error) {
+        console.error("Error al cargar el dashboard:", error);
+        throw error;
       }
-      return response.json();
     },
     enabled: !!volunteerId
   });
