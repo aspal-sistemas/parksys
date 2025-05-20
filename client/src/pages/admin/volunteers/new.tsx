@@ -44,8 +44,8 @@ import { apiRequest } from '@/lib/queryClient';
 import AdminLayout from '@/components/AdminLayout';
 
 // Función para validar edad mínima
-const isAdult = (birthdate: Date) => {
-  if (!birthdate) return false;
+const isAdult = (birthDate: Date) => {
+  if (!birthDate) return false;
   
   const today = new Date();
   const minAgeDate = new Date(
@@ -54,7 +54,7 @@ const isAdult = (birthdate: Date) => {
     today.getDate()
   );
   
-  return birthdate <= minAgeDate;
+  return birthDate <= minAgeDate;
 };
 
 // Definir el esquema de validación del formulario
@@ -95,6 +95,7 @@ const NewVolunteer: React.FC = () => {
       skills: '',
       availability: '',
       status: 'pending',
+      birthDate: undefined,
     },
   });
 
@@ -294,7 +295,7 @@ const NewVolunteer: React.FC = () => {
 
                   <FormField
                     control={form.control}
-                    name="emergencyContactName"
+                    name="emergencyContact"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Nombre de contacto de emergencia</FormLabel>
@@ -308,7 +309,7 @@ const NewVolunteer: React.FC = () => {
 
                   <FormField
                     control={form.control}
-                    name="emergencyContactPhone"
+                    name="emergencyPhone"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Teléfono de contacto de emergencia</FormLabel>
@@ -322,7 +323,7 @@ const NewVolunteer: React.FC = () => {
 
                   <FormField
                     control={form.control}
-                    name="birthdate"
+                    name="birthDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel>Fecha de nacimiento *</FormLabel>
