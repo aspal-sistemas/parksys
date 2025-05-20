@@ -616,13 +616,15 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
   // === RUTAS PARA ESTADÍSTICAS ===
   
   // Obtener estadísticas del dashboard de un voluntario específico
-  apiRouter.get("/volunteers/dashboard", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.get("/volunteers/dashboard", async (req: Request, res: Response) => {
     try {
       const volunteerId = req.query.id;
       
       if (!volunteerId) {
         return res.status(400).json({ message: "ID de voluntario no proporcionado" });
       }
+      
+      console.log("Consultando dashboard para voluntario ID:", volunteerId);
       
       // Obtener información básica del voluntario
       const [volunteerInfo] = await db
