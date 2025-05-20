@@ -113,7 +113,45 @@ const ModuleNav: React.FC<ModuleNavProps> = ({ title, icon, children, value, def
 };
 
 const AdminSidebarModular: React.FC = () => {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  
+  // Cargar el usuario actual desde localStorage al inicializar
+  React.useEffect(() => {
+    const loadUser = () => {
+      try {
+        const userJson = localStorage.getItem('user');
+        if (userJson) {
+          const userData = JSON.parse(userJson);
+          setCurrentUser(userData);
+        }
+      } catch (error) {
+        console.error("Error al cargar el usuario:", error);
+      }
+    };
+    
+    // Cargar al inicio
+    loadUser();
+    
+    // También escuchar por cambios en localStorage (por ejemplo, al iniciar sesión)
+    const handleStorageChange = () => {
+      loadUser();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Crear un evento personalizado para actualizar el usuario
+    const handleUserUpdate = () => {
+      loadUser();
+    };
+    
+    window.addEventListener('userUpdated', handleUserUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userUpdated', handleUserUpdate);
+    };
+  }, []);
   
   // Identificar qué módulos deberían estar abiertos basado en la ruta actual
   const getDefaultAccordionValue = () => {
@@ -131,6 +169,14 @@ const AdminSidebarModular: React.FC = () => {
       return ['system'];
     
     return [''];
+  };
+  
+  // Cerrar sesión
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    setCurrentUser(null);
+    setLocation('/admin/login');
   };
   
   return (
