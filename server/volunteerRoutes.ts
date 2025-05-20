@@ -363,7 +363,12 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      const recognitions = await storage.getVolunteerRecognitions(volunteerId);
+      const recognitions = await db
+        .select()
+        .from(volunteerRecognitions)
+        .where(eq(volunteerRecognitions.volunteerId, volunteerId))
+        .orderBy(desc(volunteerRecognitions.createdAt));
+        
       res.json(recognitions);
     } catch (error) {
       console.error(`Error al obtener reconocimientos del voluntario ${req.params.id}:`, error);
@@ -381,7 +386,10 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
       }
       
       // Verificar que existe el voluntario
-      const volunteer = await storage.getVolunteerById(volunteerId);
+      const [volunteer] = await db
+        .select()
+        .from(volunteers)
+        .where(eq(volunteers.id, volunteerId));
       
       if (!volunteer) {
         return res.status(404).json({ message: "Voluntario no encontrado" });
@@ -391,8 +399,10 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
       const recognitionData = {
         ...req.body,
         volunteerId,
-        // El emisor es el usuario autenticado
-        issuedById: req.user.id || req.body.issuedById,
+        // El emisor es el usuario autenticado o el proporcionado en el cuerpo
+        issuedById: req.user?.id || req.body.issuedById,
+        // Agregamos la fecha de creación
+        createdAt: new Date()
       };
       
       const validationResult = insertVolunteerRecognitionSchema.safeParse(recognitionData);
@@ -404,32 +414,120 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, isAuthenticate
         });
       }
       
-      const newRecognition = await storage.createVolunteerRecognition(validationResult.data);
+      // Insertamos el nuevo reconocimiento en la base de datos
+      const [newRecognition] = await db
+        .insert(volunteerRecognitions)
+        .values(validationResult.data)
+        .returning();
+        
       res.status(201).json(newRecognition);
     } catch (error) {
       console.error(`Error al crear reconocimiento para voluntario ${req.params.id}:`, error);
-      res.status(500).json({ message: "Error al registrar reconocimiento" });
+      res.status(500).json({ message: "Error al crear reconocimiento" });
     }
   });
-
-  // Ruta para dashboard/estadísticas de voluntariado
+  
+  // === RUTAS PARA ESTADÍSTICAS ===
+  
+  // Obtener estadísticas del dashboard de voluntarios
   apiRouter.get("/volunteers/stats/dashboard", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      // Obtener estadísticas de voluntariado
-      const totalActiveVolunteers = await storage.countVolunteersByStatus("active");
-      const totalHours = await storage.getTotalVolunteerHours();
-      const topVolunteers = await storage.getTopVolunteers(5); // Top 5 voluntarios por horas
-      const recentActivities = await storage.getRecentVolunteerActivities(5); // 5 actividades recientes
-
+      // Conteo total de voluntarios por estado
+      const volunteersByStatus = await db
+        .select({
+          status: volunteers.status,
+          count: sql<number>`count(*)::int`
+        })
+        .from(volunteers)
+        .groupBy(volunteers.status);
+        
+      // Total de horas de voluntariado
+      const [totalHours] = await db
+        .select({
+          total: sql<number>`sum(${volunteerParticipations.hoursContributed})::int`
+        })
+        .from(volunteerParticipations);
+        
+      // Actividades más populares
+      const popularActivities = await db
+        .select({
+          activityName: volunteerParticipations.activityName,
+          count: sql<number>`count(*)::int`
+        })
+        .from(volunteerParticipations)
+        .groupBy(volunteerParticipations.activityName)
+        .orderBy(sql`count(*) desc`)
+        .limit(5);
+        
+      // Parques con más participación
+      const popularParks = await db
+        .select({
+          parkId: volunteerParticipations.parkId,
+          count: sql<number>`count(*)::int`
+        })
+        .from(volunteerParticipations)
+        .groupBy(volunteerParticipations.parkId)
+        .orderBy(sql`count(*) desc`)
+        .limit(5);
+        
+      // Obtener nombres de parques populares
+      const parkIds = popularParks.map(p => p.parkId);
+      let parkNames = [];
+      
+      if (parkIds.length > 0) {
+        parkNames = await db
+          .select({
+            id: parks.id,
+            name: parks.name
+          })
+          .from(parks)
+          .where(sql`${parks.id} = ANY(${parkIds})`);
+      }
+      
+      // Combinar datos de parques populares con sus nombres
+      const parksWithNames = popularParks.map(park => {
+        const parkInfo = parkNames.find(p => p.id === park.parkId);
+        return {
+          ...park,
+          parkName: parkInfo ? parkInfo.name : 'Parque desconocido'
+        };
+      });
+      
+      // Rendimiento promedio de los voluntarios
+      const [avgPerformance] = await db
+        .select({
+          punctuality: sql<number>`avg(${volunteerEvaluations.punctuality})::float`,
+          attitude: sql<number>`avg(${volunteerEvaluations.attitude})::float`,
+          responsibility: sql<number>`avg(${volunteerEvaluations.responsibility})::float`,
+          overall: sql<number>`avg(${volunteerEvaluations.overallPerformance})::float`
+        })
+        .from(volunteerEvaluations);
+      
       res.json({
-        totalActiveVolunteers,
-        totalHours,
-        topVolunteers,
-        recentActivities
+        volunteerCounts: {
+          total: volunteersByStatus.reduce((sum, group) => sum + group.count, 0),
+          byStatus: volunteersByStatus.reduce((obj, item) => {
+            obj[item.status] = item.count;
+            return obj;
+          }, {} as Record<string, number>)
+        },
+        activities: {
+          totalHours: totalHours?.total || 0,
+          popularActivities
+        },
+        locations: {
+          popularParks: parksWithNames
+        },
+        performance: avgPerformance || {
+          punctuality: 0,
+          attitude: 0,
+          responsibility: 0,
+          overall: 0
+        }
       });
     } catch (error) {
-      console.error("Error al obtener estadísticas de voluntariado:", error);
-      res.status(500).json({ message: "Error al obtener estadísticas de voluntariado" });
+      console.error("Error al obtener estadísticas de voluntarios:", error);
+      res.status(500).json({ message: "Error al obtener estadísticas de voluntarios" });
     }
   });
 }
