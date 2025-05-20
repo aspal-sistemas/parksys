@@ -1601,5 +1601,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Ruta para agregar datos de muestra de reconocimientos
+  apiRouter.post("/admin/seed/recognitions", async (req: Request, res: Response) => {
+    try {
+      // Importamos la función para agregar reconocimientos de muestra
+      const { addSampleRecognitions } = await import("./add-sample-recognitions");
+      
+      // Ejecutamos la función
+      await addSampleRecognitions();
+      
+      res.status(200).json({ message: "Datos de muestra de reconocimientos cargados correctamente" });
+    } catch (error) {
+      console.error("Error al cargar datos de muestra de reconocimientos:", error);
+      res.status(500).json({ message: "Error al cargar datos de muestra de reconocimientos" });
+    }
+  });
+  
   return httpServer;
 }
