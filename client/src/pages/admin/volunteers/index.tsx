@@ -267,12 +267,19 @@ const VolunteersList: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex justify-center gap-2">
-                            <Link href={`/admin/volunteers/dashboard/${volunteer.id}`}>
-                              <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700">
-                                <BarChart3 className="h-3 w-3 mr-1" />
-                                Dashboard
-                              </Button>
-                            </Link>
+                            <Button 
+                              variant="default" 
+                              size="sm" 
+                              className="bg-blue-600 hover:bg-blue-700"
+                              onClick={() => {
+                                const url = `/admin/volunteers/dashboard/${volunteer.id}`;
+                                console.log("Navegando al dashboard:", url);
+                                window.location.href = url;
+                              }}
+                            >
+                              <BarChart3 className="h-3 w-3 mr-1" />
+                              Dashboard
+                            </Button>
                             <Link href={`/admin/volunteers/${volunteer.id}`}>
                               <Button variant="outline" size="sm">
                                 <FileEdit className="h-3 w-3 mr-1" />
