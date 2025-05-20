@@ -236,6 +236,14 @@ const AdminSidebarModular: React.FC = () => {
                 </NavItem>
                 
                 <NavItem 
+                  href="/admin/activities/catalog" 
+                  icon={<ListChecks className="h-4 w-4" />}
+                  active={location.startsWith('/admin/activities/catalog')}
+                >
+                  Catálogo
+                </NavItem>
+                
+                <NavItem 
                   href="/admin/activities/reports" 
                   icon={<FileText className="h-4 w-4" />}
                   active={location.startsWith('/admin/activities/reports')}
