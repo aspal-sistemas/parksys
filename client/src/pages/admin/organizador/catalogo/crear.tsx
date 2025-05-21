@@ -103,6 +103,12 @@ const CrearActividadPage = () => {
   const { data: parques = [] } = useQuery<{ id: number, name: string }[]>({
     queryKey: ['/api/parks'],
   });
+  
+  // Consulta para obtener la lista de usuarios con rol de instructor
+  const { data: instructores = [] } = useQuery<any[]>({
+    queryKey: ['/api/users'],
+    select: (data) => data.filter(user => user.role === 'instructor')
+  });
 
   // Configuración del formulario
   const form = useForm<FormValues>({
