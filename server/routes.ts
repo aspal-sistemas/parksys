@@ -1630,5 +1630,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Ruta para agregar datos de muestra de instructores
+  apiRouter.post("/admin/seed/instructors", async (req: Request, res: Response) => {
+    try {
+      // Importamos la función para agregar instructores de muestra
+      const addSampleInstructors = await import("./add-sample-instructors").then(m => m.default);
+      
+      // Ejecutamos la función
+      await addSampleInstructors();
+      
+      res.status(200).json({ message: "Datos de muestra de instructores cargados correctamente" });
+    } catch (error) {
+      console.error("Error al cargar datos de muestra de instructores:", error);
+      res.status(500).json({ 
+        message: "Error al cargar datos de muestra de instructores",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
   return httpServer;
 }

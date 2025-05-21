@@ -327,8 +327,8 @@ export default function InstructorsListPage() {
         </div>
 
         {/* Tabla de instructores */}
-        {/* Botón para cargar datos manualmente */}
-        <div className="mb-4">
+        {/* Botones para cargar datos */}
+        <div className="flex gap-2 mb-4">
           <Button 
             onClick={() => {
               console.log("Solicitando datos de instructores...");
@@ -347,6 +347,39 @@ export default function InstructorsListPage() {
           >
             <RefreshCw className="mr-2 h-4 w-4" />
             Cargar instructores
+          </Button>
+          
+          {/* Botón para cargar datos de muestra */}
+          <Button 
+            onClick={() => {
+              console.log("Cargando datos de muestra...");
+              
+              fetch('/api/admin/seed/instructors', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              })
+              .then(response => {
+                console.log("Respuesta de API:", response.status);
+                return response.json();
+              })
+              .then(data => {
+                console.log("Datos de muestra cargados:", data);
+                // Refrescamos los datos después de cargar la muestra
+                refetch();
+                // Mostrar notificación de éxito (puedes importar useToast si lo prefieres)
+                alert("Datos de muestra de instructores cargados correctamente");
+              })
+              .catch(error => {
+                console.error("Error al cargar datos de muestra:", error);
+                alert("Error al cargar datos de muestra: " + error.message);
+              });
+            }}
+            variant="secondary"
+          >
+            <Database className="mr-2 h-4 w-4" />
+            Cargar datos de muestra
           </Button>
         </div>
 
