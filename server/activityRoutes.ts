@@ -4,6 +4,8 @@ import { fromZodError } from 'zod-validation-error';
 import { insertActivitySchema } from '@shared/schema';
 import { storage } from './storage';
 import { isAuthenticated } from './middleware/auth';
+import { db } from './db';
+import { sql } from 'drizzle-orm';
 
 // Crear un router para las actividades
 const activityRouter = Router();
@@ -11,20 +13,18 @@ const activityRouter = Router();
 // Obtener todas las actividades
 activityRouter.get("/activities", async (_req: Request, res: Response) => {
   try {
-    const activities = await storage.getAllActivities();
-    
-    // Enriquecer con información del parque
-    const activitiesWithParkInfo = await Promise.all(
-      activities.map(async (activity) => {
-        const park = await storage.getPark(activity.parkId);
-        return {
-          ...activity,
-          parkName: park ? park.name : 'Parque no disponible'
-        };
-      })
+    // Usar SQL directo para evitar problemas con el esquema
+    const result = await db.execute(
+      sql`SELECT a.id, a.park_id as "parkId", a.title, a.description, 
+               a.start_date as "startDate", a.end_date as "endDate", 
+               a.category, a.location, a.created_at as "createdAt",
+               p.name as "parkName"
+           FROM activities a
+           LEFT JOIN parks p ON a.park_id = p.id
+           ORDER BY a.start_date`
     );
     
-    res.json(activitiesWithParkInfo);
+    res.json(result.rows);
   } catch (error) {
     console.error("Error al obtener actividades:", error);
     res.status(500).json({ message: "Error al obtener actividades" });
@@ -35,8 +35,20 @@ activityRouter.get("/activities", async (_req: Request, res: Response) => {
 activityRouter.get("/parks/:id/activities", async (req: Request, res: Response) => {
   try {
     const parkId = Number(req.params.id);
-    const activities = await storage.getParkActivities(parkId);
-    res.json(activities);
+    
+    // Usar SQL directo para evitar problemas con el esquema
+    const result = await db.execute(
+      sql`SELECT a.id, a.park_id as "parkId", a.title, a.description, 
+               a.start_date as "startDate", a.end_date as "endDate", 
+               a.category, a.location, a.created_at as "createdAt",
+               p.name as "parkName"
+           FROM activities a
+           LEFT JOIN parks p ON a.park_id = p.id
+           WHERE a.park_id = ${parkId}
+           ORDER BY a.start_date`
+    );
+    
+    res.json(result.rows);
   } catch (error) {
     console.error("Error al obtener actividades del parque:", error);
     res.status(500).json({ message: "Error al obtener actividades del parque" });
@@ -49,7 +61,7 @@ activityRouter.post("/activities", async (req: Request, res: Response) => {
     console.log("Datos recibidos para crear actividad:", req.body);
     
     // Extraer los datos
-    const { startDate, endDate, parkId, ...otherData } = req.body;
+    const { startDate, endDate, parkId, title, description, category, location } = req.body;
     
     // Convertir las fechas explícitamente a objetos Date
     let parsedStartDate: Date;
@@ -74,23 +86,33 @@ activityRouter.post("/activities", async (req: Request, res: Response) => {
     if (parsedEndDate && isNaN(parsedEndDate.getTime())) {
       return res.status(400).json({ message: "La fecha de fin no es válida" });
     }
+
+    // Verificar que el título existe
+    if (!title) {
+      return res.status(400).json({ message: "El título es obligatorio" });
+    }
     
-    // Crear el objeto con los datos procesados (solo con campos que existen en la DB)
-    const activityData = { 
-      ...otherData, 
-      parkId: Number(parkId),
-      startDate: parsedStartDate,
-      endDate: parsedEndDate || null,
-      category: otherData.category || null,
-      location: otherData.location || null
-    };
-    
-    console.log("Datos procesados para crear actividad:", activityData);
-    
-    // Crear la actividad directamente sin validar con Zod
-    const result = await storage.createActivity(activityData);
-    
-    res.status(201).json(result);
+    // Crear la actividad directamente usando SQL para evitar problemas con el esquema
+    try {
+      const insertResult = await db.execute(
+        sql`INSERT INTO activities (title, description, park_id, start_date, end_date, category, location)
+            VALUES (${title}, ${description || null}, ${Number(parkId)}, 
+                    ${parsedStartDate}, ${parsedEndDate || null}, ${category || null}, 
+                    ${location || null})
+            RETURNING id, title, description, park_id as "parkId", start_date as "startDate", 
+                     end_date as "endDate", category, location, created_at as "createdAt"`
+      );
+      
+      if (insertResult.rows && insertResult.rows.length > 0) {
+        const result = insertResult.rows[0];
+        res.status(201).json(result);
+      } else {
+        throw new Error("No se pudo crear la actividad");
+      }
+    } catch (dbError) {
+      console.error("Error de base de datos al crear actividad:", dbError);
+      res.status(500).json({ message: "Error de base de datos al crear actividad" });
+    }
   } catch (error) {
     console.error("Error al crear actividad:", error);
     res.status(500).json({ message: "Error al crear actividad" });

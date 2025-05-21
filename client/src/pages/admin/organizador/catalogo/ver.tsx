@@ -60,19 +60,26 @@ const VerActividadesPage = () => {
       // Transformar y enriquecer datos si es necesario
       return data.map(actividad => ({
         ...actividad,
-        parqueNombre: parques.find(p => p.id === actividad.parkId)?.name
+        // Si ya tiene parkName (del backend) lo usamos, si no, lo buscamos en los parques
+        parqueNombre: actividad.parkName || parques.find(p => p.id === actividad.parkId)?.name || 'Parque no disponible'
       }));
     }
   });
 
   // Filtrar actividades por categoría
   const actividadesPorCategoria = actividades.filter(act => 
-    act.category === categoriaActiva &&
+    // Si la categoría no coincide exactamente, intentamos hacer una coincidencia parcial
+    (act.category === categoriaActiva || 
+     (act.category && act.category.includes(categoriaActiva)) ||
+     (categoriaActiva === "artecultura" && act.category && act.category.toLowerCase().includes("arte"))) &&
+    // Filtro de búsqueda por texto
     (busqueda === "" || 
-      act.title.toLowerCase().includes(busqueda.toLowerCase()) || 
-      act.description.toLowerCase().includes(busqueda.toLowerCase())
+      (act.title && act.title.toLowerCase().includes(busqueda.toLowerCase())) || 
+      (act.description && act.description.toLowerCase().includes(busqueda.toLowerCase()))
     ) &&
-    (parqueFiltro === "todos" || parqueFiltro === "" || act.parkId.toString() === parqueFiltro)
+    // Filtro por parque
+    (parqueFiltro === "todos" || parqueFiltro === "" || 
+     (act.parkId && act.parkId.toString() === parqueFiltro))
   );
 
   // Función para renderizar la badge de estado de una actividad

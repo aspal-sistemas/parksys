@@ -2062,20 +2062,13 @@ export class DatabaseStorage implements IStorage {
 
   async getAllActivities(): Promise<Activity[]> {
     try {
-      // Seleccionamos solo las columnas que realmente existen en la base de datos
-      return await db.select({
-        id: activities.id,
-        parkId: activities.parkId,
-        title: activities.title,
-        description: activities.description,
-        startDate: activities.startDate,
-        endDate: activities.endDate,
-        category: activities.category,
-        location: activities.location,
-        createdAt: activities.createdAt
-      })
-      .from(activities)
-      .orderBy(activities.startDate);
+      // Usamos SQL directo para evitar problemas de desajuste con el esquema
+      const result = await db.execute(
+        sql`SELECT id, park_id as "parkId", title, description, start_date as "startDate", 
+             end_date as "endDate", category, location, created_at as "createdAt" 
+             FROM activities ORDER BY start_date`
+      );
+      return result.rows;
     } catch (error) {
       console.error("Error al obtener actividades:", error);
       return [];
@@ -2084,21 +2077,15 @@ export class DatabaseStorage implements IStorage {
 
   async getParkActivities(parkId: number): Promise<Activity[]> {
     try {
-      // Utilizamos solo las columnas que realmente existen en la base de datos
-      return await db.select({
-        id: activities.id,
-        parkId: activities.parkId,
-        title: activities.title,
-        description: activities.description,
-        startDate: activities.startDate,
-        endDate: activities.endDate,
-        category: activities.category,
-        location: activities.location,
-        createdAt: activities.createdAt
-      })
-      .from(activities)
-      .where(eq(activities.parkId, parkId))
-      .orderBy(activities.startDate);
+      // Usamos SQL directo para evitar problemas con el esquema
+      const result = await db.execute(
+        sql`SELECT id, park_id as "parkId", title, description, start_date as "startDate",
+             end_date as "endDate", category, location, created_at as "createdAt"
+             FROM activities 
+             WHERE park_id = ${parkId}
+             ORDER BY start_date`
+      );
+      return result.rows;
     } catch (error) {
       console.error("Error getting park activities:", error);
       return []; // Devolvemos un array vacío en caso de error para no bloquear la carga
