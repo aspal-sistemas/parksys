@@ -41,10 +41,7 @@ interface Activity {
   title: string;
   description?: string;
   parkId: number;
-  park?: {
-    id: number;
-    name: string;
-  };
+  parkName?: string;
   startDate: string;
   endDate?: string;
   category?: string;
@@ -78,7 +75,7 @@ export default function ActivitiesCalendarPage() {
   });
 
   // Obtener actividades
-  const { data: activities, isLoading } = useQuery({
+  const { data: activities = [], isLoading } = useQuery({
     queryKey: ['/api/activities'],
     retry: 1,
   });
@@ -97,9 +94,9 @@ export default function ActivitiesCalendarPage() {
 
   // Función para filtrar actividades
   const filteredActivities = React.useMemo(() => {
-    if (!activities) return [];
-
-    return activities.filter((activity: Activity) => {
+    const activitiesArray = Array.isArray(activities) ? activities : [];
+    
+    return activitiesArray.filter((activity: Activity) => {
       // Filtro por categoría
       const matchesCategory = filters.category === 'all' || activity.category === filters.category;
       
@@ -135,10 +132,10 @@ export default function ActivitiesCalendarPage() {
 
   // Obtener categorías únicas para filtro
   const categories = React.useMemo(() => {
-    if (!activities) return [];
+    const activitiesArray = Array.isArray(activities) ? activities : [];
     
     const uniqueCategories = new Set();
-    activities.forEach((activity: Activity) => {
+    activitiesArray.forEach((activity: Activity) => {
       if (activity.category) {
         uniqueCategories.add(activity.category);
       }
@@ -428,7 +425,7 @@ export default function ActivitiesCalendarPage() {
                       </div>
                       <div className="flex justify-between mt-2 text-xs">
                         <div>
-                          <span className="font-medium">Parque:</span> {activity.park?.name}
+                          <span className="font-medium">Parque:</span> {activity.parkName || `Parque #${activity.parkId}`}
                         </div>
                         {activity.instructor && (
                           <div>
