@@ -77,7 +77,7 @@ interface ActivityCatalogFormData {
   staffRequired: number | null;
   isRecurring: boolean;
   recommendedParks?: number[]; // IDs de parques recomendados para esta actividad
-  specificLocations?: { parkId: number, locationName: string }[]; // Ubicaciones específicas dentro de los parques
+  specificLocations?: { parkId: number, locationName: string[] }[]; // Ubicaciones específicas dentro de los parques (array de nombres)
 }
 
 const AdminActivityCatalogPage: React.FC = () => {
@@ -772,6 +772,174 @@ const AdminActivityCatalogPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+              
+              {/* Sección de parques recomendados */}
+              <div className="grid gap-2 items-start mt-4">
+                <Label className="mb-2">Parques recomendados para esta actividad</Label>
+                <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2 border rounded-md">
+                  {parks.map(park => (
+                    <div key={park.id} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={`park-${park.id}`}
+                        className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                        checked={formData.recommendedParks?.includes(park.id) || false}
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          setFormData(prev => ({
+                            ...prev,
+                            recommendedParks: isChecked 
+                              ? [...(prev.recommendedParks || []), park.id]
+                              : (prev.recommendedParks || []).filter(id => id !== park.id)
+                          }));
+                        }}
+                      />
+                      <label htmlFor={`park-${park.id}`} className="text-sm">{park.name}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Sección de ubicaciones específicas */}
+              {formData.recommendedParks && formData.recommendedParks.length > 0 && (
+                <div className="grid gap-2 items-start mt-4">
+                  <Label className="mb-2">Ubicaciones específicas dentro de los parques</Label>
+                  <div className="space-y-4 p-2 border rounded-md">
+                    {formData.recommendedParks.map(parkId => {
+                      const park = parks.find(p => p.id === parkId);
+                      if (!park) return null;
+                      
+                      return (
+                        <div key={`loc-${parkId}`} className="space-y-2">
+                          <h4 className="font-medium text-sm">{park.name}</h4>
+                          <div className="flex gap-2">
+                            <Input
+                              type="text"
+                              placeholder="Añadir ubicación (ej: 'Área de juegos', 'Zona norte')"
+                              className="flex-1 text-sm"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  const target = e.target as HTMLInputElement;
+                                  const locationName = target.value.trim();
+                                  
+                                  if (locationName) {
+                                    // Obtener las ubicaciones actuales o inicializar un array vacío
+                                    const currentLocations = formData.specificLocations || [];
+                                    
+                                    // Buscar si ya existe una entrada para este parque
+                                    const existingIndex = currentLocations.findIndex(loc => loc.parkId === parkId);
+                                    
+                                    let newLocations;
+                                    if (existingIndex >= 0) {
+                                      // Actualizar el array existente
+                                      newLocations = [...currentLocations];
+                                      newLocations[existingIndex] = {
+                                        ...newLocations[existingIndex],
+                                        locationName: [...(newLocations[existingIndex].locationName || []), locationName]
+                                      };
+                                    } else {
+                                      // Crear una nueva entrada
+                                      newLocations = [
+                                        ...currentLocations,
+                                        { parkId, locationName: [locationName] }
+                                      ];
+                                    }
+                                    
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      specificLocations: newLocations
+                                    }));
+                                    
+                                    target.value = '';
+                                  }
+                                }
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const input = document.querySelector(`input[placeholder="Añadir ubicación (ej: 'Área de juegos', 'Zona norte')"]`) as HTMLInputElement;
+                                if (input && input.value.trim()) {
+                                  const locationName = input.value.trim();
+                                  
+                                  // Obtener las ubicaciones actuales o inicializar un array vacío
+                                  const currentLocations = formData.specificLocations || [];
+                                  
+                                  // Buscar si ya existe una entrada para este parque
+                                  const existingIndex = currentLocations.findIndex(loc => loc.parkId === parkId);
+                                  
+                                  let newLocations;
+                                  if (existingIndex >= 0) {
+                                    // Actualizar el array existente
+                                    newLocations = [...currentLocations];
+                                    newLocations[existingIndex] = {
+                                      ...newLocations[existingIndex],
+                                      locationName: [...(newLocations[existingIndex].locationName || []), locationName]
+                                    };
+                                  } else {
+                                    // Crear una nueva entrada
+                                    newLocations = [
+                                      ...currentLocations,
+                                      { parkId, locationName: [locationName] }
+                                    ];
+                                  }
+                                  
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    specificLocations: newLocations
+                                  }));
+                                  
+                                  input.value = '';
+                                }
+                              }}
+                            >
+                              Añadir
+                            </Button>
+                          </div>
+                          
+                          {/* Mostrar las ubicaciones ya agregadas */}
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {formData.specificLocations?.find(loc => loc.parkId === parkId)?.locationName.map((loc, index) => (
+                              <Badge key={`${parkId}-${index}`} className="flex items-center gap-1">
+                                {loc}
+                                <X 
+                                  className="h-3 w-3 cursor-pointer" 
+                                  onClick={() => {
+                                    const currentLocations = formData.specificLocations || [];
+                                    const parkLocIndex = currentLocations.findIndex(l => l.parkId === parkId);
+                                    
+                                    if (parkLocIndex >= 0) {
+                                      const newLocations = [...currentLocations];
+                                      newLocations[parkLocIndex] = {
+                                        ...newLocations[parkLocIndex],
+                                        locationName: newLocations[parkLocIndex].locationName.filter((_, i) => i !== index)
+                                      };
+                                      
+                                      // Si no quedan ubicaciones, eliminar completamente la entrada del parque
+                                      if (newLocations[parkLocIndex].locationName.length === 0) {
+                                        newLocations.splice(parkLocIndex, 1);
+                                      }
+                                      
+                                      setFormData(prev => ({
+                                        ...prev,
+                                        specificLocations: newLocations
+                                      }));
+                                    }
+                                  }}
+                                />
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
               <DialogFooter>
                 <Button variant="outline" type="button" onClick={() => setIsCreateDialogOpen(false)}>
                   Cancelar
@@ -1139,6 +1307,180 @@ const AdminActivityCatalogPage: React.FC = () => {
                 </div>
               </div>
             </div>
+            
+            {/* Sección de parques recomendados - formulario de edición */}
+            <div className="grid gap-2 items-start mt-4">
+              <Label className="mb-2">Parques recomendados para esta actividad</Label>
+              <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2 border rounded-md">
+                {parks.map(park => (
+                  <div key={park.id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`edit-park-${park.id}`}
+                      className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                      checked={formData.recommendedParks?.includes(park.id) || false}
+                      onChange={(e) => {
+                        const isChecked = e.target.checked;
+                        setFormData(prev => ({
+                          ...prev,
+                          recommendedParks: isChecked 
+                            ? [...(prev.recommendedParks || []), park.id]
+                            : (prev.recommendedParks || []).filter(id => id !== park.id)
+                        }));
+                      }}
+                    />
+                    <label htmlFor={`edit-park-${park.id}`} className="text-sm">{park.name}</label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Sección de ubicaciones específicas - formulario de edición */}
+            {formData.recommendedParks && formData.recommendedParks.length > 0 && (
+              <div className="grid gap-2 items-start mt-4">
+                <Label className="mb-2">Ubicaciones específicas dentro de los parques</Label>
+                <div className="space-y-4 p-2 border rounded-md">
+                  {formData.recommendedParks.map(parkId => {
+                    const park = parks.find(p => p.id === parkId);
+                    if (!park) return null;
+                    
+                    return (
+                      <div key={`edit-loc-${parkId}`} className="space-y-2">
+                        <h4 className="font-medium text-sm">{park.name}</h4>
+                        <div className="flex gap-2">
+                          <Input
+                            type="text"
+                            placeholder="Añadir ubicación (ej: 'Área de juegos', 'Zona norte')"
+                            className="flex-1 text-sm"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const target = e.target as HTMLInputElement;
+                                const locationName = target.value.trim();
+                                
+                                if (locationName) {
+                                  // Obtener las ubicaciones actuales o inicializar un array vacío
+                                  const currentLocations = formData.specificLocations || [];
+                                  
+                                  // Buscar si ya existe una entrada para este parque
+                                  const existingIndex = currentLocations.findIndex(loc => loc.parkId === parkId);
+                                  
+                                  let newLocations;
+                                  if (existingIndex >= 0) {
+                                    // Actualizar el array existente
+                                    newLocations = [...currentLocations];
+                                    newLocations[existingIndex] = {
+                                      ...newLocations[existingIndex],
+                                      locationName: [...(newLocations[existingIndex].locationName || []), locationName]
+                                    };
+                                  } else {
+                                    // Crear una nueva entrada
+                                    newLocations = [
+                                      ...currentLocations,
+                                      { parkId, locationName: [locationName] }
+                                    ];
+                                  }
+                                  
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    specificLocations: newLocations
+                                  }));
+                                  
+                                  target.value = '';
+                                }
+                              }
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const inputs = document.querySelectorAll(`input[placeholder="Añadir ubicación (ej: 'Área de juegos', 'Zona norte')"]`);
+                              // Buscar el input asociado a este parque
+                              const input = Array.from(inputs).find(inp => {
+                                const parent = inp.closest(`div[key="edit-loc-${parkId}"]`);
+                                return parent !== null;
+                              }) as HTMLInputElement | undefined;
+                              
+                              if (input && input.value.trim()) {
+                                const locationName = input.value.trim();
+                                
+                                // Obtener las ubicaciones actuales o inicializar un array vacío
+                                const currentLocations = formData.specificLocations || [];
+                                
+                                // Buscar si ya existe una entrada para este parque
+                                const existingIndex = currentLocations.findIndex(loc => loc.parkId === parkId);
+                                
+                                let newLocations;
+                                if (existingIndex >= 0) {
+                                  // Actualizar el array existente
+                                  newLocations = [...currentLocations];
+                                  newLocations[existingIndex] = {
+                                    ...newLocations[existingIndex],
+                                    locationName: [...(newLocations[existingIndex].locationName || []), locationName]
+                                  };
+                                } else {
+                                  // Crear una nueva entrada
+                                  newLocations = [
+                                    ...currentLocations,
+                                    { parkId, locationName: [locationName] }
+                                  ];
+                                }
+                                
+                                setFormData(prev => ({
+                                  ...prev,
+                                  specificLocations: newLocations
+                                }));
+                                
+                                input.value = '';
+                              }
+                            }}
+                          >
+                            Añadir
+                          </Button>
+                        </div>
+                        
+                        {/* Mostrar las ubicaciones ya agregadas */}
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {formData.specificLocations?.find(loc => loc.parkId === parkId)?.locationName.map((loc, index) => (
+                            <Badge key={`edit-${parkId}-${index}`} className="flex items-center gap-1">
+                              {loc}
+                              <X 
+                                className="h-3 w-3 cursor-pointer" 
+                                onClick={() => {
+                                  const currentLocations = formData.specificLocations || [];
+                                  const parkLocIndex = currentLocations.findIndex(l => l.parkId === parkId);
+                                  
+                                  if (parkLocIndex >= 0) {
+                                    const newLocations = [...currentLocations];
+                                    newLocations[parkLocIndex] = {
+                                      ...newLocations[parkLocIndex],
+                                      locationName: newLocations[parkLocIndex].locationName.filter((_, i) => i !== index)
+                                    };
+                                    
+                                    // Si no quedan ubicaciones, eliminar completamente la entrada del parque
+                                    if (newLocations[parkLocIndex].locationName.length === 0) {
+                                      newLocations.splice(parkLocIndex, 1);
+                                    }
+                                    
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      specificLocations: newLocations
+                                    }));
+                                  }
+                                }}
+                              />
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => setIsEditDialogOpen(false)}>
                 Cancelar
