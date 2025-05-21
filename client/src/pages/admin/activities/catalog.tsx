@@ -89,8 +89,110 @@ const AdminActivityCatalogPage: React.FC = () => {
 
   // Por ahora usamos datos de ejemplo mientras implementamos el backend
   const mockActivitiesCatalog: ActivityCatalogItem[] = [
+    // Categoría: Arte y Cultura
     {
       id: 1,
+      name: "Exposiciones",
+      description: "Exhibiciones artísticas temporales abiertas al público",
+      category: "artecultura",
+      duration: 180,
+      capacity: 50,
+      materials: "Paneles de exposición, iluminación especial, material informativo",
+      staffRequired: 2,
+      isRecurring: true
+    },
+    {
+      id: 2,
+      name: "Actividades Culturales",
+      description: "Eventos culturales diversos para promover las tradiciones locales",
+      category: "artecultura",
+      duration: 120,
+      capacity: 40,
+      materials: "Materiales específicos según la actividad cultural",
+      staffRequired: 3,
+      isRecurring: true
+    },
+    {
+      id: 3,
+      name: "Conciertos",
+      description: "Presentaciones musicales en vivo de artistas locales",
+      category: "artecultura",
+      duration: 120,
+      capacity: 100,
+      materials: "Equipo de sonido, escenario, iluminación",
+      staffRequired: 5,
+      isRecurring: false
+    },
+    {
+      id: 4,
+      name: "Clases de pintura",
+      description: "Taller creativo de pintura para todos los niveles",
+      category: "artecultura",
+      duration: 120,
+      capacity: 15,
+      materials: "Lienzos, pinturas, pinceles, caballetes",
+      staffRequired: 2,
+      isRecurring: true
+    },
+    {
+      id: 5,
+      name: "Clases de música",
+      description: "Lecciones básicas de instrumentos musicales populares",
+      category: "artecultura",
+      duration: 90,
+      capacity: 12,
+      materials: "Instrumentos musicales básicos, partituras, sillas",
+      staffRequired: 1,
+      isRecurring: true
+    },
+    {
+      id: 6,
+      name: "Taller de manualidades",
+      description: "Actividades manuales creativas con diversos materiales",
+      category: "artecultura",
+      duration: 90,
+      capacity: 20,
+      materials: "Papelería, tijeras, pegamento, materiales reciclados",
+      staffRequired: 2,
+      isRecurring: true
+    },
+    {
+      id: 7,
+      name: "Arte",
+      description: "Espacio de expresión artística libre para todas las edades",
+      category: "artecultura",
+      duration: 120,
+      capacity: 25,
+      materials: "Diversos materiales artísticos según la temática",
+      staffRequired: 2,
+      isRecurring: true
+    },
+    {
+      id: 8,
+      name: "Actividades Educativas",
+      description: "Talleres y actividades con enfoque educativo y cultural",
+      category: "artecultura",
+      duration: 90,
+      capacity: 30,
+      materials: "Material didáctico, proyector, pizarra",
+      staffRequired: 2,
+      isRecurring: true
+    },
+    {
+      id: 9,
+      name: "Recorridos guiados",
+      description: "Visitas guiadas por espacios culturales dentro del parque",
+      category: "artecultura",
+      duration: 60,
+      capacity: 15,
+      materials: "Mapas, material informativo",
+      staffRequired: 1,
+      isRecurring: true
+    },
+    
+    // Categoría: Recreación y Bienestar
+    {
+      id: 10,
       name: "Clase de Yoga",
       description: "Sesión de yoga para todos los niveles con instructor",
       category: "recreacionbienestar",
@@ -100,19 +202,10 @@ const AdminActivityCatalogPage: React.FC = () => {
       staffRequired: 1,
       isRecurring: true
     },
+    
+    // Categoría: Eventos de Temporada
     {
-      id: 2,
-      name: "Taller de Pintura",
-      description: "Taller creativo de pintura para niños y adultos",
-      category: "artecultura",
-      duration: 120,
-      capacity: 15,
-      materials: "Lienzos, pinturas, pinceles, caballetes",
-      staffRequired: 2,
-      isRecurring: false
-    },
-    {
-      id: 3,
+      id: 11,
       name: "Festival de Primavera",
       description: "Evento familiar con actividades temáticas de la estación",
       category: "temporada",
@@ -122,8 +215,10 @@ const AdminActivityCatalogPage: React.FC = () => {
       staffRequired: 8,
       isRecurring: false
     },
+    
+    // Categoría: Naturaleza, Ciencia y Conservación
     {
-      id: 4,
+      id: 12,
       name: "Taller de Identificación de Plantas Nativas",
       description: "Actividad educativa para conocer y conservar especies locales",
       category: "naturalezaciencia",
