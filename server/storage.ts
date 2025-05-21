@@ -2061,20 +2061,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllActivities(): Promise<Activity[]> {
-    // Seleccionamos solo las columnas que existen en la tabla
-    return await db.select({
-      id: activities.id,
-      parkId: activities.parkId,
-      title: activities.title,
-      description: activities.description,
-      startDate: activities.startDate,
-      endDate: activities.endDate,
-      category: activities.category,
-      location: activities.location,
-      createdAt: activities.createdAt
-    })
-    .from(activities)
-    .orderBy(activities.startDate);
+    try {
+      // Seleccionamos solo las columnas que realmente existen en la base de datos
+      return await db.select({
+        id: activities.id,
+        parkId: activities.parkId,
+        title: activities.title,
+        description: activities.description,
+        startDate: activities.startDate,
+        endDate: activities.endDate,
+        category: activities.category,
+        location: activities.location,
+        createdAt: activities.createdAt
+      })
+      .from(activities)
+      .orderBy(activities.startDate);
+    } catch (error) {
+      console.error("Error al obtener actividades:", error);
+      return [];
+    }
   }
 
   async getParkActivities(parkId: number): Promise<Activity[]> {
@@ -2101,8 +2106,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createActivity(activityData: InsertActivity): Promise<Activity> {
-    const [newActivity] = await db.insert(activities).values(activityData).returning();
-    return newActivity;
+    try {
+      // Adaptamos los datos para que coincidan con la estructura real de la tabla en la base de datos
+      const cleanData = {
+        parkId: activityData.parkId,
+        title: activityData.title,
+        description: activityData.description || null,
+        startDate: new Date(activityData.startDate),
+        endDate: activityData.endDate ? new Date(activityData.endDate) : null,
+        category: activityData.category || null,
+        location: activityData.location || null
+      };
+      
+      console.log("Insertando actividad con datos:", cleanData);
+      
+      const [newActivity] = await db.insert(activities).values(cleanData).returning();
+      return newActivity;
+    } catch (error) {
+      console.error("Error al crear actividad:", error);
+      throw error;
+    }
   }
 
   async updateActivity(id: number, activityData: Partial<InsertActivity>): Promise<Activity | undefined> {

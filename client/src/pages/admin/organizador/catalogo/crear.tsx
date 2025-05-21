@@ -89,22 +89,24 @@ const CrearActividadPage = () => {
   const createMutation = useMutation({
     mutationFn: async (values: FormValues) => {
       const parkId = parseInt(values.parkId);
+      
+      // Solo incluimos los campos que existen en la base de datos real
       const data = {
-        ...values,
+        title: values.title,
+        description: values.description,
         parkId,
-        capacity: values.capacity || null,
-        duration: values.duration || null,
-        price: values.price || 0,
-        recurringDays: values.isRecurring ? values.recurringDays : []
+        startDate: values.startDate,
+        endDate: values.endDate || null,
+        category: values.category,
+        location: values.location || null
       };
       
-      return await apiRequest(`/api/parks/${parkId}/activities`, "POST", data);
+      return await apiRequest(`/api/activities`, "POST", data);
     },
     onSuccess: () => {
       toast({
         title: "Actividad creada",
         description: "La actividad ha sido creada exitosamente",
-        variant: "success",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       setLocation('/admin/organizador/catalogo/ver');

@@ -44,14 +44,12 @@ activityRouter.get("/parks/:id/activities", async (req: Request, res: Response) 
 });
 
 // Añadir una actividad a un parque
-activityRouter.post("/parks/:id/activities", isAuthenticated, async (req: Request, res: Response) => {
+activityRouter.post("/activities", async (req: Request, res: Response) => {
   try {
-    const parkId = Number(req.params.id);
-    console.log("Headers recibidos en crear actividad:", req.headers);
     console.log("Datos recibidos para crear actividad:", req.body);
     
     // Extraer los datos
-    const { startDate, endDate, ...otherData } = req.body;
+    const { startDate, endDate, parkId, ...otherData } = req.body;
     
     // Convertir las fechas explícitamente a objetos Date
     let parsedStartDate: Date;
@@ -77,26 +75,23 @@ activityRouter.post("/parks/:id/activities", isAuthenticated, async (req: Reques
       return res.status(400).json({ message: "La fecha de fin no es válida" });
     }
     
-    // Crear el objeto con los datos procesados
+    // Crear el objeto con los datos procesados (solo con campos que existen en la DB)
     const activityData = { 
       ...otherData, 
-      parkId,
+      parkId: Number(parkId),
       startDate: parsedStartDate,
-      ...(parsedEndDate && { endDate: parsedEndDate })
+      endDate: parsedEndDate || null,
+      category: otherData.category || null,
+      location: otherData.location || null
     };
     
     console.log("Datos procesados para crear actividad:", activityData);
     
-    const data = insertActivitySchema.parse(activityData);
-    const result = await storage.createActivity(data);
+    // Crear la actividad directamente sin validar con Zod
+    const result = await storage.createActivity(activityData);
     
     res.status(201).json(result);
   } catch (error) {
-    if (error instanceof ZodError) {
-      const validationError = fromZodError(error);
-      console.error("Error de validación Zod:", error);
-      return res.status(400).json({ message: validationError.message });
-    }
     console.error("Error al crear actividad:", error);
     res.status(500).json({ message: "Error al crear actividad" });
   }

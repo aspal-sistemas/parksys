@@ -8,6 +8,7 @@ import { sql, eq } from "drizzle-orm";
 import * as schema from "@shared/schema";
 import { videoRouter } from "./video_routes";
 import { registerVolunteerRoutes } from "./volunteerRoutes";
+import { activityRouter } from "./activityRoutes";
 import { 
   uploadParkFile, 
   handleMulterErrors, 
