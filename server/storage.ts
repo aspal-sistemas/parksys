@@ -2067,12 +2067,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getParkActivities(parkId: number): Promise<Activity[]> {
-    // Usamos una consulta SQL directa para evitar problemas con columnas no existentes
-    const result = await db.execute(
-      `SELECT * FROM activities WHERE park_id = $1 ORDER BY start_date`,
-      [parkId]
-    );
-    return result.rows as Activity[];
+    try {
+      // Utilizamos el constructor de consultas de Drizzle sin la columna problemática
+      return await db.select({
+        id: activities.id,
+        parkId: activities.parkId,
+        title: activities.title,
+        description: activities.description,
+        startDate: activities.startDate,
+        endDate: activities.endDate,
+        category: activities.category,
+        location: activities.location,
+        capacity: activities.capacity,
+        enrollmentCount: activities.enrollmentCount,
+        createdAt: activities.createdAt
+      })
+      .from(activities)
+      .where(eq(activities.parkId, parkId))
+      .orderBy(activities.startDate);
+    } catch (error) {
+      console.error("Error getting park activities:", error);
+      return []; // Devolvemos un array vacío en caso de error para no bloquear la carga
+    }
   }
 
   async createActivity(activityData: InsertActivity): Promise<Activity> {
