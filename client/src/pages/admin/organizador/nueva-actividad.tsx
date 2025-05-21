@@ -106,7 +106,10 @@ const NuevaActividadPage = () => {
   // Mutación para crear una nueva actividad
   const crearActividad = useMutation({
     mutationFn: async (data: NuevaActividadFormValues) => {
-      return await apiRequest('POST', `/api/activities`, data);
+      return await apiRequest(`/api/activities`, { 
+        method: 'POST',
+        data
+      });
     },
     onSuccess: () => {
       toast({

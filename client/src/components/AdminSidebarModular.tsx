@@ -215,40 +215,40 @@ const AdminSidebarModular: React.FC = () => {
                 Usuarios del Sistema
               </NavItem>
               
-              {/* Módulo - Actividades */}
+              {/* Módulo - Organizador */}
               <ModuleNav 
-                title="Actividades" 
+                title="Organizador" 
                 icon={<Calendar className="h-5 w-5" />} 
                 value="programming"
               >
                 <NavItem 
-                  href="/admin/activities/organizer" 
+                  href="/admin/organizador" 
                   icon={<CalendarDays className="h-4 w-4" />}
-                  active={location.startsWith('/admin/activities/organizer')}
+                  active={location === '/admin/organizador'}
                 >
-                  Organizador
+                  Dashboard
                 </NavItem>
                 
                 <NavItem 
-                  href="/admin/activities" 
+                  href="/admin/organizador/nueva-actividad" 
                   icon={<Calendar className="h-4 w-4" />}
-                  active={location === '/admin/activities'}
+                  active={location === '/admin/organizador/nueva-actividad'}
                 >
-                  Actividades
+                  Nueva Actividad
                 </NavItem>
                 
                 <NavItem 
-                  href="/admin/activities/catalog" 
+                  href="/admin/organizador/calendario" 
                   icon={<ListChecks className="h-4 w-4" />}
-                  active={location.startsWith('/admin/activities/catalog')}
+                  active={location.startsWith('/admin/organizador/calendario')}
                 >
-                  Catálogo
+                  Calendario
                 </NavItem>
                 
                 <NavItem 
-                  href="/admin/activities/reports" 
+                  href="/admin/organizador/reportes" 
                   icon={<FileText className="h-4 w-4" />}
-                  active={location.startsWith('/admin/activities/reports')}
+                  active={location.startsWith('/admin/organizador/reportes')}
                 >
                   Reportes
                 </NavItem>
