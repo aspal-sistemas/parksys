@@ -66,6 +66,7 @@ export default function InstructorsListPage() {
   const { data: instructors, isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/instructors'],
     retry: 1,
+    enabled: false, // No hacemos la consulta automáticamente
   });
 
   // Filtrar instructores según criterios de búsqueda
@@ -326,6 +327,29 @@ export default function InstructorsListPage() {
         </div>
 
         {/* Tabla de instructores */}
+        {/* Botón para cargar datos manualmente */}
+        <div className="mb-4">
+          <Button 
+            onClick={() => {
+              console.log("Solicitando datos de instructores...");
+              
+              // Usamos refetch de react-query que incluye las credenciales de sesión automáticamente
+              refetch().then(result => {
+                console.log("Datos de instructores obtenidos:", result.data);
+                if (!result.data || result.data.length === 0) {
+                  console.log("No se encontraron instructores. Es posible que necesites ejecutar el script de carga de datos de muestra.");
+                }
+              }).catch(error => {
+                console.error("Error al cargar instructores:", error);
+              });
+            }}
+            variant="outline"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Cargar instructores
+          </Button>
+        </div>
+
         <div className="bg-white rounded-md shadow">
           {isLoading ? (
             <div className="text-center py-8">
@@ -340,9 +364,11 @@ export default function InstructorsListPage() {
                 Reintentar
               </Button>
             </div>
-          ) : paginatedInstructors.length === 0 ? (
+          ) : paginatedInstructors?.length === 0 ? (
             <div className="text-center py-8">
-              <div className="text-gray-500">No se encontraron instructores que coincidan con los criterios de búsqueda.</div>
+              <div className="text-gray-500">
+                {instructors ? "No se encontraron instructores que coincidan con los criterios de búsqueda." : "Haz clic en 'Cargar instructores' para ver los datos."}
+              </div>
             </div>
           ) : (
             <div className="border rounded-md overflow-hidden">
