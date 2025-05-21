@@ -39,7 +39,8 @@ const InstructorsPage: React.FC = () => {
   instructors.forEach(instructor => {
     if (instructor.specialties) {
       instructor.specialties.split(',').forEach(specialty => {
-        allSpecialties.add(specialty.trim());
+        const trimmed = specialty.trim();
+        if (trimmed) allSpecialties.add(trimmed);
       });
     }
   });
@@ -112,9 +113,9 @@ const InstructorsPage: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas las especialidades</SelectItem>
-                {Array.from(allSpecialties).map((specialty) => (
-                  <SelectItem key={specialty} value={specialty}>
-                    {specialty}
+                {Array.from(allSpecialties).filter(Boolean).map((specialty) => (
+                  <SelectItem key={specialty} value={specialty || "sin_especialidad"}>
+                    {specialty || "Sin especialidad"}
                   </SelectItem>
                 ))}
               </SelectContent>

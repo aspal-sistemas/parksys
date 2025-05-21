@@ -47,15 +47,24 @@ const CalendarPage: React.FC = () => {
   });
   
   // Extraer categorías, parques e instructores únicos para los filtros
-  const categories = Array.from(new Set(activities.map(a => a.category)));
-  const parks = Array.from(new Set(activities.map(a => a.parkName)));
-  const instructors = Array.from(
-    new Set(
-      activities
-        .filter(a => a.instructorId && a.instructorName)
-        .map(a => ({ id: a.instructorId!, name: a.instructorName! }))
-    )
-  ).sort((a, b) => a.name.localeCompare(b.name));
+  const categories = Array.from(new Set(activities.map(a => a.category || 'Sin categoría')));
+  const parks = Array.from(new Set(activities.map(a => a.parkName || 'Sin parque')));
+  
+  // Extraer instructores únicos 
+  const uniqueInstructors = new Map();
+  activities
+    .filter(a => a.instructorId && a.instructorName)
+    .forEach(a => {
+      if (!uniqueInstructors.has(a.instructorId)) {
+        uniqueInstructors.set(a.instructorId, { 
+          id: a.instructorId, 
+          name: a.instructorName || `Instructor ${a.instructorId}`
+        });
+      }
+    });
+  
+  const instructors = Array.from(uniqueInstructors.values())
+    .sort((a, b) => a.name.localeCompare(b.name));
   
   // Navegación entre meses
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
