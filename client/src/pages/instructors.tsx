@@ -30,16 +30,12 @@ const InstructorsPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   // Obtener datos de instructores de la ruta pública
-  const { data: rawInstructors = [], isLoading } = useQuery<Instructor[]>({
+  const { data: apiResponse = { status: '', data: [], count: 0 }, isLoading } = useQuery<{ status: string, data: Instructor[], count: number }>({
     queryKey: ['/public-api/instructors'],
   });
   
-  // Eliminar duplicados usando un Map con el ID como clave
-  const instructorsMap = new Map();
-  rawInstructors.forEach(instructor => {
-    instructorsMap.set(instructor.id, instructor);
-  });
-  const instructors = Array.from(instructorsMap.values());
+  // Extraer la lista de instructores de la respuesta
+  const instructors = apiResponse.data || [];
   
   // Extraer especialidades únicas para el filtro
   const allSpecialties = new Set<string>();
