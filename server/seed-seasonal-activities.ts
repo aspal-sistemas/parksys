@@ -166,21 +166,21 @@ export async function addSeasonalActivities() {
       console.log(`Insertando actividad "${activity.title}" en el parque ID ${parkId}`);
       
       // Insertar en activities usando SQL directo para evitar problemas con el esquema
-      await db.execute(
-        `INSERT INTO activities 
+      const query = `
+        INSERT INTO activities 
         (park_id, title, description, start_date, end_date, category, location, created_at) 
         VALUES 
-        ($1, $2, $3, $4, $5, $6, $7, NOW())`,
-        [
-          activity.parkId, 
-          activity.title, 
-          activity.description, 
-          activity.startDate, 
-          activity.endDate, 
-          activity.category, 
-          activity.location
-        ]
-      );
+        ('${activity.parkId}', '${activity.title.replace(/'/g, "''")}', 
+         '${activity.description.replace(/'/g, "''")}', 
+         '${activity.startDate.toISOString()}', 
+         ${activity.endDate ? `'${activity.endDate.toISOString()}'` : 'NULL'}, 
+         '${activity.category}', 
+         ${activity.location ? `'${activity.location.replace(/'/g, "''")}'` : 'NULL'}, 
+         NOW())
+      `;
+      
+      console.log(`Ejecutando consulta: ${query}`);
+      await db.execute(query);
     }
     
     console.log("Actividades de Eventos de Temporada agregadas correctamente.");
