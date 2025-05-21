@@ -29,21 +29,31 @@ const InstructorsPage: React.FC = () => {
   const [specialtyFilter, setSpecialtyFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  // Obtener datos de instructores de la ruta pública
-  const { data: apiResponse = [], isLoading } = useQuery<Instructor[]>({
-    queryKey: ['/public-api/instructors'],
+  // Obtener datos de instructores de la ruta correcta para la página pública
+  const { data: apiResponse = [], isLoading } = useQuery<any>({
+    queryKey: ['/public-api/instructors/public'],
   });
   
-  // Manejar la respuesta y eliminar duplicados usando Map
+  // Verificar qué estructura de datos tenemos
+  let rawData: Instructor[] = [];
+  
+  if (Array.isArray(apiResponse)) {
+    // La API devolvió un array directamente
+    rawData = apiResponse;
+  } else if (apiResponse && 'data' in apiResponse) {
+    // La API devolvió un objeto con una propiedad data
+    rawData = apiResponse.data || [];
+  } else if (apiResponse && typeof apiResponse === 'object') {
+    // La API devolvió algún otro objeto, intentar usarlo directamente
+    rawData = [apiResponse];
+  }
+  
+  // Eliminar duplicados usando Map con ID como clave
   const instructorsMap = new Map<number, Instructor>();
   
-  // Si la respuesta es un array, procesamos ese array
-  const rawInstructors = Array.isArray(apiResponse) ? apiResponse : 
-    (apiResponse && 'data' in apiResponse ? (apiResponse.data || []) : []);
-    
-  // Eliminar duplicados usando ID como clave
-  rawInstructors.forEach((instructor: Instructor) => {
-    if (instructor && instructor.id) {
+  // Procesar solamente entradas válidas
+  rawData.forEach((instructor: any) => {
+    if (instructor && instructor.id && !instructorsMap.has(instructor.id)) {
       instructorsMap.set(instructor.id, instructor);
     }
   });
