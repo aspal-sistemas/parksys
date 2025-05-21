@@ -35,7 +35,7 @@ const InstructorsPage: React.FC = () => {
   });
   
   // Verificar qué estructura de datos tenemos
-  let rawData: Instructor[] = [];
+  let rawData: any[] = [];
   
   if (Array.isArray(apiResponse)) {
     // La API devolvió un array directamente
@@ -51,10 +51,24 @@ const InstructorsPage: React.FC = () => {
   // Eliminar duplicados usando Map con ID como clave
   const instructorsMap = new Map<number, Instructor>();
   
-  // Procesar solamente entradas válidas
-  rawData.forEach((instructor: any) => {
-    if (instructor && instructor.id && !instructorsMap.has(instructor.id)) {
-      instructorsMap.set(instructor.id, instructor);
+  // Procesar solamente entradas válidas y adaptar formato de campos
+  rawData.forEach((data: any) => {
+    if (data && data.id && !instructorsMap.has(data.id)) {
+      // Adaptar el formato de los datos que llegan de la API al formato esperado por la interfaz
+      const instructor: Instructor = {
+        id: data.id,
+        full_name: data.fullName || data.full_name || '',
+        email: data.email || '',
+        phone: data.phoneNumber || data.phone || '',
+        specialties: data.specialties || '',
+        experience_years: data.experience || data.experience_years || 0,
+        status: data.status || 'active',
+        profile_image_url: data.profileImageUrl || data.profile_image_url || null,
+        created_at: data.createdAt || data.created_at || '',
+        rating: data.rating || null
+      };
+      
+      instructorsMap.set(data.id, instructor);
     }
   });
   
