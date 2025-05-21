@@ -74,9 +74,9 @@ const CalendarPage: React.FC = () => {
       const sameDay = isSameDay(date, activityDate);
       
       // Aplicar filtros
-      const matchesCategory = categoryFilter === '' || activity.category === categoryFilter;
-      const matchesPark = parkFilter === '' || activity.parkName === parkFilter;
-      const matchesInstructor = instructorFilter === '' || 
+      const matchesCategory = categoryFilter === 'all' || categoryFilter === '' || activity.category === categoryFilter;
+      const matchesPark = parkFilter === 'all' || parkFilter === '' || activity.parkName === parkFilter;
+      const matchesInstructor = instructorFilter === 'all' || instructorFilter === '' ||
         (activity.instructorId && activity.instructorId.toString() === instructorFilter);
       
       // Filtrar por precio
@@ -158,7 +158,7 @@ const CalendarPage: React.FC = () => {
                   <SelectValue placeholder="Categoría" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas las categorías</SelectItem>
+                  <SelectItem value="all">Todas las categorías</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
@@ -170,7 +170,7 @@ const CalendarPage: React.FC = () => {
                   <SelectValue placeholder="Parque" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos los parques</SelectItem>
+                  <SelectItem value="all">Todos los parques</SelectItem>
                   {parks.map(park => (
                     <SelectItem key={park} value={park}>{park}</SelectItem>
                   ))}
@@ -182,7 +182,7 @@ const CalendarPage: React.FC = () => {
                   <SelectValue placeholder="Instructor" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos los instructores</SelectItem>
+                  <SelectItem value="all">Todos los instructores</SelectItem>
                   {instructors.map(instructor => (
                     <SelectItem key={instructor.id} value={instructor.id.toString()}>
                       {instructor.name}
@@ -196,14 +196,17 @@ const CalendarPage: React.FC = () => {
                   <SelectValue placeholder="Precio" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos los precios</SelectItem>
+                  <SelectItem value="all">Todos los precios</SelectItem>
                   <SelectItem value="free">Gratis</SelectItem>
                   <SelectItem value="paid">De pago</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
-            {(categoryFilter || parkFilter || instructorFilter || priceFilter) && (
+            {((categoryFilter && categoryFilter !== 'all') || 
+              (parkFilter && parkFilter !== 'all') || 
+              (instructorFilter && instructorFilter !== 'all') || 
+              priceFilter) && (
               <div className="flex justify-end mt-4">
                 <Button 
                   variant="outline"

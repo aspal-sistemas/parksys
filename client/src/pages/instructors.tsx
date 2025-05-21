@@ -51,7 +51,7 @@ const InstructorsPage: React.FC = () => {
       instructor.full_name.toLowerCase().includes(searchTerm.toLowerCase());
     
     // Filtrar por especialidad
-    const matchesSpecialty = specialtyFilter === '' || 
+    const matchesSpecialty = specialtyFilter === 'all' || specialtyFilter === '' || 
       (instructor.specialties && instructor.specialties.toLowerCase().includes(specialtyFilter.toLowerCase()));
     
     return matchesSearch && matchesSpecialty;
@@ -111,7 +111,7 @@ const InstructorsPage: React.FC = () => {
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas las especialidades</SelectItem>
+                <SelectItem value="all">Todas las especialidades</SelectItem>
                 {Array.from(allSpecialties).map((specialty) => (
                   <SelectItem key={specialty} value={specialty}>
                     {specialty}
