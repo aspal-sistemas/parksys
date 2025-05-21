@@ -722,6 +722,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error fetching park activities" });
     }
   });
+  
+  // Endpoint directo para obtener todas las actividades
+  apiRouter.get("/activities", async (_req: Request, res: Response) => {
+    try {
+      console.log("Obteniendo todas las actividades en GET /api/activities");
+      const activities = await storage.getAllActivities();
+      console.log(`Actividades encontradas: ${activities.length}`);
+      res.json(activities);
+    } catch (error) {
+      console.error("Error al obtener actividades:", error);
+      res.status(500).json({ message: "Error al recuperar actividades" });
+    }
+  });
+  
+  // Endpoint directo para crear actividades
+  apiRouter.post("/activities", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      console.log("Datos recibidos en POST /api/activities:", req.body);
+      
+      // Extraer los datos
+      const { startDate, endDate, ...otherData } = req.body;
+      
+      // Convertir las fechas explícitamente a objetos Date
+      let parsedStartDate: Date;
+      let parsedEndDate: Date | undefined;
+      
+      try {
+        parsedStartDate = new Date(startDate);
+        if (endDate) {
+          parsedEndDate = new Date(endDate);
+        }
+      } catch (e) {
+        console.error("Error al convertir fechas:", e);
+        return res.status(400).json({ message: "Formato de fecha inválido" });
+      }
+      
+      // Verificar que la fecha de inicio es válida
+      if (isNaN(parsedStartDate.getTime())) {
+        return res.status(400).json({ message: "La fecha de inicio no es válida" });
+      }
+      
+      // Verificar que la fecha de fin es válida (si existe)
+      if (parsedEndDate && isNaN(parsedEndDate.getTime())) {
+        return res.status(400).json({ message: "La fecha de fin no es válida" });
+      }
+      
+      // Crear el objeto con los datos procesados
+      const activityData = { 
+        ...otherData, 
+        startDate: parsedStartDate,
+        ...(parsedEndDate && { endDate: parsedEndDate })
+      };
+      
+      console.log("Datos procesados para creación de actividad:", activityData);
+      
+      const data = insertActivitySchema.parse(activityData);
+      const result = await storage.createActivity(data);
+      
+      console.log("Actividad creada exitosamente:", result);
+      
+      res.status(201).json(result);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        console.error("Error de validación Zod:", error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      console.error("Error al crear actividad:", error);
+      res.status(500).json({ message: "Error al crear actividad" });
+    }
+  });
 
   // Add an activity to a park (admin/municipality only)
   apiRouter.post("/parks/:id/activities", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
