@@ -30,12 +30,13 @@ const InstructorsPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   // Obtener datos de instructores de la ruta pública
-  const { data: apiResponse = { status: '', data: [], count: 0 }, isLoading } = useQuery<{ status: string, data: Instructor[], count: number }>({
+  const { data: apiResponse = [], isLoading } = useQuery<Instructor[]>({
     queryKey: ['/public-api/instructors'],
   });
   
-  // Extraer la lista de instructores de la respuesta
-  const instructors = apiResponse.data || [];
+  // Manejar la respuesta que puede ser un array directamente o un objeto estructurado
+  const instructors = Array.isArray(apiResponse) ? apiResponse : 
+    (apiResponse && 'data' in apiResponse ? (apiResponse.data || []) : []);
   
   // Extraer especialidades únicas para el filtro
   const allSpecialties = new Set<string>();
