@@ -215,9 +215,9 @@ const AdminSidebarModular: React.FC = () => {
                 Usuarios del Sistema
               </NavItem>
               
-              {/* Módulo - Organizador */}
+              {/* Módulo - Actividades */}
               <ModuleNav 
-                title="Organizador" 
+                title="Actividades" 
                 icon={<Calendar className="h-5 w-5" />} 
                 value="programming"
               >
