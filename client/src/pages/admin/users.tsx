@@ -128,9 +128,7 @@ const UserDetail: React.FC<{
     legalConsent: user?.legalConsent || false,
   });
 
-  const { data: municipalities = [] } = useQuery({
-    queryKey: ['/api/municipalities'],
-  });
+  // Eliminamos la consulta de municipios ya que no se usará en el formulario
 
   const handleChange = (field: keyof UserFormData, value: string | number | null | boolean | File | string[]) => {
     setUserData(prev => ({
@@ -394,14 +392,46 @@ const UserDetail: React.FC<{
                 </div>
                 
                 <div className="space-y-2">
-                  <label htmlFor="curriculum" className="text-sm font-medium">Curriculum Vitae (URL)</label>
-                  <Input
-                    id="curriculum"
-                    value={userData.curriculum}
-                    onChange={(e) => handleChange('curriculum', e.target.value)}
-                    placeholder="https://ejemplo.com/curriculum.pdf"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">Enlace a tu CV en formato PDF</p>
+                  <label htmlFor="curriculumFile" className="text-sm font-medium">Curriculum Vitae</label>
+                  <div className="border border-gray-300 rounded-md p-4 bg-gray-50">
+                    {userData.curriculumFile ? (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <FileSymlink className="h-5 w-5 text-blue-500" />
+                          <span className="text-sm text-gray-700 truncate max-w-[150px]">
+                            {userData.curriculumFile.name}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          className="text-red-500 hover:text-red-700"
+                          onClick={() => handleChange('curriculumFile', null)}
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <label
+                          htmlFor="curriculumUpload"
+                          className="cursor-pointer inline-flex items-center gap-2 py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          <FileSymlink className="h-4 w-4" />
+                          Subir CV
+                          <input
+                            id="curriculumUpload"
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            className="hidden"
+                            onChange={handleCurriculumUpload}
+                          />
+                        </label>
+                        <p className="text-xs text-gray-500 mt-2">
+                          Formatos: PDF, DOC, DOCX. Máx: 5MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               
@@ -443,16 +473,17 @@ const UserDetail: React.FC<{
                 </div>
                 
                 <div className="space-y-2">
-                  <label htmlFor="age" className="text-sm font-medium">Edad</label>
-                  <Input
-                    id="age"
-                    type="number"
-                    min="16"
-                    max="99"
-                    value={userData.age?.toString() || ''}
-                    onChange={(e) => handleChange('age', e.target.value ? parseInt(e.target.value) : undefined)}
-                    placeholder="Ej: 25"
-                  />
+                  <label htmlFor="birthDate" className="text-sm font-medium">Fecha de nacimiento</label>
+                  <div className="relative">
+                    <Input
+                      id="birthDate"
+                      type="date"
+                      value={userData.birthDate}
+                      onChange={(e) => handleChange('birthDate', e.target.value)}
+                      className="w-full"
+                    />
+                    <Calendar className="h-4 w-4 absolute right-3 top-3 text-gray-400" />
+                  </div>
                 </div>
               </div>
               
