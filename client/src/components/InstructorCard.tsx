@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'wouter';
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,8 +14,21 @@ import {
   ChevronRight,
   Eye,
   BookOpen,
-  MessageSquare
+  MessageSquare,
+  Edit,
+  MoreHorizontal
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import InstructorProfileDialog from './InstructorProfileDialog';
+import InstructorEditDialog from './InstructorEditDialog';
 
 // Tipo para los instructores
 interface InstructorCardProps {
@@ -37,6 +50,8 @@ interface InstructorCardProps {
 
 export default function InstructorCard({ instructor, showActions = true, compact = false }: InstructorCardProps) {
   const [, setLocation] = useLocation();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   // Iniciales para avatar fallback
   const getInitials = (name: string) => {
@@ -96,96 +111,131 @@ export default function InstructorCard({ instructor, showActions = true, compact
   };
   
   return (
-    <Card className={`h-full overflow-hidden transition-all ${getStatusColor(instructor.status)}`}>
-      <CardHeader className="pb-0 pt-4">
-        <div className="flex items-center">
-          <Avatar className="h-14 w-14 mr-3">
-            <AvatarImage src={instructor.profile_image_url} alt={instructor.full_name} />
-            <AvatarFallback>
-              {getInitials(instructor.full_name)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold truncate">{instructor.full_name}</h3>
-            <div className="flex items-center text-sm text-gray-500">
-              <Briefcase className="h-4 w-4 mr-1" />
-              <span>{instructor.experience_years} {instructor.experience_years === 1 ? 'año' : 'años'} de experiencia</span>
-            </div>
-            {!compact && instructor.rating && (
-              <div className="mt-1">
-                {renderRating(instructor.rating)}
+    <>
+      <Card className={`h-full overflow-hidden transition-all ${getStatusColor(instructor.status)}`}>
+        <CardHeader className="pb-0 pt-4">
+          <div className="flex items-center">
+            <Avatar className="h-14 w-14 mr-3">
+              <AvatarImage src={instructor.profile_image_url} alt={instructor.full_name} />
+              <AvatarFallback>
+                {getInitials(instructor.full_name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-semibold truncate">{instructor.full_name}</h3>
+              <div className="flex items-center text-sm text-gray-500">
+                <Briefcase className="h-4 w-4 mr-1" />
+                <span>{instructor.experience_years} {instructor.experience_years === 1 ? 'año' : 'años'} de experiencia</span>
               </div>
-            )}
+              {!compact && instructor.rating && (
+                <div className="mt-1">
+                  {renderRating(instructor.rating)}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pt-4">
-        {!compact && (
-          <>
-            <div className="text-sm mb-3 flex items-center text-gray-500">
-              <Mail className="h-4 w-4 mr-2" />
-              <span className="truncate">{instructor.email}</span>
-            </div>
-            
-            {instructor.phone && (
-              <div className="text-sm mb-3 flex items-center text-gray-500">
-                <Phone className="h-4 w-4 mr-2" />
-                <span>{instructor.phone}</span>
-              </div>
-            )}
-          </>
-        )}
+        </CardHeader>
         
-        <div className="mt-2 flex flex-wrap">
-          {renderSpecialties(instructor.specialties)}
-        </div>
-      </CardContent>
-      
-      {showActions && (
-        <CardFooter className="flex justify-between border-t p-3 bg-gray-50">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => setLocation(`/admin/instructors/${instructor.id}`)}
-          >
-            <Eye className="h-4 w-4 mr-1" />
-            {compact ? '' : 'Perfil'}
-          </Button>
-          
+        <CardContent className="pt-4">
           {!compact && (
             <>
+              <div className="text-sm mb-3 flex items-center text-gray-500">
+                <Mail className="h-4 w-4 mr-2" />
+                <span className="truncate">{instructor.email}</span>
+              </div>
+              
+              {instructor.phone && (
+                <div className="text-sm mb-3 flex items-center text-gray-500">
+                  <Phone className="h-4 w-4 mr-2" />
+                  <span>{instructor.phone}</span>
+                </div>
+              )}
+            </>
+          )}
+          
+          <div className="mt-2 flex flex-wrap">
+            {renderSpecialties(instructor.specialties)}
+          </div>
+        </CardContent>
+        
+        {showActions && (
+          <CardFooter className="flex justify-between border-t p-3 bg-gray-50">
+            {/* Menú de acciones */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <MoreHorizontal className="h-4 w-4 mr-1" />
+                  Acciones
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuLabel>Opciones</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Ver perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar perfil
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => setLocation(`/admin/instructors/${instructor.id}/assignments`)}>
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Asignaciones
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLocation(`/admin/instructors/${instructor.id}/evaluations`)}>
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Evaluaciones
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLocation(`/admin/instructors/${instructor.id}/recognitions`)}>
+                    <Award className="h-4 w-4 mr-2" />
+                    Reconocimientos
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {/* Botones de acceso rápido */}
+            <div>
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => setLocation(`/admin/instructors/${instructor.id}/assignments`)}
+                onClick={() => setIsProfileOpen(true)}
               >
-                <Calendar className="h-4 w-4 mr-1" />
-                Asignaciones
+                <Eye className="h-4 w-4 mr-1" />
+                Ver
               </Button>
               
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => setLocation(`/admin/instructors/${instructor.id}/evaluations`)}
+                onClick={() => setIsEditOpen(true)}
               >
-                <MessageSquare className="h-4 w-4 mr-1" />
-                Evaluaciones
+                <Edit className="h-4 w-4 mr-1" />
+                Editar
               </Button>
-            </>
-          )}
-          
-          {compact && (
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setLocation(`/admin/instructors/${instructor.id}`)}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          )}
-        </CardFooter>
-      )}
-    </Card>
+            </div>
+          </CardFooter>
+        )}
+      </Card>
+      
+      {/* Diálogo para ver el perfil del instructor */}
+      <InstructorProfileDialog 
+        instructorId={instructor.id}
+        open={isProfileOpen}
+        onOpenChange={setIsProfileOpen}
+      />
+      
+      {/* Diálogo para editar el perfil del instructor */}
+      <InstructorEditDialog 
+        instructorId={instructor.id}
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+      />
+    </>
   );
 }

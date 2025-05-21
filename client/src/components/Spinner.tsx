@@ -1,15 +1,26 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { RefreshCw } from 'lucide-react';
 
-interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface SpinnerProps {
+  className?: string;
+  size?: 'sm' | 'md' | 'lg';
+}
 
-export const Spinner = ({ className, ...props }: SpinnerProps) => {
+export function Spinner({ className, size = 'md' }: SpinnerProps) {
+  const sizeClasses = {
+    sm: 'h-4 w-4',
+    md: 'h-6 w-6',
+    lg: 'h-8 w-8',
+  };
+
   return (
-    <div
-      className={cn("animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full", className)}
-      {...props}
-    >
-      <span className="sr-only">Cargando...</span>
-    </div>
+    <RefreshCw
+      className={cn(
+        'animate-spin text-gray-400',
+        sizeClasses[size],
+        className
+      )}
+    />
   );
-};
+}
