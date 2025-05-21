@@ -114,6 +114,13 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/instructors/index')))}
           </Suspense>
         </Route>
+        
+        {/* Ruta para el calendario de actividades */}
+        <Route path="/admin/activities/calendar">
+          <Suspense fallback={<div className="p-8 text-center">Cargando calendario de actividades...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/activities/calendar')))}
+          </Suspense>
+        </Route>
         <Route component={NotFound} />
       </Switch>
     </div>

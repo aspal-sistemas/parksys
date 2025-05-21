@@ -239,9 +239,9 @@ const AdminSidebarModular: React.FC = () => {
                 </NavItem>
                 
                 <NavItem 
-                  href="/admin/organizador/calendario" 
+                  href="/admin/activities/calendar" 
                   icon={<Calendar className="h-4 w-4" />}
-                  active={location.startsWith('/admin/organizador/calendario')}
+                  active={location.startsWith('/admin/activities/calendar')}
                 >
                   Calendario
                 </NavItem>
