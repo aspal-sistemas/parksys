@@ -576,7 +576,35 @@ const CrearActividadPage = () => {
                   />
 
                   <div className="space-y-3">
-                    <div className="flex flex-col gap-2">
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Precio (MXN)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="0" 
+                              step="0.01" 
+                              placeholder="Ej: 50.00" 
+                              {...field} 
+                              disabled={form.watch("isFree") || form.watch("isPriceRandom")}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            {form.watch("isFree") 
+                              ? "Actividad gratuita" 
+                              : form.watch("isPriceRandom") 
+                                ? "El precio será variable o por donativo" 
+                                : "Precio fijo por persona"}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="flex flex-col gap-2 mt-2">
                       <FormField
                         control={form.control}
                         name="isFree"
@@ -624,34 +652,6 @@ const CrearActividadPage = () => {
                         )}
                       />
                     </div>
-                    
-                    <FormField
-                      control={form.control}
-                      name="price"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Precio (MXN)</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              min="0" 
-                              step="0.01" 
-                              placeholder="Ej: 50.00" 
-                              {...field} 
-                              disabled={form.watch("isFree") || form.watch("isPriceRandom")}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            {form.watch("isFree") 
-                              ? "Actividad gratuita" 
-                              : form.watch("isPriceRandom") 
-                                ? "El precio será variable o por donativo" 
-                                : "Precio fijo por persona"}
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
                 </div>
 
