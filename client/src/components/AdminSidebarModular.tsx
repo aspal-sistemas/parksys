@@ -234,7 +234,7 @@ const AdminSidebarModular: React.FC = () => {
                     icon={<PlusCircle className="h-4 w-4" />}
                     active={location === '/admin/organizador/catalogo/crear'}
                   >
-                    Crear Nueva Actividad
+                    Nueva
                   </NavItem>
                   <NavItem 
                     href="/admin/organizador/catalogo/ver" 
