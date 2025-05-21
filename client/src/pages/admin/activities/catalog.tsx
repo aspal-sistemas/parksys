@@ -182,46 +182,16 @@ const AdminActivityCatalogPage: React.FC = () => {
   // Función para filtrar actividades por categoría
   const getActivitiesByCategory = (category: string) => {
     if (!category) return [];
-    return PREDEFINED_ACTIVITIES.filter(activity => {
-      // Lista de actividades por categoría
-      if (category === 'artecultura' && [
-        "Exposiciones", "Actividades Culturales", "Conciertos", 
-        "Clases de pintura", "Clases de música", "Taller de manualidades", 
-        "Arte", "Actividades Educativas", "Recorridos guiados"
-      ].includes(activity.value)) {
-        return true;
-      }
-      
-      if (category === 'recreacionbienestar' && [
-        "Clase de Yoga", "Clases de baile", "Activación física", 
-        "Actividades deportivas", "Yoga", "Actividades para todos", 
-        "Actividades infantiles", "Picnic", "Ciclismo", 
-        "Senderismo", "Bicirruta y renta de bicicletas/patines"
-      ].includes(activity.value)) {
-        return true;
-      }
-      
-      if (category === 'temporada' && [
-        "Festival de Primavera", "Festivales", "Eventos en días especiales", 
-        "Ferias (zapatos, libros, salud)", "Pláticas-charlas", "Tianguis", 
-        "Espectáculos", "Feria para OSC recaudación de fondos", 
-        "Hanal Pixán", "Mercado emprendedores", "Eventos sociales"
-      ].includes(activity.value)) {
-        return true;
-      }
-      
-      if (category === 'naturalezaciencia' && [
-        "Taller de Identificación de Plantas Nativas", "Clases de jardinería y siembra", 
-        "Recorrido botánico", "Venta de plantas", "Clases de educación ambiental", 
-        "Taller Huertos orgánicos", "Manualidades", "Cursos de reciclaje", 
-        "Avistamiento de Aves", "Pláticas sobre plantas ricas en vitaminas y para una buena alimentación", 
-        "Reforestación"
-      ].includes(activity.value)) {
-        return true;
-      }
-      
-      return activity.value === "otro";
-    });
+    
+    // Usa directamente el objeto categorizado para obtener las actividades
+    const categoryActivities = PREDEFINED_ACTIVITIES_BY_CATEGORY[category as keyof typeof PREDEFINED_ACTIVITIES_BY_CATEGORY] || [];
+    
+    // Añade siempre las opciones comunes
+    return [
+      ...categoryActivities,
+      { value: "nuevo", label: "Añadir nueva actividad al catálogo" },
+      { value: "otro", label: "Otra actividad (sólo para esta vez)" }
+    ];
   };
 
   // Por ahora usamos datos de ejemplo mientras implementamos el backend
