@@ -241,7 +241,7 @@ const AdminSidebarModular: React.FC = () => {
                     icon={<ListChecks className="h-4 w-4" />}
                     active={location === '/admin/organizador/catalogo/ver'}
                   >
-                    Ver Actividades Disponibles
+                    Disponibles
                   </NavItem>
                 </ModuleNav>
                 
