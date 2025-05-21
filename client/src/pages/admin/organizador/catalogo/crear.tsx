@@ -184,8 +184,14 @@ const CrearActividadPage = () => {
         description: "La actividad ha sido creada exitosamente",
         variant: "default"
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
-      setLocation('/admin/organizador/catalogo/ver');
+      
+      // Invalidar todas las consultas relacionadas con actividades
+      queryClient.invalidateQueries();
+      
+      // Esperar un momento para que la invalidación surta efecto
+      setTimeout(() => {
+        setLocation('/admin/organizador/catalogo/ver');
+      }, 500);
     },
     onError: (error) => {
       console.error("Error al crear actividad:", error);
