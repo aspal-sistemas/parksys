@@ -144,6 +144,51 @@ const AdminActivityCatalogPage: React.FC = () => {
     staffRequired: null,
     isRecurring: false
   });
+  
+  // Función para filtrar actividades por categoría
+  const getActivitiesByCategory = (category: string) => {
+    if (!category) return [];
+    return PREDEFINED_ACTIVITIES.filter(activity => {
+      // Lista de actividades por categoría
+      if (category === 'artecultura' && [
+        "Exposiciones", "Actividades Culturales", "Conciertos", 
+        "Clases de pintura", "Clases de música", "Taller de manualidades", 
+        "Arte", "Actividades Educativas", "Recorridos guiados"
+      ].includes(activity.value)) {
+        return true;
+      }
+      
+      if (category === 'recreacionbienestar' && [
+        "Clase de Yoga", "Clases de baile", "Activación física", 
+        "Actividades deportivas", "Yoga", "Actividades para todos", 
+        "Actividades infantiles", "Picnic", "Ciclismo", 
+        "Senderismo", "Bicirruta y renta de bicicletas/patines"
+      ].includes(activity.value)) {
+        return true;
+      }
+      
+      if (category === 'temporada' && [
+        "Festival de Primavera", "Festivales", "Eventos en días especiales", 
+        "Ferias (zapatos, libros, salud)", "Pláticas-charlas", "Tianguis", 
+        "Espectáculos", "Feria para OSC recaudación de fondos", 
+        "Hanal Pixán", "Mercado emprendedores", "Eventos sociales"
+      ].includes(activity.value)) {
+        return true;
+      }
+      
+      if (category === 'naturalezaciencia' && [
+        "Taller de Identificación de Plantas Nativas", "Clases de jardinería y siembra", 
+        "Recorrido botánico", "Venta de plantas", "Clases de educación ambiental", 
+        "Taller Huertos orgánicos", "Manualidades", "Cursos de reciclaje", 
+        "Avistamiento de Aves", "Pláticas sobre plantas ricas en vitaminas y para una buena alimentación", 
+        "Reforestación"
+      ].includes(activity.value)) {
+        return true;
+      }
+      
+      return activity.value === "otro";
+    });
+  };
 
   // Por ahora usamos datos de ejemplo mientras implementamos el backend
   const mockActivitiesCatalog: ActivityCatalogItem[] = [
@@ -449,62 +494,17 @@ const AdminActivityCatalogPage: React.FC = () => {
             <form onSubmit={handleCreateSubmit}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Nombre de Actividad</Label>
-                  <Select 
-                    value={formData.name} 
-                    onValueChange={(value) => {
-                      if (value === "otro") {
-                        setCustomActivity(true);
-                      } else {
-                        setCustomActivity(false);
-                        setFormData({ ...formData, name: value });
-                      }
-                    }}
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona una actividad" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-80">
-                      {PREDEFINED_ACTIVITIES.map((activity) => (
-                        <SelectItem key={activity.value} value={activity.value}>
-                          {activity.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  {customActivity && (
-                    <div className="mt-2">
-                      <Label htmlFor="customName">Especificar nombre</Label>
-                      <Input
-                        id="customName"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Ingresa el nombre de la actividad"
-                        required
-                      />
-                    </div>
-                  )}
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Descripción</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Describe la actividad..."
-                    rows={3}
-                    required
-                  />
-                </div>
-                
-                <div className="grid gap-2">
                   <Label htmlFor="category">Categoría</Label>
                   <Select 
                     value={formData.category} 
-                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                    onValueChange={(value) => {
+                      setFormData({ 
+                        ...formData, 
+                        category: value,
+                        name: '' // Reiniciamos el nombre al cambiar de categoría
+                      });
+                      setCustomActivity(false);
+                    }}
                     required
                   >
                     <SelectTrigger>
@@ -518,6 +518,61 @@ const AdminActivityCatalogPage: React.FC = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                
+                {formData.category && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Nombre de Actividad</Label>
+                    <Select 
+                      value={formData.name} 
+                      onValueChange={(value) => {
+                        if (value === "otro") {
+                          setCustomActivity(true);
+                          setFormData({ ...formData, name: '' });
+                        } else {
+                          setCustomActivity(false);
+                          setFormData({ ...formData, name: value });
+                        }
+                      }}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona una actividad" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-80">
+                        {getActivitiesByCategory(formData.category).map((activity) => (
+                          <SelectItem key={activity.value} value={activity.value}>
+                            {activity.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    {customActivity && (
+                      <div className="mt-2">
+                        <Label htmlFor="customName">Especificar nombre</Label>
+                        <Input
+                          id="customName"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Ingresa el nombre de la actividad"
+                          required
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="description">Descripción</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Describe la actividad..."
+                    rows={3}
+                    required
+                  />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -709,62 +764,17 @@ const AdminActivityCatalogPage: React.FC = () => {
           <form onSubmit={handleEditSubmit}>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="edit-name">Nombre de Actividad</Label>
-                <Select 
-                  value={formData.name} 
-                  onValueChange={(value) => {
-                    if (value === "otro") {
-                      setCustomActivity(true);
-                    } else {
-                      setCustomActivity(false);
-                      setFormData({ ...formData, name: value });
-                    }
-                  }}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una actividad" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-80">
-                    {PREDEFINED_ACTIVITIES.map((activity) => (
-                      <SelectItem key={activity.value} value={activity.value}>
-                        {activity.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                {customActivity && (
-                  <div className="mt-2">
-                    <Label htmlFor="edit-customName">Especificar nombre</Label>
-                    <Input
-                      id="edit-customName"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Ingresa el nombre de la actividad"
-                      required
-                    />
-                  </div>
-                )}
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="edit-description">Descripción</Label>
-                <Textarea
-                  id="edit-description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe la actividad..."
-                  rows={3}
-                  required
-                />
-              </div>
-              
-              <div className="grid gap-2">
                 <Label htmlFor="edit-category">Categoría</Label>
                 <Select 
                   value={formData.category} 
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  onValueChange={(value) => {
+                    setFormData({ 
+                      ...formData, 
+                      category: value,
+                      name: '' // Reiniciamos el nombre al cambiar de categoría
+                    });
+                    setCustomActivity(false);
+                  }}
                   required
                 >
                   <SelectTrigger id="edit-category">
@@ -778,6 +788,61 @@ const AdminActivityCatalogPage: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              
+              {formData.category && (
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-name">Nombre de Actividad</Label>
+                  <Select 
+                    value={formData.name} 
+                    onValueChange={(value) => {
+                      if (value === "otro") {
+                        setCustomActivity(true);
+                        setFormData({ ...formData, name: '' });
+                      } else {
+                        setCustomActivity(false);
+                        setFormData({ ...formData, name: value });
+                      }
+                    }}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una actividad" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-80">
+                      {getActivitiesByCategory(formData.category).map((activity) => (
+                        <SelectItem key={activity.value} value={activity.value}>
+                          {activity.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {customActivity && (
+                    <div className="mt-2">
+                      <Label htmlFor="edit-customName">Especificar nombre</Label>
+                      <Input
+                        id="edit-customName"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="Ingresa el nombre de la actividad"
+                        required
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div className="grid gap-2">
+                <Label htmlFor="edit-description">Descripción</Label>
+                <Textarea
+                  id="edit-description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Describe la actividad..."
+                  rows={3}
+                  required
+                />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
