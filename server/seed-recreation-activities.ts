@@ -285,9 +285,9 @@ export async function addRecreationActivities() {
       // Insertar en activities usando SQL directo para evitar problemas con el esquema
       await db.execute(
         `INSERT INTO activities 
-        (park_id, title, description, start_date, end_date, category, location, capacity, created_at) 
+        (park_id, title, description, start_date, end_date, category, location, created_at) 
         VALUES 
-        ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
+        ($1, $2, $3, $4, $5, $6, $7, NOW())`,
         [
           activity.parkId, 
           activity.title, 
@@ -295,8 +295,7 @@ export async function addRecreationActivities() {
           activity.startDate, 
           activity.endDate, 
           activity.category, 
-          activity.location, 
-          activity.capacity
+          activity.location
         ]
       );
     }
