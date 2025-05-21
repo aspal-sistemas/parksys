@@ -14,17 +14,17 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Plus, Tag, Users, MapPin, Clock } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 
-// Página principal del módulo de Organizado
-const OrganizadoPage: React.FC = () => {
+// Página principal del módulo de Organizador
+const OrganizadorPage: React.FC = () => {
   return (
     <AdminLayout>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Organizado</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Organizador</h1>
           <p className="text-gray-500">Gestión de actividades y eventos en parques</p>
         </div>
         <div className="flex gap-2">
-          <Link href="/admin/organizado/nueva-actividad">
+          <Link href="/admin/organizador/nueva-actividad">
             <Button className="flex items-center gap-2">
               <Plus size={16} />
               Nueva Actividad
@@ -155,4 +155,4 @@ const OrganizadoPage: React.FC = () => {
   );
 };
 
-export default OrganizadoPage;
+export default OrganizadorPage;

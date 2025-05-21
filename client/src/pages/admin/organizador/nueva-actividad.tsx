@@ -114,7 +114,7 @@ const NuevaActividadPage = () => {
         description: 'La actividad ha sido creada exitosamente',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
-      setLocation('/admin/organizado');
+      setLocation('/admin/organizador');
     },
     onError: (error: any) => {
       toast({
@@ -165,9 +165,9 @@ const NuevaActividadPage = () => {
         <Button
           variant="outline"
           className="mb-4"
-          onClick={() => setLocation('/admin/organizado')}
+          onClick={() => setLocation('/admin/organizador')}
         >
-          ← Volver a Organizado
+          ← Volver a Organizador
         </Button>
         <h1 className="text-2xl font-bold text-gray-900">Crear Nueva Actividad</h1>
         <p className="text-gray-500">
@@ -645,7 +645,7 @@ const NuevaActividadPage = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setLocation('/admin/organizado')}
+                onClick={() => setLocation('/admin/organizador')}
               >
                 Cancelar
               </Button>

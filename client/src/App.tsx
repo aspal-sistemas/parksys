@@ -8,12 +8,10 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Parks from "@/pages/parks";
 import ParkDetail from "@/pages/park-detail";
-import Activities from "@/pages/activities";
 import AdminDashboard from "@/pages/admin";
 import AdminParks from "@/pages/admin/parks";
 import AdminParkEdit from "@/pages/admin/park-edit";
 import AdminParksImport from "@/pages/admin/parks-import";
-import AdminActivities from "@/pages/admin/activities";
 import AdminAnalytics from "@/pages/admin/analytics";
 import AdminDocuments from "@/pages/admin/documents";
 import AdminComments from "@/pages/admin/comments";
@@ -42,17 +40,20 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/parks" component={Parks} />
         <Route path="/parks/:id" component={ParkDetail} />
-        <Route path="/activities" component={Activities} />
 
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/parks" component={AdminParks} />
         <Route path="/admin/parks-import" component={AdminParksImport} />
         <Route path="/admin/parks/new" component={AdminParkEdit} />
         <Route path="/admin/parks/:id" component={AdminParkEdit} />
-        <Route path="/admin/activities" component={AdminActivities} />
-        <Route path="/admin/activities/catalog">
-          <Suspense fallback={<div className="p-8 text-center">Cargando catálogo de actividades...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/activities/catalog')))}
+        <Route path="/admin/organizador">
+          <Suspense fallback={<div className="p-8 text-center">Cargando Organizador...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/organizador')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/organizador/nueva-actividad">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de actividad...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/organizador/nueva-actividad')))}
           </Suspense>
         </Route>
         <Route path="/admin/analytics" component={AdminAnalytics} />
