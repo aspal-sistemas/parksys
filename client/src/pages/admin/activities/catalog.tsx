@@ -189,7 +189,7 @@ const AdminActivityCatalogPage: React.FC = () => {
     // Añade siempre las opciones comunes
     return [
       ...categoryActivities,
-      { value: "nuevo", label: "Añadir nueva actividad al catálogo" },
+      { value: "nueva", label: "Añadir nueva actividad al catálogo" },
       { value: "otro", label: "Otra actividad (sólo para esta vez)" }
     ];
   };
@@ -551,7 +551,7 @@ const AdminActivityCatalogPage: React.FC = () => {
                         <SelectValue placeholder="Selecciona una actividad" />
                       </SelectTrigger>
                       <SelectContent className="max-h-80">
-                        {getActivitiesByCategory(formData.category).map((activity) => (
+                        {PREDEFINED_ACTIVITIES_BY_CATEGORY[formData.category as keyof typeof PREDEFINED_ACTIVITIES_BY_CATEGORY]?.map((activity) => (
                           <SelectItem key={activity.value} value={activity.value}>
                             {activity.label}
                           </SelectItem>
@@ -957,7 +957,7 @@ const AdminActivityCatalogPage: React.FC = () => {
                       <SelectValue placeholder="Selecciona una actividad" />
                     </SelectTrigger>
                     <SelectContent className="max-h-80">
-                      {getActivitiesByCategory(formData.category).map((activity) => (
+                      {formData.category && PREDEFINED_ACTIVITIES_BY_CATEGORY[formData.category as keyof typeof PREDEFINED_ACTIVITIES_BY_CATEGORY]?.map((activity) => (
                         <SelectItem key={activity.value} value={activity.value}>
                           {activity.label}
                         </SelectItem>
