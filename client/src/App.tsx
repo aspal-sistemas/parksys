@@ -78,7 +78,7 @@ function Router() {
         </Route>
         <Route path="/admin/organizador/catalogo/editar/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando editor de actividad...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/organizador/catalogo/editar')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/organizador/catalogo/editar-nuevo')))}
           </Suspense>
         </Route>
         <Route path="/admin/organizador/catalogo/:id">

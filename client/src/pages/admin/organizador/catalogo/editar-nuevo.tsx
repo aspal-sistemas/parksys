@@ -149,6 +149,58 @@ const EditarActividadPage = () => {
     queryKey: [`/api/activities/${activityId}`],
     enabled: !!activityId,
   });
+  
+  // Efecto para cargar los datos de la actividad cuando esté disponible
+  React.useEffect(() => {
+    if (actividad && !isLoadingActividad) {
+      try {
+        // Procesar arrays que pueden venir como strings
+        const recurringDaysArray = actividad.recurringDays ? 
+          (typeof actividad.recurringDays === 'string' ? 
+            JSON.parse(actividad.recurringDays) : actividad.recurringDays) : [];
+        
+        const targetMarketArray = actividad.targetMarket ? 
+          (typeof actividad.targetMarket === 'string' ? 
+            JSON.parse(actividad.targetMarket) : actividad.targetMarket) : [];
+            
+        const specialNeedsArray = actividad.specialNeeds ? 
+          (typeof actividad.specialNeeds === 'string' ? 
+            JSON.parse(actividad.specialNeeds) : actividad.specialNeeds) : [];
+        
+        // Resetear formulario con datos de la actividad
+        form.reset({
+          title: actividad.title || "",
+          description: actividad.description || "",
+          category: actividad.category || "",
+          parkId: actividad.parkId ? actividad.parkId.toString() : "",
+          startDate: actividad.startDate ? actividad.startDate.toString().split('T')[0] : "",
+          endDate: actividad.endDate ? actividad.endDate.toString().split('T')[0] : "",
+          startTime: actividad.startTime || "09:00",
+          endTime: actividad.endTime || "10:00",
+          location: actividad.location || "",
+          capacity: actividad.capacity || undefined,
+          duration: actividad.duration || undefined,
+          price: actividad.price || 0,
+          isPriceRandom: actividad.isPriceRandom || false,
+          isFree: actividad.isFree || false,
+          materials: actividad.materials || "",
+          requirements: actividad.requirements || "",
+          isRecurring: actividad.isRecurring || false,
+          recurringDays: recurringDaysArray,
+          targetMarket: targetMarketArray,
+          specialNeeds: specialNeedsArray,
+          instructorId: actividad.instructorId ? actividad.instructorId.toString() : "",
+        });
+      } catch (error) {
+        console.error("Error al procesar datos de la actividad:", error);
+        toast({
+          title: "Error",
+          description: "Hubo un problema al cargar los datos de la actividad",
+          variant: "destructive"
+        });
+      }
+    }
+  }, [actividad, isLoadingActividad, form]);
   const [location, setLocation] = useLocation();
 
   // Consulta para obtener la lista de parques
@@ -289,8 +341,16 @@ const EditarActividadPage = () => {
     }
   });
 
+  // Estado para mostrar el indicador de carga
+  const [submitting, setSubmitting] = React.useState(false);
+
   const onSubmit = (values: FormValues) => {
-    updateMutation.mutate(values);
+    setSubmitting(true);
+    updateMutation.mutate(values, {
+      onSettled: () => {
+        setSubmitting(false);
+      }
+    });
   };
 
   return (
@@ -937,9 +997,9 @@ const EditarActividadPage = () => {
                   </Button>
                   <Button 
                     type="submit"
-                    disabled={createMutation.isPending}
+                    disabled={updateMutation.isPending || submitting}
                   >
-                    {createMutation.isPending ? "Guardando..." : "Guardar Actividad"}
+                    {updateMutation.isPending || submitting ? "Actualizando..." : "Guardar Cambios"}
                   </Button>
                 </div>
               </div>
@@ -951,4 +1011,4 @@ const EditarActividadPage = () => {
   );
 };
 
-export default CrearActividadPage;
+export default EditarActividadPage;
