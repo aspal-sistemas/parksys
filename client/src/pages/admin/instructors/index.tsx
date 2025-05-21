@@ -252,7 +252,7 @@ export default function InstructorsListPage() {
                 <Briefcase className="h-5 w-5 text-amber-600 mr-2" />
                 <span className="text-2xl font-bold">
                   {instructors && instructors.length > 0 
-                    ? Math.round(instructors.reduce((sum: number, i: Instructor) => sum + (i.experience || 0), 0) / instructors.length) 
+                    ? Math.round(instructors.reduce((sum: number, i: Instructor) => sum + (i.experience_years || 0), 0) / instructors.length) 
                     : 0} años
                 </span>
               </div>
