@@ -152,10 +152,29 @@ export default function InstructorActivitiesList({
     );
   }
 
+  // Eliminar duplicados usando un Map basado en ID
+  const uniqueAssignmentsMap = new Map();
+  
+  if (assignments && assignments.length > 0) {
+    assignments.forEach((assignment: any) => {
+      if (!uniqueAssignmentsMap.has(assignment.id)) {
+        uniqueAssignmentsMap.set(assignment.id, assignment);
+      }
+    });
+  }
+  
+  // Convertir el Map a array y ordenar por fecha de inicio (más recientes primero)
+  const uniqueAssignments = Array.from(uniqueAssignmentsMap.values())
+    .sort((a: any, b: any) => {
+      const dateA = new Date(a.startDate).getTime();
+      const dateB = new Date(b.startDate).getTime();
+      return dateB - dateA;
+    });
+  
   // Determinar cuántas asignaciones mostrar
   const displayedAssignments = showAll 
-    ? assignments 
-    : assignments.slice(0, limit);
+    ? uniqueAssignments 
+    : uniqueAssignments.slice(0, limit);
 
   return (
     <Card>
