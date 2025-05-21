@@ -63,6 +63,8 @@ interface ActivityCatalogItem {
   materials: string | null;
   staffRequired: number | null;
   isRecurring: boolean;
+  recommendedParks?: number[]; // IDs de parques recomendados para esta actividad
+  specificLocations?: { parkId: number, locationName: string }[]; // Ubicaciones específicas dentro de los parques
 }
 
 interface ActivityCatalogFormData {
@@ -74,7 +76,8 @@ interface ActivityCatalogFormData {
   materials: string | null;
   staffRequired: number | null;
   isRecurring: boolean;
-  recommendedParks?: number[];
+  recommendedParks?: number[]; // IDs de parques recomendados para esta actividad
+  specificLocations?: { parkId: number, locationName: string }[]; // Ubicaciones específicas dentro de los parques
 }
 
 const AdminActivityCatalogPage: React.FC = () => {
@@ -152,18 +155,11 @@ const AdminActivityCatalogPage: React.FC = () => {
   
   const [customActivity, setCustomActivity] = useState(false);
   const [showNewActivityForm, setShowNewActivityForm] = useState(false);
-  const [selectedParks, setSelectedParks] = useState<number[]>([]);
-  
-  // Consulta para obtener los parques disponibles
-  const { data: parks = [] } = useQuery<{ id: number, name: string }[]>({
-    queryKey: ['/api/parks'],
-  });
   // Interfaz para la creación de nuevas actividades en el catálogo
   interface NewActivityData {
     name: string;
     category: string;
     preferredParks: number[]; // IDs de parques donde se recomienda esta actividad
-    locations?: { parkId: number, locationName: string }[]; // Ubicaciones específicas dentro de los parques
   }
   
   const [newActivityData, setNewActivityData] = useState<NewActivityData>({
@@ -171,9 +167,6 @@ const AdminActivityCatalogPage: React.FC = () => {
     category: '',
     preferredParks: []
   });
-  
-  // Estado para manejar las ubicaciones específicas por parque
-  const [parkLocations, setParkLocations] = useState<{[parkId: number]: string[]}>({});
   
   // Consulta para obtener los parques disponibles
   const { data: parks = [] } = useQuery<{ id: number, name: string }[]>({
@@ -187,8 +180,13 @@ const AdminActivityCatalogPage: React.FC = () => {
     capacity: null,
     materials: null,
     staffRequired: null,
-    isRecurring: false
+    isRecurring: false,
+    recommendedParks: [],
+    specificLocations: []
   });
+  
+  // Estado para manejar las ubicaciones específicas por parque
+  const [parkLocations, setParkLocations] = useState<{[parkId: number]: string[]}>({});
   
   // Ya no usamos esta función porque accedemos directamente a PREDEFINED_ACTIVITIES_BY_CATEGORY
 
@@ -423,10 +421,13 @@ const AdminActivityCatalogPage: React.FC = () => {
       capacity: null,
       materials: null,
       staffRequired: null,
-      isRecurring: false
+      isRecurring: false,
+      recommendedParks: [],
+      specificLocations: []
     });
     setCurrentActivity(null);
     setCustomActivity(false);
+    setParkLocations({});
   };
 
   const handleEditClick = (activity: ActivityCatalogItem) => {
@@ -439,7 +440,9 @@ const AdminActivityCatalogPage: React.FC = () => {
       capacity: activity.capacity,
       materials: activity.materials,
       staffRequired: activity.staffRequired,
-      isRecurring: activity.isRecurring
+      isRecurring: activity.isRecurring,
+      recommendedParks: [],
+      specificLocations: []
     });
     setIsEditDialogOpen(true);
   };
