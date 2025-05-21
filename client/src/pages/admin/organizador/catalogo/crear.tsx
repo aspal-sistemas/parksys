@@ -114,18 +114,30 @@ function combinarFechaYHora(fecha: string, hora: string): string {
 
 // Función para calcular la duración en minutos entre dos horas
 function calcularDuracionEnMinutos(horaInicio: string, horaFin: string): number {
-  const [horaInicioH, horaInicioM] = horaInicio.split(':').map(Number);
-  const [horaFinH, horaFinM] = horaFin.split(':').map(Number);
+  if (!horaInicio || !horaFin) return 0;
   
-  const inicioMinutos = horaInicioH * 60 + horaInicioM;
-  const finMinutos = horaFinH * 60 + horaFinM;
-  
-  // Si la hora de fin es menor que la de inicio, asumimos que es al día siguiente
-  if (finMinutos < inicioMinutos) {
-    return (24 * 60 - inicioMinutos) + finMinutos;
+  try {
+    const [horaInicioH, horaInicioM] = horaInicio.split(':').map(Number);
+    const [horaFinH, horaFinM] = horaFin.split(':').map(Number);
+    
+    if (isNaN(horaInicioH) || isNaN(horaInicioM) || isNaN(horaFinH) || isNaN(horaFinM)) {
+      console.error("Error en formato de horas:", { horaInicio, horaFin });
+      return 0;
+    }
+    
+    const inicioMinutos = horaInicioH * 60 + horaInicioM;
+    const finMinutos = horaFinH * 60 + horaFinM;
+    
+    // Si la hora de fin es menor que la de inicio, asumimos que es al día siguiente
+    if (finMinutos < inicioMinutos) {
+      return (24 * 60 - inicioMinutos) + finMinutos;
+    }
+    
+    return finMinutos - inicioMinutos;
+  } catch (error) {
+    console.error("Error al calcular duración:", error);
+    return 0;
   }
-  
-  return finMinutos - inicioMinutos;
 }
 
 const CrearActividadPage = () => {
@@ -225,7 +237,24 @@ const CrearActividadPage = () => {
         ...instructorData
       };
       
-      return await apiRequest(`/api/activities`, "POST", data);
+      console.log("Enviando datos a la API:", data);
+  // Usar directamente fetch para tener más control sobre la petición
+  const response = await fetch('/api/activities', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    },
+    body: JSON.stringify(data)
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Error en la respuesta:", errorText);
+    throw new Error(`Error al crear actividad: ${response.status} ${errorText}`);
+  }
+  
+  return await response.json();
     },
     onSuccess: () => {
       toast({
