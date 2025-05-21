@@ -107,6 +107,7 @@ const CrearActividadPage = () => {
       toast({
         title: "Actividad creada",
         description: "La actividad ha sido creada exitosamente",
+        variant: "default"
       });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       setLocation('/admin/organizador/catalogo/ver');

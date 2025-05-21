@@ -68,6 +68,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Registramos las rutas de actividades
+  apiRouter.use(activityRouter);
+  
   // Registramos las rutas del módulo de voluntariado
   registerVolunteerRoutes(app, apiRouter, null, isAuthenticated);
   
