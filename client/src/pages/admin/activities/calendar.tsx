@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import AdminLayout from '@/components/AdminLayout';
 import {
@@ -10,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Select,
@@ -24,6 +25,11 @@ import {
   ChevronRight,
   Filter,
   X,
+  MapPin,
+  Clock,
+  User,
+  CreditCard,
+  Calendar as CalendarIconSimple,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +40,15 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 // Tipo para las actividades
 interface Activity {
@@ -67,6 +82,8 @@ export default function ActivitiesCalendarPage() {
   const [, setLocation] = useLocation();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [filters, setFilters] = useState({
     category: 'all',
     parkId: 'all',
@@ -210,10 +227,9 @@ export default function ActivitiesCalendarPage() {
               className="text-xs truncate cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                // Redirigir a la página catalogo para evitar errores mientras arreglamos los detalles
-                setLocation(`/admin/organizador/catalogo/ver`);
-                // Mostramos un mensaje sobre la actividad
-                console.log("Actividad seleccionada:", activity);
+                // Abrir el diálogo con los detalles de la actividad
+                setSelectedActivity(activity);
+                setIsDialogOpen(true);
               }}
             >
               <Badge className={categoryColors[activity.category || 'default']} variant="outline">
@@ -401,6 +417,107 @@ export default function ActivitiesCalendarPage() {
           })}
         </div>
 
+        {/* Diálogo de detalles de actividad */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+            {selectedActivity ? (
+              <>
+                <DialogHeader>
+                  <div className="flex justify-between items-center">
+                    <DialogTitle className="text-2xl font-bold">{selectedActivity.title}</DialogTitle>
+                    <Badge className={categoryColors[selectedActivity.category || 'default']} variant="outline">
+                      {selectedActivity.category}
+                    </Badge>
+                  </div>
+                  <DialogDescription>
+                    <div className="mt-2 flex items-center text-gray-500">
+                      <CalendarIconSimple className="h-4 w-4 mr-1" />
+                      <span className="mr-3">
+                        {selectedActivity.startDate
+                          ? format(new Date(selectedActivity.startDate), 'dd/MM/yyyy HH:mm', { locale: es })
+                          : 'Fecha no disponible'}
+                      </span>
+                      {selectedActivity.location && (
+                        <>
+                          <MapPin className="h-4 w-4 mr-1" />
+                          <span>{selectedActivity.location}</span>
+                        </>
+                      )}
+                    </div>
+                    {selectedActivity.parkName && (
+                      <div className="mt-1 text-gray-500">Parque: {selectedActivity.parkName}</div>
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="py-4">
+                  <div className="mb-4">
+                    <h3 className="font-semibold mb-2">Descripción</h3>
+                    <p className="text-gray-700">{selectedActivity.description || 'Sin descripción disponible'}</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    {selectedActivity.price !== undefined && (
+                      <div className="flex items-start">
+                        <CreditCard className="h-5 w-5 mr-2 text-gray-500 mt-0.5" />
+                        <div>
+                          <h4 className="font-medium">Precio</h4>
+                          <p>{selectedActivity.price > 0 ? `$${selectedActivity.price}` : 'Gratuita'}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {selectedActivity.instructor?.full_name && (
+                      <div className="flex items-start">
+                        <User className="h-5 w-5 mr-2 text-gray-500 mt-0.5" />
+                        <div>
+                          <h4 className="font-medium">Instructor</h4>
+                          <p>{selectedActivity.instructor.full_name}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {selectedActivity.startDate && selectedActivity.endDate && (
+                      <div className="flex items-start">
+                        <Clock className="h-5 w-5 mr-2 text-gray-500 mt-0.5" />
+                        <div>
+                          <h4 className="font-medium">Duración</h4>
+                          <p>
+                            {format(new Date(selectedActivity.startDate), 'HH:mm', { locale: es })} - 
+                            {format(new Date(selectedActivity.endDate), 'HH:mm', { locale: es })}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <DialogFooter className="flex gap-2">
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cerrar
+                  </Button>
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                      setLocation(`/admin/organizador/catalogo/ver`);
+                    }}
+                  >
+                    Ver todas las actividades
+                  </Button>
+                </DialogFooter>
+              </>
+            ) : (
+              <div className="p-6 text-center">
+                <p>No se encontraron detalles de la actividad</p>
+                <Button variant="outline" className="mt-4" onClick={() => setIsDialogOpen(false)}>
+                  Cerrar
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Panel de detalle para el día seleccionado */}
         {selectedDate && (
           <Card className="mt-6">
@@ -422,8 +539,8 @@ export default function ActivitiesCalendarPage() {
                   {getActivitiesForDay(selectedDate).map((activity: Activity) => (
                     <div key={activity.id} className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer" 
                       onClick={() => {
-                        setLocation(`/admin/organizador/catalogo/ver`);
-                        console.log("Actividad seleccionada (día completo):", activity);
+                        setSelectedActivity(activity);
+                        setIsDialogOpen(true);
                       }}>
                       <div className="flex justify-between">
                         <h3 className="font-medium">{activity.title}</h3>
