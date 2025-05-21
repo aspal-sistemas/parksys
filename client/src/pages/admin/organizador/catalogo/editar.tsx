@@ -482,7 +482,7 @@ const EditarActividadPage = () => {
                       <FormLabel>Parque *</FormLabel>
                       <Select
                         onValueChange={(value) => field.onChange(parseInt(value))}
-                        value={field.value?.toString()}
+                        value={field.value?.toString() || "0"}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -491,8 +491,8 @@ const EditarActividadPage = () => {
                         </FormControl>
                         <SelectContent>
                           {parques?.map((parque: any) => (
-                            <SelectItem key={parque.id} value={parque.id.toString()}>
-                              {parque.name}
+                            <SelectItem key={parque.id} value={parque.id.toString() || "0"}>
+                              {parque.name || "Parque sin nombre"}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -1088,7 +1088,7 @@ const EditarActividadPage = () => {
                             form.setValue("instructorContact", instructor.email || instructor.contactEmail || '');
                           }
                         }}
-                        value={field.value?.toString() || ""}
+                        value={field.value?.toString() || "0"}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -1096,7 +1096,7 @@ const EditarActividadPage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Ninguno</SelectItem>
+                          <SelectItem value="0">Ninguno</SelectItem>
                           {instructores?.map((instructor: any) => (
                             <SelectItem key={instructor.id} value={instructor.id.toString()}>
                               {instructor.fullName || `${instructor.firstName} ${instructor.lastName}`}
