@@ -68,15 +68,30 @@ const formSchema = z.object({
   location: z.string().optional(),
   capacity: z.coerce.number().int().positive().optional(),
   duration: z.coerce.number().int().positive().optional(),
+  
+  // Campos para precio
   price: z.coerce.number().min(0).optional(),
+  isPriceRandom: z.boolean().default(false),
+  isFree: z.boolean().default(false),
+  
   materials: z.string().optional(),
   requirements: z.string().optional(),
   isRecurring: z.boolean().default(false),
   recurringDays: z.array(z.string()).optional(),
+  
   // Nuevos campos para segmentación
   targetMarket: z.array(z.string()).optional(),
+  
   // Campos para capacidades diferentes
   specialNeeds: z.array(z.string()).optional(),
+  
+  // Campos para el facilitador/instructor
+  instructorName: z.string().optional(),
+  instructorEmail: z.string().email("Ingrese un correo electrónico válido").optional(),
+  instructorExperience: z.string().optional(),
+  instructorPhoto: z.string().optional(),
+  instructorPhone: z.string().optional(),
+  instructorBio: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -103,12 +118,20 @@ const CrearActividadPage = () => {
       capacity: undefined,
       duration: undefined,
       price: 0,
+      isPriceRandom: false,
+      isFree: false,
       materials: "",
       requirements: "",
       isRecurring: false,
       recurringDays: [],
       targetMarket: [],
       specialNeeds: [],
+      instructorName: "",
+      instructorEmail: "",
+      instructorExperience: "",
+      instructorPhoto: "",
+      instructorPhone: "",
+      instructorBio: "",
     },
   });
 
@@ -552,22 +575,84 @@ const CrearActividadPage = () => {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Precio (MXN)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" step="0.01" placeholder="Ej: 50.00" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Deja en 0 si la actividad es gratuita
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-3">
+                    <div className="flex flex-col gap-2">
+                      <FormField
+                        control={form.control}
+                        name="isFree"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={(checked) => {
+                                  field.onChange(checked);
+                                  if (checked) {
+                                    form.setValue("price", 0);
+                                    form.setValue("isPriceRandom", false);
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="font-medium">
+                              Actividad Gratuita
+                            </FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="isPriceRandom"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={(checked) => {
+                                  field.onChange(checked);
+                                  if (checked) {
+                                    form.setValue("isFree", false);
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="font-medium">
+                              Precio Aleatorio (Donativo/Variable)
+                            </FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Precio (MXN)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="0" 
+                              step="0.01" 
+                              placeholder="Ej: 50.00" 
+                              {...field} 
+                              disabled={form.watch("isFree") || form.watch("isPriceRandom")}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            {form.watch("isFree") 
+                              ? "Actividad gratuita" 
+                              : form.watch("isPriceRandom") 
+                                ? "El precio será variable o por donativo" 
+                                : "Precio fijo por persona"}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
 
                 <FormField
@@ -596,6 +681,115 @@ const CrearActividadPage = () => {
                       <FormControl>
                         <Textarea
                           placeholder="Requisitos especiales, rango de edad, condiciones físicas, etc."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Sección de Instructor/Facilitador */}
+              <div className="space-y-4 pt-4 border-t">
+                <h3 className="text-lg font-medium">Datos del Instructor o Facilitador</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="instructorName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre completo</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nombre del instructor/facilitador" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="instructorEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Correo electrónico</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="email" 
+                            placeholder="correo@ejemplo.com" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="instructorPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Teléfono de contacto</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ej: 33-1234-5678" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="instructorPhoto"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>URL de la fotografía</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="https://ejemplo.com/imagen.jpg" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Enlace a una fotografía del instructor/facilitador
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="instructorExperience"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Experiencia y certificaciones</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Experiencia relevante, certificaciones, logros..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="instructorBio"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Biografía</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Breve biografía o descripción personal del instructor/facilitador"
                           {...field}
                         />
                       </FormControl>
