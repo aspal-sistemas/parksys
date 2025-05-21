@@ -8,7 +8,9 @@ import {
   Trash2, 
   Loader,
   X,
-  CheckCircle, 
+  CheckCircle,
+  Calendar,
+  FileSymlink
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -39,7 +41,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 type User = {
@@ -149,6 +151,14 @@ const UserDetail: React.FC<{
       handleChange('profileImageUrl', imageUrl);
     }
   };
+  
+  // Manejar la carga del curriculum
+  const handleCurriculumUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleChange('curriculumFile', file);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,8 +175,36 @@ const UserDetail: React.FC<{
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          {/* Selección de rol - primer paso */}
+          <div className="space-y-4 mb-6">
+            <h3 className="font-medium text-lg text-primary-600">Rol del Usuario</h3>
+            
+            <div className="space-y-2">
+              <Select
+                value={userData.role}
+                onValueChange={(value) => handleChange('role', value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectItem value="director">Director</SelectItem>
+                  <SelectItem value="manager">Gestor</SelectItem>
+                  <SelectItem value="ciudadano">Ciudadano</SelectItem>
+                  <SelectItem value="volunteer">Voluntario</SelectItem>
+                  <SelectItem value="instructor">Instructor</SelectItem>
+                  <SelectItem value="user">Usuario</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                El rol determina los permisos y funciones disponibles para el usuario.
+              </p>
+            </div>
+          </div>
+          
           {/* Información básica de la cuenta */}
-          <div className="space-y-4">
+          <div className="space-y-4 pt-6 border-t border-gray-200">
             <h3 className="font-medium text-lg">Información de Cuenta</h3>
             
             <div className="grid grid-cols-2 gap-4">
@@ -222,47 +260,6 @@ const UserDetail: React.FC<{
                 onChange={(e) => handleChange('password', e.target.value)}
                 required={isNew}
               />
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="role" className="text-sm font-medium">Rol</label>
-              <Select
-                value={userData.role}
-                onValueChange={(value) => handleChange('role', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar rol" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="director">Director</SelectItem>
-                  <SelectItem value="manager">Gestor</SelectItem>
-                  <SelectItem value="citizen">Ciudadano</SelectItem>
-                  <SelectItem value="volunteer">Voluntario</SelectItem>
-                  <SelectItem value="instructor">Instructor</SelectItem>
-                  <SelectItem value="user">Usuario</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="municipality" className="text-sm font-medium">Municipio</label>
-              <Select
-                value={userData.municipalityId?.toString() || 'null'}
-                onValueChange={(value) => handleChange('municipalityId', value === 'null' ? null : parseInt(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar municipio" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="null">Ninguno</SelectItem>
-                  {municipalities.map((municipality: any) => (
-                    <SelectItem key={municipality.id} value={municipality.id.toString()}>
-                      {municipality.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
           
@@ -321,14 +318,47 @@ const UserDetail: React.FC<{
               
               {/* Columna de información de contacto */}
               <div className="space-y-4 col-span-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="phone" className="text-sm font-medium">Teléfono</label>
+                    <Input
+                      id="phone"
+                      value={userData.phone}
+                      onChange={(e) => handleChange('phone', e.target.value)}
+                      placeholder="Ej: 555-123-4567"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="gender" className="text-sm font-medium">Género</label>
+                    <Select
+                      value={userData.gender}
+                      onValueChange={(value) => handleChange('gender', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar género" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="masculino">Masculino</SelectItem>
+                        <SelectItem value="femenino">Femenino</SelectItem>
+                        <SelectItem value="no_especificar">Prefiero no decir</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
                 <div className="space-y-2">
-                  <label htmlFor="phone" className="text-sm font-medium">Teléfono</label>
-                  <Input
-                    id="phone"
-                    value={userData.phone}
-                    onChange={(e) => handleChange('phone', e.target.value)}
-                    placeholder="Ej: 555-123-4567"
-                  />
+                  <label htmlFor="birthDate" className="text-sm font-medium">Fecha de nacimiento</label>
+                  <div className="relative">
+                    <Input
+                      id="birthDate"
+                      type="date"
+                      value={userData.birthDate}
+                      onChange={(e) => handleChange('birthDate', e.target.value)}
+                      className="w-full"
+                    />
+                    <Calendar className="h-4 w-4 absolute right-3 top-3 text-gray-400" />
+                  </div>
                 </div>
                 
                 <div className="space-y-2">
