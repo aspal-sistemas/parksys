@@ -207,7 +207,7 @@ const CrearActividadPage = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-gray-900">Crear Nueva Actividad</h1>
           <Button variant="outline" onClick={() => setLocation('/admin/organizador/catalogo/ver')}>
-            Volver al Catálogo
+            Actividades Disponibles
           </Button>
         </div>
         <p className="text-gray-500">
