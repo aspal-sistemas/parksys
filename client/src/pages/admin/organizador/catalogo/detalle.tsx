@@ -149,9 +149,22 @@ const DetalleActividadPage = () => {
                   <div className="flex items-center">
                     <Calendar className="h-5 w-5 mr-2 text-gray-500" />
                     <div>
-                      <p>Inicio: {format(new Date(actividad.startDate), "PPP", { locale: es })}</p>
+                      <p>Inicio: {actividad.startDate ? 
+                          (() => {
+                            try {
+                              return format(new Date(actividad.startDate), "PPP", { locale: es });
+                            } catch (e) {
+                              return 'Fecha no disponible';
+                            }
+                          })() : 'Fecha no disponible'}</p>
                       {actividad.endDate && (
-                        <p>Fin: {format(new Date(actividad.endDate), "PPP", { locale: es })}</p>
+                        <p>Fin: {(() => {
+                          try {
+                            return format(new Date(actividad.endDate), "PPP", { locale: es });
+                          } catch (e) {
+                            return 'Fecha no disponible';
+                          }
+                        })()}</p>
                       )}
                     </div>
                   </div>
@@ -162,7 +175,7 @@ const DetalleActividadPage = () => {
                   <div className="flex items-center">
                     <MapPin className="h-5 w-5 mr-2 text-gray-500" />
                     <div>
-                      <p>{parque?.name || `Parque #${actividad.parkId}`}</p>
+                      <p>{parque?.name || (actividad.parkId ? `Parque #${actividad.parkId}` : 'Parque no especificado')}</p>
                       {actividad.location && <p>{actividad.location}</p>}
                     </div>
                   </div>
