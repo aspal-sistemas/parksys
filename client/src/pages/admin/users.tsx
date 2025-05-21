@@ -178,6 +178,7 @@ const UserDetail: React.FC<{
                 <SelectItem value="manager">Gestor</SelectItem>
                 <SelectItem value="citizen">Ciudadano</SelectItem>
                 <SelectItem value="volunteer">Voluntario</SelectItem>
+                <SelectItem value="instructor">Instructor</SelectItem>
                 <SelectItem value="user">Usuario</SelectItem>
               </SelectContent>
             </Select>
@@ -488,6 +489,8 @@ const AdminUsers = () => {
         return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Ciudadano</Badge>;
       case 'volunteer':
         return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Voluntario</Badge>;
+      case 'instructor':
+        return <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-100">Instructor</Badge>;
       case 'user':
         return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Usuario</Badge>;
       default:
