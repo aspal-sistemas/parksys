@@ -2061,14 +2061,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllActivities(): Promise<Activity[]> {
-    return await db.select()
-      .from(activities)
-      .orderBy(activities.startDate);
+    // Seleccionamos solo las columnas que existen en la tabla
+    return await db.select({
+      id: activities.id,
+      parkId: activities.parkId,
+      title: activities.title,
+      description: activities.description,
+      startDate: activities.startDate,
+      endDate: activities.endDate,
+      category: activities.category,
+      location: activities.location,
+      createdAt: activities.createdAt
+    })
+    .from(activities)
+    .orderBy(activities.startDate);
   }
 
   async getParkActivities(parkId: number): Promise<Activity[]> {
     try {
-      // Utilizamos el constructor de consultas de Drizzle con solo las columnas que existen
+      // Utilizamos solo las columnas que realmente existen en la base de datos
       return await db.select({
         id: activities.id,
         parkId: activities.parkId,

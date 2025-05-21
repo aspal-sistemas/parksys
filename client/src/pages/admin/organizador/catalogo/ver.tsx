@@ -60,7 +60,7 @@ const VerActividadesPage = () => {
       // Transformar y enriquecer datos si es necesario
       return data.map(actividad => ({
         ...actividad,
-        parqueNombre: parques.find(p => p.id === actividad.parqueId)?.name
+        parqueNombre: parques.find(p => p.id === actividad.parkId)?.name
       }));
     }
   });
