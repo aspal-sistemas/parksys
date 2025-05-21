@@ -231,15 +231,15 @@ const AdminSidebarModular: React.FC = () => {
                 
                 <NavItem 
                   href="/admin/organizador/nueva-actividad" 
-                  icon={<Calendar className="h-4 w-4" />}
+                  icon={<ListChecks className="h-4 w-4" />}
                   active={location === '/admin/organizador/nueva-actividad'}
                 >
-                  Nueva Actividad
+                  Catálogo
                 </NavItem>
                 
                 <NavItem 
                   href="/admin/organizador/calendario" 
-                  icon={<ListChecks className="h-4 w-4" />}
+                  icon={<Calendar className="h-4 w-4" />}
                   active={location.startsWith('/admin/organizador/calendario')}
                 >
                   Calendario
