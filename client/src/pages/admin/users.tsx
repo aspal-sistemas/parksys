@@ -69,14 +69,16 @@ interface UserFormData {
   profileImageFile?: File | null;
   bio?: string;
   
+  // Campos para todos los usuarios
+  gender?: 'masculino' | 'femenino' | 'no_especificar';
+  birthDate?: string;
+  
   // Campos específicos para instructores
   experience?: string;
   specialties?: string[];
-  curriculum?: string;
+  curriculumFile?: File | null;
   
   // Campos específicos para voluntarios
-  gender?: 'masculino' | 'femenino' | 'otro' | 'no_especificar';
-  age?: number;
   address?: string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;
