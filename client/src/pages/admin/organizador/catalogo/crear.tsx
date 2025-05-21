@@ -65,6 +65,11 @@ const formSchema = z.object({
   parkId: z.string().min(1, "Debes seleccionar un parque"),
   startDate: z.string().min(1, "La fecha de inicio es obligatoria"),
   endDate: z.string().optional(),
+  
+  // Nuevos campos para hora de inicio y finalización
+  startTime: z.string().min(1, "La hora de inicio es obligatoria"),
+  endTime: z.string().min(1, "La hora de finalización es obligatoria"),
+  
   location: z.string().optional(),
   capacity: z.coerce.number().int().positive().optional(),
   duration: z.coerce.number().int().positive().optional(),
@@ -90,6 +95,38 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+// Función para combinar una fecha y una hora en un formato ISO
+function combinarFechaYHora(fecha: string, hora: string): string {
+  const [year, month, day] = fecha.split('-');
+  const [hours, minutes] = hora.split(':');
+  
+  const fechaCompleta = new Date(
+    parseInt(year), 
+    parseInt(month) - 1, // El mes en JavaScript es 0-indexado
+    parseInt(day),
+    parseInt(hours),
+    parseInt(minutes)
+  );
+  
+  return fechaCompleta.toISOString();
+}
+
+// Función para calcular la duración en minutos entre dos horas
+function calcularDuracionEnMinutos(horaInicio: string, horaFin: string): number {
+  const [horaInicioH, horaInicioM] = horaInicio.split(':').map(Number);
+  const [horaFinH, horaFinM] = horaFin.split(':').map(Number);
+  
+  const inicioMinutos = horaInicioH * 60 + horaInicioM;
+  const finMinutos = horaFinH * 60 + horaFinM;
+  
+  // Si la hora de fin es menor que la de inicio, asumimos que es al día siguiente
+  if (finMinutos < inicioMinutos) {
+    return (24 * 60 - inicioMinutos) + finMinutos;
+  }
+  
+  return finMinutos - inicioMinutos;
+}
 
 const CrearActividadPage = () => {
   const [location, setLocation] = useLocation();
@@ -154,16 +191,28 @@ const CrearActividadPage = () => {
       }
       
       // Solo incluimos los campos que existen en la base de datos real
+      // Combinar fecha y hora para crear fechas completas
+      const startDateTime = combinarFechaYHora(values.startDate, values.startTime);
+      const endDateTime = values.endDate ? combinarFechaYHora(values.endDate, values.endTime) : null;
+      
+      // Si no hay duración especificada, calcularla a partir de las horas
+      let duracion = values.duration;
+      if (!duracion && values.startTime && values.endTime) {
+        duracion = calcularDuracionEnMinutos(values.startTime, values.endTime);
+      }
+      
       const data = {
         title: values.title,
         description: values.description,
         parkId,
-        startDate: values.startDate,
-        endDate: values.endDate || null,
+        startDate: startDateTime,
+        endDate: endDateTime,
+        startTime: values.startTime, // Guardar también la hora como string para mostrar en la interfaz
+        endTime: values.endTime,     // Guardar también la hora como string para mostrar en la interfaz
         category: values.category,
         location: values.location || null,
         capacity: values.capacity || null,
-        duration: values.duration || null,
+        duration: duracion || null,
         price: values.price || 0,
         isPriceRandom: values.isPriceRandom || false,
         isFree: values.isFree || false,
@@ -486,6 +535,43 @@ const CrearActividadPage = () => {
                         </FormControl>
                         <FormDescription>
                           Opcional para actividades de un solo día
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                {/* Nuevos campos para hora de inicio y finalización */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Hora de inicio *</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Hora a la que comenzará la actividad
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Hora de finalización *</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Hora a la que terminará la actividad
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
