@@ -95,15 +95,20 @@ const UserDetail: React.FC<{
   isSaving: boolean;
 }> = ({ user, isNew, onClose, onSave, isSaving }) => {
   const [userData, setUserData] = useState<UserFormData>({
+    // Elegir rol es el primer paso
+    role: user?.role || 'user',
+    
+    // Información básica de la cuenta
     username: user?.username || '',
     email: user?.email || '',
     firstName: user?.firstName || user?.fullName?.split(' ')[0] || '',
     lastName: user?.lastName || user?.fullName?.split(' ').slice(1).join(' ') || '',
     password: '',
-    role: user?.role || 'user',
-    municipalityId: user?.municipalityId || null,
-    // Campos comunes
+    
+    // Campos comunes para todos los usuarios
     phone: user?.phone || '',
+    gender: user?.gender || 'no_especificar',
+    birthDate: user?.birthDate || '',
     profileImageUrl: user?.profileImageUrl || '',
     profileImageFile: null,
     bio: user?.bio || '',
@@ -111,11 +116,9 @@ const UserDetail: React.FC<{
     // Campos para instructores
     experience: user?.experience || '',
     specialties: user?.specialties || [],
-    curriculum: user?.curriculum || '',
+    curriculumFile: null,
     
     // Campos para voluntarios
-    gender: user?.gender || 'no_especificar',
-    age: user?.age || undefined,
     address: user?.address || '',
     emergencyContactName: user?.emergencyContactName || '',
     emergencyContactPhone: user?.emergencyContactPhone || '',
