@@ -419,7 +419,7 @@ export default function ActivitiesCalendarPage() {
                 <div className="space-y-3">
                   {getActivitiesForDay(selectedDate).map((activity: Activity) => (
                     <div key={activity.id} className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer" 
-                      onClick={() => setLocation('/admin/organizador/catalogo/ver')}>
+                      onClick={() => setLocation(`/admin/organizador/catalogo/${activity.id}`)}>
                       <div className="flex justify-between">
                         <h3 className="font-medium">{activity.title}</h3>
                         <Badge className={categoryColors[activity.category || 'default']} variant="outline">
