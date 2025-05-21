@@ -63,12 +63,25 @@ interface UserFormData {
   password: string;
   role: string;
   municipalityId: number | null;
-  // Campos adicionales para instructores
+  // Campos comunes adicionales
   phone?: string;
   profileImageUrl?: string;
-  experience?: string;
+  profileImageFile?: File | null;
   bio?: string;
+  
+  // Campos específicos para instructores
+  experience?: string;
   specialties?: string[];
+  curriculum?: string;
+  
+  // Campos específicos para voluntarios
+  gender?: 'masculino' | 'femenino' | 'otro' | 'no_especificar';
+  age?: number;
+  address?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  preferredParkId?: number | null;
+  legalConsent?: boolean;
 }
 
 // User detail/edit component
@@ -87,22 +100,49 @@ const UserDetail: React.FC<{
     password: '',
     role: user?.role || 'user',
     municipalityId: user?.municipalityId || null,
+    // Campos comunes
     phone: user?.phone || '',
     profileImageUrl: user?.profileImageUrl || '',
-    experience: user?.experience || '',
+    profileImageFile: null,
     bio: user?.bio || '',
+    
+    // Campos para instructores
+    experience: user?.experience || '',
     specialties: user?.specialties || [],
+    curriculum: user?.curriculum || '',
+    
+    // Campos para voluntarios
+    gender: user?.gender || 'no_especificar',
+    age: user?.age || undefined,
+    address: user?.address || '',
+    emergencyContactName: user?.emergencyContactName || '',
+    emergencyContactPhone: user?.emergencyContactPhone || '',
+    preferredParkId: user?.preferredParkId || null,
+    legalConsent: user?.legalConsent || false,
   });
 
   const { data: municipalities = [] } = useQuery({
     queryKey: ['/api/municipalities'],
   });
 
-  const handleChange = (field: keyof UserFormData, value: string | number | null) => {
+  const handleChange = (field: keyof UserFormData, value: string | number | null | boolean | File | string[]) => {
     setUserData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+  
+  // Manejar la carga de imágenes
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Guardar el archivo para enviarlo al servidor más tarde
+      handleChange('profileImageFile', file);
+      
+      // Crear una URL para previsualizar la imagen
+      const imageUrl = URL.createObjectURL(file);
+      handleChange('profileImageUrl', imageUrl);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -225,48 +265,78 @@ const UserDetail: React.FC<{
           <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
             <h3 className="font-medium text-lg">Información de Contacto y Perfil</h3>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label htmlFor="phone" className="text-sm font-medium">Teléfono</label>
-                <Input
-                  id="phone"
-                  value={userData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  placeholder="Ej: 555-123-4567"
-                />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Columna de foto de perfil */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="profileImage" className="text-sm font-medium">Foto de perfil</label>
+                  <div className="flex flex-col items-center">
+                    {userData.profileImageUrl ? (
+                      <div className="relative mb-3">
+                        <img 
+                          src={userData.profileImageUrl} 
+                          alt="Vista previa" 
+                          className="w-32 h-32 rounded-full object-cover border border-gray-300"
+                        />
+                        <button
+                          type="button"
+                          className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full"
+                          onClick={() => {
+                            handleChange('profileImageUrl', '');
+                            handleChange('profileImageFile', null);
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center mb-3">
+                        <UserRound className="h-16 w-16 text-gray-400" />
+                      </div>
+                    )}
+                    <label 
+                      htmlFor="imageUpload"
+                      className="cursor-pointer py-2 px-3 bg-gray-100 hover:bg-gray-200 rounded text-sm text-center"
+                    >
+                      Subir imagen
+                      <input 
+                        id="imageUpload" 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handleImageUpload} 
+                      />
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1 text-center">
+                      Formatos: JPG, PNG. Máx: 5MB
+                    </p>
+                  </div>
+                </div>
               </div>
               
-              <div className="space-y-2">
-                <label htmlFor="profileImageUrl" className="text-sm font-medium">Foto de perfil (URL)</label>
-                <Input
-                  id="profileImageUrl"
-                  value={userData.profileImageUrl}
-                  onChange={(e) => handleChange('profileImageUrl', e.target.value)}
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                />
+              {/* Columna de información de contacto */}
+              <div className="space-y-4 col-span-2">
+                <div className="space-y-2">
+                  <label htmlFor="phone" className="text-sm font-medium">Teléfono</label>
+                  <Input
+                    id="phone"
+                    value={userData.phone}
+                    onChange={(e) => handleChange('phone', e.target.value)}
+                    placeholder="Ej: 555-123-4567"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="bio" className="text-sm font-medium">Biografía</label>
+                  <Textarea
+                    id="bio"
+                    value={userData.bio}
+                    onChange={(e) => handleChange('bio', e.target.value)}
+                    placeholder="Breve descripción personal"
+                    rows={3}
+                  />
+                </div>
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="bio" className="text-sm font-medium">Biografía</label>
-              <Textarea
-                id="bio"
-                value={userData.bio}
-                onChange={(e) => handleChange('bio', e.target.value)}
-                placeholder="Breve descripción personal"
-                rows={3}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="experience" className="text-sm font-medium">Experiencia y Certificaciones</label>
-              <Textarea
-                id="experience"
-                value={userData.experience}
-                onChange={(e) => handleChange('experience', e.target.value)}
-                placeholder="Experiencia profesional o certificaciones relevantes"
-                rows={4}
-              />
             </div>
           </div>
           
@@ -275,32 +345,151 @@ const UserDetail: React.FC<{
             <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
               <h3 className="font-medium text-lg">Información Profesional de Instructor</h3>
               
-              <div className="space-y-2">
-                <label htmlFor="specialties" className="text-sm font-medium">Especialidades</label>
-                <Textarea
-                  id="specialties"
-                  value={Array.isArray(userData.specialties) ? userData.specialties.join(', ') : ''}
-                  onChange={(e) => handleChange('specialties', e.target.value.split(', '))}
-                  placeholder="Yoga, Fitness, Artes marciales, Deportes infantiles, etc."
-                  rows={2}
-                />
-                <p className="text-xs text-muted-foreground mt-1">Ingresa las especialidades separadas por comas</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="specialties" className="text-sm font-medium">Especialidades</label>
+                  <Textarea
+                    id="specialties"
+                    value={Array.isArray(userData.specialties) ? userData.specialties.join(', ') : ''}
+                    onChange={(e) => handleChange('specialties', e.target.value.split(', '))}
+                    placeholder="Yoga, Fitness, Artes marciales, Deportes infantiles, etc."
+                    rows={2}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Ingresa las especialidades separadas por comas</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="curriculum" className="text-sm font-medium">Curriculum Vitae (URL)</label>
+                  <Input
+                    id="curriculum"
+                    value={userData.curriculum}
+                    onChange={(e) => handleChange('curriculum', e.target.value)}
+                    placeholder="https://ejemplo.com/curriculum.pdf"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Enlace a tu CV en formato PDF</p>
+                </div>
               </div>
               
-              {/* Para futuras expansiones: campos de especialidades */}
+              <div className="space-y-2">
+                <label htmlFor="experience" className="text-sm font-medium">Experiencia y Certificaciones</label>
+                <Textarea
+                  id="experience"
+                  value={userData.experience}
+                  onChange={(e) => handleChange('experience', e.target.value)}
+                  placeholder="Describe tu experiencia profesional, certificaciones, logros y áreas de especialización."
+                  rows={4}
+                />
+              </div>
             </div>
           )}
           
-          {/* Sección específica para voluntarios (podría expandirse en el futuro) */}
+          {/* Sección específica para voluntarios */}
           {userData.role === 'volunteer' && (
             <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
               <h3 className="font-medium text-lg">Información de Voluntario</h3>
               
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Áreas de interés</label>
-                <div className="text-sm text-muted-foreground">
-                  Las áreas de interés y disponibilidad se configuran en el módulo de voluntarios.
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="gender" className="text-sm font-medium">Género</label>
+                  <Select
+                    value={userData.gender}
+                    onValueChange={(value) => handleChange('gender', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar género" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="masculino">Masculino</SelectItem>
+                      <SelectItem value="femenino">Femenino</SelectItem>
+                      <SelectItem value="otro">Otro</SelectItem>
+                      <SelectItem value="no_especificar">Prefiero no decir</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="age" className="text-sm font-medium">Edad</label>
+                  <Input
+                    id="age"
+                    type="number"
+                    min="16"
+                    max="99"
+                    value={userData.age?.toString() || ''}
+                    onChange={(e) => handleChange('age', e.target.value ? parseInt(e.target.value) : undefined)}
+                    placeholder="Ej: 25"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="address" className="text-sm font-medium">Dirección</label>
+                <Textarea
+                  id="address"
+                  value={userData.address}
+                  onChange={(e) => handleChange('address', e.target.value)}
+                  placeholder="Dirección completa"
+                  rows={2}
+                />
+              </div>
+              
+              <div className="space-y-4">
+                <h4 className="font-medium">Información de Contacto de Emergencia</h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="emergencyContactName" className="text-sm font-medium">Nombre de contacto</label>
+                    <Input
+                      id="emergencyContactName"
+                      value={userData.emergencyContactName}
+                      onChange={(e) => handleChange('emergencyContactName', e.target.value)}
+                      placeholder="Nombre completo"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="emergencyContactPhone" className="text-sm font-medium">Teléfono de emergencia</label>
+                    <Input
+                      id="emergencyContactPhone"
+                      value={userData.emergencyContactPhone}
+                      onChange={(e) => handleChange('emergencyContactPhone', e.target.value)}
+                      placeholder="Ej: 555-123-4567"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="preferredParkId" className="text-sm font-medium">Parque preferido</label>
+                  <Select
+                    value={userData.preferredParkId?.toString() || 'null'}
+                    onValueChange={(value) => handleChange('preferredParkId', value === 'null' ? null : parseInt(value))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar parque" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="null">Sin preferencia</SelectItem>
+                      {/* Obtener parques desde la API */}
+                      {userData.municipalityId && (
+                        <SelectItem value="1">Parque 1</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2 mt-4">
+                <input
+                  type="checkbox"
+                  id="legalConsent"
+                  checked={userData.legalConsent}
+                  onChange={(e) => handleChange('legalConsent', e.target.checked)}
+                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 h-4 w-4"
+                />
+                <label htmlFor="legalConsent" className="text-sm text-gray-700">
+                  Acepto los términos y condiciones del programa de voluntariado y autorizo el uso de mis datos personales para los fines del programa.
+                </label>
               </div>
             </div>
           )}
