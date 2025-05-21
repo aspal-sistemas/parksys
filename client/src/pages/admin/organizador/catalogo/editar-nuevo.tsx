@@ -144,12 +144,53 @@ const EditarActividadPage = () => {
   const params = useParams();
   const activityId = params?.id;
   
+  const [location, setLocation] = useLocation();
+  
   // Consulta para obtener los datos de la actividad
   const { data: actividad, isLoading: isLoadingActividad } = useQuery({
     queryKey: [`/api/activities/${activityId}`],
     enabled: !!activityId,
   });
+
+  // Consulta para obtener la lista de parques
+  const { data: parques = [] } = useQuery<{ id: number, name: string }[]>({
+    queryKey: ['/api/parks'],
+  });
   
+  // Consulta para obtener la lista de usuarios con rol de instructor
+  const { data: instructores = [] } = useQuery<any[]>({
+    queryKey: ['/api/users'],
+    select: (data) => data.filter(user => user.role === 'instructor')
+  });
+
+  // Configuración del formulario
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      category: "",
+      parkId: "",
+      startDate: "",
+      endDate: "",
+      startTime: "09:00", // Valor predeterminado para la hora de inicio
+      endTime: "10:00",   // Valor predeterminado para la hora de finalización
+      location: "",
+      capacity: undefined,
+      duration: undefined,
+      price: 0,
+      isPriceRandom: false,
+      isFree: false,
+      materials: "",
+      requirements: "",
+      isRecurring: false,
+      recurringDays: [],
+      targetMarket: [],
+      specialNeeds: [],
+      instructorId: "",
+    },
+  });
+
   // Efecto para cargar los datos de la actividad cuando esté disponible
   React.useEffect(() => {
     if (actividad && !isLoadingActividad) {
@@ -201,46 +242,6 @@ const EditarActividadPage = () => {
       }
     }
   }, [actividad, isLoadingActividad, form]);
-  const [location, setLocation] = useLocation();
-
-  // Consulta para obtener la lista de parques
-  const { data: parques = [] } = useQuery<{ id: number, name: string }[]>({
-    queryKey: ['/api/parks'],
-  });
-  
-  // Consulta para obtener la lista de usuarios con rol de instructor
-  const { data: instructores = [] } = useQuery<any[]>({
-    queryKey: ['/api/users'],
-    select: (data) => data.filter(user => user.role === 'instructor')
-  });
-
-  // Configuración del formulario
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      category: "",
-      parkId: "",
-      startDate: "",
-      endDate: "",
-      startTime: "09:00", // Valor predeterminado para la hora de inicio
-      endTime: "10:00",   // Valor predeterminado para la hora de finalización
-      location: "",
-      capacity: undefined,
-      duration: undefined,
-      price: 0,
-      isPriceRandom: false,
-      isFree: false,
-      materials: "",
-      requirements: "",
-      isRecurring: false,
-      recurringDays: [],
-      targetMarket: [],
-      specialNeeds: [],
-      instructorId: "",
-    },
-  });
 
   // Mutación para actualizar una actividad existente
   const updateMutation = useMutation({
