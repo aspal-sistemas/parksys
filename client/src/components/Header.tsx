@@ -1,17 +1,26 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Header: React.FC = () => {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activitiesMenuOpen, setActivitiesMenuOpen] = useState(false);
   
   const isAdmin = location.startsWith('/admin');
   
   const toggleMobileMenu = () => {
     setMobileMenuOpen(prev => !prev);
   };
+
+  const toggleActivitiesMenu = () => {
+    setActivitiesMenuOpen(prev => !prev);
+  };
+
+  const isActivitiesActive = location === '/activities' || 
+                            location === '/calendar' || 
+                            location === '/instructors';
 
   return (
     <header className="bg-white shadow-sm">
@@ -32,7 +41,7 @@ const Header: React.FC = () => {
             {!isAdmin && (
               <nav className="hidden md:ml-8 md:flex md:space-x-6">
                 <Link href="/"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium order-1 ${
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
                     location === '/' 
                       ? 'border-primary text-gray-900' 
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -41,7 +50,7 @@ const Header: React.FC = () => {
                 </Link>
                 
                 <Link href="/parks"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium order-2 ${
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
                     location === '/parks' 
                       ? 'border-primary text-gray-900' 
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -49,32 +58,41 @@ const Header: React.FC = () => {
                   Parques
                 </Link>
                 
-                <Link href="/activities"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium order-3 ${
-                    location === '/activities' 
+                {/* Actividades dropdown */}
+                <div className="relative group">
+                  <div 
+                    className={`flex items-center cursor-pointer border-b-2 pt-1 pb-3 px-1 text-sm font-medium 
+                    ${isActivitiesActive 
                       ? 'border-primary text-gray-900' 
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}>
-                  Actividades
-                </Link>
-                
-                <Link href="/calendar"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium order-4 ${
-                    location === '/calendar' 
-                      ? 'border-primary text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}>
-                  Calendario
-                </Link>
-                
-                <Link href="/instructors"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium order-5 ${
-                    location === '/instructors' 
-                      ? 'border-primary text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}>
-                  Instructores
-                </Link>
+                    }`}
+                    onClick={toggleActivitiesMenu}
+                  >
+                    <span>Actividades</span>
+                    <ChevronDown className="h-4 w-4 ml-1" />
+                  </div>
+                  
+                  <div className={`absolute z-10 mt-2 w-48 bg-white shadow-lg rounded-md py-1 ${activitiesMenuOpen ? 'block' : 'hidden'} group-hover:block`}>
+                    <Link href="/activities"
+                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${
+                        location === '/activities' ? 'font-medium text-primary' : ''
+                      }`}>
+                      Todas las Actividades
+                    </Link>
+                    <Link href="/calendar"
+                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${
+                        location === '/calendar' ? 'font-medium text-primary' : ''
+                      }`}>
+                      Calendario
+                    </Link>
+                    <Link href="/instructors"
+                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${
+                        location === '/instructors' ? 'font-medium text-primary' : ''
+                      }`}>
+                      Instructores
+                    </Link>
+                  </div>
+                </div>
                 
                 <Link href="/voluntarios/registro"
                   className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
@@ -133,9 +151,9 @@ const Header: React.FC = () => {
       {/* Mobile menu, show/hide based on menu state. */}
       {mobileMenuOpen && !isAdmin && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <Link href="/"
-              className={`block px-3 py-2 rounded-md text-base font-medium order-1 ${
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
                 location === '/' 
                   ? 'bg-primary-50 text-primary-700' 
                   : 'text-gray-700 hover:bg-gray-50'
@@ -144,7 +162,7 @@ const Header: React.FC = () => {
             </Link>
             
             <Link href="/parks"
-              className={`block px-3 py-2 rounded-md text-base font-medium order-2 ${
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
                 location === '/parks' 
                   ? 'bg-primary-50 text-primary-700' 
                   : 'text-gray-700 hover:bg-gray-50'
@@ -152,32 +170,48 @@ const Header: React.FC = () => {
               Parques
             </Link>
             
-            <Link href="/activities"
-              className={`block px-3 py-2 rounded-md text-base font-medium order-3 ${
-                location === '/activities' 
-                  ? 'bg-primary-50 text-primary-700' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}>
-              Actividades
-            </Link>
-            
-            <Link href="/calendar"
-              className={`block px-3 py-2 rounded-md text-base font-medium order-4 ${
-                location === '/calendar' 
-                  ? 'bg-primary-50 text-primary-700' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}>
-              Calendario
-            </Link>
-            
-            <Link href="/instructors"
-              className={`block px-3 py-2 rounded-md text-base font-medium order-5 ${
-                location === '/instructors' 
-                  ? 'bg-primary-50 text-primary-700' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}>
-              Instructores
-            </Link>
+            {/* Actividades móvil con submenú */}
+            <div>
+              <div 
+                className={`flex items-center justify-between px-3 py-2 rounded-md text-base font-medium 
+                  ${isActivitiesActive ? 'bg-primary-50 text-primary-700' : 'text-gray-700'}`}
+                onClick={() => setActivitiesMenuOpen(!activitiesMenuOpen)}
+              >
+                <span>Actividades</span>
+                <ChevronDown className={`h-5 w-5 transition-transform ${activitiesMenuOpen ? 'transform rotate-180' : ''}`} />
+              </div>
+              
+              {activitiesMenuOpen && (
+                <div className="pl-4">
+                  <Link href="/activities"
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      location === '/activities' 
+                        ? 'bg-primary-50 text-primary-700' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}>
+                    Todas las Actividades
+                  </Link>
+                  
+                  <Link href="/calendar"
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      location === '/calendar' 
+                        ? 'bg-primary-50 text-primary-700' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}>
+                    Calendario
+                  </Link>
+                  
+                  <Link href="/instructors"
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      location === '/instructors' 
+                        ? 'bg-primary-50 text-primary-700' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}>
+                    Instructores
+                  </Link>
+                </div>
+              )}
+            </div>
             
             <Link href="/voluntarios/registro"
               className={`block px-3 py-2 rounded-md text-base font-medium ${
