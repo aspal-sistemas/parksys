@@ -62,6 +62,12 @@ interface UserFormData {
   password: string;
   role: string;
   municipalityId: number | null;
+  // Campos adicionales para instructores
+  phone?: string;
+  profileImageUrl?: string;
+  experience?: string;
+  bio?: string;
+  specialties?: string[];
 }
 
 // User detail/edit component
@@ -80,6 +86,11 @@ const UserDetail: React.FC<{
     password: '',
     role: user?.role || 'user',
     municipalityId: user?.municipalityId || null,
+    phone: user?.phone || '',
+    profileImageUrl: user?.profileImageUrl || '',
+    experience: user?.experience || '',
+    bio: user?.bio || '',
+    specialties: user?.specialties || [],
   });
 
   const { data: municipalities = [] } = useQuery({
@@ -204,6 +215,58 @@ const UserDetail: React.FC<{
             </Select>
           </div>
           
+          
+          {/* Sección de campos específicos para instructores */}
+          {userData.role === 'instructor' && (
+            <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+              <h3 className="font-medium text-lg">Información de Instructor</h3>
+              
+              <div className="space-y-2">
+                <label htmlFor="phone" className="text-sm font-medium">Teléfono de contacto</label>
+                <Input
+                  id="phone"
+                  value={userData.phone}
+                  onChange={(e) => handleChange('phone', e.target.value)}
+                  placeholder="Ej: 555-123-4567"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="profileImageUrl" className="text-sm font-medium">URL de imagen de perfil</label>
+                <Input
+                  id="profileImageUrl"
+                  value={userData.profileImageUrl}
+                  onChange={(e) => handleChange('profileImageUrl', e.target.value)}
+                  placeholder="https://ejemplo.com/imagen.jpg"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="experience" className="text-sm font-medium">Experiencia profesional</label>
+                <Textarea
+                  id="experience"
+                  value={userData.experience}
+                  onChange={(e) => handleChange('experience', e.target.value)}
+                  placeholder="Experiencia relevante, certificaciones, logros profesionales..."
+                  rows={4}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="bio" className="text-sm font-medium">Biografía</label>
+                <Textarea
+                  id="bio"
+                  value={userData.bio}
+                  onChange={(e) => handleChange('bio', e.target.value)}
+                  placeholder="Breve biografía o descripción personal del instructor"
+                  rows={3}
+                />
+              </div>
+              
+              {/* Aquí podríamos añadir un componente para manejar las especialidades como etiquetas */}
+            </div>
+          )}
+
           <DialogFooter className="pt-4">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
               Cancelar
