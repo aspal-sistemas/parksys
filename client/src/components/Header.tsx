@@ -30,7 +30,7 @@ const Header: React.FC = () => {
             
             {/* Desktop navigation */}
             {!isAdmin && (
-              <nav className="hidden md:ml-8 md:flex md:space-x-8">
+              <nav className="hidden md:ml-8 md:flex md:space-x-6">
                 <Link href="/"
                   className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
                     location === '/' 
@@ -56,6 +56,24 @@ const Header: React.FC = () => {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}>
                   Actividades
+                </Link>
+                
+                <Link href="/calendar"
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                    location === '/calendar' 
+                      ? 'border-primary text-gray-900' 
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}>
+                  Calendario
+                </Link>
+                
+                <Link href="/instructors"
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                    location === '/instructors' 
+                      ? 'border-primary text-gray-900' 
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}>
+                  Instructores
                 </Link>
                 
                 <Link href="/voluntarios/registro"
@@ -138,6 +156,24 @@ const Header: React.FC = () => {
                   : 'text-gray-700 hover:bg-gray-50'
               }`}>
               Actividades
+            </Link>
+            
+            <Link href="/calendar"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                location === '/calendar' 
+                  ? 'bg-primary-50 text-primary-700' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}>
+              Calendario
+            </Link>
+            
+            <Link href="/instructors"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                location === '/instructors' 
+                  ? 'bg-primary-50 text-primary-700' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}>
+              Instructores
             </Link>
             
             <Link href="/voluntarios/registro"

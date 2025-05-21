@@ -40,6 +40,16 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/parks" component={Parks} />
         <Route path="/parks/:id" component={ParkDetail} />
+        <Route path="/instructors">
+          <Suspense fallback={<div className="p-8 text-center">Cargando instructores...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/instructors')))}
+          </Suspense>
+        </Route>
+        <Route path="/calendar">
+          <Suspense fallback={<div className="p-8 text-center">Cargando calendario...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/calendar')))}
+          </Suspense>
+        </Route>
 
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/parks" component={AdminParks} />
