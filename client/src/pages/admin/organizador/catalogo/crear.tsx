@@ -152,6 +152,8 @@ const CrearActividadPage = () => {
       parkId: "",
       startDate: "",
       endDate: "",
+      startTime: "09:00", // Valor predeterminado para la hora de inicio
+      endTime: "10:00",   // Valor predeterminado para la hora de finalización
       location: "",
       capacity: undefined,
       duration: undefined,
