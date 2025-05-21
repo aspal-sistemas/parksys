@@ -8,6 +8,7 @@ import { sql, eq } from "drizzle-orm";
 import * as schema from "@shared/schema";
 import { videoRouter } from "./video_routes";
 import { registerVolunteerRoutes } from "./volunteerRoutes";
+import { registerInstructorRoutes } from "./instructorRoutes";
 import { activityRouter } from "./activityRoutes";
 import { 
   uploadParkFile, 
@@ -73,6 +74,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de voluntariado
   registerVolunteerRoutes(app, apiRouter, null, isAuthenticated);
+  registerInstructorRoutes(app, apiRouter, null, isAuthenticated);
   
   // Registramos las rutas del módulo de usuarios
   registerUserRoutes(app, apiRouter);

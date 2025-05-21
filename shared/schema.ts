@@ -556,6 +556,163 @@ export type ExtendedVolunteer = Volunteer & {
   preferredPark?: Park;
 };
 
+// TABLES FOR MODULE: INSTRUCTORS
+
+// 1. Tabla de Instructores
+export const instructors = pgTable("instructors", {
+  id: serial("id").primaryKey(),
+  fullName: text("full_name").notNull(),
+  phoneNumber: text("phone"),
+  address: text("address"),
+  age: integer("age"),
+  email: text("email").notNull(),
+  availability: text("available_hours"),
+  specialties: text("specialties"),
+  experience: integer("experience_years").notNull(),
+  bio: text("bio"),
+  status: text("status").default("active").notNull(),
+  profileImageUrl: text("profile_image_url"),
+  preferredParkId: integer("preferred_park_id"),
+  cvUrl: text("cv_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  gender: text("gender"),
+  availableDays: text("available_days").array(),
+  education: text("education"),
+  certifications: text("certifications").array(),
+});
+
+// 2. Tabla de Asignaciones de Instructores
+export const instructorAssignments = pgTable("instructor_assignments", {
+  id: serial("id").primaryKey(),
+  instructorId: integer("instructor_id").notNull(),
+  activityId: integer("activity_id").notNull(),
+  parkId: integer("park_id").notNull(),
+  activityName: text("activity_name").notNull(),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date"),
+  hoursAssigned: integer("hours_assigned").notNull(),
+  assignedById: integer("assigned_by_id").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// 3. Tabla de Evaluaciones de Instructores
+export const instructorEvaluations = pgTable("instructor_evaluations", {
+  id: serial("id").primaryKey(),
+  assignmentId: integer("assignment_id").notNull(),
+  instructorId: integer("instructor_id").notNull(),
+  evaluatorId: integer("evaluator_id").notNull(),
+  knowledge: integer("knowledge").notNull(), // 1-5
+  communication: integer("communication").notNull(), // 1-5
+  methodology: integer("methodology").notNull(), // 1-5
+  overallPerformance: integer("overall_performance").notNull(), // 1-5
+  comments: text("comments"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// 4. Tabla de Reconocimientos de Instructores
+export const instructorRecognitions = pgTable("instructor_recognitions", {
+  id: serial("id").primaryKey(),
+  instructorId: integer("instructor_id").notNull(),
+  recognitionType: text("recognition_type").notNull(), // certification, award, special-mention
+  level: text("level"), // basic, intermediate, advanced, expert
+  reason: text("reason").notNull(),
+  hoursCompleted: integer("hours_completed"),
+  certificateUrl: text("certificate_url"),
+  issuedAt: timestamp("issued_at").notNull().defaultNow(),
+  issuedById: integer("issued_by_id").notNull(),
+  additionalComments: text("additional_comments"),
+});
+
+// Definición de relaciones para instructores
+export const instructorsRelations = relations(instructors, ({ one, many }) => ({
+  preferredPark: one(parks, {
+    fields: [instructors.preferredParkId],
+    references: [parks.id],
+  }),
+  assignments: many(instructorAssignments),
+  evaluations: many(instructorEvaluations),
+  recognitions: many(instructorRecognitions),
+}));
+
+export const instructorAssignmentsRelations = relations(instructorAssignments, ({ one }) => ({
+  instructor: one(instructors, {
+    fields: [instructorAssignments.instructorId],
+    references: [instructors.id],
+  }),
+  activity: one(activities, {
+    fields: [instructorAssignments.activityId],
+    references: [activities.id],
+  }),
+  park: one(parks, {
+    fields: [instructorAssignments.parkId],
+    references: [parks.id],
+  }),
+}));
+
+export const instructorEvaluationsRelations = relations(instructorEvaluations, ({ one }) => ({
+  instructor: one(instructors, {
+    fields: [instructorEvaluations.instructorId],
+    references: [instructors.id],
+  }),
+  assignment: one(instructorAssignments, {
+    fields: [instructorEvaluations.assignmentId],
+    references: [instructorAssignments.id],
+  }),
+}));
+
+export const instructorRecognitionsRelations = relations(instructorRecognitions, ({ one }) => ({
+  instructor: one(instructors, {
+    fields: [instructorRecognitions.instructorId],
+    references: [instructors.id],
+  }),
+}));
+
+// Esquemas para validación de datos de instructores
+export const insertInstructorSchema = createInsertSchema(instructors).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true 
+});
+
+export const insertInstructorAssignmentSchema = createInsertSchema(instructorAssignments).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export const insertInstructorEvaluationSchema = createInsertSchema(instructorEvaluations).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export const insertInstructorRecognitionSchema = createInsertSchema(instructorRecognitions).omit({ 
+  id: true, 
+  issuedAt: true 
+});
+
+// Tipos para el módulo de instructores
+export type Instructor = typeof instructors.$inferSelect;
+export type InsertInstructor = z.infer<typeof insertInstructorSchema>;
+
+export type InstructorAssignment = typeof instructorAssignments.$inferSelect;
+export type InsertInstructorAssignment = z.infer<typeof insertInstructorAssignmentSchema>;
+
+export type InstructorEvaluation = typeof instructorEvaluations.$inferSelect;
+export type InsertInstructorEvaluation = z.infer<typeof insertInstructorEvaluationSchema>;
+
+export type InstructorRecognition = typeof instructorRecognitions.$inferSelect;
+export type InsertInstructorRecognition = z.infer<typeof insertInstructorRecognitionSchema>;
+
+// Tipos extendidos para la interfaz
+export type ExtendedInstructor = Instructor & {
+  assignments?: InstructorAssignment[];
+  evaluations?: InstructorEvaluation[];
+  recognitions?: InstructorRecognition[];
+  totalHours?: number;
+  preferredPark?: Park;
+};
+
 export type ExtendedPark = Park & {
   amenities?: Amenity[];
   images?: ParkImage[];
