@@ -107,6 +107,13 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/edit')))}
           </Suspense>
         </Route>
+        
+        {/* Rutas para el módulo de instructores */}
+        <Route path="/admin/instructors">
+          <Suspense fallback={<div className="p-8 text-center">Cargando lista de instructores...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/instructors/index')))}
+          </Suspense>
+        </Route>
         <Route component={NotFound} />
       </Switch>
     </div>
