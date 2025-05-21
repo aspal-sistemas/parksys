@@ -9,6 +9,7 @@ import * as schema from "@shared/schema";
 import { videoRouter } from "./video_routes";
 import { registerVolunteerRoutes } from "./volunteerRoutes";
 import { registerInstructorRoutes } from "./instructorRoutes";
+import { registerPublicRoutes } from "./publicRoutes";
 import { activityRouter } from "./activityRoutes";
 import { 
   uploadParkFile, 
