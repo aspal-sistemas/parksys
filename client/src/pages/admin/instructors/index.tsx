@@ -44,14 +44,14 @@ import { es } from 'date-fns/locale';
 // Tipo para los instructores
 interface Instructor {
   id: number;
-  fullName: string;
+  full_name: string;
   email: string;
-  phoneNumber?: string;
+  phone?: string;
   specialties?: string;
-  experience: number;
+  experience_years: number;
   status: string;
-  profileImageUrl?: string;
-  createdAt: string;
+  profile_image_url?: string;
+  created_at: string;
 }
 
 export default function InstructorsListPage() {
@@ -76,7 +76,7 @@ export default function InstructorsListPage() {
     return instructors.filter((instructor: Instructor) => {
       // Filtro por término de búsqueda (nombre o email)
       const matchesSearch = searchTerm === '' || 
-        instructor.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        instructor.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         instructor.email?.toLowerCase().includes(searchTerm.toLowerCase());
       
       // Filtro por estado
@@ -426,12 +426,12 @@ export default function InstructorsListPage() {
                   {paginatedInstructors.map((instructor: Instructor) => (
                     <TableRow key={instructor.id}>
                       <TableCell className="font-medium">
-                        {instructor.fullName}
+                        {instructor.full_name}
                       </TableCell>
                       <TableCell>
                         <div>{instructor.email}</div>
-                        {instructor.phoneNumber && (
-                          <div className="text-muted-foreground text-xs">{instructor.phoneNumber}</div>
+                        {instructor.phone && (
+                          <div className="text-muted-foreground text-xs">{instructor.phone}</div>
                         )}
                       </TableCell>
                       <TableCell>
@@ -441,9 +441,9 @@ export default function InstructorsListPage() {
                         {renderSpecialties(instructor.specialties)}
                       </TableCell>
                       <TableCell>
-                        {instructor.experience} {instructor.experience === 1 ? 'año' : 'años'}
+                        {instructor.experience_years} {instructor.experience_years === 1 ? 'año' : 'años'}
                       </TableCell>
-                      <TableCell>{formatDate(instructor.createdAt)}</TableCell>
+                      <TableCell>{formatDate(instructor.created_at)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
