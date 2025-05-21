@@ -222,14 +222,6 @@ const AdminSidebarModular: React.FC = () => {
                 value="programming"
               >
                 <NavItem 
-                  href="/admin/organizador" 
-                  icon={<CalendarDays className="h-4 w-4" />}
-                  active={location === '/admin/organizador'}
-                >
-                  Dashboard
-                </NavItem>
-                
-                <NavItem 
                   href="/admin/organizador/nueva-actividad" 
                   icon={<Calendar className="h-4 w-4" />}
                   active={location === '/admin/organizador/nueva-actividad'}
@@ -246,11 +238,11 @@ const AdminSidebarModular: React.FC = () => {
                 </NavItem>
                 
                 <NavItem 
-                  href="/admin/organizador/reportes" 
-                  icon={<FileText className="h-4 w-4" />}
-                  active={location.startsWith('/admin/organizador/reportes')}
+                  href="/admin/organizador" 
+                  icon={<CalendarDays className="h-4 w-4" />}
+                  active={location === '/admin/organizador'}
                 >
-                  Reportes
+                  Dashboard
                 </NavItem>
               </ModuleNav>
               
