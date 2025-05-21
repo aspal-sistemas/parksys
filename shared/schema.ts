@@ -90,15 +90,46 @@ export const documents = pgTable("documents", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Tabla para ubicaciones específicas dentro de un parque
+export const parkLocations = pgTable("park_locations", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  type: text("type").notNull(), // área, zona, instalación, etc.
+  amenityId: integer("amenity_id"), // relación opcional con amenidades
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Catálogo de actividades predefinidas
+export const activityCatalog = pgTable("activity_catalog", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category").notNull(),
+  duration: integer("duration").notNull(), // duración en minutos
+  capacity: integer("capacity"),
+  materials: text("materials"),
+  staffRequired: integer("staff_required"),
+  isRecurring: boolean("is_recurring").default(false).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const activities = pgTable("activities", {
   id: serial("id").primaryKey(),
   parkId: integer("park_id").notNull(),
+  locationId: integer("location_id"), // relación opcional con ubicación específica
+  catalogItemId: integer("catalog_item_id"), // relación opcional con el catálogo de actividades
   title: text("title").notNull(),
   description: text("description"),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date"),
   category: text("category"),
-  location: text("location"),
+  location: text("location"), // mantenemos por compatibilidad
+  capacity: integer("capacity"), // número máximo de participantes
+  enrollmentCount: integer("enrollment_count").default(0), // número actual de inscritos
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -133,6 +164,8 @@ export const insertParkImageSchema = createInsertSchema(parkImages).omit({ id: t
 export const insertAmenitySchema = createInsertSchema(amenities).omit({ id: true });
 export const insertParkAmenitySchema = createInsertSchema(parkAmenities).omit({ id: true });
 export const insertDocumentSchema = createInsertSchema(documents).omit({ id: true, createdAt: true });
+export const insertParkLocationSchema = createInsertSchema(parkLocations).omit({ id: true, createdAt: true });
+export const insertActivityCatalogSchema = createInsertSchema(activityCatalog).omit({ id: true, createdAt: true });
 export const insertActivitySchema = createInsertSchema(activities).omit({ id: true, createdAt: true });
 export const insertCommentSchema = createInsertSchema(comments).omit({ id: true, createdAt: true, isApproved: true });
 export const insertIncidentSchema = createInsertSchema(incidents).omit({ id: true, createdAt: true, updatedAt: true, status: true });
@@ -159,6 +192,12 @@ export type InsertParkAmenity = z.infer<typeof insertParkAmenitySchema>;
 
 export type Document = typeof documents.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+
+export type ParkLocation = typeof parkLocations.$inferSelect;
+export type InsertParkLocation = z.infer<typeof insertParkLocationSchema>;
+
+export type ActivityCatalogItem = typeof activityCatalog.$inferSelect;
+export type InsertActivityCatalogItem = z.infer<typeof insertActivityCatalogSchema>;
 
 export type Activity = typeof activities.$inferSelect;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
@@ -233,6 +272,7 @@ export const parksRelations = relations(parks, ({ one, many }) => ({
   parkImages: many(parkImages),
   parkAmenities: many(parkAmenities),
   documents: many(documents),
+  locations: many(parkLocations),
   activities: many(activities),
   comments: many(comments),
   incidents: many(incidents),
@@ -267,10 +307,36 @@ export const documentsRelations = relations(documents, ({ one }) => ({
   }),
 }));
 
+export const parkLocationsRelations = relations(parkLocations, ({ one }) => ({
+  park: one(parks, {
+    fields: [parkLocations.parkId],
+    references: [parks.id],
+  }),
+  amenity: one(amenities, {
+    fields: [parkLocations.amenityId],
+    references: [amenities.id],
+    relationName: "locationAmenity"
+  }),
+}));
+
+export const activityCatalogRelations = relations(activityCatalog, ({ many }) => ({
+  activities: many(activities, { relationName: "catalogActivities" }),
+}));
+
 export const activitiesRelations = relations(activities, ({ one }) => ({
   park: one(parks, {
     fields: [activities.parkId],
     references: [parks.id],
+  }),
+  location: one(parkLocations, {
+    fields: [activities.locationId],
+    references: [parkLocations.id],
+    relationName: "activityLocation"
+  }),
+  catalogItem: one(activityCatalog, {
+    fields: [activities.catalogItemId],
+    references: [activityCatalog.id],
+    relationName: "activityCatalogItem"
   }),
 }));
 

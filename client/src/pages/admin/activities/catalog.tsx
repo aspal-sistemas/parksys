@@ -153,7 +153,13 @@ const AdminActivityCatalogPage: React.FC = () => {
   const [showNewActivityForm, setShowNewActivityForm] = useState(false);
   const [newActivityData, setNewActivityData] = useState({
     name: '',
-    category: ''
+    category: '',
+    preferredParks: [] as number[] // IDs de parques donde se recomienda esta actividad
+  });
+  
+  // Consulta para obtener los parques disponibles
+  const { data: parks = [] } = useQuery<{ id: number, name: string }[]>({
+    queryKey: ['/api/parks'],
   });
   const [formData, setFormData] = useState<ActivityCatalogFormData>({
     name: '',
