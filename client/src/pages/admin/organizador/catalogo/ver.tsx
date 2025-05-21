@@ -266,8 +266,8 @@ const VerActividadesPage = () => {
                         variant="outline" 
                         size="sm"
                         onClick={() => {
-                          // Aquí iría la lógica para ver detalles
-                          console.log(`Ver detalles de actividad ${actividad.id}`);
+                          // Redirigir a la página de detalles con el ID de la actividad
+                          setLocation(`/admin/organizador/catalogo/${actividad.id}`);
                         }}
                       >
                         Ver detalles

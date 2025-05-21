@@ -210,8 +210,8 @@ export default function ActivitiesCalendarPage() {
               className="text-xs truncate cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                // Redirigir al catálogo de actividades disponibles
-                setLocation('/admin/organizador/catalogo/ver');
+                // Redirigir a la página de detalle de esta actividad específica
+                setLocation(`/admin/organizador/catalogo/${activity.id}`);
               }}
             >
               <Badge className={categoryColors[activity.category || 'default']} variant="outline">
@@ -324,7 +324,7 @@ export default function ActivitiesCalendarPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos los parques</SelectItem>
-                    {parks?.map((park: any) => (
+                    {Array.isArray(parks) && parks.map((park: any) => (
                       <SelectItem key={park.id} value={park.id.toString()}>{park.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -339,7 +339,7 @@ export default function ActivitiesCalendarPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos los instructores</SelectItem>
-                    {instructors?.map((instructor: any) => (
+                    {Array.isArray(instructors) && instructors.map((instructor: any) => (
                       <SelectItem key={instructor.id} value={instructor.id.toString()}>{instructor.full_name}</SelectItem>
                     ))}
                   </SelectContent>
