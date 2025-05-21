@@ -119,6 +119,16 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/instructors/index')))}
           </Suspense>
         </Route>
+        <Route path="/admin/instructors/cards">
+          <Suspense fallback={<div className="p-8 text-center">Cargando tarjetas de instructores...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/instructors/cards')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/instructors/:id">
+          <Suspense fallback={<div className="p-8 text-center">Cargando perfil de instructor...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/instructors/detail')))}
+          </Suspense>
+        </Route>
         
         {/* Ruta para el calendario de actividades */}
         <Route path="/admin/activities/calendar">
