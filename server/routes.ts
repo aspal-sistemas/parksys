@@ -33,6 +33,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API routes - all prefixed with /api
   const apiRouter = express.Router();
   
+  // Public API routes - all prefixed with /public-api
+  const publicRouter = express.Router();
+  
   // Template download routes (must be defined before conflicting routes)
   app.get('/api/template/parks-import', generateImportTemplate);
   
@@ -77,13 +80,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerVolunteerRoutes(app, apiRouter, null, isAuthenticated);
   
   // Registramos las rutas del módulo de instructores
-  registerInstructorRoutes(app, apiRouter, null, isAuthenticated);
+  registerInstructorRoutes(app, apiRouter, publicRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de usuarios
   registerUserRoutes(app, apiRouter);
   
+  // Registramos las rutas públicas
+  registerPublicRoutes(publicRouter);
+  
   // Montamos todas las rutas de la API bajo el prefijo /api
   app.use('/api', apiRouter);
+  
+  // Montamos todas las rutas públicas bajo el prefijo /public-api
+  // Montamos todas las rutas públicas bajo el prefijo /public-api
+  // Esta línea asegura que todas las rutas definidas en publicRouter sean accesibles bajo /public-api
+  app.use('/public-api', publicRouter);
 
   // Get all parks with option to filter
   apiRouter.get("/parks", async (req: Request, res: Response) => {
@@ -1202,10 +1213,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public API feature for connecting with other municipal applications
-  // This creates endpoints that other municipal apps can use
-  const publicRouter = express.Router();
-  app.use('/public-api', publicRouter);
+  // Continuamos usando el mismo publicRouter definido antes
   
   // Get basic park data - limited information for public consumption
   publicRouter.get("/parks", async (_req: Request, res: Response) => {

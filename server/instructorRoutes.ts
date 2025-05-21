@@ -17,6 +17,26 @@ import { instructors, instructorAssignments, instructorEvaluations, instructorRe
  */
 export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRouter: any, isAuthenticated: any) {
   
+  // === RUTAS PÚBLICAS PARA INSTRUCTORES ===
+  if (publicApiRouter) {
+    // Ruta pública para obtener todos los instructores activos
+    publicApiRouter.get("/instructors", async (_req: Request, res: Response) => {
+      try {
+        // Usamos una consulta SQL directa para evitar errores con mapeo de columnas
+        const allInstructors = await db.execute(
+          sql`SELECT id, full_name, email, phone, specialties, experience_years, status, profile_image_url, created_at 
+              FROM instructors 
+              WHERE status = 'active'
+              ORDER BY id DESC`
+        );
+        res.json(allInstructors.rows || []);
+      } catch (error) {
+        console.error("Error al obtener instructores públicos:", error);
+        res.status(500).json({ message: "Error al obtener instructores" });
+      }
+    });
+  }
+  
   // === RUTAS PARA INSTRUCTORES ===
   
   // Obtener todos los instructores
