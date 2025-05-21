@@ -2067,10 +2067,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getParkActivities(parkId: number): Promise<Activity[]> {
-    return await db.select()
-      .from(activities)
-      .where(eq(activities.parkId, parkId))
-      .orderBy(activities.startDate);
+    // Usamos una consulta SQL directa para evitar problemas con columnas no existentes
+    const result = await db.execute(
+      `SELECT * FROM activities WHERE park_id = $1 ORDER BY start_date`,
+      [parkId]
+    );
+    return result.rows as Activity[];
   }
 
   async createActivity(activityData: InsertActivity): Promise<Activity> {
