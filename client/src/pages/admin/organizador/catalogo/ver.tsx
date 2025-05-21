@@ -276,8 +276,8 @@ const VerActividadesPage = () => {
                         variant="ghost" 
                         size="sm"
                         onClick={() => {
-                          // Aquí iría la lógica para editar
-                          console.log(`Editar actividad ${actividad.id}`);
+                          // Redirigir a la página de edición con el ID de la actividad
+                          setLocation(`/admin/organizador/catalogo/editar/${actividad.id}`);
                         }}
                       >
                         Editar
