@@ -66,7 +66,7 @@ export default function InstructorsListPage() {
   const { data: instructors, isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/instructors'],
     retry: 1,
-    enabled: false, // No hacemos la consulta automáticamente
+    enabled: true, // Hacemos la consulta automáticamente
   });
 
   // Filtrar instructores según criterios de búsqueda
