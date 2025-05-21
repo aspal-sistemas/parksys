@@ -210,7 +210,8 @@ export default function ActivitiesCalendarPage() {
               className="text-xs truncate cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                setLocation(`/admin/activities/${activity.id}`);
+                // Redirigir al catálogo de actividades disponibles
+                setLocation('/admin/organizador/catalogo/ver');
               }}
             >
               <Badge className={categoryColors[activity.category || 'default']} variant="outline">
@@ -276,6 +277,11 @@ export default function ActivitiesCalendarPage() {
                 />
               </PopoverContent>
             </Popover>
+            <Button 
+              onClick={() => setLocation('/admin/organizador/catalogo/crear')}
+              className="ml-2 bg-blue-600 hover:bg-blue-700 text-white">
+              Nueva Actividad
+            </Button>
           </div>
         </div>
 
@@ -413,7 +419,7 @@ export default function ActivitiesCalendarPage() {
                 <div className="space-y-3">
                   {getActivitiesForDay(selectedDate).map((activity: Activity) => (
                     <div key={activity.id} className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer" 
-                      onClick={() => setLocation(`/admin/activities/${activity.id}`)}>
+                      onClick={() => setLocation('/admin/organizador/catalogo/ver')}>
                       <div className="flex justify-between">
                         <h3 className="font-medium">{activity.title}</h3>
                         <Badge className={categoryColors[activity.category || 'default']} variant="outline">
