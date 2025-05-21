@@ -2068,7 +2068,7 @@ export class DatabaseStorage implements IStorage {
 
   async getParkActivities(parkId: number): Promise<Activity[]> {
     try {
-      // Utilizamos el constructor de consultas de Drizzle sin la columna problemática
+      // Utilizamos el constructor de consultas de Drizzle con solo las columnas que existen
       return await db.select({
         id: activities.id,
         parkId: activities.parkId,
@@ -2078,8 +2078,6 @@ export class DatabaseStorage implements IStorage {
         endDate: activities.endDate,
         category: activities.category,
         location: activities.location,
-        capacity: activities.capacity,
-        enrollmentCount: activities.enrollmentCount,
         createdAt: activities.createdAt
       })
       .from(activities)

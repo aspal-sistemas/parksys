@@ -20,34 +20,33 @@ const CATEGORIAS_ACTIVIDADES = [
   { value: "naturalezaciencia", label: "Naturaleza, Ciencia y Conservación" }
 ];
 
-// Tipo para las actividades
+// Tipo para las actividades según la estructura actual de datos
 interface Actividad {
   id: number;
-  nombre: string;
-  descripcion: string;
-  categoria: string;
-  parqueId: number;
-  parqueNombre?: string;
-  fechaInicio: string;
-  fechaFin?: string;
-  horaInicio: string;
-  duracion: number;
-  capacidad?: number;
-  ubicaciones?: string[];
-  esRecurrente: boolean;
-  diasRecurrentes?: string[];
-  esGratuita: boolean;
-  precio?: number;
-  materiales?: string;
-  requisitos?: string;
-  personalRequerido?: number;
+  title: string;          // Nombre de la actividad
+  description: string;    // Descripción
+  category: string;       // Categoría
+  parkId: number;         // ID del parque
+  parqueNombre?: string;  // Nombre del parque (agregado desde la consulta de parques)
+  startDate: string;      // Fecha de inicio
+  endDate?: string;       // Fecha fin (opcional)
+  location?: string;      // Ubicación dentro del parque
+  createdAt: string;
+  // Campos adicionales que mostraremos si están disponibles
+  capacity?: number;
+  price?: number;
+  materials?: string;
+  requirements?: string;
+  duration?: number;      // Duración en minutos
+  isRecurring?: boolean;  // Si es recurrente
+  recurringDays?: string[]; // Días recurrentes
 }
 
 const VerActividadesPage = () => {
   const [location, setLocation] = useLocation();
   const [categoriaActiva, setCategoriaActiva] = useState<string>("artecultura");
   const [busqueda, setBusqueda] = useState<string>("");
-  const [parqueFiltro, setParqueFiltro] = useState<string>("");
+  const [parqueFiltro, setParqueFiltro] = useState<string>("todos");
 
   // Consulta para obtener la lista de parques
   const { data: parques = [] } = useQuery<{ id: number, name: string }[]>({
@@ -68,19 +67,19 @@ const VerActividadesPage = () => {
 
   // Filtrar actividades por categoría
   const actividadesPorCategoria = actividades.filter(act => 
-    act.categoria === categoriaActiva &&
+    act.category === categoriaActiva &&
     (busqueda === "" || 
-      act.nombre.toLowerCase().includes(busqueda.toLowerCase()) || 
-      act.descripcion.toLowerCase().includes(busqueda.toLowerCase())
+      act.title.toLowerCase().includes(busqueda.toLowerCase()) || 
+      act.description.toLowerCase().includes(busqueda.toLowerCase())
     ) &&
-    (parqueFiltro === "" || act.parqueId.toString() === parqueFiltro)
+    (parqueFiltro === "todos" || parqueFiltro === "" || act.parkId.toString() === parqueFiltro)
   );
 
   // Función para renderizar la badge de estado de una actividad
   const renderEstadoBadge = (actividad: Actividad) => {
     const ahora = new Date();
-    const fechaInicio = new Date(actividad.fechaInicio);
-    const fechaFin = actividad.fechaFin ? new Date(actividad.fechaFin) : null;
+    const fechaInicio = new Date(actividad.startDate);
+    const fechaFin = actividad.endDate ? new Date(actividad.endDate) : null;
     
     if (fechaInicio > ahora) {
       return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Programada</Badge>;
@@ -121,7 +120,7 @@ const VerActividadesPage = () => {
               <SelectValue placeholder="Filtrar por parque" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos los parques</SelectItem>
+              <SelectItem value="todos">Todos los parques</SelectItem>
               {parques.map((parque) => (
                 <SelectItem key={parque.id} value={parque.id.toString()}>
                   {parque.name}
@@ -178,7 +177,7 @@ const VerActividadesPage = () => {
                   <Card key={actividad.id} className="overflow-hidden">
                     <CardHeader className="bg-gray-50 pb-3">
                       <div className="flex justify-between items-start">
-                        <CardTitle className="text-lg">{actividad.nombre}</CardTitle>
+                        <CardTitle className="text-lg">{actividad.title}</CardTitle>
                         {renderEstadoBadge(actividad)}
                       </div>
                       {actividad.parqueNombre && (
@@ -189,32 +188,41 @@ const VerActividadesPage = () => {
                       )}
                     </CardHeader>
                     <CardContent className="pt-4">
-                      <p className="text-sm mb-4">{actividad.descripcion}</p>
+                      <p className="text-sm mb-4">{actividad.description}</p>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center">
                           <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                           <span>
-                            {actividad.fechaInicio && format(new Date(actividad.fechaInicio), "PPP", { locale: es })}
-                            {actividad.fechaFin && ` - ${format(new Date(actividad.fechaFin), "PPP", { locale: es })}`}
+                            {actividad.startDate && format(new Date(actividad.startDate), "PPP", { locale: es })}
+                            {actividad.endDate && ` - ${format(new Date(actividad.endDate), "PPP", { locale: es })}`}
                           </span>
                         </div>
+                        
+                        {/* Duración - Usamos un valor por defecto si no está disponible */}
                         <div className="flex items-center">
                           <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                          <span>{actividad.horaInicio} ({actividad.duracion} min)</span>
+                          {actividad.duration ? 
+                            <span>Duración: {actividad.duration} min</span> :
+                            <span>Horario: Consultar detalles</span>
+                          }
                         </div>
-                        {actividad.capacidad && (
+                        
+                        {/* Capacidad */}
+                        {actividad.capacity && (
                           <div className="flex items-center">
                             <Users className="h-4 w-4 mr-2 text-gray-500" />
-                            <span>Capacidad: {actividad.capacidad} personas</span>
+                            <span>Capacidad: {actividad.capacity} personas</span>
                           </div>
                         )}
-                        {actividad.esRecurrente && actividad.diasRecurrentes && actividad.diasRecurrentes.length > 0 && (
+                        
+                        {/* Actividad recurrente */}
+                        {actividad.isRecurring && actividad.recurringDays && actividad.recurringDays.length > 0 && (
                           <div className="flex items-start">
                             <Calendar className="h-4 w-4 mr-2 text-gray-500 mt-0.5" />
                             <div>
                               <span className="block">Actividad recurrente:</span>
                               <div className="flex flex-wrap gap-1 mt-1">
-                                {actividad.diasRecurrentes.map((dia) => (
+                                {actividad.recurringDays.map((dia: string) => (
                                   <Badge key={dia} variant="outline" className="text-xs">
                                     {dia.charAt(0).toUpperCase() + dia.slice(1)}
                                   </Badge>
@@ -225,28 +233,24 @@ const VerActividadesPage = () => {
                         )}
                       </div>
 
-                      {/* Ubicaciones específicas */}
-                      {actividad.ubicaciones && actividad.ubicaciones.length > 0 && (
+                      {/* Ubicación */}
+                      {actividad.location && (
                         <div className="mt-4">
-                          <h4 className="text-sm font-medium mb-1">Ubicaciones:</h4>
-                          <div className="flex flex-wrap gap-1">
-                            {actividad.ubicaciones.map((ubicacion, idx) => (
-                              <Badge key={idx} variant="secondary" className="text-xs">
-                                {ubicacion}
-                              </Badge>
-                            ))}
-                          </div>
+                          <h4 className="text-sm font-medium mb-1">Ubicación:</h4>
+                          <Badge variant="secondary" className="text-xs">
+                            {actividad.location}
+                          </Badge>
                         </div>
                       )}
 
-                      {/* Precio */}
+                      {/* Precio - Mostramos un valor por defecto */}
                       <div className="mt-4">
-                        {actividad.esGratuita ? (
-                          <Badge className="bg-green-50 text-green-700 border-0">Gratuita</Badge>
-                        ) : (
+                        {actividad.price ? (
                           <Badge variant="outline" className="text-yellow-700">
-                            Precio: ${actividad.precio?.toFixed(2) || '0.00'} MXN
+                            Precio: ${actividad.price.toFixed(2)} MXN
                           </Badge>
+                        ) : (
+                          <Badge className="bg-green-50 text-green-700 border-0">Gratuita</Badge>
                         )}
                       </div>
                     </CardContent>
