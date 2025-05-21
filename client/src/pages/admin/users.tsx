@@ -825,7 +825,7 @@ const AdminUsers = () => {
   const formatDate = (date: Date | string | null) => {
     if (!date) return "N/A";
     try {
-      return format(new Date(date), "dd/MM/yyyy", { locale: es });
+      return format(new Date(date), "dd/MM/yyyy HH:mm", { locale: es });
     } catch (error) {
       console.error("Error al formatear fecha:", error);
       return "Fecha inválida";
