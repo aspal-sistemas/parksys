@@ -30,9 +30,16 @@ const InstructorsPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   // Obtener datos de instructores
-  const { data: instructors = [], isLoading } = useQuery<Instructor[]>({
+  const { data: rawInstructors = [], isLoading } = useQuery<Instructor[]>({
     queryKey: ['/api/instructors'],
   });
+  
+  // Eliminar duplicados usando un Map con el ID como clave
+  const instructorsMap = new Map();
+  rawInstructors.forEach(instructor => {
+    instructorsMap.set(instructor.id, instructor);
+  });
+  const instructors = Array.from(instructorsMap.values());
   
   // Extraer especialidades únicas para el filtro
   const allSpecialties = new Set<string>();
