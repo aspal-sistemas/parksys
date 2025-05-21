@@ -22,22 +22,35 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
     // Ruta pública para obtener todos los instructores activos
     publicApiRouter.get("/instructors", async (_req: Request, res: Response) => {
       try {
-        // Usamos filtrado en memoria para eliminar duplicados por ID
-        // Primero consultamos todos los instructores activos
+        // Usamos DISTINCT ON para eliminar duplicados basados en nombre y correo
         const result = await db.execute(
-          sql`SELECT id, full_name, email, phone, specialties, experience_years, status, profile_image_url, created_at 
-              FROM instructors 
-              WHERE status = 'active'
+          sql`WITH unique_instructors AS (
+                SELECT DISTINCT ON (LOWER(full_name), LOWER(email)) 
+                  id, 
+                  full_name, 
+                  email, 
+                  phone, 
+                  specialties, 
+                  experience_years, 
+                  status, 
+                  profile_image_url, 
+                  created_at
+                FROM instructors 
+                WHERE status = 'active'
+                ORDER BY LOWER(full_name), LOWER(email), created_at DESC
+              )
+              SELECT * FROM unique_instructors
               ORDER BY id DESC`
         );
         
-        // Eliminamos duplicados usando un Map con el ID como clave
+        // Esta consulta ya entrega instructores únicos, pero mantenemos el filtro en memoria como seguridad adicional
         const uniqueInstructors = new Map();
         
         if (result.rows && result.rows.length > 0) {
           result.rows.forEach((instructor: any) => {
-            if (!uniqueInstructors.has(instructor.id)) {
-              uniqueInstructors.set(instructor.id, instructor);
+            const key = `${instructor.full_name.toLowerCase()}|${instructor.email.toLowerCase()}`;
+            if (!uniqueInstructors.has(key)) {
+              uniqueInstructors.set(key, instructor);
             }
           });
         }
