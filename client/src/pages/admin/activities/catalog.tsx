@@ -92,6 +92,16 @@ const AdminActivityCatalogPage: React.FC = () => {
     
     // Recreación y Bienestar
     { value: "Clase de Yoga", label: "Clase de Yoga" },
+    { value: "Clases de baile", label: "Clases de baile (Salsa, Jazz, Ballet, Folklore, Breakdance)" },
+    { value: "Activación física", label: "Activación física (Zumba, Cardio, Pilates)" },
+    { value: "Actividades deportivas", label: "Actividades deportivas (fútbol, voleybol, caminatas)" },
+    { value: "Yoga", label: "Yoga" },
+    { value: "Actividades para todos", label: "Actividades para todos" },
+    { value: "Actividades infantiles", label: "Actividades infantiles" },
+    { value: "Picnic", label: "Picnic" },
+    { value: "Ciclismo", label: "Ciclismo" },
+    { value: "Senderismo", label: "Senderismo" },
+    { value: "Bicirruta y renta de bicicletas/patines", label: "Bicirruta y renta de bicicletas/patines" },
     
     // Eventos de Temporada
     { value: "Festival de Primavera", label: "Festival de Primavera" },
