@@ -119,6 +119,33 @@ activityRouter.post("/activities", async (req: Request, res: Response) => {
   }
 });
 
+// Obtener una actividad por ID
+activityRouter.get("/activities/:id", async (req: Request, res: Response) => {
+  try {
+    const activityId = Number(req.params.id);
+    
+    // Usar SQL directo para evitar problemas con el esquema
+    const result = await db.execute(
+      sql`SELECT a.id, a.park_id as "parkId", a.title, a.description, 
+               a.start_date as "startDate", a.end_date as "endDate", 
+               a.category, a.location, a.created_at as "createdAt",
+               p.name as "parkName"
+           FROM activities a
+           LEFT JOIN parks p ON a.park_id = p.id
+           WHERE a.id = ${activityId}`
+    );
+    
+    if (result.rows && result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: "Actividad no encontrada" });
+    }
+  } catch (error) {
+    console.error("Error al obtener actividad:", error);
+    res.status(500).json({ message: "Error al obtener actividad" });
+  }
+});
+
 // Actualizar una actividad existente
 activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res: Response) => {
   try {
@@ -128,13 +155,16 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
     console.log("Datos recibidos para actualizar actividad:", req.body);
     
     // Verificar si la actividad existe
-    const existingActivity = await storage.getActivity(activityId);
-    if (!existingActivity) {
+    const checkResult = await db.execute(
+      sql`SELECT id FROM activities WHERE id = ${activityId}`
+    );
+    
+    if (!checkResult.rows || checkResult.rows.length === 0) {
       return res.status(404).json({ message: "Actividad no encontrada" });
     }
     
     // Extraer los datos
-    const { startDate, endDate, ...otherData } = req.body;
+    const { startDate, endDate, title, description, category, location } = req.body;
     
     // Convertir las fechas explícitamente a objetos Date
     let parsedStartDate: Date;
@@ -160,24 +190,36 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
       return res.status(400).json({ message: "La fecha de fin no es válida" });
     }
     
-    // Crear el objeto con los datos procesados
-    const activityData = { 
-      ...otherData,
-      startDate: parsedStartDate,
-      ...(parsedEndDate && { endDate: parsedEndDate })
-    };
-    
-    console.log("Datos procesados para actualización:", activityData);
-    
-    const result = await storage.updateActivity(activityId, activityData);
-    
-    res.json(result);
-  } catch (error) {
-    if (error instanceof ZodError) {
-      const validationError = fromZodError(error);
-      console.error("Error de validación Zod:", validationError);
-      return res.status(400).json({ message: validationError.message });
+    // Verificar que el título existe
+    if (!title) {
+      return res.status(400).json({ message: "El título es obligatorio" });
     }
+    
+    // Actualizar usando SQL directo
+    try {
+      const updateResult = await db.execute(
+        sql`UPDATE activities
+            SET title = ${title},
+                description = ${description || null},
+                start_date = ${parsedStartDate},
+                end_date = ${parsedEndDate || null},
+                category = ${category || null},
+                location = ${location || null}
+            WHERE id = ${activityId}
+            RETURNING id, title, description, park_id as "parkId", start_date as "startDate", 
+                     end_date as "endDate", category, location, created_at as "createdAt"`
+      );
+      
+      if (updateResult.rows && updateResult.rows.length > 0) {
+        res.json(updateResult.rows[0]);
+      } else {
+        throw new Error("No se pudo actualizar la actividad");
+      }
+    } catch (dbError) {
+      console.error("Error de base de datos al actualizar actividad:", dbError);
+      res.status(500).json({ message: "Error de base de datos al actualizar actividad" });
+    }
+  } catch (error) {
     console.error("Error al actualizar actividad:", error);
     res.status(500).json({ message: "Error al actualizar actividad" });
   }
@@ -191,18 +233,24 @@ activityRouter.delete("/activities/:id", isAuthenticated, async (req: Request, r
     console.log("Headers recibidos:", req.headers);
     
     // Verificar si la actividad existe
-    const existingActivity = await storage.getActivity(activityId);
-    if (!existingActivity) {
+    const checkResult = await db.execute(
+      sql`SELECT id FROM activities WHERE id = ${activityId}`
+    );
+    
+    if (!checkResult.rows || checkResult.rows.length === 0) {
       return res.status(404).json({ message: "Actividad no encontrada" });
     }
     
-    // Eliminar la actividad
-    const result = await storage.deleteActivity(activityId);
-    
-    if (result) {
+    // Eliminar la actividad usando SQL directo
+    try {
+      await db.execute(
+        sql`DELETE FROM activities WHERE id = ${activityId}`
+      );
+      
       res.status(200).json({ success: true, message: "Actividad eliminada correctamente" });
-    } else {
-      res.status(500).json({ success: false, message: "Error al eliminar la actividad" });
+    } catch (dbError) {
+      console.error("Error de base de datos al eliminar actividad:", dbError);
+      res.status(500).json({ success: false, message: "Error de base de datos al eliminar la actividad" });
     }
   } catch (error) {
     console.error("Error al eliminar actividad:", error);
