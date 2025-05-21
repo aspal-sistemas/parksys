@@ -32,7 +32,7 @@ const Header: React.FC = () => {
             {!isAdmin && (
               <nav className="hidden md:ml-8 md:flex md:space-x-6">
                 <Link href="/"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium order-1 ${
                     location === '/' 
                       ? 'border-primary text-gray-900' 
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -41,7 +41,7 @@ const Header: React.FC = () => {
                 </Link>
                 
                 <Link href="/parks"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium order-2 ${
                     location === '/parks' 
                       ? 'border-primary text-gray-900' 
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -50,7 +50,7 @@ const Header: React.FC = () => {
                 </Link>
                 
                 <Link href="/activities"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium order-3 ${
                     location === '/activities' 
                       ? 'border-primary text-gray-900' 
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -59,7 +59,7 @@ const Header: React.FC = () => {
                 </Link>
                 
                 <Link href="/calendar"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium order-4 ${
                     location === '/calendar' 
                       ? 'border-primary text-gray-900' 
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -68,7 +68,7 @@ const Header: React.FC = () => {
                 </Link>
                 
                 <Link href="/instructors"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium order-5 ${
                     location === '/instructors' 
                       ? 'border-primary text-gray-900' 
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -133,9 +133,9 @@ const Header: React.FC = () => {
       {/* Mobile menu, show/hide based on menu state. */}
       {mobileMenuOpen && !isAdmin && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
             <Link href="/"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2 rounded-md text-base font-medium order-1 ${
                 location === '/' 
                   ? 'bg-primary-50 text-primary-700' 
                   : 'text-gray-700 hover:bg-gray-50'
@@ -144,7 +144,7 @@ const Header: React.FC = () => {
             </Link>
             
             <Link href="/parks"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2 rounded-md text-base font-medium order-2 ${
                 location === '/parks' 
                   ? 'bg-primary-50 text-primary-700' 
                   : 'text-gray-700 hover:bg-gray-50'
@@ -153,7 +153,7 @@ const Header: React.FC = () => {
             </Link>
             
             <Link href="/activities"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2 rounded-md text-base font-medium order-3 ${
                 location === '/activities' 
                   ? 'bg-primary-50 text-primary-700' 
                   : 'text-gray-700 hover:bg-gray-50'
@@ -162,7 +162,7 @@ const Header: React.FC = () => {
             </Link>
             
             <Link href="/calendar"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2 rounded-md text-base font-medium order-4 ${
                 location === '/calendar' 
                   ? 'bg-primary-50 text-primary-700' 
                   : 'text-gray-700 hover:bg-gray-50'
@@ -171,7 +171,7 @@ const Header: React.FC = () => {
             </Link>
             
             <Link href="/instructors"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2 rounded-md text-base font-medium order-5 ${
                 location === '/instructors' 
                   ? 'bg-primary-50 text-primary-700' 
                   : 'text-gray-700 hover:bg-gray-50'
