@@ -709,14 +709,43 @@ const AdminActivityCatalogPage: React.FC = () => {
           <form onSubmit={handleEditSubmit}>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="edit-name">Nombre</Label>
-                <Input
-                  id="edit-name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Ej. Clase de Yoga"
+                <Label htmlFor="edit-name">Nombre de Actividad</Label>
+                <Select 
+                  value={formData.name} 
+                  onValueChange={(value) => {
+                    if (value === "otro") {
+                      setCustomActivity(true);
+                    } else {
+                      setCustomActivity(false);
+                      setFormData({ ...formData, name: value });
+                    }
+                  }}
                   required
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una actividad" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-80">
+                    {PREDEFINED_ACTIVITIES.map((activity) => (
+                      <SelectItem key={activity.value} value={activity.value}>
+                        {activity.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                {customActivity && (
+                  <div className="mt-2">
+                    <Label htmlFor="edit-customName">Especificar nombre</Label>
+                    <Input
+                      id="edit-customName"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Ingresa el nombre de la actividad"
+                      required
+                    />
+                  </div>
+                )}
               </div>
               
               <div className="grid gap-2">
