@@ -29,9 +29,9 @@ const InstructorsPage: React.FC = () => {
   const [specialtyFilter, setSpecialtyFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  // Obtener datos de instructores
+  // Obtener datos de instructores de la ruta pública
   const { data: rawInstructors = [], isLoading } = useQuery<Instructor[]>({
-    queryKey: ['/api/instructors'],
+    queryKey: ['/public-api/instructors'],
   });
   
   // Eliminar duplicados usando un Map con el ID como clave

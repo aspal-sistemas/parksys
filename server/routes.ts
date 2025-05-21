@@ -1344,6 +1344,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Ruta pública para obtener instructores activos
+  publicRouter.get("/instructors", async (_req: Request, res: Response) => {
+    try {
+      const instructorsResult = await db.execute(
+        sql`SELECT id, full_name, email, phone, specialties, experience_years, status, profile_image_url, created_at 
+            FROM instructors 
+            WHERE status = 'active'
+            ORDER BY id DESC`
+      );
+      res.json(instructorsResult.rows || []);
+    } catch (error) {
+      console.error('Error al obtener instructores públicos:', error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching instructors data" 
+      });
+    }
+  });
+  
   // Get upcoming activities across all parks - for calendar integration
   publicRouter.get("/activities", async (req: Request, res: Response) => {
     try {

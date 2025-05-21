@@ -41,9 +41,9 @@ const CalendarPage: React.FC = () => {
   const [instructorFilter, setInstructorFilter] = useState('');
   const [priceFilter, setPriceFilter] = useState('');
   
-  // Consultar actividades
+  // Consultar actividades desde la API pública
   const { data: activities = [], isLoading } = useQuery<Activity[]>({
-    queryKey: ['/api/activities'],
+    queryKey: ['/public-api/activities'],
   });
   
   // Extraer categorías, parques e instructores únicos para los filtros
