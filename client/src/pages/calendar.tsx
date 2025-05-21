@@ -42,9 +42,12 @@ const CalendarPage: React.FC = () => {
   const [priceFilter, setPriceFilter] = useState('');
   
   // Consultar actividades desde la API pública
-  const { data: activities = [], isLoading } = useQuery<Activity[]>({
+  const { data: apiResponse = { data: [] }, isLoading } = useQuery<{ status: string, data: Activity[], count: number }>({
     queryKey: ['/public-api/activities'],
   });
+
+  // Extraer los datos de actividades de la respuesta
+  const activities = apiResponse.data || [];
   
   // Extraer categorías, parques e instructores únicos para los filtros
   const categories = Array.from(new Set(activities.map(a => a.category || 'Sin categoría')));
