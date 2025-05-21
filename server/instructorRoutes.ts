@@ -254,28 +254,75 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
         }
       }
       
-      // Combinar datos y eliminar duplicados basados en ID
-      const assignmentsMap = new Map();
+      // En este caso específico, vemos que las actividades son realmente duplicados técnicos
+      // en la base de datos, ya que son exactamente la misma actividad, mismo parque, misma fecha,
+      // pero con diferentes ID y horas asignadas. Vamos a unificar estas entradas.
+      
+      // Agrupar por actividad+parque+fecha
+      const assignmentGroups = new Map();
       
       assignments.forEach(assignment => {
         const park = parkNames.find(p => p.id === assignment.parkId);
         const activity = activityDetails.find(a => a.id === assignment.activityId);
         
-        const assignmentWithDetails = {
-          ...assignment,
+        // Creamos un objeto base con los datos comunes
+        const baseAssignment = {
+          activityName: activity ? activity.title : assignment.activityName,
+          activityCategory: activity ? activity.category : null,
           parkName: park ? park.name : 'Parque desconocido',
-          activityTitle: activity ? activity.title : assignment.activityName,
-          activityCategory: activity ? activity.category : null
+          parkId: assignment.parkId,
+          activityId: assignment.activityId,
+          startDate: assignment.startDate,
+          endDate: assignment.endDate,
+          instructorId: assignment.instructorId,
         };
         
-        // Solo agregar si no existe ya un elemento con el mismo ID
-        if (!assignmentsMap.has(assignment.id)) {
-          assignmentsMap.set(assignment.id, assignmentWithDetails);
+        // Clave para agrupar actividades que son "la misma" conceptualmente
+        const groupKey = `${assignment.activityId || 0}|${assignment.parkId || 0}|${assignment.startDate || ''}`;
+        
+        if (!assignmentGroups.has(groupKey)) {
+          // Inicializar un nuevo grupo
+          assignmentGroups.set(groupKey, {
+            ...baseAssignment,
+            // En el ID usamos el mayor (presumiblemente el más reciente)
+            id: assignment.id,
+            // Sumamos las horas de todas las asignaciones relacionadas
+            hoursAssigned: assignment.hoursAssigned || 0,
+            // Mantenemos datos administrativos del registro más reciente
+            createdAt: assignment.createdAt,
+            assignedById: assignment.assignedById,
+            notes: assignment.notes,
+            // Lista de IDs originales para referencia
+            originalIds: [assignment.id],
+          });
+        } else {
+          // Actualizar el grupo existente
+          const existingGroup = assignmentGroups.get(groupKey);
+          
+          // Sumar horas
+          existingGroup.hoursAssigned += (assignment.hoursAssigned || 0);
+          
+          // Mantener el ID más alto
+          if (assignment.id > existingGroup.id) {
+            existingGroup.id = assignment.id;
+            existingGroup.createdAt = assignment.createdAt;
+            existingGroup.assignedById = assignment.assignedById;
+            existingGroup.notes = assignment.notes;
+          }
+          
+          // Agregar este ID a la lista de originales
+          existingGroup.originalIds.push(assignment.id);
         }
       });
       
-      // Convertir el mapa a un array
-      const uniqueAssignments = Array.from(assignmentsMap.values());
+      // Convertir grupos a un array de asignaciones únicas
+      const uniqueAssignments = Array.from(assignmentGroups.values())
+        .sort((a, b) => {
+          // Ordenar por fecha de inicio más reciente
+          const dateA = new Date(a.startDate).getTime();
+          const dateB = new Date(b.startDate).getTime();
+          return dateB - dateA;
+        });
       
       res.json(uniqueAssignments);
     } catch (error) {
