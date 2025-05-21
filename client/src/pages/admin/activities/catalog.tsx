@@ -151,10 +151,17 @@ const AdminActivityCatalogPage: React.FC = () => {
   
   const [customActivity, setCustomActivity] = useState(false);
   const [showNewActivityForm, setShowNewActivityForm] = useState(false);
-  const [newActivityData, setNewActivityData] = useState({
+  // Interfaz para la creación de nuevas actividades en el catálogo
+  interface NewActivityData {
+    name: string;
+    category: string;
+    preferredParks: number[]; // IDs de parques donde se recomienda esta actividad
+  }
+  
+  const [newActivityData, setNewActivityData] = useState<NewActivityData>({
     name: '',
     category: '',
-    preferredParks: [] as number[] // IDs de parques donde se recomienda esta actividad
+    preferredParks: []
   });
   
   // Consulta para obtener los parques disponibles
@@ -615,6 +622,45 @@ const AdminActivityCatalogPage: React.FC = () => {
                               required
                             />
                           </div>
+                          
+                          <div>
+                            <Label className="mb-2 block">Parques recomendados para esta actividad</Label>
+                            <div className="max-h-40 overflow-y-auto border rounded-md p-2">
+                              {parks.length === 0 ? (
+                                <p className="text-sm text-gray-500 text-center py-2">No hay parques disponibles</p>
+                              ) : (
+                                <div className="space-y-2">
+                                  {parks.map(park => (
+                                    <div key={park.id} className="flex items-center">
+                                      <input 
+                                        type="checkbox"
+                                        id={`park-${park.id}`}
+                                        checked={newActivityData.preferredParks.includes(park.id)}
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            setNewActivityData({
+                                              ...newActivityData,
+                                              preferredParks: [...newActivityData.preferredParks, park.id]
+                                            });
+                                          } else {
+                                            setNewActivityData({
+                                              ...newActivityData,
+                                              preferredParks: newActivityData.preferredParks.filter(id => id !== park.id)
+                                            });
+                                          }
+                                        }}
+                                        className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 mr-2"
+                                      />
+                                      <Label htmlFor={`park-${park.id}`} className="text-sm mt-0">{park.name || `Parque #${park.id}`}</Label>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Selecciona los parques donde se recomienda realizar esta actividad
+                            </p>
+                          </div>
                           <div className="flex items-center space-x-2 mt-3">
                             <Button 
                               type="button" 
@@ -657,7 +703,7 @@ const AdminActivityCatalogPage: React.FC = () => {
                                   setShowNewActivityForm(false);
                                   
                                   // Resetear los datos
-                                  setNewActivityData({name: '', category: ''});
+                                  setNewActivityData({name: '', category: '', preferredParks: []});
                                 }
                               }}
                               disabled={!newActivityData.name || !newActivityData.category}
@@ -1024,7 +1070,7 @@ const AdminActivityCatalogPage: React.FC = () => {
                                 setShowNewActivityForm(false);
                                 
                                 // Resetear los datos
-                                setNewActivityData({name: '', category: ''});
+                                setNewActivityData({name: '', category: '', preferredParks: []});
                               }
                             }}
                             disabled={!newActivityData.name || !newActivityData.category}
