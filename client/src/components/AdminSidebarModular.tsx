@@ -18,6 +18,7 @@ import {
   ListFilter,
   AlertTriangle,
   Download,
+  PlusCircle,
   UserPlus,
   CheckSquare,
   Award,
