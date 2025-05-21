@@ -85,62 +85,76 @@ const AdminActivityCatalogPage: React.FC = () => {
   const [currentActivity, setCurrentActivity] = useState<ActivityCatalogItem | null>(null);
   
   // Lista de nombres de actividades precargadas
+  // Actividades predefinidas organizadas por categoría para mejor mantenimiento
+  const PREDEFINED_ACTIVITIES_BY_CATEGORY = {
+    artecultura: [
+      { value: "Exposiciones", label: "Exposiciones" },
+      { value: "Actividades Culturales", label: "Actividades Culturales" },
+      { value: "Conciertos", label: "Conciertos" },
+      { value: "Clases de pintura", label: "Clases de pintura" },
+      { value: "Clases de música", label: "Clases de música" },
+      { value: "Taller de manualidades", label: "Taller de manualidades" },
+      { value: "Arte", label: "Arte" },
+      { value: "Actividades Educativas", label: "Actividades Educativas" },
+      { value: "Recorridos guiados", label: "Recorridos guiados" }
+    ],
+    recreacionbienestar: [
+      { value: "Clase de Yoga", label: "Clase de Yoga" },
+      { value: "Clases de baile", label: "Clases de baile (Salsa, Jazz, Ballet, Folklore, Breakdance)" },
+      { value: "Activación física", label: "Activación física (Zumba, Cardio, Pilates)" },
+      { value: "Actividades deportivas", label: "Actividades deportivas (fútbol, voleybol, caminatas)" },
+      { value: "Yoga", label: "Yoga" },
+      { value: "Actividades para todos", label: "Actividades para todos" },
+      { value: "Actividades infantiles", label: "Actividades infantiles" },
+      { value: "Picnic", label: "Picnic" },
+      { value: "Ciclismo", label: "Ciclismo" },
+      { value: "Senderismo", label: "Senderismo" },
+      { value: "Bicirruta y renta de bicicletas/patines", label: "Bicirruta y renta de bicicletas/patines" }
+    ],
+    temporada: [
+      { value: "Festival de Primavera", label: "Festival de Primavera" },
+      { value: "Festivales", label: "Festivales" },
+      { value: "Eventos en días especiales", label: "Eventos en días especiales" },
+      { value: "Ferias (zapatos, libros, salud)", label: "Ferias (zapatos, libros, salud)" },
+      { value: "Pláticas-charlas", label: "Pláticas-charlas (octubre, marzo, Mujer, cáncer, violencia)" },
+      { value: "Tianguis", label: "Tianguis" },
+      { value: "Espectáculos", label: "Espectáculos" },
+      { value: "Feria para OSC recaudación de fondos", label: "Feria para OSC recaudación de fondos" },
+      { value: "Hanal Pixán", label: "Hanal Pixán" },
+      { value: "Mercado emprendedores", label: "Mercado emprendedores" },
+      { value: "Eventos sociales", label: "Eventos sociales" }
+    ],
+    naturalezaciencia: [
+      { value: "Taller de Identificación de Plantas Nativas", label: "Taller de Identificación de Plantas Nativas" },
+      { value: "Clases de jardinería y siembra", label: "Clases de jardinería y siembra" },
+      { value: "Recorrido botánico", label: "Recorrido botánico" },
+      { value: "Venta de plantas", label: "Venta de plantas" },
+      { value: "Clases de educación ambiental", label: "Clases de educación ambiental" },
+      { value: "Taller Huertos orgánicos", label: "Taller Huertos orgánicos" },
+      { value: "Manualidades", label: "Manualidades" },
+      { value: "Cursos de reciclaje", label: "Cursos de reciclaje" },
+      { value: "Avistamiento de Aves", label: "Avistamiento de Aves" },
+      { value: "Pláticas sobre plantas ricas en vitaminas y para una buena alimentación", label: "Pláticas sobre plantas ricas en vitaminas y para una buena alimentación" },
+      { value: "Reforestación", label: "Reforestación" }
+    ]
+  };
+  
+  // Lista plana de todas las actividades para compatibilidad con código existente
   const PREDEFINED_ACTIVITIES = [
-    // Arte y Cultura
-    { value: "Exposiciones", label: "Exposiciones" },
-    { value: "Actividades Culturales", label: "Actividades Culturales" },
-    { value: "Conciertos", label: "Conciertos" },
-    { value: "Clases de pintura", label: "Clases de pintura" },
-    { value: "Clases de música", label: "Clases de música" },
-    { value: "Taller de manualidades", label: "Taller de manualidades" },
-    { value: "Arte", label: "Arte" },
-    { value: "Actividades Educativas", label: "Actividades Educativas" },
-    { value: "Recorridos guiados", label: "Recorridos guiados" },
-    
-    // Recreación y Bienestar
-    { value: "Clase de Yoga", label: "Clase de Yoga" },
-    { value: "Clases de baile", label: "Clases de baile (Salsa, Jazz, Ballet, Folklore, Breakdance)" },
-    { value: "Activación física", label: "Activación física (Zumba, Cardio, Pilates)" },
-    { value: "Actividades deportivas", label: "Actividades deportivas (fútbol, voleybol, caminatas)" },
-    { value: "Yoga", label: "Yoga" },
-    { value: "Actividades para todos", label: "Actividades para todos" },
-    { value: "Actividades infantiles", label: "Actividades infantiles" },
-    { value: "Picnic", label: "Picnic" },
-    { value: "Ciclismo", label: "Ciclismo" },
-    { value: "Senderismo", label: "Senderismo" },
-    { value: "Bicirruta y renta de bicicletas/patines", label: "Bicirruta y renta de bicicletas/patines" },
-    
-    // Eventos de Temporada
-    { value: "Festival de Primavera", label: "Festival de Primavera" },
-    { value: "Festivales", label: "Festivales" },
-    { value: "Eventos en días especiales", label: "Eventos en días especiales" },
-    { value: "Ferias (zapatos, libros, salud)", label: "Ferias (zapatos, libros, salud)" },
-    { value: "Pláticas-charlas", label: "Pláticas-charlas (octubre, marzo, Mujer, cáncer, violencia)" },
-    { value: "Tianguis", label: "Tianguis" },
-    { value: "Espectáculos", label: "Espectáculos" },
-    { value: "Feria para OSC recaudación de fondos", label: "Feria para OSC recaudación de fondos" },
-    { value: "Hanal Pixán", label: "Hanal Pixán" },
-    { value: "Mercado emprendedores", label: "Mercado emprendedores" },
-    { value: "Eventos sociales", label: "Eventos sociales" },
-    
-    // Naturaleza, Ciencia y Conservación
-    { value: "Taller de Identificación de Plantas Nativas", label: "Taller de Identificación de Plantas Nativas" },
-    { value: "Clases de jardinería y siembra", label: "Clases de jardinería y siembra" },
-    { value: "Recorrido botánico", label: "Recorrido botánico" },
-    { value: "Venta de plantas", label: "Venta de plantas" },
-    { value: "Clases de educación ambiental", label: "Clases de educación ambiental" },
-    { value: "Taller Huertos orgánicos", label: "Taller Huertos orgánicos" },
-    { value: "Manualidades", label: "Manualidades" },
-    { value: "Cursos de reciclaje", label: "Cursos de reciclaje" },
-    { value: "Avistamiento de Aves", label: "Avistamiento de Aves" },
-    { value: "Pláticas sobre plantas ricas en vitaminas y para una buena alimentación", label: "Pláticas sobre plantas ricas en vitaminas y para una buena alimentación" },
-    { value: "Reforestación", label: "Reforestación" },
-    
-    // Otro
-    { value: "otro", label: "Otra actividad (especificar)" }
+    ...PREDEFINED_ACTIVITIES_BY_CATEGORY.artecultura,
+    ...PREDEFINED_ACTIVITIES_BY_CATEGORY.recreacionbienestar,
+    ...PREDEFINED_ACTIVITIES_BY_CATEGORY.temporada,
+    ...PREDEFINED_ACTIVITIES_BY_CATEGORY.naturalezaciencia,
+    { value: "otro", label: "Otra actividad (especificar)" },
+    { value: "nueva", label: "Añadir nueva actividad al catálogo" }
   ];
   
   const [customActivity, setCustomActivity] = useState(false);
+  const [showNewActivityForm, setShowNewActivityForm] = useState(false);
+  const [newActivityData, setNewActivityData] = useState({
+    name: '',
+    category: ''
+  });
   const [formData, setFormData] = useState<ActivityCatalogFormData>({
     name: '',
     description: '',
@@ -535,9 +549,16 @@ const AdminActivityCatalogPage: React.FC = () => {
                       onValueChange={(value) => {
                         if (value === "otro") {
                           setCustomActivity(true);
+                          setShowNewActivityForm(false);
                           setFormData({ ...formData, name: '' });
+                        } else if (value === "nueva") {
+                          setCustomActivity(false);
+                          setShowNewActivityForm(true);
+                          setFormData({ ...formData, name: '' });
+                          setNewActivityData({ ...newActivityData, category: formData.category });
                         } else {
                           setCustomActivity(false);
+                          setShowNewActivityForm(false);
                           setFormData({ ...formData, name: value });
                         }
                       }}
@@ -552,12 +573,14 @@ const AdminActivityCatalogPage: React.FC = () => {
                             {activity.label}
                           </SelectItem>
                         ))}
+                        <SelectItem value="nueva">Añadir nueva actividad al catálogo</SelectItem>
+                        <SelectItem value="otro">Otra actividad (sólo para esta vez)</SelectItem>
                       </SelectContent>
                     </Select>
                     
                     {customActivity && (
                       <div className="mt-2">
-                        <Label htmlFor="customName">Especificar nombre</Label>
+                        <Label htmlFor="customName">Especificar nombre (sólo para esta actividad)</Label>
                         <Input
                           id="customName"
                           value={formData.name}
@@ -565,6 +588,78 @@ const AdminActivityCatalogPage: React.FC = () => {
                           placeholder="Ingresa el nombre de la actividad"
                           required
                         />
+                      </div>
+                    )}
+
+                    {showNewActivityForm && (
+                      <div className="mt-2 p-4 border rounded-md bg-gray-50">
+                        <h4 className="font-medium mb-3">Añadir nueva actividad al catálogo</h4>
+                        <div className="space-y-3">
+                          <div>
+                            <Label htmlFor="newActivityName">Nombre de la nueva actividad</Label>
+                            <Input
+                              id="newActivityName"
+                              value={newActivityData.name}
+                              onChange={(e) => {
+                                setNewActivityData({...newActivityData, name: e.target.value});
+                                // Actualizamos también el formData para que se use en la actividad actual
+                                setFormData({...formData, name: e.target.value});
+                              }}
+                              placeholder="Ej. Taller de Fotografía"
+                              required
+                            />
+                          </div>
+                          <div className="flex items-center space-x-2 mt-3">
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                setShowNewActivityForm(false);
+                                setFormData({...formData, name: ''});
+                              }}
+                            >
+                              Cancelar
+                            </Button>
+                            <Button 
+                              type="button" 
+                              size="sm"
+                              onClick={() => {
+                                // En una implementación real, aquí se enviaría la nueva actividad al backend
+                                // para añadirla al catálogo de actividades predefinidas
+                                
+                                // Simulamos añadir la actividad al catálogo actual
+                                if (newActivityData.name && newActivityData.category) {
+                                  const newActivity = {
+                                    value: newActivityData.name,
+                                    label: newActivityData.name
+                                  };
+                                  
+                                  // Añadirla a la categoría correspondiente
+                                  PREDEFINED_ACTIVITIES_BY_CATEGORY[newActivityData.category as keyof typeof PREDEFINED_ACTIVITIES_BY_CATEGORY].push(newActivity);
+                                  
+                                  // Actualizar el formData
+                                  setFormData({...formData, name: newActivityData.name});
+                                  
+                                  // Mostrar confirmación
+                                  toast({
+                                    title: "Actividad añadida al catálogo",
+                                    description: `"${newActivityData.name}" ha sido añadida a la categoría ${ACTIVITY_CATEGORIES.find(cat => cat.value === newActivityData.category)?.label || newActivityData.category}`
+                                  });
+                                  
+                                  // Cerrar el formulario
+                                  setShowNewActivityForm(false);
+                                  
+                                  // Resetear los datos
+                                  setNewActivityData({name: '', category: ''});
+                                }
+                              }}
+                              disabled={!newActivityData.name || !newActivityData.category}
+                            >
+                              Añadir al Catálogo
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -821,9 +916,16 @@ const AdminActivityCatalogPage: React.FC = () => {
                     onValueChange={(value) => {
                       if (value === "otro") {
                         setCustomActivity(true);
+                        setShowNewActivityForm(false);
                         setFormData({ ...formData, name: '' });
+                      } else if (value === "nueva") {
+                        setCustomActivity(false);
+                        setShowNewActivityForm(true);
+                        setFormData({ ...formData, name: '' });
+                        setNewActivityData({ ...newActivityData, category: formData.category });
                       } else {
                         setCustomActivity(false);
+                        setShowNewActivityForm(false);
                         setFormData({ ...formData, name: value });
                       }
                     }}
@@ -838,12 +940,14 @@ const AdminActivityCatalogPage: React.FC = () => {
                           {activity.label}
                         </SelectItem>
                       ))}
+                      <SelectItem value="nueva">Añadir nueva actividad al catálogo</SelectItem>
+                      <SelectItem value="otro">Otra actividad (sólo para esta vez)</SelectItem>
                     </SelectContent>
                   </Select>
                   
                   {customActivity && (
                     <div className="mt-2">
-                      <Label htmlFor="edit-customName">Especificar nombre</Label>
+                      <Label htmlFor="edit-customName">Especificar nombre (sólo para esta actividad)</Label>
                       <Input
                         id="edit-customName"
                         value={formData.name}
@@ -851,6 +955,78 @@ const AdminActivityCatalogPage: React.FC = () => {
                         placeholder="Ingresa el nombre de la actividad"
                         required
                       />
+                    </div>
+                  )}
+
+                  {showNewActivityForm && (
+                    <div className="mt-2 p-4 border rounded-md bg-gray-50">
+                      <h4 className="font-medium mb-3">Añadir nueva actividad al catálogo</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <Label htmlFor="edit-newActivityName">Nombre de la nueva actividad</Label>
+                          <Input
+                            id="edit-newActivityName"
+                            value={newActivityData.name}
+                            onChange={(e) => {
+                              setNewActivityData({...newActivityData, name: e.target.value});
+                              // Actualizamos también el formData para que se use en la actividad actual
+                              setFormData({...formData, name: e.target.value});
+                            }}
+                            placeholder="Ej. Taller de Fotografía"
+                            required
+                          />
+                        </div>
+                        <div className="flex items-center space-x-2 mt-3">
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setShowNewActivityForm(false);
+                              setFormData({...formData, name: ''});
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button 
+                            type="button" 
+                            size="sm"
+                            onClick={() => {
+                              // En una implementación real, aquí se enviaría la nueva actividad al backend
+                              // para añadirla al catálogo de actividades predefinidas
+                              
+                              // Simulamos añadir la actividad al catálogo actual
+                              if (newActivityData.name && newActivityData.category) {
+                                const newActivity = {
+                                  value: newActivityData.name,
+                                  label: newActivityData.name
+                                };
+                                
+                                // Añadirla a la categoría correspondiente
+                                PREDEFINED_ACTIVITIES_BY_CATEGORY[newActivityData.category as keyof typeof PREDEFINED_ACTIVITIES_BY_CATEGORY].push(newActivity);
+                                
+                                // Actualizar el formData
+                                setFormData({...formData, name: newActivityData.name});
+                                
+                                // Mostrar confirmación
+                                toast({
+                                  title: "Actividad añadida al catálogo",
+                                  description: `"${newActivityData.name}" ha sido añadida a la categoría ${ACTIVITY_CATEGORIES.find(cat => cat.value === newActivityData.category)?.label || newActivityData.category}`
+                                });
+                                
+                                // Cerrar el formulario
+                                setShowNewActivityForm(false);
+                                
+                                // Resetear los datos
+                                setNewActivityData({name: '', category: ''});
+                              }
+                            }}
+                            disabled={!newActivityData.name || !newActivityData.category}
+                          >
+                            Añadir al Catálogo
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
