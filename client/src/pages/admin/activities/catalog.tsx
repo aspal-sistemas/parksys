@@ -74,6 +74,7 @@ interface ActivityCatalogFormData {
   materials: string | null;
   staffRequired: number | null;
   isRecurring: boolean;
+  recommendedParks?: number[];
 }
 
 const AdminActivityCatalogPage: React.FC = () => {
@@ -151,11 +152,18 @@ const AdminActivityCatalogPage: React.FC = () => {
   
   const [customActivity, setCustomActivity] = useState(false);
   const [showNewActivityForm, setShowNewActivityForm] = useState(false);
+  const [selectedParks, setSelectedParks] = useState<number[]>([]);
+  
+  // Consulta para obtener los parques disponibles
+  const { data: parks = [] } = useQuery<{ id: number, name: string }[]>({
+    queryKey: ['/api/parks'],
+  });
   // Interfaz para la creación de nuevas actividades en el catálogo
   interface NewActivityData {
     name: string;
     category: string;
     preferredParks: number[]; // IDs de parques donde se recomienda esta actividad
+    locations?: { parkId: number, locationName: string }[]; // Ubicaciones específicas dentro de los parques
   }
   
   const [newActivityData, setNewActivityData] = useState<NewActivityData>({
@@ -163,6 +171,9 @@ const AdminActivityCatalogPage: React.FC = () => {
     category: '',
     preferredParks: []
   });
+  
+  // Estado para manejar las ubicaciones específicas por parque
+  const [parkLocations, setParkLocations] = useState<{[parkId: number]: string[]}>({});
   
   // Consulta para obtener los parques disponibles
   const { data: parks = [] } = useQuery<{ id: number, name: string }[]>({
