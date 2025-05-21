@@ -379,6 +379,7 @@ const AdminActivityCatalogPage: React.FC = () => {
       isRecurring: false
     });
     setCurrentActivity(null);
+    setCustomActivity(false);
   };
 
   const handleEditClick = (activity: ActivityCatalogItem) => {
@@ -448,14 +449,43 @@ const AdminActivityCatalogPage: React.FC = () => {
             <form onSubmit={handleCreateSubmit}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Nombre</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Ej. Clase de Yoga"
+                  <Label htmlFor="name">Nombre de Actividad</Label>
+                  <Select 
+                    value={formData.name} 
+                    onValueChange={(value) => {
+                      if (value === "otro") {
+                        setCustomActivity(true);
+                      } else {
+                        setCustomActivity(false);
+                        setFormData({ ...formData, name: value });
+                      }
+                    }}
                     required
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una actividad" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-80">
+                      {PREDEFINED_ACTIVITIES.map((activity) => (
+                        <SelectItem key={activity.value} value={activity.value}>
+                          {activity.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {customActivity && (
+                    <div className="mt-2">
+                      <Label htmlFor="customName">Especificar nombre</Label>
+                      <Input
+                        id="customName"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="Ingresa el nombre de la actividad"
+                        required
+                      />
+                    </div>
+                  )}
                 </div>
                 
                 <div className="grid gap-2">
