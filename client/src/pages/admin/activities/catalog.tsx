@@ -64,7 +64,7 @@ interface ActivityCatalogItem {
   staffRequired: number | null;
   isRecurring: boolean;
   recommendedParks?: number[]; // IDs de parques recomendados para esta actividad
-  specificLocations?: { parkId: number, locationName: string }[]; // Ubicaciones específicas dentro de los parques
+  specificLocations?: { parkId: number, locationName: string[] }[]; // Ubicaciones específicas dentro de los parques (array de nombres)
 }
 
 interface ActivityCatalogFormData {
@@ -836,7 +836,10 @@ const AdminActivityCatalogPage: React.FC = () => {
                                       newLocations = [...currentLocations];
                                       newLocations[existingIndex] = {
                                         ...newLocations[existingIndex],
-                                        locationName: [...(newLocations[existingIndex].locationName || []), locationName]
+                                        locationName: [
+                                          ...(newLocations[existingIndex].locationName),
+                                          locationName
+                                        ]
                                       };
                                     } else {
                                       // Crear una nueva entrada
@@ -877,7 +880,10 @@ const AdminActivityCatalogPage: React.FC = () => {
                                     newLocations = [...currentLocations];
                                     newLocations[existingIndex] = {
                                       ...newLocations[existingIndex],
-                                      locationName: [...(newLocations[existingIndex].locationName || []), locationName]
+                                      locationName: [
+                                        ...newLocations[existingIndex].locationName,
+                                        locationName
+                                      ]
                                     };
                                   } else {
                                     // Crear una nueva entrada
@@ -902,7 +908,7 @@ const AdminActivityCatalogPage: React.FC = () => {
                           
                           {/* Mostrar las ubicaciones ya agregadas */}
                           <div className="flex flex-wrap gap-1 mt-2">
-                            {formData.specificLocations?.find(loc => loc.parkId === parkId)?.locationName.map((loc, index) => (
+                            {formData.specificLocations?.find(loc => loc.parkId === parkId)?.locationName?.map((loc, index) => (
                               <Badge key={`${parkId}-${index}`} className="flex items-center gap-1">
                                 {loc}
                                 <X 
@@ -913,9 +919,12 @@ const AdminActivityCatalogPage: React.FC = () => {
                                     
                                     if (parkLocIndex >= 0) {
                                       const newLocations = [...currentLocations];
+                                      const filteredLocations = newLocations[parkLocIndex].locationName
+                                        .filter((_, i) => i !== index);
+                                      
                                       newLocations[parkLocIndex] = {
                                         ...newLocations[parkLocIndex],
-                                        locationName: newLocations[parkLocIndex].locationName.filter((_, i) => i !== index)
+                                        locationName: filteredLocations
                                       };
                                       
                                       // Si no quedan ubicaciones, eliminar completamente la entrada del parque
@@ -1418,7 +1427,10 @@ const AdminActivityCatalogPage: React.FC = () => {
                                   newLocations = [...currentLocations];
                                   newLocations[existingIndex] = {
                                     ...newLocations[existingIndex],
-                                    locationName: [...(newLocations[existingIndex].locationName || []), locationName]
+                                    locationName: [
+                                      ...newLocations[existingIndex].locationName,
+                                      locationName
+                                    ]
                                   };
                                 } else {
                                   // Crear una nueva entrada
@@ -1443,7 +1455,7 @@ const AdminActivityCatalogPage: React.FC = () => {
                         
                         {/* Mostrar las ubicaciones ya agregadas */}
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {formData.specificLocations?.find(loc => loc.parkId === parkId)?.locationName.map((loc, index) => (
+                          {formData.specificLocations?.find(loc => loc.parkId === parkId)?.locationName?.map((loc, index) => (
                             <Badge key={`edit-${parkId}-${index}`} className="flex items-center gap-1">
                               {loc}
                               <X 
@@ -1454,9 +1466,12 @@ const AdminActivityCatalogPage: React.FC = () => {
                                   
                                   if (parkLocIndex >= 0) {
                                     const newLocations = [...currentLocations];
+                                    const filteredLocations = newLocations[parkLocIndex].locationName
+                                      .filter((_, i) => i !== index);
+                                    
                                     newLocations[parkLocIndex] = {
                                       ...newLocations[parkLocIndex],
-                                      locationName: newLocations[parkLocIndex].locationName.filter((_, i) => i !== index)
+                                      locationName: filteredLocations
                                     };
                                     
                                     // Si no quedan ubicaciones, eliminar completamente la entrada del parque
