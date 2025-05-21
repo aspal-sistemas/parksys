@@ -27,7 +27,7 @@ export function registerPublicRoutes(publicRouter: any) {
                 bio,
                 status,
                 gender,
-                availability,
+                available_hours,
                 cv_url,
                 education,
                 certifications
