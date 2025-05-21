@@ -50,29 +50,41 @@ import { Spinner } from '@/components/Spinner';
 
 // Esquema para validar el formulario
 const activitySchema = z.object({
-  title: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
+  title: z.string().min(3, "El título debe tener al menos 3 caracteres"),
   description: z.string().min(10, "La descripción debe tener al menos 10 caracteres"),
-  parkId: z.coerce.number().min(1, "Debe seleccionar un parque"),
-  startDate: z.string().min(1, "Debe seleccionar una fecha de inicio"),
+  category: z.string().min(1, "Debes seleccionar una categoría"),
+  parkId: z.string().min(1, "Debes seleccionar un parque"),
+  startDate: z.string().min(1, "La fecha de inicio es obligatoria"),
   endDate: z.string().optional(),
-  startTime: z.string().min(1, "Debe seleccionar una hora de inicio"),
-  endTime: z.string().min(1, "Debe seleccionar una hora de fin"),
-  category: z.string().min(1, "Debe seleccionar una categoría"),
+  
+  // Campos para hora de inicio y finalización
+  startTime: z.string().min(1, "La hora de inicio es obligatoria"),
+  endTime: z.string().min(1, "La hora de finalización es obligatoria"),
+  
   location: z.string().optional(),
-  capacity: z.coerce.number().min(1, "La capacidad debe ser al menos 1").optional(),
-  price: z.coerce.number().min(0, "El precio no puede ser negativo").optional(),
-  isPriceRandom: z.boolean().optional(),
-  isFree: z.boolean().optional(),
+  capacity: z.coerce.number().int().positive().optional(),
+  duration: z.coerce.number().int().positive().optional(),
+  
+  // Campos para precio
+  price: z.coerce.number().min(0).optional(),
+  isPriceRandom: z.boolean().default(false),
+  isFree: z.boolean().default(false),
+  
   materials: z.string().optional(),
   requirements: z.string().optional(),
-  isRecurring: z.boolean().optional(),
+  isRecurring: z.boolean().default(false),
   recurringDays: z.array(z.string()).optional(),
+  
+  // Campos para segmentación
   targetMarket: z.array(z.string()).optional(),
+  
+  // Campos para capacidades diferentes
   specialNeeds: z.array(z.string()).optional(),
-  instructorId: z.coerce.number().optional(),
+  
+  // Campo para seleccionar al instructor por su ID e información adicional
+  instructorId: z.string().optional(),
   instructorName: z.string().optional(),
   instructorContact: z.string().optional(),
-  duration: z.coerce.number().optional(),
 });
 
 // Función para formatear la fecha correctamente para la API
@@ -336,38 +348,44 @@ const EditarActividadPage = () => {
     actualizarActividad.mutate(values);
   };
   
-  // Opciones para los selects
+  // Categorías de actividades
   const categorias = [
     { value: "artecultura", label: "Arte y Cultura" },
     { value: "recreacionbienestar", label: "Recreación y Bienestar" },
-    { value: "naturalezaciencia", label: "Naturaleza, Ciencia y Conservación" },
-    { value: "eventostemporada", label: "Eventos de Temporada" },
+    { value: "temporada", label: "Eventos de Temporada" },
+    { value: "naturalezaciencia", label: "Naturaleza, Ciencia y Conservación" }
   ];
   
+  // Días de la semana para actividades recurrentes
   const diasSemana = [
-    { value: "lunes", label: "Lunes" },
-    { value: "martes", label: "Martes" },
-    { value: "miercoles", label: "Miércoles" },
-    { value: "jueves", label: "Jueves" },
-    { value: "viernes", label: "Viernes" },
-    { value: "sabado", label: "Sábado" },
-    { value: "domingo", label: "Domingo" },
+    { id: "lunes", label: "Lunes" },
+    { id: "martes", label: "Martes" },
+    { id: "miercoles", label: "Miércoles" },
+    { id: "jueves", label: "Jueves" },
+    { id: "viernes", label: "Viernes" },
+    { id: "sabado", label: "Sábado" },
+    { id: "domingo", label: "Domingo" }
   ];
   
+  // Opciones de mercado meta para la segmentación
   const mercadoObjetivo = [
-    { value: "niños", label: "Niños (0-12 años)" },
-    { value: "adolescentes", label: "Adolescentes (13-17 años)" },
-    { value: "jovenes", label: "Jóvenes (18-29 años)" },
-    { value: "adultos", label: "Adultos (30-59 años)" },
-    { value: "adultosmayores", label: "Adultos mayores (60+ años)" },
-    { value: "familias", label: "Familias" },
+    { id: "preescolar", label: "Preescolar - 0 a 5 años" },
+    { id: "ninos", label: "Niños - 6 a 12 años" },
+    { id: "adolescentes", label: "Adolescentes - 13 a 18 años" },
+    { id: "adultos", label: "Adultos - 19 a 65 años" },
+    { id: "adultosmayores", label: "Adultos Mayores - +65 años" }
   ];
   
+  // Opciones de capacidades diferentes
   const necesidadesEspeciales = [
-    { value: "movilidad", label: "Adaptada para personas con movilidad reducida" },
-    { value: "visual", label: "Adaptada para personas con discapacidad visual" },
-    { value: "auditiva", label: "Adaptada para personas con discapacidad auditiva" },
-    { value: "intelectual", label: "Adaptada para personas con discapacidad intelectual" },
+    { id: "fisica", label: "Física / Motriz" },
+    { id: "visual", label: "Visual" },
+    { id: "auditiva", label: "Auditiva" },
+    { id: "intelectual", label: "Intelectual / Cognitiva" },
+    { id: "psicosocial", label: "Psicosocial / Mental" },
+    { id: "neurodivergencias", label: "Neurodivergencias" },
+    { id: "multiple", label: "Múltiple / Combinada" },
+    { id: "temporal", label: "Temporal" }
   ];
   
   // Manejar cambios en las horas
