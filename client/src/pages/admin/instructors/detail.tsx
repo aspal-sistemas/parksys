@@ -190,12 +190,7 @@ export default function InstructorDetailPage() {
               </p>
             </div>
           </div>
-          <div className="flex space-x-2">
-            <Button variant="outline">
-              <FileEdit className="mr-2 h-4 w-4" />
-              Editar
-            </Button>
-          </div>
+          {/* Se han eliminado los botones de editar y eliminar */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
