@@ -74,11 +74,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de voluntariado
   registerVolunteerRoutes(app, apiRouter, null, isAuthenticated);
+  
+  // Registramos las rutas del módulo de instructores
   registerInstructorRoutes(app, apiRouter, null, isAuthenticated);
   
   // Registramos las rutas del módulo de usuarios
   registerUserRoutes(app, apiRouter);
   
+  // Montamos todas las rutas de la API bajo el prefijo /api
   app.use('/api', apiRouter);
 
   // Get all parks with option to filter
