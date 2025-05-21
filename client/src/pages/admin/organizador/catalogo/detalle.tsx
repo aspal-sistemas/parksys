@@ -57,10 +57,32 @@ const DetalleActividadPage = () => {
   }, [location]);
   
   // Obtener los detalles de la actividad
-  const { data: actividad, isLoading } = useQuery({
+  const { data: actividadRaw, isLoading } = useQuery({
     queryKey: ['/api/activities', actividadId],
     enabled: actividadId !== null,
   });
+  
+  // Procesar los datos de actividad con valores por defecto para evitar errores
+  const actividad = actividadRaw ? {
+    id: actividadRaw.id || 0,
+    title: actividadRaw.title || 'Actividad sin título',
+    description: actividadRaw.description || 'Sin descripción disponible',
+    category: actividadRaw.category || 'Sin categoría',
+    parkId: actividadRaw.parkId || 0,
+    parkName: actividadRaw.parkName || '',
+    startDate: actividadRaw.startDate || null,
+    endDate: actividadRaw.endDate || null,
+    location: actividadRaw.location || null,
+    createdAt: actividadRaw.createdAt || new Date().toISOString(),
+    capacity: actividadRaw.capacity || null,
+    price: actividadRaw.price || null,
+    materials: actividadRaw.materials || null,
+    requirements: actividadRaw.requirements || null,
+    duration: actividadRaw.duration || null,
+    isRecurring: actividadRaw.isRecurring || false,
+    recurringDays: actividadRaw.recurringDays || [],
+    instructorId: actividadRaw.instructorId || null
+  } : null;
   
   // Obtener el parque relacionado
   const { data: parque } = useQuery({
