@@ -13,6 +13,7 @@ import {
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Table, 
   TableBody, 
@@ -119,110 +120,114 @@ const UserDetail: React.FC<{
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="firstName" className="text-sm font-medium">Nombre</label>
-              <Input
-                id="firstName"
-                value={userData.firstName}
-                onChange={(e) => handleChange('firstName', e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="lastName" className="text-sm font-medium">Apellido</label>
-              <Input
-                id="lastName"
-                value={userData.lastName}
-                onChange={(e) => handleChange('lastName', e.target.value)}
-                required
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="username" className="text-sm font-medium">Nombre de usuario</label>
-            <Input
-              id="username"
-              value={userData.username}
-              onChange={(e) => handleChange('username', e.target.value)}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">Email</label>
-            <Input
-              id="email"
-              type="email"
-              value={userData.email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
-              {isNew ? 'Contraseña' : 'Contraseña (dejar en blanco para no cambiar)'}
-            </label>
-            <Input
-              id="password"
-              type="password"
-              value={userData.password}
-              onChange={(e) => handleChange('password', e.target.value)}
-              required={isNew}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="role" className="text-sm font-medium">Rol</label>
-            <Select
-              value={userData.role}
-              onValueChange={(value) => handleChange('role', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar rol" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Administrador</SelectItem>
-                <SelectItem value="director">Director</SelectItem>
-                <SelectItem value="manager">Gestor</SelectItem>
-                <SelectItem value="citizen">Ciudadano</SelectItem>
-                <SelectItem value="volunteer">Voluntario</SelectItem>
-                <SelectItem value="instructor">Instructor</SelectItem>
-                <SelectItem value="user">Usuario</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="municipality" className="text-sm font-medium">Municipio</label>
-            <Select
-              value={userData.municipalityId?.toString() || 'null'}
-              onValueChange={(value) => handleChange('municipalityId', value === 'null' ? null : parseInt(value))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar municipio" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="null">Ninguno</SelectItem>
-                {municipalities.map((municipality: any) => (
-                  <SelectItem key={municipality.id} value={municipality.id.toString()}>
-                    {municipality.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          
-          {/* Sección de campos específicos para instructores */}
-          {userData.role === 'instructor' && (
-            <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-              <h3 className="font-medium text-lg">Información de Instructor</h3>
-              
+          {/* Información básica de la cuenta */}
+          <div className="space-y-4">
+            <h3 className="font-medium text-lg">Información de Cuenta</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label htmlFor="phone" className="text-sm font-medium">Teléfono de contacto</label>
+                <label htmlFor="firstName" className="text-sm font-medium">Nombre</label>
+                <Input
+                  id="firstName"
+                  value={userData.firstName}
+                  onChange={(e) => handleChange('firstName', e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="lastName" className="text-sm font-medium">Apellido</label>
+                <Input
+                  id="lastName"
+                  value={userData.lastName}
+                  onChange={(e) => handleChange('lastName', e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="username" className="text-sm font-medium">Nombre de usuario</label>
+              <Input
+                id="username"
+                value={userData.username}
+                onChange={(e) => handleChange('username', e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium">Email</label>
+              <Input
+                id="email"
+                type="email"
+                value={userData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium">
+                {isNew ? 'Contraseña' : 'Contraseña (dejar en blanco para no cambiar)'}
+              </label>
+              <Input
+                id="password"
+                type="password"
+                value={userData.password}
+                onChange={(e) => handleChange('password', e.target.value)}
+                required={isNew}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="role" className="text-sm font-medium">Rol</label>
+              <Select
+                value={userData.role}
+                onValueChange={(value) => handleChange('role', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectItem value="director">Director</SelectItem>
+                  <SelectItem value="manager">Gestor</SelectItem>
+                  <SelectItem value="citizen">Ciudadano</SelectItem>
+                  <SelectItem value="volunteer">Voluntario</SelectItem>
+                  <SelectItem value="instructor">Instructor</SelectItem>
+                  <SelectItem value="user">Usuario</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="municipality" className="text-sm font-medium">Municipio</label>
+              <Select
+                value={userData.municipalityId?.toString() || 'null'}
+                onValueChange={(value) => handleChange('municipalityId', value === 'null' ? null : parseInt(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar municipio" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="null">Ninguno</SelectItem>
+                  {municipalities.map((municipality: any) => (
+                    <SelectItem key={municipality.id} value={municipality.id.toString()}>
+                      {municipality.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          {/* Información de contacto y perfil - para todos los usuarios */}
+          <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+            <h3 className="font-medium text-lg">Información de Contacto y Perfil</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="phone" className="text-sm font-medium">Teléfono</label>
                 <Input
                   id="phone"
                   value={userData.phone}
@@ -232,7 +237,7 @@ const UserDetail: React.FC<{
               </div>
               
               <div className="space-y-2">
-                <label htmlFor="profileImageUrl" className="text-sm font-medium">URL de imagen de perfil</label>
+                <label htmlFor="profileImageUrl" className="text-sm font-medium">Foto de perfil (URL)</label>
                 <Input
                   id="profileImageUrl"
                   value={userData.profileImageUrl}
@@ -240,9 +245,27 @@ const UserDetail: React.FC<{
                   placeholder="https://ejemplo.com/imagen.jpg"
                 />
               </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="bio" className="text-sm font-medium">Biografía</label>
+              <Textarea
+                id="bio"
+                value={userData.bio}
+                onChange={(e) => handleChange('bio', e.target.value)}
+                placeholder="Breve descripción personal"
+                rows={3}
+              />
+            </div>
+          </div>
+          
+          {/* Sección de campos específicos para instructores */}
+          {userData.role === 'instructor' && (
+            <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+              <h3 className="font-medium text-lg">Información Profesional de Instructor</h3>
               
               <div className="space-y-2">
-                <label htmlFor="experience" className="text-sm font-medium">Experiencia profesional</label>
+                <label htmlFor="experience" className="text-sm font-medium">Experiencia y certificaciones</label>
                 <Textarea
                   id="experience"
                   value={userData.experience}
@@ -252,18 +275,21 @@ const UserDetail: React.FC<{
                 />
               </div>
               
-              <div className="space-y-2">
-                <label htmlFor="bio" className="text-sm font-medium">Biografía</label>
-                <Textarea
-                  id="bio"
-                  value={userData.bio}
-                  onChange={(e) => handleChange('bio', e.target.value)}
-                  placeholder="Breve biografía o descripción personal del instructor"
-                  rows={3}
-                />
-              </div>
+              {/* Para futuras expansiones: campos de especialidades */}
+            </div>
+          )}
+          
+          {/* Sección específica para voluntarios (podría expandirse en el futuro) */}
+          {userData.role === 'volunteer' && (
+            <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+              <h3 className="font-medium text-lg">Información de Voluntario</h3>
               
-              {/* Aquí podríamos añadir un componente para manejar las especialidades como etiquetas */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Áreas de interés</label>
+                <div className="text-sm text-muted-foreground">
+                  Las áreas de interés y disponibilidad se configuran en el módulo de voluntarios.
+                </div>
+              </div>
             </div>
           )}
 
