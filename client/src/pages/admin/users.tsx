@@ -257,6 +257,17 @@ const UserDetail: React.FC<{
                 rows={3}
               />
             </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="experience" className="text-sm font-medium">Experiencia y Certificaciones</label>
+              <Textarea
+                id="experience"
+                value={userData.experience}
+                onChange={(e) => handleChange('experience', e.target.value)}
+                placeholder="Experiencia profesional o certificaciones relevantes"
+                rows={4}
+              />
+            </div>
           </div>
           
           {/* Sección de campos específicos para instructores */}
@@ -265,14 +276,15 @@ const UserDetail: React.FC<{
               <h3 className="font-medium text-lg">Información Profesional de Instructor</h3>
               
               <div className="space-y-2">
-                <label htmlFor="experience" className="text-sm font-medium">Experiencia y certificaciones</label>
+                <label htmlFor="specialties" className="text-sm font-medium">Especialidades</label>
                 <Textarea
-                  id="experience"
-                  value={userData.experience}
-                  onChange={(e) => handleChange('experience', e.target.value)}
-                  placeholder="Experiencia relevante, certificaciones, logros profesionales..."
-                  rows={4}
+                  id="specialties"
+                  value={Array.isArray(userData.specialties) ? userData.specialties.join(', ') : ''}
+                  onChange={(e) => handleChange('specialties', e.target.value.split(', '))}
+                  placeholder="Yoga, Fitness, Artes marciales, Deportes infantiles, etc."
+                  rows={2}
                 />
+                <p className="text-xs text-muted-foreground mt-1">Ingresa las especialidades separadas por comas</p>
               </div>
               
               {/* Para futuras expansiones: campos de especialidades */}
