@@ -265,15 +265,36 @@ const VerActividadesPage = () => {
                       <Button 
                         variant="outline" 
                         size="sm"
+                        className="text-red-600 hover:text-red-800 hover:bg-red-50"
                         onClick={() => {
-                          // Redirigir a la página de detalles con el ID de la actividad
-                          setLocation(`/admin/organizador/catalogo/${actividad.id}`);
+                          // Mostrar alerta de confirmación
+                          if (window.confirm(`¿Estás seguro de que deseas eliminar la actividad "${actividad.title}"? Esta acción no se puede deshacer.`)) {
+                            // Lógica para eliminar la actividad
+                            fetch(`/api/activities/${actividad.id}`, {
+                              method: 'DELETE',
+                              headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                              }
+                            })
+                            .then(response => {
+                              if (response.ok) {
+                                // Recargar la página para ver los cambios
+                                window.location.reload();
+                              } else {
+                                alert('No se pudo eliminar la actividad. Inténtalo de nuevo.');
+                              }
+                            })
+                            .catch(error => {
+                              console.error('Error al eliminar la actividad:', error);
+                              alert('Error al eliminar la actividad. Inténtalo de nuevo.');
+                            });
+                          }
                         }}
                       >
-                        Ver detalles
+                        Borrar
                       </Button>
                       <Button 
-                        variant="ghost" 
+                        variant="default" 
                         size="sm"
                         onClick={() => {
                           // Redirigir a la página de edición con el ID de la actividad
