@@ -179,20 +179,7 @@ const AdminActivityCatalogPage: React.FC = () => {
     isRecurring: false
   });
   
-  // Función para filtrar actividades por categoría
-  const getActivitiesByCategory = (category: string) => {
-    if (!category) return [];
-    
-    // Usa directamente el objeto categorizado para obtener las actividades
-    const categoryActivities = PREDEFINED_ACTIVITIES_BY_CATEGORY[category as keyof typeof PREDEFINED_ACTIVITIES_BY_CATEGORY] || [];
-    
-    // Añade siempre las opciones comunes
-    return [
-      ...categoryActivities,
-      { value: "nueva", label: "Añadir nueva actividad al catálogo" },
-      { value: "otro", label: "Otra actividad (sólo para esta vez)" }
-    ];
-  };
+  // Ya no usamos esta función porque accedemos directamente a PREDEFINED_ACTIVITIES_BY_CATEGORY
 
   // Por ahora usamos datos de ejemplo mientras implementamos el backend
   const mockActivitiesCatalog: ActivityCatalogItem[] = [
