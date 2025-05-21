@@ -270,7 +270,10 @@ export default function InstructorProfileDialog({
               <CardContent className="pt-6">
                 {assignments && assignments.length > 0 ? (
                   <div className="space-y-4">
-                    {assignments.map((assignment: any) => (
+                    {/* Usamos un Set para eliminar duplicados basados en ID */}
+                    {Array.from(new Map(assignments.map(item => 
+                      [item.id, item]
+                    )).values()).map((assignment: any) => (
                       <div key={assignment.id} className="border p-3 rounded-md hover:bg-gray-50">
                         <div className="flex justify-between items-start">
                           <div>
