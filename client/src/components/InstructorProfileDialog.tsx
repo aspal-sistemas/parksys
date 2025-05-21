@@ -125,8 +125,8 @@ export default function InstructorProfileDialog({
         <DialogHeader>
           <div className="flex items-start mb-4">
             <Avatar className="h-16 w-16 mr-4">
-              <AvatarImage src={instructor.profile_image_url} alt={instructor.full_name} />
-              <AvatarFallback>{getInitials(instructor.full_name)}</AvatarFallback>
+              <AvatarImage src={instructor.profile_image_url || instructor.profileImageUrl} alt={instructor.full_name || instructor.fullName} />
+              <AvatarFallback>{getInitials(instructor.full_name || instructor.fullName || '')}</AvatarFallback>
             </Avatar>
             <div>
               <DialogTitle className="text-xl">{instructor.full_name}</DialogTitle>

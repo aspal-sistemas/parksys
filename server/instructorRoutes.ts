@@ -216,13 +216,20 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
       let parkNames: { id: number, name: string }[] = [];
       
       if (parkIds.length > 0) {
-        parkNames = await db
-          .select({
-            id: parks.id,
-            name: parks.name
-          })
-          .from(parks)
-          .where(sql`${parks.id} = ANY(${parkIds})`);
+        // Usamos consultas separadas para evitar problemas con arrays en PostgreSQL
+        for (const parkId of parkIds) {
+          const [park] = await db
+            .select({
+              id: parks.id,
+              name: parks.name
+            })
+            .from(parks)
+            .where(eq(parks.id, parkId));
+          
+          if (park) {
+            parkNames.push(park);
+          }
+        }
       }
       
       // Obtener información de las actividades asignadas
@@ -230,14 +237,21 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
       let activityDetails: { id: number, title: string, category: string | null }[] = [];
       
       if (activityIds.length > 0) {
-        activityDetails = await db
-          .select({
-            id: activities.id,
-            title: activities.title,
-            category: activities.category
-          })
-          .from(activities)
-          .where(sql`${activities.id} = ANY(${activityIds})`);
+        // Usamos consultas separadas para evitar problemas con arrays en PostgreSQL
+        for (const activityId of activityIds) {
+          const [activity] = await db
+            .select({
+              id: activities.id,
+              title: activities.title,
+              category: activities.category
+            })
+            .from(activities)
+            .where(eq(activities.id, activityId));
+          
+          if (activity) {
+            activityDetails.push(activity);
+          }
+        }
       }
       
       // Combinar datos
