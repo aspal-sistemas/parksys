@@ -210,8 +210,10 @@ export default function ActivitiesCalendarPage() {
               className="text-xs truncate cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                // Redirigir a la página de detalle de esta actividad específica
-                setLocation(`/admin/organizador/catalogo/${activity.id}`);
+                // Redirigir a la página catalogo para evitar errores mientras arreglamos los detalles
+                setLocation(`/admin/organizador/catalogo/ver`);
+                // Mostramos un mensaje sobre la actividad
+                console.log("Actividad seleccionada:", activity);
               }}
             >
               <Badge className={categoryColors[activity.category || 'default']} variant="outline">
@@ -419,7 +421,10 @@ export default function ActivitiesCalendarPage() {
                 <div className="space-y-3">
                   {getActivitiesForDay(selectedDate).map((activity: Activity) => (
                     <div key={activity.id} className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer" 
-                      onClick={() => setLocation(`/admin/organizador/catalogo/${activity.id}`)}>
+                      onClick={() => {
+                        setLocation(`/admin/organizador/catalogo/ver`);
+                        console.log("Actividad seleccionada (día completo):", activity);
+                      }}>
                       <div className="flex justify-between">
                         <h3 className="font-medium">{activity.title}</h3>
                         <Badge className={categoryColors[activity.category || 'default']} variant="outline">

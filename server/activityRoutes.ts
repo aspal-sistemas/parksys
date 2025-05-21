@@ -65,10 +65,9 @@ activityRouter.get("/activities/:id", async (req: Request, res: Response) => {
       sql`SELECT a.id, a.park_id as "parkId", a.title, a.description, 
                a.start_date as "startDate", a.end_date as "endDate", 
                a.category, a.location, a.created_at as "createdAt",
-               p.name as "parkName", i.id as "instructorId", i.full_name as "instructorName"
+               p.name as "parkName"
            FROM activities a
            LEFT JOIN parks p ON a.park_id = p.id
-           LEFT JOIN instructors i ON a.instructor_id = i.id
            WHERE a.id = ${activityId}`
     );
     
