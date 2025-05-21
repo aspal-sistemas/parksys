@@ -36,6 +36,15 @@ const DIAS_SEMANA = [
   { id: "domingo", label: "Domingo" }
 ];
 
+// Opciones de mercado meta para la segmentación
+const MERCADO_META = [
+  { id: "preescolar", label: "Preescolar - 0 a 5 años" },
+  { id: "ninos", label: "Niños - 6 a 12 años" },
+  { id: "adolescentes", label: "Adolescentes - 13 a 18 años" },
+  { id: "adultos", label: "Adultos - 19 a 65 años" },
+  { id: "adultosmayores", label: "Adultos Mayores - +65 años" }
+];
+
 // Esquema de validación para el formulario
 const formSchema = z.object({
   title: z.string().min(3, "El título debe tener al menos 3 caracteres"),
@@ -52,6 +61,8 @@ const formSchema = z.object({
   requirements: z.string().optional(),
   isRecurring: z.boolean().default(false),
   recurringDays: z.array(z.string()).optional(),
+  // Nuevos campos para segmentación
+  targetMarket: z.array(z.string()).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -82,6 +93,7 @@ const CrearActividadPage = () => {
       requirements: "",
       isRecurring: false,
       recurringDays: [],
+      targetMarket: [],
     },
   });
 
@@ -258,6 +270,62 @@ const CrearActividadPage = () => {
                       <FormDescription>
                         Especifica dónde dentro del parque se realizará la actividad
                       </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Sección de Segmentación */}
+              <div className="space-y-4 pt-4 border-t">
+                <h3 className="text-lg font-medium">Segmentación</h3>
+                
+                <FormField
+                  control={form.control}
+                  name="targetMarket"
+                  render={() => (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel>Mercado Meta</FormLabel>
+                        <FormDescription>
+                          Selecciona los grupos de edad a los que está dirigida esta actividad
+                        </FormDescription>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {MERCADO_META.map((item) => (
+                          <FormField
+                            key={item.id}
+                            control={form.control}
+                            name="targetMarket"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={item.id}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(item.id)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...(field.value || []), item.id])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== item.id
+                                              )
+                                            );
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal">
+                                    {item.label}
+                                  </FormLabel>
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        ))}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
