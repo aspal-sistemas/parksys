@@ -229,13 +229,27 @@ const AdminSidebarModular: React.FC = () => {
                   Organizador
                 </NavItem>
                 
-                <NavItem 
-                  href="/admin/organizador/nueva-actividad" 
-                  icon={<ListChecks className="h-4 w-4" />}
-                  active={location === '/admin/organizador/nueva-actividad'}
+                <ModuleNav 
+                  title="Catálogo" 
+                  icon={<ListChecks className="h-4 w-4" />} 
+                  value="catalogo"
+                  defaultOpen={location.includes('/admin/organizador/catalogo')}
                 >
-                  Catálogo
-                </NavItem>
+                  <NavItem 
+                    href="/admin/organizador/catalogo/crear" 
+                    icon={<PlusCircle className="h-4 w-4" />}
+                    active={location === '/admin/organizador/catalogo/crear'}
+                  >
+                    Crear Nueva Actividad
+                  </NavItem>
+                  <NavItem 
+                    href="/admin/organizador/catalogo/ver" 
+                    icon={<ListChecks className="h-4 w-4" />}
+                    active={location === '/admin/organizador/catalogo/ver'}
+                  >
+                    Ver Actividades Disponibles
+                  </NavItem>
+                </ModuleNav>
                 
                 <NavItem 
                   href="/admin/organizador/calendario" 
