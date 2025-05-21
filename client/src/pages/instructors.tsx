@@ -34,9 +34,22 @@ const InstructorsPage: React.FC = () => {
     queryKey: ['/public-api/instructors'],
   });
   
-  // Manejar la respuesta que puede ser un array directamente o un objeto estructurado
-  const instructors = Array.isArray(apiResponse) ? apiResponse : 
+  // Manejar la respuesta y eliminar duplicados usando Map
+  const instructorsMap = new Map<number, Instructor>();
+  
+  // Si la respuesta es un array, procesamos ese array
+  const rawInstructors = Array.isArray(apiResponse) ? apiResponse : 
     (apiResponse && 'data' in apiResponse ? (apiResponse.data || []) : []);
+    
+  // Eliminar duplicados usando ID como clave
+  rawInstructors.forEach((instructor: Instructor) => {
+    if (instructor && instructor.id) {
+      instructorsMap.set(instructor.id, instructor);
+    }
+  });
+  
+  // Convertir el Map a array
+  const instructors = Array.from(instructorsMap.values());
   
   // Extraer especialidades únicas para el filtro
   const allSpecialties = new Set<string>();

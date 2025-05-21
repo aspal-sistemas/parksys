@@ -22,27 +22,34 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
     // Ruta pública para obtener todos los instructores activos
     publicApiRouter.get("/instructors", async (_req: Request, res: Response) => {
       try {
-        // Usamos una consulta SQL directa para evitar errores con mapeo de columnas
-        // Agregamos DISTINCT ON para asegurar que no haya duplicados por ID
-        const allInstructors = await db.execute(
-          sql`SELECT DISTINCT ON (id) id, full_name, email, phone, specialties, experience_years, status, profile_image_url, created_at 
+        // Usamos filtrado en memoria para eliminar duplicados por ID
+        // Primero consultamos todos los instructores activos
+        const result = await db.execute(
+          sql`SELECT id, full_name, email, phone, specialties, experience_years, status, profile_image_url, created_at 
               FROM instructors 
               WHERE status = 'active'
               ORDER BY id DESC`
         );
         
-        // Enviamos un objeto estructurado para mantener consistencia con otras APIs
-        res.json({
-          status: "success",
-          data: allInstructors.rows || [],
-          count: allInstructors.rows?.length || 0
-        });
+        // Eliminamos duplicados usando un Map con el ID como clave
+        const uniqueInstructors = new Map();
+        
+        if (result.rows && result.rows.length > 0) {
+          result.rows.forEach((instructor: any) => {
+            if (!uniqueInstructors.has(instructor.id)) {
+              uniqueInstructors.set(instructor.id, instructor);
+            }
+          });
+        }
+        
+        // Convertimos el Map a un array
+        const instructorsArray = Array.from(uniqueInstructors.values());
+        
+        // Respondemos con el array directamente para mantener compatibilidad con el cliente existente
+        res.json(instructorsArray);
       } catch (error) {
         console.error("Error al obtener instructores públicos:", error);
-        res.status(500).json({ 
-          status: "error", 
-          message: "Error al obtener instructores" 
-        });
+        res.status(500).json({ message: "Error al obtener instructores" });
       }
     });
   }
