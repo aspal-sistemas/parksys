@@ -247,6 +247,14 @@ const AdminSidebarModular: React.FC = () => {
                 </NavItem>
                 
                 <NavItem 
+                  href="/admin/instructors" 
+                  icon={<GraduationCap className="h-4 w-4" />}
+                  active={location.startsWith('/admin/instructors')}
+                >
+                  Instructores
+                </NavItem>
+                
+                <NavItem 
                   href="/admin/organizador" 
                   icon={<FileText className="h-4 w-4" />}
                   active={location === '/admin/organizador'}
