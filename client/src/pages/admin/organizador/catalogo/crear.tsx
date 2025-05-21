@@ -85,13 +85,8 @@ const formSchema = z.object({
   // Campos para capacidades diferentes
   specialNeeds: z.array(z.string()).optional(),
   
-  // Campos para el facilitador/instructor
-  instructorName: z.string().optional(),
-  instructorEmail: z.string().email("Ingrese un correo electrónico válido").optional(),
-  instructorExperience: z.string().optional(),
-  instructorPhoto: z.string().optional(),
-  instructorPhone: z.string().optional(),
-  instructorBio: z.string().optional(),
+  // Campo para seleccionar al instructor por su ID
+  instructorId: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -132,12 +127,7 @@ const CrearActividadPage = () => {
       recurringDays: [],
       targetMarket: [],
       specialNeeds: [],
-      instructorName: "",
-      instructorEmail: "",
-      instructorExperience: "",
-      instructorPhoto: "",
-      instructorPhone: "",
-      instructorBio: "",
+      instructorId: "",
     },
   });
 
@@ -145,6 +135,23 @@ const CrearActividadPage = () => {
   const createMutation = useMutation({
     mutationFn: async (values: FormValues) => {
       const parkId = parseInt(values.parkId);
+      
+      // Buscamos el instructor seleccionado para obtener sus datos
+      let instructorData = {};
+      
+      if (values.instructorId) {
+        const selectedInstructor = instructores.find(
+          instructor => instructor.id.toString() === values.instructorId
+        );
+        
+        if (selectedInstructor) {
+          instructorData = {
+            instructorId: selectedInstructor.id,
+            instructorName: `${selectedInstructor.fullName || selectedInstructor.username || ''}`.trim(),
+            instructorContact: selectedInstructor.email || '',
+          };
+        }
+      }
       
       // Solo incluimos los campos que existen en la base de datos real
       const data = {
@@ -154,7 +161,19 @@ const CrearActividadPage = () => {
         startDate: values.startDate,
         endDate: values.endDate || null,
         category: values.category,
-        location: values.location || null
+        location: values.location || null,
+        capacity: values.capacity || null,
+        duration: values.duration || null,
+        price: values.price || 0,
+        isPriceRandom: values.isPriceRandom || false,
+        isFree: values.isFree || false,
+        materials: values.materials || "",
+        requirements: values.requirements || "",
+        isRecurring: values.isRecurring || false,
+        recurringDays: values.recurringDays || [],
+        targetMarket: values.targetMarket || [],
+        specialNeeds: values.specialNeeds || [],
+        ...instructorData
       };
       
       return await apiRequest(`/api/activities`, "POST", data);
@@ -700,109 +719,50 @@ const CrearActividadPage = () => {
               <div className="space-y-4 pt-4 border-t">
                 <h3 className="text-lg font-medium">Datos del Instructor o Facilitador</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="instructorName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre completo</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nombre del instructor/facilitador" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="instructorEmail"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Correo electrónico</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="email" 
-                            placeholder="correo@ejemplo.com" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="instructorPhone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Teléfono de contacto</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ej: 33-1234-5678" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="instructorPhoto"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>URL de la fotografía</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="https://ejemplo.com/imagen.jpg" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Enlace a una fotografía del instructor/facilitador
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
                 <FormField
                   control={form.control}
-                  name="instructorExperience"
+                  name="instructorId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Experiencia y certificaciones</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Experiencia relevante, certificaciones, logros..."
-                          {...field}
-                        />
-                      </FormControl>
+                      <FormLabel>Seleccionar Instructor</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona un instructor" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {instructores.length === 0 ? (
+                            <SelectItem value="no-instructors" disabled>
+                              No hay instructores disponibles
+                            </SelectItem>
+                          ) : (
+                            instructores.map((instructor) => (
+                              <SelectItem key={instructor.id} value={instructor.id.toString()}>
+                                {instructor.firstName} {instructor.lastName} ({instructor.email})
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Selecciona un instructor registrado en el sistema. Si el instructor que buscas no está en la lista, primero debes registrarlo en la sección de Usuarios.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 
-                <FormField
-                  control={form.control}
-                  name="instructorBio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Biografía</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Breve biografía o descripción personal del instructor/facilitador"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {instructores.length === 0 && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-md p-4 my-4">
+                    <p className="text-amber-800">
+                      No hay instructores registrados en el sistema. Dirígete a la sección de Usuarios para crear un usuario con rol de Instructor primero.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="pt-4 border-t">
