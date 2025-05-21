@@ -254,20 +254,30 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
         }
       }
       
-      // Combinar datos
-      const assignmentsWithDetails = assignments.map(assignment => {
+      // Combinar datos y eliminar duplicados basados en ID
+      const assignmentsMap = new Map();
+      
+      assignments.forEach(assignment => {
         const park = parkNames.find(p => p.id === assignment.parkId);
         const activity = activityDetails.find(a => a.id === assignment.activityId);
         
-        return {
+        const assignmentWithDetails = {
           ...assignment,
           parkName: park ? park.name : 'Parque desconocido',
           activityTitle: activity ? activity.title : assignment.activityName,
           activityCategory: activity ? activity.category : null
         };
+        
+        // Solo agregar si no existe ya un elemento con el mismo ID
+        if (!assignmentsMap.has(assignment.id)) {
+          assignmentsMap.set(assignment.id, assignmentWithDetails);
+        }
       });
       
-      res.json(assignmentsWithDetails);
+      // Convertir el mapa a un array
+      const uniqueAssignments = Array.from(assignmentsMap.values());
+      
+      res.json(uniqueAssignments);
     } catch (error) {
       console.error(`Error al obtener asignaciones del instructor ${req.params.id}:`, error);
       res.status(500).json({ message: "Error al obtener asignaciones" });
