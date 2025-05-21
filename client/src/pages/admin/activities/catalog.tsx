@@ -76,6 +76,25 @@ const AdminActivityCatalogPage: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentActivity, setCurrentActivity] = useState<ActivityCatalogItem | null>(null);
+  
+  // Lista de nombres de actividades precargadas
+  const PREDEFINED_ACTIVITIES = [
+    { value: "Exposiciones", label: "Exposiciones" },
+    { value: "Actividades Culturales", label: "Actividades Culturales" },
+    { value: "Conciertos", label: "Conciertos" },
+    { value: "Clases de pintura", label: "Clases de pintura" },
+    { value: "Clases de música", label: "Clases de música" },
+    { value: "Taller de manualidades", label: "Taller de manualidades" },
+    { value: "Arte", label: "Arte" },
+    { value: "Actividades Educativas", label: "Actividades Educativas" },
+    { value: "Recorridos guiados", label: "Recorridos guiados" },
+    { value: "Clase de Yoga", label: "Clase de Yoga" },
+    { value: "Festival de Primavera", label: "Festival de Primavera" },
+    { value: "Taller de Identificación de Plantas Nativas", label: "Taller de Identificación de Plantas Nativas" },
+    { value: "otro", label: "Otra actividad (especificar)" }
+  ];
+  
+  const [customActivity, setCustomActivity] = useState(false);
   const [formData, setFormData] = useState<ActivityCatalogFormData>({
     name: '',
     description: '',
