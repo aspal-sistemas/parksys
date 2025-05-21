@@ -129,22 +129,22 @@ export default function InstructorProfileDialog({
               <AvatarFallback>{getInitials(instructor.full_name || instructor.fullName || '')}</AvatarFallback>
             </Avatar>
             <div>
-              <DialogTitle className="text-xl">{instructor.full_name}</DialogTitle>
+              <DialogTitle className="text-xl">{instructor.full_name || instructor.fullName}</DialogTitle>
               <DialogDescription>
                 <div className="mt-1 flex items-center space-x-2">
                   <Badge 
                     className={`${
-                      instructor.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-100' : 
-                      instructor.status === 'inactive' ? 'bg-gray-100 text-gray-800 hover:bg-gray-100' : 
+                      (instructor.status || instructor.estado) === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-100' : 
+                      (instructor.status || instructor.estado) === 'inactive' ? 'bg-gray-100 text-gray-800 hover:bg-gray-100' : 
                       'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
                     }`}
                   >
-                    {instructor.status === 'active' ? 'Activo' : 
-                     instructor.status === 'inactive' ? 'Inactivo' : 'Pendiente'}
+                    {(instructor.status || instructor.estado) === 'active' ? 'Activo' : 
+                     (instructor.status || instructor.estado) === 'inactive' ? 'Inactivo' : 'Pendiente'}
                   </Badge>
-                  {instructor.rating && (
+                  {(instructor.rating || instructor.calificacion) && (
                     <div className="flex items-center">
-                      {renderRating(instructor.rating)}
+                      {renderRating(instructor.rating || instructor.calificacion)}
                     </div>
                   )}
                 </div>
@@ -174,36 +174,36 @@ export default function InstructorProfileDialog({
                         <Mail className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
                         <div>
                           <p className="font-medium text-sm">Correo electrónico</p>
-                          <p>{instructor.email}</p>
+                          <p>{instructor.email || instructor.correo}</p>
                         </div>
                       </div>
                       
-                      {instructor.phone && (
+                      {(instructor.phone || instructor.telefono) && (
                         <div className="flex items-start">
                           <Phone className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
                           <div>
                             <p className="font-medium text-sm">Teléfono</p>
-                            <p>{instructor.phone}</p>
+                            <p>{instructor.phone || instructor.telefono}</p>
                           </div>
                         </div>
                       )}
 
-                      {instructor.date_of_birth && (
+                      {(instructor.date_of_birth || instructor.fechaNacimiento) && (
                         <div className="flex items-start">
                           <Calendar className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
                           <div>
                             <p className="font-medium text-sm">Fecha de nacimiento</p>
-                            <p>{formatDate(instructor.date_of_birth)}</p>
+                            <p>{formatDate(instructor.date_of_birth || instructor.fechaNacimiento)}</p>
                           </div>
                         </div>
                       )}
 
-                      {instructor.address && (
+                      {(instructor.address || instructor.direccion) && (
                         <div className="flex items-start">
                           <MapPin className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
                           <div>
                             <p className="font-medium text-sm">Dirección</p>
-                            <p>{instructor.address}</p>
+                            <p>{instructor.address || instructor.direccion}</p>
                           </div>
                         </div>
                       )}
@@ -218,17 +218,17 @@ export default function InstructorProfileDialog({
                         <Briefcase className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
                         <div>
                           <p className="font-medium text-sm">Experiencia</p>
-                          <p>{instructor.experience_years} {instructor.experience_years === 1 ? 'año' : 'años'}</p>
+                          <p>{instructor.experience_years || instructor.experienceYears || 0} {(instructor.experience_years || instructor.experienceYears) === 1 ? 'año' : 'años'}</p>
                         </div>
                       </div>
                       
-                      {instructor.specialties && (
+                      {(instructor.specialties || instructor.especialidades) && (
                         <div className="flex items-start">
                           <GraduationCap className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
                           <div>
                             <p className="font-medium text-sm">Especialidades</p>
                             <div className="flex flex-wrap gap-1 mt-1">
-                              {instructor.specialties.split(',').map((specialty, index) => (
+                              {(instructor.specialties || instructor.especialidades || "").split(',').map((specialty, index) => (
                                 <Badge key={index} variant="outline" className="mr-1 mb-1">
                                   {specialty.trim()}
                                 </Badge>
@@ -238,22 +238,22 @@ export default function InstructorProfileDialog({
                         </div>
                       )}
                       
-                      {instructor.biography && (
+                      {(instructor.biography || instructor.biografia) && (
                         <div className="flex items-start">
                           <FileText className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
                           <div>
                             <p className="font-medium text-sm">Biografía</p>
-                            <p className="text-sm whitespace-pre-line">{instructor.biography}</p>
+                            <p className="text-sm whitespace-pre-line">{instructor.biography || instructor.biografia}</p>
                           </div>
                         </div>
                       )}
                       
-                      {instructor.created_at && (
+                      {(instructor.created_at || instructor.createdAt) && (
                         <div className="flex items-start">
                           <Clock className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
                           <div>
                             <p className="font-medium text-sm">Fecha de registro</p>
-                            <p>{formatDate(instructor.created_at)}</p>
+                            <p>{formatDate(instructor.created_at || instructor.createdAt)}</p>
                           </div>
                         </div>
                       )}
@@ -274,28 +274,28 @@ export default function InstructorProfileDialog({
                       <div key={assignment.id} className="border p-3 rounded-md hover:bg-gray-50">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-medium">{assignment.activity_title}</h4>
-                            <p className="text-sm text-gray-500">{assignment.park_name}</p>
+                            <h4 className="font-medium">{assignment.activity_title || assignment.activityTitle || "Actividad sin título"}</h4>
+                            <p className="text-sm text-gray-500">{assignment.park_name || assignment.parkName || "Parque no especificado"}</p>
                             <div className="mt-1 text-sm">
                               <span className="inline-flex items-center mr-3">
                                 <Calendar className="h-4 w-4 mr-1 text-gray-400" />
-                                {formatDate(assignment.start_date)}
+                                {formatDate(assignment.start_date || assignment.startDate)}
                               </span>
                               <span className="inline-flex items-center">
                                 <Clock className="h-4 w-4 mr-1 text-gray-400" />
-                                {assignment.status}
+                                {assignment.status || assignment.estado || "Pendiente"}
                               </span>
                             </div>
                           </div>
                           <Badge 
                             className={`${
-                              assignment.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-100' : 
-                              assignment.status === 'completed' ? 'bg-blue-100 text-blue-800 hover:bg-blue-100' : 
+                              (assignment.status || assignment.estado) === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-100' : 
+                              (assignment.status || assignment.estado) === 'completed' ? 'bg-blue-100 text-blue-800 hover:bg-blue-100' : 
                               'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
                             }`}
                           >
-                            {assignment.status === 'active' ? 'Activa' : 
-                             assignment.status === 'completed' ? 'Completada' : 'Programada'}
+                            {(assignment.status || assignment.estado) === 'active' ? 'Activa' : 
+                             (assignment.status || assignment.estado) === 'completed' ? 'Completada' : 'Programada'}
                           </Badge>
                         </div>
                       </div>
