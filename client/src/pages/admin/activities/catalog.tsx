@@ -32,9 +32,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, Calendar, Check, X } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -664,91 +671,107 @@ const AdminActivityCatalogPage: React.FC = () => {
         <div className="flex justify-center my-12">
           <p>Cargando catálogo de actividades...</p>
         </div>
+      ) : activityCatalog.length === 0 ? (
+        <div className="text-center p-8 bg-gray-50 rounded-lg border">
+          <p className="text-gray-500">No hay actividades definidas en el catálogo.</p>
+        </div>
       ) : (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[300px]">Nombre</TableHead>
-                <TableHead>Categoría</TableHead>
-                <TableHead>Duración</TableHead>
-                <TableHead>Capacidad</TableHead>
-                <TableHead>Recurrente</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {activityCatalog.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    No hay actividades definidas en el catálogo.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                activityCatalog.map((activity) => (
-                  <TableRow key={activity.id}>
-                    <TableCell className="font-medium">
-                      <div>
-                        {activity.name}
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{activity.description}</p>
+        <div className="space-y-4">
+          {ACTIVITY_CATEGORIES.map((category) => {
+            const categoryActivities = activityCatalog.filter((activity) => activity.category === category.value);
+            
+            return (
+              <Accordion key={category.value} type="single" collapsible className="border rounded-lg">
+                <AccordionItem value={category.value}>
+                  <AccordionTrigger className="px-4 py-3 bg-gray-50 hover:bg-gray-100">
+                    <div className="flex items-center">
+                      <span className="text-lg font-medium">{category.label}</span>
+                      <Badge variant="outline" className="ml-3">{categoryActivities.length}</Badge>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-0">
+                    {categoryActivities.length === 0 ? (
+                      <div className="p-4 text-center text-gray-500">
+                        No hay actividades en esta categoría.
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      {ACTIVITY_CATEGORIES.find(cat => cat.value === activity.category)?.label || activity.category}
-                    </TableCell>
-                    <TableCell>
-                      {activity.duration} min
-                    </TableCell>
-                    <TableCell>
-                      {activity.capacity || 'Sin límite'}
-                    </TableCell>
-                    <TableCell>
-                      {activity.isRecurring ? 'Sí' : 'No'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end space-x-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => handleEditClick(activity)}
-                        >
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Editar</span>
-                        </Button>
-                        <AlertDialog open={isDeleteDialogOpen && currentActivity?.id === activity.id} onOpenChange={setIsDeleteDialogOpen}>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={() => handleDeleteClick(activity)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">Eliminar</span>
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>¿Eliminar esta actividad del catálogo?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Esta acción no se puede deshacer. Esto eliminará permanentemente la actividad
-                                <strong> {currentActivity?.name}</strong> del catálogo.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
-                                Eliminar
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-[300px]">Nombre</TableHead>
+                            <TableHead>Duración</TableHead>
+                            <TableHead>Capacidad</TableHead>
+                            <TableHead>Recurrente</TableHead>
+                            <TableHead className="text-right">Acciones</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {categoryActivities.map((activity) => (
+                            <TableRow key={activity.id}>
+                              <TableCell className="font-medium">
+                                <div>
+                                  {activity.name}
+                                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{activity.description}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {activity.duration} min
+                              </TableCell>
+                              <TableCell>
+                                {activity.capacity || 'Sin límite'}
+                              </TableCell>
+                              <TableCell>
+                                {activity.isRecurring ? <Check className="h-4 w-4 mx-auto" /> : <X className="h-4 w-4 mx-auto text-gray-400" />}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end space-x-2">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => handleEditClick(activity)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                    <span className="sr-only">Editar</span>
+                                  </Button>
+                                  <AlertDialog open={isDeleteDialogOpen && currentActivity?.id === activity.id} onOpenChange={setIsDeleteDialogOpen}>
+                                    <AlertDialogTrigger asChild>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon"
+                                        onClick={() => handleDeleteClick(activity)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Eliminar</span>
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>¿Eliminar esta actividad del catálogo?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Esta acción no se puede deshacer. Esto eliminará permanentemente la actividad
+                                          <strong> {currentActivity?.name}</strong> del catálogo.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
+                                          Eliminar
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            );
+          })}
         </div>
       )}
 
