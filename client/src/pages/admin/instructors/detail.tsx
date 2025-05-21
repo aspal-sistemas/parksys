@@ -195,10 +195,6 @@ export default function InstructorDetailPage() {
               <FileEdit className="mr-2 h-4 w-4" />
               Editar
             </Button>
-            <Button variant="destructive">
-              <Trash className="mr-2 h-4 w-4" />
-              Eliminar
-            </Button>
           </div>
         </div>
 
