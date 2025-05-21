@@ -79,6 +79,7 @@ const AdminActivityCatalogPage: React.FC = () => {
   
   // Lista de nombres de actividades precargadas
   const PREDEFINED_ACTIVITIES = [
+    // Arte y Cultura
     { value: "Exposiciones", label: "Exposiciones" },
     { value: "Actividades Culturales", label: "Actividades Culturales" },
     { value: "Conciertos", label: "Conciertos" },
@@ -88,9 +89,37 @@ const AdminActivityCatalogPage: React.FC = () => {
     { value: "Arte", label: "Arte" },
     { value: "Actividades Educativas", label: "Actividades Educativas" },
     { value: "Recorridos guiados", label: "Recorridos guiados" },
+    
+    // Recreación y Bienestar
     { value: "Clase de Yoga", label: "Clase de Yoga" },
+    
+    // Eventos de Temporada
     { value: "Festival de Primavera", label: "Festival de Primavera" },
+    { value: "Festivales", label: "Festivales" },
+    { value: "Eventos en días especiales", label: "Eventos en días especiales" },
+    { value: "Ferias (zapatos, libros, salud)", label: "Ferias (zapatos, libros, salud)" },
+    { value: "Pláticas-charlas", label: "Pláticas-charlas (octubre, marzo, Mujer, cáncer, violencia)" },
+    { value: "Tianguis", label: "Tianguis" },
+    { value: "Espectáculos", label: "Espectáculos" },
+    { value: "Feria para OSC recaudación de fondos", label: "Feria para OSC recaudación de fondos" },
+    { value: "Hanal Pixán", label: "Hanal Pixán" },
+    { value: "Mercado emprendedores", label: "Mercado emprendedores" },
+    { value: "Eventos sociales", label: "Eventos sociales" },
+    
+    // Naturaleza, Ciencia y Conservación
     { value: "Taller de Identificación de Plantas Nativas", label: "Taller de Identificación de Plantas Nativas" },
+    { value: "Clases de jardinería y siembra", label: "Clases de jardinería y siembra" },
+    { value: "Recorrido botánico", label: "Recorrido botánico" },
+    { value: "Venta de plantas", label: "Venta de plantas" },
+    { value: "Clases de educación ambiental", label: "Clases de educación ambiental" },
+    { value: "Taller Huertos orgánicos", label: "Taller Huertos orgánicos" },
+    { value: "Manualidades", label: "Manualidades" },
+    { value: "Cursos de reciclaje", label: "Cursos de reciclaje" },
+    { value: "Avistamiento de Aves", label: "Avistamiento de Aves" },
+    { value: "Pláticas sobre plantas ricas en vitaminas y para una buena alimentación", label: "Pláticas sobre plantas ricas en vitaminas y para una buena alimentación" },
+    { value: "Reforestación", label: "Reforestación" },
+    
+    // Otro
     { value: "otro", label: "Otra actividad (especificar)" }
   ];
   
