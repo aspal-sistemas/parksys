@@ -45,6 +45,18 @@ const MERCADO_META = [
   { id: "adultosmayores", label: "Adultos Mayores - +65 años" }
 ];
 
+// Opciones de capacidades diferentes
+const CAPACIDADES_DIFERENTES = [
+  { id: "fisica", label: "Física / Motriz" },
+  { id: "visual", label: "Visual" },
+  { id: "auditiva", label: "Auditiva" },
+  { id: "intelectual", label: "Intelectual / Cognitiva" },
+  { id: "psicosocial", label: "Psicosocial / Mental" },
+  { id: "neurodivergencias", label: "Neurodivergencias" },
+  { id: "multiple", label: "Múltiple / Combinada" },
+  { id: "temporal", label: "Temporal" }
+];
+
 // Esquema de validación para el formulario
 const formSchema = z.object({
   title: z.string().min(3, "El título debe tener al menos 3 caracteres"),
@@ -63,6 +75,8 @@ const formSchema = z.object({
   recurringDays: z.array(z.string()).optional(),
   // Nuevos campos para segmentación
   targetMarket: z.array(z.string()).optional(),
+  // Campos para capacidades diferentes
+  specialNeeds: z.array(z.string()).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -94,6 +108,7 @@ const CrearActividadPage = () => {
       isRecurring: false,
       recurringDays: [],
       targetMarket: [],
+      specialNeeds: [],
     },
   });
 
@@ -297,6 +312,62 @@ const CrearActividadPage = () => {
                             key={item.id}
                             control={form.control}
                             name="targetMarket"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={item.id}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(item.id)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...(field.value || []), item.id])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== item.id
+                                              )
+                                            );
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal">
+                                    {item.label}
+                                  </FormLabel>
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Sección de Capacidades Diferentes */}
+              <div className="space-y-4 pt-4 border-t">
+                <h3 className="text-lg font-medium">Capacidades Diferentes</h3>
+                
+                <FormField
+                  control={form.control}
+                  name="specialNeeds"
+                  render={() => (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel>Accesibilidad para personas con capacidades diferentes</FormLabel>
+                        <FormDescription>
+                          Selecciona los tipos de discapacidad para los que esta actividad está adaptada
+                        </FormDescription>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {CAPACIDADES_DIFERENTES.map((item) => (
+                          <FormField
+                            key={item.id}
+                            control={form.control}
+                            name="specialNeeds"
                             render={({ field }) => {
                               return (
                                 <FormItem
