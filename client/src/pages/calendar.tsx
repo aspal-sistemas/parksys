@@ -43,7 +43,7 @@ const CalendarPage: React.FC = () => {
   
   // Consultar actividades
   const { data: activities = [], isLoading } = useQuery<Activity[]>({
-    queryKey: ['/api/activities/public'],
+    queryKey: ['/api/activities'],
   });
   
   // Extraer categorías, parques e instructores únicos para los filtros

@@ -31,7 +31,7 @@ const InstructorsPage: React.FC = () => {
   
   // Obtener datos de instructores
   const { data: instructors = [], isLoading } = useQuery<Instructor[]>({
-    queryKey: ['/api/instructors/public'],
+    queryKey: ['/api/instructors'],
   });
   
   // Extraer especialidades únicas para el filtro
