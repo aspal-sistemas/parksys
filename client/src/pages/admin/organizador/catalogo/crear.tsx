@@ -193,24 +193,22 @@ const CrearActividadPage = () => {
       }
       
       // Solo incluimos los campos que existen en la base de datos real
-      // Combinar fecha y hora para crear fechas completas
-      const startDateTime = combinarFechaYHora(values.startDate, values.startTime);
-      const endDateTime = values.endDate ? combinarFechaYHora(values.endDate, values.endTime) : null;
-      
-      // Si no hay duración especificada, calcularla a partir de las horas
+      // Calcular duración
       let duracion = values.duration;
-      if (!duracion && values.startTime && values.endTime) {
+      if (values.startTime && values.endTime) {
         duracion = calcularDuracionEnMinutos(values.startTime, values.endTime);
       }
       
+      // Formatear fechas para la API
+      // La API espera fechas normales, no necesitamos combinar con hora porque puede causar problemas
       const data = {
         title: values.title,
         description: values.description,
         parkId,
-        startDate: startDateTime,
-        endDate: endDateTime,
-        startTime: values.startTime, // Guardar también la hora como string para mostrar en la interfaz
-        endTime: values.endTime,     // Guardar también la hora como string para mostrar en la interfaz
+        startDate: values.startDate,
+        endDate: values.endDate || null,
+        startTime: values.startTime,
+        endTime: values.endTime,
         category: values.category,
         location: values.location || null,
         capacity: values.capacity || null,
@@ -553,7 +551,20 @@ const CrearActividadPage = () => {
                       <FormItem>
                         <FormLabel>Hora de inicio *</FormLabel>
                         <FormControl>
-                          <Input type="time" {...field} />
+                          <Input 
+                            type="time" 
+                            {...field} 
+                            onChange={(e) => {
+                              field.onChange(e); // Actualizar el campo normalmente
+                              
+                              // Calcular la duración automáticamente
+                              const endTime = form.getValues("endTime");
+                              if (endTime) {
+                                const duracionCalculada = calcularDuracionEnMinutos(e.target.value, endTime);
+                                form.setValue("duration", duracionCalculada);
+                              }
+                            }}
+                          />
                         </FormControl>
                         <FormDescription>
                           Hora a la que comenzará la actividad
@@ -570,7 +581,20 @@ const CrearActividadPage = () => {
                       <FormItem>
                         <FormLabel>Hora de finalización *</FormLabel>
                         <FormControl>
-                          <Input type="time" {...field} />
+                          <Input 
+                            type="time" 
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e); // Actualizar el campo normalmente
+                              
+                              // Calcular la duración automáticamente
+                              const startTime = form.getValues("startTime");
+                              if (startTime) {
+                                const duracionCalculada = calcularDuracionEnMinutos(startTime, e.target.value);
+                                form.setValue("duration", duracionCalculada);
+                              }
+                            }}
+                          />
                         </FormControl>
                         <FormDescription>
                           Hora a la que terminará la actividad
@@ -588,10 +612,16 @@ const CrearActividadPage = () => {
                     <FormItem>
                       <FormLabel>Duración (minutos)</FormLabel>
                       <FormControl>
-                        <Input type="number" min="0" placeholder="Ej: 60" {...field} />
+                        <Input 
+                          type="number" 
+                          min="0" 
+                          placeholder="Se calcula automáticamente" 
+                          {...field} 
+                          disabled={true} // Deshabilitamos el campo para que sea de solo lectura
+                        />
                       </FormControl>
                       <FormDescription>
-                        Indica cuánto dura cada sesión en minutos
+                        Se calcula automáticamente basado en la hora de inicio y finalización
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
