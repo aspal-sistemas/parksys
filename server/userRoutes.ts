@@ -18,6 +18,18 @@ const createUserSchema = z.object({
 // Esquema para validar la actualización de un usuario
 const updateUserSchema = createUserSchema.partial().extend({
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").optional(),
+  profileImageUrl: z.string().optional(),
+  phone: z.string().optional(),
+  gender: z.string().optional(),
+  birthDate: z.string().optional(),
+  bio: z.string().optional(),
+  experience: z.string().optional(),
+  specialties: z.array(z.string()).optional(),
+  address: z.string().optional(),
+  emergencyContactName: z.string().optional(),
+  emergencyContactPhone: z.string().optional(),
+  preferredParkId: z.number().nullable().optional(),
+  legalConsent: z.boolean().optional(),
 });
 
 export function registerUserRoutes(app: any, apiRouter: Router) {
