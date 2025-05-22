@@ -431,7 +431,7 @@ const AdminSidebarModular: React.FC = () => {
                   icon={<Users className="h-4 w-4" />}
                   active={location === '/admin/volunteers'}
                 >
-                  Lista de Voluntarios
+                  Voluntarios
                 </NavItem>
                 
 
