@@ -373,41 +373,47 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
       // Si el usuario tiene rol de voluntario, sincronizar con la tabla de voluntarios
       if (updatedUser.role === 'voluntario') {
         try {
-          // Capturar campos específicos de voluntario del formulario
-          const volunteerProfileData = {
-            volunteer_experience: updateData.volunteerExperience,
-            skills: updateData.skills,
-            emergency_contact_name: updateData.emergencyContactName,
-            emergency_contact_phone: updateData.emergencyContactPhone,
-            preferred_park_id: updateData.preferredParkId,
-            legal_consent: updateData.legalConsent,
-            address: updateData.address
-          };
-          
-          console.log("Datos de perfil de voluntario a actualizar:", volunteerProfileData);
-          
-          // Primero sincronizar los datos básicos
+          // Primero sincronizamos los datos básicos
           await syncUserWithVolunteerTable(updatedUser);
           
-          // Luego actualizar campos específicos de voluntario si existen
-          const volunteerResult = await db.execute(
-            sql`SELECT id FROM volunteers WHERE email = ${updatedUser.email}`
-          );
-          
-          if (volunteerResult.rows && volunteerResult.rows.length > 0) {
-            const volunteerId = volunteerResult.rows[0].id;
+          // Si hay información adicional de voluntario, hacemos una solicitud a la ruta especializada
+          if (updateData.volunteerExperience || updateData.availability || 
+              updateData.preferredParkId || updateData.legalConsent) {
             
-            // Actualizar los campos adicionales de voluntario
-            await db.execute(
-              sql`UPDATE volunteers 
-                  SET previous_experience = COALESCE(${volunteerProfileData.volunteer_experience}, previous_experience),
-                      legal_consent = COALESCE(${volunteerProfileData.legal_consent}, legal_consent),
-                      preferred_park_id = COALESCE(${volunteerProfileData.preferred_park_id}, preferred_park_id),
-                      available_hours = COALESCE(${updateData.availability}, available_hours)
-                  WHERE id = ${volunteerId}`
+            // Encuentro el ID del voluntario
+            const volunteerResult = await db.execute(
+              sql`SELECT id FROM volunteers WHERE user_id = ${updatedUser.id}`
             );
             
-            console.log(`Información adicional de voluntario actualizada para ID ${volunteerId}`);
+            if (volunteerResult.rows && volunteerResult.rows.length > 0) {
+              const volunteerId = volunteerResult.rows[0].id;
+              
+              // Llamamos a la API interna para actualizar el perfil de voluntario
+              const volunteerUpdateData = {
+                volunteerId: volunteerId,
+                userId: updatedUser.id,
+                volunteerExperience: updateData.volunteerExperience,
+                availability: updateData.availability,
+                preferredParkId: updateData.preferredParkId,
+                legalConsent: updateData.legalConsent
+              };
+              
+              // Hacer la solicitud a nuestra nueva ruta
+              const response = await fetch(`http://localhost:5000/api/volunteers/update-profile`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': req.headers.authorization || ''
+                },
+                body: JSON.stringify(volunteerUpdateData)
+              });
+              
+              if (!response.ok) {
+                console.error(`Error al actualizar perfil adicional del voluntario: ${response.status}`);
+              } else {
+                console.log('Perfil de voluntario actualizado correctamente mediante API');
+              }
+            }
           }
         } catch (error) {
           console.error("Error al actualizar información adicional de voluntario:", error);

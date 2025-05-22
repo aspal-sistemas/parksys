@@ -604,6 +604,73 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
     }
   });
 
+  // Actualizar perfil completo de voluntario (para integrar con perfil de usuario)
+  apiRouter.post("/volunteers/update-profile", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      console.log("Actualizando perfil completo de voluntario:", req.body);
+      
+      const { userId, volunteerId, volunteerExperience, skills, availability, legalConsent, preferredParkId } = req.body;
+      
+      if (!volunteerId && !userId) {
+        return res.status(400).json({ message: "Se requiere un ID de voluntario o usuario" });
+      }
+      
+      // Buscar por ID de voluntario o ID de usuario
+      let existingVolunteer;
+      if (volunteerId) {
+        const [result] = await db
+          .select()
+          .from(volunteers)
+          .where(eq(volunteers.id, parseInt(volunteerId)));
+        existingVolunteer = result;
+      } else if (userId) {
+        const [result] = await db
+          .select()
+          .from(volunteers)
+          .where(eq(volunteers.user_id, parseInt(userId)));
+        existingVolunteer = result;
+      }
+      
+      if (!existingVolunteer) {
+        return res.status(404).json({ message: "Voluntario no encontrado" });
+      }
+      
+      // Actualizar solo los campos que existen en la tabla
+      const updatedData: any = {};
+      
+      if (volunteerExperience !== undefined) {
+        updatedData.previous_experience = volunteerExperience;
+      }
+      
+      if (availability !== undefined) {
+        updatedData.available_hours = availability;
+      }
+      
+      if (legalConsent !== undefined) {
+        updatedData.legal_consent = legalConsent;
+      }
+      
+      if (preferredParkId !== undefined) {
+        updatedData.preferred_park_id = preferredParkId;
+      }
+      
+      // Actualizar timestamp
+      updatedData.updated_at = new Date();
+      
+      // Actualizar el registro
+      const [updatedVolunteer] = await db
+        .update(volunteers)
+        .set(updatedData)
+        .where(eq(volunteers.id, existingVolunteer.id))
+        .returning();
+      
+      res.json(updatedVolunteer);
+    } catch (error) {
+      console.error("Error al actualizar perfil de voluntario:", error);
+      res.status(500).json({ message: "Error al actualizar perfil de voluntario" });
+    }
+  });
+  
   // Registrar nueva participación
   apiRouter.post("/volunteers/:id/participations", isAuthenticated, async (req: Request, res: Response) => {
     try {
