@@ -394,7 +394,7 @@ export default function InstructorsListPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setLocation(`/admin/instructors/${instructor.id}`)}
+                            onClick={() => setLocation(`/admin/instructors/detail/${instructor.id}`)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
