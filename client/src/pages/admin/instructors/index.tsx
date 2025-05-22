@@ -453,27 +453,6 @@ export default function InstructorsListPage() {
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <ChevronDown className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setLocation(`/admin/instructors/assignments/${instructor.id}`)}>
-                                <Calendar className="mr-2 h-4 w-4" />
-                                <span>Asignaciones</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setLocation(`/admin/instructors/evaluations/${instructor.id}`)}>
-                                <BookText className="mr-2 h-4 w-4" />
-                                <span>Evaluaciones</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setLocation(`/admin/instructors/recognitions/${instructor.id}`)}>
-                                <Award className="mr-2 h-4 w-4" />
-                                <span>Reconocimientos</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
                         </div>
                       </TableCell>
                     </TableRow>
