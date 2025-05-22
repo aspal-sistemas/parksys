@@ -33,6 +33,10 @@ export default function InstructorDetailPage() {
   const [, setLocation] = useLocation();
   const instructorId = parseInt(params.id);
   
+  // Estados del componente (todos juntos al inicio)
+  const [activeTab, setActiveTab] = useState('profile');
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState<number | null>(null);
+  
   // Obtener datos del instructor
   const { 
     data: instructorData, 
@@ -84,6 +88,13 @@ export default function InstructorDetailPage() {
     queryKey: [`/api/instructors/${instructorId}/recognitions`],
     enabled: !isNaN(instructorId)
   });
+
+  // Seleccionar la primera asignación por defecto si está disponible
+  React.useEffect(() => {
+    if (assignments?.length > 0 && !selectedAssignmentId) {
+      setSelectedAssignmentId(assignments[0].id);
+    }
+  }, [assignments, selectedAssignmentId]);
 
   // Formatear fecha
   const formatDate = (dateString: string) => {
@@ -185,9 +196,6 @@ export default function InstructorDetailPage() {
       </AdminLayout>
     );
   }
-
-  // Estado para el diálogo de evaluación
-  const [evaluationDialogOpen, setEvaluationDialogOpen] = useState(false);
 
   return (
     <AdminLayout>
@@ -326,7 +334,7 @@ export default function InstructorDetailPage() {
           
           {/* Columna derecha - Tabs con información detallada */}
           <div className="md:col-span-2">
-            <Tabs defaultValue="activities">
+            <Tabs defaultValue="activities" onValueChange={setActiveTab} value={activeTab}>
               <TabsList className="mb-4">
                 <TabsTrigger value="activities">
                   <CalendarClock className="h-4 w-4 mr-2" />
@@ -375,7 +383,7 @@ export default function InstructorDetailPage() {
                         <CardHeader className="pb-2">
                           <div className="flex justify-between">
                             <CardTitle className="text-lg">{evaluation.title || 'Evaluación'}</CardTitle>
-                            <Badge>{format(new Date(evaluation.createdAt), 'dd MMM yyyy', { locale: es })}</Badge>
+                            <Badge>{formatDate(evaluation.evaluation_date || evaluation.created_at)}</Badge>
                           </div>
                         </CardHeader>
                         <CardContent>
@@ -398,9 +406,16 @@ export default function InstructorDetailPage() {
                             </div>
                             <div className="bg-gray-50 p-2 rounded text-center">
                               <p className="text-xs text-gray-500">Desempeño</p>
-                              <p className="font-bold">{evaluation.overallPerformance}/5</p>
+                              <p className="font-bold">{evaluation.overall_performance}/5</p>
                             </div>
                           </div>
+                          
+                          {evaluation.activity_title && (
+                            <div className="mt-3 pt-3 border-t">
+                              <p className="text-xs text-gray-500">Actividad evaluada</p>
+                              <p>{evaluation.activity_title}</p>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     ))}
@@ -432,16 +447,14 @@ export default function InstructorDetailPage() {
                       <Card key={recognition.id}>
                         <CardHeader className="pb-2">
                           <div className="flex justify-between">
-                            <CardTitle className="text-lg">{recognition.title}</CardTitle>
-                            <Badge className="bg-amber-100 text-amber-800">
-                              {format(new Date(recognition.issuedAt), 'dd MMM yyyy', { locale: es })}
-                            </Badge>
+                            <CardTitle className="text-lg">{recognition.title || 'Reconocimiento'}</CardTitle>
+                            <Badge>{formatDate(recognition.issuedAt || recognition.created_at)}</Badge>
                           </div>
+                          <CardDescription>{recognition.type}</CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-gray-700 mb-3">{recognition.description}</p>
-                          {recognition.category && (
-                            <Badge variant="outline">{recognition.category}</Badge>
+                          {recognition.description && (
+                            <p className="text-gray-700">{recognition.description}</p>
                           )}
                         </CardContent>
                       </Card>
