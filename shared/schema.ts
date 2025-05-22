@@ -597,37 +597,25 @@ export const instructorAssignments = pgTable("instructor_assignments", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-// 3. Tabla de Evaluaciones de Instructores
+// 3. Tabla de Evaluaciones de Instructores (adaptada a la estructura real de la DB)
 export const instructorEvaluations = pgTable("instructor_evaluations", {
   id: serial("id").primaryKey(),
   assignmentId: integer("assignment_id").notNull(),
   instructorId: integer("instructor_id").notNull(),
-  evaluatorId: integer("evaluator_id").notNull(),
-  evaluatorType: text("evaluator_type").notNull(), // "participant", "supervisor", "self"
-  evaluationDate: timestamp("evaluation_date").notNull().defaultNow(),
+  evaluatorId: integer("evaluator_id"),
   
-  // Criterios de evaluación (escala 1-5)
-  professionalism: integer("professionalism"), // Puntualidad, presentación, respeto, responsabilidad
-  teachingClarity: integer("teaching_clarity"), // Capacidad para explicar conceptos, guiar al grupo, resolver dudas
-  activeParticipation: integer("active_participation"), // Si motiva e involucra a los asistentes
-  communication: integer("communication"), // Lenguaje claro, escucha activa, trato amable
-  groupManagement: integer("group_management"), // Orden, respeto, control del grupo
+  // Criterios básicos de evaluación (escala 1-5)
+  knowledge: integer("knowledge"), // 1-5 Conocimiento de la materia
+  communication: integer("communication"), // 1-5 Habilidades de comunicación
+  methodology: integer("methodology"), // 1-5 Metodología de enseñanza
+  overallPerformance: integer("overall_performance"), // 1-5 Desempeño general
   
-  // Campo para compatibilidad con el esquema anterior
-  knowledge: integer("knowledge"), // 1-5
-  methodology: integer("methodology"), // 1-5
-  overallPerformance: integer("overall_performance").notNull(), // 1-5 (promedio general)
+  // Comentarios y evaluación cualitativa
+  comments: text("comments"), // Observaciones adicionales
   
-  // Identificadores relacionados
-  activityId: integer("activity_id"), // Opcional, para relacionar con actividad específica
-  periodId: integer("period_id"), // Opcional, para evaluaciones periódicas (trimestre, etc.)
-  
-  comments: text("comments"), // Espacio para observaciones adicionales
-  followUpRequired: boolean("follow_up_required").default(false), // Si requiere seguimiento
-  followUpNotes: text("follow_up_notes"), // Notas de seguimiento
-
+  // Campos de auditoría
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at")
 });
 
 // 4. Tabla de Reconocimientos de Instructores
@@ -703,8 +691,7 @@ export const insertInstructorAssignmentSchema = createInsertSchema(instructorAss
 export const insertInstructorEvaluationSchema = createInsertSchema(instructorEvaluations).omit({ 
   id: true, 
   createdAt: true,
-  updatedAt: true,
-  evaluationDate: true  // Se autogenera con defaultNow()
+  updatedAt: true
 });
 
 export const insertInstructorRecognitionSchema = createInsertSchema(instructorRecognitions).omit({ 

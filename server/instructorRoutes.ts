@@ -385,27 +385,19 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
         return res.status(400).json({ message: "ID de instructor no válido" });
       }
       
-      // Usamos una consulta SQL específica para evitar problemas con campos que podrían no existir
+      // Usamos una consulta SQL específica para obtener solo los campos que existen en la tabla
       const result = await db.execute(sql`
         SELECT 
           e.id,
           e.instructor_id,
           e.assignment_id,
           e.evaluator_id,
-          e.created_at as evaluation_date,
-          e.professionalism,
-          e.teaching_clarity,
-          e.active_participation,
+          e.created_at,
+          e.comments,
           e.communication,
-          e.group_management,
           e.knowledge,
           e.methodology,
           e.overall_performance,
-          e.comments,
-          e.follow_up_required,
-          e.follow_up_notes,
-          e.created_at,
-          e.updated_at,
           'supervisor' as evaluator_type,
           i.full_name as instructor_name,
           a.title as activity_title
