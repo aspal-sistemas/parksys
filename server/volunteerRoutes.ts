@@ -512,7 +512,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       
       // Realizamos un soft delete cambiando el estado a "inactive" con SQL directo
       await db.execute(
-        sql`UPDATE volunteers SET status = 'inactive', updated_at = NOW() WHERE id = ${volunteerId}`
+        sql`UPDATE volunteers SET status = 'inactive', updated_at = CURRENT_TIMESTAMP WHERE id = ${volunteerId}`
       );
         
       res.json({ message: "Voluntario inactivado correctamente", volunteerId });
@@ -530,16 +530,28 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         return res.status(403).json({ message: "No autorizado. Solo administradores pueden realizar esta acción" });
       }
       
-      // Realizamos un soft delete cambiando el estado a "inactive" para todos los voluntarios activos
-      const result = await db.execute(
-        sql`UPDATE volunteers SET status = 'inactive', updated_at = NOW() WHERE status = 'active'`
+      // Obtenemos una lista de IDs de voluntarios activos para mostrar el conteo
+      const activeVolunteers = await db.execute(
+        sql`SELECT id FROM volunteers WHERE status = 'active'`
       );
       
-      const affectedRows = result.rowCount || 0;
+      const activeCount = activeVolunteers.rows?.length || 0;
+      
+      if (activeCount === 0) {
+        return res.json({ 
+          message: "No hay voluntarios activos para eliminar",
+          count: 0
+        });
+      }
+      
+      // Realizamos un soft delete cambiando el estado a "inactive" para todos los voluntarios activos
+      await db.execute(
+        sql`UPDATE volunteers SET status = 'inactive', updated_at = CURRENT_TIMESTAMP WHERE status = 'active'`
+      );
       
       res.json({ 
-        message: `${affectedRows} voluntarios han sido inactivados correctamente`,
-        count: affectedRows
+        message: `${activeCount} voluntarios han sido inactivados correctamente`,
+        count: activeCount
       });
     } catch (error) {
       console.error("Error al eliminar todos los voluntarios:", error);

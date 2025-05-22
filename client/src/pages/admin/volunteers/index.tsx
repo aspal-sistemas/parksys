@@ -224,6 +224,13 @@ const VolunteersList: React.FC = () => {
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteAllClick}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Eliminar Todos
+            </Button>
             <Link href="/admin/volunteers/new">
               <Button>
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -486,6 +493,41 @@ const VolunteersList: React.FC = () => {
                   <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Eliminando...</>
                 ) : (
                   'Eliminar'
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        
+        {/* Diálogo de confirmación para eliminar TODOS los voluntarios */}
+        <AlertDialog open={deleteAllDialogOpen} onOpenChange={setDeleteAllDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-red-600">¡ADVERTENCIA! Acción irreversible</AlertDialogTitle>
+              <AlertDialogDescription>
+                <div className="space-y-2">
+                  <p>Estás a punto de inactivar <strong>TODOS los voluntarios</strong> del sistema.</p>
+                  <p>Esta acción:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Cambiará el estado de todos los voluntarios activos a "inactivo"</li>
+                    <li>Hará que desaparezcan de la lista principal</li>
+                    <li>No eliminará permanentemente sus datos, pero dejará de ser accesibles</li>
+                  </ul>
+                  <p className="font-bold">¿Estás absolutamente seguro de que deseas continuar?</p>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleConfirmDeleteAll}
+                disabled={deleteAllVolunteersMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {deleteAllVolunteersMutation.isPending ? (
+                  <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Eliminando todos...</>
+                ) : (
+                  'Sí, eliminar TODOS los voluntarios'
                 )}
               </AlertDialogAction>
             </AlertDialogFooter>
