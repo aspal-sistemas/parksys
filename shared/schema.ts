@@ -409,13 +409,32 @@ export const volunteerEvaluations = pgTable("volunteer_evaluations", {
   participationId: integer("participation_id").notNull(),
   volunteerId: integer("volunteer_id").notNull(),
   evaluatorId: integer("evaluator_id").notNull(),
-  punctuality: integer("punctuality").notNull(), // 1-5
-  attitude: integer("attitude").notNull(), // 1-5
-  responsibility: integer("responsibility").notNull(), // 1-5
-  overallPerformance: integer("overall_performance").notNull(), // 1-5
-  comments: text("comments"),
-  followUpRequired: boolean("follow_up_required").default(false),
+  evaluatorType: text("evaluator_type").notNull(), // "supervisor", "coordinator", "self"
+  evaluationDate: timestamp("evaluation_date").notNull().defaultNow(),
+  
+  // Criterios de evaluación (escala 1-5)
+  professionalism: integer("professionalism"), // Puntualidad, presentación, respeto, responsabilidad
+  communication: integer("communication"), // Lenguaje claro, escucha activa, trato amable
+  teamwork: integer("teamwork"), // Colaboración, trabajo en equipo
+  initiative: integer("initiative"), // Proactividad, proposición de ideas
+  adaptability: integer("adaptability"), // Capacidad de adaptación a cambios o desafíos
+  
+  // Campos para compatibilidad con el esquema anterior
+  punctuality: integer("punctuality"), // 1-5
+  attitude: integer("attitude"), // 1-5
+  responsibility: integer("responsibility"), // 1-5
+  overallPerformance: integer("overall_performance").notNull(), // 1-5 (promedio general)
+  
+  // Identificadores relacionados
+  activityId: integer("activity_id"), // Opcional, para relacionar con actividad específica
+  periodId: integer("period_id"), // Opcional, para evaluaciones periódicas (trimestre, etc.)
+  
+  comments: text("comments"), // Espacio para observaciones adicionales
+  followUpRequired: boolean("follow_up_required").default(false), // Si requiere seguimiento
+  followUpNotes: text("follow_up_notes"), // Notas de seguimiento
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 // 4. Tabla de Reconocimientos
@@ -603,12 +622,31 @@ export const instructorEvaluations = pgTable("instructor_evaluations", {
   assignmentId: integer("assignment_id").notNull(),
   instructorId: integer("instructor_id").notNull(),
   evaluatorId: integer("evaluator_id").notNull(),
-  knowledge: integer("knowledge").notNull(), // 1-5
-  communication: integer("communication").notNull(), // 1-5
-  methodology: integer("methodology").notNull(), // 1-5
-  overallPerformance: integer("overall_performance").notNull(), // 1-5
-  comments: text("comments"),
+  evaluatorType: text("evaluator_type").notNull(), // "participant", "supervisor", "self"
+  evaluationDate: timestamp("evaluation_date").notNull().defaultNow(),
+  
+  // Criterios de evaluación (escala 1-5)
+  professionalism: integer("professionalism"), // Puntualidad, presentación, respeto, responsabilidad
+  teachingClarity: integer("teaching_clarity"), // Capacidad para explicar conceptos, guiar al grupo, resolver dudas
+  activeParticipation: integer("active_participation"), // Si motiva e involucra a los asistentes
+  communication: integer("communication"), // Lenguaje claro, escucha activa, trato amable
+  groupManagement: integer("group_management"), // Orden, respeto, control del grupo
+  
+  // Campo para compatibilidad con el esquema anterior
+  knowledge: integer("knowledge"), // 1-5
+  methodology: integer("methodology"), // 1-5
+  overallPerformance: integer("overall_performance").notNull(), // 1-5 (promedio general)
+  
+  // Identificadores relacionados
+  activityId: integer("activity_id"), // Opcional, para relacionar con actividad específica
+  periodId: integer("period_id"), // Opcional, para evaluaciones periódicas (trimestre, etc.)
+  
+  comments: text("comments"), // Espacio para observaciones adicionales
+  followUpRequired: boolean("follow_up_required").default(false), // Si requiere seguimiento
+  followUpNotes: text("follow_up_notes"), // Notas de seguimiento
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 // 4. Tabla de Reconocimientos de Instructores
