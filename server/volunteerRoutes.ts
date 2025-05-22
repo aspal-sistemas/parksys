@@ -128,7 +128,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       const volunteerUsers = await db.execute(
         sql`SELECT 
           u.id as user_id, 
-          u.fullName as full_name, 
+          u.full_name, 
           u.email, 
           NULL as phone, 
           'active' as status, 
