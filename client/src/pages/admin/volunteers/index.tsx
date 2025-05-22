@@ -407,12 +407,6 @@ const VolunteersList: React.FC = () => {
                                     Editar Usuario
                                   </Button>
                                 </Link>
-                                <Link href={`/admin/volunteers/convert/${volunteer.user_id}`}>
-                                  <Button variant="secondary" size="sm">
-                                    <RefreshCw className="h-3 w-3 mr-1" />
-                                    Crear Perfil Completo
-                                  </Button>
-                                </Link>
                               </>
                             ) : (
                               <>
