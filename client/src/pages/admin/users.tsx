@@ -138,15 +138,41 @@ const UserDetail: React.FC<{
   };
   
   // Manejar la carga de imágenes
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Guardar el archivo para enviarlo al servidor más tarde
-      handleChange('profileImageFile', file);
-      
-      // Crear una URL para previsualizar la imagen
-      const imageUrl = URL.createObjectURL(file);
-      handleChange('profileImageUrl', imageUrl);
+      try {
+        // Crear un FormData para enviar la imagen al servidor
+        const formData = new FormData();
+        formData.append('profileImage', file);
+        
+        // Enviar la imagen al servidor
+        const response = await fetch('/api/upload/profile-image', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            // No incluir Content-Type, el navegador lo configura automáticamente con el boundary
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Error al cargar la imagen');
+        }
+        
+        const data = await response.json();
+        
+        // Actualizar la URL de la imagen con la URL permanente devuelta por el servidor
+        handleChange('profileImageUrl', data.url);
+        // Ya no necesitamos guardar el archivo, ya que se ha subido al servidor
+        handleChange('profileImageFile', null);
+      } catch (error) {
+        console.error('Error al cargar la imagen:', error);
+        // En caso de error, creamos una URL temporal para la vista previa
+        const imageUrl = URL.createObjectURL(file);
+        handleChange('profileImageUrl', imageUrl);
+        handleChange('profileImageFile', file);
+      }
     }
   };
   

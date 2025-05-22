@@ -92,7 +92,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Montamos todas las rutas de la API bajo el prefijo /api
   app.use('/api', apiRouter);
   
-  // Montamos todas las rutas públicas bajo el prefijo /public-api
+  // Endpoint para cargar imágenes de perfil
+  app.post('/api/upload/profile-image', isAuthenticated, handleProfileImageUpload);
+
   // Montamos todas las rutas públicas bajo el prefijo /public-api
   // Esta línea asegura que todas las rutas definidas en publicRouter sean accesibles bajo /public-api
   app.use('/public-api', publicRouter);

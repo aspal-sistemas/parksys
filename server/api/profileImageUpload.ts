@@ -3,8 +3,8 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-// Configurar la carpeta de destino para imágenes de perfil
-const uploadDir = path.join(__dirname, '../../public/uploads/profiles');
+// Configurar la carpeta de destino para imágenes de perfil usando una ruta relativa
+const uploadDir = path.resolve('./public/uploads/profiles');
 
 // Asegurarse de que existe la carpeta para los perfiles
 if (!fs.existsSync(uploadDir)) {
