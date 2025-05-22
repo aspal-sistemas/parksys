@@ -224,19 +224,6 @@ const VolunteersList: React.FC = () => {
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleDeleteAllClick}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Eliminar Todos
-            </Button>
-            <Link href="/admin/volunteers/new">
-              <Button>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Nuevo Voluntario
-              </Button>
-            </Link>
           </div>
         </div>
 
