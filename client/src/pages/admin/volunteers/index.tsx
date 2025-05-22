@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
@@ -23,24 +23,81 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   UserPlus, Search, Filter, RefreshCw, Download, ArrowUpDown,
-  Check, X, Clock, AlertCircle, Award, FileEdit, BarChart3
+  Check, X, Clock, AlertCircle, Award, FileEdit, BarChart3, Trash2
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/AdminLayout';
 import { Volunteer } from '@/types';
+import { apiRequest } from '@/lib/queryClient';
 
 const VolunteersList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [, setLocation] = useLocation();
+  const [volunteerToDelete, setVolunteerToDelete] = useState<Volunteer | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const pageSize = 10;
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch all volunteers
   const { data: volunteers = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/volunteers'],
   });
+  
+  // Delete volunteer mutation
+  const deleteVolunteerMutation = useMutation({
+    mutationFn: async (volunteerId: number) => {
+      return await apiRequest(`/api/volunteers/${volunteerId}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Voluntario eliminado",
+        description: "El voluntario ha sido eliminado correctamente",
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/volunteers'] });
+      setDeleteDialogOpen(false);
+      setVolunteerToDelete(null);
+    },
+    onError: (error) => {
+      console.error("Error al eliminar voluntario:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el voluntario. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      });
+      setDeleteDialogOpen(false);
+    },
+  });
+  
+  // Handle delete button click
+  const handleDeleteClick = (volunteer: Volunteer) => {
+    setVolunteerToDelete(volunteer);
+    setDeleteDialogOpen(true);
+  };
+  
+  // Handle confirm delete
+  const handleConfirmDelete = () => {
+    if (volunteerToDelete && volunteerToDelete.id) {
+      deleteVolunteerMutation.mutate(volunteerToDelete.id);
+    }
+  };
 
   // Filter volunteers based on search term and status
   const filteredVolunteers = volunteers.filter((volunteer: Volunteer) => {
@@ -296,12 +353,25 @@ const VolunteersList: React.FC = () => {
                                 </Link>
                               </>
                             ) : (
-                              <Link href={`/admin/volunteers/${volunteer.id}`}>
-                                <Button variant="outline" size="sm">
-                                  <FileEdit className="h-3 w-3 mr-1" />
-                                  Ver / Editar
+                              <>
+                                <Link href={`/admin/volunteers/${volunteer.id}`}>
+                                  <Button variant="outline" size="sm">
+                                    <FileEdit className="h-3 w-3 mr-1" />
+                                    Ver / Editar
+                                  </Button>
+                                </Link>
+                                <Button 
+                                  variant="destructive" 
+                                  size="sm" 
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleDeleteClick(volunteer);
+                                  }}
+                                >
+                                  <Trash2 className="h-3 w-3 mr-1" />
+                                  Eliminar
                                 </Button>
-                              </Link>
+                              </>
                             )}
                           </div>
                         </TableCell>
@@ -356,6 +426,33 @@ const VolunteersList: React.FC = () => {
             )}
           </CardContent>
         </Card>
+        
+        {/* Diálogo de confirmación para eliminar voluntario */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer. Se inactivará al voluntario
+                <strong>{volunteerToDelete ? ` ${volunteerToDelete.full_name}` : ''}</strong> y 
+                ya no aparecerá en la lista principal de voluntarios.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleConfirmDelete}
+                disabled={deleteVolunteerMutation.isPending}
+              >
+                {deleteVolunteerMutation.isPending ? (
+                  <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Eliminando...</>
+                ) : (
+                  'Eliminar'
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );
