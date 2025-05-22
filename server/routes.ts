@@ -1736,12 +1736,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { addSimpleInstructorEvaluations } = await import("./fix-instructor-evaluations");
       
       // Ejecutamos la función
-      await addSimpleInstructorEvaluations();
+      const result = await addSimpleInstructorEvaluations();
       
-      res.status(200).json({ message: "Datos de muestra de evaluaciones de instructores cargados correctamente" });
+      // Log para debugging
+      console.log("Resultado de agregar evaluaciones:", result);
+      
+      res.status(200).json({ 
+        message: "Datos de muestra de evaluaciones de instructores cargados correctamente",
+        details: result
+      });
     } catch (error) {
       console.error("Error al cargar datos de muestra de evaluaciones de instructores:", error);
-      res.status(500).json({ message: "Error al cargar datos de muestra de evaluaciones de instructores" });
+      res.status(500).json({ 
+        message: "Error al cargar datos de muestra de evaluaciones de instructores",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
   
