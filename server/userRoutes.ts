@@ -405,12 +405,17 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
                 // Enviar datos directamente a nuestra API (usando conexión interna)
                 // Asegurarnos de tener la ID del voluntario
                 if (volunteerId) {
-                  await db.execute(
+                  console.log("Datos de voluntario completos:", updateData);
+                
+                // Convertir disponibilidad a formato de texto si existe
+                const availableHours = updateData.availability ? updateData.availability.toString() : null;
+                
+                await db.execute(
                     sql`UPDATE volunteers 
-                        SET previous_experience = ${volunteerUpdateData.volunteerExperience || null},
-                            available_hours = ${volunteerUpdateData.availability || null},
-                            legal_consent = ${volunteerUpdateData.legalConsent || false},
-                            preferred_park_id = ${volunteerUpdateData.preferredParkId || null},
+                        SET previous_experience = ${updateData.volunteerExperience || null},
+                            available_hours = ${availableHours},
+                            legal_consent = ${updateData.legalConsent === true},
+                            preferred_park_id = ${updateData.preferredParkId || null},
                             updated_at = ${new Date()}
                         WHERE id = ${volunteerId}`
                   );
