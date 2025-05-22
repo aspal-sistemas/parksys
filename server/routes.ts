@@ -87,6 +87,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas del módulo de usuarios
   registerUserRoutes(app, apiRouter);
   
+  // Endpoints para imágenes de perfil
+  // Obtener la imagen de perfil de un usuario
+  apiRouter.get('/users/:id/profile-image', async (req: Request, res: Response) => {
+    try {
+      const userId = Number(req.params.id);
+      const imageUrl = getProfileImage(userId);
+      
+      if (!imageUrl) {
+        return res.status(404).json({ 
+          message: 'No se encontró ninguna imagen de perfil para este usuario'
+        });
+      }
+      
+      res.json({ imageUrl });
+    } catch (error) {
+      console.error('Error al obtener la URL de imagen de perfil:', error);
+      res.status(500).json({ 
+        message: 'Error al obtener la URL de imagen de perfil'
+      });
+    }
+  });
+  
+  // Guardar la URL de la imagen de perfil de un usuario
+  apiRouter.post('/users/:id/profile-image', async (req: Request, res: Response) => {
+    try {
+      const userId = Number(req.params.id);
+      const { imageUrl } = req.body;
+      
+      if (!imageUrl) {
+        return res.status(400).json({ message: 'URL de imagen no proporcionada' });
+      }
+      
+      // Guardar la URL en la caché
+      saveProfileImage(userId, imageUrl);
+      console.log(`Imagen de perfil guardada para el usuario ${userId}: ${imageUrl}`);
+      
+      res.json({ 
+        success: true, 
+        message: 'URL de imagen de perfil guardada correctamente',
+        userId,
+        imageUrl
+      });
+    } catch (error) {
+      console.error('Error al guardar la URL de imagen de perfil:', error);
+      res.status(500).json({ 
+        message: 'Error al guardar la URL de imagen de perfil'
+      });
+    }
+  });
+  
   // Importamos la función para asignar imágenes de perfil
   import("./assign-profile-images").then(module => {
     // Endpoint para asignar imágenes de perfil a todos los usuarios
