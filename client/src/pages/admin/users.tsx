@@ -97,7 +97,8 @@ const UserDetail: React.FC<{
   onClose: () => void;
   onSave: (userData: UserFormData) => void;
   isSaving: boolean;
-}> = ({ user, isNew, onClose, onSave, isSaving }) => {
+  editingUserId?: number | null;
+}> = ({ user, isNew, onClose, onSave, isSaving, editingUserId }) => {
   const [userData, setUserData] = useState<UserFormData>({
     // Elegir rol es el primer paso
     role: user?.role || 'user',
@@ -1033,6 +1034,7 @@ const AdminUsers = () => {
           onClose={handleCloseUserDialog}
           onSave={handleSaveUser}
           isSaving={saveUserMutation.isPending}
+          editingUserId={editingUserId}
         />
       )}
 
