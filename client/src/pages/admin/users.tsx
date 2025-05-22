@@ -889,10 +889,28 @@ const AdminUsers = () => {
           console.error(`❌ Error al guardar la imagen para el usuario ID: ${userId}`);
         }
         
-        // Para el caso específico de Admin Guadalajara (ID: 3)
+        // Para casos específicos que necesitan tratamiento especial
         if (userId === 3) {
           console.log("Aplicando tratamiento especial para Admin Guadalajara (ID: 3)");
           localStorage.setItem('admin_guadalajara_image', userData.profileImageUrl);
+        }
+        
+        // Para Admin Gear (ID: 1)
+        if (userId === 1) {
+          console.log("Aplicando tratamiento especial para Admin Gear (ID: 1)");
+          localStorage.setItem('admin_gear_image', userData.profileImageUrl);
+          
+          // Verificar la imagen 3 veces más para asegurar que persista
+          setTimeout(() => {
+            fetch(`/api/users/${userId}/profile-image`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              },
+              body: JSON.stringify({ imageUrl: userData.profileImageUrl })
+            }).then(() => console.log("Verificación adicional 1 completada para Admin Gear"));
+          }, 500);
         }
       } catch (error) {
         console.error('Error al guardar la imagen en la caché:', error);
