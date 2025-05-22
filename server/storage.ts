@@ -1578,8 +1578,49 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteUser(id: number): Promise<boolean> {
-    const result = await db.delete(users).where(eq(users.id, id));
-    return result.rowCount > 0;
+    try {
+      // Primero verificamos si el usuario existe
+      const user = await this.getUser(id);
+      if (!user) {
+        return false;
+      }
+      
+      // Verificamos el rol del usuario para realizar acciones especiales
+      if (user.role === 'voluntario') {
+        // Si es voluntario, primero lo marcamos como inactivo en la tabla volunteers
+        try {
+          await db.execute(sql`
+            UPDATE volunteers
+            SET status = 'inactive'
+            WHERE user_id = ${id}
+          `);
+          console.log(`Usuario ${id} marcado como inactivo en la tabla volunteers`);
+        } catch (error) {
+          console.error(`Error al actualizar estado del voluntario:`, error);
+          // Continuamos con la eliminación aunque falle este paso
+        }
+      } else if (user.role === 'instructor') {
+        // Si es instructor, primero lo marcamos como inactivo en la tabla instructors
+        try {
+          await db.execute(sql`
+            UPDATE instructors
+            SET status = 'inactive'
+            WHERE user_id = ${id}
+          `);
+          console.log(`Usuario ${id} marcado como inactivo en la tabla instructors`);
+        } catch (error) {
+          console.error(`Error al actualizar estado del instructor:`, error);
+          // Continuamos con la eliminación aunque falle este paso
+        }
+      }
+      
+      // Ahora sí eliminamos el usuario
+      const result = await db.delete(users).where(eq(users.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error(`Error al eliminar usuario ${id}:`, error);
+      throw error;
+    }
   }
 
   async getMunicipality(id: number): Promise<Municipality | undefined> {
