@@ -48,6 +48,7 @@ import {
   UserCircle,
   Clock,
   History,
+  Star,
   ClipboardCheck,
   FileText as FileDescription,
   Network,
@@ -249,9 +250,17 @@ const AdminSidebarModular: React.FC = () => {
                 <NavItem 
                   href="/admin/instructors" 
                   icon={<GraduationCap className="h-4 w-4" />}
-                  active={location.startsWith('/admin/instructors')}
+                  active={location === '/admin/instructors' || location === '/admin/instructors/new' || location === '/admin/instructors/edit'}
                 >
                   Instructores
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/instructors/evaluations" 
+                  icon={<Star className="h-4 w-4" />}
+                  active={location.startsWith('/admin/instructors/evaluations')}
+                >
+                  Evaluaciones
                 </NavItem>
                 
                 <NavItem 

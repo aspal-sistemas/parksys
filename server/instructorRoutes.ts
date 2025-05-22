@@ -441,6 +441,33 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
     }
   });
   
+  // Obtener todas las evaluaciones (para la página de administración)
+  apiRouter.get("/instructors/evaluations", isAuthenticated, async (_req: Request, res: Response) => {
+    try {
+      // Consulta con join para obtener datos del instructor relacionado
+      const result = await db.execute(sql`
+        SELECT 
+          e.*,
+          i.full_name as instructor_name,
+          i.profile_image_url as instructor_profile_image_url,
+          a.title as activity_title
+        FROM 
+          instructor_evaluations e
+        LEFT JOIN 
+          instructors i ON e.instructor_id = i.id
+        LEFT JOIN 
+          instructor_assignments a ON e.assignment_id = a.id
+        ORDER BY 
+          e.created_at DESC
+      `);
+      
+      res.json(result.rows || []);
+    } catch (error) {
+      console.error("Error al obtener todas las evaluaciones:", error);
+      res.status(500).json({ message: "Error al obtener evaluaciones" });
+    }
+  });
+
   // === RUTAS PARA RECONOCIMIENTOS DE INSTRUCTORES ===
   
   // Obtener todos los reconocimientos de un instructor

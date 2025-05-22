@@ -702,7 +702,9 @@ export const insertInstructorAssignmentSchema = createInsertSchema(instructorAss
 
 export const insertInstructorEvaluationSchema = createInsertSchema(instructorEvaluations).omit({ 
   id: true, 
-  createdAt: true 
+  createdAt: true,
+  updatedAt: true,
+  evaluationDate: true  // Se autogenera con defaultNow()
 });
 
 export const insertInstructorRecognitionSchema = createInsertSchema(instructorRecognitions).omit({ 
