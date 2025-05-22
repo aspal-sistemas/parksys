@@ -343,8 +343,8 @@ const VolunteersList: React.FC = () => {
                               <div className="font-medium">
                                 {volunteer.full_name || 'Sin nombre'} 
                                 {volunteer.source === 'user' && (
-                                  <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-800 border-blue-200">
-                                    Usuario Sistema
+                                  <Badge variant="outline" className="ml-2 bg-amber-100 text-amber-800 border-amber-200">
+                                    Perfil Básico
                                   </Badge>
                                 )}
                               </div>
