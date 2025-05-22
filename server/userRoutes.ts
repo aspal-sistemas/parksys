@@ -234,6 +234,30 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
         userData.fullName = `${existingUser.firstName || ''} ${updateData.lastName}`;
       }
       
+      // Procesar campos adicionales de perfil
+      if (updateData.phone !== undefined) {
+        userData.phone = updateData.phone || null;
+      }
+      
+      if (updateData.gender !== undefined) {
+        userData.gender = updateData.gender || null;
+      }
+      
+      if (updateData.birthDate !== undefined) {
+        userData.birthDate = updateData.birthDate ? new Date(updateData.birthDate) : null;
+      }
+      
+      if (updateData.bio !== undefined) {
+        userData.bio = updateData.bio || null;
+      }
+      
+      if (updateData.profileImageUrl !== undefined) {
+        userData.profileImageUrl = updateData.profileImageUrl || null;
+      }
+      
+      // Actualizar timestamp
+      userData.updatedAt = new Date();
+      
       // Si se proporcionó contraseña, encriptarla (en un entorno real)
       if (updateData.password) {
         // userData.password = await bcrypt.hash(updateData.password, 10);

@@ -6,6 +6,12 @@ export interface User {
   role: string;
   municipalityId: number | null;
   profileImageUrl?: string;
+  phone?: string | null;
+  gender?: string | null;
+  birthDate?: string | null;
+  bio?: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Volunteer {
