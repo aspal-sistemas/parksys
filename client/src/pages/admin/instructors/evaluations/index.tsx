@@ -89,6 +89,10 @@ export default function InstructorEvaluationsPage() {
     refetch
   } = useQuery({
     queryKey: ['/api/instructors-evaluations'],
+    retry: false,
+    meta: {
+      errorMessage: "Error al cargar evaluaciones. Verificando tu autenticación."
+    }
   });
 
   // Formatear fecha
@@ -256,6 +260,24 @@ export default function InstructorEvaluationsPage() {
             <Button variant="outline" onClick={() => refetch()}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Actualizar
+            </Button>
+            <Button variant="default" onClick={async () => {
+              try {
+                const response = await fetch('/api/admin/seed/instructor-evaluations', {
+                  method: 'POST',
+                });
+                if (response.ok) {
+                  alert("Datos de muestra agregados correctamente. Actualizando...");
+                  refetch();
+                } else {
+                  throw new Error('Error al cargar datos de muestra');
+                }
+              } catch (error) {
+                console.error("Error:", error);
+                alert("Error al cargar datos de muestra. Verifica tu conexión e inténtalo de nuevo.");
+              }
+            }}>
+              Cargar Datos de Prueba
             </Button>
           </div>
         </div>
