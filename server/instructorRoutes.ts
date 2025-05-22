@@ -472,7 +472,7 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
   });
   
   // Obtener todas las evaluaciones (para la página de administración)
-  apiRouter.get("/instructors/evaluations", isAuthenticated, async (_req: Request, res: Response) => {
+  apiRouter.get("/instructors-evaluations", isAuthenticated, async (_req: Request, res: Response) => {
     try {
       // Consulta con join para obtener datos del instructor relacionado
       // Usamos una consulta más específica para evitar problemas con columnas que podrían no existir

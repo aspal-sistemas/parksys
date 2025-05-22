@@ -88,7 +88,7 @@ export default function InstructorEvaluationsPage() {
     isError,
     refetch
   } = useQuery({
-    queryKey: ['/api/instructors/evaluations'],
+    queryKey: ['/api/instructors-evaluations'],
   });
 
   // Formatear fecha
