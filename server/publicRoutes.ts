@@ -9,6 +9,58 @@ import { eq, sql } from 'drizzle-orm';
  * @param publicRouter Express router para rutas públicas
  */
 export function registerPublicRoutes(publicRouter: any) {
+  // Endpoint para permitir a los ciudadanos evaluar a los instructores
+  publicRouter.post('/instructors/:id/evaluations', async (req: Request, res: Response) => {
+    try {
+      const instructorId = parseInt(req.params.id);
+      
+      if (isNaN(instructorId)) {
+        return res.status(400).json({ message: "ID de instructor no válido" });
+      }
+      
+      // Verificar que el instructor existe
+      const [instructor] = await db
+        .select()
+        .from(instructors)
+        .where(eq(instructors.id, instructorId));
+      
+      if (!instructor) {
+        return res.status(404).json({ message: "Instructor no encontrado" });
+      }
+      
+      // Validar los datos de entrada - versión simplificada para evaluación pública
+      const { assignmentId, communication, knowledge, methodology, overallPerformance, comments } = req.body;
+      
+      if (!assignmentId || !communication || !knowledge || !methodology || !overallPerformance) {
+        return res.status(400).json({ message: "Faltan campos obligatorios para la evaluación" });
+      }
+      
+      // Insertar la evaluación
+      const [newEvaluation] = await db
+        .insert(instructorEvaluations)
+        .values({
+          instructorId,
+          assignmentId,
+          evaluatorId: 0, // Para evaluaciones públicas, usamos 0 como ID genérico
+          communication,
+          knowledge,
+          methodology,
+          overallPerformance,
+          comments,
+          // No incluimos campos que podrían no existir en la tabla
+        })
+        .returning();
+      
+      res.status(201).json({
+        success: true,
+        message: "Evaluación enviada correctamente",
+        data: newEvaluation
+      });
+    } catch (error) {
+      console.error(`Error al crear evaluación pública para instructor ${req.params.id}:`, error);
+      res.status(500).json({ message: "Error al crear evaluación" });
+    }
+  });
   // Obtener todos los instructores públicos (solo los activos)
   publicRouter.get('/instructors/public', async (_req: Request, res: Response) => {
     try {

@@ -1,26 +1,23 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
-import { RefreshCw } from 'lucide-react';
 
 interface SpinnerProps {
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
 }
 
-export function Spinner({ className, size = 'md' }: SpinnerProps) {
+export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-6 w-6',
     lg: 'h-8 w-8',
+    xl: 'h-12 w-12',
   };
 
   return (
-    <RefreshCw
-      className={cn(
-        'animate-spin text-gray-400',
-        sizeClasses[size],
-        className
-      )}
-    />
+    <div className={`inline-block animate-spin rounded-full border-2 border-solid border-current border-r-transparent ${sizeClasses[size]} ${className}`} role="status">
+      <span className="sr-only">Cargando...</span>
+    </div>
   );
 }
+
+export default Spinner;
