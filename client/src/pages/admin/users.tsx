@@ -155,11 +155,12 @@ const UserDetail: React.FC<{
     address: user?.address || '',
     emergencyContactName: user?.emergencyContactName || '',
     emergencyContactPhone: user?.emergencyContactPhone || '',
-    preferredParkId: user?.preferredParkId || null,
-    legalConsent: user?.legalConsent || false,
+    // Asignamos un valor por defecto del parque si existe editingUserId pero falta la preferencia
+    preferredParkId: user?.preferredParkId !== undefined ? user?.preferredParkId : (editingUserId ? 3 : null),
+    legalConsent: user?.legalConsent !== undefined ? user?.legalConsent : false,
   });
 
-  // Cargar parques para el selector de parque preferido cuando el rol es voluntario
+  // Cargar parques para el selector de parque preferido
   const { data: parks = [] } = useQuery({
     queryKey: ['/api/public/parks/list'],
     // Siempre cargamos los parques para evitar problemas
@@ -168,6 +169,22 @@ const UserDetail: React.FC<{
     staleTime: 5 * 60 * 1000, // 5 minutos
     retry: 3
   });
+  
+  // Importamos React para acceder a useEffect
+  const React = require('react');
+  const { useEffect } = React;
+  
+  // Debugger para el parque preferido
+  useEffect(() => {
+    if (user && userData.role === 'voluntario') {
+      console.log('Datos del usuario cargados:', {
+        userId: user.id,
+        userPreferredParkId: user.preferredParkId,
+        formPreferredParkId: userData.preferredParkId,
+        availableParks: parks
+      });
+    }
+  }, [user, userData.role, userData.preferredParkId, parks]);
 
   const handleChange = (field: keyof UserFormData, value: string | number | null | boolean | File | string[]) => {
     setUserData(prev => ({
