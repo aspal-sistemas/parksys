@@ -155,8 +155,8 @@ const UserDetail: React.FC<{
     address: user?.address || '',
     emergencyContactName: user?.emergencyContactName || '',
     emergencyContactPhone: user?.emergencyContactPhone || '',
-    // Asignamos un valor por defecto del parque si existe editingUserId pero falta la preferencia
-    preferredParkId: user?.preferredParkId !== undefined ? user?.preferredParkId : (editingUserId ? 3 : null),
+    // Siempre asignamos un valor por defecto para el parque preferido (el parque con ID 3 como respaldo)
+    preferredParkId: user?.preferredParkId !== undefined ? user?.preferredParkId : 3,
     legalConsent: user?.legalConsent !== undefined ? user?.legalConsent : false,
   });
 

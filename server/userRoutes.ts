@@ -117,11 +117,11 @@ async function syncUserWithVolunteerTable(user: any) {
       
       await db.execute(
         sql`INSERT INTO volunteers 
-            (full_name, email, phone, gender, status, profile_image_url, user_id, created_at, updated_at, age, address, legal_consent)
+            (full_name, email, phone, gender, status, profile_image_url, user_id, created_at, updated_at, age, legal_consent)
             VALUES 
             (${volunteerData.full_name}, ${volunteerData.email}, ${volunteerData.phone}, 
              ${volunteerData.gender}, ${volunteerData.status}, ${volunteerData.profile_image_url}, 
-             ${volunteerData.user_id}, ${new Date()}, ${volunteerData.updated_at}, ${age}, ${user.address || null}, ${true})`
+             ${volunteerData.user_id}, ${new Date()}, ${volunteerData.updated_at}, ${age}, ${true})`
       );
       
       console.log(`Nuevo voluntario creado para usuario ID ${user.id}`);
@@ -402,7 +402,7 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
           
           // Si hay información adicional de voluntario, hacemos una solicitud a la ruta especializada
           if (updateData.volunteerExperience || updateData.availability || 
-              updateData.preferredParkId || updateData.legalConsent) {
+              updateData.preferredParkId !== undefined || updateData.legalConsent) {
             
             // Encuentro el ID del voluntario
             const volunteerResult = await db.execute(
