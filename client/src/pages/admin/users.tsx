@@ -977,12 +977,18 @@ const AdminUsers = () => {
         return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Gestor</Badge>;
       case 'supervisor':
         return <Badge className="bg-teal-100 text-teal-800 hover:bg-teal-100">Supervisor</Badge>;
-      case 'citizen':
+      case 'ciudadano':
         return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Ciudadano</Badge>;
-      case 'volunteer':
+      case 'voluntario':
         return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Voluntario</Badge>;
       case 'instructor':
         return <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-100">Instructor</Badge>;
+      case 'guardaparques':
+        return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Guardaparques</Badge>;
+      case 'guardia':
+        return <Badge className="bg-cyan-100 text-cyan-800 hover:bg-cyan-100">Guardia</Badge>;
+      case 'concesionario':
+        return <Badge className="bg-pink-100 text-pink-800 hover:bg-pink-100">Concesionario</Badge>;
       case 'user':
         return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Usuario</Badge>;
       default:
