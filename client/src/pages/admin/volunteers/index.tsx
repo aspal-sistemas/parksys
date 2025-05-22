@@ -233,9 +233,21 @@ const VolunteersList: React.FC = () => {
                               )}
                             </div>
                             <div>
-                              <div className="font-medium">{volunteer.full_name || 'Sin nombre'}</div>
+                              <div className="font-medium">
+                                {volunteer.full_name || 'Sin nombre'} 
+                                {volunteer.source === 'user' && (
+                                  <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-800 border-blue-200">
+                                    Usuario Sistema
+                                  </Badge>
+                                )}
+                              </div>
                               <div className="text-sm text-gray-500">
-                                {volunteer.created_at ? new Date(volunteer.created_at).toLocaleDateString() : 'Fecha desconocida'}
+                                {volunteer.source === 'user' 
+                                  ? `Usuario ID: ${volunteer.user_id || '?'}`
+                                  : volunteer.created_at 
+                                    ? new Date(volunteer.created_at).toLocaleDateString() 
+                                    : 'Fecha desconocida'
+                                }
                               </div>
                             </div>
                           </div>
@@ -268,12 +280,29 @@ const VolunteersList: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex justify-center gap-2">
-                            <Link href={`/admin/volunteers/${volunteer.id}`}>
-                              <Button variant="outline" size="sm">
-                                <FileEdit className="h-3 w-3 mr-1" />
-                                Ver / Editar
-                              </Button>
-                            </Link>
+                            {volunteer.source === 'user' ? (
+                              <>
+                                <Link href={`/admin/users?edit=${volunteer.user_id}`}>
+                                  <Button variant="outline" size="sm">
+                                    <FileEdit className="h-3 w-3 mr-1" />
+                                    Editar Usuario
+                                  </Button>
+                                </Link>
+                                <Link href={`/admin/volunteers/convert/${volunteer.user_id}`}>
+                                  <Button variant="secondary" size="sm">
+                                    <RefreshCw className="h-3 w-3 mr-1" />
+                                    Crear Perfil Completo
+                                  </Button>
+                                </Link>
+                              </>
+                            ) : (
+                              <Link href={`/admin/volunteers/${volunteer.id}`}>
+                                <Button variant="outline" size="sm">
+                                  <FileEdit className="h-3 w-3 mr-1" />
+                                  Ver / Editar
+                                </Button>
+                              </Link>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
