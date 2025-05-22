@@ -148,6 +148,11 @@ const UserDetail: React.FC<{
         formData.append('profileImage', file);
         
         // Enviar la imagen al servidor
+        // Agregar el userId al formData si estamos editando un usuario existente
+        if (user && user.id) {
+          formData.append('userId', user.id.toString());
+        }
+        
         const response = await fetch('/api/upload/profile-image', {
           method: 'POST',
           body: formData,
@@ -167,6 +172,25 @@ const UserDetail: React.FC<{
         handleChange('profileImageUrl', data.url);
         // Ya no necesitamos guardar el archivo, ya que se ha subido al servidor
         handleChange('profileImageFile', null);
+        
+        // Si estamos editando un usuario existente, guardamos la URL en la caché
+        if (user && user.id) {
+          try {
+            // Llamar al endpoint para guardar la URL en la caché
+            await fetch(`/api/users/${user.id}/profile-image`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              },
+              body: JSON.stringify({ imageUrl: data.url })
+            });
+            console.log(`Imagen de perfil guardada en caché para el usuario ${user.id}`);
+          } catch (error) {
+            console.error('Error al guardar la URL en la caché:', error);
+            // Continuamos aunque falle el guardado en caché
+          }
+        }
       } catch (error) {
         console.error('Error al cargar la imagen:', error);
         // En caso de error, creamos una URL temporal para la vista previa

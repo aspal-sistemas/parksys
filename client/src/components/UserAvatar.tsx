@@ -70,39 +70,42 @@ const getInitials = (fullName: string): string => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  fullName?: string;
-  role: string;
-  profileImageUrl?: string;
-}
-
 interface UserAvatarProps {
-  user: User;
-  size?: 'sm' | 'md' | 'lg';
+  userId: number;
+  role?: string;
+  name?: string;
+  className?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  imageUrl?: string;
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 'md' }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({ 
+  userId, 
+  role = 'user', 
+  name = '',
+  className = '',
+  size = 'md',
+  imageUrl
+}) => {
   // Determinar el tamaño del avatar
-  const sizeClasses = {
+  const sizeClass = {
     sm: 'h-8 w-8 text-xs',
-    md: 'h-12 w-12 text-sm',
-    lg: 'h-20 w-20 text-lg',
-  };
+    md: 'h-10 w-10 text-sm',
+    lg: 'h-14 w-14 text-base',
+    xl: 'h-20 w-20 text-lg',
+  }[size];
   
   // Generar la URL del avatar basada en el usuario
-  const avatarUrl = user.profileImageUrl || getRandomAvatarUrl(user.id, user.role);
+  const avatarUrl = imageUrl || getRandomAvatarUrl(userId, role);
   
   // Configuración visual basada en el rol
-  const avatarConfig = roleAvatarConfig[user.role] || roleAvatarConfig.user;
+  const avatarConfig = roleAvatarConfig[role] || roleAvatarConfig.user;
   
   return (
-    <Avatar className={sizeClasses[size]}>
-      <AvatarImage src={avatarUrl} alt={user.fullName || user.username} />
+    <Avatar className={`${sizeClass} ${className}`}>
+      <AvatarImage src={avatarUrl} alt={name || `Usuario ${userId}`} />
       <AvatarFallback className={`${avatarConfig.bgColor} ${avatarConfig.textColor}`}>
-        {getInitials(user.fullName || user.username)}
+        {getInitials(name)}
       </AvatarFallback>
     </Avatar>
   );
