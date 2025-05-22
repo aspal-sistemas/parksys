@@ -109,6 +109,7 @@ const UserDetail: React.FC<{
     firstName: user?.firstName || user?.fullName?.split(' ')[0] || '',
     lastName: user?.lastName || user?.fullName?.split(' ').slice(1).join(' ') || '',
     password: '',
+    municipalityId: user?.municipalityId || null,
     
     // Campos comunes para todos los usuarios
     phone: user?.phone || '',
