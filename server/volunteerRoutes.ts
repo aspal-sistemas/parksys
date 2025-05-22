@@ -105,50 +105,65 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
   // Obtener todos los voluntarios (incluidos usuarios con rol 'voluntario')
   apiRouter.get("/volunteers", isAuthenticated, async (_req: Request, res: Response) => {
     try {
-      // 1. Obtenemos los voluntarios tradicionales del módulo de voluntarios
-      const traditionaVolunteers = await db.execute(
-        sql`SELECT 
-          id, 
-          full_name, 
-          email, 
-          phone, 
-          status, 
-          profile_image_url, 
-          created_at,
-          age,
-          available_hours as availability,
-          previous_experience,
-          'module' as source,
-          NULL as user_id
-        FROM volunteers 
-        ORDER BY id DESC`
-      );
+      let allVolunteers = [];
       
-      // 2. Obtenemos los usuarios con rol 'voluntario'
-      const volunteerUsers = await db.execute(
-        sql`SELECT 
-          u.id as user_id, 
-          u.full_name, 
-          u.email, 
-          NULL as phone, 
-          'active' as status, 
-          NULL as profile_image_url, 
-          NOW() as created_at,
-          NULL as age,
-          NULL as availability,
-          NULL as previous_experience,
-          'user' as source,
-          u.id as user_id
-        FROM users u 
-        WHERE u.role = 'voluntario'
-        ORDER BY u.id DESC`
-      );
+      // 1. Primero obtenemos los voluntarios tradicionales
+      try {
+        const traditionalVolunteersResult = await db.execute(
+          sql`SELECT 
+            id, 
+            full_name, 
+            email, 
+            phone, 
+            status, 
+            profile_image_url, 
+            created_at,
+            age,
+            available_hours as availability,
+            previous_experience,
+            'module' as source,
+            NULL as user_id
+          FROM volunteers 
+          ORDER BY id DESC`
+        );
+        
+        if (traditionalVolunteersResult.rows) {
+          allVolunteers = [...traditionalVolunteersResult.rows];
+        }
+      } catch (err) {
+        console.error("Error al obtener voluntarios tradicionales:", err);
+        // Continuamos con la siguiente consulta en caso de error
+      }
       
-      // 3. Combinamos ambos conjuntos de datos
-      const allVolunteers = [
-        ...(traditionaVolunteers.rows || []),
-        ...(volunteerUsers.rows || [])
-      ];
+      // 2. Luego obtenemos los usuarios con rol 'voluntario'
+      try {
+        // Usamos una consulta directa sin alias para evitar problemas
+        const usersResult = await db.execute(
+          sql`SELECT 
+            id as user_id,
+            full_name, 
+            email, 
+            null as phone, 
+            'active' as status, 
+            null as profile_image_url, 
+            now() as created_at,
+            null as age,
+            null as availability,
+            null as previous_experience,
+            'user' as source,
+            id as user_id
+          FROM users 
+          WHERE role = 'voluntario'
+          ORDER BY id DESC`
+        );
+        
+        if (usersResult.rows) {
+          allVolunteers = [...allVolunteers, ...usersResult.rows];
+        }
+      } catch (err) {
+        console.error("Error al obtener usuarios voluntarios:", err);
+        // Continuamos y devolvemos lo que tengamos
+      }
       
       res.json(allVolunteers);
     } catch (error) {
