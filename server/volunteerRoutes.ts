@@ -152,7 +152,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         
         if (userVolunteerIds.size > 0) {
           const excludeIds = Array.from(userVolunteerIds).join(',');
-          excludeClause = `AND id NOT IN (${excludeIds})`;
+          excludeClause = `AND u.id NOT IN (${excludeIds})`;
         }
         
         // Construimos la consulta SQL dinámicamente
