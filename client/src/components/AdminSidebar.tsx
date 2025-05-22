@@ -15,7 +15,8 @@ import {
   CheckSquare,
   Building,
   Wrench,
-  AlertTriangle
+  AlertTriangle,
+  School
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -131,6 +132,14 @@ const AdminSidebar: React.FC = () => {
             active={location.startsWith('/admin/amenities')}
           >
             Amenidades
+          </NavItem>
+          
+          <NavItem 
+            href="/admin/instructors" 
+            icon={<School className="h-5 w-5" />}
+            active={location.startsWith('/admin/instructors')}
+          >
+            Instructores
           </NavItem>
           
           <NavItem 
