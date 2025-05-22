@@ -20,7 +20,14 @@ export const users = pgTable("users", {
   email: text("email").notNull(),
   role: text("role").notNull().default("admin"),
   fullName: text("full_name").notNull(),
-  municipalityId: integer("municipality_id")
+  municipalityId: integer("municipality_id"),
+  phone: text("phone"),
+  gender: text("gender"),
+  birthDate: date("birth_date"),
+  bio: text("bio"),
+  profileImageUrl: text("profile_image_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
 });
 
 export const municipalities = pgTable("municipalities", {

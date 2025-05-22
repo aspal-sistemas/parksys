@@ -150,11 +150,19 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
         });
         
         try {
-          const newUser = await storage.createUser({
+          // Preparamos todos los campos adicionales
+          const userDataToSave = {
             ...userData,
             password: hashedPassword,
-            fullName: `${userData.firstName} ${userData.lastName}`
-          });
+            fullName: `${userData.firstName} ${userData.lastName}`,
+            phone: userData.phone || null,
+            gender: userData.gender || null,
+            birthDate: userData.birthDate ? new Date(userData.birthDate) : null,
+            bio: userData.bio || null,
+            profileImageUrl: userData.profileImageUrl || null
+          };
+
+          const newUser = await storage.createUser(userDataToSave);
           
           console.log("Usuario creado exitosamente:", {
             id: newUser.id,
