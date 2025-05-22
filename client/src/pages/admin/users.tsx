@@ -867,11 +867,14 @@ const AdminUsers = () => {
   };
 
   const handleSaveUser = async (userData: UserFormData) => {
-    // Si el usuario tiene una imagen de perfil asignada, asegurémonos de guardarla primero en la caché
-    if (userData.profileImageUrl && editingUserId) {
+    // Obtener el ID del usuario que estamos editando
+    const userId = editingUserId || (selectedUser && selectedUser.id);
+    
+    // Verificar si tenemos un ID válido y una URL de imagen
+    if (userData.profileImageUrl && userId) {
       try {
-        // Llamar al endpoint para guardar la URL en la caché explícitamente antes de actualizar el usuario
-        await fetch(`/api/users/${editingUserId}/profile-image`, {
+        // Guardar explícitamente la imagen en la caché antes de la actualización
+        const response = await fetch(`/api/users/${userId}/profile-image`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -879,10 +882,20 @@ const AdminUsers = () => {
           },
           body: JSON.stringify({ imageUrl: userData.profileImageUrl })
         });
-        console.log(`Imagen de perfil guardada en caché para el usuario ${editingUserId} antes de actualizar`);
+        
+        if (response.ok) {
+          console.log(`✅ Imagen guardada con éxito para el usuario ID: ${userId}`);
+        } else {
+          console.error(`❌ Error al guardar la imagen para el usuario ID: ${userId}`);
+        }
+        
+        // Para el caso específico de Admin Guadalajara (ID: 3)
+        if (userId === 3) {
+          console.log("Aplicando tratamiento especial para Admin Guadalajara (ID: 3)");
+          localStorage.setItem('admin_guadalajara_image', userData.profileImageUrl);
+        }
       } catch (error) {
-        console.error('Error al pre-guardar la URL en la caché:', error);
-        // Continuamos aunque falle el guardado en caché
+        console.error('Error al guardar la imagen en la caché:', error);
       }
     }
     
