@@ -270,10 +270,11 @@ export default function InstructorProfileDialog({
               <CardContent className="pt-6">
                 {assignments && assignments.length > 0 ? (
                   <div className="space-y-4">
-                    {/* Usamos un Set para eliminar duplicados basados en ID */}
-                    {Array.from(new Map(assignments.map(item => 
-                      [item.id, item]
-                    )).values()).map((assignment: any) => (
+                    {/* Eliminamos duplicados basados en la combinación de actividad, parque y fecha */}
+                    {Array.from(new Map(assignments.map(item => [
+                      `${item.activityId || item.activity_id || 0}-${item.parkId || item.park_id || 0}-${item.startDate || item.start_date || ''}`,
+                      item
+                    ])).values()).map((assignment: any) => (
                       <div key={assignment.id} className="border p-3 rounded-md hover:bg-gray-50">
                         <div className="flex justify-between items-start">
                           <div>

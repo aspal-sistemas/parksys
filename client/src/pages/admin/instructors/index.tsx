@@ -453,13 +453,6 @@ export default function InstructorsListPage() {
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setLocation(`/admin/instructors/edit/${instructor.id}`)}
-                          >
-                            <FileEdit className="h-4 w-4" />
-                          </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon">
