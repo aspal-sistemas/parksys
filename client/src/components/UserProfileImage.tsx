@@ -36,11 +36,46 @@ const UserProfileImage: React.FC<UserProfileImageProps> = ({
         return;
       }
 
+      // Primero verificamos si tenemos la imagen guardada en localStorage
+      const localStorageKey = `profile_image_${userId}`;
+      const localImageUrl = localStorage.getItem(localStorageKey);
+      
+      // Casos especiales para usuarios problemáticos (compatibilidad con versiones anteriores)
+      if (userId === 3) {
+        const adminGuadalajaraImage = localStorage.getItem('admin_guadalajara_image');
+        if (adminGuadalajaraImage) {
+          setImageUrl(adminGuadalajaraImage);
+          setLoading(false);
+          return;
+        }
+      }
+      
+      if (userId === 1) {
+        const adminGearImage = localStorage.getItem('admin_gear_image');
+        if (adminGearImage) {
+          setImageUrl(adminGearImage);
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // Si encontramos una imagen en localStorage, la usamos
+      if (localImageUrl) {
+        console.log(`Usando imagen desde localStorage para usuario ${userId}`);
+        setImageUrl(localImageUrl);
+        setLoading(false);
+        return;
+      }
+
+      // Si no hay imagen en localStorage, intentamos obtenerla del servidor
       try {
         const response = await fetch(`/api/users/${userId}/profile-image`);
         if (response.ok) {
           const data = await response.json();
           setImageUrl(data.imageUrl);
+          
+          // Guardamos también en localStorage como respaldo
+          localStorage.setItem(localStorageKey, data.imageUrl);
         } else {
           // Si no hay imagen en la caché, usamos el avatar generado
           setError(true);

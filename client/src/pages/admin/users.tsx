@@ -873,6 +873,10 @@ const AdminUsers = () => {
     // Verificar si tenemos un ID válido y una URL de imagen
     if (userData.profileImageUrl && userId) {
       try {
+        // Guardar la imagen en localStorage para todos los usuarios (respaldo universal)
+        localStorage.setItem(`profile_image_${userId}`, userData.profileImageUrl);
+        console.log(`Imagen guardada en localStorage para usuario ID: ${userId}`);
+        
         // Guardar explícitamente la imagen en la caché antes de la actualización
         const response = await fetch(`/api/users/${userId}/profile-image`, {
           method: 'POST',
@@ -889,29 +893,22 @@ const AdminUsers = () => {
           console.error(`❌ Error al guardar la imagen para el usuario ID: ${userId}`);
         }
         
-        // Para casos específicos que necesitan tratamiento especial
-        if (userId === 3) {
-          console.log("Aplicando tratamiento especial para Admin Guadalajara (ID: 3)");
-          localStorage.setItem('admin_guadalajara_image', userData.profileImageUrl);
-        }
+        // Programar verificaciones adicionales para todos los usuarios
+        // Esto ayuda a garantizar que la imagen persista para todos los usuarios
+        const verifyImage = () => {
+          fetch(`/api/users/${userId}/profile-image`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify({ imageUrl: userData.profileImageUrl })
+          }).then(() => console.log(`Verificación adicional completada para usuario ID: ${userId}`));
+        };
         
-        // Para Admin Gear (ID: 1)
-        if (userId === 1) {
-          console.log("Aplicando tratamiento especial para Admin Gear (ID: 1)");
-          localStorage.setItem('admin_gear_image', userData.profileImageUrl);
-          
-          // Verificar la imagen 3 veces más para asegurar que persista
-          setTimeout(() => {
-            fetch(`/api/users/${userId}/profile-image`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-              },
-              body: JSON.stringify({ imageUrl: userData.profileImageUrl })
-            }).then(() => console.log("Verificación adicional 1 completada para Admin Gear"));
-          }, 500);
-        }
+        // Realizar verificaciones a intervalos diferentes para mejorar las probabilidades de éxito
+        setTimeout(verifyImage, 500);
+        setTimeout(verifyImage, 1500);
       } catch (error) {
         console.error('Error al guardar la imagen en la caché:', error);
       }

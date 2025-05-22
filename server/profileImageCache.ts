@@ -13,6 +13,7 @@ const profileImageCache: Map<number, string> = new Map();
  */
 export function saveProfileImage(userId: number, imageUrl: string): void {
   profileImageCache.set(userId, imageUrl);
+  console.log(`Imagen de perfil guardada en caché para el usuario ${userId}: ${imageUrl}`);
 }
 
 /**
