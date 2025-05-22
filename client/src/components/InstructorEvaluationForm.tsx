@@ -79,16 +79,16 @@ export default function InstructorEvaluationForm({
 }: InstructorEvaluationFormProps) {
   const queryClient = useQueryClient();
 
-  // Obtener detalles del instructor
+  // Obtener detalles del instructor - Solo si instructorId es un número válido
   const { data: instructor, isLoading: isLoadingInstructor } = useQuery({
     queryKey: [`/api/instructors/${instructorId}`],
-    enabled: !!instructorId,
+    enabled: !!instructorId && !isNaN(instructorId) && instructorId > 0,
   });
 
-  // Obtener detalles de la asignación
+  // Obtener detalles de la asignación - Solo si assignmentId es un número válido
   const { data: assignment, isLoading: isLoadingAssignment } = useQuery({
     queryKey: [`/api/instructors/assignments/${assignmentId}`],
-    enabled: !!assignmentId,
+    enabled: !!assignmentId && !isNaN(assignmentId) && assignmentId > 0,
   });
 
   // Configurar el formulario con valores predeterminados
