@@ -196,6 +196,7 @@ export default function InstructorEvaluationsPage() {
 
   // Mostrar detalles de evaluación
   const handleViewDetails = (evaluation: any) => {
+    console.log("Mostrando evaluación:", evaluation);
     setSelectedEvaluation(evaluation);
     setShowEvaluationDetails(true);
   };
