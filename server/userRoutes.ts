@@ -11,7 +11,7 @@ const createUserSchema = z.object({
   firstName: z.string().min(1, "El nombre es requerido"),
   lastName: z.string().min(1, "El apellido es requerido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-  role: z.enum(['admin', 'director', 'manager', 'supervisor', 'ciudadano', 'voluntario', 'instructor', 'user']),
+  role: z.enum(['admin', 'director', 'manager', 'supervisor', 'ciudadano', 'voluntario', 'instructor', 'user', 'guardaparques', 'guardia', 'concesionario']),
   municipalityId: z.number().nullable(),
 });
 
@@ -22,7 +22,7 @@ const updateUserSchema = z.object({
   firstName: z.string().min(1, "El nombre es requerido").optional(),
   lastName: z.string().min(1, "El apellido es requerido").optional(),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").optional(),
-  role: z.enum(['admin', 'director', 'manager', 'supervisor', 'ciudadano', 'voluntario', 'instructor', 'user']).optional(),
+  role: z.enum(['admin', 'director', 'manager', 'supervisor', 'ciudadano', 'voluntario', 'instructor', 'user', 'guardaparques', 'guardia', 'concesionario']).optional(),
   municipalityId: z.number().nullable().optional(),
   profileImageUrl: z.string().optional(),
   phone: z.string().optional(),
