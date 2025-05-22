@@ -206,14 +206,39 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      // Usar consulta SQL directa para evitar problemas de esquema
+      // Usar consulta SQL directa para incluir todos los campos, incluidos los nuevos
       const result = await db.execute(
-        sql`SELECT * FROM volunteers WHERE id = ${volunteerId}`
+        sql`SELECT 
+          id, 
+          full_name, 
+          email, 
+          phone, 
+          gender, 
+          age, 
+          status, 
+          profile_image_url,
+          previous_experience,
+          available_hours,
+          available_days,
+          interest_areas,
+          preferred_park_id,
+          legal_consent,
+          address,
+          emergency_contact,
+          emergency_phone,
+          created_at,
+          updated_at,
+          user_id
+        FROM volunteers 
+        WHERE id = ${volunteerId}`
       );
       
       if (!result.rows || result.rows.length === 0) {
         return res.status(404).json({ message: "Voluntario no encontrado" });
       }
+      
+      // Log para depuración
+      console.log("Datos del voluntario recuperados:", result.rows[0]);
       
       res.json(result.rows[0]);
     } catch (error) {
