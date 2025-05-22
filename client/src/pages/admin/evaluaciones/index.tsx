@@ -31,15 +31,15 @@ import {
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth';
 
 export default function EvaluacionesPage() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Obtenemos información del usuario autenticado
+  // Obtener información del usuario autenticado
   const { user, isAuthenticated } = useAuth();
-  const isSupervisor = user?.role === 'supervisor';
+  const isSupervisor = user && user.role === 'supervisor';
   
   // Consulta para obtener todas las evaluaciones
   const { 
@@ -49,7 +49,7 @@ export default function EvaluacionesPage() {
     refetch
   } = useQuery({
     // Si es supervisor, filtramos por su ID
-    queryKey: [isSupervisor ? `/api/instructors-evaluations?evaluatorId=${user?.id}` : '/api/instructors-evaluations'],
+    queryKey: [isSupervisor && user ? `/api/instructors-evaluations?evaluatorId=${user.id}` : '/api/instructors-evaluations'],
   });
   
   const evaluations = evaluationData || [];
@@ -66,14 +66,16 @@ export default function EvaluacionesPage() {
   };
 
   // Filtrar evaluaciones
-  const filteredEvaluations = evaluations.filter((evaluation: any) => {
-    const matchesSearch = 
-      evaluation.instructor_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      evaluation.activity_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      evaluation.comments?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    return matchesSearch;
-  });
+  const filteredEvaluations = Array.isArray(evaluations) 
+    ? evaluations.filter((evaluation: any) => {
+        const matchesSearch = 
+          evaluation.instructor_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          evaluation.activity_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          evaluation.comments?.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        return matchesSearch;
+      })
+    : [];
 
   // Calcular promedio de evaluación
   const calculateAverage = (evaluation: any) => {
@@ -85,7 +87,7 @@ export default function EvaluacionesPage() {
     ].filter(Boolean);
     
     if (scores.length === 0) return 0;
-    return scores.reduce((sum, score) => sum + score, 0) / scores.length;
+    return scores.reduce((sum: number, score: number) => sum + score, 0) / scores.length;
   };
 
   // Estilo basado en puntuación
@@ -111,7 +113,7 @@ export default function EvaluacionesPage() {
   // Estadísticas para el panel de control
   const totalEvaluations = filteredEvaluations.length;
   const averageScore = filteredEvaluations.length > 0 
-    ? filteredEvaluations.reduce((sum, eval: any) => sum + calculateAverage(eval), 0) / filteredEvaluations.length
+    ? filteredEvaluations.reduce((sum: number, eval: any) => sum + calculateAverage(eval), 0) / filteredEvaluations.length
     : 0;
   const instructorsEvaluated = Object.keys(evaluationsByInstructor).length;
   const recentEvaluations = filteredEvaluations.slice(0, 5);
@@ -363,7 +365,7 @@ export default function EvaluacionesPage() {
                   const instructor = instructorEvaluations[0]; // Tomamos el primer registro para datos del instructor
                   
                   // Cálculo de estadísticas por instructor
-                  const totalScore = instructorEvaluations.reduce((sum, eval) => sum + calculateAverage(eval), 0);
+                  const totalScore = instructorEvaluations.reduce((sum: number, eval: any) => sum + calculateAverage(eval), 0);
                   const avgScore = totalScore / instructorEvaluations.length;
                   
                   return (

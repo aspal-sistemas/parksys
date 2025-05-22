@@ -143,6 +143,14 @@ const AdminSidebar: React.FC = () => {
           </NavItem>
           
           <NavItem 
+            href="/admin/evaluaciones" 
+            icon={<CheckSquare className="h-5 w-5" />}
+            active={location.startsWith('/admin/evaluaciones')}
+          >
+            Evaluaciones
+          </NavItem>
+          
+          <NavItem 
             href="/admin/analytics" 
             icon={<BarChart className="h-5 w-5" />}
             active={location.startsWith('/admin/analytics')}
