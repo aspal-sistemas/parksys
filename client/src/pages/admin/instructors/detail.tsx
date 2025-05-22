@@ -186,15 +186,8 @@ export default function InstructorDetailPage() {
     );
   }
 
-  // Estado para manejar las asignaciones para evaluación
-  const [selectedAssignmentId, setSelectedAssignmentId] = useState<number | null>(null);
-  
-  // Seleccionar la primera asignación por defecto si está disponible
-  React.useEffect(() => {
-    if (assignments?.length > 0 && !selectedAssignmentId) {
-      setSelectedAssignmentId(assignments[0].id);
-    }
-  }, [assignments, selectedAssignmentId]);
+  // Estado para el diálogo de evaluación
+  const [evaluationDialogOpen, setEvaluationDialogOpen] = useState(false);
 
   return (
     <AdminLayout>
