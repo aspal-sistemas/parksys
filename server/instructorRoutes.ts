@@ -69,12 +69,49 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
   
   // === RUTAS PARA INSTRUCTORES ===
   
+  // Ruta para eliminar (inactivar) todos los instructores (solo administradores)
+  apiRouter.delete("/instructors/batch/all", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar que el usuario sea administrador
+      if (req.headers['x-user-role'] !== 'admin') {
+        return res.status(403).json({ message: "No autorizado. Solo administradores pueden realizar esta acción" });
+      }
+      
+      // Obtenemos una lista de IDs de instructores activos para mostrar el conteo
+      const activeInstructors = await db.execute(
+        sql`SELECT id FROM instructors WHERE status = 'active'`
+      );
+      
+      const activeCount = activeInstructors.rows?.length || 0;
+      
+      if (activeCount === 0) {
+        return res.json({ 
+          message: "No hay instructores activos para eliminar",
+          count: 0
+        });
+      }
+      
+      // Realizamos un soft delete cambiando el estado a "inactive" para todos los instructores activos
+      await db.execute(
+        sql`UPDATE instructors SET status = 'inactive', updated_at = CURRENT_TIMESTAMP WHERE status = 'active'`
+      );
+      
+      res.json({ 
+        message: `${activeCount} instructores han sido inactivados correctamente`,
+        count: activeCount
+      });
+    } catch (error) {
+      console.error("Error al eliminar todos los instructores:", error);
+      res.status(500).json({ message: "Error al eliminar los instructores" });
+    }
+  });
+
   // Obtener todos los instructores
   apiRouter.get("/instructors", isAuthenticated, async (_req: Request, res: Response) => {
     try {
       // Usamos una consulta SQL directa para evitar errores con mapeo de columnas
       const allInstructors = await db.execute(
-        sql`SELECT * FROM instructors ORDER BY id DESC`
+        sql`SELECT * FROM instructors WHERE status = 'active' ORDER BY id DESC`
       );
       res.json(allInstructors.rows || []);
     } catch (error) {

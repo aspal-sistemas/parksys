@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
@@ -27,7 +27,7 @@ import {
   Search, Filter, RefreshCw, FileEdit, Eye, 
   Plus, AlertCircle, Download, Users, Book, BookOpen, 
   Calendar, Award, ArrowUpDown, ChevronDown, BookText,
-  Briefcase, GraduationCap, UserCheck, Database
+  Briefcase, GraduationCap, UserCheck, Database, Trash2
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { 
@@ -38,6 +38,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -60,13 +72,43 @@ export default function InstructorsListPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterSpecialty, setFilterSpecialty] = useState('all');
+  const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
   const itemsPerPage = 10;
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // Obtener datos de instructores
   const { data: instructors, isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/instructors'],
     retry: 1,
     enabled: true, // Hacemos la consulta automáticamente
+  });
+
+  // Mutación para eliminar todos los instructores
+  const deleteAllInstructorsMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('/api/instructors/batch/all', {
+        method: 'DELETE'
+      });
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Instructores inactivados",
+        description: `${data.count} instructores han sido inactivados correctamente`,
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/instructors'] });
+      setDeleteAllDialogOpen(false);
+    },
+    onError: (error) => {
+      console.error("Error al eliminar todos los instructores:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron eliminar los instructores. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      });
+      setDeleteAllDialogOpen(false);
+    },
   });
 
   // Filtrar instructores según criterios de búsqueda
@@ -102,6 +144,16 @@ export default function InstructorsListPage() {
   // Cambiar de página
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+  
+  // Manejar click en botón de eliminar todos
+  const handleDeleteAllClick = () => {
+    setDeleteAllDialogOpen(true);
+  };
+
+  // Manejar confirmación de eliminar todos
+  const handleConfirmDeleteAll = () => {
+    deleteAllInstructorsMutation.mutate();
   };
 
   // Resetear página al cambiar filtros
