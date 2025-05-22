@@ -13,6 +13,7 @@ import {
   FileSymlink
 } from 'lucide-react';
 import UserAvatar from '@/components/UserAvatar';
+import UserProfileImage from '@/components/UserProfileImage';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -323,29 +324,39 @@ const UserDetail: React.FC<{
                 <div className="space-y-2">
                   <label htmlFor="profileImage" className="text-sm font-medium">Foto de perfil</label>
                   <div className="flex flex-col items-center">
-                    {userData.profileImageUrl ? (
-                      <div className="relative mb-3">
-                        <img 
-                          src={userData.profileImageUrl} 
-                          alt="Vista previa" 
-                          className="w-32 h-32 rounded-full object-cover border border-gray-300"
+                    <div className="relative mb-3">
+                      {!isNew && editingUserId ? (
+                        <UserProfileImage 
+                          userId={editingUserId} 
+                          role={userData.role} 
+                          name={`${userData.firstName} ${userData.lastName}`}
+                          size="xl"
+                          className="w-32 h-32 border border-gray-300"
                         />
-                        <button
-                          type="button"
-                          className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full"
-                          onClick={() => {
-                            handleChange('profileImageUrl', '');
-                            handleChange('profileImageFile', null);
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center mb-3">
-                        <UserRound className="h-16 w-16 text-gray-400" />
-                      </div>
-                    )}
+                      ) : userData.profileImageUrl ? (
+                        <div className="relative">
+                          <img 
+                            src={userData.profileImageUrl} 
+                            alt="Vista previa" 
+                            className="w-32 h-32 rounded-full object-cover border border-gray-300"
+                          />
+                          <button
+                            type="button"
+                            className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full"
+                            onClick={() => {
+                              handleChange('profileImageUrl', '');
+                              handleChange('profileImageFile', null);
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center">
+                          <UserRound className="h-16 w-16 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
                     <label 
                       htmlFor="imageUpload"
                       className="cursor-pointer py-2 px-3 bg-gray-100 hover:bg-gray-200 rounded text-sm text-center"
@@ -970,7 +981,12 @@ const AdminUsers = () => {
                   <TableCell className="font-medium">{user.id}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <UserAvatar user={user} size="sm" />
+                      <UserProfileImage 
+                        userId={user.id} 
+                        role={user.role} 
+                        name={user.fullName || `${user.firstName || ''} ${user.lastName || ''}`}
+                        size="sm" 
+                      />
                       <span>{user.username}</span>
                     </div>
                   </TableCell>
