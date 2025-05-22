@@ -1585,55 +1585,43 @@ export class DatabaseStorage implements IStorage {
         return false;
       }
       
-      // Comenzamos una transacción para asegurar consistencia
-      await db.transaction(async (tx) => {
-        // 1. Verificar si hay un registro en la tabla volunteers asociado a este usuario
-        const volunteerRecord = await tx.execute(sql`
-          SELECT id FROM volunteers WHERE user_id = ${id}
+      // Primero eliminamos cualquier referencia en la tabla volunteers
+      try {
+        await db.execute(sql`
+          UPDATE volunteers 
+          SET status = 'inactive', user_id = NULL 
+          WHERE user_id = ${id}
         `);
-        
-        // Si existe un voluntario asociado
-        if (volunteerRecord.rows && volunteerRecord.rows.length > 0) {
-          console.log(`Encontrado voluntario con user_id=${id}, actualizando estado...`);
-          
-          // Marcar como inactivo en la tabla volunteers
-          await tx.execute(sql`
-            UPDATE volunteers
-            SET status = 'inactive', user_id = NULL
-            WHERE user_id = ${id}
-          `);
-          console.log(`Voluntario con user_id=${id} actualizado: status=inactive, user_id=NULL`);
-        }
-        
-        // 2. Verificar si hay un registro en la tabla instructors
-        const instructorRecord = await tx.execute(sql`
-          SELECT id FROM instructors WHERE user_id = ${id}
-        `);
-        
-        // Si existe un instructor asociado
-        if (instructorRecord.rows && instructorRecord.rows.length > 0) {
-          console.log(`Encontrado instructor con user_id=${id}, actualizando estado...`);
-          
-          // Marcar como inactivo en la tabla instructors
-          await tx.execute(sql`
-            UPDATE instructors
-            SET status = 'inactive', user_id = NULL
-            WHERE user_id = ${id}
-          `);
-          console.log(`Instructor con user_id=${id} actualizado: status=inactive, user_id=NULL`);
-        }
-        
-        // 3. Finalmente eliminamos el usuario
-        const result = await tx.delete(users).where(eq(users.id, id));
-        if (result.rowCount === 0) {
-          throw new Error(`No se pudo eliminar el usuario con ID ${id}`);
-        }
-      });
+        console.log(`Referencias a user_id=${id} eliminadas de la tabla volunteers`);
+      } catch (err) {
+        console.error(`Error al actualizar referencias de voluntarios:`, err);
+        // Continuamos con el proceso aunque falle este paso
+      }
       
-      console.log(`Usuario ${id} eliminado exitosamente`);
-      return true;
+      // Eliminamos cualquier referencia en la tabla instructors
+      try {
+        await db.execute(sql`
+          UPDATE instructors 
+          SET status = 'inactive', user_id = NULL 
+          WHERE user_id = ${id}
+        `);
+        console.log(`Referencias a user_id=${id} eliminadas de la tabla instructors`);
+      } catch (err) {
+        console.error(`Error al actualizar referencias de instructores:`, err);
+        // Continuamos con el proceso aunque falle este paso
+      }
+      
+      // Eliminamos el usuario después de eliminar las referencias
+      try {
+        const result = await db.delete(users).where(eq(users.id, id));
+        console.log(`Usuario ${id} eliminado. Filas afectadas: ${result.rowCount}`);
+        return result.rowCount > 0;
+      } catch (deleteErr) {
+        console.error(`Error al eliminar usuario ${id}:`, deleteErr);
+        throw deleteErr;
+      }
     } catch (error) {
-      console.error(`Error al eliminar usuario ${id}:`, error);
+      console.error(`Error general al eliminar usuario ${id}:`, error);
       throw error;
     }
   }
