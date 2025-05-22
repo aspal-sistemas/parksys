@@ -521,114 +521,317 @@ const UserDetail: React.FC<{
           )}
           
           {/* Sección específica para voluntarios */}
-          {userData.role === 'volunteer' && (
+          {userData.role === 'voluntario' && (
             <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
               <h3 className="font-medium text-lg">Información de Voluntario</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="gender" className="text-sm font-medium">Género</label>
-                  <Select
-                    value={userData.gender}
-                    onValueChange={(value) => handleChange('gender', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar género" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="masculino">Masculino</SelectItem>
-                      <SelectItem value="femenino">Femenino</SelectItem>
-                      <SelectItem value="otro">Otro</SelectItem>
-                      <SelectItem value="no_especificar">Prefiero no decir</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              {/* Pestañas para organizar la información del voluntario */}
+              <Tabs defaultValue="personal" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="personal">Información Personal</TabsTrigger>
+                  <TabsTrigger value="experiencia">Experiencia y Disponibilidad</TabsTrigger>
+                  <TabsTrigger value="documentos">Documentación y Términos</TabsTrigger>
+                </TabsList>
                 
-                <div className="space-y-2">
-                  <label htmlFor="birthDate" className="text-sm font-medium">Fecha de nacimiento</label>
-                  <div className="relative">
-                    <Input
-                      id="birthDate"
-                      type="date"
-                      value={userData.birthDate}
-                      onChange={(e) => handleChange('birthDate', e.target.value)}
-                      className="w-full"
-                    />
-                    <Calendar className="h-4 w-4 absolute right-3 top-3 text-gray-400" />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="address" className="text-sm font-medium">Dirección</label>
-                <Textarea
-                  id="address"
-                  value={userData.address}
-                  onChange={(e) => handleChange('address', e.target.value)}
-                  placeholder="Dirección completa"
-                  rows={2}
-                />
-              </div>
-              
-              <div className="space-y-4">
-                <h4 className="font-medium">Información de Contacto de Emergencia</h4>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Pestaña 1: Información Personal */}
+                <TabsContent value="personal" className="space-y-4 pt-4">
                   <div className="space-y-2">
-                    <label htmlFor="emergencyContactName" className="text-sm font-medium">Nombre de contacto</label>
-                    <Input
-                      id="emergencyContactName"
-                      value={userData.emergencyContactName}
-                      onChange={(e) => handleChange('emergencyContactName', e.target.value)}
-                      placeholder="Nombre completo"
+                    <label htmlFor="address" className="text-sm font-medium">Dirección</label>
+                    <Textarea
+                      id="address"
+                      value={userData.address}
+                      onChange={(e) => handleChange('address', e.target.value)}
+                      placeholder="Dirección completa"
+                      rows={2}
+                    />
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Información de Contacto de Emergencia</h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label htmlFor="emergencyContactName" className="text-sm font-medium">Nombre de contacto</label>
+                        <Input
+                          id="emergencyContactName"
+                          value={userData.emergencyContactName}
+                          onChange={(e) => handleChange('emergencyContactName', e.target.value)}
+                          placeholder="Nombre completo"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label htmlFor="emergencyContactPhone" className="text-sm font-medium">Teléfono de emergencia</label>
+                        <Input
+                          id="emergencyContactPhone"
+                          value={userData.emergencyContactPhone}
+                          onChange={(e) => handleChange('emergencyContactPhone', e.target.value)}
+                          placeholder="Ej: 555-123-4567"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="preferredParkId" className="text-sm font-medium">Parque preferido</label>
+                      <Select
+                        value={userData.preferredParkId?.toString() || 'null'}
+                        onValueChange={(value) => handleChange('preferredParkId', value === 'null' ? null : parseInt(value))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar parque" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="null">Sin preferencia</SelectItem>
+                          {/* Obtener parques desde la API */}
+                          {userData.municipalityId && (
+                            <SelectItem value="1">Parque 1</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                {/* Pestaña 2: Experiencia y Disponibilidad */}
+                <TabsContent value="experiencia" className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <label htmlFor="volunteerExperience" className="text-sm font-medium">Experiencia previa como voluntario</label>
+                    <Textarea
+                      id="volunteerExperience"
+                      value={userData.volunteerExperience || ''}
+                      onChange={(e) => handleChange('volunteerExperience', e.target.value)}
+                      placeholder="Describe tu experiencia previa como voluntario"
+                      rows={3}
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <label htmlFor="emergencyContactPhone" className="text-sm font-medium">Teléfono de emergencia</label>
-                    <Input
-                      id="emergencyContactPhone"
-                      value={userData.emergencyContactPhone}
-                      onChange={(e) => handleChange('emergencyContactPhone', e.target.value)}
-                      placeholder="Ej: 555-123-4567"
+                    <label htmlFor="skills" className="text-sm font-medium">Habilidades especiales</label>
+                    <Textarea
+                      id="skills"
+                      value={userData.skills || ''}
+                      onChange={(e) => handleChange('skills', e.target.value)}
+                      placeholder="Jardinería, organización de eventos, deportes, etc."
+                      rows={2}
                     />
+                    <p className="text-xs text-muted-foreground mt-1">Ingresa las habilidades separadas por comas</p>
                   </div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="preferredParkId" className="text-sm font-medium">Parque preferido</label>
-                  <Select
-                    value={userData.preferredParkId?.toString() || 'null'}
-                    onValueChange={(value) => handleChange('preferredParkId', value === 'null' ? null : parseInt(value))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar parque" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="null">Sin preferencia</SelectItem>
-                      {/* Obtener parques desde la API */}
-                      {userData.municipalityId && (
-                        <SelectItem value="1">Parque 1</SelectItem>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="availability" className="text-sm font-medium">Disponibilidad</label>
+                    <Select
+                      value={userData.availability || 'weekends'}
+                      onValueChange={(value) => handleChange('availability', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar disponibilidad" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="weekdays">Entre semana</SelectItem>
+                        <SelectItem value="weekends">Fines de semana</SelectItem>
+                        <SelectItem value="evenings">Tardes/Noches</SelectItem>
+                        <SelectItem value="mornings">Mañanas</SelectItem>
+                        <SelectItem value="flexible">Horario flexible</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="interests" className="text-sm font-medium">Áreas de interés</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="interest-nature" 
+                          checked={userData.interestNature || false}
+                          onCheckedChange={(checked) => handleChange('interestNature', checked === true)}
+                        />
+                        <label htmlFor="interest-nature" className="text-sm">Naturaleza y Conservación</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="interest-events" 
+                          checked={userData.interestEvents || false}
+                          onCheckedChange={(checked) => handleChange('interestEvents', checked === true)}
+                        />
+                        <label htmlFor="interest-events" className="text-sm">Eventos y Actividades</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="interest-education" 
+                          checked={userData.interestEducation || false}
+                          onCheckedChange={(checked) => handleChange('interestEducation', checked === true)}
+                        />
+                        <label htmlFor="interest-education" className="text-sm">Educación Ambiental</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="interest-maintenance" 
+                          checked={userData.interestMaintenance || false}
+                          onCheckedChange={(checked) => handleChange('interestMaintenance', checked === true)}
+                        />
+                        <label htmlFor="interest-maintenance" className="text-sm">Mantenimiento</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="interest-sports" 
+                          checked={userData.interestSports || false}
+                          onCheckedChange={(checked) => handleChange('interestSports', checked === true)}
+                        />
+                        <label htmlFor="interest-sports" className="text-sm">Deportes y Recreación</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="interest-cultural" 
+                          checked={userData.interestCultural || false}
+                          onCheckedChange={(checked) => handleChange('interestCultural', checked === true)}
+                        />
+                        <label htmlFor="interest-cultural" className="text-sm">Arte y Cultura</label>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                {/* Pestaña 3: Documentación y Términos */}
+                <TabsContent value="documentos" className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <label htmlFor="idDocument" className="text-sm font-medium">Identificación oficial</label>
+                    <div className="border border-gray-300 rounded-md p-4 bg-gray-50">
+                      {userData.idDocumentFile ? (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileSymlink className="h-5 w-5 text-blue-500" />
+                            <span className="text-sm text-gray-700 truncate max-w-[150px]">
+                              {userData.idDocumentFile.name}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() => handleChange('idDocumentFile', null)}
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <label
+                            htmlFor="idDocumentUpload"
+                            className="cursor-pointer inline-flex items-center gap-2 py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          >
+                            <FileSymlink className="h-4 w-4" />
+                            Subir identificación
+                            <input
+                              id="idDocumentUpload"
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              className="hidden"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  handleChange('idDocumentFile', e.target.files[0]);
+                                }
+                              }}
+                            />
+                          </label>
+                          <p className="text-xs text-gray-500 mt-2">
+                            Formatos: PDF, JPG, PNG. Máx: 5MB
+                          </p>
+                        </div>
                       )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2 mt-4">
-                <input
-                  type="checkbox"
-                  id="legalConsent"
-                  checked={userData.legalConsent}
-                  onChange={(e) => handleChange('legalConsent', e.target.checked)}
-                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 h-4 w-4"
-                />
-                <label htmlFor="legalConsent" className="text-sm text-gray-700">
-                  Acepto los términos y condiciones del programa de voluntariado y autorizo el uso de mis datos personales para los fines del programa.
-                </label>
-              </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="addressDocument" className="text-sm font-medium">Comprobante de domicilio</label>
+                    <div className="border border-gray-300 rounded-md p-4 bg-gray-50">
+                      {userData.addressDocumentFile ? (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileSymlink className="h-5 w-5 text-blue-500" />
+                            <span className="text-sm text-gray-700 truncate max-w-[150px]">
+                              {userData.addressDocumentFile.name}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() => handleChange('addressDocumentFile', null)}
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <label
+                            htmlFor="addressDocumentUpload"
+                            className="cursor-pointer inline-flex items-center gap-2 py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          >
+                            <FileSymlink className="h-4 w-4" />
+                            Subir comprobante
+                            <input
+                              id="addressDocumentUpload"
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              className="hidden"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  handleChange('addressDocumentFile', e.target.files[0]);
+                                }
+                              }}
+                            />
+                          </label>
+                          <p className="text-xs text-gray-500 mt-2">
+                            Formatos: PDF, JPG, PNG. Máx: 5MB
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4 mt-4 pt-4 border-t border-gray-200">
+                    <h4 className="font-medium">Términos y condiciones</h4>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-2">
+                        <Checkbox 
+                          id="legalConsent"
+                          checked={userData.legalConsent || false}
+                          onCheckedChange={(checked) => handleChange('legalConsent', checked === true)}
+                          className="mt-1"
+                        />
+                        <label htmlFor="legalConsent" className="text-sm text-gray-700">
+                          Acepto los términos y condiciones del programa de voluntariado y autorizo el uso de mis datos personales para los fines del programa.
+                        </label>
+                      </div>
+                      
+                      <div className="flex items-start space-x-2">
+                        <Checkbox 
+                          id="ageConsent"
+                          checked={userData.ageConsent || false}
+                          onCheckedChange={(checked) => handleChange('ageConsent', checked === true)}
+                          className="mt-1"
+                        />
+                        <label htmlFor="ageConsent" className="text-sm text-gray-700">
+                          Confirmo que soy mayor de 18 años de edad o cuento con autorización de mi tutor legal para participar en el programa.
+                        </label>
+                      </div>
+                      
+                      <div className="flex items-start space-x-2">
+                        <Checkbox 
+                          id="conductConsent"
+                          checked={userData.conductConsent || false}
+                          onCheckedChange={(checked) => handleChange('conductConsent', checked === true)}
+                          className="mt-1"
+                        />
+                        <label htmlFor="conductConsent" className="text-sm text-gray-700">
+                          Me comprometo a seguir el código de conducta del programa de voluntariado y entiendo que su incumplimiento puede resultar en mi exclusión del programa.
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
           )}
 
