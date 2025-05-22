@@ -605,7 +605,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
   });
 
   // Actualizar perfil completo de voluntario (para integrar con perfil de usuario)
-  apiRouter.post("/volunteers/update-profile", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.post("/volunteers/update-profile", async (req: Request, res: Response) => {
     try {
       console.log("Actualizando perfil completo de voluntario:", req.body);
       

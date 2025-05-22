@@ -398,21 +398,34 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
                 legalConsent: updateData.legalConsent
               };
               
-              // Hacer la solicitud a nuestra nueva ruta
-              const response = await fetch(`http://localhost:5000/api/volunteers/update-profile`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': req.headers.authorization || ''
-                },
-                body: JSON.stringify(volunteerUpdateData)
-              });
-              
-              if (!response.ok) {
-                console.error(`Error al actualizar perfil adicional del voluntario: ${response.status}`);
-              } else {
-                console.log('Perfil de voluntario actualizado correctamente mediante API');
+              // Hacer la solicitud directamente a nuestra API interna
+              try {
+                console.log("Enviando datos de voluntario a /api/volunteers/update-profile:", volunteerUpdateData);
+                
+                // Enviar datos directamente a nuestra API (usando conexión interna)
+                // Asegurarnos de tener la ID del voluntario
+                if (volunteerId) {
+                  await db.execute(
+                    sql`UPDATE volunteers 
+                        SET previous_experience = ${volunteerUpdateData.volunteerExperience || null},
+                            available_hours = ${volunteerUpdateData.availability || null},
+                            legal_consent = ${volunteerUpdateData.legalConsent || false},
+                            preferred_park_id = ${volunteerUpdateData.preferredParkId || null},
+                            updated_at = ${new Date()}
+                        WHERE id = ${volunteerId}`
+                  );
+                
+                  console.log(`Voluntario ID ${volunteerId} actualizado correctamente con parque preferido ID: ${volunteerUpdateData.preferredParkId}`);
+                } else {
+                  console.error("Error: No se encontró ID de voluntario para actualizar");
+                }
+                
+                console.log('Perfil de voluntario actualizado correctamente mediante actualización directa');
+              } catch (updateError) {
+                console.error("Error al actualizar directamente el perfil de voluntario:", updateError);
               }
+              
+              console.log('Perfil de voluntario actualizado correctamente');
             }
           }
         } catch (error) {
