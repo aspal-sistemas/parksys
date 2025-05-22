@@ -105,66 +105,81 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
   // POST /api/users - Crear un nuevo usuario
   apiRouter.post('/users', isAdmin, async (req: Request, res: Response) => {
     try {
-      // Validar los datos del usuario
-      const userData = createUserSchema.parse(req.body);
-      
-      // Verificar si el usuario ya existe
-      const existingUser = await storage.getUserByUsername(userData.username);
-      if (existingUser) {
-        return res.status(400).json({ message: 'El nombre de usuario ya está en uso' });
-      }
-      
-      // Verificar si el email ya está en uso
-      const existingEmail = await storage.getUserByEmail(userData.email);
-      if (existingEmail) {
-        return res.status(400).json({ message: 'El email ya está en uso' });
-      }
-      
-      // Encriptar la contraseña (en un entorno real)
-      // const hashedPassword = await bcrypt.hash(userData.password, 10);
-      
-      // En este caso, no hasheamos la contraseña para facilitar las pruebas
-      const hashedPassword = userData.password;
-      
-      // Crear el usuario con logging detallado
-      console.log("Datos que se enviarán a createUser:", {
-        ...userData,
-        password: "[REDACTED]",
-        fullName: `${userData.firstName} ${userData.lastName}`
+      // Imprimir los datos recibidos para diagnosticar problemas
+      console.log("Datos recibidos en POST /users:", {
+        ...req.body,
+        password: req.body.password ? "[REDACTED]" : undefined
       });
       
+      // Validar los datos del usuario
       try {
-        const newUser = await storage.createUser({
+        const validationResult = createUserSchema.safeParse(req.body);
+        if (!validationResult.success) {
+          const formattedError = fromZodError(validationResult.error);
+          console.error("Error detallado de validación:", JSON.stringify(formattedError, null, 2));
+          console.error("Errores específicos:", formattedError.details);
+          return res.status(400).json({ 
+            message: 'Error de validación', 
+            details: formattedError.message,
+            errors: formattedError.details
+          });
+        }
+        
+        const userData = validationResult.data;
+        
+        // Verificar si el usuario ya existe
+        const existingUser = await storage.getUserByUsername(userData.username);
+        if (existingUser) {
+          return res.status(400).json({ message: 'El nombre de usuario ya está en uso' });
+        }
+        
+        // Verificar si el email ya está en uso
+        const existingEmail = await storage.getUserByEmail(userData.email);
+        if (existingEmail) {
+          return res.status(400).json({ message: 'El email ya está en uso' });
+        }
+        
+        // En este caso, no hasheamos la contraseña para facilitar las pruebas
+        const hashedPassword = userData.password;
+        
+        // Crear el usuario con logging detallado
+        console.log("Datos que se enviarán a createUser:", {
           ...userData,
-          password: hashedPassword,
+          password: "[REDACTED]",
           fullName: `${userData.firstName} ${userData.lastName}`
         });
         
-        console.log("Usuario creado exitosamente:", {
-          id: newUser.id,
-          username: newUser.username,
-          email: newUser.email,
-          role: newUser.role
-        });
-        
-        // No enviamos la contraseña en la respuesta
-        const { password, ...userWithoutPassword } = newUser;
-        
-        res.status(201).json(userWithoutPassword);
-      } catch (dbError) {
-        console.error("Error específico al crear usuario en la base de datos:", dbError);
-        res.status(500).json({ message: 'Error al crear usuario en la base de datos', details: dbError.message });
-      }
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const validationError = fromZodError(error);
+        try {
+          const newUser = await storage.createUser({
+            ...userData,
+            password: hashedPassword,
+            fullName: `${userData.firstName} ${userData.lastName}`
+          });
+          
+          console.log("Usuario creado exitosamente:", {
+            id: newUser.id,
+            username: newUser.username,
+            email: newUser.email,
+            role: newUser.role
+          });
+          
+          // No enviamos la contraseña en la respuesta
+          const { password, ...userWithoutPassword } = newUser;
+          
+          res.status(201).json(userWithoutPassword);
+        } catch (dbError) {
+          console.error("Error específico al crear usuario en la base de datos:", dbError);
+          res.status(500).json({ message: 'Error al crear usuario en la base de datos', details: dbError.message });
+        }
+      } catch (validationError) {
+        console.error("Error durante la validación:", validationError);
         return res.status(400).json({ 
           message: 'Error de validación', 
-          details: validationError.message 
+          details: 'Error en el proceso de validación'
         });
       }
-      
-      console.error('Error creating user:', error);
+    } catch (error) {
+      console.error('Error general creating user:', error);
       res.status(500).json({ message: 'Error al crear usuario' });
     }
   });
