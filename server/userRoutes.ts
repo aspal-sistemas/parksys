@@ -191,6 +191,30 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
       // No enviamos la contraseña al cliente
       const { password, ...userWithoutPassword } = user;
       
+      // Si el usuario es voluntario, obtenemos los datos adicionales de la tabla voluntarios
+      if (user.role === 'voluntario') {
+        try {
+          // Buscar los datos adicionales del voluntario
+          const volunteerResult = await db.execute(
+            sql`SELECT * FROM volunteers WHERE user_id = ${userId}`
+          );
+          
+          if (volunteerResult.rows && volunteerResult.rows.length > 0) {
+            const volunteerData = volunteerResult.rows[0];
+            console.log("Datos del voluntario encontrados:", volunteerData);
+            
+            // Agregar los datos del voluntario al objeto de usuario
+            userWithoutPassword.preferredParkId = volunteerData.preferred_park_id;
+            userWithoutPassword.legalConsent = volunteerData.legal_consent;
+            userWithoutPassword.volunteerExperience = volunteerData.previous_experience;
+            userWithoutPassword.availability = volunteerData.available_hours;
+          }
+        } catch (error) {
+          console.error('Error al obtener datos de voluntario:', error);
+          // No interrumpimos el flujo, devolvemos los datos de usuario que tenemos
+        }
+      }
+      
       res.json(userWithoutPassword);
     } catch (error) {
       console.error('Error fetching user:', error);
