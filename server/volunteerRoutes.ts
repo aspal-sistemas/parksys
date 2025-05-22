@@ -125,6 +125,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
             'module' as source,
             user_id
           FROM volunteers 
+          WHERE status = 'active'
           ORDER BY id DESC`
         );
         
