@@ -105,7 +105,8 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
   // Obtener todos los voluntarios (incluidos usuarios con rol 'voluntario')
   apiRouter.get("/volunteers", isAuthenticated, async (_req: Request, res: Response) => {
     try {
-      let allVolunteers = [];
+      let allVolunteers: any[] = [];
+      let userVolunteerIds: Set<number> = new Set(); // Para rastrear IDs de usuarios que ya son voluntarios
       
       // 1. Primero obtenemos los voluntarios tradicionales
       try {
@@ -122,24 +123,40 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
             available_hours as availability,
             previous_experience,
             'module' as source,
-            NULL as user_id
+            user_id
           FROM volunteers 
           ORDER BY id DESC`
         );
         
-        if (traditionalVolunteersResult.rows) {
+        if (traditionalVolunteersResult.rows && Array.isArray(traditionalVolunteersResult.rows)) {
+          // Agregamos los voluntarios tradicionales a nuestra lista
           allVolunteers = [...traditionalVolunteersResult.rows];
+          
+          // Guardamos los IDs de usuarios asociados para evitar duplicados
+          traditionalVolunteersResult.rows.forEach((volunteer: any) => {
+            if (volunteer.user_id) {
+              userVolunteerIds.add(volunteer.user_id);
+            }
+          });
         }
       } catch (err) {
         console.error("Error al obtener voluntarios tradicionales:", err);
         // Continuamos con la siguiente consulta en caso de error
       }
       
-      // 2. Luego obtenemos los usuarios con rol 'voluntario'
+      // 2. Luego obtenemos los usuarios con rol 'voluntario' que NO están ya en la tabla de voluntarios
       try {
-        // Usamos una consulta directa sin alias para evitar problemas
-        const usersResult = await db.execute(
-          sql`SELECT 
+        // Lista de IDs a excluir
+        let excludeClause = "";
+        
+        if (userVolunteerIds.size > 0) {
+          const excludeIds = Array.from(userVolunteerIds).join(',');
+          excludeClause = `AND id NOT IN (${excludeIds})`;
+        }
+        
+        // Construimos la consulta SQL dinámicamente
+        const query = `
+          SELECT 
             id as user_id,
             full_name, 
             email, 
@@ -153,11 +170,15 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
             'user' as source,
             id as user_id
           FROM users 
-          WHERE role = 'voluntario'
-          ORDER BY id DESC`
-        );
+          WHERE role = 'voluntario' 
+          ${excludeClause}
+          ORDER BY id DESC
+        `;
         
-        if (usersResult.rows) {
+        const usersResult = await db.execute(query);
+        console.log("Usuarios voluntarios que no están en tabla volunteers:", usersResult.rows);
+        
+        if (usersResult.rows && Array.isArray(usersResult.rows)) {
           allVolunteers = [...allVolunteers, ...usersResult.rows];
         }
       } catch (err) {
@@ -165,6 +186,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         // Continuamos y devolvemos lo que tengamos
       }
       
+      console.log(`Total de ${allVolunteers.length} voluntarios encontrados`);
       res.json(allVolunteers);
     } catch (error) {
       console.error("Error al obtener voluntarios:", error);
