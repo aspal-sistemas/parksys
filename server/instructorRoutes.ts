@@ -385,13 +385,43 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
         return res.status(400).json({ message: "ID de instructor no válido" });
       }
       
-      const evaluations = await db
-        .select()
-        .from(instructorEvaluations)
-        .where(eq(instructorEvaluations.instructorId, instructorId))
-        .orderBy(desc(instructorEvaluations.createdAt));
+      // Usamos una consulta SQL específica para evitar problemas con campos que podrían no existir
+      const result = await db.execute(sql`
+        SELECT 
+          e.id,
+          e.instructor_id,
+          e.assignment_id,
+          e.evaluator_id,
+          e.evaluation_date,
+          e.professionalism,
+          e.teaching_clarity,
+          e.active_participation,
+          e.communication,
+          e.group_management,
+          e.knowledge,
+          e.methodology,
+          e.overall_performance,
+          e.comments,
+          e.follow_up_required,
+          e.follow_up_notes,
+          e.created_at,
+          e.updated_at,
+          'supervisor' as evaluator_type,
+          i.full_name as instructor_name,
+          a.title as activity_title
+        FROM 
+          instructor_evaluations e
+        LEFT JOIN 
+          instructors i ON e.instructor_id = i.id
+        LEFT JOIN 
+          instructor_assignments a ON e.assignment_id = a.id
+        WHERE 
+          e.instructor_id = ${instructorId}
+        ORDER BY 
+          e.created_at DESC
+      `);
       
-      res.json(evaluations);
+      res.json(result.rows || []);
     } catch (error) {
       console.error(`Error al obtener evaluaciones del instructor ${req.params.id}:`, error);
       res.status(500).json({ message: "Error al obtener evaluaciones" });
@@ -445,12 +475,31 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
   apiRouter.get("/instructors/evaluations", isAuthenticated, async (_req: Request, res: Response) => {
     try {
       // Consulta con join para obtener datos del instructor relacionado
+      // Usamos una consulta más específica para evitar problemas con columnas que podrían no existir
       const result = await db.execute(sql`
         SELECT 
-          e.*,
+          e.id,
+          e.instructor_id,
+          e.assignment_id,
+          e.evaluator_id,
+          e.evaluation_date,
+          e.professionalism,
+          e.teaching_clarity,
+          e.active_participation,
+          e.communication,
+          e.group_management,
+          e.knowledge,
+          e.methodology,
+          e.overall_performance,
+          e.comments,
+          e.follow_up_required,
+          e.follow_up_notes,
+          e.created_at,
+          e.updated_at,
           i.full_name as instructor_name,
           i.profile_image_url as instructor_profile_image_url,
-          a.title as activity_title
+          a.title as activity_title,
+          'supervisor' as evaluator_type
         FROM 
           instructor_evaluations e
         LEFT JOIN 
