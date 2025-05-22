@@ -149,10 +149,14 @@ const UserDetail: React.FC<{
         const formData = new FormData();
         formData.append('profileImage', file);
         
-        // Enviar la imagen al servidor
-        // Agregar el userId al formData si estamos editando un usuario existente
-        if (user && user.id) {
-          formData.append('userId', user.id.toString());
+        // Usamos el editingUserId que recibimos como prop directamente
+        // Este valor es más confiable que el ID del objeto user
+        const userIdToUpdate = editingUserId || (user && user.id);
+        
+        // Agregar el userId al formData si tenemos un ID válido
+        if (userIdToUpdate) {
+          formData.append('userId', userIdToUpdate.toString());
+          console.log(`Subiendo imagen para usuario ID: ${userIdToUpdate}`);
         }
         
         const response = await fetch('/api/upload/profile-image', {
@@ -175,11 +179,11 @@ const UserDetail: React.FC<{
         // Ya no necesitamos guardar el archivo, ya que se ha subido al servidor
         handleChange('profileImageFile', null);
         
-        // Si estamos editando un usuario existente, guardamos la URL en la caché
-        if (user && user.id) {
+        // Guardar la URL en la caché solo si tenemos un ID válido
+        if (userIdToUpdate) {
           try {
             // Llamar al endpoint para guardar la URL en la caché
-            await fetch(`/api/users/${user.id}/profile-image`, {
+            await fetch(`/api/users/${userIdToUpdate}/profile-image`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -187,7 +191,7 @@ const UserDetail: React.FC<{
               },
               body: JSON.stringify({ imageUrl: data.url })
             });
-            console.log(`Imagen de perfil guardada en caché para el usuario ${user.id}`);
+            console.log(`Imagen de perfil guardada en caché para el usuario ${userIdToUpdate}`);
           } catch (error) {
             console.error('Error al guardar la URL en la caché:', error);
             // Continuamos aunque falle el guardado en caché
