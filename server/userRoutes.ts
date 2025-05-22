@@ -11,13 +11,19 @@ const createUserSchema = z.object({
   firstName: z.string().min(1, "El nombre es requerido"),
   lastName: z.string().min(1, "El apellido es requerido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-  role: z.enum(['admin', 'director', 'manager', 'supervisor', 'citizen', 'volunteer', 'instructor', 'user']),
+  role: z.enum(['admin', 'director', 'manager', 'supervisor', 'ciudadano', 'voluntario', 'instructor', 'user']),
   municipalityId: z.number().nullable(),
 });
 
 // Esquema para validar la actualización de un usuario
-const updateUserSchema = createUserSchema.partial().extend({
+const updateUserSchema = z.object({
+  username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres").optional(),
+  email: z.string().email("Email inválido").optional(),
+  firstName: z.string().min(1, "El nombre es requerido").optional(),
+  lastName: z.string().min(1, "El apellido es requerido").optional(),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").optional(),
+  role: z.enum(['admin', 'director', 'manager', 'supervisor', 'ciudadano', 'voluntario', 'instructor', 'user']).optional(),
+  municipalityId: z.number().nullable().optional(),
   profileImageUrl: z.string().optional(),
   phone: z.string().optional(),
   gender: z.string().optional(),
