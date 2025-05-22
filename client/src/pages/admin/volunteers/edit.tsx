@@ -45,6 +45,7 @@ const volunteerFormSchema = z.object({
   status: z.string().default('active'),
   gender: z.string().optional().nullable(),
   age: z.number().int().min(16).max(99).optional().nullable(),
+  address: z.string().optional().nullable(),
   
   // Información de contacto de emergencia
   emergency_contact: z.string().optional().nullable(),
@@ -104,6 +105,7 @@ const EditVolunteer = () => {
       phone: volunteer.phone || '',
       gender: volunteer.gender || '',
       age: volunteer.age || null,
+      address: volunteer.address || '',
       status: volunteer.status || 'active',
       emergency_contact: volunteer.emergency_contact || '',
       emergency_phone: volunteer.emergency_phone || '',
