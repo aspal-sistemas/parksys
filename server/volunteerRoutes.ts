@@ -18,6 +18,89 @@ import { volunteers, volunteerParticipations, volunteerEvaluations, volunteerRec
 export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRouter: any, isAuthenticated: any) {
   
   // === RUTAS PARA VOLUNTARIOS ===
+
+  // Crear un perfil de voluntario completo a partir de un usuario existente con rol "voluntario"
+  apiRouter.post("/volunteers/create-from-user", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { 
+        fullName, email, phoneNumber, address, age, gender, 
+        previousExperience, availability, availableDays, interestAreas, 
+        preferredParkId, legalConsent, userId 
+      } = req.body;
+      
+      // Validar que el usuario exista y tenga el rol "voluntario"
+      const userResults = await db.execute(
+        sql`SELECT * FROM users WHERE id = ${userId} AND role = 'voluntario'`
+      );
+      
+      if (!userResults.rows || userResults.rows.length === 0) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "No se encontró el usuario o no tiene el rol de voluntario" 
+        });
+      }
+      
+      // Verificar si ya existe un voluntario asociado a este usuario
+      const existingVolunteerResults = await db.execute(
+        sql`SELECT * FROM volunteers WHERE email = ${email}`
+      );
+      
+      if (existingVolunteerResults.rows && existingVolunteerResults.rows.length > 0) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Ya existe un voluntario con este correo electrónico" 
+        });
+      }
+      
+      // Crear el registro de voluntario en la base de datos
+      const volunteerResult = await db.execute(
+        sql`INSERT INTO volunteers (
+          full_name, email, phone, address, age, gender, 
+          previous_experience, available_hours, available_days, interest_areas,
+          preferred_park_id, legal_consent, status, created_at, updated_at
+        ) VALUES (
+          ${fullName}, 
+          ${email}, 
+          ${phoneNumber || null}, 
+          ${address || null}, 
+          ${age ? parseInt(age) : null}, 
+          ${gender || null},
+          ${previousExperience || null}, 
+          ${availability || null}, 
+          ${availableDays ? JSON.stringify(availableDays) : null}, 
+          ${interestAreas ? JSON.stringify(interestAreas) : null},
+          ${preferredParkId ? parseInt(preferredParkId) : null}, 
+          ${legalConsent === true}, 
+          'active', 
+          NOW(), 
+          NOW()
+        ) RETURNING *`
+      );
+      
+      // Validar si se creó correctamente
+      if (!volunteerResult.rows || volunteerResult.rows.length === 0) {
+        return res.status(500).json({ 
+          success: false, 
+          message: "Error al crear el perfil de voluntario" 
+        });
+      }
+      
+      // Relacionar el usuario con el voluntario (esto podría hacerse en una tabla de relaciones si se desea)
+      // Para esto habría que crear una tabla adicional, pero por ahora lo manejamos con el email
+      
+      res.status(201).json({
+        success: true,
+        message: "Perfil de voluntario creado exitosamente",
+        volunteer: volunteerResult.rows[0]
+      });
+    } catch (error) {
+      console.error("Error al crear perfil de voluntario desde usuario:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Error interno al crear el perfil de voluntario" 
+      });
+    }
+  });
   
   // Obtener todos los voluntarios (incluidos usuarios con rol 'voluntario')
   apiRouter.get("/volunteers", isAuthenticated, async (_req: Request, res: Response) => {
