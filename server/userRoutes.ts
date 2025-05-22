@@ -225,6 +225,13 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
             userWithoutPassword.address = volunteerData.address;
             userWithoutPassword.emergencyContactName = volunteerData.emergency_contact;
             userWithoutPassword.emergencyContactPhone = volunteerData.emergency_phone;
+            
+            // Log para verificar que los datos se estén asignando correctamente
+            console.log("Datos enviados en la respuesta:", {
+              address: userWithoutPassword.address,
+              emergencyContactName: userWithoutPassword.emergencyContactName,
+              emergencyContactPhone: userWithoutPassword.emergencyContactPhone
+            });
           }
         } catch (error) {
           console.error('Error al obtener datos de voluntario:', error);
