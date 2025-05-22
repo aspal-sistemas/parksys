@@ -220,6 +220,11 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
             userWithoutPassword.legalConsent = volunteerData.legal_consent;
             userWithoutPassword.volunteerExperience = volunteerData.previous_experience;
             userWithoutPassword.availability = volunteerData.available_hours;
+            
+            // Agregar campos adicionales para dirección y contactos de emergencia
+            userWithoutPassword.address = volunteerData.address;
+            userWithoutPassword.emergencyContactName = volunteerData.emergency_contact;
+            userWithoutPassword.emergencyContactPhone = volunteerData.emergency_phone;
           }
         } catch (error) {
           console.error('Error al obtener datos de voluntario:', error);
