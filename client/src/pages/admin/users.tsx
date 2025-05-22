@@ -817,10 +817,22 @@ const AdminUsers = () => {
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => {
-      // Simulamos la API en desarrollo
       console.log('DELETE usuario:', userId);
       
-      // En producción, usaríamos la API real
+      // Realizar la eliminación real del usuario
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Error al eliminar el usuario');
+      }
+      
       return userId;
     },
     onSuccess: () => {
