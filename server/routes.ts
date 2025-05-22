@@ -1733,10 +1733,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/admin/seed/instructor-evaluations", async (req: Request, res: Response) => {
     try {
       // Importamos la función para agregar evaluaciones de instructores de muestra
-      const { addInstructorEvaluations } = await import("./add-instructor-evaluations");
+      const { addSimpleInstructorEvaluations } = await import("./fix-instructor-evaluations");
       
       // Ejecutamos la función
-      await addInstructorEvaluations();
+      await addSimpleInstructorEvaluations();
       
       res.status(200).json({ message: "Datos de muestra de evaluaciones de instructores cargados correctamente" });
     } catch (error) {

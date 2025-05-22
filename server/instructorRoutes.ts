@@ -482,7 +482,7 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
           e.instructor_id,
           e.assignment_id,
           e.evaluator_id,
-          e.created_at,
+          e.created_at as evaluation_date,
           e.knowledge,
           e.communication,
           e.methodology,
