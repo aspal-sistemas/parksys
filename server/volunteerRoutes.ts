@@ -158,22 +158,24 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         // Construimos la consulta SQL dinámicamente
         const query = `
           SELECT 
-            id as user_id,
-            full_name, 
-            email, 
+            u.id as user_id,
+            u.full_name, 
+            u.email, 
             null as phone, 
-            'active' as status, 
+            COALESCE(v.status, 'active') as status, 
             null as profile_image_url, 
             now() as created_at,
             null as age,
             null as availability,
             null as previous_experience,
             'user' as source,
-            id as user_id
-          FROM users 
-          WHERE role = 'voluntario' 
+            u.id as user_id
+          FROM users u
+          LEFT JOIN volunteers v ON u.email = v.email
+          WHERE u.role = 'voluntario' 
+          AND (v.status IS NULL OR v.status = 'active')
           ${excludeClause}
-          ORDER BY id DESC
+          ORDER BY u.id DESC
         `;
         
         const usersResult = await db.execute(query);
