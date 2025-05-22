@@ -159,7 +159,12 @@ const UserDetail: React.FC<{
     legalConsent: user?.legalConsent || false,
   });
 
-  // Eliminamos la consulta de municipios ya que no se usará en el formulario
+  // Cargar parques para el selector de parque preferido cuando el rol es voluntario
+  const { data: parks = [] } = useQuery({
+    queryKey: ['/api/public/parks/list'],
+    // Solo cargar parques si el rol seleccionado es voluntario
+    enabled: userData.role === 'voluntario'
+  });
 
   const handleChange = (field: keyof UserFormData, value: string | number | null | boolean | File | string[]) => {
     setUserData(prev => ({
@@ -611,9 +616,18 @@ const UserDetail: React.FC<{
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="null">Sin preferencia</SelectItem>
-                          {/* Obtener parques desde la API */}
-                          {userData.municipalityId && (
-                            <SelectItem value="1">Parque 1</SelectItem>
+                          {parks && parks.length > 0 ? (
+                            parks.map((park: any) => (
+                              <SelectItem key={park.id} value={park.id.toString()}>
+                                {park.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <>
+                              <SelectItem value="1">Parque Metropolitano</SelectItem>
+                              <SelectItem value="2">Parque Agua Azul</SelectItem>
+                              <SelectItem value="3">Parque de la Solidaridad</SelectItem>
+                            </>
                           )}
                         </SelectContent>
                       </Select>
