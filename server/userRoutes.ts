@@ -93,7 +93,8 @@ async function syncUserWithVolunteerTable(user: any) {
                 profile_image_url = ${volunteerData.profile_image_url},
                 user_id = ${volunteerData.user_id},
                 updated_at = ${volunteerData.updated_at},
-                age = ${age}
+                age = ${age},
+                preferred_park_id = ${user.preferredParkId || 3}
             WHERE id = ${volunteerId}`
       );
       
@@ -117,11 +118,11 @@ async function syncUserWithVolunteerTable(user: any) {
       
       await db.execute(
         sql`INSERT INTO volunteers 
-            (full_name, email, phone, gender, status, profile_image_url, user_id, created_at, updated_at, age, legal_consent)
+            (full_name, email, phone, gender, status, profile_image_url, user_id, created_at, updated_at, age, legal_consent, preferred_park_id)
             VALUES 
             (${volunteerData.full_name}, ${volunteerData.email}, ${volunteerData.phone}, 
              ${volunteerData.gender}, ${volunteerData.status}, ${volunteerData.profile_image_url}, 
-             ${volunteerData.user_id}, ${new Date()}, ${volunteerData.updated_at}, ${age}, ${true})`
+             ${volunteerData.user_id}, ${new Date()}, ${volunteerData.updated_at}, ${age}, ${true}, ${user.preferredParkId || 3})`
       );
       
       console.log(`Nuevo voluntario creado para usuario ID ${user.id}`);
@@ -439,7 +440,7 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
                         SET previous_experience = ${updateData.volunteerExperience || null},
                             available_hours = ${availableHours},
                             legal_consent = ${updateData.legalConsent === true},
-                            preferred_park_id = ${updateData.preferredParkId || null},
+                            preferred_park_id = ${updateData.preferredParkId !== undefined ? updateData.preferredParkId : 3},
                             updated_at = ${new Date()}
                         WHERE id = ${volunteerId}`
                   );
