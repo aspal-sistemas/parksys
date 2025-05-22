@@ -12,6 +12,7 @@ import {
   Calendar,
   FileSymlink
 } from 'lucide-react';
+import UserAvatar from '@/components/UserAvatar';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -943,7 +944,12 @@ const AdminUsers = () => {
               {filteredUsers.map((user: User) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.id}</TableCell>
-                  <TableCell>{user.username}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <UserAvatar user={user} size="sm" />
+                      <span>{user.username}</span>
+                    </div>
+                  </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.fullName || `${user.firstName || ''} ${user.lastName || ''}`}</TableCell>
                   <TableCell>{getRoleBadge(user.role)}</TableCell>

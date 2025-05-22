@@ -20,19 +20,7 @@ export const users = pgTable("users", {
   email: text("email").notNull(),
   role: text("role").notNull().default("admin"),
   fullName: text("full_name").notNull(),
-  municipalityId: integer("municipality_id"),
-  profileImageUrl: text("profile_image_url"),
-  phone: text("phone"),
-  gender: text("gender"),
-  birthDate: text("birth_date"),
-  bio: text("bio"),
-  experience: text("experience"),
-  specialties: text("specialties"), // stored as JSON string
-  address: text("address"),
-  emergencyContactName: text("emergency_contact_name"),
-  emergencyContactPhone: text("emergency_contact_phone"),
-  preferredParkId: integer("preferred_park_id"),
-  legalConsent: boolean("legal_consent")
+  municipalityId: integer("municipality_id")
 });
 
 export const municipalities = pgTable("municipalities", {
