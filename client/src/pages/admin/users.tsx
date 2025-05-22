@@ -162,8 +162,11 @@ const UserDetail: React.FC<{
   // Cargar parques para el selector de parque preferido cuando el rol es voluntario
   const { data: parks = [] } = useQuery({
     queryKey: ['/api/public/parks/list'],
-    // Solo cargar parques si el rol seleccionado es voluntario
-    enabled: userData.role === 'voluntario'
+    // Siempre cargamos los parques para evitar problemas
+    enabled: true,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    retry: 3
   });
 
   const handleChange = (field: keyof UserFormData, value: string | number | null | boolean | File | string[]) => {
