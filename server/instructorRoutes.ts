@@ -442,10 +442,15 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
       console.log("Recibiendo evaluación:", req.body);
       
       // Mapeamos los datos de entrada a los campos que realmente existen en la tabla
+      // Si el evaluatorType es 'supervisor', usamos el ID del supervisor fijo (28)
+      const evaluatorId = req.body.evaluationType === 'supervisor' 
+        ? 28  // ID del supervisor que acabamos de crear
+        : req.user?.id || null;
+        
       const evaluationData = {
         instructorId,
         assignmentId: req.body.assignmentId,
-        evaluatorId: req.user?.id || null,
+        evaluatorId,
         knowledge: req.body.knowledge || 3,
         communication: req.body.communication || 3,
         methodology: req.body.methodology || 3,
@@ -470,9 +475,65 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
   // Obtener todas las evaluaciones (para la página de administración)
   apiRouter.get("/instructors-evaluations", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      // Importamos y llamamos al endpoint simplificado
-      const { getSimpleInstructorEvaluations } = await import('./simple-evaluations-endpoint');
-      return getSimpleInstructorEvaluations(req, res);
+      // Verificamos si se solicitan evaluaciones de un supervisor específico
+      const evaluatorId = req.query.evaluatorId ? parseInt(req.query.evaluatorId as string) : null;
+      
+      // Si el usuario tiene rol 'supervisor', solo mostrar sus propias evaluaciones
+      const userId = req.user?.id as number;
+      const userRole = req.user?.role as string;
+      
+      // Si es el supervisor específico o un admin, continuar con la consulta
+      if (userRole === 'supervisor' || userRole === 'admin') {
+        try {
+          // Construimos la consulta base
+          let query = sql`
+            SELECT 
+              e.id,
+              e.instructor_id,
+              e.evaluator_id,
+              e.assignment_id,
+              e.knowledge,
+              e.communication,
+              e.methodology,
+              e.overall_performance,
+              e.comments,
+              e.created_at,
+              i.full_name as instructor_name,
+              u.full_name as evaluator_name,
+              u.role as evaluator_role,
+              a.title as activity_title
+            FROM 
+              instructor_evaluations e
+            LEFT JOIN 
+              instructors i ON e.instructor_id = i.id
+            LEFT JOIN 
+              users u ON e.evaluator_id = u.id
+            LEFT JOIN 
+              instructor_assignments a ON e.assignment_id = a.id
+          `;
+          
+          // Si se filtra por evaluador específico o es un supervisor viendo sus propias evaluaciones
+          if (evaluatorId || (userRole === 'supervisor' && !evaluatorId)) {
+            const filterId = evaluatorId || userId;
+            query = sql`${query} WHERE e.evaluator_id = ${filterId}`;
+          }
+          
+          // Ordenamos por fecha de creación (más reciente primero)
+          query = sql`${query} ORDER BY e.created_at DESC`;
+          
+          const result = await db.execute(query);
+          return res.json(result.rows || []);
+        } catch (error) {
+          console.error("Error al obtener evaluaciones filtradas:", error);
+          // Si hay error en la consulta personalizada, intentamos el endpoint simplificado
+          const { getSimpleInstructorEvaluations } = await import('./simple-evaluations-endpoint');
+          return getSimpleInstructorEvaluations(req, res);
+        }
+      } else {
+        // Para otros usuarios, usar el endpoint simplificado
+        const { getSimpleInstructorEvaluations } = await import('./simple-evaluations-endpoint');
+        return getSimpleInstructorEvaluations(req, res);
+      }
     } catch (error) {
       console.error("Error al obtener todas las evaluaciones:", error);
       res.status(500).json({ message: "Error al obtener evaluaciones" });
