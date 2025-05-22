@@ -1585,38 +1585,53 @@ export class DatabaseStorage implements IStorage {
         return false;
       }
       
-      // Verificamos el rol del usuario para realizar acciones especiales
-      if (user.role === 'voluntario') {
-        // Si es voluntario, primero lo marcamos como inactivo en la tabla volunteers
-        try {
-          await db.execute(sql`
+      // Comenzamos una transacción para asegurar consistencia
+      await db.transaction(async (tx) => {
+        // 1. Verificar si hay un registro en la tabla volunteers asociado a este usuario
+        const volunteerRecord = await tx.execute(sql`
+          SELECT id FROM volunteers WHERE user_id = ${id}
+        `);
+        
+        // Si existe un voluntario asociado
+        if (volunteerRecord.rows && volunteerRecord.rows.length > 0) {
+          console.log(`Encontrado voluntario con user_id=${id}, actualizando estado...`);
+          
+          // Marcar como inactivo en la tabla volunteers
+          await tx.execute(sql`
             UPDATE volunteers
-            SET status = 'inactive'
+            SET status = 'inactive', user_id = NULL
             WHERE user_id = ${id}
           `);
-          console.log(`Usuario ${id} marcado como inactivo en la tabla volunteers`);
-        } catch (error) {
-          console.error(`Error al actualizar estado del voluntario:`, error);
-          // Continuamos con la eliminación aunque falle este paso
+          console.log(`Voluntario con user_id=${id} actualizado: status=inactive, user_id=NULL`);
         }
-      } else if (user.role === 'instructor') {
-        // Si es instructor, primero lo marcamos como inactivo en la tabla instructors
-        try {
-          await db.execute(sql`
+        
+        // 2. Verificar si hay un registro en la tabla instructors
+        const instructorRecord = await tx.execute(sql`
+          SELECT id FROM instructors WHERE user_id = ${id}
+        `);
+        
+        // Si existe un instructor asociado
+        if (instructorRecord.rows && instructorRecord.rows.length > 0) {
+          console.log(`Encontrado instructor con user_id=${id}, actualizando estado...`);
+          
+          // Marcar como inactivo en la tabla instructors
+          await tx.execute(sql`
             UPDATE instructors
-            SET status = 'inactive'
+            SET status = 'inactive', user_id = NULL
             WHERE user_id = ${id}
           `);
-          console.log(`Usuario ${id} marcado como inactivo en la tabla instructors`);
-        } catch (error) {
-          console.error(`Error al actualizar estado del instructor:`, error);
-          // Continuamos con la eliminación aunque falle este paso
+          console.log(`Instructor con user_id=${id} actualizado: status=inactive, user_id=NULL`);
         }
-      }
+        
+        // 3. Finalmente eliminamos el usuario
+        const result = await tx.delete(users).where(eq(users.id, id));
+        if (result.rowCount === 0) {
+          throw new Error(`No se pudo eliminar el usuario con ID ${id}`);
+        }
+      });
       
-      // Ahora sí eliminamos el usuario
-      const result = await db.delete(users).where(eq(users.id, id));
-      return result.rowCount > 0;
+      console.log(`Usuario ${id} eliminado exitosamente`);
+      return true;
     } catch (error) {
       console.error(`Error al eliminar usuario ${id}:`, error);
       throw error;
