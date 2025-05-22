@@ -269,6 +269,11 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
       // Actualizar el usuario
       const updatedUser = await storage.updateUser(userId, userData);
       
+      // Si el usuario tiene rol de voluntario, sincronizar con la tabla de voluntarios
+      if (updatedUser.role === 'voluntario') {
+        await syncUserWithVolunteerTable(updatedUser);
+      }
+      
       // No enviamos la contraseña en la respuesta
       const { password, ...userWithoutPassword } = updatedUser;
       
