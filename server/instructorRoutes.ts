@@ -461,34 +461,17 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
         });
       }
       
-      try {
-        // Intentar insertar con evaluationDate
-        const evaluationData = {
-          ...validationResult.data,
-          evaluationDate: new Date()
-        };
-        
-        const [newEvaluation] = await db
-          .insert(instructorEvaluations)
-          .values(evaluationData)
-          .returning();
-        
-        res.status(201).json(newEvaluation);
-      } catch (insertError) {
-        console.error("Error al insertar con evaluationDate, intentando sin el campo:", insertError);
-        
-        // Si falla, intentar sin el campo evaluationDate (caso de que no exista la columna en la tabla)
-        const evaluationData = {
-          ...validationResult.data
-        };
-        
-        const [newEvaluation] = await db
-          .insert(instructorEvaluations)
-          .values(evaluationData)
-          .returning();
-        
-        res.status(201).json(newEvaluation);
-      }
+      // Insertamos directamente sin el campo evaluationDate que no existe en la tabla
+      const evaluationData = {
+        ...validationResult.data
+      };
+      
+      const [newEvaluation] = await db
+        .insert(instructorEvaluations)
+        .values(evaluationData)
+        .returning();
+      
+      res.status(201).json(newEvaluation);
     } catch (error) {
       console.error(`Error al crear evaluación para instructor ${req.params.id}:`, error);
       res.status(500).json({ message: "Error al crear evaluación" });
