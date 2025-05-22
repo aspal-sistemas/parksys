@@ -676,6 +676,7 @@ const AdminUsers = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [editingUserId, setEditingUserId] = useState<number | null>(null);
   const [isNewUser, setIsNewUser] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
@@ -850,11 +851,13 @@ const AdminUsers = () => {
 
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
+    setEditingUserId(user.id);
     setIsNewUser(false);
   };
 
   const handleCloseUserDialog = () => {
     setSelectedUser(null);
+    setEditingUserId(null);
     setIsNewUser(false);
   };
 
