@@ -4,6 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { isAuthenticated, hasMunicipalityAccess, hasParkAccess } from "./middleware/auth";
 import { handleProfileImageUpload } from "./api/profileImageUpload";
+import { saveProfileImage, getProfileImage } from "./profileImageCache";
 import { db, pool } from "./db";
 import { sql, eq } from "drizzle-orm";
 import * as schema from "@shared/schema";

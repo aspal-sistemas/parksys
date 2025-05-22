@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { saveProfileImage } from '../profileImageCache';
 
 // Configurar la carpeta de destino para imágenes de perfil usando una ruta relativa
 const uploadDir = path.resolve('./public/uploads/profiles');
@@ -72,6 +73,14 @@ export function handleProfileImageUpload(req: Request, res: Response) {
     
     // Devolver la URL de la imagen cargada
     const imagePath = `/uploads/profiles/${req.file.filename}`;
+    
+    // Guardar en caché si se proporciona un userId
+    const userId = req.body.userId ? Number(req.body.userId) : null;
+    if (userId) {
+      saveProfileImage(userId, imagePath);
+      console.log(`Imagen de perfil guardada en caché para el usuario ${userId}: ${imagePath}`);
+    }
+    
     res.json({ 
       url: imagePath,
       message: 'Imagen cargada correctamente' 
