@@ -106,32 +106,22 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
   apiRouter.get("/volunteers", isAuthenticated, async (_req: Request, res: Response) => {
     try {
       // 1. Obtenemos los voluntarios tradicionales del módulo de voluntarios
-      // Usamos una consulta más segura verificando primero las columnas de la tabla
-      const volunteerColumnsResult = await db.execute(sql`
-        SELECT column_name FROM information_schema.columns 
-        WHERE table_name = 'volunteers'
-      `);
-      
-      const columns = volunteerColumnsResult.rows.map(row => row.column_name);
-      console.log("Columnas disponibles en la tabla volunteers:", columns);
-      
-      // Construimos una consulta segura solo con las columnas que existen
       const traditionaVolunteers = await db.execute(
         sql`SELECT 
-          v.id, 
-          v.full_name, 
-          v.email, 
-          v.phone as phone_number, 
-          v.status, 
-          v.profile_image_url, 
-          v.created_at,
-          v.age,
-          v.available_hours as availability,
-          v.previous_experience,
+          id, 
+          full_name, 
+          email, 
+          phone, 
+          status, 
+          profile_image_url, 
+          created_at,
+          age,
+          available_hours as availability,
+          previous_experience,
           'module' as source,
           NULL as user_id
-        FROM volunteers v 
-        ORDER BY v.id DESC`
+        FROM volunteers 
+        ORDER BY id DESC`
       );
       
       // 2. Obtenemos los usuarios con rol 'voluntario'
@@ -140,15 +130,15 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           u.id as user_id, 
           u.fullName as full_name, 
           u.email, 
-          NULL as phone_number, 
+          NULL as phone, 
           'active' as status, 
           NULL as profile_image_url, 
-          u.createdAt as created_at,
+          NOW() as created_at,
           NULL as age,
           NULL as availability,
           NULL as previous_experience,
           'user' as source,
-          u.id as related_user_id
+          u.id as user_id
         FROM users u 
         WHERE u.role = 'voluntario'
         ORDER BY u.id DESC`

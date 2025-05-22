@@ -94,12 +94,12 @@ const VolunteersList: React.FC = () => {
       headers.join(','),
       ...filteredVolunteers.map((volunteer: Volunteer) => [
         volunteer.id,
-        volunteer.fullName,
+        volunteer.full_name,
         volunteer.email || 'N/A',
-        volunteer.phoneNumber || 'N/A',
+        volunteer.phone || 'N/A',
         volunteer.status,
         volunteer.totalHours || 0,
-        new Date(volunteer.createdAt).toLocaleDateString()
+        volunteer.created_at ? new Date(volunteer.created_at).toLocaleDateString() : 'N/A'
       ].join(','))
     ];
     
