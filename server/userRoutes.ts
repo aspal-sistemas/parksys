@@ -373,7 +373,47 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
       
       // Si el usuario tiene rol de voluntario, sincronizar con la tabla de voluntarios
       if (updatedUser.role === 'voluntario') {
-        await syncUserWithVolunteerTable(updatedUser);
+        try {
+          // Capturar campos específicos de voluntario del formulario
+          const volunteerProfileData = {
+            volunteer_experience: updateData.volunteerExperience,
+            skills: updateData.skills,
+            emergency_contact_name: updateData.emergencyContactName,
+            emergency_contact_phone: updateData.emergencyContactPhone,
+            preferred_park_id: updateData.preferredParkId,
+            legal_consent: updateData.legalConsent,
+            address: updateData.address
+          };
+          
+          console.log("Datos de perfil de voluntario a actualizar:", volunteerProfileData);
+          
+          // Primero sincronizar los datos básicos
+          await syncUserWithVolunteerTable(updatedUser);
+          
+          // Luego actualizar campos específicos de voluntario si existen
+          const volunteerResult = await db.execute(
+            sql`SELECT id FROM volunteers WHERE email = ${updatedUser.email}`
+          );
+          
+          if (volunteerResult.rows && volunteerResult.rows.length > 0) {
+            const volunteerId = volunteerResult.rows[0].id;
+            
+            // Actualizar los campos adicionales de voluntario
+            await db.execute(
+              sql`UPDATE volunteers 
+                  SET previous_experience = COALESCE(${volunteerProfileData.volunteer_experience}, previous_experience),
+                      address = COALESCE(${volunteerProfileData.address}, address),
+                      legal_consent = COALESCE(${volunteerProfileData.legal_consent}, legal_consent),
+                      preferred_park_id = COALESCE(${volunteerProfileData.preferred_park_id}, preferred_park_id)
+                  WHERE id = ${volunteerId}`
+            );
+            
+            console.log(`Información adicional de voluntario actualizada para ID ${volunteerId}`);
+          }
+        } catch (error) {
+          console.error("Error al actualizar información adicional de voluntario:", error);
+          // No interrumpimos el flujo principal si hay error en esto
+        }
       }
       
       // No enviamos la contraseña en la respuesta
