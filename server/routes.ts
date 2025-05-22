@@ -86,6 +86,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas del módulo de usuarios
   registerUserRoutes(app, apiRouter);
   
+  // Importamos la función para asignar imágenes de perfil
+  import("./assign-profile-images").then(module => {
+    // Endpoint para asignar imágenes de perfil a todos los usuarios
+    apiRouter.post("/admin/assign-profile-images", isAuthenticated, async (req: Request, res: Response) => {
+      try {
+        const result = await module.assignProfileImages();
+        res.status(200).json(result);
+      } catch (error) {
+        console.error("Error al asignar imágenes de perfil:", error);
+        res.status(500).json({ 
+          success: false, 
+          message: "Error al asignar imágenes de perfil",
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
+    });
+  });
+  
   // Registramos las rutas públicas
   registerPublicRoutes(publicRouter);
   
