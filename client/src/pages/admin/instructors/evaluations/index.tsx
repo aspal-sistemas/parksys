@@ -124,7 +124,12 @@ export default function InstructorEvaluationsPage() {
 
   // Filtrar y buscar evaluaciones
   const filteredEvaluations = React.useMemo(() => {
-    if (!evaluations || evaluations.length === 0) return [];
+    if (!evaluations || !Array.isArray(evaluations) || evaluations.length === 0) {
+      console.log('No hay evaluaciones disponibles o no es un array:', evaluations);
+      return [];
+    }
+    
+    console.log('Evaluaciones cargadas:', evaluations.length);
     
     return evaluations.filter((evaluation: any) => {
       // Filtro por búsqueda
