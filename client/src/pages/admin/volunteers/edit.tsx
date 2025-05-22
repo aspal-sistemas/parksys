@@ -76,7 +76,7 @@ const EditVolunteer = () => {
 
   // Fetch parks for dropdown
   const { data: parks = [] } = useQuery({
-    queryKey: ['/api/parks'],
+    queryKey: ['/api/public/parks/list'],
   });
 
   // Setup form with default values from API data

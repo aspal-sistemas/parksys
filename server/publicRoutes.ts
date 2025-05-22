@@ -1,14 +1,33 @@
 import { Request, Response } from 'express';
 import { db } from './db';
-import { activities, instructors } from '@shared/schema';
+import { activities, instructors, parks } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
 
 /**
- * Registro de rutas públicas para instructores y actividades
+ * Registro de rutas públicas para instructores, actividades y parques
  * @param app Express app
  * @param publicRouter Express router para rutas públicas
  */
 export function registerPublicRoutes(publicRouter: any) {
+  // Ruta para obtener listado básico de parques (para formularios)
+  publicRouter.get('/parks/list', async (_req: Request, res: Response) => {
+    try {
+      // Obtenemos solo los datos mínimos necesarios para los selectores
+      const parkList = await db
+        .select({
+          id: parks.id,
+          name: parks.name
+        })
+        .from(parks)
+        .where(eq(parks.isDeleted, false))
+        .orderBy(parks.name);
+      
+      res.json(parkList);
+    } catch (error) {
+      console.error("Error al obtener listado de parques:", error);
+      res.status(500).json({ message: "Error al obtener listado de parques" });
+    }
+  });
   // Endpoint para permitir a los ciudadanos evaluar a los instructores
   publicRouter.post('/instructors/:id/evaluations', async (req: Request, res: Response) => {
     try {
