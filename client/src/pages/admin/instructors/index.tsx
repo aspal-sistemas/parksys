@@ -225,6 +225,29 @@ export default function InstructorsListPage() {
 
   return (
     <AdminLayout>
+      {/* Diálogo de confirmación para eliminar todos los instructores */}
+      <AlertDialog open={deleteAllDialogOpen} onOpenChange={setDeleteAllDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción desactivará a todos los instructores en el sistema y no se puede deshacer.
+              Los instructores marcados como inactivos ya no aparecerán en las listas públicas ni podrán ser asignados a actividades.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDeleteAll}
+              disabled={deleteAllInstructorsMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteAllInstructorsMutation.isPending ? 'Procesando...' : 'Confirmar eliminación'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -237,6 +260,14 @@ export default function InstructorsListPage() {
             <Button onClick={() => setLocation('/admin/instructors/new')}>
               <Plus className="mr-2 h-4 w-4" />
               Nuevo Instructor
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteAllClick}
+              disabled={deleteAllInstructorsMutation.isPending}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {deleteAllInstructorsMutation.isPending ? 'Procesando...' : 'Eliminar Todos'}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
