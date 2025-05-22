@@ -129,9 +129,9 @@ function Router() {
         </Route>
         
         {/* Rutas para el módulo de instructores */}
-        <Route path="/admin/instructors">
-          <Suspense fallback={<div className="p-8 text-center">Cargando lista de instructores...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/instructors/index')))}
+        <Route path="/admin/instructors/evaluations">
+          <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de instructores...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/instructors/evaluations/index')))}
           </Suspense>
         </Route>
         <Route path="/admin/instructors/cards">
@@ -139,9 +139,14 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/instructors/cards')))}
           </Suspense>
         </Route>
-        <Route path="/admin/instructors/:id">
+        <Route path="/admin/instructors/detail/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando perfil de instructor...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/instructors/detail')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/instructors">
+          <Suspense fallback={<div className="p-8 text-center">Cargando lista de instructores...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/instructors/index')))}
           </Suspense>
         </Route>
         
