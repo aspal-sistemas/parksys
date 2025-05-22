@@ -3,6 +3,8 @@ import { storage } from './storage';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { fromZodError } from 'zod-validation-error';
+import { db } from './db';
+import { sql } from 'drizzle-orm';
 
 // Esquema para validar la creación de un usuario
 const createUserSchema = z.object({
@@ -37,6 +39,73 @@ const updateUserSchema = z.object({
   preferredParkId: z.number().nullable().optional(),
   legalConsent: z.boolean().optional(),
 });
+
+// Función para sincronizar datos de usuario con la tabla de voluntarios
+async function syncUserWithVolunteerTable(user: any) {
+  try {
+    console.log(`Sincronizando usuario ${user.id} con tabla de voluntarios...`);
+    
+    // Verificar si ya existe un registro en la tabla de voluntarios para este usuario
+    const volunteerResult = await db.execute(
+      sql`SELECT * FROM volunteers WHERE email = ${user.email}`
+    );
+    
+    const volunteerExists = volunteerResult.rows && volunteerResult.rows.length > 0;
+    
+    // Convertir campos de usuario a formato de voluntario
+    const volunteerData = {
+      full_name: user.fullName,
+      email: user.email,
+      phone: user.phone || null,
+      gender: user.gender || null,
+      status: 'active',
+      profile_image_url: user.profileImageUrl || null,
+      previous_experience: null, // Estos campos pueden estar en un objeto adicional 
+      user_id: user.id,
+      updated_at: new Date()
+    };
+    
+    if (volunteerExists) {
+      // Actualizar el registro existente
+      const volunteerId = volunteerResult.rows[0].id;
+      console.log(`Actualizando voluntario existente ID ${volunteerId}`);
+      
+      await db.execute(
+        sql`UPDATE volunteers 
+            SET full_name = ${volunteerData.full_name},
+                email = ${volunteerData.email},
+                phone = ${volunteerData.phone},
+                gender = ${volunteerData.gender},
+                status = ${volunteerData.status},
+                profile_image_url = ${volunteerData.profile_image_url},
+                user_id = ${volunteerData.user_id},
+                updated_at = ${volunteerData.updated_at}
+            WHERE id = ${volunteerId}`
+      );
+      
+      console.log(`Voluntario ID ${volunteerId} actualizado correctamente`);
+    } else {
+      // Crear un nuevo registro
+      console.log(`Creando nuevo registro de voluntario para usuario ID ${user.id}`);
+      
+      await db.execute(
+        sql`INSERT INTO volunteers 
+            (full_name, email, phone, gender, status, profile_image_url, user_id, created_at, updated_at)
+            VALUES 
+            (${volunteerData.full_name}, ${volunteerData.email}, ${volunteerData.phone}, 
+             ${volunteerData.gender}, ${volunteerData.status}, ${volunteerData.profile_image_url}, 
+             ${volunteerData.user_id}, ${new Date()}, ${volunteerData.updated_at})`
+      );
+      
+      console.log(`Nuevo voluntario creado para usuario ID ${user.id}`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(`Error al sincronizar usuario con tabla de voluntarios:`, error);
+    return false;
+  }
+}
 
 export function registerUserRoutes(app: any, apiRouter: Router) {
   // Middleware para verificar si el usuario es administrador
@@ -170,6 +239,11 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
             email: newUser.email,
             role: newUser.role
           });
+          
+          // Si el usuario tiene rol de voluntario, sincronizar con la tabla de voluntarios
+          if (newUser.role === 'voluntario') {
+            await syncUserWithVolunteerTable(newUser);
+          }
           
           // No enviamos la contraseña en la respuesta
           const { password, ...userWithoutPassword } = newUser;
