@@ -35,7 +35,7 @@ export default function InstructorDetailPage() {
   
   // Obtener datos del instructor
   const { 
-    data: instructor, 
+    data: instructorData, 
     isLoading, 
     isError,
     refetch 
@@ -43,6 +43,20 @@ export default function InstructorDetailPage() {
     queryKey: [`/api/instructors/${instructorId}`],
     enabled: !isNaN(instructorId)
   });
+  
+  // Asegurarnos de que tenemos un objeto instructor con valores por defecto para evitar errores
+  const instructor = instructorData || {
+    id: 0,
+    full_name: '',
+    email: '',
+    phone: '',
+    specialties: '',
+    experience_years: 0,
+    status: 'pending',
+    profile_image_url: '',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
 
   // Obtener asignaciones del instructor
   const { 
@@ -139,7 +153,7 @@ export default function InstructorDetailPage() {
     );
   }
 
-  if (isError || !instructor) {
+  if (isError) {
     return (
       <AdminLayout>
         <div className="container mx-auto p-6">
