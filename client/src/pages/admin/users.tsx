@@ -866,7 +866,27 @@ const AdminUsers = () => {
     setIsNewUser(false);
   };
 
-  const handleSaveUser = (userData: UserFormData) => {
+  const handleSaveUser = async (userData: UserFormData) => {
+    // Si el usuario tiene una imagen de perfil asignada, asegurémonos de guardarla primero en la caché
+    if (userData.profileImageUrl && editingUserId) {
+      try {
+        // Llamar al endpoint para guardar la URL en la caché explícitamente antes de actualizar el usuario
+        await fetch(`/api/users/${editingUserId}/profile-image`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({ imageUrl: userData.profileImageUrl })
+        });
+        console.log(`Imagen de perfil guardada en caché para el usuario ${editingUserId} antes de actualizar`);
+      } catch (error) {
+        console.error('Error al pre-guardar la URL en la caché:', error);
+        // Continuamos aunque falle el guardado en caché
+      }
+    }
+    
+    // Proceder con la actualización del usuario
     saveUserMutation.mutate(userData);
   };
 
