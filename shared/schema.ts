@@ -597,7 +597,7 @@ export const instructorAssignments = pgTable("instructor_assignments", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-// 3. Tabla de Evaluaciones de Instructores (adaptada a la estructura real de la DB)
+// 3. Tabla de Evaluaciones de Instructores (adaptada a la estructura EXACTA de la DB)
 export const instructorEvaluations = pgTable("instructor_evaluations", {
   id: serial("id").primaryKey(),
   assignmentId: integer("assignment_id").notNull(),
@@ -613,9 +613,8 @@ export const instructorEvaluations = pgTable("instructor_evaluations", {
   // Comentarios y evaluación cualitativa
   comments: text("comments"), // Observaciones adicionales
   
-  // Campos de auditoría
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at")
+  // Campos de auditoría (solo el que realmente existe)
+  createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
 // 4. Tabla de Reconocimientos de Instructores

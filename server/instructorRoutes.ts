@@ -386,6 +386,7 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
       }
       
       // Usamos una consulta SQL específica para obtener solo los campos que existen en la tabla
+      // Corregimos la unión con instructor_assignments para usar el nombre correcto de la columna
       const result = await db.execute(sql`
         SELECT 
           e.id,
@@ -400,7 +401,7 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
           e.overall_performance,
           'supervisor' as evaluator_type,
           i.full_name as instructor_name,
-          a.title as activity_title
+          a.activity_name as activity_title
         FROM 
           instructor_evaluations e
         LEFT JOIN 
@@ -460,10 +461,31 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
       
       console.log("Datos de evaluación procesados:", evaluationData);
       
-      const [newEvaluation] = await db
-        .insert(instructorEvaluations)
-        .values(evaluationData)
-        .returning();
+      // Usamos SQL directo para evitar problemas con campos que no existen
+      const result = await db.execute(sql`
+        INSERT INTO instructor_evaluations (
+          instructor_id,
+          assignment_id,
+          evaluator_id,
+          knowledge,
+          communication,
+          methodology,
+          overall_performance,
+          comments
+        ) VALUES (
+          ${evaluationData.instructorId},
+          ${evaluationData.assignmentId},
+          ${evaluationData.evaluatorId},
+          ${evaluationData.knowledge},
+          ${evaluationData.communication},
+          ${evaluationData.methodology},
+          ${evaluationData.overallPerformance},
+          ${evaluationData.comments}
+        )
+        RETURNING *
+      `);
+      
+      const newEvaluation = result.rows[0];
       
       res.status(201).json(newEvaluation);
     } catch (error) {
@@ -501,7 +523,7 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
               i.full_name as instructor_name,
               u.full_name as evaluator_name,
               u.role as evaluator_role,
-              a.title as activity_title
+              a.activity_name as activity_title
             FROM 
               instructor_evaluations e
             LEFT JOIN 
