@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -197,7 +197,29 @@ export default function InstructorEvaluationsPage() {
   // Mostrar detalles de evaluación
   const handleViewDetails = (evaluation: any) => {
     console.log("Mostrando evaluación:", evaluation);
-    setSelectedEvaluation(evaluation);
+    // Asegurar que la evaluación tiene todos los campos necesarios
+    const evaluationWithDefaults = {
+      ...evaluation,
+      // Valores por defecto para evitar problemas de renderizado
+      evaluation_date: evaluation.evaluation_date || evaluation.created_at || new Date().toISOString(),
+      instructor_name: evaluation.instructor_name || 'Instructor',
+      instructor_profile_image_url: evaluation.instructor_profile_image_url || '',
+      activity_title: evaluation.activity_title || 'Actividad',
+      professionalism: evaluation.professionalism || 0,
+      teaching_clarity: evaluation.teaching_clarity || 0,
+      active_participation: evaluation.active_participation || 0,
+      communication: evaluation.communication || 0,
+      group_management: evaluation.group_management || 0,
+      knowledge: evaluation.knowledge || 0,
+      methodology: evaluation.methodology || 0,
+      overall_performance: evaluation.overall_performance || 0,
+      comments: evaluation.comments || 'Sin comentarios',
+      evaluator_type: evaluation.evaluator_type || 'supervisor',
+      follow_up_required: evaluation.follow_up_required || false,
+      follow_up_notes: evaluation.follow_up_notes || ''
+    };
+    
+    setSelectedEvaluation(evaluationWithDefaults);
     setShowEvaluationDetails(true);
   };
 
