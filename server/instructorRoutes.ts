@@ -441,22 +441,19 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
       
       console.log("Recibiendo evaluación:", req.body);
       
-      const validationResult = insertInstructorEvaluationSchema.safeParse({
-        ...req.body,
-        instructorId
-      });
-      
-      if (!validationResult.success) {
-        return res.status(400).json({ 
-          message: "Datos de evaluación no válidos", 
-          errors: validationResult.error.format() 
-        });
-      }
-      
-      // Insertamos directamente sin el campo evaluationDate que no existe en la tabla
+      // Mapeamos los datos de entrada a los campos que realmente existen en la tabla
       const evaluationData = {
-        ...validationResult.data
+        instructorId,
+        assignmentId: req.body.assignmentId,
+        evaluatorId: req.user?.id || null,
+        knowledge: req.body.knowledge || 3,
+        communication: req.body.communication || 3,
+        methodology: req.body.methodology || 3,
+        overallPerformance: req.body.overallPerformance || 3,
+        comments: req.body.comments || ""
       };
+      
+      console.log("Datos de evaluación procesados:", evaluationData);
       
       const [newEvaluation] = await db
         .insert(instructorEvaluations)
