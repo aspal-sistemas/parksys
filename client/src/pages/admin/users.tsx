@@ -10,7 +10,11 @@ import {
   X,
   CheckCircle,
   Calendar,
-  FileSymlink
+  FileSymlink,
+  Eye,
+  Award,
+  Clock,
+  MapPin
 } from 'lucide-react';
 import UserAvatar from '@/components/UserAvatar';
 import UserProfileImage from '@/components/UserProfileImage';
@@ -43,6 +47,8 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -88,6 +94,27 @@ interface UserFormData {
   emergencyContactPhone?: string;
   preferredParkId?: number | null;
   legalConsent?: boolean;
+  
+  // Nuevos campos para voluntarios - Experiencia y disponibilidad
+  volunteerExperience?: string;
+  skills?: string;
+  availability?: 'weekdays' | 'weekends' | 'evenings' | 'mornings' | 'flexible';
+  
+  // Campos para áreas de interés
+  interestNature?: boolean;
+  interestEvents?: boolean;
+  interestEducation?: boolean;
+  interestMaintenance?: boolean;
+  interestSports?: boolean;
+  interestCultural?: boolean;
+  
+  // Campos para documentos
+  idDocumentFile?: File | null;
+  addressDocumentFile?: File | null;
+  
+  // Campos para términos legales adicionales
+  ageConsent?: boolean;
+  conductConsent?: boolean;
 }
 
 // User detail/edit component

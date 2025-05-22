@@ -35,8 +35,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import { 
   UserPlus, Search, Filter, RefreshCw, Download, ArrowUpDown,
-  Check, X, Clock, AlertCircle, Award, FileEdit, BarChart3, Trash2
+  Check, X, Clock, AlertCircle, Award, FileEdit, BarChart3, Trash2,
+  Eye, MapPin, Mail, Phone, Calendar, FileText, User, Info, FileCheck,
+  Users, HelpingHand, BookMarked
 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/AdminLayout';
 import { Volunteer } from '@/types';
