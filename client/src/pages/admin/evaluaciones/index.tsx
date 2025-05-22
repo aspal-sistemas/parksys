@@ -167,6 +167,41 @@ export default function EvaluacionesPage() {
   return (
     <AdminLayout>
       <div className="container mx-auto p-6">
+        {isSupervisor && (
+          <Card className="mb-6 border-teal-200 bg-teal-50">
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                <div className="p-3 bg-teal-100 rounded-full">
+                  <User className="h-6 w-6 text-teal-700" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-medium text-teal-800 mb-1">
+                    Bienvenido, Supervisor de Instructores
+                  </h3>
+                  <p className="text-teal-700 mb-2">
+                    Tu rol te permite evaluar a los instructores y revisar su desempeño. Desde aquí puedes ver todas las evaluaciones que has realizado.
+                  </p>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      variant="outline" 
+                      className="border-teal-300 text-teal-700 hover:bg-teal-100"
+                      onClick={() => setLocation('/admin/instructors')}
+                    >
+                      Ver listado de instructores
+                    </Button>
+                    <Button
+                      className="bg-teal-600 hover:bg-teal-700"
+                      onClick={() => setLocation('/admin/instructors')}
+                    >
+                      Crear nueva evaluación
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">Evaluaciones de Instructores</h1>
