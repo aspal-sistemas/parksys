@@ -19,14 +19,65 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
   
   // === RUTAS PARA VOLUNTARIOS ===
   
-  // Obtener todos los voluntarios
+  // Obtener todos los voluntarios (incluidos usuarios con rol 'voluntario')
   apiRouter.get("/volunteers", isAuthenticated, async (_req: Request, res: Response) => {
     try {
-      // Usamos una consulta SQL directa para evitar errores con mapeo de columnas
-      const allVolunteers = await db.execute(
-        sql`SELECT * FROM volunteers ORDER BY id DESC`
+      // 1. Obtenemos los voluntarios tradicionales del módulo de voluntarios
+      const traditionaVolunteers = await db.execute(
+        sql`SELECT 
+          v.id, 
+          v.full_name, 
+          v.email, 
+          v.phone as phone_number, 
+          v.status, 
+          v.profile_image_url, 
+          v.created_at,
+          v.age,
+          v.available_hours as availability,
+          v.previous_experience,
+          v.address,
+          v.preferred_park_id,
+          v.gender,
+          v.interest_areas,
+          v.available_days,
+          'module' as source,
+          NULL as user_id
+        FROM volunteers v 
+        ORDER BY v.id DESC`
       );
-      res.json(allVolunteers.rows || []);
+      
+      // 2. Obtenemos los usuarios con rol 'voluntario'
+      const volunteerUsers = await db.execute(
+        sql`SELECT 
+          u.id as user_id, 
+          u.full_name, 
+          u.email, 
+          NULL as phone_number, 
+          'active' as status, 
+          NULL as profile_image_url, 
+          NOW() as created_at,
+          NULL as age,
+          NULL as availability,
+          NULL as previous_experience,
+          NULL as address,
+          NULL as preferred_park_id,
+          NULL as gender,
+          NULL as interest_areas,
+          NULL as available_days,
+          'user' as source,
+          u.id as related_user_id
+        FROM users u 
+        WHERE u.role = 'voluntario'
+        ORDER BY u.id DESC`
+      );
+      
+      // 3. Combinamos ambos conjuntos de datos
+      const allVolunteers = [
+        ...(traditionaVolunteers.rows || []),
+        ...(volunteerUsers.rows || [])
+      ];
+      
+      res.json(allVolunteers);
     } catch (error) {
       console.error("Error al obtener voluntarios:", error);
       res.status(500).json({ message: "Error al obtener voluntarios" });
