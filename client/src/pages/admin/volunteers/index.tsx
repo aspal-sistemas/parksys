@@ -46,9 +46,9 @@ const VolunteersList: React.FC = () => {
   const filteredVolunteers = volunteers.filter((volunteer: Volunteer) => {
     const matchesSearch = 
       searchTerm === '' || 
-      volunteer.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      volunteer.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       volunteer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      volunteer.phoneNumber?.toLowerCase().includes(searchTerm.toLowerCase());
+      volunteer.phone?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = 
       statusFilter === 'all' || 

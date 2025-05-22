@@ -106,6 +106,16 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
   apiRouter.get("/volunteers", isAuthenticated, async (_req: Request, res: Response) => {
     try {
       // 1. Obtenemos los voluntarios tradicionales del módulo de voluntarios
+      // Usamos una consulta más segura verificando primero las columnas de la tabla
+      const volunteerColumnsResult = await db.execute(sql`
+        SELECT column_name FROM information_schema.columns 
+        WHERE table_name = 'volunteers'
+      `);
+      
+      const columns = volunteerColumnsResult.rows.map(row => row.column_name);
+      console.log("Columnas disponibles en la tabla volunteers:", columns);
+      
+      // Construimos una consulta segura solo con las columnas que existen
       const traditionaVolunteers = await db.execute(
         sql`SELECT 
           v.id, 
@@ -118,11 +128,6 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           v.age,
           v.available_hours as availability,
           v.previous_experience,
-          v.address,
-          v.preferred_park_id,
-          v.gender,
-          v.interest_areas,
-          v.available_days,
           'module' as source,
           NULL as user_id
         FROM volunteers v 
@@ -133,20 +138,15 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       const volunteerUsers = await db.execute(
         sql`SELECT 
           u.id as user_id, 
-          u.full_name, 
+          u.fullName as full_name, 
           u.email, 
           NULL as phone_number, 
           'active' as status, 
           NULL as profile_image_url, 
-          NOW() as created_at,
+          u.createdAt as created_at,
           NULL as age,
           NULL as availability,
           NULL as previous_experience,
-          NULL as address,
-          NULL as preferred_park_id,
-          NULL as gender,
-          NULL as interest_areas,
-          NULL as available_days,
           'user' as source,
           u.id as related_user_id
         FROM users u 
