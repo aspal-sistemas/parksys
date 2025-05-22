@@ -248,7 +248,7 @@ const UserDetail: React.FC<{
                   <SelectItem value="manager">Gestor</SelectItem>
                   <SelectItem value="supervisor">Supervisor</SelectItem>
                   <SelectItem value="ciudadano">Ciudadano</SelectItem>
-                  <SelectItem value="volunteer">Voluntario</SelectItem>
+                  <SelectItem value="voluntario">Voluntario</SelectItem>
                   <SelectItem value="instructor">Instructor</SelectItem>
                   <SelectItem value="user">Usuario</SelectItem>
                 </SelectContent>
