@@ -69,8 +69,20 @@ const UserProfileImage: React.FC<UserProfileImageProps> = ({
 
       // Si no hay imagen en localStorage, intentamos obtenerla del servidor
       try {
-        const response = await fetch(`/api/users/${userId}/profile-image`);
-        if (response.ok) {
+        // Añadimos control para evitar que falle cuando el servidor no responde
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 segundos de timeout
+        
+        const response = await fetch(`/api/users/${userId}/profile-image`, {
+          signal: controller.signal
+        }).catch(err => {
+          console.error("Error al obtener la imagen de perfil:", err);
+          return null;
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (response && response.ok) {
           const data = await response.json();
           setImageUrl(data.imageUrl);
           
