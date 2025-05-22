@@ -551,6 +551,13 @@ const VolunteersList: React.FC = () => {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+      
+      {/* Visor de perfil de voluntario */}
+      <VolunteerProfile 
+        volunteer={selectedVolunteer} 
+        open={profileDialogOpen} 
+        onClose={() => setProfileDialogOpen(false)} 
+      />
     </AdminLayout>
   );
 };
