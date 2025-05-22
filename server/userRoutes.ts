@@ -93,8 +93,7 @@ async function syncUserWithVolunteerTable(user: any) {
                 profile_image_url = ${volunteerData.profile_image_url},
                 user_id = ${volunteerData.user_id},
                 updated_at = ${volunteerData.updated_at},
-                age = ${age},
-                address = ${user.address || null}
+                age = ${age}
             WHERE id = ${volunteerId}`
       );
       
@@ -402,9 +401,9 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
             await db.execute(
               sql`UPDATE volunteers 
                   SET previous_experience = COALESCE(${volunteerProfileData.volunteer_experience}, previous_experience),
-                      address = COALESCE(${volunteerProfileData.address}, address),
                       legal_consent = COALESCE(${volunteerProfileData.legal_consent}, legal_consent),
-                      preferred_park_id = COALESCE(${volunteerProfileData.preferred_park_id}, preferred_park_id)
+                      preferred_park_id = COALESCE(${volunteerProfileData.preferred_park_id}, preferred_park_id),
+                      available_hours = COALESCE(${updateData.availability}, available_hours)
                   WHERE id = ${volunteerId}`
             );
             
