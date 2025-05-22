@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   UserRound, 
@@ -170,18 +170,14 @@ const UserDetail: React.FC<{
     retry: 3
   });
   
-  // Importamos React para acceder a useEffect
-  const React = require('react');
-  const { useEffect } = React;
-  
   // Debugger para el parque preferido
   useEffect(() => {
     if (user && userData.role === 'voluntario') {
       console.log('Datos del usuario cargados:', {
         userId: user.id,
-        userPreferredParkId: user.preferredParkId,
+        userPreferredParkId: user?.preferredParkId,
         formPreferredParkId: userData.preferredParkId,
-        availableParks: parks
+        availableParks: parks?.length || 0
       });
     }
   }, [user, userData.role, userData.preferredParkId, parks]);
