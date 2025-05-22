@@ -70,6 +70,19 @@ async function syncUserWithVolunteerTable(user: any) {
       const volunteerId = volunteerResult.rows[0].id;
       console.log(`Actualizando voluntario existente ID ${volunteerId}`);
       
+      // Calcular la edad a partir de la fecha de nacimiento si existe, o mantener la existente
+      let age = 18; // Valor por defecto
+      if (user.birthDate) {
+        const birthDate = new Date(user.birthDate);
+        const today = new Date();
+        age = today.getFullYear() - birthDate.getFullYear();
+        // Ajustar si aún no ha cumplido años este año
+        if (today.getMonth() < birthDate.getMonth() || 
+            (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+      }
+      
       await db.execute(
         sql`UPDATE volunteers 
             SET full_name = ${volunteerData.full_name},
@@ -79,7 +92,9 @@ async function syncUserWithVolunteerTable(user: any) {
                 status = ${volunteerData.status},
                 profile_image_url = ${volunteerData.profile_image_url},
                 user_id = ${volunteerData.user_id},
-                updated_at = ${volunteerData.updated_at}
+                updated_at = ${volunteerData.updated_at},
+                age = ${age},
+                address = ${user.address || null}
             WHERE id = ${volunteerId}`
       );
       
@@ -88,13 +103,26 @@ async function syncUserWithVolunteerTable(user: any) {
       // Crear un nuevo registro
       console.log(`Creando nuevo registro de voluntario para usuario ID ${user.id}`);
       
+      // Calcular la edad a partir de la fecha de nacimiento si existe, o usar 18 como valor predeterminado
+      let age = 18; // Valor predeterminado
+      if (user.birthDate) {
+        const birthDate = new Date(user.birthDate);
+        const today = new Date();
+        age = today.getFullYear() - birthDate.getFullYear();
+        // Ajustar si aún no ha cumplido años este año
+        if (today.getMonth() < birthDate.getMonth() || 
+            (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+      }
+      
       await db.execute(
         sql`INSERT INTO volunteers 
-            (full_name, email, phone, gender, status, profile_image_url, user_id, created_at, updated_at)
+            (full_name, email, phone, gender, status, profile_image_url, user_id, created_at, updated_at, age, address, legal_consent)
             VALUES 
             (${volunteerData.full_name}, ${volunteerData.email}, ${volunteerData.phone}, 
              ${volunteerData.gender}, ${volunteerData.status}, ${volunteerData.profile_image_url}, 
-             ${volunteerData.user_id}, ${new Date()}, ${volunteerData.updated_at})`
+             ${volunteerData.user_id}, ${new Date()}, ${volunteerData.updated_at}, ${age}, ${user.address || null}, ${true})`
       );
       
       console.log(`Nuevo voluntario creado para usuario ID ${user.id}`);
