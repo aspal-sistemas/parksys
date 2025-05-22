@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
@@ -18,13 +18,15 @@ import {
   Award,
   BookOpen,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  Star
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import InstructorActivitiesList from '@/components/InstructorActivitiesList';
+import InstructorEvaluationDialog from '@/components/InstructorEvaluationDialog';
 
 export default function InstructorDetailPage() {
   const params = useParams<{ id: string }>();
@@ -170,6 +172,16 @@ export default function InstructorDetailPage() {
     );
   }
 
+  // Estado para manejar las asignaciones para evaluación
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState<number | null>(null);
+  
+  // Seleccionar la primera asignación por defecto si está disponible
+  React.useEffect(() => {
+    if (assignments?.length > 0 && !selectedAssignmentId) {
+      setSelectedAssignmentId(assignments[0].id);
+    }
+  }, [assignments, selectedAssignmentId]);
+
   return (
     <AdminLayout>
       <div className="container mx-auto p-6">
@@ -190,7 +202,22 @@ export default function InstructorDetailPage() {
               </p>
             </div>
           </div>
-          {/* Se han eliminado los botones de editar y eliminar */}
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => refetch()}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualizar
+            </Button>
+            {selectedAssignmentId && (
+              <InstructorEvaluationDialog
+                instructorId={instructorId}
+                assignmentId={selectedAssignmentId}
+                buttonLabel="Evaluar instructor"
+                buttonVariant="default"
+                evaluationType="supervisor"
+                onEvaluationComplete={() => refetch()}
+              />
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
