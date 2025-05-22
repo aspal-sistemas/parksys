@@ -501,29 +501,49 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      // Verificar si el voluntario existe
-      const [existingVolunteer] = await db
-        .select()
-        .from(volunteers)
-        .where(eq(volunteers.id, volunteerId));
+      // Usamos SQL directo para evitar problemas con los campos
+      const existingVolunteerResult = await db.execute(
+        sql`SELECT * FROM volunteers WHERE id = ${volunteerId}`
+      );
       
-      if (!existingVolunteer) {
+      if (!existingVolunteerResult.rows || existingVolunteerResult.rows.length === 0) {
         return res.status(404).json({ message: "Voluntario no encontrado" });
       }
       
-      // Realizamos un soft delete cambiando el estado a "inactive"
-      await db
-        .update(volunteers)
-        .set({ 
-          status: "inactive",
-          updatedAt: new Date()
-        })
-        .where(eq(volunteers.id, volunteerId));
+      // Realizamos un soft delete cambiando el estado a "inactive" con SQL directo
+      await db.execute(
+        sql`UPDATE volunteers SET status = 'inactive', updated_at = NOW() WHERE id = ${volunteerId}`
+      );
         
-      res.json({ message: "Voluntario inactivado correctamente" });
+      res.json({ message: "Voluntario inactivado correctamente", volunteerId });
     } catch (error) {
       console.error(`Error al eliminar voluntario ${req.params.id}:`, error);
       res.status(500).json({ message: "Error al eliminar voluntario" });
+    }
+  });
+  
+  // Eliminar todos los voluntarios (soft delete cambiando estado a "inactive" para todos)
+  apiRouter.delete("/volunteers/batch/all", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Solo administradores pueden usar esta función
+      if (req.headers['x-user-role'] !== 'admin') {
+        return res.status(403).json({ message: "No autorizado. Solo administradores pueden realizar esta acción" });
+      }
+      
+      // Realizamos un soft delete cambiando el estado a "inactive" para todos los voluntarios activos
+      const result = await db.execute(
+        sql`UPDATE volunteers SET status = 'inactive', updated_at = NOW() WHERE status = 'active'`
+      );
+      
+      const affectedRows = result.rowCount || 0;
+      
+      res.json({ 
+        message: `${affectedRows} voluntarios han sido inactivados correctamente`,
+        count: affectedRows
+      });
+    } catch (error) {
+      console.error("Error al eliminar todos los voluntarios:", error);
+      res.status(500).json({ message: "Error al eliminar voluntarios" });
     }
   });
 

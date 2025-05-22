@@ -49,6 +49,7 @@ const VolunteersList: React.FC = () => {
   const [, setLocation] = useLocation();
   const [volunteerToDelete, setVolunteerToDelete] = useState<Volunteer | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
   const pageSize = 10;
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -86,10 +87,42 @@ const VolunteersList: React.FC = () => {
     },
   });
   
+  // Delete all volunteers mutation
+  const deleteAllVolunteersMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest(`/api/volunteers/batch/all`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Voluntarios eliminados",
+        description: `${data.count} voluntarios han sido inactivados correctamente`,
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/volunteers'] });
+      setDeleteAllDialogOpen(false);
+    },
+    onError: (error) => {
+      console.error("Error al eliminar todos los voluntarios:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron eliminar los voluntarios. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      });
+      setDeleteAllDialogOpen(false);
+    },
+  });
+  
   // Handle delete button click
   const handleDeleteClick = (volunteer: Volunteer) => {
     setVolunteerToDelete(volunteer);
     setDeleteDialogOpen(true);
+  };
+  
+  // Handle delete all button click
+  const handleDeleteAllClick = () => {
+    setDeleteAllDialogOpen(true);
   };
   
   // Handle confirm delete
@@ -97,6 +130,11 @@ const VolunteersList: React.FC = () => {
     if (volunteerToDelete && volunteerToDelete.id) {
       deleteVolunteerMutation.mutate(volunteerToDelete.id);
     }
+  };
+  
+  // Handle confirm delete all
+  const handleConfirmDeleteAll = () => {
+    deleteAllVolunteersMutation.mutate();
   };
 
   // Filter volunteers based on search term and status
