@@ -435,43 +435,65 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      // Verificar si el voluntario existe
-      const [existingVolunteer] = await db
-        .select()
-        .from(volunteers)
-        .where(eq(volunteers.id, volunteerId));
+      console.log("Actualizando voluntario ID:", volunteerId);
+      console.log("Datos recibidos:", req.body);
       
-      if (!existingVolunteer) {
+      // Verificar si el voluntario existe
+      const checkResult = await db.execute(
+        sql`SELECT * FROM volunteers WHERE id = ${volunteerId}`
+      );
+      
+      if (!checkResult.rows || checkResult.rows.length === 0) {
         return res.status(404).json({ message: "Voluntario no encontrado" });
       }
       
-      // Combinamos los datos existentes con los nuevos
-      const updatedData = {
-        ...existingVolunteer,
-        ...req.body,
-        id: volunteerId,
-        updatedAt: new Date()
-      };
+      const existingVolunteer = checkResult.rows[0];
       
-      // Validamos los datos actualizados (omitimos algunos campos que no son necesarios validar)
-      const { id, createdAt, updatedAt, ...dataToValidate } = updatedData;
-      const validationResult = insertVolunteerSchema.safeParse(dataToValidate);
+      // Preparar datos para la actualización
+      // Es importante asegurarnos de que los campos JSON se manejen correctamente
+      const interestAreas = req.body.interest_areas 
+        ? (Array.isArray(req.body.interest_areas) 
+            ? req.body.interest_areas 
+            : JSON.parse(req.body.interest_areas))
+        : existingVolunteer.interest_areas;
+        
+      const availableDays = req.body.available_days 
+        ? (Array.isArray(req.body.available_days) 
+            ? req.body.available_days 
+            : JSON.parse(req.body.available_days))
+        : existingVolunteer.available_days;
+        
+      // Usar SQL directo para actualizar todos los campos, incluidos los nuevos
+      const result = await db.execute(
+        sql`UPDATE volunteers SET
+          full_name = ${req.body.full_name || existingVolunteer.full_name},
+          email = ${req.body.email || existingVolunteer.email},
+          phone = ${req.body.phone || existingVolunteer.phone},
+          gender = ${req.body.gender || existingVolunteer.gender},
+          age = ${parseInt(req.body.age) || existingVolunteer.age},
+          status = ${req.body.status || existingVolunteer.status},
+          profile_image_url = ${req.body.profile_image_url || existingVolunteer.profile_image_url},
+          previous_experience = ${req.body.previous_experience || existingVolunteer.previous_experience},
+          available_hours = ${req.body.available_hours || existingVolunteer.available_hours},
+          available_days = ${JSON.stringify(availableDays)},
+          interest_areas = ${JSON.stringify(interestAreas)},
+          preferred_park_id = ${req.body.preferred_park_id !== undefined ? req.body.preferred_park_id : existingVolunteer.preferred_park_id},
+          legal_consent = ${req.body.legal_consent !== undefined ? req.body.legal_consent : existingVolunteer.legal_consent},
+          address = ${req.body.address || existingVolunteer.address},
+          emergency_contact = ${req.body.emergency_contact || existingVolunteer.emergency_contact},
+          emergency_phone = ${req.body.emergency_phone || existingVolunteer.emergency_phone},
+          updated_at = NOW()
+        WHERE id = ${volunteerId}
+        RETURNING *`
+      );
       
-      if (!validationResult.success) {
-        return res.status(400).json({ 
-          message: "Datos de voluntario no válidos", 
-          errors: validationResult.error.format() 
-        });
+      console.log("Resultado de la actualización:", result.rows[0]);
+      
+      if (!result.rows || result.rows.length === 0) {
+        return res.status(500).json({ message: "Error al actualizar el voluntario" });
       }
       
-      // Actualizamos el voluntario
-      const [updatedVolunteer] = await db
-        .update(volunteers)
-        .set(updatedData)
-        .where(eq(volunteers.id, volunteerId))
-        .returning();
-        
-      res.json(updatedVolunteer);
+      res.json(result.rows[0]);
     } catch (error) {
       console.error(`Error al actualizar voluntario ${req.params.id}:`, error);
       res.status(500).json({ message: "Error al actualizar voluntario" });
