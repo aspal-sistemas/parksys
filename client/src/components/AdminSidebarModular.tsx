@@ -287,6 +287,37 @@ const AdminSidebarModular: React.FC = () => {
                 </NavItem>
               </ModuleNav>
               
+              {/* Módulo - Activos */}
+              <ModuleNav 
+                title="Activos" 
+                icon={<Tag className="h-5 w-5" />} 
+                value="assets"
+              >
+                <NavItem 
+                  href="/admin/assets" 
+                  icon={<Tag className="h-4 w-4" />}
+                  active={location.startsWith('/admin/assets')}
+                >
+                  Lista de Activos
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/assets/categories" 
+                  icon={<ListFilter className="h-4 w-4" />}
+                  active={location.startsWith('/admin/assets/categories')}
+                >
+                  Categorías
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/assets/inventory" 
+                  icon={<ClipboardList className="h-4 w-4" />}
+                  active={location.startsWith('/admin/assets/inventory')}
+                >
+                  Inventario
+                </NavItem>
+              </ModuleNav>
+              
               {/* Módulo - Operaciones */}
               <ModuleNav 
                 title="Operaciones" 
@@ -299,14 +330,6 @@ const AdminSidebarModular: React.FC = () => {
                   active={location === '/admin/parks'}
                 >
                   Parques
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/assets" 
-                  icon={<Tag className="h-4 w-4" />}
-                  active={location.startsWith('/admin/assets')}
-                >
-                  Activos
                 </NavItem>
                 
                 <NavItem 
