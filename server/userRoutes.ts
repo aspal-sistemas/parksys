@@ -480,13 +480,39 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
                   });
                   
                   try {
+                    // Preparar datos completos para el endpoint
+                    const completeVolunteerData = {
+                      volunteerId: volunteerId,
+                      userId: updatedUser.id,
+                      // Datos básicos
+                      address: updateData.address,
+                      emergencyContactName: updateData.emergencyContactName,
+                      emergencyContactPhone: updateData.emergencyContactPhone,
+                      // Campos de experiencia y disponibilidad (con valores por defecto)
+                      volunteerExperience: updateData.volunteerExperience || "",
+                      availability: updateData.availability || "flexible",
+                      availableDays: updateData.availableDays || "weekdays",
+                      // Campos de parque preferido y consentimiento
+                      preferredParkId: updateData.preferredParkId || 1,
+                      legalConsent: updateData.legalConsent === true,
+                      // Campos de áreas de interés (con valores por defecto)
+                      interestNature: updateData.interestNature === true,
+                      interestEvents: updateData.interestEvents === true,
+                      interestEducation: updateData.interestEducation === true,
+                      interestMaintenance: updateData.interestMaintenance === true,
+                      interestSports: updateData.interestSports === true,
+                      interestCultural: updateData.interestCultural === true
+                    };
+                    
+                    console.log("ENVIANDO DATOS COMPLETOS:", completeVolunteerData);
+                    
                     // Llamar al endpoint interno
                     const response = await fetch('http://localhost:5000/api/volunteers/update-profile', {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
                       },
-                      body: JSON.stringify(volunteerUpdateData)
+                      body: JSON.stringify(completeVolunteerData)
                     });
                     
                     if (response.ok) {
