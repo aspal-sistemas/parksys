@@ -6,7 +6,7 @@
 import { pool } from "./db";
 
 /**
- * Actualiza los campos de experiencia, disponibilidad, días disponibles e intereses de un voluntario
+ * Actualiza los campos de experiencia, disponibilidad, días disponibles, intereses y habilidades de un voluntario
  * @param volunteerId ID del voluntario a actualizar
  * @param data Objeto con los datos a actualizar
  * @returns El voluntario actualizado
@@ -18,6 +18,7 @@ export async function updateVolunteerFields(
     availability?: string;
     availableDays?: string[] | string;
     interestAreas?: string[] | string;
+    skills?: string;
   }
 ) {
   try {
@@ -42,16 +43,20 @@ export async function updateVolunteerFields(
         available_hours = $2,
         available_days = $3,
         interest_areas = $4,
+        skills = $5,
         updated_at = NOW()
-      WHERE id = $5
+      WHERE id = $6
       RETURNING *
     `;
+    
+    console.log("⭐ Actualizando habilidades:", data.skills);
     
     const result = await pool.query(query, [
       data.experience || null, 
       data.availability || "flexible",
       formattedDays,
       formattedInterests,
+      data.skills || null,
       volunteerId
     ]);
     
