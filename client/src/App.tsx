@@ -164,6 +164,11 @@ function Router() {
         </Route>
 
         {/* Rutas para el módulo de activos */}
+        <Route path="/admin/assets/dashboard">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de activos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/dashboard')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/assets">
           <Suspense fallback={<div className="p-8 text-center">Cargando gestión de activos...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/index')))}
