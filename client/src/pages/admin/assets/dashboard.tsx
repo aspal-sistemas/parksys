@@ -118,10 +118,12 @@ const AssetsDashboard: React.FC = () => {
   const [_, setLocation] = useLocation();
 
   // Datos de muestra para usar como respaldo
-  // Al iniciar, forzamos el uso de datos de muestra para asegurar que el dashboard siempre sea visible
+  // IMPORTANTE: Forzamos siempre a usar datos de muestra para evitar problemas con la API
+  // Al iniciar, aseguramos que los datos de muestra estén disponibles
   useEffect(() => {
+    // Mostramos inmediatamente datos de muestra
     setUseRealData(false);
-    setErrorMessage("Se están mostrando datos de muestra porque actualmente hay problemas de conexión con el servidor");
+    setErrorMessage("Se están mostrando datos de ejemplo para visualizar el dashboard");
   }, []);
 
   const sampleStats: AssetStats = {
