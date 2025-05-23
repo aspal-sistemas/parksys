@@ -4,7 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
 import { activityRouter } from "./activityRoutes";
 import { testRouter } from "./testRoutes";
-import { volunteerFieldRouter } from "./volunteerFieldRoutes";
+import volunteerFieldRouter from "./volunteerFieldRoutes";
 
 const app = express();
 app.use(express.json());

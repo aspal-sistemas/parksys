@@ -204,4 +204,4 @@ volunteerFieldRouter.post("/interests/:id", async (req: Request, res: Response) 
   }
 });
 
-export { volunteerFieldRouter };
+export default volunteerFieldRouter;

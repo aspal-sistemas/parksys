@@ -1,49 +1,96 @@
-import { Pool } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { sql } from 'drizzle-orm';
+/**
+ * Script para actualizar directamente los campos problemáticos de un voluntario
+ * Este script es una solución directa y temporal hasta que se pueda integrar correctamente en la aplicación
+ */
 
-async function updateVolunteerProfile() {
-  if (!process.env.DATABASE_URL) {
-    console.error("ERROR: No DATABASE_URL encontrado en variables de entorno");
-    return;
+import { pool } from "./db";
+
+/**
+ * Actualiza los campos de experiencia, disponibilidad, días disponibles e intereses de un voluntario
+ * @param volunteerId ID del voluntario a actualizar
+ * @param data Objeto con los datos a actualizar
+ * @returns El voluntario actualizado
+ */
+export async function updateVolunteerFields(
+  volunteerId: number,
+  data: {
+    experience?: string;
+    availability?: string;
+    availableDays?: string[] | string;
+    interestAreas?: string[] | string;
   }
-
-  // Conecta directamente a la base de datos
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  const db = drizzle(pool);
-  
+) {
   try {
-    // ID del voluntario que queremos actualizar
-    const volunteerId = 11;
+    console.log("🔄 Actualizando campos del voluntario ID:", volunteerId);
+    console.log("Datos recibidos:", data);
     
-    // Actualiza el perfil directamente con SQL plano
+    // Formatear correctamente los arrays para PostgreSQL
+    // PostgreSQL acepta el formato '{item1,item2,item3}' para arrays
+    const formattedDays = Array.isArray(data.availableDays) 
+      ? `{${data.availableDays.join(',')}}` 
+      : (typeof data.availableDays === 'string' ? data.availableDays : null);
+      
+    const formattedInterests = Array.isArray(data.interestAreas) 
+      ? `{${data.interestAreas.join(',')}}` 
+      : (typeof data.interestAreas === 'string' ? data.interestAreas : null);
+    
+    // Consulta SQL directa para actualizar todos los campos problemáticos
     const query = `
       UPDATE volunteers 
       SET 
-        previous_experience = 'Tengo experiencia previa como voluntario en eventos deportivos y comunitarios.', 
-        available_hours = 'evenings',
-        available_days = '["weekdays"]',
-        interest_areas = '["nature", "education"]',
+        previous_experience = $1, 
+        available_hours = $2,
+        available_days = $3,
+        interest_areas = $4,
         updated_at = NOW()
-      WHERE id = $1
+      WHERE id = $5
       RETURNING *
     `;
     
-    const result = await pool.query(query, [volunteerId]);
+    const result = await pool.query(query, [
+      data.experience || null, 
+      data.availability || "flexible",
+      formattedDays,
+      formattedInterests,
+      volunteerId
+    ]);
     
     if (result.rows && result.rows.length > 0) {
-      console.log("✅ Voluntario actualizado exitosamente:", result.rows[0]);
+      console.log("✅ Actualización directa exitosa de todos los campos");
+      return result.rows[0];
     } else {
-      console.log("❌ No se encontró el voluntario");
+      console.error("❌ No se encontró el voluntario con ID:", volunteerId);
+      return null;
     }
   } catch (error) {
-    console.error("Error al actualizar el voluntario:", error);
-  } finally {
-    await pool.end();
+    console.error("Error al actualizar voluntario:", error);
+    return null;
   }
 }
 
-// Ejecutar la función
-updateVolunteerProfile()
-  .then(() => console.log("Script completado"))
-  .catch(err => console.error("Error en script:", err));
+// Ejecutar inmediatamente para probar
+const voluntarioDemo = {
+  // ID del voluntario a actualizar (ajustar según necesidad)
+  volunteerId: 11,
+  
+  // Datos de prueba
+  experience: "He participado como voluntario en diversos eventos de reforestación y mantenimiento de áreas verdes durante los últimos 3 años.",
+  availability: "weekends",
+  availableDays: ["saturday", "sunday"],
+  interestAreas: ["nature", "education", "maintenance"]
+};
+
+// Auto-ejecutar la función
+(async () => {
+  try {
+    const resultado = await updateVolunteerFields(voluntarioDemo.volunteerId, voluntarioDemo);
+    if (resultado) {
+      console.log("Resultado completo:", resultado);
+      console.log("Proceso completado con éxito");
+    } else {
+      console.log("No se pudo completar la actualización");
+    }
+  } catch (err) {
+    console.error("Error en la ejecución:", err);
+  }
+})();
