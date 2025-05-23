@@ -209,13 +209,28 @@ const AdminSidebarModular: React.FC = () => {
           <div className="pt-3 pb-1">
             <Accordion type="multiple" defaultValue={getDefaultAccordionValue()} className="space-y-1">
               {/* Módulo - Usuarios */}
-              <NavItem 
-                href="/admin/users" 
-                icon={<Users className="h-5 w-5" />}
-                active={location.startsWith('/admin/users')}
+              <ModuleNav 
+                title="Usuarios" 
+                icon={<Users className="h-5 w-5" />} 
+                value="users"
+                defaultOpen={location.startsWith('/admin/users') || location.startsWith('/admin/permissions')}
               >
-                Usuarios
-              </NavItem>
+                <NavItem 
+                  href="/admin/users" 
+                  icon={<UserCircle className="h-4 w-4" />}
+                  active={location === '/admin/users'}
+                >
+                  Lista de Usuarios
+                </NavItem>
+                
+                <NavItem 
+                  href="/admin/permissions" 
+                  icon={<FileSignature className="h-4 w-4" />}
+                  active={location === '/admin/permissions'}
+                >
+                  Permisos de Roles
+                </NavItem>
+              </ModuleNav>
               
               {/* Módulo - Actividades */}
               <ModuleNav 
