@@ -88,6 +88,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas del módulo de instructores
   registerInstructorRoutes(app, apiRouter, publicRouter, isAuthenticated);
   
+  // Registramos las rutas del módulo de activos
+  registerAssetRoutes(app, apiRouter);
+  
   // Registramos las rutas del módulo de usuarios
   registerUserRoutes(app, apiRouter);
   
