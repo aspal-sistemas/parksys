@@ -225,6 +225,10 @@ export interface IStorage {
   getTotalAssetsValue(): Promise<number>;
   getAssetsByCategory(): Promise<{category: string, count: number}[]>;
   getAssetsRequiringMaintenance(): Promise<Asset[]>;
+  getAssetTotalCount(): Promise<number>;
+  getAssetCountByStatus(status: string): Promise<number>;
+  getCategoryValues(): Promise<{name: string, value: number}[]>;
+  getUpcomingMaintenances(): Promise<any[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -3434,6 +3438,107 @@ export class DatabaseStorage implements IStorage {
       return overdueMaintenance;
     } catch (error) {
       console.error("Error al obtener activos que requieren mantenimiento:", error);
+      return [];
+    }
+  }
+  
+  // Métodos adicionales para el dashboard de activos
+  async getAssetTotalCount(): Promise<number> {
+    try {
+      const result = await db.execute(sql`
+        SELECT COUNT(*) as count 
+        FROM assets 
+        WHERE is_deleted = false
+      `);
+      
+      return parseInt(result.rows[0]?.count as string) || 0;
+    } catch (error) {
+      console.error("Error al obtener conteo total de activos:", error);
+      return 0;
+    }
+  }
+  
+  async getAssetCountByStatus(status: string): Promise<number> {
+    try {
+      const result = await db.execute(sql`
+        SELECT COUNT(*) as count 
+        FROM assets 
+        WHERE is_deleted = false AND status = ${status}
+      `);
+      
+      return parseInt(result.rows[0]?.count as string) || 0;
+    } catch (error) {
+      console.error(`Error al obtener conteo de activos por estado '${status}':`, error);
+      return 0;
+    }
+  }
+  
+  async getCategoryValues(): Promise<any[]> {
+    try {
+      const result = await db.execute(sql`
+        SELECT ac.name, COALESCE(SUM(a.acquisition_cost), 0) as value
+        FROM assets a
+        JOIN asset_categories ac ON a.category_id = ac.id
+        WHERE a.is_deleted = false
+        GROUP BY ac.name
+        ORDER BY value DESC
+      `);
+      
+      return result.rows.map(row => ({
+        name: row.name as string,
+        value: parseFloat(row.value as string) || 0
+      }));
+    } catch (error) {
+      console.error("Error al obtener valores por categoría:", error);
+      return [];
+    }
+  }
+  
+  async getUpcomingMaintenances(): Promise<any[]> {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          a.id, 
+          a.name,
+          a.next_maintenance_date,
+          a.park_id,
+          a.category_id,
+          a.responsible_person_id,
+          p.name as park_name,
+          ac.name as category_name,
+          u.id as responsible_user_id,
+          u.full_name as responsible_user_name,
+          u.role as responsible_user_role
+        FROM assets a
+        LEFT JOIN parks p ON a.park_id = p.id
+        LEFT JOIN asset_categories ac ON a.category_id = ac.id
+        LEFT JOIN users u ON a.responsible_person_id = u.id
+        WHERE a.is_deleted = false
+          AND a.next_maintenance_date IS NOT NULL
+          AND a.next_maintenance_date <= CURRENT_DATE + INTERVAL '30 days'
+        ORDER BY a.next_maintenance_date ASC
+        LIMIT 10
+      `);
+      
+      // Transformar el resultado a la estructura esperada por el frontend
+      return result.rows.map(row => ({
+        asset: {
+          id: parseInt(row.id as string),
+          name: row.name as string,
+          parkId: parseInt(row.park_id as string),
+          parkName: row.park_name as string,
+          categoryId: parseInt(row.category_id as string),
+          categoryName: row.category_name as string,
+          responsiblePerson: row.responsible_user_id ? {
+            id: parseInt(row.responsible_user_id as string),
+            fullName: row.responsible_user_name as string,
+            role: row.responsible_user_role as string
+          } : null
+        },
+        nextMaintenanceDate: row.next_maintenance_date
+      }));
+    } catch (error) {
+      console.error("Error al obtener mantenimientos próximos:", error);
       return [];
     }
   }
