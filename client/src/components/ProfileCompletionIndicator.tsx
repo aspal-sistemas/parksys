@@ -6,7 +6,7 @@ import {
   AlertDescription,
 } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, CheckCircle, InfoIcon } from "lucide-react";
+import { AlertCircle, CheckCircle, Info } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -43,13 +43,13 @@ export const ProfileCompletionIndicator: React.FC<ProfileCompletionIndicatorProp
       case CompletionLevel.COMPLETE:
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case CompletionLevel.INTERMEDIATE:
-        return <InfoIcon className="h-5 w-5 text-blue-500" />;
+        return <Info className="h-5 w-5 text-blue-500" />;
       case CompletionLevel.BASIC:
-        return <InfoIcon className="h-5 w-5 text-yellow-500" />;
+        return <Info className="h-5 w-5 text-yellow-500" />;
       case CompletionLevel.INCOMPLETE:
         return <AlertCircle className="h-5 w-5 text-red-500" />;
       default:
-        return <InfoIcon className="h-5 w-5 text-gray-500" />;
+        return <Info className="h-5 w-5 text-gray-500" />;
     }
   };
   
