@@ -759,7 +759,29 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
   apiRouter.post("/volunteers/update-profile", async (req: Request, res: Response) => {
     try {
       console.log("Actualizando perfil completo de voluntario:", req.body);
-      console.log("Skills recibidos:", req.body.skills);
+      
+      // SOLUCIÓN AL PROBLEMA: Intentar extraer habilidades de diferentes lugares del objeto
+      // El formulario frontend podría estar enviando los datos en diferentes formatos
+      let extractedSkills = req.body.skills;
+      
+      // Si no encontramos en el lugar obvio, intentamos otras variantes
+      if (extractedSkills === undefined) {
+        if (typeof req.body === 'object') {
+          // Buscar en todas las propiedades que podrían contener skills
+          const possibleKeys = ['skill', 'Skills', 'SKILLS', 'habilidades', 'Habilidades'];
+          
+          for (const key of Object.keys(req.body)) {
+            // Comparamos convirtiendo a minúsculas para una búsqueda insensible a mayúsculas/minúsculas
+            if (possibleKeys.includes(key) || key.toLowerCase().includes('skill') || key.toLowerCase().includes('habilidad')) {
+              extractedSkills = req.body[key];
+              console.log(`🔍 Encontradas habilidades en campo alternativo '${key}':`, extractedSkills);
+              break;
+            }
+          }
+        }
+      }
+      
+      console.log("Skills finalmente extraídos:", extractedSkills);
       
       const { 
         userId, 
@@ -778,8 +800,10 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         address,
         emergencyContactName,
         emergencyContactPhone,
-        skills  // Capturamos también las habilidades especiales
       } = req.body;
+      
+      // Usamos las habilidades extraídas en lugar de las originales
+      const skills = extractedSkills;
       
       if (!volunteerId && !userId) {
         return res.status(400).json({ message: "Se requiere un ID de voluntario o usuario" });
