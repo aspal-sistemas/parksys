@@ -9,6 +9,12 @@ import {
   type VolunteerEvaluation, type InsertVolunteerEvaluation, type VolunteerRecognition, type InsertVolunteerRecognition,
   type ExtendedVolunteer
 } from "@shared/schema";
+import {
+  assetCategories, assets, assetMaintenances, assetHistory,
+  type AssetCategory, type InsertAssetCategory, type Asset, type InsertAsset,
+  type AssetMaintenance, type InsertAssetMaintenance, type AssetHistoryEntry, type InsertAssetHistoryEntry,
+  DEFAULT_ASSET_CATEGORIES
+} from "@shared/asset-schema";
 import { db } from "./db";
 import { and, eq, like, inArray, or, desc, isNull, lte, gte, sql } from "drizzle-orm";
 
@@ -152,6 +158,47 @@ export interface IStorage {
   getTotalVolunteerHours(): Promise<number>;
   getTopVolunteers(limit: number): Promise<ExtendedVolunteer[]>;
   getRecentVolunteerActivities(limit: number): Promise<VolunteerParticipation[]>;
+  
+  // Asset Category operations
+  getAssetCategory(id: number): Promise<AssetCategory | undefined>;
+  getAssetCategories(): Promise<AssetCategory[]>;
+  createAssetCategory(category: InsertAssetCategory): Promise<AssetCategory>;
+  updateAssetCategory(id: number, category: Partial<InsertAssetCategory>): Promise<AssetCategory | undefined>;
+  deleteAssetCategory(id: number): Promise<boolean>;
+  
+  // Asset operations
+  getAsset(id: number): Promise<Asset | undefined>;
+  getAssets(filters?: Partial<{
+    parkId: number;
+    categoryId: number;
+    status: string;
+    condition: string;
+    search: string;
+    maintenanceDue: boolean;
+  }>): Promise<Asset[]>;
+  getParkAssets(parkId: number): Promise<Asset[]>;
+  getCategoryAssets(categoryId: number): Promise<Asset[]>;
+  createAsset(asset: InsertAsset): Promise<Asset>;
+  updateAsset(id: number, asset: Partial<InsertAsset>): Promise<Asset | undefined>;
+  deleteAsset(id: number): Promise<boolean>;
+  
+  // Asset Maintenance operations
+  getAssetMaintenance(id: number): Promise<AssetMaintenance | undefined>;
+  getAssetMaintenances(assetId: number): Promise<AssetMaintenance[]>;
+  createAssetMaintenance(maintenance: InsertAssetMaintenance): Promise<AssetMaintenance>;
+  updateAssetMaintenance(id: number, maintenance: Partial<InsertAssetMaintenance>): Promise<AssetMaintenance | undefined>;
+  deleteAssetMaintenance(id: number): Promise<boolean>;
+  
+  // Asset History operations
+  getAssetHistory(assetId: number): Promise<AssetHistoryEntry[]>;
+  createAssetHistoryEntry(entry: InsertAssetHistoryEntry): Promise<AssetHistoryEntry>;
+  
+  // Asset Statistics operations
+  getAssetsByStatus(): Promise<{status: string, count: number}[]>;
+  getAssetsByCondition(): Promise<{condition: string, count: number}[]>;
+  getTotalAssetsValue(): Promise<number>;
+  getAssetsByCategory(): Promise<{category: string, count: number}[]>;
+  getAssetsRequiringMaintenance(): Promise<Asset[]>;
 }
 
 export class MemStorage implements IStorage {

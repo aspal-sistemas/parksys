@@ -13,6 +13,7 @@ import { videoRouter } from "./video_routes";
 import { registerVolunteerRoutes } from "./volunteerRoutes";
 import { registerInstructorRoutes } from "./instructorRoutes";
 import { registerPublicRoutes } from "./publicRoutes";
+import { registerAssetRoutes } from "./asset_routes";
 import { activityRouter } from "./activityRoutes";
 import directRouter from "./directRoutes";
 import { 
