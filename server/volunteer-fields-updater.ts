@@ -27,6 +27,7 @@ export async function updateVolunteerFieldsPreserving(
     emergencyPhone?: string;
     preferredParkId?: number;
     legalConsent?: boolean;
+    skills?: string;
   }
 ) {
   try {
@@ -62,6 +63,7 @@ export async function updateVolunteerFieldsPreserving(
       emergency_phone: fields.emergencyPhone !== undefined ? fields.emergencyPhone : currentData.emergency_phone,
       preferred_park_id: fields.preferredParkId !== undefined ? fields.preferredParkId : currentData.preferred_park_id,
       legal_consent: fields.legalConsent !== undefined ? fields.legalConsent : currentData.legal_consent,
+      skills: fields.skills !== undefined ? fields.skills : currentData.skills,
     };
     
     // Formatear correctamente los arrays para PostgreSQL si se proporcionan
@@ -171,6 +173,7 @@ export async function updateCompleteProfile(
     emergencyPhone?: string;
     preferredParkId?: number;
     legalConsent?: boolean;
+    skills?: string;
   }
 ) {
   return updateVolunteerFieldsPreserving(volunteerId, data);
