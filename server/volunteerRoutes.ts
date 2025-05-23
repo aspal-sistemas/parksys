@@ -849,11 +849,6 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           updateData.availableDays = availableDays;
         }
         
-        // Solo incluimos habilidades si se proporcionaron explícitamente
-        if (skills !== undefined) {
-          updateData.skills = skills;
-        }
-        
         // Solo incluimos áreas de interés si hay alguna
         if (interestAreas && interestAreas.length > 0) {
           updateData.interestAreas = interestAreas;
@@ -866,10 +861,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         updateData.preferredParkId = parsedParkId;
         updateData.legalConsent = legalConsent === true;
         
-        // Añadimos habilidades especiales si se proporcionan
-        if (skills !== undefined && skills !== '') {
-          updateData.skills = skills;
-        }
+        // Ya hemos añadido las habilidades en la condición anterior, así que eliminamos esta duplicación
         
         console.log("🔍 Datos que se van a actualizar:", updateData);
         

@@ -57,7 +57,7 @@ export async function updateVolunteerFieldsPreserving(
     // Preparamos los campos a actualizar, preservando valores existentes
     const updatedFields = {
       previous_experience: fields.experience !== undefined ? fields.experience : currentData.previous_experience,
-      available_hours: fields.availability !== undefined ? fields.availability : currentData.available_hours,
+      available_hours: fields.availability !== undefined ? fields.availability || null : currentData.available_hours,
       address: fields.address !== undefined ? fields.address : currentData.address,
       emergency_contact: fields.emergencyContact !== undefined ? fields.emergencyContact : currentData.emergency_contact,
       emergency_phone: fields.emergencyPhone !== undefined ? fields.emergencyPhone : currentData.emergency_phone,
