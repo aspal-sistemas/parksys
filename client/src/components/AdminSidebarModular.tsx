@@ -12,6 +12,7 @@ import {
   LogOut,
   Tag,
   BarChart,
+  BarChart3,
   ChevronDown,
   ChevronRight,
   Layers,
@@ -294,9 +295,17 @@ const AdminSidebarModular: React.FC = () => {
                 value="assets"
               >
                 <NavItem 
+                  href="/admin/assets/dashboard" 
+                  icon={<BarChart3 className="h-4 w-4" />}
+                  active={location.startsWith('/admin/assets/dashboard')}
+                >
+                  Dashboard
+                </NavItem>
+                
+                <NavItem 
                   href="/admin/assets" 
                   icon={<Tag className="h-4 w-4" />}
-                  active={location.startsWith('/admin/assets')}
+                  active={location === '/admin/assets'}
                 >
                   Lista de Activos
                 </NavItem>
