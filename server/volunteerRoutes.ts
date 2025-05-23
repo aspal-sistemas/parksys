@@ -758,6 +758,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
   apiRouter.post("/volunteers/update-profile", async (req: Request, res: Response) => {
     try {
       console.log("Actualizando perfil completo de voluntario:", req.body);
+      console.log("Skills recibidos:", req.body.skills);
       
       const { 
         userId, 
@@ -849,8 +850,10 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           updateData.availableDays = availableDays;
         }
         
-        // Solo incluimos habilidades si se proporcionaron explícitamente y no están vacías
-        if (skills !== undefined && skills !== '') {
+        // Solo incluimos habilidades si se proporcionaron explícitamente
+        // IMPORTANTE: En este punto no filtramos strings vacíos para las habilidades
+        // ya que puede ser que el usuario esté actualizando otros campos
+        if (skills !== undefined) {
           updateData.skills = skills;
         }
         
