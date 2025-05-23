@@ -109,11 +109,51 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
   // Obtener todos los instructores
   apiRouter.get("/instructors", isAuthenticated, async (_req: Request, res: Response) => {
     try {
-      // Usamos una consulta SQL directa para evitar errores con mapeo de columnas
+      // Usamos una consulta mejorada para incluir instructores vinculados a usuarios del sistema
+      // y que esos instructores aparezcan primero en la lista para dar prioridad a los usuarios registrados
       const allInstructors = await db.execute(
-        sql`SELECT * FROM instructors WHERE status = 'active' ORDER BY id DESC`
+        sql`
+          WITH instructor_data AS (
+            -- Primero seleccionamos instructores vinculados a usuarios del sistema (prioridad)
+            SELECT i.*, 
+                  u.username, 
+                  u.email as user_email,
+                  u.profile_image_url as user_profile_image,
+                  1 as priority
+            FROM instructors i
+            JOIN users u ON i.user_id = u.id
+            WHERE i.status = 'active' AND u.role = 'instructor'
+            
+            UNION ALL
+            
+            -- Luego seleccionamos instructores que no están vinculados a usuarios
+            SELECT i.*, 
+                  NULL as username, 
+                  NULL as user_email,
+                  NULL as user_profile_image,
+                  2 as priority
+            FROM instructors i
+            WHERE i.status = 'active' AND i.user_id IS NULL
+          )
+          SELECT * FROM instructor_data
+          ORDER BY priority, id DESC
+        `
       );
-      res.json(allInstructors.rows || []);
+      
+      // Procesar los resultados para usar la información del usuario cuando esté disponible
+      const processedInstructors = (allInstructors.rows || []).map(instructor => {
+        // Si el instructor tiene un usuario vinculado, usar esos datos cuando no existan en el perfil
+        if (instructor.user_id) {
+          return {
+            ...instructor,
+            email: instructor.email || instructor.user_email,
+            profile_image_url: instructor.profile_image_url || instructor.user_profile_image
+          };
+        }
+        return instructor;
+      });
+      
+      res.json(processedInstructors);
     } catch (error) {
       console.error("Error al obtener instructores:", error);
       res.status(500).json({ message: "Error al obtener instructores" });
