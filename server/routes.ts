@@ -22,6 +22,7 @@ import {
   processImportFile 
 } from "./api/parksImport";
 import { registerUserRoutes } from "./userRoutes";
+import { updateSkillsRouter } from "./updateSkills";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
   insertActivitySchema, insertDocumentSchema, insertParkImageSchema,
@@ -169,6 +170,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Montamos todas las rutas públicas bajo el prefijo /public-api
   // Esta línea asegura que todas las rutas definidas en publicRouter sean accesibles bajo /public-api
   app.use('/public-api', publicRouter);
+  
+  // Añadir router especial para actualizar habilidades
+  app.use('/api', updateSkillsRouter);
 
   // Get all parks with option to filter
   apiRouter.get("/parks", async (req: Request, res: Response) => {
