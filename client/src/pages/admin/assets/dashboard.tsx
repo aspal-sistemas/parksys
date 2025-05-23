@@ -118,12 +118,25 @@ const AssetsDashboard: React.FC = () => {
   // Obtener datos del dashboard de activos
   const { data: stats, isLoading, error } = useQuery<AssetStats>({
     queryKey: ['/api/assets-stats'],
+    retry: 1,
+    onError: (error) => {
+      // Si hay un error 401 (no autorizado), redirigir a la página de login
+      if ((error as any)?.response?.status === 401) {
+        setLocation('/login');
+      }
+    }
   });
 
   // Obtener próximos mantenimientos
   const { data: upcomingMaintenances, isLoading: isLoadingUpcoming } = useQuery({
     queryKey: ['/api/assets/maintenance/upcoming'],
     retry: 1,
+    onError: (error) => {
+      // Si hay un error 401 (no autorizado), redirigir a la página de login
+      if ((error as any)?.response?.status === 401) {
+        setLocation('/login');
+      }
+    }
   });
 
   // Calcular porcentajes para el gráfico de distribución de condiciones
