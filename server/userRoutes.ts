@@ -443,10 +443,20 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
               const volunteerUpdateData = {
                 volunteerId: volunteerId,
                 userId: updatedUser.id,
+                // Campos de experiencia y disponibilidad
                 volunteerExperience: updateData.volunteerExperience,
                 availability: updateData.availability,
+                availableDays: updateData.availableDays,
+                // Campos de parque preferido y consentimiento
                 preferredParkId: updateData.preferredParkId,
-                legalConsent: updateData.legalConsent
+                legalConsent: updateData.legalConsent,
+                // Campos de áreas de interés
+                interestNature: updateData.interestNature,
+                interestEvents: updateData.interestEvents,
+                interestEducation: updateData.interestEducation,
+                interestMaintenance: updateData.interestMaintenance,
+                interestSports: updateData.interestSports, 
+                interestCultural: updateData.interestCultural
               };
               
               // Hacer la solicitud directamente a nuestra API interna
@@ -458,62 +468,65 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
                 if (volunteerId) {
                   console.log("Datos de voluntario completos:", updateData);
                 
-                // Convertir disponibilidad a formato de texto si existe
-                const availableHours = updateData.availability ? updateData.availability.toString() : null;
-                
-                // Log para depuración
-                console.log("Datos de voluntario que se van a actualizar:", {
-                  volunteerId,
-                  address: updateData.address,
-                  emergencyContactName: updateData.emergencyContactName,
-                  emergencyContactPhone: updateData.emergencyContactPhone,
-                  preferredParkId: updateData.preferredParkId
-                });
-                
-                // Preparar las áreas de interés como un array JSON
-                const interestAreas = [];
-                if (updateData.interestNature) interestAreas.push('nature');
-                if (updateData.interestEvents) interestAreas.push('events');
-                if (updateData.interestEducation) interestAreas.push('education');
-                if (updateData.interestMaintenance) interestAreas.push('maintenance');
-                if (updateData.interestSports) interestAreas.push('sports');
-                if (updateData.interestCultural) interestAreas.push('cultural');
-                
-                // Convertir el array a string JSON para almacenamiento
-                const interestAreasJSON = interestAreas.length > 0 ? JSON.stringify(interestAreas) : null;
-
-                // Actualización mejorada con verificación de datos
-                await db.execute(
-                    sql`UPDATE volunteers 
-                        SET previous_experience = ${updateData.volunteerExperience || null},
-                            skills = ${updateData.skills || null},
-                            available_hours = ${availableHours},
-                            available_days = ${updateData.availableDays || null},
-                            interest_areas = ${interestAreasJSON},
-                            legal_consent = ${updateData.legalConsent === true},
-                            age_consent = ${updateData.ageConsent === true},
-                            conduct_consent = ${updateData.conductConsent === true},
-                            preferred_park_id = ${updateData.preferredParkId || null},
-                            address = ${updateData.address || null},
-                            emergency_contact = ${updateData.emergencyContactName || null},
-                            emergency_phone = ${updateData.emergencyContactPhone || null},
-                            updated_at = ${new Date()}
-                        WHERE id = ${volunteerId}`
-                  );
+                  // Log para depuración de lo que vamos a enviar al endpoint
+                  console.log("Datos de voluntario que se van a actualizar:", {
+                    volunteerId,
+                    address: updateData.address,
+                    emergencyContactName: updateData.emergencyContactName,
+                    emergencyContactPhone: updateData.emergencyContactPhone,
+                    preferredParkId: updateData.preferredParkId,
+                    volunteerExperience: updateData.volunteerExperience,
+                    availability: updateData.availability
+                  });
                   
-                // Vamos a verificar que los datos se hayan guardado correctamente
-                const verifyResult = await db.execute(
-                    sql`SELECT 
-                        address, emergency_contact, emergency_phone, preferred_park_id,
-                        previous_experience, skills, available_hours, available_days, interest_areas,
-                        legal_consent, age_consent, conduct_consent
-                        FROM volunteers WHERE id = ${volunteerId}`
-                );
-                
-                if (verifyResult.rows && verifyResult.rows.length > 0) {
-                    console.log("Datos guardados verificados:", verifyResult.rows[0]);
-                }
-                
+                  try {
+                    // Llamar al endpoint interno
+                    const response = await fetch('http://localhost:5000/api/volunteers/update-profile', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify(volunteerUpdateData)
+                    });
+                    
+                    if (response.ok) {
+                      console.log("Perfil de voluntario actualizado correctamente mediante llamada HTTP interna");
+                    } else {
+                      console.error("Error al actualizar perfil de voluntario:", await response.text());
+                      
+                      // Como respaldo, actualizar solo los campos básicos del voluntario
+                      await db.execute(
+                        sql`UPDATE volunteers 
+                            SET address = ${updateData.address || null},
+                                emergency_contact = ${updateData.emergencyContactName || null},
+                                emergency_phone = ${updateData.emergencyContactPhone || null},
+                                preferred_park_id = ${updateData.preferredParkId || null},
+                                legal_consent = ${updateData.legalConsent === true},
+                                previous_experience = ${updateData.volunteerExperience || null},
+                                available_hours = ${updateData.availability || null},
+                                updated_at = ${new Date()}
+                            WHERE id = ${volunteerId}`
+                      );
+                    }
+                  } catch (error) {
+                    console.error("Error al llamar al endpoint interno:", error);
+                    
+                    // Como respaldo, actualizar solo los campos básicos
+                    try {
+                      await db.execute(
+                        sql`UPDATE volunteers 
+                            SET address = ${updateData.address || null},
+                                emergency_contact = ${updateData.emergencyContactName || null},
+                                emergency_phone = ${updateData.emergencyContactPhone || null},
+                                preferred_park_id = ${updateData.preferredParkId || null},
+                                updated_at = ${new Date()}
+                            WHERE id = ${volunteerId}`
+                      );
+                    } catch (directError) {
+                      console.error("Error al actualizar directamente el perfil de voluntario:", directError);
+                    }
+                  }
+                  
                   console.log(`Voluntario ID ${volunteerId} actualizado correctamente con parque preferido ID: ${volunteerUpdateData.preferredParkId}`);
                 } else {
                   console.error("Error: No se encontró ID de voluntario para actualizar");
