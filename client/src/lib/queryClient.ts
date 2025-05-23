@@ -27,9 +27,26 @@ export async function apiRequest(
   
   // Solo agregamos las cabeceras de autorización si no es una petición de login
   if (!isLoginRequest) {
-    headers["Authorization"] = "Bearer direct-token-admin";
-    headers["X-User-Id"] = "1"; // Este es el ID del usuario admin
-    headers["X-User-Role"] = "super_admin"; // Asignamos rol de super_admin para tener todos los permisos
+    // Intentar usar el token almacenado, o usar el token directo como respaldo
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    let userId = "1";
+    let userRole = "super_admin";
+    
+    // Si hay un usuario almacenado, usamos su información
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        userId = userObj.id.toString();
+        userRole = userObj.role || "admin";
+      } catch (e) {
+        console.error("Error parsing stored user:", e);
+      }
+    }
+    
+    headers["Authorization"] = storedToken ? `Bearer ${storedToken}` : "Bearer direct-token-admin";
+    headers["X-User-Id"] = userId;
+    headers["X-User-Role"] = userRole;
   }
   
   // Solo añadimos Content-Type JSON si no es FormData
@@ -67,11 +84,28 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    // Añadimos encabezados de autenticación para desarrollo
+    // Obtener información de autenticación almacenada
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    let userId = "1";
+    let userRole = "super_admin";
+    
+    // Si hay un usuario almacenado, usamos su información
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        userId = userObj.id.toString();
+        userRole = userObj.role || "admin";
+      } catch (e) {
+        console.error("Error parsing stored user:", e);
+      }
+    }
+    
+    // Añadimos encabezados de autenticación
     const headers: Record<string, string> = {
-      "Authorization": "Bearer direct-token-admin",
-      "X-User-Id": "1", // Este es el ID del usuario admin
-      "X-User-Role": "super_admin" // Asignamos rol de super_admin para tener todos los permisos
+      "Authorization": storedToken ? `Bearer ${storedToken}` : "Bearer direct-token-admin",
+      "X-User-Id": userId,
+      "X-User-Role": userRole
     };
 
     const res = await fetch(queryKey[0] as string, {

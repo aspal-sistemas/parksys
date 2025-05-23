@@ -122,7 +122,7 @@ const AssetsDashboard: React.FC = () => {
     onError: (error) => {
       // Si hay un error 401 (no autorizado), redirigir a la página de login
       if ((error as any)?.response?.status === 401) {
-        setLocation('/login');
+        setLocation('/admin/login');
       }
     }
   });
@@ -134,7 +134,7 @@ const AssetsDashboard: React.FC = () => {
     onError: (error) => {
       // Si hay un error 401 (no autorizado), redirigir a la página de login
       if ((error as any)?.response?.status === 401) {
-        setLocation('/login');
+        setLocation('/admin/login');
       }
     }
   });
