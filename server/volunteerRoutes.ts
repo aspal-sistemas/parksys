@@ -11,6 +11,12 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { volunteers, volunteerParticipations, volunteerEvaluations, volunteerRecognitions, users, parks } from "@shared/schema";
+// Importamos nuestro nuevo módulo para actualizar los campos de voluntarios preservando valores
+import { 
+  updateVolunteerFieldsPreserving, 
+  updateExperienceAndAvailability,
+  updateCompleteProfile
+} from "./volunteer-fields-updater";
 
 /**
  * Función que registra las rutas relacionadas con el módulo de voluntariado
