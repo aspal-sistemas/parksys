@@ -766,12 +766,27 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       
       // Actualizar por partes para evitar errores de sintaxis
       try {
-        // 1. Actualizar campos básicos que sabemos son seguros
+        // 1. Verificar si hay cambios en los datos básicos desde el cliente
+        let address = existingVolunteerResult.rows[0].address;
+        let emergencyContact = existingVolunteerResult.rows[0].emergency_contact;
+        let emergencyPhone = existingVolunteerResult.rows[0].emergency_phone;
+        
+        // Obtener datos adicionales del request si están disponibles
+        const reqAddress = req.body.address;
+        const reqEmergencyContact = req.body.emergencyContactName;
+        const reqEmergencyPhone = req.body.emergencyContactPhone;
+        
+        console.log("Verificando datos de contacto:", {
+          reqAddress, reqEmergencyContact, reqEmergencyPhone,
+          dbAddress: address, dbEmergencyContact: emergencyContact, dbEmergencyPhone: emergencyPhone
+        });
+        
+        // Actualizar campos básicos que sabemos son seguros usando datos del request si están disponibles
         await db.execute(
           sql`UPDATE volunteers 
-              SET address = ${existingVolunteerResult.rows[0].address},
-                  emergency_contact = ${existingVolunteerResult.rows[0].emergency_contact},
-                  emergency_phone = ${existingVolunteerResult.rows[0].emergency_phone},
+              SET address = ${reqAddress || address},
+                  emergency_contact = ${reqEmergencyContact || emergencyContact},
+                  emergency_phone = ${reqEmergencyPhone || emergencyPhone},
                   preferred_park_id = ${preferredParkId || existingVolunteerResult.rows[0].preferred_park_id},
                   updated_at = ${new Date()}
               WHERE id = ${volunteerIdToUpdate}`
