@@ -11,6 +11,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { instructors, instructorAssignments, instructorEvaluations, instructorRecognitions, users, parks, activities } from "@shared/schema";
+import { forceSyncInstructor } from "./force-instructor-sync";
 
 /**
  * Función que registra las rutas relacionadas con el módulo de instructores
@@ -182,6 +183,35 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
     } catch (error) {
       console.error(`Error al obtener instructor ${req.params.id}:`, error);
       res.status(500).json({ message: "Error al obtener instructor" });
+    }
+  });
+  
+  // Forzar sincronización de instructor con usuario
+  apiRouter.post("/instructors/:id/sync", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const instructorId = parseInt(req.params.id);
+      
+      if (isNaN(instructorId)) {
+        return res.status(400).json({ message: "ID de instructor no válido" });
+      }
+      
+      // Forzar la sincronización
+      const result = await forceSyncInstructor(instructorId);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: result.message,
+          details: result.error
+        });
+      }
+      
+      res.json({ 
+        message: "Instructor sincronizado correctamente", 
+        data: result.data 
+      });
+    } catch (error) {
+      console.error(`Error al sincronizar instructor ${req.params.id}:`, error);
+      res.status(500).json({ message: "Error al sincronizar instructor" });
     }
   });
   
