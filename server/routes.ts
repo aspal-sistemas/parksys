@@ -14,6 +14,7 @@ import { registerVolunteerRoutes } from "./volunteerRoutes";
 import { registerInstructorRoutes } from "./instructorRoutes";
 import { registerPublicRoutes } from "./publicRoutes";
 import { activityRouter } from "./activityRoutes";
+import directRouter from "./directRoutes";
 import { 
   uploadParkFile, 
   handleMulterErrors, 
