@@ -174,16 +174,45 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
         return res.status(400).json({ message: "ID de instructor no válido" });
       }
       
-      const [instructor] = await db
-        .select()
-        .from(instructors)
-        .where(eq(instructors.id, instructorId));
+      // Obtener instructor con datos del usuario vinculado
+      const instructorResult = await db.execute(
+        sql`
+          SELECT 
+            i.*,
+            u.full_name AS user_full_name,
+            u.email AS user_email,
+            u.profile_image_url AS user_profile_image,
+            u.phone AS user_phone,
+            u.gender AS user_gender,
+            u.bio AS user_bio
+          FROM 
+            instructors i
+          LEFT JOIN 
+            users u ON i.user_id = u.id
+          WHERE 
+            i.id = ${instructorId}
+        `
+      );
       
-      if (!instructor) {
+      if (!instructorResult.rows || instructorResult.rows.length === 0) {
         return res.status(404).json({ message: "Instructor no encontrado" });
       }
       
-      res.json(instructor);
+      const instructor = instructorResult.rows[0];
+      
+      // Priorizar datos del usuario cuando existan
+      const processedInstructor = {
+        ...instructor,
+        fullName: instructor.user_full_name || instructor.full_name,
+        full_name: instructor.user_full_name || instructor.full_name,
+        email: instructor.email || instructor.user_email,
+        profile_image_url: instructor.profile_image_url || instructor.user_profile_image,
+        phone: instructor.phone || instructor.user_phone,
+        gender: instructor.gender || instructor.user_gender,
+        bio: instructor.bio || instructor.user_bio
+      };
+      
+      res.json(processedInstructor);
     } catch (error) {
       console.error(`Error al obtener instructor ${req.params.id}:`, error);
       res.status(500).json({ message: "Error al obtener instructor" });
