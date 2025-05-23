@@ -513,15 +513,58 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
                     
                     // Como respaldo, actualizar solo los campos básicos
                     try {
+                      // 1. Actualizar campos básicos
                       await db.execute(
                         sql`UPDATE volunteers 
                             SET address = ${updateData.address || null},
                                 emergency_contact = ${updateData.emergencyContactName || null},
                                 emergency_phone = ${updateData.emergencyContactPhone || null},
                                 preferred_park_id = ${updateData.preferredParkId || null},
+                                previous_experience = ${updateData.volunteerExperience || null},
+                                available_hours = ${updateData.availability || null},
+                                available_days = ${updateData.availableDays || null},
+                                legal_consent = ${updateData.legalConsent === true},
                                 updated_at = ${new Date()}
                             WHERE id = ${volunteerId}`
                       );
+                      
+                      // 2. Preparar áreas de interés como array
+                      const interestAreas = [];
+                      if (updateData.interestNature) interestAreas.push('nature');
+                      if (updateData.interestEvents) interestAreas.push('events');
+                      if (updateData.interestEducation) interestAreas.push('education');
+                      if (updateData.interestMaintenance) interestAreas.push('maintenance');
+                      if (updateData.interestSports) interestAreas.push('sports');
+                      if (updateData.interestCultural) interestAreas.push('cultural');
+                      
+                      // 3. Actualizar áreas de interés en operación separada si hay alguna
+                      if (interestAreas.length > 0) {
+                        const interestAreasJSON = JSON.stringify(interestAreas);
+                        await db.execute(
+                          sql`UPDATE volunteers 
+                              SET interest_areas = ${interestAreasJSON}
+                              WHERE id = ${volunteerId}`
+                        );
+                      }
+                      
+                      // Verificar datos guardados
+                      const verifyResult = await db.execute(
+                        sql`SELECT * FROM volunteers WHERE id = ${volunteerId}`
+                      );
+                      
+                      if (verifyResult.rows && verifyResult.rows.length > 0) {
+                        console.log("Datos del voluntario guardados y verificados:", {
+                          id: verifyResult.rows[0].id,
+                          address: verifyResult.rows[0].address,
+                          emergency_contact: verifyResult.rows[0].emergency_contact,
+                          emergency_phone: verifyResult.rows[0].emergency_phone,
+                          previous_experience: verifyResult.rows[0].previous_experience,
+                          available_hours: verifyResult.rows[0].available_hours,
+                          available_days: verifyResult.rows[0].available_days,
+                          interest_areas: verifyResult.rows[0].interest_areas,
+                          legal_consent: verifyResult.rows[0].legal_consent
+                        });
+                      }
                     } catch (directError) {
                       console.error("Error al actualizar directamente el perfil de voluntario:", directError);
                     }
