@@ -119,6 +119,7 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
             SELECT i.*, 
                   u.username, 
                   u.email as user_email,
+                  u.full_name as user_full_name,
                   u.profile_image_url as user_profile_image,
                   1 as priority
             FROM instructors i
@@ -131,6 +132,7 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
             SELECT i.*, 
                   NULL as username, 
                   NULL as user_email,
+                  NULL as user_full_name,
                   NULL as user_profile_image,
                   2 as priority
             FROM instructors i
@@ -147,6 +149,8 @@ export function registerInstructorRoutes(app: any, apiRouter: any, publicApiRout
         if (instructor.user_id) {
           return {
             ...instructor,
+            // Priorizar el nombre del usuario para mantener sincronización
+            full_name: instructor.user_full_name || instructor.full_name,
             email: instructor.email || instructor.user_email,
             profile_image_url: instructor.profile_image_url || instructor.user_profile_image
           };
