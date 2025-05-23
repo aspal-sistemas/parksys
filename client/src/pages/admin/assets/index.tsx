@@ -8,7 +8,8 @@ import {
   Filter, 
   Tag,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  MapPin
 } from 'lucide-react';
 
 import AdminLayout from '@/components/AdminLayout';
@@ -227,10 +228,16 @@ const AssetsPage: React.FC = () => {
             Administra el inventario de activos físicos de los parques y espacios públicos.
           </p>
         </div>
-        <Button onClick={handleAddAsset}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuevo Activo
-        </Button>
+        <div className="flex space-x-2">
+          <Button variant="outline" onClick={() => setLocation('/admin/assets/map')}>
+            <MapPin className="mr-2 h-4 w-4" />
+            Ver Mapa
+          </Button>
+          <Button onClick={handleAddAsset}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nuevo Activo
+          </Button>
+        </div>
       </div>
       
       <div className="grid gap-4 md:grid-cols-3 mb-6">
