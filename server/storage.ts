@@ -31,6 +31,32 @@ export interface IStorage {
   deleteUser(id: number): Promise<boolean>;
   upsertUser(userData: Partial<InsertUser> & { externalId: string }): Promise<User>;
   
+  // Asset Category operations
+  getAssetCategory(id: number): Promise<AssetCategory | undefined>;
+  getAssetCategories(): Promise<AssetCategory[]>;
+  createAssetCategory(category: InsertAssetCategory): Promise<AssetCategory>;
+  updateAssetCategory(id: number, category: Partial<InsertAssetCategory>): Promise<AssetCategory | undefined>;
+  deleteAssetCategory(id: number): Promise<boolean>;
+  
+  // Asset operations
+  getAsset(id: number): Promise<Asset | undefined>;
+  getAssets(filters?: Partial<{ parkId: number; categoryId: number; status: string; condition: string; search: string }>): Promise<Asset[]>;
+  getAssetsByPark(parkId: number): Promise<Asset[]>;
+  createAsset(asset: InsertAsset): Promise<Asset>;
+  updateAsset(id: number, asset: Partial<InsertAsset>): Promise<Asset | undefined>;
+  deleteAsset(id: number): Promise<boolean>;
+  
+  // Asset Maintenance operations
+  getAssetMaintenance(id: number): Promise<AssetMaintenance | undefined>;
+  getAssetMaintenances(assetId: number): Promise<AssetMaintenance[]>;
+  createAssetMaintenance(maintenance: InsertAssetMaintenance): Promise<AssetMaintenance>;
+  updateAssetMaintenance(id: number, maintenance: Partial<InsertAssetMaintenance>): Promise<AssetMaintenance | undefined>;
+  deleteAssetMaintenance(id: number): Promise<boolean>;
+  
+  // Asset History operations
+  getAssetHistory(assetId: number): Promise<AssetHistoryEntry[]>;
+  createAssetHistoryEntry(entry: InsertAssetHistoryEntry): Promise<AssetHistoryEntry>;
+  
   // Municipality operations
   getMunicipality(id: number): Promise<Municipality | undefined>;
   getMunicipalities(): Promise<Municipality[]>;
@@ -2072,6 +2098,365 @@ export class DatabaseStorage implements IStorage {
       .from(parkAmenities)
       .where(eq(parkAmenities.amenityId, id));
     return result.count > 0;
+  }
+  
+  // Implementación de métodos para el módulo de Activos
+  
+  // Asset Category operations
+  async getAssetCategory(id: number): Promise<AssetCategory | undefined> {
+    const [category] = await db.select().from(assetCategories).where(eq(assetCategories.id, id));
+    return category || undefined;
+  }
+  
+  async getAssetCategories(): Promise<AssetCategory[]> {
+    return await db.select().from(assetCategories).orderBy(assetCategories.name);
+  }
+  
+  async createAssetCategory(category: InsertAssetCategory): Promise<AssetCategory> {
+    const [newCategory] = await db.insert(assetCategories).values(category).returning();
+    return newCategory;
+  }
+  
+  async updateAssetCategory(id: number, category: Partial<InsertAssetCategory>): Promise<AssetCategory | undefined> {
+    const [updatedCategory] = await db.update(assetCategories)
+      .set({
+        ...category,
+        updatedAt: new Date()
+      })
+      .where(eq(assetCategories.id, id))
+      .returning();
+    return updatedCategory || undefined;
+  }
+  
+  async deleteAssetCategory(id: number): Promise<boolean> {
+    // Verificar si la categoría está en uso
+    const [inUseResult] = await db.select({ count: sql<number>`count(*)` })
+      .from(assets)
+      .where(eq(assets.categoryId, id));
+    
+    if (inUseResult.count > 0) {
+      // No podemos eliminar una categoría que tiene activos asociados
+      return false;
+    }
+    
+    const result = await db.delete(assetCategories).where(eq(assetCategories.id, id));
+    return result.rowCount > 0;
+  }
+  
+  // Asset operations
+  async getAsset(id: number): Promise<Asset | undefined> {
+    const [asset] = await db.select().from(assets).where(eq(assets.id, id));
+    return asset || undefined;
+  }
+  
+  async getAssets(filters?: Partial<{
+    parkId: number;
+    categoryId: number;
+    status: string;
+    condition: string;
+    search: string;
+  }>): Promise<Asset[]> {
+    let query = db.select({
+      a: assets,
+      categoryName: assetCategories.name,
+      parkName: parks.name
+    })
+    .from(assets)
+    .leftJoin(assetCategories, eq(assets.categoryId, assetCategories.id))
+    .leftJoin(parks, eq(assets.parkId, parks.id));
+    
+    // Aplicar filtros si existen
+    if (filters) {
+      const conditions = [];
+      
+      if (filters.parkId) {
+        conditions.push(eq(assets.parkId, filters.parkId));
+      }
+      
+      if (filters.categoryId) {
+        conditions.push(eq(assets.categoryId, filters.categoryId));
+      }
+      
+      if (filters.status) {
+        conditions.push(eq(assets.status, filters.status));
+      }
+      
+      if (filters.condition) {
+        conditions.push(eq(assets.condition, filters.condition));
+      }
+      
+      if (filters.search) {
+        conditions.push(
+          or(
+            like(assets.name, `%${filters.search}%`),
+            like(assets.description, `%${filters.search}%`),
+            like(assets.serialNumber, `%${filters.search}%`)
+          )
+        );
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+    }
+    
+    const result = await query;
+    
+    // Mapear los resultados para incluir los nombres de categoría y parque
+    return result.map(row => ({
+      ...row.a,
+      categoryName: row.categoryName,
+      parkName: row.parkName
+    }));
+  }
+  
+  async getAssetsByPark(parkId: number): Promise<Asset[]> {
+    return this.getAssets({ parkId });
+  }
+  
+  async createAsset(asset: InsertAsset): Promise<Asset> {
+    const [newAsset] = await db.insert(assets).values(asset).returning();
+    
+    // Crear registro en el historial
+    await this.createAssetHistoryEntry({
+      assetId: newAsset.id,
+      changeType: 'acquisition',
+      date: new Date(),
+      description: 'Activo registrado en el sistema',
+      changedBy: asset.responsiblePersonId || 1, // Usar el ID del responsable o un valor por defecto
+      newValue: asset,
+    });
+    
+    return newAsset;
+  }
+  
+  async updateAsset(id: number, assetData: Partial<InsertAsset>): Promise<Asset | undefined> {
+    // Obtener el activo antes de actualizarlo para el historial
+    const oldAsset = await this.getAsset(id);
+    if (!oldAsset) return undefined;
+    
+    const [updatedAsset] = await db.update(assets)
+      .set({
+        ...assetData,
+        updatedAt: new Date()
+      })
+      .where(eq(assets.id, id))
+      .returning();
+    
+    if (updatedAsset) {
+      // Crear registro en el historial
+      await this.createAssetHistoryEntry({
+        assetId: updatedAsset.id,
+        changeType: 'update',
+        date: new Date(),
+        description: 'Información del activo actualizada',
+        changedBy: assetData.responsiblePersonId || 1,
+        previousValue: oldAsset,
+        newValue: updatedAsset,
+      });
+    }
+    
+    return updatedAsset || undefined;
+  }
+  
+  async deleteAsset(id: number): Promise<boolean> {
+    // Primero, verificar si existe el activo
+    const asset = await this.getAsset(id);
+    if (!asset) return false;
+    
+    // Crear un registro en el historial antes de eliminar
+    await this.createAssetHistoryEntry({
+      assetId: id,
+      changeType: 'retirement',
+      date: new Date(),
+      description: 'Activo eliminado del sistema',
+      changedBy: asset.responsiblePersonId || 1,
+      previousValue: asset,
+    });
+    
+    // Eliminar el activo
+    const result = await db.delete(assets).where(eq(assets.id, id));
+    return result.rowCount > 0;
+  }
+  
+  // Asset Maintenance operations
+  async getAssetMaintenance(id: number): Promise<AssetMaintenance | undefined> {
+    const [maintenance] = await db.select().from(assetMaintenances).where(eq(assetMaintenances.id, id));
+    return maintenance || undefined;
+  }
+  
+  async getAssetMaintenances(assetId: number): Promise<AssetMaintenance[]> {
+    return await db.select()
+      .from(assetMaintenances)
+      .where(eq(assetMaintenances.assetId, assetId))
+      .orderBy(desc(assetMaintenances.date));
+  }
+  
+  async createAssetMaintenance(maintenance: InsertAssetMaintenance): Promise<AssetMaintenance> {
+    const [newMaintenance] = await db.insert(assetMaintenances).values(maintenance).returning();
+    
+    // Actualizar la fecha del último mantenimiento y la próxima fecha de mantenimiento en el activo
+    if (maintenance.assetId) {
+      await db.update(assets)
+        .set({
+          lastMaintenanceDate: maintenance.date,
+          nextMaintenanceDate: maintenance.nextMaintenanceDate,
+          updatedAt: new Date()
+        })
+        .where(eq(assets.id, maintenance.assetId));
+      
+      // Agregar entrada al historial
+      await this.createAssetHistoryEntry({
+        assetId: maintenance.assetId,
+        changeType: 'maintenance',
+        date: new Date(),
+        description: `Mantenimiento ${maintenance.maintenanceType} realizado`,
+        changedBy: maintenance.performerId || 1,
+        newValue: {
+          maintenanceType: maintenance.maintenanceType,
+          date: maintenance.date,
+          description: maintenance.description,
+          actions: maintenance.actions,
+          findings: maintenance.findings,
+          nextMaintenanceDate: maintenance.nextMaintenanceDate
+        },
+      });
+    }
+    
+    return newMaintenance;
+  }
+  
+  async updateAssetMaintenance(id: number, maintenanceData: Partial<InsertAssetMaintenance>): Promise<AssetMaintenance | undefined> {
+    const [updatedMaintenance] = await db.update(assetMaintenances)
+      .set({
+        ...maintenanceData,
+        updatedAt: new Date()
+      })
+      .where(eq(assetMaintenances.id, id))
+      .returning();
+    
+    // Si se actualizó la fecha del próximo mantenimiento, actualizar también el activo
+    if (updatedMaintenance && maintenanceData.nextMaintenanceDate) {
+      await db.update(assets)
+        .set({
+          nextMaintenanceDate: maintenanceData.nextMaintenanceDate,
+          updatedAt: new Date()
+        })
+        .where(eq(assets.id, updatedMaintenance.assetId));
+    }
+    
+    return updatedMaintenance || undefined;
+  }
+  
+  async deleteAssetMaintenance(id: number): Promise<boolean> {
+    const maintenance = await this.getAssetMaintenance(id);
+    if (!maintenance) return false;
+    
+    const result = await db.delete(assetMaintenances).where(eq(assetMaintenances.id, id));
+    
+    // Al eliminar un mantenimiento, puede ser necesario actualizar las fechas en el activo
+    if (result.rowCount > 0 && maintenance.assetId) {
+      // Obtener el mantenimiento más reciente para este activo
+      const maintenances = await this.getAssetMaintenances(maintenance.assetId);
+      
+      if (maintenances.length > 0) {
+        // Actualizar con la información del mantenimiento más reciente
+        await db.update(assets)
+          .set({
+            lastMaintenanceDate: maintenances[0].date,
+            nextMaintenanceDate: maintenances[0].nextMaintenanceDate,
+            updatedAt: new Date()
+          })
+          .where(eq(assets.id, maintenance.assetId));
+      } else {
+        // No hay más mantenimientos, establecer valores a null
+        await db.update(assets)
+          .set({
+            lastMaintenanceDate: null,
+            nextMaintenanceDate: null,
+            updatedAt: new Date()
+          })
+          .where(eq(assets.id, maintenance.assetId));
+      }
+    }
+    
+    return result.rowCount > 0;
+  }
+  
+  // Asset History operations
+  async getAssetHistory(assetId: number): Promise<AssetHistoryEntry[]> {
+    return await db.select()
+      .from(assetHistory)
+      .where(eq(assetHistory.assetId, assetId))
+      .orderBy(desc(assetHistory.date));
+  }
+  
+  async createAssetHistoryEntry(entry: InsertAssetHistoryEntry): Promise<AssetHistoryEntry> {
+    const [newEntry] = await db.insert(assetHistory).values(entry).returning();
+    return newEntry;
+  }
+  
+  // Métodos adicionales para estadísticas de activos
+  async getAssetsByStatus(): Promise<any[]> {
+    const result = await db.select({
+      status: assets.status,
+      count: sql<number>`count(*)`,
+    })
+    .from(assets)
+    .groupBy(assets.status);
+    
+    return result;
+  }
+  
+  async getAssetsByCondition(): Promise<any[]> {
+    const result = await db.select({
+      condition: assets.condition,
+      count: sql<number>`count(*)`,
+    })
+    .from(assets)
+    .groupBy(assets.condition);
+    
+    return result;
+  }
+  
+  async getTotalAssetsValue(): Promise<number> {
+    const [result] = await db.select({
+      total: sql<number>`sum(acquisition_cost)`,
+    })
+    .from(assets);
+    
+    return result.total || 0;
+  }
+  
+  async getAssetsByCategory(): Promise<any[]> {
+    const result = await db.select({
+      categoryId: assets.categoryId,
+      categoryName: assetCategories.name,
+      count: sql<number>`count(*)`,
+      totalValue: sql<number>`sum(acquisition_cost)`,
+    })
+    .from(assets)
+    .leftJoin(assetCategories, eq(assets.categoryId, assetCategories.id))
+    .groupBy(assets.categoryId, assetCategories.name);
+    
+    return result;
+  }
+  
+  async getAssetsRequiringMaintenance(): Promise<Asset[]> {
+    // Obtener activos que necesitan mantenimiento (fecha de próximo mantenimiento pasada)
+    const today = new Date();
+    
+    return await this.getAssets({
+      maintenance: 'due'
+    });
+  }
+  
+  async getParkAssets(parkId: number): Promise<Asset[]> {
+    return this.getAssets({ parkId });
+  }
+  
+  async getCategoryAssets(categoryId: number): Promise<Asset[]> {
+    return this.getAssets({ categoryId });
   }
 
   async getParkAmenities(parkId: number): Promise<Amenity[]> {
