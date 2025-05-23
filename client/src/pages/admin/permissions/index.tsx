@@ -491,8 +491,8 @@ export default function PermissionsPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          <Card>
-            <CardHeader>
+          <Card className="bg-muted">
+            <CardHeader className="bg-background rounded-t-lg">
               <CardTitle className="flex items-center">
                 <Shield className="mr-2 h-5 w-5" />
                 Matriz de Permisos por Rol
