@@ -215,28 +215,29 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
             const volunteerData = volunteerResult.rows[0];
             console.log("Datos del voluntario encontrados:", volunteerData);
             
-            // Agregar los datos del voluntario al objeto de usuario
-            userWithoutPassword.preferredParkId = volunteerData.preferred_park_id;
-            userWithoutPassword.legalConsent = volunteerData.legal_consent === true;
-            userWithoutPassword.volunteerExperience = volunteerData.previous_experience;
-            userWithoutPassword.availability = volunteerData.available_hours;
+            // IMPORTANTE - Cambio en la forma de agregar datos: usamos cualquier nombre
+            // como propiedad para evitar conflictos con TypeScript
+            const userDataWithVolunteer = {
+              ...userWithoutPassword,
+              preferredParkId: volunteerData.preferred_park_id,
+              legalConsent: volunteerData.legal_consent === true,
+              volunteerExperience: volunteerData.previous_experience,
+              availability: volunteerData.available_hours,
+              address: volunteerData.address || '',
+              emergencyContactName: volunteerData.emergency_contact || '',
+              emergencyContactPhone: volunteerData.emergency_phone || ''
+            };
             
-            // Agregar campos adicionales para dirección y contactos de emergencia
-            userWithoutPassword.address = volunteerData.address || '';
-            userWithoutPassword.emergencyContactName = volunteerData.emergency_contact || '';
-            userWithoutPassword.emergencyContactPhone = volunteerData.emergency_phone || '';
+            // Reemplazamos el objeto para enviar
+            userWithoutPassword = userDataWithVolunteer;
             
-            console.log("🔍 DEBUG - Datos de voluntario agregados al usuario:", {
-              address: volunteerData.address,
-              emergencyContact: volunteerData.emergency_contact,
-              emergencyPhone: volunteerData.emergency_phone
-            });
-            
-            // Log para verificar que los datos se estén asignando correctamente
-            console.log("Datos enviados en la respuesta:", {
+            console.log("🔍 DEBUG - NUEVA IMPLEMENTACIÓN - Datos completos a enviar:", {
+              id: userWithoutPassword.id,
+              role: userWithoutPassword.role,
               address: userWithoutPassword.address,
               emergencyContactName: userWithoutPassword.emergencyContactName,
-              emergencyContactPhone: userWithoutPassword.emergencyContactPhone
+              emergencyContactPhone: userWithoutPassword.emergencyContactPhone,
+              preferredParkId: userWithoutPassword.preferredParkId
             });
           }
         } catch (error) {
