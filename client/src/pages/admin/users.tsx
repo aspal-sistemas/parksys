@@ -160,6 +160,45 @@ const UserDetail: React.FC<{
     legalConsent: user?.legalConsent !== undefined ? user?.legalConsent : false,
   });
 
+  // Efecto para cargar y sincronizar los datos del voluntario desde la API
+  useEffect(() => {
+    if (user && user.role === 'voluntario' && editingUserId) {
+      console.log("🔥 DATOS RECIBIDOS DEL USUARIO:", user);
+      
+      // Usar un efecto asíncrono para cargar los datos adicionales del voluntario
+      const loadVolunteerData = async () => {
+        try {
+          const response = await fetch(`/api/volunteers/by-user/${editingUserId}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          
+          if (response.ok) {
+            const volunteerData = await response.json();
+            console.log("✅ DATOS DE VOLUNTARIO CARGADOS:", volunteerData);
+            
+            // Actualizamos el estado del formulario con los datos completos
+            setUserData(prevData => ({
+              ...prevData,
+              // Datos específicos del voluntario
+              address: volunteerData.address || '',
+              emergencyContactName: volunteerData.emergency_contact || '',
+              emergencyContactPhone: volunteerData.emergency_phone || '',
+              preferredParkId: volunteerData.preferred_park_id || 3
+            }));
+          } else {
+            console.error("Error al cargar datos de voluntario:", await response.text());
+          }
+        } catch (error) {
+          console.error("Error al obtener datos de voluntario:", error);
+        }
+      };
+      
+      loadVolunteerData();
+    }
+  }, [user, editingUserId]);
+
   // Cargar parques para el selector de parque preferido
   const { data: parks = [] } = useQuery({
     queryKey: ['/api/public/parks/list'],
