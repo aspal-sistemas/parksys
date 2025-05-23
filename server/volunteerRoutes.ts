@@ -772,11 +772,22 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           volunteerIdToUpdate
         });
         
+        // Convertir availableDays a formato JSON String para PostgreSQL
+        // En lugar de enviar el string directamente, lo convertimos a un array JSON
+        const availableDaysJSON = availableDays ? JSON.stringify([availableDays]) : null;
+        
+        console.log("VALORES FORMATEADOS PARA LA BD:", {
+          experiencia: volunteerExperience || null,
+          horasDisponibles: availability || null,
+          diasDisponiblesJSON: availableDaysJSON,
+          interesesJSON: interestAreasJSON
+        });
+        
         await db.execute(
           sql`UPDATE volunteers SET
               previous_experience = ${volunteerExperience || null},
               available_hours = ${availability || null},
-              available_days = ${availableDays || null},
+              available_days = ${availableDaysJSON}, 
               interest_areas = ${interestAreasJSON},
               legal_consent = ${legalConsent === true},
               preferred_park_id = ${preferredParkId || null},
