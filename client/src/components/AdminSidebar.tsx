@@ -17,7 +17,8 @@ import {
   Wrench,
   AlertTriangle,
   School,
-  Shield
+  Shield,
+  User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -119,13 +120,48 @@ const AdminSidebar: React.FC = () => {
             Incidentes
           </NavItem>
           
-          <NavItem 
-            href="/admin/users" 
-            icon={<Users className="h-5 w-5" />}
-            active={location.startsWith('/admin/users')}
-          >
-            Usuarios
-          </NavItem>
+          <Accordion type="single" collapsible className="border-none px-0 py-0">
+            <AccordionItem value="users" className="border-none">
+              <AccordionTrigger className={`flex justify-between pl-3 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                location.startsWith('/admin/users') || location.startsWith('/admin/permissions') 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+              }`}>
+                <div className="flex items-center">
+                  <span className={`mr-3 ${location.startsWith('/admin/users') || location.startsWith('/admin/permissions') ? 'text-primary-foreground' : 'text-gray-500'}`}>
+                    <Users className="h-5 w-5" />
+                  </span>
+                  Usuarios
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-1 pb-0 pl-6">
+                <Link href="/admin/users">
+                  <div className={`flex items-center pl-3 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                    location === '/admin/users'
+                      ? 'bg-primary/20 text-primary' 
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                  }`}>
+                    <span className={`mr-3 ${location === '/admin/users' ? 'text-primary' : 'text-gray-500'}`}>
+                      <User className="h-4 w-4" />
+                    </span>
+                    Lista de Usuarios
+                  </div>
+                </Link>
+                <Link href="/admin/permissions">
+                  <div className={`flex items-center pl-3 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                    location === '/admin/permissions'
+                      ? 'bg-primary/20 text-primary' 
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                  }`}>
+                    <span className={`mr-3 ${location === '/admin/permissions' ? 'text-primary' : 'text-gray-500'}`}>
+                      <Shield className="h-4 w-4" />
+                    </span>
+                    Permisos de Roles
+                  </div>
+                </Link>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
           
           <NavItem 
             href="/admin/amenities" 
@@ -159,13 +195,7 @@ const AdminSidebar: React.FC = () => {
             Análisis y Reportes
           </NavItem>
 
-          <NavItem 
-            href="/admin/permissions" 
-            icon={<Shield className="h-5 w-5" />}
-            active={location.startsWith('/admin/permissions')}
-          >
-            Permisos de Roles
-          </NavItem>
+
         </nav>
       </ScrollArea>
       
