@@ -257,17 +257,9 @@ export default function InstructorsListPage() {
             </p>
           </div>
           <div className="flex space-x-2">
-            <Button onClick={() => setLocation('/admin/instructors/new')}>
+            <Button onClick={() => setLocation('/admin/users')}>
               <Plus className="mr-2 h-4 w-4" />
               Nuevo Instructor
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleDeleteAllClick}
-              disabled={deleteAllInstructorsMutation.isPending}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              {deleteAllInstructorsMutation.isPending ? 'Procesando...' : 'Eliminar Todos'}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

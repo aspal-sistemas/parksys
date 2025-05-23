@@ -128,7 +128,7 @@ export default function InstructorsCardsView() {
               <Users className="mr-2 h-4 w-4" />
               Ver como lista
             </Button>
-            <Button onClick={() => setLocation('/admin/instructors/new')}>
+            <Button onClick={() => setLocation('/admin/users')}>
               <Plus className="mr-2 h-4 w-4" />
               Nuevo Instructor
             </Button>
