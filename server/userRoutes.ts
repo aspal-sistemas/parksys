@@ -458,18 +458,38 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
                 // Convertir disponibilidad a formato de texto si existe
                 const availableHours = updateData.availability ? updateData.availability.toString() : null;
                 
+                // Log para depuración
+                console.log("Datos de voluntario que se van a actualizar:", {
+                  volunteerId,
+                  address: updateData.address,
+                  emergencyContactName: updateData.emergencyContactName,
+                  emergencyContactPhone: updateData.emergencyContactPhone,
+                  preferredParkId: updateData.preferredParkId
+                });
+                
+                // Actualización mejorada con verificación de datos
                 await db.execute(
                     sql`UPDATE volunteers 
                         SET previous_experience = ${updateData.volunteerExperience || null},
                             available_hours = ${availableHours},
                             legal_consent = ${updateData.legalConsent === true},
-                            preferred_park_id = ${updateData.preferredParkId !== undefined ? updateData.preferredParkId : 3},
+                            preferred_park_id = ${updateData.preferredParkId || null},
                             address = ${updateData.address || null},
                             emergency_contact = ${updateData.emergencyContactName || null},
                             emergency_phone = ${updateData.emergencyContactPhone || null},
                             updated_at = ${new Date()}
                         WHERE id = ${volunteerId}`
                   );
+                  
+                // Vamos a verificar que los datos se hayan guardado correctamente
+                const verifyResult = await db.execute(
+                    sql`SELECT address, emergency_contact, emergency_phone, preferred_park_id 
+                        FROM volunteers WHERE id = ${volunteerId}`
+                );
+                
+                if (verifyResult.rows && verifyResult.rows.length > 0) {
+                    console.log("Datos guardados verificados:", verifyResult.rows[0]);
+                }
                 
                   console.log(`Voluntario ID ${volunteerId} actualizado correctamente con parque preferido ID: ${volunteerUpdateData.preferredParkId}`);
                 } else {
