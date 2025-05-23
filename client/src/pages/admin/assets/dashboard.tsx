@@ -17,30 +17,52 @@ interface AssetStats {
   totalAssets: number;
   activeAssets: number;
   inactiveAssets: number;
-  maintenanceRequired: number;
-  valueByCategory: {
+  maintenanceAssets: number;
+  activeAssetsPercentage: number;
+  maintenanceAssetsPercentage: number;
+  conditionDistribution: {
+    [key: string]: number;
+  };
+  statusDistribution: {
+    [key: string]: number;
+  };
+  needMaintenance: number;
+  needMaintenanceList: {
+    id: number;
+    name: string;
+    condition: string;
+    lastMaintenanceDate: string | null;
+    nextMaintenanceDate: string | null;
+  }[];
+  categoryValues: {
     category: string;
     totalValue: number;
   }[];
-  conditionDistribution: {
+  // Para compatibilidad
+  totalValue: number;
+  byCategory: {
+    category: string;
+    count: number;
+  }[];
+  byCondition: {
     condition: string;
     count: number;
   }[];
-  recentMaintenances: {
-    id: number;
-    assetName: string;
-    date: string;
-    type: string;
-    performedBy: string;
-  }[];
-  upcomingMaintenances: {
-    id: number;
-    assetId: number;
-    assetName: string;
-    date: string;
-    type: string;
+  byStatus: {
     status: string;
+    count: number;
   }[];
+}
+
+// Tipo para los mantenimientos próximos
+interface UpcomingMaintenance {
+  id: number;
+  assetId: number;
+  assetName: string;
+  date: string;
+  maintenanceType: string;
+  status: string;
+  performedBy: string | null;
 }
 
 const getAssetStatusColor = (status: string) => {
@@ -107,6 +129,14 @@ const AssetsDashboard: React.FC = () => {
   // Calcular porcentajes para el gráfico de distribución de condiciones
   const calculatePercentage = (count: number, total: number) => {
     return total > 0 ? Math.round((count / total) * 100) : 0;
+  };
+
+  // Convertir objeto de distribución a array para poder mapearlo
+  const conditionDistributionToArray = (distribution: Record<string, number> = {}) => {
+    return Object.entries(distribution).map(([condition, count]) => ({
+      condition,
+      count
+    }));
   };
 
   if (isLoading) {
@@ -215,16 +245,34 @@ const AssetsDashboard: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Buscar condiciones que indiquen buen estado */}
               <div className="text-3xl font-bold text-green-600">
-                {stats.conditionDistribution.find(c => 
-                  ['bueno', 'good', 'óptimo', 'excelente'].includes(c.condition.toLowerCase()))?.count || 0}
+                {(() => {
+                  // Filtrar condiciones de buen estado del objeto
+                  const goodConditionKeys = Object.keys(stats.conditionDistribution || {}).filter(
+                    key => ['bueno', 'good', 'óptimo', 'excelente'].includes(key.toLowerCase())
+                  );
+                  // Sumar los conteos de todas las condiciones buenas
+                  const total = goodConditionKeys.reduce(
+                    (sum, key) => sum + (stats.conditionDistribution[key] || 0), 
+                    0
+                  );
+                  return total;
+                })()}
               </div>
               <p className="text-sm text-gray-500">
-                {calculatePercentage(
-                  stats.conditionDistribution.find(c => 
-                    ['bueno', 'good', 'óptimo', 'excelente'].includes(c.condition.toLowerCase()))?.count || 0,
-                  stats.totalAssets
-                )}% del total
+                {(() => {
+                  // Filtrar condiciones de buen estado del objeto
+                  const goodConditionKeys = Object.keys(stats.conditionDistribution || {}).filter(
+                    key => ['bueno', 'good', 'óptimo', 'excelente'].includes(key.toLowerCase())
+                  );
+                  // Sumar los conteos de todas las condiciones buenas
+                  const total = goodConditionKeys.reduce(
+                    (sum, key) => sum + (stats.conditionDistribution[key] || 0), 
+                    0
+                  );
+                  return calculatePercentage(total, stats.totalAssets);
+                })()}% del total
               </p>
             </CardContent>
           </Card>
@@ -237,10 +285,10 @@ const AssetsDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-amber-600">
-                {stats.maintenanceRequired}
+                {stats.needMaintenance || 0}
               </div>
               <p className="text-sm text-gray-500">
-                {calculatePercentage(stats.maintenanceRequired, stats.totalAssets)}% del total
+                {calculatePercentage(stats.needMaintenance || 0, stats.totalAssets)}% del total
               </p>
             </CardContent>
           </Card>
