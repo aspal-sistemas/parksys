@@ -217,14 +217,20 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
             
             // Agregar los datos del voluntario al objeto de usuario
             userWithoutPassword.preferredParkId = volunteerData.preferred_park_id;
-            userWithoutPassword.legalConsent = volunteerData.legal_consent;
+            userWithoutPassword.legalConsent = volunteerData.legal_consent === true;
             userWithoutPassword.volunteerExperience = volunteerData.previous_experience;
             userWithoutPassword.availability = volunteerData.available_hours;
             
             // Agregar campos adicionales para dirección y contactos de emergencia
-            userWithoutPassword.address = volunteerData.address;
-            userWithoutPassword.emergencyContactName = volunteerData.emergency_contact;
-            userWithoutPassword.emergencyContactPhone = volunteerData.emergency_phone;
+            userWithoutPassword.address = volunteerData.address || '';
+            userWithoutPassword.emergencyContactName = volunteerData.emergency_contact || '';
+            userWithoutPassword.emergencyContactPhone = volunteerData.emergency_phone || '';
+            
+            console.log("🔍 DEBUG - Datos de voluntario agregados al usuario:", {
+              address: volunteerData.address,
+              emergencyContact: volunteerData.emergency_contact,
+              emergencyPhone: volunteerData.emergency_phone
+            });
             
             // Log para verificar que los datos se estén asignando correctamente
             console.log("Datos enviados en la respuesta:", {
