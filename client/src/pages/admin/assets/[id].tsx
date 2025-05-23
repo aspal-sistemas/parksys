@@ -106,6 +106,13 @@ interface Asset {
   lastMaintenanceDate: string | null;
   nextMaintenanceDate: string | null;
   notes: string | null;
+  responsiblePersonId: number | null;
+  responsiblePerson?: {
+    id: number;
+    fullName: string;
+    email: string;
+    role: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -118,6 +125,13 @@ interface AssetMaintenance {
   description: string;
   cost: number | null;
   performedBy: string | null;
+  performerId: number | null;
+  performer?: {
+    id: number;
+    fullName: string;
+    email: string;
+    role: string;
+  };
   nextMaintenanceDate: string | null;
   createdAt: string;
   updatedAt: string;
@@ -559,6 +573,15 @@ const AssetDetailPage: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="font-medium text-gray-500">Parque:</span>
                         <span>{currentPark?.name || 'No especificado'}</span>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <span className="font-medium text-gray-500">Responsable:</span>
+                        <span>
+                          {asset?.responsiblePerson ? 
+                            `${asset.responsiblePerson.fullName} (${asset.responsiblePerson.role})` : 
+                            'No asignado'}
+                        </span>
                       </div>
                       
                       <div className="flex justify-between">
