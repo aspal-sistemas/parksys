@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, varchar, jsonb, date } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json, varchar, jsonb, date, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -176,9 +176,9 @@ export const insertActivityCatalogSchema = createInsertSchema(activityCatalog).o
 export const insertActivitySchema = createInsertSchema(activities).omit({ id: true, createdAt: true });
 export const insertCommentSchema = createInsertSchema(comments).omit({ id: true, createdAt: true, isApproved: true });
 export const insertIncidentSchema = createInsertSchema(incidents).omit({ id: true, createdAt: true, updatedAt: true, status: true });
+// Asset schemas will be defined later
 
 // TYPES
-
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
@@ -215,7 +215,7 @@ export type InsertComment = z.infer<typeof insertCommentSchema>;
 export type Incident = typeof incidents.$inferSelect;
 export type InsertIncident = z.infer<typeof insertIncidentSchema>;
 
-// Estos tipos se definirán más abajo después de crear los esquemas de inserción
+// Asset types will be defined in a separate file
 
 // PARK TYPES
 export const PARK_TYPES = [
@@ -360,6 +360,8 @@ export const incidentsRelations = relations(incidents, ({ one }) => ({
     references: [parks.id],
   }),
 }));
+
+// TABLES FOR MODULE: ASSETS are intentionally left out for now
 
 // TABLES FOR MODULE: VOLUNTEERS
 
