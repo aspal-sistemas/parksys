@@ -604,29 +604,32 @@ export default function PermissionsPage() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="admin" value={currentRoleTab} onValueChange={setCurrentRoleTab} className="w-full">
-                <TabsList className="grid grid-cols-3 md:grid-cols-6 gap-1 mb-4">
+                {/* Lista de roles en pestañas horizontales con mejor espaciado */}
+                <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 mb-8">
                   {roles.map(role => (
                     <TabsTrigger 
                       key={role.id} 
                       value={role.id}
-                      className="flex items-center justify-center"
+                      className="flex items-center justify-center py-2"
                     >
                       <span className={`w-2 h-2 rounded-full ${role.badge.color} mr-2`}></span>
-                      {role.displayName}
+                      <span className="truncate">{role.displayName}</span>
                     </TabsTrigger>
                   ))}
                 </TabsList>
 
+                {/* Contenido de cada pestaña de rol */}
                 {roles.map(role => (
-                  <TabsContent key={role.id} value={role.id} className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-8 h-8 rounded-full ${role.badge.color} ${role.badge.textColor} flex items-center justify-center font-bold text-xl`}>
+                  <TabsContent key={role.id} value={role.id} className="space-y-8">
+                    {/* Encabezado del rol con descripción y botón de acción */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0 p-5 bg-muted rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 rounded-full ${role.badge.color} ${role.badge.textColor} flex items-center justify-center font-bold text-xl`}>
                           {role.displayName[0]}
                         </div>
                         <div>
-                          <h3 className="font-bold">{role.displayName}</h3>
-                          <p className="text-sm text-muted-foreground">{role.description}</p>
+                          <h3 className="text-lg font-bold">{role.displayName}</h3>
+                          <p className="text-sm text-muted-foreground mt-1">{role.description}</p>
                         </div>
                       </div>
                       
@@ -634,7 +637,7 @@ export default function PermissionsPage() {
                       {role.id === 'admin' && isEditing && (
                         <Button 
                           onClick={() => grantAllPermissionsToRole(role.id)}
-                          className="bg-green-600 hover:bg-green-700"
+                          className="bg-green-600 hover:bg-green-700 ml-auto"
                         >
                           <ShieldCheck className="mr-2 h-4 w-4" />
                           Otorgar Todos los Permisos
