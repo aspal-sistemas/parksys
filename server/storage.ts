@@ -2607,6 +2607,451 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(volunteerParticipations.date))
       .limit(limit);
   }
+
+  // Asset Category operations
+  async getAssetCategory(id: number): Promise<AssetCategory | undefined> {
+    try {
+      const [category] = await db
+        .select()
+        .from(assetCategories)
+        .where(eq(assetCategories.id, id));
+      
+      return category;
+    } catch (error) {
+      console.error("Error al obtener categoría de activo:", error);
+      return undefined;
+    }
+  }
+
+  async getAssetCategories(): Promise<AssetCategory[]> {
+    try {
+      const categories = await db
+        .select()
+        .from(assetCategories)
+        .orderBy(assetCategories.name);
+      
+      return categories;
+    } catch (error) {
+      console.error("Error al obtener categorías de activos:", error);
+      return [];
+    }
+  }
+
+  async createAssetCategory(category: InsertAssetCategory): Promise<AssetCategory> {
+    try {
+      const [newCategory] = await db
+        .insert(assetCategories)
+        .values(category)
+        .returning();
+      
+      return newCategory;
+    } catch (error) {
+      console.error("Error al crear categoría de activo:", error);
+      throw error;
+    }
+  }
+
+  async updateAssetCategory(id: number, category: Partial<InsertAssetCategory>): Promise<AssetCategory | undefined> {
+    try {
+      const [updatedCategory] = await db
+        .update(assetCategories)
+        .set({
+          ...category,
+          updatedAt: new Date()
+        })
+        .where(eq(assetCategories.id, id))
+        .returning();
+      
+      return updatedCategory;
+    } catch (error) {
+      console.error(`Error al actualizar categoría de activo ${id}:`, error);
+      return undefined;
+    }
+  }
+
+  async deleteAssetCategory(id: number): Promise<boolean> {
+    try {
+      await db
+        .delete(assetCategories)
+        .where(eq(assetCategories.id, id));
+      
+      return true;
+    } catch (error) {
+      console.error(`Error al eliminar categoría de activo ${id}:`, error);
+      return false;
+    }
+  }
+
+  // Asset operations
+  async getAsset(id: number): Promise<Asset | undefined> {
+    try {
+      const [asset] = await db
+        .select()
+        .from(assets)
+        .where(eq(assets.id, id));
+      
+      return asset;
+    } catch (error) {
+      console.error(`Error al obtener activo ${id}:`, error);
+      return undefined;
+    }
+  }
+
+  async getAssets(filters?: Partial<{
+    parkId: number;
+    categoryId: number;
+    status: string;
+    condition: string;
+    search: string;
+    maintenanceDue: boolean;
+  }>): Promise<Asset[]> {
+    try {
+      let query = db.select().from(assets);
+      
+      if (filters) {
+        const conditions = [];
+        
+        if (filters.parkId) {
+          conditions.push(eq(assets.parkId, filters.parkId));
+        }
+        
+        if (filters.categoryId) {
+          conditions.push(eq(assets.categoryId, filters.categoryId));
+        }
+        
+        if (filters.status) {
+          conditions.push(eq(assets.status, filters.status));
+        }
+        
+        if (filters.condition) {
+          conditions.push(eq(assets.condition, filters.condition));
+        }
+        
+        if (filters.search) {
+          conditions.push(
+            or(
+              like(assets.name, `%${filters.search}%`),
+              like(assets.description, `%${filters.search}%`),
+              like(assets.serialNumber, `%${filters.search}%`),
+              like(assets.location, `%${filters.search}%`)
+            )
+          );
+        }
+        
+        if (filters.maintenanceDue) {
+          const today = new Date();
+          conditions.push(
+            and(
+              isNull(assets.nextMaintenanceDate).not(),
+              lte(assets.nextMaintenanceDate, today)
+            )
+          );
+        }
+        
+        if (conditions.length > 0) {
+          query = query.where(and(...conditions));
+        }
+      }
+      
+      const allAssets = await query.orderBy(assets.name);
+      return allAssets;
+    } catch (error) {
+      console.error("Error al obtener activos:", error);
+      return [];
+    }
+  }
+
+  async getParkAssets(parkId: number): Promise<Asset[]> {
+    try {
+      const parkAssets = await db
+        .select()
+        .from(assets)
+        .where(eq(assets.parkId, parkId))
+        .orderBy(assets.name);
+      
+      return parkAssets;
+    } catch (error) {
+      console.error(`Error al obtener activos del parque ${parkId}:`, error);
+      return [];
+    }
+  }
+
+  async getCategoryAssets(categoryId: number): Promise<Asset[]> {
+    try {
+      const categoryAssets = await db
+        .select()
+        .from(assets)
+        .where(eq(assets.categoryId, categoryId))
+        .orderBy(assets.name);
+      
+      return categoryAssets;
+    } catch (error) {
+      console.error(`Error al obtener activos de la categoría ${categoryId}:`, error);
+      return [];
+    }
+  }
+
+  async createAsset(asset: InsertAsset): Promise<Asset> {
+    try {
+      const [newAsset] = await db
+        .insert(assets)
+        .values({
+          ...asset,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      return newAsset;
+    } catch (error) {
+      console.error("Error al crear activo:", error);
+      throw error;
+    }
+  }
+
+  async updateAsset(id: number, asset: Partial<InsertAsset>): Promise<Asset | undefined> {
+    try {
+      const [updatedAsset] = await db
+        .update(assets)
+        .set({
+          ...asset,
+          updatedAt: new Date()
+        })
+        .where(eq(assets.id, id))
+        .returning();
+      
+      return updatedAsset;
+    } catch (error) {
+      console.error(`Error al actualizar activo ${id}:`, error);
+      return undefined;
+    }
+  }
+
+  async deleteAsset(id: number): Promise<boolean> {
+    try {
+      await db
+        .delete(assets)
+        .where(eq(assets.id, id));
+      
+      return true;
+    } catch (error) {
+      console.error(`Error al eliminar activo ${id}:`, error);
+      return false;
+    }
+  }
+
+  // Asset Maintenance operations
+  async getAssetMaintenance(id: number): Promise<AssetMaintenance | undefined> {
+    try {
+      const [maintenance] = await db
+        .select()
+        .from(assetMaintenances)
+        .where(eq(assetMaintenances.id, id));
+      
+      return maintenance;
+    } catch (error) {
+      console.error(`Error al obtener mantenimiento ${id}:`, error);
+      return undefined;
+    }
+  }
+
+  async getAssetMaintenances(assetId: number): Promise<AssetMaintenance[]> {
+    try {
+      const maintenances = await db
+        .select()
+        .from(assetMaintenances)
+        .where(eq(assetMaintenances.assetId, assetId))
+        .orderBy(desc(assetMaintenances.date));
+      
+      return maintenances;
+    } catch (error) {
+      console.error(`Error al obtener mantenimientos del activo ${assetId}:`, error);
+      return [];
+    }
+  }
+
+  async createAssetMaintenance(maintenance: InsertAssetMaintenance): Promise<AssetMaintenance> {
+    try {
+      const [newMaintenance] = await db
+        .insert(assetMaintenances)
+        .values({
+          ...maintenance,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      return newMaintenance;
+    } catch (error) {
+      console.error("Error al crear mantenimiento de activo:", error);
+      throw error;
+    }
+  }
+
+  async updateAssetMaintenance(id: number, maintenance: Partial<InsertAssetMaintenance>): Promise<AssetMaintenance | undefined> {
+    try {
+      const [updatedMaintenance] = await db
+        .update(assetMaintenances)
+        .set({
+          ...maintenance,
+          updatedAt: new Date()
+        })
+        .where(eq(assetMaintenances.id, id))
+        .returning();
+      
+      return updatedMaintenance;
+    } catch (error) {
+      console.error(`Error al actualizar mantenimiento ${id}:`, error);
+      return undefined;
+    }
+  }
+
+  async deleteAssetMaintenance(id: number): Promise<boolean> {
+    try {
+      await db
+        .delete(assetMaintenances)
+        .where(eq(assetMaintenances.id, id));
+      
+      return true;
+    } catch (error) {
+      console.error(`Error al eliminar mantenimiento ${id}:`, error);
+      return false;
+    }
+  }
+
+  // Asset History operations
+  async getAssetHistory(assetId: number): Promise<AssetHistoryEntry[]> {
+    try {
+      const history = await db
+        .select()
+        .from(assetHistory)
+        .where(eq(assetHistory.assetId, assetId))
+        .orderBy(desc(assetHistory.date));
+      
+      return history;
+    } catch (error) {
+      console.error(`Error al obtener historial del activo ${assetId}:`, error);
+      return [];
+    }
+  }
+
+  async createAssetHistoryEntry(entry: InsertAssetHistoryEntry): Promise<AssetHistoryEntry> {
+    try {
+      const [newEntry] = await db
+        .insert(assetHistory)
+        .values({
+          ...entry,
+          createdAt: new Date()
+        })
+        .returning();
+      
+      return newEntry;
+    } catch (error) {
+      console.error("Error al crear entrada de historial de activo:", error);
+      throw error;
+    }
+  }
+
+  // Asset Statistics operations
+  async getAssetsByStatus(): Promise<{status: string, count: number}[]> {
+    try {
+      // Usar SQL directo para el conteo por estado
+      const result = await db.execute(sql`
+        SELECT status, COUNT(*) as count 
+        FROM assets 
+        GROUP BY status 
+        ORDER BY count DESC
+      `);
+      
+      return result.rows.map(row => ({
+        status: row.status as string,
+        count: parseInt(row.count as string)
+      }));
+    } catch (error) {
+      console.error("Error al obtener estadísticas de activos por estado:", error);
+      return [];
+    }
+  }
+
+  async getAssetsByCondition(): Promise<{condition: string, count: number}[]> {
+    try {
+      // Usar SQL directo para el conteo por condición
+      const result = await db.execute(sql`
+        SELECT condition, COUNT(*) as count 
+        FROM assets 
+        GROUP BY condition 
+        ORDER BY count DESC
+      `);
+      
+      return result.rows.map(row => ({
+        condition: row.condition as string,
+        count: parseInt(row.count as string)
+      }));
+    } catch (error) {
+      console.error("Error al obtener estadísticas de activos por condición:", error);
+      return [];
+    }
+  }
+
+  async getTotalAssetsValue(): Promise<number> {
+    try {
+      // Sumar el valor de todos los activos activos
+      const result = await db.execute(sql`
+        SELECT SUM(acquisition_cost) as total_value 
+        FROM assets 
+        WHERE status = 'active'
+      `);
+      
+      return parseFloat(result.rows[0]?.total_value as string) || 0;
+    } catch (error) {
+      console.error("Error al obtener valor total de activos:", error);
+      return 0;
+    }
+  }
+
+  async getAssetsByCategory(): Promise<{category: string, count: number}[]> {
+    try {
+      // Unir las tablas de activos y categorías para contar activos por categoría
+      const result = await db.execute(sql`
+        SELECT ac.name as category, COUNT(a.id) as count 
+        FROM assets a
+        JOIN asset_categories ac ON a.category_id = ac.id
+        GROUP BY ac.name 
+        ORDER BY count DESC
+      `);
+      
+      return result.rows.map(row => ({
+        category: row.category as string,
+        count: parseInt(row.count as string)
+      }));
+    } catch (error) {
+      console.error("Error al obtener estadísticas de activos por categoría:", error);
+      return [];
+    }
+  }
+
+  async getAssetsRequiringMaintenance(): Promise<Asset[]> {
+    try {
+      const today = new Date();
+      
+      // Obtener activos con fecha de mantenimiento vencida
+      const overdueMaintenance = await db
+        .select()
+        .from(assets)
+        .where(
+          and(
+            isNull(assets.nextMaintenanceDate).not(),
+            lte(assets.nextMaintenanceDate, today)
+          )
+        )
+        .orderBy(assets.nextMaintenanceDate);
+      
+      return overdueMaintenance;
+    } catch (error) {
+      console.error("Error al obtener activos que requieren mantenimiento:", error);
+      return [];
+    }
+  }
 }
 
 // Use database storage
