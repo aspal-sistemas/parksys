@@ -8,8 +8,75 @@ import {
   updateVolunteerDays,
   updateVolunteerInterests
 } from './update-volunteer-fields';
+import { pool } from './db';
 
 const volunteerFieldRouter = Router();
+
+// Ruta para actualización completa y directa de todos los campos problemáticos
+volunteerFieldRouter.post("/update-all-fields/:id", async (req: Request, res: Response) => {
+  try {
+    const volunteerId = parseInt(req.params.id);
+    const { 
+      experience,
+      availability,
+      availableDays,
+      interestAreas
+    } = req.body;
+    
+    console.log("🔄 Actualizando todos los campos del voluntario ID:", volunteerId);
+    console.log("Datos recibidos:", { experience, availability, availableDays, interestAreas });
+    
+    // Formatear correctamente los arrays
+    const formattedDays = Array.isArray(availableDays) 
+      ? JSON.stringify(availableDays) 
+      : availableDays || null;
+      
+    const formattedInterests = Array.isArray(interestAreas) 
+      ? JSON.stringify(interestAreas) 
+      : interestAreas || null;
+    
+    // Consulta SQL directa para actualizar todos los campos problemáticos
+    const query = `
+      UPDATE volunteers 
+      SET 
+        previous_experience = $1, 
+        available_hours = $2,
+        available_days = $3,
+        interest_areas = $4,
+        updated_at = NOW()
+      WHERE id = $5
+      RETURNING *
+    `;
+    
+    const result = await pool.query(query, [
+      experience || "", 
+      availability || "flexible",
+      formattedDays,
+      formattedInterests,
+      volunteerId
+    ]);
+    
+    if (result.rows && result.rows.length > 0) {
+      console.log("✅ Actualización directa exitosa de todos los campos");
+      return res.json({ 
+        success: true, 
+        message: "Datos del voluntario actualizados correctamente",
+        data: result.rows[0]
+      });
+    } else {
+      return res.status(404).json({ 
+        success: false, 
+        message: "No se pudo encontrar el voluntario" 
+      });
+    }
+  } catch (error) {
+    console.error("Error en actualización directa:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Error al actualizar los datos del voluntario" 
+    });
+  }
+});
 
 // Ruta para actualizar experiencia previa
 volunteerFieldRouter.post("/experience/:id", async (req: Request, res: Response) => {
