@@ -231,6 +231,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           address,
           emergency_contact,
           emergency_phone,
+          skills,
           created_at,
           updated_at,
           user_id
