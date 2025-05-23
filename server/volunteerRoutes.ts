@@ -706,7 +706,21 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
     try {
       console.log("Actualizando perfil completo de voluntario:", req.body);
       
-      const { userId, volunteerId, volunteerExperience, skills, availability, legalConsent, preferredParkId } = req.body;
+      const { 
+        userId, 
+        volunteerId, 
+        volunteerExperience, 
+        availability,
+        availableDays,
+        legalConsent, 
+        preferredParkId,
+        interestNature,
+        interestEvents,
+        interestEducation,
+        interestMaintenance,
+        interestSports,
+        interestCultural
+      } = req.body;
       
       if (!volunteerId && !userId) {
         return res.status(400).json({ message: "Se requiere un ID de voluntario o usuario" });
@@ -732,6 +746,15 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         return res.status(404).json({ message: "Voluntario no encontrado" });
       }
       
+      // Preparar áreas de interés como un array JSON
+      const interestAreas = [];
+      if (interestNature) interestAreas.push('nature');
+      if (interestEvents) interestAreas.push('events');
+      if (interestEducation) interestAreas.push('education');
+      if (interestMaintenance) interestAreas.push('maintenance');
+      if (interestSports) interestAreas.push('sports');
+      if (interestCultural) interestAreas.push('cultural');
+      
       // Actualizar solo los campos que existen en la tabla
       const updatedData: any = {};
       
@@ -741,6 +764,14 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       
       if (availability !== undefined) {
         updatedData.available_hours = availability;
+      }
+      
+      if (availableDays !== undefined) {
+        updatedData.available_days = availableDays;
+      }
+      
+      if (interestAreas.length > 0) {
+        updatedData.interest_areas = JSON.stringify(interestAreas);
       }
       
       if (legalConsent !== undefined) {
