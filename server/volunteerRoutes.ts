@@ -775,7 +775,8 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         interestCultural,
         address,
         emergencyContactName,
-        emergencyContactPhone
+        emergencyContactPhone,
+        skills  // Capturamos también las habilidades especiales
       } = req.body;
       
       if (!volunteerId && !userId) {
@@ -800,7 +801,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         volunteerIdToUpdate = volunteerResult.rows[0].id;
       }
       
-      // Preparar áreas de interés como un array JSON
+      // Preparar áreas de interés como un array
       const interestAreas = [];
       if (interestNature) interestAreas.push('nature');
       if (interestEvents) interestAreas.push('events');
@@ -809,8 +810,6 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       if (interestSports) interestAreas.push('sports');
       if (interestCultural) interestAreas.push('cultural');
       
-      const interestAreasJSON = interestAreas.length > 0 ? JSON.stringify(interestAreas) : null;
-      
       // SOLUCIÓN MEJORADA: Usar el actualizador que preserva campos existentes
       try {
         console.log("ACTUALIZANDO DATOS con preservación de valores:", {
@@ -818,6 +817,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           availability,
           availableDays,
           interestAreas,
+          skills,
           address,
           emergencyContactName,
           emergencyContactPhone,
@@ -830,18 +830,46 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           parsedParkId = parseInt(preferredParkId.toString());
         }
         
+        // IMPORTANTE: Solo enviamos campos si realmente tienen un valor
+        // Esto garantiza que no sobrescribamos valores existentes con vacíos
+        const updateData: any = {};
+        
+        // Solo incluimos la experiencia si se proporcionó explícitamente y no está vacía
+        if (volunteerExperience !== undefined && volunteerExperience !== '') {
+          updateData.experience = volunteerExperience;
+        }
+        
+        // Solo incluimos disponibilidad si se proporcionó explícitamente
+        if (availability !== undefined && availability !== '') {
+          updateData.availability = availability;
+        }
+        
+        // Solo incluimos días disponibles si se proporcionaron explícitamente
+        if (availableDays !== undefined && availableDays !== '') {
+          updateData.availableDays = availableDays;
+        }
+        
+        // Solo incluimos áreas de interés si hay alguna
+        if (interestAreas && interestAreas.length > 0) {
+          updateData.interestAreas = interestAreas;
+        }
+        
+        // Incluimos los datos básicos que siempre se actualizan
+        updateData.address = address;
+        updateData.emergencyContact = emergencyContactName;
+        updateData.emergencyPhone = emergencyContactPhone;
+        updateData.preferredParkId = parsedParkId;
+        updateData.legalConsent = legalConsent === true;
+        
+        // Añadimos habilidades especiales si se proporcionan
+        if (skills !== undefined && skills !== '') {
+          updateData.skills = skills;
+        }
+        
+        console.log("🔍 Datos que se van a actualizar:", updateData);
+        
         // Usamos el nuevo método que preserva los valores existentes
-        const updatedVolunteer = await updateCompleteProfile(volunteerIdToUpdate, {
-          experience: volunteerExperience,
-          availability: availability,
-          availableDays: availableDays,
-          interestAreas: interestAreas.length > 0 ? interestAreas : undefined,
-          address: address,
-          emergencyContact: emergencyContactName,
-          emergencyPhone: emergencyContactPhone,
-          preferredParkId: parsedParkId,
-          legalConsent: legalConsent === true
-        });
+        const updatedVolunteer = await updateCompleteProfile(volunteerIdToUpdate, updateData);
         
         if (!updatedVolunteer) {
           return res.status(500).json({ message: "Error al actualizar el perfil del voluntario" });
@@ -854,7 +882,8 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           areasInteres: updatedVolunteer.interest_areas,
           direccion: updatedVolunteer.address,
           contacto: updatedVolunteer.emergency_contact,
-          telefono: updatedVolunteer.emergency_phone
+          telefono: updatedVolunteer.emergency_phone,
+          habilidades: updatedVolunteer.skills
         });
         
         res.json(updatedVolunteer);
