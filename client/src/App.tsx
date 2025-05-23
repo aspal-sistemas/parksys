@@ -94,6 +94,11 @@ function Router() {
         <Route path="/admin/amenities" component={AdminAmenities} />
         <Route path="/admin/settings" component={AdminSettings} />
         <Route path="/admin/login" component={AdminLogin} />
+        <Route path="/admin/permissions">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de permisos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/permissions')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/volunteers" component={AdminVolunteers} />
         <Route path="/admin/volunteers/new" component={AdminVolunteerNew} />
         <Route path="/admin/volunteers/participations" component={AdminVolunteerParticipations} />

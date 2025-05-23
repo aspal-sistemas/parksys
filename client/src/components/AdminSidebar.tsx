@@ -16,7 +16,8 @@ import {
   Building,
   Wrench,
   AlertTriangle,
-  School
+  School,
+  Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -156,6 +157,14 @@ const AdminSidebar: React.FC = () => {
             active={location.startsWith('/admin/analytics')}
           >
             Análisis y Reportes
+          </NavItem>
+
+          <NavItem 
+            href="/admin/permissions" 
+            icon={<Shield className="h-5 w-5" />}
+            active={location.startsWith('/admin/permissions')}
+          >
+            Permisos de Roles
           </NavItem>
         </nav>
       </ScrollArea>

@@ -10,7 +10,7 @@ import {
   Clipboard, ClipboardEdit, Save, 
   Eye, Edit, Building, Trash, RefreshCw,
   Map, Calendar, Activity, User, FileText,
-  BarChart, Settings, Lock, Info
+  BarChart, Settings, Lock, Info, Plus
 } from 'lucide-react';
 import {
   Table,
