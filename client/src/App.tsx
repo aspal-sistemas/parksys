@@ -162,6 +162,34 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/activities/calendar')))}
           </Suspense>
         </Route>
+
+        {/* Rutas para el módulo de activos */}
+        <Route path="/admin/assets">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de activos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/index')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/assets/new">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de nuevo activo...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/new')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/assets/categories">
+          <Suspense fallback={<div className="p-8 text-center">Cargando categorías de activos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/categories/index')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/assets/inventory">
+          <Suspense fallback={<div className="p-8 text-center">Cargando inventario de activos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/inventory/index')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/assets/:id">
+          <Suspense fallback={<div className="p-8 text-center">Cargando detalles del activo...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/[id]')))}
+          </Suspense>
+        </Route>
+        
         <Route component={NotFound} />
       </Switch>
     </div>
