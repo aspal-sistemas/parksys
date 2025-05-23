@@ -726,23 +726,30 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         return res.status(400).json({ message: "Se requiere un ID de voluntario o usuario" });
       }
       
-      // Buscar por ID de voluntario o ID de usuario
-      let existingVolunteer;
+      // Buscar el ID del voluntario
+      let volunteerIdToUpdate: number;
+      
       if (volunteerId) {
-        const [result] = await db
-          .select()
-          .from(volunteers)
-          .where(eq(volunteers.id, parseInt(volunteerId)));
-        existingVolunteer = result;
-      } else if (userId) {
-        const [result] = await db
-          .select()
-          .from(volunteers)
-          .where(eq(volunteers.user_id, parseInt(userId)));
-        existingVolunteer = result;
+        volunteerIdToUpdate = parseInt(volunteerId);
+      } else {
+        // Buscar por userId
+        const volunteerResult = await db.execute(
+          sql`SELECT id FROM volunteers WHERE user_id = ${parseInt(userId)}`
+        );
+        
+        if (!volunteerResult.rows || volunteerResult.rows.length === 0) {
+          return res.status(404).json({ message: "Voluntario no encontrado para este usuario" });
+        }
+        
+        volunteerIdToUpdate = volunteerResult.rows[0].id;
       }
       
-      if (!existingVolunteer) {
+      // Verificar que el voluntario exista
+      const existingVolunteerResult = await db.execute(
+        sql`SELECT * FROM volunteers WHERE id = ${volunteerIdToUpdate}`
+      );
+      
+      if (!existingVolunteerResult.rows || existingVolunteerResult.rows.length === 0) {
         return res.status(404).json({ message: "Voluntario no encontrado" });
       }
       
@@ -755,44 +762,34 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       if (interestSports) interestAreas.push('sports');
       if (interestCultural) interestAreas.push('cultural');
       
-      // Actualizar solo los campos que existen en la tabla
-      const updatedData: any = {};
+      const interestAreasJSON = interestAreas.length > 0 ? JSON.stringify(interestAreas) : null;
       
-      if (volunteerExperience !== undefined) {
-        updatedData.previous_experience = volunteerExperience;
+      // Actualizar utilizando SQL directo para evitar problemas de sintaxis
+      const updateResult = await db.execute(
+        sql`UPDATE volunteers SET
+            previous_experience = COALESCE(${volunteerExperience}, previous_experience),
+            available_hours = COALESCE(${availability}, available_hours),
+            available_days = COALESCE(${availableDays}, available_days),
+            interest_areas = COALESCE(${interestAreasJSON}, interest_areas),
+            legal_consent = COALESCE(${legalConsent !== undefined ? legalConsent : null}, legal_consent),
+            preferred_park_id = COALESCE(${preferredParkId !== undefined ? preferredParkId : null}, preferred_park_id),
+            updated_at = ${new Date()}
+          WHERE id = ${volunteerIdToUpdate}
+          RETURNING *`
+      );
+      
+      if (!updateResult.rows || updateResult.rows.length === 0) {
+        return res.status(500).json({ message: "Error al actualizar el perfil de voluntario" });
       }
       
-      if (availability !== undefined) {
-        updatedData.available_hours = availability;
-      }
+      console.log("Perfil de voluntario actualizado correctamente con campos adicionales:", {
+        experiencia: updateResult.rows[0].previous_experience,
+        disponibilidad: updateResult.rows[0].available_hours,
+        diasDisponibles: updateResult.rows[0].available_days,
+        areasInteres: updateResult.rows[0].interest_areas
+      });
       
-      if (availableDays !== undefined) {
-        updatedData.available_days = availableDays;
-      }
-      
-      if (interestAreas.length > 0) {
-        updatedData.interest_areas = JSON.stringify(interestAreas);
-      }
-      
-      if (legalConsent !== undefined) {
-        updatedData.legal_consent = legalConsent;
-      }
-      
-      if (preferredParkId !== undefined) {
-        updatedData.preferred_park_id = preferredParkId;
-      }
-      
-      // Actualizar timestamp
-      updatedData.updated_at = new Date();
-      
-      // Actualizar el registro
-      const [updatedVolunteer] = await db
-        .update(volunteers)
-        .set(updatedData)
-        .where(eq(volunteers.id, existingVolunteer.id))
-        .returning();
-      
-      res.json(updatedVolunteer);
+      res.json(updateResult.rows[0]);
     } catch (error) {
       console.error("Error al actualizar perfil de voluntario:", error);
       res.status(500).json({ message: "Error al actualizar perfil de voluntario" });
