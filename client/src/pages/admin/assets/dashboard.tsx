@@ -320,7 +320,7 @@ const AssetsDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats.conditionDistribution.map((condition) => (
+                {conditionDistributionToArray(stats.conditionDistribution).map((condition) => (
                   <div key={condition.condition} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
@@ -349,7 +349,7 @@ const AssetsDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats.valueByCategory.map((category) => (
+                {(stats.categoryValues || []).map((category) => (
                   <div key={category.category} className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Tag className="h-4 w-4 text-primary" />
@@ -432,7 +432,7 @@ const AssetsDashboard: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {stats.recentMaintenances && stats.recentMaintenances.length > 0 ? (
+            {stats.recentMaintenances && Array.isArray(stats.recentMaintenances) && stats.recentMaintenances.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
