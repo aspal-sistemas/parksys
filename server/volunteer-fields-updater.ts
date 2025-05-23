@@ -56,14 +56,20 @@ export async function updateVolunteerFieldsPreserving(
     
     // Preparamos los campos a actualizar, preservando valores existentes
     const updatedFields = {
-      previous_experience: fields.experience !== undefined ? fields.experience : currentData.previous_experience,
-      available_hours: fields.availability !== undefined ? fields.availability || null : currentData.available_hours,
+      // Para estos campos, si recibimos una cadena vacía, conservamos el valor existente
+      previous_experience: fields.experience !== undefined && fields.experience !== '' ? 
+        fields.experience : currentData.previous_experience,
+      available_hours: fields.availability !== undefined && fields.availability !== '' ? 
+        fields.availability || null : currentData.available_hours,
+      skills: fields.skills !== undefined && fields.skills !== '' ? 
+        fields.skills : currentData.skills,
+        
+      // Estos campos se pueden sobrescribir con valores vacíos si se proporciona explícitamente
       address: fields.address !== undefined ? fields.address : currentData.address,
       emergency_contact: fields.emergencyContact !== undefined ? fields.emergencyContact : currentData.emergency_contact,
       emergency_phone: fields.emergencyPhone !== undefined ? fields.emergencyPhone : currentData.emergency_phone,
       preferred_park_id: fields.preferredParkId !== undefined ? fields.preferredParkId : currentData.preferred_park_id,
       legal_consent: fields.legalConsent !== undefined ? fields.legalConsent : currentData.legal_consent,
-      skills: fields.skills !== undefined ? fields.skills : currentData.skills,
     };
     
     // Formatear correctamente los arrays para PostgreSQL si se proporcionan

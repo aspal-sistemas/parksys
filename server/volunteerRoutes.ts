@@ -835,11 +835,11 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         const updateData: any = {};
         
         // Solo incluimos la experiencia si se proporcionó explícitamente y no está vacía
-        if (volunteerExperience !== undefined) {
+        if (volunteerExperience !== undefined && volunteerExperience !== '') {
           updateData.experience = volunteerExperience;
         }
         
-        // Solo incluimos disponibilidad si se proporcionó explícitamente
+        // Solo incluimos disponibilidad si se proporcionó explícitamente y no está vacía
         if (availability !== undefined && availability !== '') {
           updateData.availability = availability;
         }
@@ -847,6 +847,11 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         // Solo incluimos días disponibles si se proporcionaron explícitamente
         if (availableDays !== undefined && availableDays !== '') {
           updateData.availableDays = availableDays;
+        }
+        
+        // Solo incluimos habilidades si se proporcionaron explícitamente y no están vacías
+        if (skills !== undefined && skills !== '') {
+          updateData.skills = skills;
         }
         
         // Solo incluimos áreas de interés si hay alguna
