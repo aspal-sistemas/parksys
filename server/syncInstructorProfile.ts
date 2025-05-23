@@ -33,10 +33,14 @@ export async function syncInstructorProfileWithUser(userId: number) {
       sql`SELECT * FROM instructors WHERE user_id = ${userId}`
     );
     
-    // 3. Obtener el nombre completo del usuario
-    let fullName = user.fullName;
-    if (!fullName && user.firstName && user.lastName) {
+    // 3. Obtener el nombre completo del usuario (priorizar firstName + lastName)
+    let fullName;
+    if (user.firstName && user.lastName) {
+      // Prioridad 1: Usar firstName y lastName actuales
       fullName = `${user.firstName} ${user.lastName}`;
+    } else if (user.fullName) {
+      // Prioridad 2: Usar fullName si está disponible
+      fullName = user.fullName;
     }
     
     // 4. Sincronizar datos básicos
@@ -45,10 +49,10 @@ export async function syncInstructorProfileWithUser(userId: number) {
       const instructor = instructorResult.rows[0];
       console.log(`✅ Perfil de instructor encontrado con ID: ${instructor.id}`);
       
-      // Preparar datos para actualización
+      // Preparar datos para actualización (forzar actualización del nombre)
       const updateResult = await db.execute(
         sql`UPDATE instructors 
-            SET full_name = ${fullName || instructor.full_name},
+            SET full_name = ${fullName ? fullName : instructor.full_name},
                 email = ${user.email || instructor.email},
                 phone = ${user.phone || instructor.phone},
                 profile_image_url = ${user.profileImageUrl || instructor.profile_image_url},
