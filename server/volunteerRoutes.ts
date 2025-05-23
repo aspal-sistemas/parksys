@@ -764,32 +764,87 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       
       const interestAreasJSON = interestAreas.length > 0 ? JSON.stringify(interestAreas) : null;
       
-      // Actualizar utilizando SQL directo para evitar problemas de sintaxis
-      const updateResult = await db.execute(
-        sql`UPDATE volunteers SET
-            previous_experience = COALESCE(${volunteerExperience}, previous_experience),
-            available_hours = COALESCE(${availability}, available_hours),
-            available_days = COALESCE(${availableDays}, available_days),
-            interest_areas = COALESCE(${interestAreasJSON}, interest_areas),
-            legal_consent = COALESCE(${legalConsent !== undefined ? legalConsent : null}, legal_consent),
-            preferred_park_id = COALESCE(${preferredParkId !== undefined ? preferredParkId : null}, preferred_park_id),
-            updated_at = ${new Date()}
-          WHERE id = ${volunteerIdToUpdate}
-          RETURNING *`
-      );
-      
-      if (!updateResult.rows || updateResult.rows.length === 0) {
-        return res.status(500).json({ message: "Error al actualizar el perfil de voluntario" });
+      // Actualizar por partes para evitar errores de sintaxis
+      try {
+        // 1. Actualizar campos básicos que sabemos son seguros
+        await db.execute(
+          sql`UPDATE volunteers 
+              SET address = ${existingVolunteerResult.rows[0].address},
+                  emergency_contact = ${existingVolunteerResult.rows[0].emergency_contact},
+                  emergency_phone = ${existingVolunteerResult.rows[0].emergency_phone},
+                  preferred_park_id = ${preferredParkId || existingVolunteerResult.rows[0].preferred_park_id},
+                  updated_at = ${new Date()}
+              WHERE id = ${volunteerIdToUpdate}`
+        );
+        
+        // 2. Actualizar experiencia previa si está presente
+        if (volunteerExperience !== undefined) {
+          await db.execute(
+            sql`UPDATE volunteers 
+                SET previous_experience = ${volunteerExperience}
+                WHERE id = ${volunteerIdToUpdate}`
+          );
+        }
+        
+        // 3. Actualizar horas disponibles si está presente
+        if (availability !== undefined) {
+          await db.execute(
+            sql`UPDATE volunteers 
+                SET available_hours = ${availability}
+                WHERE id = ${volunteerIdToUpdate}`
+          );
+        }
+        
+        // 4. Actualizar días disponibles si está presente
+        if (availableDays !== undefined) {
+          await db.execute(
+            sql`UPDATE volunteers 
+                SET available_days = ${availableDays}
+                WHERE id = ${volunteerIdToUpdate}`
+          );
+        }
+        
+        // 5. Actualizar áreas de interés si están presentes
+        if (interestAreas.length > 0) {
+          await db.execute(
+            sql`UPDATE volunteers 
+                SET interest_areas = ${interestAreasJSON}
+                WHERE id = ${volunteerIdToUpdate}`
+          );
+        }
+        
+        // 6. Actualizar consentimiento legal si está presente
+        if (legalConsent !== undefined) {
+          await db.execute(
+            sql`UPDATE volunteers 
+                SET legal_consent = ${legalConsent}
+                WHERE id = ${volunteerIdToUpdate}`
+          );
+        }
+        
+        // Obtener el registro actualizado
+        const updatedVolunteerResult = await db.execute(
+          sql`SELECT * FROM volunteers WHERE id = ${volunteerIdToUpdate}`
+        );
+        
+        if (!updatedVolunteerResult.rows || updatedVolunteerResult.rows.length === 0) {
+          return res.status(500).json({ message: "Error al obtener el perfil actualizado" });
+        }
+        
+        console.log("Perfil de voluntario actualizado correctamente con campos adicionales:", {
+          experiencia: updatedVolunteerResult.rows[0].previous_experience,
+          disponibilidad: updatedVolunteerResult.rows[0].available_hours,
+          diasDisponibles: updatedVolunteerResult.rows[0].available_days,
+          areasInteres: updatedVolunteerResult.rows[0].interest_areas,
+          parquePreferido: updatedVolunteerResult.rows[0].preferred_park_id,
+          consentimiento: updatedVolunteerResult.rows[0].legal_consent
+        });
+        
+        res.json(updatedVolunteerResult.rows[0]);
+      } catch (updateError) {
+        console.error("Error específico al actualizar el perfil:", updateError);
+        res.status(500).json({ message: "Error al actualizar el perfil de voluntario" });
       }
-      
-      console.log("Perfil de voluntario actualizado correctamente con campos adicionales:", {
-        experiencia: updateResult.rows[0].previous_experience,
-        disponibilidad: updateResult.rows[0].available_hours,
-        diasDisponibles: updateResult.rows[0].available_days,
-        areasInteres: updateResult.rows[0].interest_areas
-      });
-      
-      res.json(updateResult.rows[0]);
     } catch (error) {
       console.error("Error al actualizar perfil de voluntario:", error);
       res.status(500).json({ message: "Error al actualizar perfil de voluntario" });
