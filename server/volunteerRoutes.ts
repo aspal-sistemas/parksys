@@ -719,7 +719,10 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         interestEducation,
         interestMaintenance,
         interestSports,
-        interestCultural
+        interestCultural,
+        address,
+        emergencyContactName,
+        emergencyContactPhone
       } = req.body;
       
       if (!volunteerId && !userId) {
@@ -744,15 +747,6 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         volunteerIdToUpdate = volunteerResult.rows[0].id;
       }
       
-      // Verificar que el voluntario exista
-      const existingVolunteerResult = await db.execute(
-        sql`SELECT * FROM volunteers WHERE id = ${volunteerIdToUpdate}`
-      );
-      
-      if (!existingVolunteerResult.rows || existingVolunteerResult.rows.length === 0) {
-        return res.status(404).json({ message: "Voluntario no encontrado" });
-      }
-      
       // Preparar áreas de interés como un array JSON
       const interestAreas = [];
       if (interestNature) interestAreas.push('nature');
@@ -764,78 +758,34 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       
       const interestAreasJSON = interestAreas.length > 0 ? JSON.stringify(interestAreas) : null;
       
-      // Actualizar por partes para evitar errores de sintaxis
+      // SOLUCIÓN DIRECTA: Actualizar todo en una sola operación SQL
       try {
-        // 1. Verificar si hay cambios en los datos básicos desde el cliente
-        let address = existingVolunteerResult.rows[0].address;
-        let emergencyContact = existingVolunteerResult.rows[0].emergency_contact;
-        let emergencyPhone = existingVolunteerResult.rows[0].emergency_phone;
-        
-        // Obtener datos adicionales del request si están disponibles
-        const reqAddress = req.body.address;
-        const reqEmergencyContact = req.body.emergencyContactName;
-        const reqEmergencyPhone = req.body.emergencyContactPhone;
-        
-        console.log("Verificando datos de contacto:", {
-          reqAddress, reqEmergencyContact, reqEmergencyPhone,
-          dbAddress: address, dbEmergencyContact: emergencyContact, dbEmergencyPhone: emergencyPhone
+        // Actualización simple y directa de todos los campos
+        console.log("ACTUALIZANDO DATOS:", {
+          volunteerExperience, 
+          availability,
+          availableDays,
+          interestAreasJSON,
+          address,
+          emergencyContactName,
+          emergencyContactPhone,
+          volunteerIdToUpdate
         });
         
-        // Actualizar campos básicos que sabemos son seguros usando datos del request si están disponibles
         await db.execute(
-          sql`UPDATE volunteers 
-              SET address = ${reqAddress || address},
-                  emergency_contact = ${reqEmergencyContact || emergencyContact},
-                  emergency_phone = ${reqEmergencyPhone || emergencyPhone},
-                  preferred_park_id = ${preferredParkId || existingVolunteerResult.rows[0].preferred_park_id},
-                  updated_at = ${new Date()}
-              WHERE id = ${volunteerIdToUpdate}`
+          sql`UPDATE volunteers SET
+              previous_experience = ${volunteerExperience || null},
+              available_hours = ${availability || null},
+              available_days = ${availableDays || null},
+              interest_areas = ${interestAreasJSON},
+              legal_consent = ${legalConsent === true},
+              preferred_park_id = ${preferredParkId || null},
+              address = ${address || null},
+              emergency_contact = ${emergencyContactName || null},
+              emergency_phone = ${emergencyContactPhone || null},
+              updated_at = ${new Date()}
+            WHERE id = ${volunteerIdToUpdate}`
         );
-        
-        // 2. Actualizar experiencia previa si está presente
-        if (volunteerExperience !== undefined) {
-          await db.execute(
-            sql`UPDATE volunteers 
-                SET previous_experience = ${volunteerExperience}
-                WHERE id = ${volunteerIdToUpdate}`
-          );
-        }
-        
-        // 3. Actualizar horas disponibles si está presente
-        if (availability !== undefined) {
-          await db.execute(
-            sql`UPDATE volunteers 
-                SET available_hours = ${availability}
-                WHERE id = ${volunteerIdToUpdate}`
-          );
-        }
-        
-        // 4. Actualizar días disponibles si está presente
-        if (availableDays !== undefined) {
-          await db.execute(
-            sql`UPDATE volunteers 
-                SET available_days = ${availableDays}
-                WHERE id = ${volunteerIdToUpdate}`
-          );
-        }
-        
-        // 5. Actualizar áreas de interés si están presentes
-        if (interestAreas.length > 0) {
-          await db.execute(
-            sql`UPDATE volunteers 
-                SET interest_areas = ${interestAreasJSON}
-                WHERE id = ${volunteerIdToUpdate}`
-          );
-        }
-        
-        // 6. Actualizar consentimiento legal si está presente
-        if (legalConsent !== undefined) {
-          await db.execute(
-            sql`UPDATE volunteers 
-                SET legal_consent = ${legalConsent}
-                WHERE id = ${volunteerIdToUpdate}`
-          );
-        }
         
         // Obtener el registro actualizado
         const updatedVolunteerResult = await db.execute(
@@ -846,13 +796,14 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           return res.status(500).json({ message: "Error al obtener el perfil actualizado" });
         }
         
-        console.log("Perfil de voluntario actualizado correctamente con campos adicionales:", {
+        console.log("✅ PERFIL ACTUALIZADO EXITOSAMENTE:", {
           experiencia: updatedVolunteerResult.rows[0].previous_experience,
           disponibilidad: updatedVolunteerResult.rows[0].available_hours,
           diasDisponibles: updatedVolunteerResult.rows[0].available_days,
           areasInteres: updatedVolunteerResult.rows[0].interest_areas,
-          parquePreferido: updatedVolunteerResult.rows[0].preferred_park_id,
-          consentimiento: updatedVolunteerResult.rows[0].legal_consent
+          direccion: updatedVolunteerResult.rows[0].address,
+          contacto: updatedVolunteerResult.rows[0].emergency_contact,
+          telefono: updatedVolunteerResult.rows[0].emergency_phone
         });
         
         res.json(updatedVolunteerResult.rows[0]);
