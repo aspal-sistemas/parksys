@@ -361,7 +361,7 @@ const InventoryPage: React.FC = () => {
                       <SelectValue placeholder="Estado" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todos los estados</SelectItem>
+                      <SelectItem value="all">Todos los estados</SelectItem>
                       {ASSET_STATUSES.map((status) => (
                         <SelectItem key={status} value={status}>{status}</SelectItem>
                       ))}
@@ -375,7 +375,7 @@ const InventoryPage: React.FC = () => {
                       <SelectValue placeholder="Condición" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todas las condiciones</SelectItem>
+                      <SelectItem value="all">Todas las condiciones</SelectItem>
                       {ASSET_CONDITIONS.map((condition) => (
                         <SelectItem key={condition} value={condition}>{condition}</SelectItem>
                       ))}
@@ -389,7 +389,7 @@ const InventoryPage: React.FC = () => {
                       <SelectValue placeholder="Parque" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todos los parques</SelectItem>
+                      <SelectItem value="all">Todos los parques</SelectItem>
                       {parks?.map((park: any) => (
                         <SelectItem key={park.id} value={park.id.toString()}>{park.name}</SelectItem>
                       ))}
