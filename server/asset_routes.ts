@@ -344,25 +344,82 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
   // Rutas para estadísticas de activos
   apiRouter.get("/assets-stats", isAuthenticated, async (_req: Request, res: Response) => {
     try {
-      const [byStatus, byCondition, totalValue, byCategory, needMaintenance] = await Promise.all([
+      const [
+        byStatus, 
+        byCondition, 
+        totalValue, 
+        byCategory, 
+        needMaintenance, 
+        totalCount,
+        activeCount,
+        maintenanceCount,
+        categoryValues
+      ] = await Promise.all([
         storage.getAssetsByStatus(),
         storage.getAssetsByCondition(),
         storage.getTotalAssetsValue(),
         storage.getAssetsByCategory(),
-        storage.getAssetsRequiringMaintenance()
+        storage.getAssetsRequiringMaintenance(),
+        storage.getAssetTotalCount(),
+        storage.getAssetCountByStatus('active'),
+        storage.getAssetCountByStatus('maintenance'),
+        storage.getCategoryValues()
       ]);
       
+      // Convertir el resultado de byStatus a objeto para el dashboard
+      const statusDistribution = byStatus.reduce((acc, item) => {
+        acc[item.status] = item.count;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      // Convertir el resultado de byCondition a objeto para el dashboard
+      const conditionDistribution = byCondition.reduce((acc, item) => {
+        acc[item.condition] = item.count;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      // Calcular porcentajes
+      const totalAssets = totalCount || 0;
+      const activeAssets = activeCount || 0;
+      const maintenanceAssets = maintenanceCount || 0;
+      
+      const activeAssetsPercentage = totalAssets > 0 ? Math.round((activeAssets / totalAssets) * 100) : 0;
+      const maintenanceAssetsPercentage = totalAssets > 0 ? Math.round((maintenanceAssets / totalAssets) * 100) : 0;
+      
       res.json({
+        // Formato antiguo para compatibilidad
         byStatus,
         byCondition,
         totalValue,
         byCategory,
         needMaintenance: needMaintenance.length,
-        needMaintenanceList: needMaintenance
+        needMaintenanceList: needMaintenance,
+        
+        // Nuevo formato para el dashboard
+        totalAssets,
+        activeAssets,
+        activeAssetsPercentage,
+        maintenanceAssets,
+        maintenanceAssetsPercentage,
+        statusDistribution,
+        conditionDistribution,
+        categoryCounts: byCategory,
+        categoryValues
       });
     } catch (error) {
       console.error("Error al obtener estadísticas de activos:", error);
       res.status(500).json({ message: "Error al obtener estadísticas de activos" });
+    }
+  });
+  
+  // Ruta para obtener mantenimientos próximos
+  apiRouter.get("/assets/maintenance/upcoming", isAuthenticated, async (_req: Request, res: Response) => {
+    try {
+      const upcomingMaintenances = await storage.getUpcomingMaintenances();
+      res.json(upcomingMaintenances);
+    } catch (error) {
+      console.error("Error al obtener mantenimientos próximos:", error);
+      res.status(500).json({ message: "Error al obtener mantenimientos próximos" });
     }
   });
 

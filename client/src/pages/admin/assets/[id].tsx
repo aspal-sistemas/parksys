@@ -755,7 +755,14 @@ const AssetDetailPage: React.FC = () => {
                               <p className="text-muted-foreground text-sm">
                                 Realizado el {formatDate(maintenance.date)}
                               </p>
-                              {maintenance.performedBy && (
+                              {maintenance.performer ? (
+                                <p className="text-muted-foreground text-sm flex items-center">
+                                  Por: <span className="font-medium ml-1">{maintenance.performer.fullName}</span>
+                                  <Badge className="ml-2" variant="outline" size="sm">
+                                    {maintenance.performer.role}
+                                  </Badge>
+                                </p>
+                              ) : maintenance.performedBy && (
                                 <p className="text-muted-foreground text-sm">
                                   Por: {maintenance.performedBy}
                                 </p>
