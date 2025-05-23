@@ -3,13 +3,7 @@
  * Se usa código SQL plano para evitar problemas de tipado y formato
  */
 import { Router, Request, Response } from 'express';
-import { Pool } from '@neondatabase/serverless';
-// Sin necesidad de importar dotenv, ya está configurado en la app
-
-dotenv.config();
-
-// Conexión directa a la base de datos
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+import { pool } from './db';
 
 // Crear router para rutas directas
 const directRouter = Router();

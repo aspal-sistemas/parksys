@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
 import { activityRouter } from "./activityRoutes";
 import { testRouter } from "./testRoutes";
+import { volunteerFieldRouter } from "./volunteerFieldRoutes";
 
 const app = express();
 app.use(express.json());
@@ -14,6 +15,9 @@ app.use('/api', activityRouter);
 
 // Registrar las rutas de prueba
 app.use('/api/test', testRouter);
+
+// Registrar las rutas de campos de voluntario
+app.use('/api/volunteer-fields', volunteerFieldRouter);
 
 // Servir archivos estáticos de la carpeta de uploads
 app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
