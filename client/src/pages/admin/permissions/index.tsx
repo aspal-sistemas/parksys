@@ -605,7 +605,7 @@ export default function PermissionsPage() {
             <CardContent>
               <Tabs defaultValue="admin" value={currentRoleTab} onValueChange={setCurrentRoleTab} className="w-full">
                 {/* Lista de roles en pestañas horizontales con mejor espaciado */}
-                <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 mb-8">
+                <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 mb-12">
                   {roles.map(role => (
                     <TabsTrigger 
                       key={role.id} 
@@ -621,29 +621,31 @@ export default function PermissionsPage() {
                 {/* Contenido de cada pestaña de rol */}
                 {roles.map(role => (
                   <TabsContent key={role.id} value={role.id} className="space-y-8">
-                    {/* Encabezado del rol con descripción y botón de acción */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0 p-5 bg-muted rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-10 h-10 rounded-full ${role.badge.color} ${role.badge.textColor} flex items-center justify-center font-bold text-xl`}>
-                          {role.displayName[0]}
+                    {/* Panel con fondo gris para toda la sección */}
+                    <div className="bg-muted rounded-lg p-6">
+                      {/* Encabezado del rol con descripción y botón de acción */}
+                      <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0 p-5 bg-background rounded-lg shadow-sm mb-6">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-10 h-10 rounded-full ${role.badge.color} ${role.badge.textColor} flex items-center justify-center font-bold text-xl`}>
+                            {role.displayName[0]}
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold">{role.displayName}</h3>
+                            <p className="text-sm text-muted-foreground mt-1">{role.description}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="text-lg font-bold">{role.displayName}</h3>
-                          <p className="text-sm text-muted-foreground mt-1">{role.description}</p>
-                        </div>
+                        
+                        {/* Botón para asignar todos los permisos si el rol es administrador */}
+                        {role.id === 'admin' && isEditing && (
+                          <Button 
+                            onClick={() => grantAllPermissionsToRole(role.id)}
+                            className="bg-green-600 hover:bg-green-700 ml-auto"
+                          >
+                            <ShieldCheck className="mr-2 h-4 w-4" />
+                            Otorgar Todos los Permisos
+                          </Button>
+                        )}
                       </div>
-                      
-                      {/* Botón para asignar todos los permisos si el rol es administrador */}
-                      {role.id === 'admin' && isEditing && (
-                        <Button 
-                          onClick={() => grantAllPermissionsToRole(role.id)}
-                          className="bg-green-600 hover:bg-green-700 ml-auto"
-                        >
-                          <ShieldCheck className="mr-2 h-4 w-4" />
-                          Otorgar Todos los Permisos
-                        </Button>
-                      )}
-                    </div>
                     
                     <Tabs defaultValue="users" value={currentModuleTab} onValueChange={setCurrentModuleTab}>
                       <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-1 mb-4">
