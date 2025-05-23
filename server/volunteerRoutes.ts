@@ -197,6 +197,56 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
     }
   });
 
+  // Obtener un voluntario por ID de usuario
+  apiRouter.get("/volunteers/by-user/:userId", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "ID de usuario no válido" });
+      }
+      
+      const result = await db.execute(
+        sql`SELECT 
+          id, 
+          full_name, 
+          email, 
+          phone, 
+          gender, 
+          age, 
+          status, 
+          profile_image_url,
+          previous_experience,
+          available_hours,
+          available_days,
+          interest_areas,
+          preferred_park_id,
+          legal_consent,
+          address,
+          emergency_contact,
+          emergency_phone,
+          created_at,
+          updated_at,
+          user_id
+        FROM volunteers 
+        WHERE user_id = ${userId}
+        AND status = 'active'`
+      );
+      
+      if (!result.rows || result.rows.length === 0) {
+        return res.status(404).json({ message: "Voluntario no encontrado para este usuario" });
+      }
+      
+      // Log para depuración
+      console.log("Datos del voluntario por usuario recuperados:", result.rows[0]);
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error(`Error al obtener voluntario con userId ${req.params.userId}:`, error);
+      res.status(500).json({ message: "Error al obtener datos del voluntario" });
+    }
+  });
+  
   // Obtener un voluntario específico
   apiRouter.get("/volunteers/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
