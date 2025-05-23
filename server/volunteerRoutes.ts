@@ -665,6 +665,53 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
     }
   });
 
+  // Ruta específica para actualizar solo experiencia y disponibilidad
+  apiRouter.post("/volunteers/experience/:id", async (req: Request, res: Response) => {
+    try {
+      const volunteerId = parseInt(req.params.id);
+      const { experience, availability } = req.body;
+      
+      if (isNaN(volunteerId)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "ID de voluntario no válido" 
+        });
+      }
+      
+      console.log(`Actualizando experiencia y disponibilidad para voluntario ${volunteerId}:`, {
+        experience, availability
+      });
+      
+      const updatedVolunteer = await updateExperienceAndAvailability(
+        volunteerId, 
+        experience,
+        availability
+      );
+      
+      if (!updatedVolunteer) {
+        return res.status(500).json({ 
+          success: false, 
+          message: "No se pudo actualizar la experiencia del voluntario" 
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: "Experiencia y disponibilidad actualizadas correctamente",
+        data: {
+          experience: updatedVolunteer.previous_experience,
+          availability: updatedVolunteer.available_hours
+        }
+      });
+    } catch (error) {
+      console.error("Error al actualizar experiencia y disponibilidad:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Error al actualizar la experiencia y disponibilidad" 
+      });
+    }
+  });
+
   // === RUTAS PARA PARTICIPACIONES ===
 
   // Obtener todas las participaciones 
@@ -764,64 +811,53 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       
       const interestAreasJSON = interestAreas.length > 0 ? JSON.stringify(interestAreas) : null;
       
-      // SOLUCIÓN DIRECTA: Actualizar todo en una sola operación SQL
+      // SOLUCIÓN MEJORADA: Usar el actualizador que preserva campos existentes
       try {
-        // Actualización simple y directa de todos los campos
-        console.log("ACTUALIZANDO DATOS:", {
+        console.log("ACTUALIZANDO DATOS con preservación de valores:", {
           volunteerExperience, 
           availability,
           availableDays,
-          interestAreasJSON,
+          interestAreas,
           address,
           emergencyContactName,
           emergencyContactPhone,
           volunteerIdToUpdate
         });
         
-        // Solución directa y simplificada: Usamos una actualización simple sin
-        // intentar convertir los campos a formatos complejos
-        
-        console.log("⭐ GUARDANDO VALORES SIMPLIFICADOS:", {
-          experiencia: volunteerExperience || null,
-          horasDisponibles: availability || null,
-          diasDisponibles: availableDays || null,
-          interesesJSON: interestAreasJSON
-        });
-        
-        // Actualizar los campos básicos no problemáticos primero
-        await db.execute(
-          sql`UPDATE volunteers SET
-              previous_experience = ${volunteerExperience || null},
-              available_hours = ${availability || null},
-              legal_consent = ${legalConsent === true},
-              preferred_park_id = ${preferredParkId || null},
-              address = ${address || null},
-              emergency_contact = ${emergencyContactName || null},
-              emergency_phone = ${emergencyContactPhone || null},
-              updated_at = ${new Date()}
-            WHERE id = ${volunteerIdToUpdate}`
-        );
-        
-        // Obtener el registro actualizado
-        const updatedVolunteerResult = await db.execute(
-          sql`SELECT * FROM volunteers WHERE id = ${volunteerIdToUpdate}`
-        );
-        
-        if (!updatedVolunteerResult.rows || updatedVolunteerResult.rows.length === 0) {
-          return res.status(500).json({ message: "Error al obtener el perfil actualizado" });
+        // Verificar que el preferredParkId sea un número válido
+        let parsedParkId = null;
+        if (preferredParkId && !isNaN(parseInt(preferredParkId.toString()))) {
+          parsedParkId = parseInt(preferredParkId.toString());
         }
         
-        console.log("✅ PERFIL ACTUALIZADO EXITOSAMENTE:", {
-          experiencia: updatedVolunteerResult.rows[0].previous_experience,
-          disponibilidad: updatedVolunteerResult.rows[0].available_hours,
-          diasDisponibles: updatedVolunteerResult.rows[0].available_days,
-          areasInteres: updatedVolunteerResult.rows[0].interest_areas,
-          direccion: updatedVolunteerResult.rows[0].address,
-          contacto: updatedVolunteerResult.rows[0].emergency_contact,
-          telefono: updatedVolunteerResult.rows[0].emergency_phone
+        // Usamos el nuevo método que preserva los valores existentes
+        const updatedVolunteer = await updateCompleteProfile(volunteerIdToUpdate, {
+          experience: volunteerExperience,
+          availability: availability,
+          availableDays: availableDays,
+          interestAreas: interestAreas.length > 0 ? interestAreas : undefined,
+          address: address,
+          emergencyContact: emergencyContactName,
+          emergencyPhone: emergencyContactPhone,
+          preferredParkId: parsedParkId,
+          legalConsent: legalConsent === true
         });
         
-        res.json(updatedVolunteerResult.rows[0]);
+        if (!updatedVolunteer) {
+          return res.status(500).json({ message: "Error al actualizar el perfil del voluntario" });
+        }
+        
+        console.log("✅ PERFIL ACTUALIZADO EXITOSAMENTE CON PRESERVACIÓN:", {
+          experiencia: updatedVolunteer.previous_experience,
+          disponibilidad: updatedVolunteer.available_hours,
+          diasDisponibles: updatedVolunteer.available_days,
+          areasInteres: updatedVolunteer.interest_areas,
+          direccion: updatedVolunteer.address,
+          contacto: updatedVolunteer.emergency_contact,
+          telefono: updatedVolunteer.emergency_phone
+        });
+        
+        res.json(updatedVolunteer);
       } catch (updateError) {
         console.error("Error específico al actualizar el perfil:", updateError);
         res.status(500).json({ message: "Error al actualizar el perfil de voluntario" });
