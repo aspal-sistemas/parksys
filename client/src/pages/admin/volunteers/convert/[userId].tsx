@@ -437,7 +437,7 @@ const ConvertVolunteerPage = () => {
                           <SelectValue placeholder="Seleccionar parque" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Sin preferencia</SelectItem>
+                          <SelectItem value="none">Sin preferencia</SelectItem>
                           {parks.map((park: any) => (
                             <SelectItem key={park.id} value={park.id.toString()}>
                               {park.name}
