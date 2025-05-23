@@ -504,18 +504,20 @@ export default function PermissionsPage() {
             <CardContent>
               <Tabs defaultValue="admin" value={currentRoleTab} onValueChange={setCurrentRoleTab} className="w-full">
                 {/* Lista de roles en pestañas horizontales con mejor espaciado */}
-                <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 mb-12">
-                  {roles.map(role => (
-                    <TabsTrigger 
-                      key={role.id} 
-                      value={role.id}
-                      className="flex items-center justify-center py-2"
-                    >
-                      <span className={`w-2 h-2 rounded-full ${role.badge.color} mr-2`}></span>
-                      <span className="truncate">{role.displayName}</span>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+                <div className="bg-muted p-4 rounded-lg mb-12">
+                  <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                    {roles.map(role => (
+                      <TabsTrigger 
+                        key={role.id} 
+                        value={role.id}
+                        className="flex items-center justify-center py-2 bg-background"
+                      >
+                        <span className={`w-2 h-2 rounded-full ${role.badge.color} mr-2`}></span>
+                        <span className="truncate">{role.displayName}</span>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
 
                 {/* Contenido de cada pestaña de rol */}
                 {roles.map(role => (
