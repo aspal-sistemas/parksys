@@ -470,12 +470,29 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
                   preferredParkId: updateData.preferredParkId
                 });
                 
+                // Preparar las áreas de interés como un array JSON
+                const interestAreas = [];
+                if (updateData.interestNature) interestAreas.push('nature');
+                if (updateData.interestEvents) interestAreas.push('events');
+                if (updateData.interestEducation) interestAreas.push('education');
+                if (updateData.interestMaintenance) interestAreas.push('maintenance');
+                if (updateData.interestSports) interestAreas.push('sports');
+                if (updateData.interestCultural) interestAreas.push('cultural');
+                
+                // Convertir el array a string JSON para almacenamiento
+                const interestAreasJSON = interestAreas.length > 0 ? JSON.stringify(interestAreas) : null;
+
                 // Actualización mejorada con verificación de datos
                 await db.execute(
                     sql`UPDATE volunteers 
                         SET previous_experience = ${updateData.volunteerExperience || null},
+                            skills = ${updateData.skills || null},
                             available_hours = ${availableHours},
+                            available_days = ${updateData.availableDays || null},
+                            interest_areas = ${interestAreasJSON},
                             legal_consent = ${updateData.legalConsent === true},
+                            age_consent = ${updateData.ageConsent === true},
+                            conduct_consent = ${updateData.conductConsent === true},
                             preferred_park_id = ${updateData.preferredParkId || null},
                             address = ${updateData.address || null},
                             emergency_contact = ${updateData.emergencyContactName || null},
@@ -486,7 +503,10 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
                   
                 // Vamos a verificar que los datos se hayan guardado correctamente
                 const verifyResult = await db.execute(
-                    sql`SELECT address, emergency_contact, emergency_phone, preferred_park_id 
+                    sql`SELECT 
+                        address, emergency_contact, emergency_phone, preferred_park_id,
+                        previous_experience, skills, available_hours, available_days, interest_areas,
+                        legal_consent, age_consent, conduct_consent
                         FROM volunteers WHERE id = ${volunteerId}`
                 );
                 

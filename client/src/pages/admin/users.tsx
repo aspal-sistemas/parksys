@@ -181,11 +181,29 @@ const UserDetail: React.FC<{
             // Actualizamos el estado del formulario con los datos completos
             setUserData(prevData => ({
               ...prevData,
-              // Datos específicos del voluntario
+              // Datos específicos del voluntario - Información básica
               address: volunteerData.address || '',
               emergencyContactName: volunteerData.emergency_contact || '',
               emergencyContactPhone: volunteerData.emergency_phone || '',
-              preferredParkId: volunteerData.preferred_park_id || 3
+              preferredParkId: volunteerData.preferred_park_id || 3,
+              
+              // Experiencia y disponibilidad
+              volunteerExperience: volunteerData.previous_experience || '',
+              skills: volunteerData.skills || '',
+              availability: volunteerData.available_hours || 'flexible',
+              
+              // Áreas de interés (convertimos de array o JSON a booleanos individuales)
+              interestNature: volunteerData.interest_areas?.includes('nature') || false,
+              interestEvents: volunteerData.interest_areas?.includes('events') || false,
+              interestEducation: volunteerData.interest_areas?.includes('education') || false,
+              interestMaintenance: volunteerData.interest_areas?.includes('maintenance') || false,
+              interestSports: volunteerData.interest_areas?.includes('sports') || false,
+              interestCultural: volunteerData.interest_areas?.includes('cultural') || false,
+              
+              // Términos legales
+              legalConsent: volunteerData.legal_consent === true,
+              ageConsent: volunteerData.age_consent === true || false,
+              conductConsent: volunteerData.conduct_consent === true || false
             }));
           } else {
             console.error("Error al cargar datos de voluntario:", await response.text());
