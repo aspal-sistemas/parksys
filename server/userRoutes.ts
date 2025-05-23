@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { fromZodError } from 'zod-validation-error';
 import { db } from './db';
 import { sql } from 'drizzle-orm';
+import { syncInstructorProfileWithUser } from './syncInstructorProfile';
 
 // Esquema para validar la creación de un usuario
 const createUserSchema = z.object({
@@ -420,6 +421,19 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
       
       // Actualizar el usuario
       const updatedUser = await storage.updateUser(userId, userData);
+      
+      // Si el usuario tiene rol de instructor, sincronizar con la tabla de instructores
+      if (updatedUser.role === 'instructor') {
+        try {
+          // Sincronizamos los datos con el perfil de instructor
+          console.log(`⚙️ Sincronizando perfil de instructor para usuario ID: ${updatedUser.id}`);
+          const syncResult = await syncInstructorProfileWithUser(updatedUser.id);
+          console.log(`✅ Resultado de sincronización de instructor:`, syncResult);
+        } catch (error) {
+          console.error(`❌ Error al sincronizar perfil de instructor para usuario ID: ${updatedUser.id}:`, error);
+          // No interrumpimos el flujo principal si hay error en esto
+        }
+      }
       
       // Si el usuario tiene rol de voluntario, sincronizar con la tabla de voluntarios
       if (updatedUser.role === 'voluntario') {
