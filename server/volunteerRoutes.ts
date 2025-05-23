@@ -758,30 +758,39 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
   // Actualizar perfil completo de voluntario (para integrar con perfil de usuario)
   apiRouter.post("/volunteers/update-profile", async (req: Request, res: Response) => {
     try {
-      console.log("Actualizando perfil completo de voluntario:", req.body);
+      console.log("🔥 DEBUGGING COMPLETO - TODO EL OBJETO REQ.BODY:");
+      console.log(JSON.stringify(req.body, null, 2));
       
-      // SOLUCIÓN AL PROBLEMA: Intentar extraer habilidades de diferentes lugares del objeto
-      // El formulario frontend podría estar enviando los datos en diferentes formatos
-      let extractedSkills = req.body.skills;
+      console.log("🔥 TODAS LAS CLAVES DEL OBJETO:");
+      console.log(Object.keys(req.body));
       
-      // Si no encontramos en el lugar obvio, intentamos otras variantes
+      // BÚSQUEDA EXHAUSTIVA de cualquier campo que contenga skills/habilidades
+      let extractedSkills = undefined;
+      
+      // Primero intentamos la búsqueda directa
+      if (req.body.skills !== undefined) {
+        extractedSkills = req.body.skills;
+        console.log("✅ Skills encontrados directamente:", extractedSkills);
+      }
+      
+      // Si no encontramos directamente, buscamos en TODAS las claves
       if (extractedSkills === undefined) {
-        if (typeof req.body === 'object') {
-          // Buscar en todas las propiedades que podrían contener skills
-          const possibleKeys = ['skill', 'Skills', 'SKILLS', 'habilidades', 'Habilidades'];
+        for (const [key, value] of Object.entries(req.body)) {
+          console.log(`🔍 Examinando clave '${key}' con valor:`, value);
           
-          for (const key of Object.keys(req.body)) {
-            // Comparamos convirtiendo a minúsculas para una búsqueda insensible a mayúsculas/minúsculas
-            if (possibleKeys.includes(key) || key.toLowerCase().includes('skill') || key.toLowerCase().includes('habilidad')) {
-              extractedSkills = req.body[key];
-              console.log(`🔍 Encontradas habilidades en campo alternativo '${key}':`, extractedSkills);
-              break;
-            }
+          if (key.toLowerCase().includes('skill') || 
+              key.toLowerCase().includes('habilidad') ||
+              key === 'skill' || 
+              key === 'Skills' || 
+              key === 'SKILLS') {
+            extractedSkills = value;
+            console.log(`✅ Skills encontrados en clave '${key}':`, extractedSkills);
+            break;
           }
         }
       }
       
-      console.log("Skills finalmente extraídos:", extractedSkills);
+      console.log("🎯 SKILLS FINALES EXTRAÍDOS:", extractedSkills);
       
       const { 
         userId, 
