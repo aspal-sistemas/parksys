@@ -511,6 +511,41 @@ export default function PermissionsPage() {
     setIsEditing(true);
   };
 
+  // Función para otorgar todos los permisos a un rol específico
+  const grantAllPermissionsToRole = (roleId: string) => {
+    setRolePermissions(prev => {
+      const updatedPermissions = {...prev};
+      
+      // Recorrer todos los módulos
+      modules.forEach(module => {
+        if (!updatedPermissions[roleId]) {
+          updatedPermissions[roleId] = {};
+        }
+        
+        if (!updatedPermissions[roleId][module.id]) {
+          updatedPermissions[roleId][module.id] = {};
+        }
+        
+        // Recorrer todos los permisos del módulo
+        module.permissions.forEach(permission => {
+          updatedPermissions[roleId][module.id][permission.id] = {
+            view: true,
+            create: true,
+            edit: true,
+            delete: true
+          };
+        });
+      });
+      
+      return updatedPermissions;
+    });
+    
+    toast({
+      title: "Permisos actualizados",
+      description: `Se han otorgado todos los permisos al rol ${roles.find(r => r.id === roleId)?.displayName}.`,
+    });
+  };
+
   // Función para guardar los cambios
   const handleSave = () => {
     toast({
@@ -584,14 +619,27 @@ export default function PermissionsPage() {
 
                 {roles.map(role => (
                   <TabsContent key={role.id} value={role.id} className="space-y-4">
-                    <div className="flex items-center space-x-2 p-4 bg-muted rounded-lg">
-                      <div className={`w-8 h-8 rounded-full ${role.badge.color} ${role.badge.textColor} flex items-center justify-center font-bold text-xl`}>
-                        {role.displayName[0]}
+                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-8 h-8 rounded-full ${role.badge.color} ${role.badge.textColor} flex items-center justify-center font-bold text-xl`}>
+                          {role.displayName[0]}
+                        </div>
+                        <div>
+                          <h3 className="font-bold">{role.displayName}</h3>
+                          <p className="text-sm text-muted-foreground">{role.description}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-bold">{role.displayName}</h3>
-                        <p className="text-sm text-muted-foreground">{role.description}</p>
-                      </div>
+                      
+                      {/* Botón para asignar todos los permisos si el rol es administrador */}
+                      {role.id === 'admin' && isEditing && (
+                        <Button 
+                          onClick={() => grantAllPermissionsToRole(role.id)}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <ShieldCheck className="mr-2 h-4 w-4" />
+                          Otorgar Todos los Permisos
+                        </Button>
+                      )}
                     </div>
                     
                     <Tabs defaultValue="users" value={currentModuleTab} onValueChange={setCurrentModuleTab}>
