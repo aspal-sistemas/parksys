@@ -68,18 +68,57 @@ export async function updateVolunteerFieldsPreserving(
     
     // Formatear correctamente los arrays para PostgreSQL si se proporcionan
     if (fields.availableDays !== undefined) {
-      const formattedDays = Array.isArray(fields.availableDays) 
-        ? `{${fields.availableDays.join(',')}}` 
-        : (typeof fields.availableDays === 'string' ? fields.availableDays : null);
+      let formattedDays;
+      
+      if (Array.isArray(fields.availableDays)) {
+        // Si ya es un array, formateamos correctamente para PostgreSQL
+        formattedDays = `{${fields.availableDays.join(',')}}`;
+      } else if (typeof fields.availableDays === 'string') {
+        // Si es un string, necesitamos convertirlo a un formato de array PostgreSQL
+        if (fields.availableDays === 'weekdays') {
+          // Convertimos palabras clave comunes a arrays reales
+          formattedDays = '{monday,tuesday,wednesday,thursday,friday}';
+        } else if (fields.availableDays === 'weekends') {
+          formattedDays = '{saturday,sunday}';
+        } else if (fields.availableDays === 'all') {
+          formattedDays = '{monday,tuesday,wednesday,thursday,friday,saturday,sunday}';
+        } else if (fields.availableDays.startsWith('{') && fields.availableDays.endsWith('}')) {
+          // Si ya tiene formato de array PostgreSQL, lo usamos tal cual
+          formattedDays = fields.availableDays;
+        } else {
+          // Si es otro tipo de string, lo tratamos como un solo valor
+          formattedDays = `{${fields.availableDays}}`;
+        }
+      } else {
+        formattedDays = null;
+      }
+      
+      console.log(`📊 Formateando días disponibles: "${fields.availableDays}" -> "${formattedDays}"`);
       
       // @ts-ignore - Agregamos al objeto de campos
       updatedFields.available_days = formattedDays;
     }
     
     if (fields.interestAreas !== undefined) {
-      const formattedInterests = Array.isArray(fields.interestAreas) 
-        ? `{${fields.interestAreas.join(',')}}` 
-        : (typeof fields.interestAreas === 'string' ? fields.interestAreas : null);
+      let formattedInterests;
+      
+      if (Array.isArray(fields.interestAreas)) {
+        // Si ya es un array, formateamos correctamente para PostgreSQL
+        formattedInterests = `{${fields.interestAreas.join(',')}}`;
+      } else if (typeof fields.interestAreas === 'string') {
+        // Si es un string, necesitamos convertirlo a un formato de array PostgreSQL
+        if (fields.interestAreas.startsWith('{') && fields.interestAreas.endsWith('}')) {
+          // Si ya tiene formato de array PostgreSQL, lo usamos tal cual
+          formattedInterests = fields.interestAreas;
+        } else {
+          // Si es otro tipo de string, lo tratamos como un solo valor
+          formattedInterests = `{${fields.interestAreas}}`;
+        }
+      } else {
+        formattedInterests = null;
+      }
+      
+      console.log(`📊 Formateando áreas de interés: "${fields.interestAreas}" -> "${formattedInterests}"`);
       
       // @ts-ignore - Agregamos al objeto de campos
       updatedFields.interest_areas = formattedInterests;
