@@ -75,6 +75,11 @@ const NavItem: React.FC<NavItemProps> = ({
   children,
   active
 }) => {
+  // Clonamos el icono para aplicarle la clase de menú-ícono verde
+  const iconWithClass = React.cloneElement(icon as React.ReactElement, {
+    className: cn((icon as React.ReactElement).props.className, 'menu-icon')
+  });
+
   return (
     <Link href={href}>
       <Button 
@@ -84,7 +89,7 @@ const NavItem: React.FC<NavItemProps> = ({
           active && "bg-secondary" 
         )}
       >
-        {icon}
+        {iconWithClass}
         <span className="ml-2">{children}</span>
       </Button>
     </Link>
@@ -98,11 +103,16 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
   value,
   defaultOpen
 }) => {
+  // Clonamos el icono para aplicarle la clase de menú-ícono verde
+  const iconWithClass = React.cloneElement(icon as React.ReactElement, {
+    className: cn((icon as React.ReactElement).props.className, 'menu-icon')
+  });
+
   return (
     <AccordionItem value={value} className="border-0">
       <AccordionTrigger className="py-2 hover:no-underline">
         <div className="flex items-center text-sm font-medium">
-          <div className="mr-2">{icon}</div>
+          <div className="mr-2">{iconWithClass}</div>
           {title}
         </div>
       </AccordionTrigger>

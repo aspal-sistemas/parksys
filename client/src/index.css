@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .menu-icon {
+    @apply text-green-500;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
