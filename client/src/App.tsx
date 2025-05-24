@@ -194,6 +194,12 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/map-simple')))}
           </Suspense>
         </Route>
+        <Route path="/admin/assets/maintenance/calendar">
+          <Suspense fallback={<div className="p-8 text-center">Cargando calendario de mantenimiento...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/maintenance-calendar')))}
+          </Suspense>
+        </Route>
+        
         <Route path="/admin/assets/:id/location">
           <Suspense fallback={<div className="p-8 text-center">Cargando editor de ubicación...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/edit-location')))}
@@ -207,12 +213,6 @@ function Router() {
         <Route path="/admin/assets/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando detalles del activo...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/[id]')))}
-          </Suspense>
-        </Route>
-
-        <Route path="/admin/assets/maintenance/calendar">
-          <Suspense fallback={<div className="p-8 text-center">Cargando calendario de mantenimiento...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/assets/maintenance-calendar')))}
           </Suspense>
         </Route>
         
