@@ -15,8 +15,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ASSET_CONDITIONS, ASSET_STATUSES } from '@shared/asset-schema';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// Constantes de estado y condición para activos
+const ASSET_STATUSES = [
+  { value: 'active', label: 'Activo' },
+  { value: 'maintenance', label: 'En Mantenimiento' },
+  { value: 'retired', label: 'Retirado' },
+  { value: 'storage', label: 'En Almacén' }
+];
+
+const ASSET_CONDITIONS = [
+  { value: 'excellent', label: 'Excelente' },
+  { value: 'good', label: 'Bueno' },
+  { value: 'fair', label: 'Regular' },
+  { value: 'poor', label: 'Malo' },
+  { value: 'critical', label: 'Crítico' }
+];
 
 // Tipado para los datos
 interface Asset {
@@ -100,91 +115,19 @@ const AssetMap: React.FC = () => {
     setMapLoaded(true);
   }, []);
 
-  // Actualizar los marcadores cuando cambian los activos filtrados o el mapa
+  // Versión simplificada para mostrar activos en mapa estático
   useEffect(() => {
-    if (map && filteredAssets.length > 0 && categories) {
-      // Limpiar marcadores anteriores
-      markers.forEach(marker => marker.setMap(null));
-      
-      const newMarkers: google.maps.Marker[] = [];
-      const bounds = new window.google.maps.LatLngBounds();
-      
-      filteredAssets.forEach(asset => {
-        if (asset.latitude && asset.longitude) {
-          const position = { 
-            lat: parseFloat(asset.latitude), 
-            lng: parseFloat(asset.longitude) 
-          };
-          
-          // Buscar la categoría para obtener el color
-          const category = categories.find(cat => cat.id === asset.categoryId);
-          const color = category?.color || '#3B82F6';
-          
-          // Crear el marcador
-          const marker = new window.google.maps.Marker({
-            position,
-            map,
-            title: asset.name,
-            icon: {
-              path: window.google.maps.SymbolPath.CIRCLE,
-              fillColor: color,
-              fillOpacity: 0.8,
-              strokeWeight: 1,
-              strokeColor: '#FFFFFF',
-              scale: 10,
-            },
-          });
-          
-          // Agregar infowindow al hacer clic en el marcador
-          marker.addListener('click', () => {
-            if (infoWindow) {
-              infoWindow.setContent(`
-                <div style="padding: 10px; max-width: 250px;">
-                  <h3 style="margin-top: 0; font-weight: bold;">${asset.name}</h3>
-                  <p style="margin-bottom: 5px;"><strong>Categoría:</strong> ${category?.name || 'No disponible'}</p>
-                  <p style="margin-bottom: 5px;"><strong>Estado:</strong> ${ASSET_STATUSES.find(s => s.value === asset.status)?.label || asset.status}</p>
-                  <p style="margin-bottom: 5px;"><strong>Condición:</strong> ${ASSET_CONDITIONS.find(c => c.value === asset.condition)?.label || asset.condition}</p>
-                  ${asset.locationDescription ? `<p style="margin-bottom: 5px;"><strong>Ubicación:</strong> ${asset.locationDescription}</p>` : ''}
-                  <div style="margin-top: 10px;">
-                    <a href="/admin/assets/${asset.id}" style="color: #3B82F6; text-decoration: none;">Ver detalles</a>
-                  </div>
-                </div>
-              `);
-              infoWindow.open(map, marker);
-            }
-          });
-          
-          newMarkers.push(marker);
-          bounds.extend(position);
-        }
-      });
-      
-      setMarkers(newMarkers);
-      
-      // Ajustar el mapa para mostrar todos los marcadores si hay más de uno
-      if (newMarkers.length > 1) {
-        map.fitBounds(bounds);
-      } else if (newMarkers.length === 1) {
-        map.setCenter(newMarkers[0].getPosition()!);
-        map.setZoom(18); // Zoom cercano para un solo activo
-      }
-    }
-  }, [map, filteredAssets, categories, infoWindow]);
-
-  // Cuando se selecciona un parque, centrar el mapa en ese parque
+    console.log(`Mostrando ${filteredAssets.length} activos en el mapa`);
+    // Esta función ahora solo registra cambios pero no depende de la API de Google Maps
+    setMapLoaded(true);
+  }, [filteredAssets, categories]);
+  
+  // Esta función se usa cuando se selecciona un parque en la versión estática
   useEffect(() => {
-    if (map && parks && selectedPark !== 'all') {
-      const selectedParkData = parks.find(park => park.id === selectedPark);
-      if (selectedParkData?.latitude && selectedParkData?.longitude) {
-        const position = { 
-          lat: parseFloat(selectedParkData.latitude), 
-          lng: parseFloat(selectedParkData.longitude) 
-        };
-        map.setCenter(position);
-        map.setZoom(16); // Zoom adecuado para ver un parque
-      }
+    if (selectedPark !== 'all') {
+      console.log(`Parque seleccionado: ${selectedPark}`);
     }
-  }, [map, parks, selectedPark]);
+  }, [selectedPark, parks]);
 
   // Determinar si hay activos sin coordenadas de geolocalización
   const unlocatedAssets = assets?.filter(asset => !asset.latitude || !asset.longitude) || [];
