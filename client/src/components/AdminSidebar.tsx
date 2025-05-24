@@ -41,7 +41,10 @@ import {
   ListChecks,
   Clipboard,
   BadgeCheck,
-  LayoutGrid
+  LayoutGrid,
+  Flower2 as Flower,
+  FileEdit,
+  Scissors
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -347,6 +350,55 @@ const AdminSidebar: React.FC = () => {
               active={location.startsWith('/admin/assets/dashboard')}
             >
               Dashboard
+            </NavItem>
+          </ModuleNav>
+          
+          <ModuleNav 
+            title="Arbolado" 
+            icon={<Flower className="h-5 w-5" />}
+            value="trees"
+          >
+            <NavItem 
+              href="/admin/trees/catalog" 
+              icon={<ListChecks className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/catalog')}
+            >
+              Catálogo
+            </NavItem>
+            <NavItem 
+              href="/admin/trees/inventory" 
+              icon={<Package className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/inventory')}
+            >
+              Inventario
+            </NavItem>
+            <NavItem 
+              href="/admin/trees/map" 
+              icon={<Map className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/map')}
+            >
+              Mapa
+            </NavItem>
+            <NavItem 
+              href="/admin/trees/management" 
+              icon={<FileEdit className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/management')}
+            >
+              Gestión
+            </NavItem>
+            <NavItem 
+              href="/admin/trees/maintenance" 
+              icon={<Scissors className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/maintenance')}
+            >
+              Mantenimiento
+            </NavItem>
+            <NavItem 
+              href="/admin/trees/reports" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/reports')}
+            >
+              Reportes
             </NavItem>
           </ModuleNav>
           
