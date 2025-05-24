@@ -250,9 +250,18 @@ const AdminSidebar: React.FC = () => {
             <NavItem 
               href="/admin/parks" 
               icon={<Map className="h-5 w-5" />}
-              active={location.startsWith('/admin/parks') && !location.startsWith('/admin/parks-import')}
+              active={location.startsWith('/admin/parks') && 
+                    !location.startsWith('/admin/parks-import') && 
+                    !location.startsWith('/admin/park-edit')}
             >
               Parques
+            </NavItem>
+            <NavItem 
+              href="/admin/park-edit" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/park-edit')}
+            >
+              Edición de Parques
             </NavItem>
             <NavItem 
               href="/admin/parks-import" 
