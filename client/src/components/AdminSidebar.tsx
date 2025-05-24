@@ -163,9 +163,32 @@ const AdminSidebar: React.FC = () => {
             <NavItem 
               href="/admin/organizador" 
               icon={<ListFilter className="h-5 w-5" />}
-              active={location.startsWith('/admin/organizador')}
+              active={location.startsWith('/admin/organizador') && 
+                      !location.startsWith('/admin/organizador/nueva-actividad') && 
+                      !location.startsWith('/admin/organizador/catalogo')}
             >
               Organizador
+            </NavItem>
+            <NavItem 
+              href="/admin/organizador/nueva-actividad" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/organizador/nueva-actividad')}
+            >
+              Nueva Actividad
+            </NavItem>
+            <NavItem 
+              href="/admin/organizador/catalogo/ver" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/organizador/catalogo/ver')}
+            >
+              Catálogo de Actividades
+            </NavItem>
+            <NavItem 
+              href="/admin/organizador/catalogo/crear" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/organizador/catalogo/crear')}
+            >
+              Crear Actividad en Catálogo
             </NavItem>
           </ModuleNav>
         </Accordion>
