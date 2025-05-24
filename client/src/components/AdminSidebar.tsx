@@ -9,28 +9,11 @@ import {
   Bell, 
   Users, 
   Settings, 
-  LogOut,
-  Tag,
-  BarChart,
-  CheckSquare,
-  Building,
-  Wrench,
-  AlertTriangle,
-  School,
-  Shield,
-  User,
-  Database,
-  Layers
+  LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 
 interface NavItemProps {
   href: string;
@@ -83,11 +66,11 @@ const AdminSidebar: React.FC = () => {
           </NavItem>
           
           <NavItem 
-            href="/admin/parks" 
-            icon={<Map className="h-5 w-5" />}
-            active={location.startsWith('/admin/parks')}
+            href="/admin/users" 
+            icon={<Users className="h-5 w-5" />}
+            active={location.startsWith('/admin/users')}
           >
-            Parques
+            Usuarios
           </NavItem>
           
           <NavItem 
@@ -99,19 +82,11 @@ const AdminSidebar: React.FC = () => {
           </NavItem>
           
           <NavItem 
-            href="/admin/documents" 
+            href="/admin/assets" 
             icon={<FileText className="h-5 w-5" />}
-            active={location.startsWith('/admin/documents')}
+            active={location.startsWith('/admin/assets')}
           >
-            Documentos
-          </NavItem>
-          
-          <NavItem 
-            href="/admin/comments" 
-            icon={<MessageSquare className="h-5 w-5" />}
-            active={location.startsWith('/admin/comments')}
-          >
-            Comentarios
+            Activos
           </NavItem>
           
           <NavItem 
@@ -122,98 +97,29 @@ const AdminSidebar: React.FC = () => {
             Incidentes
           </NavItem>
           
-          {/* Dashboard de incidencias - Acceso directo destacado */}
           <NavItem 
             href="/admin/incidents/dashboard" 
-            icon={<BarChart className="h-5 w-5" />}
+            icon={<Bell className="h-5 w-5" />}
             active={location.startsWith('/admin/incidents/dashboard')}
           >
             Dashboard Incidencias
           </NavItem>
           
           <NavItem 
-            href="/admin/users" 
-            icon={<Users className="h-5 w-5" />}
-            active={location.startsWith('/admin/users') || location.startsWith('/admin/permissions')}
+            href="/admin/parks" 
+            icon={<Map className="h-5 w-5" />}
+            active={location.startsWith('/admin/parks')}
           >
-            Usuarios
-          </NavItem>
-          
-          <div className="pl-8 -mt-1">
-            <Link href="/admin/users">
-              <div className={`flex items-center pl-3 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                location === '/admin/users'
-                  ? 'bg-primary/20 text-primary' 
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-              }`}>
-                <span className={`mr-3 ${location === '/admin/users' ? 'text-primary' : 'text-gray-500'}`}>
-                  <User className="h-4 w-4" />
-                </span>
-                Lista de Usuarios
-              </div>
-            </Link>
-            <Link href="/admin/permissions">
-              <div className={`flex items-center pl-3 pr-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                location === '/admin/permissions'
-                  ? 'bg-primary/20 text-primary' 
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-              }`}>
-                <span className={`mr-3 ${location === '/admin/permissions' ? 'text-primary' : 'text-gray-500'}`}>
-                  <Shield className="h-4 w-4" />
-                </span>
-                Permisos de Roles
-              </div>
-            </Link>
-          </div>
-          
-          <NavItem 
-            href="/admin/amenities" 
-            icon={<Tag className="h-5 w-5" />}
-            active={location.startsWith('/admin/amenities')}
-          >
-            Amenidades
+            Parques
           </NavItem>
           
           <NavItem 
-            href="/admin/instructors" 
-            icon={<School className="h-5 w-5" />}
-            active={location.startsWith('/admin/instructors')}
+            href="/admin/comments" 
+            icon={<MessageSquare className="h-5 w-5" />}
+            active={location.startsWith('/admin/comments')}
           >
-            Instructores
+            Comentarios
           </NavItem>
-          
-          <NavItem 
-            href="/admin/evaluaciones" 
-            icon={<CheckSquare className="h-5 w-5" />}
-            active={location.startsWith('/admin/evaluaciones')}
-          >
-            Evaluaciones
-          </NavItem>
-          
-          <NavItem 
-            href="/admin/analytics" 
-            icon={<BarChart className="h-5 w-5" />}
-            active={location.startsWith('/admin/analytics')}
-          >
-            Análisis y Reportes
-          </NavItem>
-          
-          <NavItem 
-            href="/admin/assets" 
-            icon={<Layers className="h-5 w-5" />}
-            active={location.startsWith('/admin/assets')}
-          >
-            Activos
-          </NavItem>
-          
-          <NavItem 
-            href="/admin/volunteers" 
-            icon={<Users className="h-5 w-5" />}
-            active={location.startsWith('/admin/volunteers')}
-          >
-            Voluntarios
-          </NavItem>
-
         </nav>
       </ScrollArea>
       
