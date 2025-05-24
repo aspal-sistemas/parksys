@@ -909,6 +909,139 @@ export type InsertInstructorEvaluation = z.infer<typeof insertInstructorEvaluati
 export type InstructorRecognition = typeof instructorRecognitions.$inferSelect;
 export type InsertInstructorRecognition = z.infer<typeof insertInstructorRecognitionSchema>;
 
+// Módulo de Arbolado (Tree Management)
+export const treeSpecies = pgTable("tree_species", {
+  id: serial("id").primaryKey(),
+  commonName: text("common_name").notNull(),
+  scientificName: text("scientific_name").notNull(),
+  family: text("family"),
+  origin: text("origin"), // Nativo, Introducido, etc.
+  climateZone: text("climate_zone"),
+  growthRate: text("growth_rate"), // Lento, Medio, Rápido
+  heightMature: decimal("height_mature", { precision: 5, scale: 2 }), // altura máxima en metros
+  canopyDiameter: decimal("canopy_diameter", { precision: 5, scale: 2 }), // diámetro de copa en metros
+  lifespan: integer("lifespan"), // años aproximados
+  imageUrl: text("image_url"),
+  description: text("description"),
+  maintenanceRequirements: text("maintenance_requirements"),
+  waterRequirements: text("water_requirements"), // Bajo, Medio, Alto
+  sunRequirements: text("sun_requirements"), // Sombra, Parcial, Pleno sol
+  soilRequirements: text("soil_requirements"),
+  ecologicalBenefits: text("ecological_benefits"),
+  ornamentalValue: text("ornamental_value"), // Bajo, Medio, Alto
+  commonUses: text("common_uses"),
+  isEndangered: boolean("is_endangered").default(false),
+  iconColor: text("icon_color").default("#4CAF50"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const trees = pgTable("trees", {
+  id: serial("id").primaryKey(),
+  speciesId: integer("species_id").notNull(),
+  parkId: integer("park_id").notNull(),
+  identifier: text("identifier"), // Identificador único en el parque
+  plantingDate: date("planting_date"),
+  height: decimal("height", { precision: 4, scale: 2 }), // altura actual en metros
+  diameter: decimal("diameter", { precision: 4, scale: 2 }), // diámetro en centímetros
+  healthStatus: text("health_status").default("bueno"), // bueno, regular, malo, crítico
+  locationDescription: text("location_description"),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+  lastInspectionDate: date("last_inspection_date"),
+  notes: text("notes"),
+  imageUrl: text("image_url"),
+  isProtected: boolean("is_protected").default(false),
+  ageEstimate: integer("age_estimate"), // edad estimada en años
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const treeMaintenances = pgTable("tree_maintenances", {
+  id: serial("id").primaryKey(),
+  treeId: integer("tree_id").notNull(),
+  maintenanceType: text("maintenance_type").notNull(), // poda, riego, fertilización, tratamiento, etc.
+  maintenanceDate: date("maintenance_date").notNull(),
+  performedBy: text("performed_by"),
+  userId: integer("user_id"),
+  description: text("description"),
+  cost: decimal("cost", { precision: 8, scale: 2 }),
+  healthBeforeService: text("health_before_service"),
+  healthAfterService: text("health_after_service"),
+  imageUrl: text("image_url"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Insert schemas para árboles
+export const insertTreeSpeciesSchema = createInsertSchema(treeSpecies).omit({ 
+  id: true, 
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertTreeSchema = createInsertSchema(trees).omit({ 
+  id: true, 
+  createdAt: true,
+  updatedAt: true 
+});
+
+export const insertTreeMaintenanceSchema = createInsertSchema(treeMaintenances).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+// Tipos para módulo de árboles
+export type TreeSpecies = typeof treeSpecies.$inferSelect;
+export type InsertTreeSpecies = z.infer<typeof insertTreeSpeciesSchema>;
+
+export type Tree = typeof trees.$inferSelect;
+export type InsertTree = z.infer<typeof insertTreeSchema>;
+
+export type TreeMaintenance = typeof treeMaintenances.$inferSelect;
+export type InsertTreeMaintenance = z.infer<typeof insertTreeMaintenanceSchema>;
+
+// Relaciones para árboles
+export const treesRelations = relations(trees, ({ one, many }) => ({
+  species: one(treeSpecies, {
+    fields: [trees.speciesId],
+    references: [treeSpecies.id],
+  }),
+  park: one(parks, {
+    fields: [trees.parkId],
+    references: [parks.id],
+  }),
+  maintenances: many(treeMaintenances),
+}));
+
+export const treeMaintenancesRelations = relations(treeMaintenances, ({ one }) => ({
+  tree: one(trees, {
+    fields: [treeMaintenances.treeId],
+    references: [trees.id],
+  }),
+}));
+
+// Constantes para árboles
+export const TREE_HEALTH_STATUS = [
+  { value: "excelente", label: "Excelente" },
+  { value: "bueno", label: "Bueno" },
+  { value: "regular", label: "Regular" },
+  { value: "malo", label: "Malo" },
+  { value: "critico", label: "Crítico" },
+  { value: "muerto", label: "Muerto" },
+] as const;
+
+export const TREE_MAINTENANCE_TYPES = [
+  { value: "poda", label: "Poda" },
+  { value: "riego", label: "Riego" },
+  { value: "fertilizacion", label: "Fertilización" },
+  { value: "tratamiento_plagas", label: "Tratamiento de Plagas" },
+  { value: "tratamiento_enfermedades", label: "Tratamiento de Enfermedades" },
+  { value: "transplante", label: "Transplante" },
+  { value: "apuntalamiento", label: "Apuntalamiento" },
+  { value: "eliminacion", label: "Eliminación" },
+] as const;
+
 // Tipos extendidos para la interfaz
 export type ExtendedInstructor = Instructor & {
   assignments?: InstructorAssignment[];
@@ -926,4 +1059,11 @@ export type ExtendedPark = Park & {
   activities?: Activity[];
   comments?: Comment[];
   municipality?: Municipality;
+  trees?: Tree[];
+};
+
+export type ExtendedTree = Tree & {
+  species?: TreeSpecies;
+  maintenances?: TreeMaintenance[];
+  park?: Park;
 };
