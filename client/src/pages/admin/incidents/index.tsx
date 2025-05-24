@@ -330,56 +330,25 @@ const IncidentsPage = () => {
 
   return (
     <AdminLayout>
-      <script dangerouslySetInnerHTML={{ __html: `
-        // Insertar botón directamente en el DOM
-        document.addEventListener('DOMContentLoaded', function() {
-          const button = document.createElement('a');
-          button.href = '/admin/incidents/dashboard';
-          button.innerHTML = 'IR AL DASHBOARD DE INCIDENCIAS';
-          button.style.position = 'fixed';
-          button.style.top = '70px';
-          button.style.right = '20px';
-          button.style.zIndex = '9999';
-          button.style.background = 'red';
-          button.style.color = 'white';
-          button.style.padding = '15px 20px';
-          button.style.borderRadius = '8px';
-          button.style.textDecoration = 'none';
-          button.style.fontWeight = 'bold';
-          button.style.fontSize = '16px';
-          button.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
-          document.body.appendChild(button);
-        });
-      `}} />
-      <div style={{
-        margin: '20px 0',
-        padding: '20px',
-        background: 'red',
-        color: 'white',
-        border: '5px solid black',
-        borderRadius: '10px',
-        textAlign: 'center',
-        fontSize: '24px',
-        fontWeight: 'bold'
-      }}>
-        <a 
-          href="/admin/incidents/dashboard" 
-          style={{
-            display: 'block',
-            padding: '15px',
-            background: 'yellow',
-            color: 'black',
-            textDecoration: 'none',
-            borderRadius: '8px',
-            border: '3px solid black',
-            margin: '10px auto',
-            maxWidth: '500px',
-            fontSize: '24px',
-            fontWeight: 'bold'
-          }}
+      {/* Botones fijos en la parte superior derecha */}
+      <div className="fixed top-24 right-6 z-50 flex flex-col gap-3">
+        <Button 
+          variant="default" 
+          className="w-full bg-blue-600 hover:bg-blue-700 text-lg px-6 py-3 h-auto font-bold shadow-lg"
+          onClick={handleViewDashboard}
         >
-          ACCEDER AL DASHBOARD DE INCIDENCIAS
-        </a>
+          <BarChart className="h-5 w-5 mr-2" />
+          Dashboard
+        </Button>
+        
+        <Button 
+          variant="default" 
+          className="w-full bg-green-600 hover:bg-green-700 text-lg px-6 py-3 h-auto font-bold shadow-lg"
+          onClick={handleManageCategories}
+        >
+          <Bookmark className="h-5 w-5 mr-2" />
+          Categorías
+        </Button>
       </div>
       <div className="container mx-auto py-6">
         <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center mb-6">
@@ -414,20 +383,7 @@ const IncidentsPage = () => {
               Nueva Incidencia
             </Button>
             
-            <a href="/admin/incidents/dashboard" style={{
-              display: 'inline-block',
-              background: 'red',
-              color: 'white',
-              padding: '10px 20px',
-              borderRadius: '6px',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              marginLeft: '10px',
-              border: '2px solid black'
-            }}>
-              <BarChart style={{display: 'inline-block', marginRight: '8px', verticalAlign: 'middle'}} />
-              DASHBOARD
-            </a>
+            {/* Se eliminó el enlace duplicado para evitar elementos repetidos */}
           </div>
         </div>
         
