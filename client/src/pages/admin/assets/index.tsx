@@ -222,32 +222,33 @@ const AssetsPage: React.FC = () => {
         <meta name="description" content="Administra los activos físicos de los parques y espacios públicos." />
       </Helmet>
       
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestión de Activos</h1>
-          <p className="text-muted-foreground">
-            Administra el inventario de activos físicos de los parques y espacios públicos.
-          </p>
-        </div>
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              // Navegación forzada debido a problemas con el router
-              window.location.href = '/admin/assets/map';
-            }}
-          >
-            <MapPin className="mr-2 h-4 w-4" />
-            Ver Mapa
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              // Navegación forzada con ruta actualizada a la versión simple
-              window.location.href = '/admin/assets/maintenance/calendar';
-            }}
-          >
-            <Clock className="mr-2 h-4 w-4" />
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Gestión de Activos</h1>
+            <p className="text-muted-foreground">
+              Administra el inventario de activos físicos de los parques y espacios públicos.
+            </p>
+          </div>
+          <div className="flex space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                // Navegación forzada debido a problemas con el router
+                window.location.href = '/admin/assets/map';
+              }}
+            >
+              <MapPin className="mr-2 h-4 w-4" />
+              Ver Mapa
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                // Navegación forzada con ruta actualizada a la versión simple
+                window.location.href = '/admin/assets/maintenance/calendar';
+              }}
+            >
+              <Clock className="mr-2 h-4 w-4" />
             Calendario de Mantenimiento
           </Button>
           <Button 
