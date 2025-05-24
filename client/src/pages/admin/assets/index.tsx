@@ -249,42 +249,43 @@ const AssetsPage: React.FC = () => {
               }}
             >
               <Clock className="mr-2 h-4 w-4" />
-            Calendario de Mantenimiento
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              // Navegación para asignar responsables
-              window.location.href = '/admin/assets/assign-manager';
-            }}
-          >
-            <User className="mr-2 h-4 w-4" />
-            Asignar Responsable
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              // Navegación para reportar problemas
-              window.location.href = '/admin/assets/report-issue';
-            }}
-          >
-            <AlertTriangle className="mr-2 h-4 w-4" />
-            Reportar Problema
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              // Navegación para asignar equipamiento a instructores
-              window.location.href = '/admin/assets/assign-equipment';
-            }}
-          >
-            <Tag className="mr-2 h-4 w-4" />
-            Asignar a Instructor
-          </Button>
-          <Button onClick={handleAddAsset}>
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Activo
-          </Button>
+              Calendario de Mantenimiento
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                // Navegación para asignar responsables
+                window.location.href = '/admin/assets/assign-manager';
+              }}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Asignar Responsable
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                // Navegación para reportar problemas
+                window.location.href = '/admin/assets/report-issue';
+              }}
+            >
+              <AlertTriangle className="mr-2 h-4 w-4" />
+              Reportar Problema
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                // Navegación para asignar equipamiento a instructores
+                window.location.href = '/admin/assets/assign-equipment';
+              }}
+            >
+              <Tag className="mr-2 h-4 w-4" />
+              Asignar a Instructor
+            </Button>
+            <Button onClick={handleAddAsset}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Activo
+            </Button>
+          </div>
         </div>
       </div>
       
