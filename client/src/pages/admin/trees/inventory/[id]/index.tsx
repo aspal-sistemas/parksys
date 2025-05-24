@@ -8,6 +8,7 @@ import AdminLayout from '@/components/AdminLayout';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Sprout, TreeDeciduous, ThermometerSun, Tag } from 'lucide-react';
 import {
   Card,
   CardContent,
