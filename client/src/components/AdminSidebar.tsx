@@ -526,27 +526,9 @@ const AdminSidebar: React.FC = () => {
             >
               Gestión de Voluntarios
             </NavItem>
-            <NavItem 
-              href="/admin/volunteers/new" 
-              icon={<User className="h-5 w-5" />}
-              active={location === '/admin/volunteers/new'}
-            >
-              Nuevo Voluntario
-            </NavItem>
-            <NavItem 
-              href="/admin/volunteers/edit" 
-              icon={<FileText className="h-5 w-5" />}
-              active={location === '/admin/volunteers/edit'}
-            >
-              Editar Voluntario
-            </NavItem>
-            <NavItem 
-              href="/admin/volunteers/convert" 
-              icon={<Workflow className="h-5 w-5" />}
-              active={location.startsWith('/admin/volunteers/convert')}
-            >
-              Convertir Usuario
-            </NavItem>
+            {/* La opción de "Nuevo Voluntario" ha sido eliminada ya que ahora se gestiona desde el módulo de Usuarios */}
+            {/* La opción de "Editar Voluntario" ha sido eliminada ya que ahora se gestiona desde el módulo de Usuarios */}
+            {/* La opción de "Convertir Usuario" ha sido eliminada ya que ahora se gestiona desde el módulo de Usuarios */}
             <NavItem 
               href="/admin/volunteers/participations" 
               icon={<Calendar className="h-5 w-5" />}
