@@ -9,13 +9,14 @@ export async function getTreeDetails(req: Request, res: Response) {
   try {
     const treeId = Number(req.params.id);
     
-    // Consulta SQL directa para obtener los detalles del árbol con información relacionada
+    // Consulta SQL directa adaptada a la estructura real de la tabla trees
+    // basada en la información obtenida de information_schema
     const query = `
       SELECT 
         t.id, t.species_id, t.park_id, t.latitude, t.longitude,
         t.planting_date, t.height, t.trunk_diameter, t.health_status,
         t.condition, t.location_description, t.notes, t.created_at, t.updated_at,
-        t.last_maintenance_date,
+        t.last_maintenance_date, t.created_by,
         s.common_name, s.scientific_name, s.family, s.origin, s.image_url as species_image,
         p.name as park_name, p.address as park_address
       FROM 
@@ -37,9 +38,9 @@ export async function getTreeDetails(req: Request, res: Response) {
     const tree = result.rows[0];
     
     // Formatear el resultado para mantener la estructura esperada por el frontend
+    // Generamos un código virtual a partir del ID
     const formattedTree = {
       id: tree.id,
-      // Crear un código generado a partir del ID
       code: `ARB-${tree.id.toString().padStart(5, '0')}`,
       speciesId: tree.species_id,
       parkId: tree.park_id,
@@ -47,11 +48,12 @@ export async function getTreeDetails(req: Request, res: Response) {
       longitude: tree.longitude,
       plantingDate: tree.planting_date,
       height: tree.height,
-      diameter: tree.trunk_diameter,
+      diameter: tree.trunk_diameter, // Renombramos trunk_diameter a diameter para el frontend
       healthStatus: tree.health_status,
       condition: tree.condition,
       locationDescription: tree.location_description,
       lastMaintenanceDate: tree.last_maintenance_date,
+      createdBy: tree.created_by,
       notes: tree.notes,
       createdAt: tree.created_at,
       updatedAt: tree.updated_at,
