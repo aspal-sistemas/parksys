@@ -227,6 +227,7 @@ const AdminSidebar: React.FC = () => {
             >
               Gestión de Activos
             </NavItem>
+            {/* Submenú oculto: Nuevo Activo
             <NavItem 
               href="/admin/assets/new" 
               icon={<FileText className="h-5 w-5" />}
@@ -234,6 +235,7 @@ const AdminSidebar: React.FC = () => {
             >
               Nuevo Activo
             </NavItem>
+            */}
             <NavItem 
               href="/admin/assets/categories" 
               icon={<Tag className="h-5 w-5" />}
@@ -262,6 +264,7 @@ const AdminSidebar: React.FC = () => {
             >
               Mapa Simplificado
             </NavItem>
+            {/* Submenú oculto: Calendario de Mantenimiento
             <NavItem 
               href="/admin/assets/maintenance-calendar" 
               icon={<CalendarDays className="h-5 w-5" />}
@@ -269,6 +272,8 @@ const AdminSidebar: React.FC = () => {
             >
               Calendario de Mantenimiento
             </NavItem>
+            */}
+            {/* Submenú oculto: Programar Mantenimiento
             <NavItem 
               href="/admin/assets/schedule-maintenance" 
               icon={<Calendar className="h-5 w-5" />}
@@ -276,6 +281,8 @@ const AdminSidebar: React.FC = () => {
             >
               Programar Mantenimiento
             </NavItem>
+            */}
+            {/* Submenú oculto: Asignar Responsable
             <NavItem 
               href="/admin/assets/assign-manager" 
               icon={<User className="h-5 w-5" />}
@@ -283,6 +290,7 @@ const AdminSidebar: React.FC = () => {
             >
               Asignar Responsable
             </NavItem>
+            */}
             <NavItem 
               href="/admin/assets/assign-equipment" 
               icon={<Box className="h-5 w-5" />}
