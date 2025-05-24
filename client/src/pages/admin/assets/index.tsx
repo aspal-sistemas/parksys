@@ -242,7 +242,7 @@ const AssetsPage: React.FC = () => {
           <Button 
             variant="outline" 
             onClick={() => {
-              // Navegación forzada debido a problemas con el router
+              // Navegación forzada con ruta actualizada a la versión simple
               window.location.href = '/admin/assets/maintenance/calendar';
             }}
           >

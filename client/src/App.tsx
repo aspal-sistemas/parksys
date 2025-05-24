@@ -196,7 +196,7 @@ function Router() {
         </Route>
         <Route path="/admin/assets/maintenance/calendar">
           <Suspense fallback={<div className="p-8 text-center">Cargando calendario de mantenimiento...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/assets/maintenance-calendar')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/maintenance-calendar-simple')))}
           </Suspense>
         </Route>
         
