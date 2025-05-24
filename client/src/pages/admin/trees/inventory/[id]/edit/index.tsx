@@ -39,7 +39,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, MapPin, Ruler, ArrowLeft, Leaf, AlertTriangle } from 'lucide-react';
+import { Loader2, MapPin, Ruler, ArrowLeft, Leaf, AlertTriangle, TreeDeciduous } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -316,7 +316,7 @@ function EditTreePage() {
               <Skeleton className="h-8 w-64" />
             ) : (
               <h1 className="text-3xl font-bold text-green-800 flex items-center">
-                <Tree className="mr-2 h-8 w-8" />
+                <TreeDeciduous className="mr-2 h-8 w-8" />
                 Editar Árbol: {tree.code}
               </h1>
             )}
