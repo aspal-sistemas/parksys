@@ -374,14 +374,6 @@ function TreeInventoryPage() {
             <div className="flex justify-between items-center">
               <CardTitle>Listado de Árboles</CardTitle>
               <div className="flex items-center gap-3">
-                <Button 
-                  onClick={handleSeedTrees} 
-                  variant="outline"
-                  className="border-green-600 text-green-700 hover:bg-green-50"
-                  size="sm"
-                >
-                  <Sprout className="mr-2 h-4 w-4" /> Cargar 50 Árboles
-                </Button>
                 {treeInventory && (
                   <div className="text-sm text-gray-500">
                     Total: {treeInventory.total} árboles
