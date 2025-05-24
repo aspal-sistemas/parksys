@@ -129,7 +129,6 @@ function Router() {
           </Suspense>
         </Route>
         <Route path="/admin/volunteers" component={AdminVolunteers} />
-        <Route path="/admin/volunteers/new" component={AdminVolunteerNew} />
         <Route path="/admin/volunteers/participations" component={AdminVolunteerParticipations} />
         <Route path="/admin/volunteers/participations/:id" component={AdminParticipationEdit} />
         <Route path="/admin/volunteers/evaluations" component={AdminVolunteerEvaluations} />
@@ -150,12 +149,8 @@ function Router() {
           </Suspense>
         </Route>
         
-        {/* La ruta de registro público de voluntarios ha sido eliminada */}
-        <Route path="/admin/volunteers/:id">
-          <Suspense fallback={<div className="p-8 text-center">Cargando editor de voluntarios...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/edit')))}
-          </Suspense>
-        </Route>
+        {/* La ruta de registro y edición de voluntarios ha sido eliminada del módulo de Voluntarios
+             ya que ahora se gestiona desde el módulo de Usuarios */}
         
         {/* Rutas para el módulo de instructores */}
         <Route path="/admin/instructors/evaluations">
