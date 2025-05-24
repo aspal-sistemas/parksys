@@ -218,13 +218,27 @@ const AdminSidebar: React.FC = () => {
               Organizador
             </NavItem>
             
-            {/* Sección de Instructores */}
+            {/* Sección de Evaluaciones */}
+            <NavItem 
+              href="/admin/evaluaciones" 
+              icon={<BadgeCheck className="h-5 w-5" />}
+              active={location.startsWith('/admin/evaluaciones')}
+            >
+              Evaluaciones Generales
+            </NavItem>
+          </ModuleNav>
+          
+          <ModuleNav 
+            title="Instructores" 
+            icon={<GraduationCap className="h-5 w-5" />}
+            value="instructors"
+          >
             <NavItem 
               href="/admin/instructors" 
-              icon={<GraduationCap className="h-5 w-5" />}
+              icon={<Users className="h-5 w-5" />}
               active={location === '/admin/instructors'}
             >
-              Instructores
+              Listado de Instructores
             </NavItem>
             <NavItem 
               href="/admin/instructors/detail" 
@@ -240,21 +254,12 @@ const AdminSidebar: React.FC = () => {
             >
               Tarjetas de Instructores
             </NavItem>
-            
-            {/* Sección de Evaluaciones */}
             <NavItem 
               href="/admin/instructors/evaluations" 
               icon={<Clipboard className="h-5 w-5" />}
               active={location.startsWith('/admin/instructors/evaluations')}
             >
               Evaluaciones de Instructores
-            </NavItem>
-            <NavItem 
-              href="/admin/evaluaciones" 
-              icon={<BadgeCheck className="h-5 w-5" />}
-              active={location.startsWith('/admin/evaluaciones')}
-            >
-              Evaluaciones Generales
             </NavItem>
           </ModuleNav>
           
