@@ -172,13 +172,6 @@ const AdminSidebar: React.FC = () => {
           >
             {/* Sección de Gestión de Actividades */}
             <NavItem 
-              href="/admin/activities" 
-              icon={<Calendar className="h-5 w-5" />}
-              active={location.startsWith('/admin/activities') && !location.startsWith('/admin/activities/calendar')}
-            >
-              Listado de Actividades
-            </NavItem>
-            <NavItem 
               href="/admin/organizador/nueva-actividad" 
               icon={<Calendar className="h-5 w-5" />}
               active={location.startsWith('/admin/organizador/nueva-actividad')}
