@@ -221,7 +221,7 @@ const AdminSidebar: React.FC = () => {
             </NavItem>
             <NavItem 
               href="/admin/instructors/cards" 
-              icon={<Cards className="h-5 w-5" />}
+              icon={<LayoutGrid className="h-5 w-5" />}
               active={location.startsWith('/admin/instructors/cards')}
             >
               Tarjetas de Instructores
