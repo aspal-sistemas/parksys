@@ -229,7 +229,13 @@ const AssetsPage: React.FC = () => {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => setLocation('/admin/assets/map')}>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              // Navegación forzada debido a problemas con el router
+              window.location.href = '/admin/assets/map';
+            }}
+          >
             <MapPin className="mr-2 h-4 w-4" />
             Ver Mapa
           </Button>
