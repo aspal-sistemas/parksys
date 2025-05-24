@@ -218,6 +218,12 @@ function Router() {
           </Suspense>
         </Route>
         
+        <Route path="/admin/assets/assign-equipment">
+          <Suspense fallback={<div className="p-8 text-center">Cargando asignación de equipamiento...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/assign-equipment')))}
+          </Suspense>
+        </Route>
+        
         <Route path="/admin/assets/:id/location">
           <Suspense fallback={<div className="p-8 text-center">Cargando editor de ubicación...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/edit-location')))}

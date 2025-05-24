@@ -260,6 +260,26 @@ const AssetsPage: React.FC = () => {
             <User className="mr-2 h-4 w-4" />
             Asignar Responsable
           </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              // Navegación para reportar problemas
+              window.location.href = '/admin/assets/report-issue';
+            }}
+          >
+            <AlertTriangle className="mr-2 h-4 w-4" />
+            Reportar Problema
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              // Navegación para asignar equipamiento a instructores
+              window.location.href = '/admin/assets/assign-equipment';
+            }}
+          >
+            <Tag className="mr-2 h-4 w-4" />
+            Asignar a Instructor
+          </Button>
           <Button onClick={handleAddAsset}>
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Activo
