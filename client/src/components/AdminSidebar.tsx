@@ -352,6 +352,7 @@ const AdminSidebar: React.FC = () => {
             >
               Parques
             </NavItem>
+            {/* Submenú oculto: Edición de Parques
             <NavItem 
               href="/admin/park-edit" 
               icon={<FileText className="h-5 w-5" />}
@@ -359,6 +360,8 @@ const AdminSidebar: React.FC = () => {
             >
               Edición de Parques
             </NavItem>
+            */}
+            {/* Submenú oculto: Importar Parques
             <NavItem 
               href="/admin/parks-import" 
               icon={<Upload className="h-5 w-5" />}
@@ -366,6 +369,7 @@ const AdminSidebar: React.FC = () => {
             >
               Importar Parques
             </NavItem>
+            */}
             <NavItem 
               href="/admin/amenities" 
               icon={<Tag className="h-5 w-5" />}
