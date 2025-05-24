@@ -25,7 +25,12 @@ import {
   Wrench,
   CalendarDays,
   CircleDollarSign,
-  MapPin
+  MapPin,
+  GraduationCap,
+  Award,
+  Clipboard,
+  BadgeCheck,
+  LayoutGrid
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -199,6 +204,41 @@ const AdminSidebar: React.FC = () => {
               active={location.startsWith('/admin/organizador/catalogo/crear')}
             >
               Crear Actividad en Catálogo
+            </NavItem>
+            <NavItem 
+              href="/admin/instructors" 
+              icon={<GraduationCap className="h-5 w-5" />}
+              active={location === '/admin/instructors'}
+            >
+              Gestión de Instructores
+            </NavItem>
+            <NavItem 
+              href="/admin/instructors/detail" 
+              icon={<User className="h-5 w-5" />}
+              active={location.startsWith('/admin/instructors/detail')}
+            >
+              Detalle de Instructor
+            </NavItem>
+            <NavItem 
+              href="/admin/instructors/cards" 
+              icon={<Cards className="h-5 w-5" />}
+              active={location.startsWith('/admin/instructors/cards')}
+            >
+              Tarjetas de Instructores
+            </NavItem>
+            <NavItem 
+              href="/admin/instructors/evaluations" 
+              icon={<Clipboard className="h-5 w-5" />}
+              active={location.startsWith('/admin/instructors/evaluations')}
+            >
+              Evaluaciones de Instructores
+            </NavItem>
+            <NavItem 
+              href="/admin/evaluaciones" 
+              icon={<BadgeCheck className="h-5 w-5" />}
+              active={location.startsWith('/admin/evaluaciones')}
+            >
+              Evaluaciones Generales
             </NavItem>
           </ModuleNav>
           
