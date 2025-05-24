@@ -979,7 +979,74 @@ export const treeMaintenances = pgTable("tree_maintenances", {
   healthAfterService: text("health_after_service"),
   imageUrl: text("image_url"),
   notes: text("notes"),
+  priority: text("priority"), // alta, media, baja
+  isCompleted: boolean("is_completed").default(false),
+  scheduledDate: date("scheduled_date"), // Fecha programada para realizar el mantenimiento
+  completionDate: date("completion_date"), // Fecha real de finalización
   createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Tabla para evaluaciones de riesgo de árboles (TRAQ, QTRA)
+export const treeRiskAssessments = pgTable("tree_risk_assessments", {
+  id: serial("id").primaryKey(),
+  treeId: integer("tree_id").notNull(),
+  assessmentDate: date("assessment_date").notNull(),
+  methodology: text("methodology").notNull(), // TRAQ, QTRA, Otro
+  assessedBy: text("assessed_by").notNull(),
+  userId: integer("user_id"),
+  riskLevel: text("risk_level").notNull(), // Bajo, Moderado, Alto, Crítico
+  likelihoodOfFailure: text("likelihood_of_failure"), // Improbable, Posible, Probable, Inminente
+  consequenceOfFailure: text("consequence_of_failure"), // Insignificante, Menor, Significante, Severo
+  targetRating: text("target_rating"), // Ocasional, Frecuente, Constante
+  recommendedActions: text("recommended_actions"), 
+  timeframe: text("timeframe"), // Inmediato, Corto plazo, Mediano plazo, Largo plazo
+  attachments: text("attachments"), // URLs de documentos/imágenes
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Tabla para intervenciones de poda/manejo
+export const treeInterventions = pgTable("tree_interventions", {
+  id: serial("id").primaryKey(),
+  treeId: integer("tree_id").notNull(),
+  interventionType: text("intervention_type").notNull(), // Poda (sanitaria, estructural, despeje), Retiro, Tratamiento
+  subType: text("sub_type"), // Específico para cada tipo (e.g., poda sanitaria, retiro por riesgo)
+  priority: text("priority").notNull(), // Alta, Media, Baja
+  status: text("status").notNull(), // Pendiente, Programada, Completada, Cancelada
+  justification: text("justification").notNull(), // Razón para la intervención
+  plannedDate: date("planned_date"), // Fecha planeada para la intervención
+  completedDate: date("completed_date"), // Fecha real de finalización
+  performedBy: text("performed_by"), // Quién realizó la intervención
+  userId: integer("user_id"), // Usuario que registró o realizó la intervención
+  beforeImageUrl: text("before_image_url"), // Imagen antes de la intervención
+  afterImageUrl: text("after_image_url"), // Imagen después de la intervención
+  notes: text("notes"),
+  costEstimate: decimal("cost_estimate", { precision: 8, scale: 2 }),
+  actualCost: decimal("actual_cost", { precision: 8, scale: 2 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Tabla para servicios ambientales de los árboles
+export const treeEnvironmentalServices = pgTable("tree_environmental_services", {
+  id: serial("id").primaryKey(),
+  treeId: integer("tree_id").notNull(),
+  calculationDate: date("calculation_date").notNull(),
+  calculationMethod: text("calculation_method").notNull(), // Método utilizado para el cálculo
+  co2SequestrationAnnual: decimal("co2_sequestration_annual", { precision: 8, scale: 2 }), // kg/año
+  co2SequestrationLifetime: decimal("co2_sequestration_lifetime", { precision: 10, scale: 2 }), // kg total
+  pollutantRemovalNO2: decimal("pollutant_removal_no2", { precision: 8, scale: 2 }), // g/año
+  pollutantRemovalSO2: decimal("pollutant_removal_so2", { precision: 8, scale: 2 }), // g/año
+  pollutantRemovalPM25: decimal("pollutant_removal_pm25", { precision: 8, scale: 2 }), // g/año
+  stormwaterInterception: decimal("stormwater_interception", { precision: 8, scale: 2 }), // litros/año
+  shadeAreaSummer: decimal("shade_area_summer", { precision: 8, scale: 2 }), // m²
+  temperatureReduction: decimal("temperature_reduction", { precision: 4, scale: 2 }), // °C
+  energySavingsValue: decimal("energy_savings_value", { precision: 8, scale: 2 }), // $/año
+  totalEconomicBenefitAnnual: decimal("total_economic_benefit_annual", { precision: 8, scale: 2 }), // $/año
+  totalEconomicBenefitLifetime: decimal("total_economic_benefit_lifetime", { precision: 10, scale: 2 }), // $ total
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 // Insert schemas para árboles
@@ -1000,6 +1067,23 @@ export const insertTreeMaintenanceSchema = createInsertSchema(treeMaintenances).
   createdAt: true 
 });
 
+export const insertTreeRiskAssessmentSchema = createInsertSchema(treeRiskAssessments).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export const insertTreeInterventionSchema = createInsertSchema(treeInterventions).omit({ 
+  id: true, 
+  createdAt: true,
+  updatedAt: true 
+});
+
+export const insertTreeEnvironmentalServiceSchema = createInsertSchema(treeEnvironmentalServices).omit({ 
+  id: true, 
+  createdAt: true,
+  updatedAt: true 
+});
+
 // Tipos para módulo de árboles
 export type TreeSpecies = typeof treeSpecies.$inferSelect;
 export type InsertTreeSpecies = z.infer<typeof insertTreeSpeciesSchema>;
@@ -1009,6 +1093,15 @@ export type InsertTree = z.infer<typeof insertTreeSchema>;
 
 export type TreeMaintenance = typeof treeMaintenances.$inferSelect;
 export type InsertTreeMaintenance = z.infer<typeof insertTreeMaintenanceSchema>;
+
+export type TreeRiskAssessment = typeof treeRiskAssessments.$inferSelect;
+export type InsertTreeRiskAssessment = z.infer<typeof insertTreeRiskAssessmentSchema>;
+
+export type TreeIntervention = typeof treeInterventions.$inferSelect;
+export type InsertTreeIntervention = z.infer<typeof insertTreeInterventionSchema>;
+
+export type TreeEnvironmentalService = typeof treeEnvironmentalServices.$inferSelect;
+export type InsertTreeEnvironmentalService = z.infer<typeof insertTreeEnvironmentalServiceSchema>;
 
 // Relaciones para árboles
 export const treesRelations = relations(trees, ({ one, many }) => ({
@@ -1021,11 +1114,35 @@ export const treesRelations = relations(trees, ({ one, many }) => ({
     references: [parks.id],
   }),
   maintenances: many(treeMaintenances),
+  riskAssessments: many(treeRiskAssessments),
+  interventions: many(treeInterventions),
+  environmentalServices: many(treeEnvironmentalServices),
 }));
 
 export const treeMaintenancesRelations = relations(treeMaintenances, ({ one }) => ({
   tree: one(trees, {
     fields: [treeMaintenances.treeId],
+    references: [trees.id],
+  }),
+}));
+
+export const treeRiskAssessmentsRelations = relations(treeRiskAssessments, ({ one }) => ({
+  tree: one(trees, {
+    fields: [treeRiskAssessments.treeId],
+    references: [trees.id],
+  }),
+}));
+
+export const treeInterventionsRelations = relations(treeInterventions, ({ one }) => ({
+  tree: one(trees, {
+    fields: [treeInterventions.treeId],
+    references: [trees.id],
+  }),
+}));
+
+export const treeEnvironmentalServicesRelations = relations(treeEnvironmentalServices, ({ one }) => ({
+  tree: one(trees, {
+    fields: [treeEnvironmentalServices.treeId],
     references: [trees.id],
   }),
 }));
@@ -1041,14 +1158,84 @@ export const TREE_HEALTH_STATUS = [
 ] as const;
 
 export const TREE_MAINTENANCE_TYPES = [
-  { value: "poda", label: "Poda" },
+  { value: "poda_sanitaria", label: "Poda Sanitaria" },
+  { value: "poda_estructural", label: "Poda Estructural" },
+  { value: "poda_despeje", label: "Poda de Despeje" },
   { value: "riego", label: "Riego" },
   { value: "fertilizacion", label: "Fertilización" },
   { value: "tratamiento_plagas", label: "Tratamiento de Plagas" },
   { value: "tratamiento_enfermedades", label: "Tratamiento de Enfermedades" },
+  { value: "tratamiento_fitosanitario", label: "Tratamiento Fitosanitario" },
+  { value: "endoterapia", label: "Endoterapia" },
   { value: "transplante", label: "Transplante" },
   { value: "apuntalamiento", label: "Apuntalamiento" },
+  { value: "sustitucion", label: "Sustitución" },
+  { value: "reforestacion", label: "Reforestación" },
   { value: "eliminacion", label: "Eliminación" },
+] as const;
+
+export const TREE_RISK_LEVELS = [
+  { value: "bajo", label: "Bajo" },
+  { value: "moderado", label: "Moderado" },
+  { value: "alto", label: "Alto" },
+  { value: "critico", label: "Crítico" },
+] as const;
+
+export const TREE_RISK_METHODOLOGIES = [
+  { value: "traq", label: "TRAQ" },
+  { value: "qtra", label: "QTRA" },
+  { value: "simple", label: "Evaluación Simple" },
+  { value: "otro", label: "Otro" },
+] as const;
+
+export const TREE_INTERVENTION_TYPES = [
+  { value: "poda", label: "Poda" },
+  { value: "retiro", label: "Retiro" },
+  { value: "tratamiento", label: "Tratamiento" },
+  { value: "sustitucion", label: "Sustitución" },
+  { value: "reforestacion", label: "Reforestación" },
+] as const;
+
+export const TREE_INTERVENTION_SUBTYPES = [
+  // Poda
+  { value: "poda_sanitaria", label: "Poda Sanitaria", parentType: "poda" },
+  { value: "poda_estructural", label: "Poda Estructural", parentType: "poda" },
+  { value: "poda_despeje", label: "Poda de Despeje", parentType: "poda" },
+  { value: "poda_reduccion", label: "Poda de Reducción", parentType: "poda" },
+  { value: "poda_estetica", label: "Poda Estética", parentType: "poda" },
+  
+  // Retiro
+  { value: "retiro_riesgo", label: "Retiro por Riesgo", parentType: "retiro" },
+  { value: "retiro_muerte", label: "Retiro por Muerte", parentType: "retiro" },
+  { value: "retiro_interferencia", label: "Retiro por Interferencia", parentType: "retiro" },
+  { value: "retiro_enfermedad", label: "Retiro por Enfermedad", parentType: "retiro" },
+  
+  // Tratamiento
+  { value: "tratamiento_fitosanitario", label: "Tratamiento Fitosanitario", parentType: "tratamiento" },
+  { value: "endoterapia", label: "Endoterapia", parentType: "tratamiento" },
+  { value: "tratamiento_heridas", label: "Tratamiento de Heridas", parentType: "tratamiento" },
+  { value: "tratamiento_suelo", label: "Tratamiento de Suelo", parentType: "tratamiento" },
+] as const;
+
+export const TREE_INTERVENTION_PRIORITIES = [
+  { value: "baja", label: "Baja" },
+  { value: "media", label: "Media" },
+  { value: "alta", label: "Alta" },
+  { value: "urgente", label: "Urgente" },
+] as const;
+
+export const TREE_INTERVENTION_STATUS = [
+  { value: "pendiente", label: "Pendiente" },
+  { value: "programada", label: "Programada" },
+  { value: "en_proceso", label: "En Proceso" },
+  { value: "completada", label: "Completada" },
+  { value: "cancelada", label: "Cancelada" },
+] as const;
+
+export const TREE_CALCULATION_METHODS = [
+  { value: "formula_basica", label: "Fórmula Básica" },
+  { value: "itree", label: "i-Tree" },
+  { value: "otro", label: "Otro" },
 ] as const;
 
 // Tipos extendidos para la interfaz
@@ -1074,5 +1261,14 @@ export type ExtendedPark = Park & {
 export type ExtendedTree = Tree & {
   species?: TreeSpecies;
   maintenances?: TreeMaintenance[];
+  riskAssessments?: TreeRiskAssessment[];
+  interventions?: TreeIntervention[];
+  environmentalServices?: TreeEnvironmentalService[];
   park?: Park;
+  // Campos calculados
+  lastAssessment?: TreeRiskAssessment;
+  lastIntervention?: TreeIntervention;
+  latestEnvironmentalCalc?: TreeEnvironmentalService;
+  pendingInterventions?: number;
+  highRiskCount?: number;
 };

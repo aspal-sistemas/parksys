@@ -318,6 +318,20 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/trees/inventory/[id]/edit/index')))}
           </Suspense>
         </Route>
+
+        {/* Rutas para Gestión Técnica de Árboles */}
+        <Route path="/admin/trees/technical">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión técnica de árboles...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/technical/index')))}
+          </Suspense>
+        </Route>
+
+        {/* Rutas para Gestión Ambiental de Árboles */}
+        <Route path="/admin/trees/environmental">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión ambiental de árboles...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/environmental/index')))}
+          </Suspense>
+        </Route>
         
         <Route component={NotFound} />
       </Switch>

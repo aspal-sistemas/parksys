@@ -17,7 +17,7 @@ import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { sql } from 'drizzle-orm';
 import { getTreeInventory } from './tree_inventory_raw';
-import { getTreeDetails } from './tree_details_route';
+// No necesitamos importar nada de tree_details_route aquí
 
 /**
  * Registra las rutas relacionadas con el módulo de arbolado
@@ -150,7 +150,53 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   apiRouter.get("/trees", getTreeInventory);
   
   // Ruta para obtener detalles de un árbol específico
-  apiRouter.get("/trees/:id", getTreeDetails);
+  apiRouter.get("/trees/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      // Obtener el árbol con su especie y parque
+      const [tree] = await db
+        .select()
+        .from(trees)
+        .where(eq(trees.id, Number(id)));
+      
+      if (!tree) {
+        return res.status(404).json({ error: "Árbol no encontrado" });
+      }
+      
+      // Obtener la especie del árbol
+      const [species] = await db
+        .select()
+        .from(treeSpecies)
+        .where(eq(treeSpecies.id, tree.speciesId));
+      
+      // Obtener el parque del árbol
+      const [park] = await db
+        .select()
+        .from(parks)
+        .where(eq(parks.id, tree.parkId));
+      
+      // Obtener los mantenimientos del árbol
+      const maintenances = await db
+        .select()
+        .from(treeMaintenances)
+        .where(eq(treeMaintenances.treeId, tree.id))
+        .orderBy(desc(treeMaintenances.maintenanceDate));
+      
+      // Construir la respuesta completa
+      const treeDetails = {
+        ...tree,
+        species,
+        park,
+        maintenances
+      };
+      
+      res.json({ data: treeDetails });
+    } catch (error) {
+      console.error("Error fetching tree details:", error);
+      res.status(500).json({ error: "Error al obtener detalles del árbol" });
+    }
+  });
   
   // Desactivar la ruta en tree_inventory_routes.ts que causa conflicto
   // Ya estamos usando getTreeDetails que es una implementación compatible con la estructura real

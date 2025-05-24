@@ -20,6 +20,7 @@ import { registerTreeRoutes } from "./tree_routes";
 // Comentamos la importación de tree_inventory_routes para evitar conflictos de rutas
 // import { registerTreeInventoryRoutes } from "./tree_inventory_routes";
 import { registerTreeStatsRoutes } from "./tree_stats_routes";
+import { registerTreeDetailsRoutes } from "./tree_details_route";
 import { activityRouter } from "./activityRoutes";
 import directRouter from "./directRoutes";
 import { 
@@ -106,6 +107,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas de estadísticas de árboles
   registerTreeStatsRoutes(app, apiRouter);
+  
+  // Registramos las rutas de gestión técnica y ambiental de árboles
+  registerTreeDetailsRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de usuarios
   registerUserRoutes(app, apiRouter);
