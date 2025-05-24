@@ -291,6 +291,7 @@ const AdminSidebar: React.FC = () => {
               Asignar Responsable
             </NavItem>
             */}
+            {/* Submenú oculto: Asignar Equipamiento
             <NavItem 
               href="/admin/assets/assign-equipment" 
               icon={<Box className="h-5 w-5" />}
@@ -298,6 +299,7 @@ const AdminSidebar: React.FC = () => {
             >
               Asignar Equipamiento
             </NavItem>
+            */}
             <NavItem 
               href="/admin/assets/report-issue" 
               icon={<Bell className="h-5 w-5" />}
