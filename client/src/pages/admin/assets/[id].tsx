@@ -467,7 +467,10 @@ const AssetDetailPage: React.FC = () => {
             <Wrench className="mr-2 h-4 w-4" />
             Registrar Mantenimiento
           </Button>
-          <Button onClick={openEditDialog} variant="outline">
+          <Button 
+            onClick={() => window.location.href = `/admin/assets/${id}/edit`} 
+            variant="outline"
+          >
             <Edit className="mr-2 h-4 w-4" />
             Editar
           </Button>

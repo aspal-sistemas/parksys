@@ -82,7 +82,12 @@ const EditLocationPage = () => {
   // Mutación para actualizar la ubicación
   const updateMutation = useMutation({
     mutationFn: (data: LocationFormValues) => {
+      // Obtener el activo actual para mantener otros campos
+      const currentAsset = asset || {};
+      
+      // Crear objeto de actualización manteniendo campos existentes
       return apiRequest(`/api/assets/${id}`, 'PUT', {
+        ...currentAsset,
         latitude: data.latitude,
         longitude: data.longitude,
         location: data.location,
