@@ -284,6 +284,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/trees/catalog/[id]/edit/index')))}
           </Suspense>
         </Route>
+        <Route path="/admin/trees/dashboard">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de arbolado...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/dashboard/index')))}
+          </Suspense>
+        </Route>
 
         {/* Rutas del Inventario de Árboles */}
         <Route path="/admin/trees/inventory">

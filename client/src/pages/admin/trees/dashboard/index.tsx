@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { useQuery } from '@tanstack/react-query';
-import { Sprout, Activity, Park, AlertTriangle, Loader2 } from 'lucide-react';
+import { Sprout, Activity, TreeDeciduous, AlertTriangle, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -139,7 +139,7 @@ const TreesDashboardPage = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Mantenimiento Pendiente</CardTitle>
-                  <Park className="h-4 w-4 text-amber-600" />
+                  <TreeDeciduous className="h-4 w-4 text-amber-600" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.maintenancePending}</div>
