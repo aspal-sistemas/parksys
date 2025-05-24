@@ -42,7 +42,7 @@ import {
   Clipboard,
   BadgeCheck,
   LayoutGrid,
-  Leaf,
+  Flower2,
   FileEdit,
   Scissors
 } from 'lucide-react';
@@ -355,7 +355,7 @@ const AdminSidebar: React.FC = () => {
           
           <ModuleNav 
             title="Arbolado" 
-            icon={<DollarSign className="h-5 w-5" />}
+            icon={<Flower2 className="h-5 w-5" />}
             value="trees"
           >
             <NavItem 
