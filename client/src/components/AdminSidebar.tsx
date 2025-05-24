@@ -224,9 +224,25 @@ const AdminSidebar: React.FC = () => {
             <NavItem 
               href="/admin/incidents" 
               icon={<Bell className="h-5 w-5" />}
-              active={location.startsWith('/admin/incidents')}
+              active={location === '/admin/incidents' || (location.startsWith('/admin/incidents/') && location.includes('/admin/incidents/[id]'))}
             >
-              Incidencias
+              Gestión de Incidencias
+            </NavItem>
+            <NavItem 
+              href="/admin/incidents/categories" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location.startsWith('/admin/incidents/categories')}
+            >
+              Categorías de Incidencias
+            </NavItem>
+            <NavItem 
+              href="/admin/incidents/dashboard" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location.startsWith('/admin/incidents/dashboard') || 
+                     location.startsWith('/admin/dashboard-incidencias') || 
+                     location.startsWith('/admin/incidentes-dashboard')}
+            >
+              Dashboard de Incidencias
             </NavItem>
           </ModuleNav>
         </Accordion>
