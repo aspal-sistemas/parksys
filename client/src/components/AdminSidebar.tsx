@@ -44,7 +44,9 @@ import {
   LayoutGrid,
   Flower2,
   FileEdit,
-  Scissors
+  Scissors,
+  AlertTriangle,
+  Leaf
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -380,11 +382,18 @@ const AdminSidebar: React.FC = () => {
               Mapa
             </NavItem>
             <NavItem 
-              href="/admin/trees/management" 
-              icon={<FileEdit className="h-5 w-5" />}
-              active={location.startsWith('/admin/trees/management')}
+              href="/admin/trees/technical" 
+              icon={<AlertTriangle className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/technical')}
             >
-              Gestión
+              Gestión Técnica
+            </NavItem>
+            <NavItem 
+              href="/admin/trees/environmental" 
+              icon={<Leaf className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/environmental')}
+            >
+              Gestión Ambiental
             </NavItem>
             <NavItem 
               href="/admin/trees/maintenance" 

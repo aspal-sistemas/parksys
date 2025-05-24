@@ -53,17 +53,21 @@ import { toast } from "@/hooks/use-toast";
 // Tipo para los árboles, incluyendo sus evaluaciones de riesgo e intervenciones
 type Tree = {
   id: number;
-  code: string;
-  speciesId: number;
-  parkId: number;
+  species_id: number;
+  park_id: number;
   latitude: string;
   longitude: string;
-  healthStatus: string;
+  height: number;
+  trunk_diameter: number;
+  health_status: string;
+  condition: string;
+  location_description?: string;
+  notes?: string;
   species?: {
     id: number;
-    commonName: string;
-    scientificName: string;
-    imageUrl?: string;
+    common_name: string;
+    scientific_name: string;
+    image_url?: string;
   };
   park?: {
     id: number;
@@ -281,11 +285,11 @@ export default function TreeTechnicalManagement() {
   // Filtrar árboles según los criterios
   const filteredTrees = trees?.data?.filter((tree) => {
     const matchesSearch = 
-      tree.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tree.species?.commonName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tree.id.toString().includes(searchTerm.toLowerCase()) ||
+      tree.species?.common_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tree.park?.name?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesPark = parkFilter ? tree.parkId === parseInt(parkFilter) : true;
+    const matchesPark = parkFilter ? tree.park_id === parseInt(parkFilter) : true;
     const matchesRiskLevel = riskLevelFilter ? 
       (tree.lastRiskAssessment?.riskLevel === riskLevelFilter) : true;
     
