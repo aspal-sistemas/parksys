@@ -378,13 +378,21 @@ const IncidentsPage = () => {
           </div>
         </div>
         
-        <Tabs defaultValue="all">
-          <TabsList className="mb-4">
-            <TabsTrigger value="all">Todas</TabsTrigger>
-            <TabsTrigger value="pending">Pendientes</TabsTrigger>
-            <TabsTrigger value="in_progress">En Proceso</TabsTrigger>
-            <TabsTrigger value="resolved">Resueltas</TabsTrigger>
-          </TabsList>
+        <div className="flex items-center justify-between mb-4">
+          <Tabs defaultValue="all" className="flex-1">
+            <TabsList>
+              <TabsTrigger value="all">Todas</TabsTrigger>
+              <TabsTrigger value="pending">Pendientes</TabsTrigger>
+              <TabsTrigger value="in_progress">En Proceso</TabsTrigger>
+              <TabsTrigger value="resolved">Resueltas</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          
+          <a href="/admin/incidents/dashboard" className="inline-flex items-center px-4 py-2 ml-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 no-underline">
+            <BarChart className="h-4 w-4 mr-2" />
+            Ver Dashboard
+          </a>
+        </div>
           
           <TabsContent value="all" className="space-y-4">
             <Card>
