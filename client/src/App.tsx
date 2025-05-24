@@ -194,6 +194,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/map-simple')))}
           </Suspense>
         </Route>
+        <Route path="/admin/assets/:id/location">
+          <Suspense fallback={<div className="p-8 text-center">Cargando editor de ubicación...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/edit-location')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/assets/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando detalles del activo...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/[id]')))}

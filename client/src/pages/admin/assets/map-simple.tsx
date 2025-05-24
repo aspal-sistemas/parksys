@@ -407,13 +407,8 @@ const AssetMapPage: React.FC = () => {
                       size="sm" 
                       className="w-full bg-blue-600" 
                       onClick={() => {
-                        // Usar coordenadas de ejemplo para la Ciudad de México si no hay coordenadas
-                        const defaultLat = "19.432608";
-                        const defaultLng = "-99.133209";
-                        
-                        // Formar URL con parámetros para mostrar ejemplos en la página de edición
-                        const editUrl = `/admin/assets/${selectedAsset.id}?mode=edit&lat=${selectedAsset.latitude || defaultLat}&lng=${selectedAsset.longitude || defaultLng}`;
-                        window.location.href = editUrl;
+                        // Redirigir a la página especializada para editar coordenadas
+                        window.location.href = `/admin/assets/${selectedAsset.id}/location`;
                       }}
                     >
                       Editar Coordenadas
