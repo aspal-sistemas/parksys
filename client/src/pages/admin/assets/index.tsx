@@ -9,7 +9,8 @@ import {
   Tag,
   Clock,
   AlertTriangle,
-  MapPin
+  MapPin,
+  User
 } from 'lucide-react';
 
 import AdminLayout from '@/components/AdminLayout';
@@ -248,6 +249,16 @@ const AssetsPage: React.FC = () => {
           >
             <Clock className="mr-2 h-4 w-4" />
             Calendario de Mantenimiento
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              // Navegación para asignar responsables
+              window.location.href = '/admin/assets/assign-manager';
+            }}
+          >
+            <User className="mr-2 h-4 w-4" />
+            Asignar Responsable
           </Button>
           <Button onClick={handleAddAsset}>
             <Plus className="mr-2 h-4 w-4" />

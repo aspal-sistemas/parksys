@@ -206,6 +206,18 @@ function Router() {
           </Suspense>
         </Route>
         
+        <Route path="/admin/assets/assign-manager">
+          <Suspense fallback={<div className="p-8 text-center">Cargando asignación de responsable...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/assign-manager')))}
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin/assets/report-issue">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de reporte...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/report-issue')))}
+          </Suspense>
+        </Route>
+        
         <Route path="/admin/assets/:id/location">
           <Suspense fallback={<div className="p-8 text-center">Cargando editor de ubicación...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/edit-location')))}
