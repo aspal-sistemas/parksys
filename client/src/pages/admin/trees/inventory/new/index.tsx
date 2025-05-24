@@ -39,7 +39,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, MapPin, Ruler, ArrowLeft, Sprout } from 'lucide-react';
+import { Loader2, MapPin, Ruler, ArrowLeft, Sprout, TreeDeciduous } from 'lucide-react';
 
 // Esquema de validación para el formulario
 const treeSchema = z.object({
@@ -233,7 +233,7 @@ function NewTreePage() {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-green-800 flex items-center">
-              <Tree className="mr-2 h-8 w-8" />
+              <TreeDeciduous className="mr-2 h-8 w-8" />
               Agregar Árbol al Inventario
             </h1>
             <p className="text-gray-600 mt-1">

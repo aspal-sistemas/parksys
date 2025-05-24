@@ -45,7 +45,7 @@ import {
   Filter, 
   MapPin, 
   Eye, 
-  Tree, 
+  TreeDeciduous, 
   CircleCheck, 
   CircleAlert, 
   Info 
@@ -229,7 +229,7 @@ function TreeInventoryPage() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-green-800 flex items-center">
-              <Tree className="mr-2 h-8 w-8" />
+              <TreeDeciduous className="mr-2 h-8 w-8" />
               Inventario de Árboles
             </h1>
             <p className="text-gray-600 mt-1">
@@ -495,7 +495,7 @@ function TreeInventoryPage() {
             ) : (
               // No hay datos
               <div className="text-center py-12">
-                <Tree className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <TreeDeciduous className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron árboles</h3>
                 <p className="text-gray-500 mb-6 max-w-md mx-auto">
                   No hay árboles registrados que coincidan con los criterios de búsqueda. Prueba a cambiar los filtros o agrega un nuevo árbol al inventario.
