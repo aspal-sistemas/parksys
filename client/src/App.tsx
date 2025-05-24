@@ -22,7 +22,7 @@ import AdminAmenities from "@/pages/admin/amenities";
 import AdminSettings from "@/pages/admin/settings";
 import AdminLogin from "@/pages/admin/login";
 import AdminVolunteers from "@/pages/admin/volunteers";
-import AdminVolunteerNew from "@/pages/admin/volunteers/new";
+// El import de AdminVolunteerNew ha sido eliminado
 import AdminVolunteerParticipations from "@/pages/admin/volunteers/participations";
 import AdminParticipationEdit from "@/pages/admin/volunteers/participations/edit";
 import AdminVolunteerEvaluations from "@/pages/admin/volunteers/evaluations";
