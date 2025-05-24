@@ -264,8 +264,8 @@ const AssetsPage: React.FC = () => {
             <Button 
               variant="outline" 
               onClick={() => {
-                // Navegación para reportar problemas
-                window.location.href = '/admin/assets/report-issue';
+                // Redirigir al módulo de incidencias para reportar un problema relacionado con un activo
+                window.location.href = '/admin/incidents?reportType=asset';
               }}
             >
               <AlertTriangle className="mr-2 h-4 w-4" />

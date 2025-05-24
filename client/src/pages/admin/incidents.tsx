@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { 
   AlertTriangle, 
   Clock, 
@@ -10,7 +11,8 @@ import {
   Loader,
   ArrowUpDown,
   MapPin,
-  User
+  User,
+  Plus
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -50,7 +52,188 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Incident, Park } from '@shared/schema';
+
+// Interfaz para el formulario de reporte de incidencias de activos
+interface AssetIncidentFormProps {
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+// Componente para reportar incidencias relacionadas con activos
+const AssetIncidentForm: React.FC<AssetIncidentFormProps> = ({ onClose, onSuccess }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [severity, setSeverity] = useState<string>('medium');
+  const [selectedAssetId, setSelectedAssetId] = useState<string>('');
+  const [submitting, setSubmitting] = useState(false);
+
+  // Consultar datos de activos
+  const { data: assets = [], isLoading: isLoadingAssets } = useQuery({
+    queryKey: ['/api/assets'],
+  });
+
+  // Manejar envío del formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedAssetId) {
+      toast({
+        title: "Error",
+        description: "Debes seleccionar un activo",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!title.trim() || !description.trim()) {
+      toast({
+        title: "Error",
+        description: "El título y la descripción son obligatorios",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      // Crear la incidencia
+      const response = await fetch('/api/incidents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer direct-token-admin',
+          'X-User-Id': '1'
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          severity,
+          assetId: parseInt(selectedAssetId),
+          category: 'asset_issue',
+          reporterName: 'Usuario del Sistema',
+          reporterEmail: ''
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al crear la incidencia');
+      }
+
+      // Actualizar la caché de incidencias
+      queryClient.invalidateQueries({ queryKey: ['/api/incidents'] });
+      
+      toast({
+        title: "Incidencia reportada",
+        description: "La incidencia ha sido reportada correctamente",
+      });
+      
+      onSuccess();
+    } catch (error) {
+      console.error('Error al reportar incidencia:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo reportar la incidencia",
+        variant: "destructive"
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="asset">Activo</Label>
+        <Select
+          value={selectedAssetId}
+          onValueChange={setSelectedAssetId}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecciona un activo" />
+          </SelectTrigger>
+          <SelectContent>
+            {isLoadingAssets ? (
+              <SelectItem value="loading" disabled>Cargando activos...</SelectItem>
+            ) : assets.length === 0 ? (
+              <SelectItem value="none" disabled>No hay activos disponibles</SelectItem>
+            ) : (
+              assets.map((asset: any) => (
+                <SelectItem key={asset.id} value={asset.id.toString()}>
+                  {asset.name} - {asset.parkName || 'Sin parque asignado'}
+                </SelectItem>
+              ))
+            )}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="title">Título del problema</Label>
+        <Input
+          id="title"
+          placeholder="Ej: Banca dañada, Juego infantil roto"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Descripción detallada</Label>
+        <Textarea
+          id="description"
+          placeholder="Describe el problema con el activo..."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+          rows={4}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="severity">Prioridad</Label>
+        <Select
+          value={severity}
+          onValueChange={setSeverity}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecciona la prioridad" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="low">Baja</SelectItem>
+            <SelectItem value="medium">Media</SelectItem>
+            <SelectItem value="high">Alta</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="pt-4 flex justify-end space-x-2">
+        <Button variant="outline" type="button" onClick={onClose}>
+          Cancelar
+        </Button>
+        <Button type="submit" disabled={submitting}>
+          {submitting ? (
+            <>
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
+              Enviando...
+            </>
+          ) : (
+            <>
+              <AlertTriangle className="mr-2 h-4 w-4" />
+              Reportar Problema
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+};
 
 // Interface for incident detail view
 interface IncidentDetailProps {
@@ -292,6 +475,18 @@ const AdminIncidents = () => {
   const [sortField, setSortField] = useState<string>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+  const [showAssetIncidentForm, setShowAssetIncidentForm] = useState(false);
+  const [location, setLocation] = useLocation();
+  
+  // Detectar si se está accediendo desde el módulo de activos
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reportType = params.get('reportType');
+    
+    if (reportType === 'asset') {
+      setShowAssetIncidentForm(true);
+    }
+  }, []);
 
   // Fetch all incidents
   const { 
