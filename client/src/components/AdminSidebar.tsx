@@ -18,7 +18,14 @@ import {
   ListFilter,
   Workflow,
   Building,
-  Upload
+  Upload,
+  Archive,
+  Boxes,
+  Box,
+  Wrench,
+  CalendarDays,
+  CircleDollarSign,
+  MapPin
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -243,6 +250,99 @@ const AdminSidebar: React.FC = () => {
                      location.startsWith('/admin/incidentes-dashboard')}
             >
               Dashboard de Incidencias
+            </NavItem>
+          </ModuleNav>
+          
+          <ModuleNav 
+            title="Activos" 
+            icon={<Archive className="h-5 w-5" />}
+            value="assets"
+            defaultOpen={true}
+          >
+            <NavItem 
+              href="/admin/assets" 
+              icon={<Boxes className="h-5 w-5" />}
+              active={location === '/admin/assets' || 
+                     (location.startsWith('/admin/assets/') && location.includes('/admin/assets/[id]'))}
+            >
+              Gestión de Activos
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/new" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/new')}
+            >
+              Nuevo Activo
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/categories" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/categories')}
+            >
+              Categorías
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/inventory" 
+              icon={<Package className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/inventory')}
+            >
+              Inventario
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/map" 
+              icon={<Map className="h-5 w-5" />}
+              active={location === '/admin/assets/map'}
+            >
+              Mapa de Activos
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/map-simple" 
+              icon={<MapPin className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/map-simple')}
+            >
+              Mapa Simplificado
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/maintenance-calendar" 
+              icon={<CalendarDays className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/maintenance-calendar')}
+            >
+              Calendario de Mantenimiento
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/schedule-maintenance" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/schedule-maintenance')}
+            >
+              Programar Mantenimiento
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/assign-manager" 
+              icon={<User className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/assign-manager')}
+            >
+              Asignar Responsable
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/assign-equipment" 
+              icon={<Box className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/assign-equipment')}
+            >
+              Asignar Equipamiento
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/report-issue" 
+              icon={<Bell className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/report-issue')}
+            >
+              Reportar Incidencia
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/dashboard" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/dashboard')}
+            >
+              Dashboard de Activos
             </NavItem>
           </ModuleNav>
         </Accordion>
