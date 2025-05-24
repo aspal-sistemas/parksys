@@ -1,693 +1,329 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'wouter';
+import React, { useState } from "react";
+import { useLocation } from "wouter";
 import { 
+  ChevronDown, 
+  ChevronRight, 
+  Database, 
+  FileText, 
   Home, 
   Map, 
-  Calendar, 
-  FileText, 
   MessageSquare, 
-  Bell, 
-  Users, 
   Settings, 
-  LogOut,
-  Tag,
-  BarChart,
-  BarChart3,
-  ChevronDown,
-  ChevronRight,
-  Layers,
-  ListFilter,
+  User, 
+  Users, 
+  Landmark, 
+  Activity,
   AlertTriangle,
-  Download,
-  PlusCircle,
-  UserPlus,
-  CheckSquare,
-  Award,
-  Upload,
-  Image,
-  Video,
-  Gauge,
-  Database,
-  Building,
-  MapPin,
-  List,
-  CalendarDays,
-  CheckSquare as SquareCheck,
-  Wrench,
-  DollarSign,
-  ArrowDown,
-  ArrowUp,
-  LineChart,
-  Calculator,
-  ClipboardList,
-  HeartHandshake,
-  CalendarClock,
-  GraduationCap,
-  Store,
-  Clipboard,
-  FileSignature,
-  UserCircle,
+  BarChart,
+  Calendar,
+  Shield,
+  Heart,
+  Package,
   Clock,
-  History,
-  Star,
-  ClipboardCheck,
-  FileText as FileDescription,
-  Network,
-  ListChecks,
-  ListTodo
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  FileQuestion,
+  Wrench,
+  Menu,
+  X
+} from "lucide-react";
+// Utilizamos un div con texto como logo temporal
+const Logo = () => (
+  <div className="text-xl font-bold text-blue-600">ParquesMX</div>
+);
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { 
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 
-interface NavItemProps {
+// Componente de enlace para el sidebar
+interface SidebarLinkProps {
   href: string;
   icon: React.ReactNode;
   children: React.ReactNode;
   active?: boolean;
+  onClick?: () => void;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active }) => {
+const SidebarLink: React.FC<SidebarLinkProps> = ({ 
+  href, 
+  icon, 
+  children, 
+  active = false,
+  onClick
+}) => {
+  const [_, setLocation] = useLocation();
+  
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onClick) {
+      onClick();
+    } else {
+      setLocation(href);
+    }
+  };
+  
   return (
-    <Link href={href}>
-      <div className={`flex items-center pl-3 pr-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${
-        active 
-          ? 'bg-primary text-primary-foreground' 
-          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-      }`}>
-        <span className={`mr-3 ${active ? 'text-primary-foreground' : 'text-gray-500'}`}>
-          {icon}
-        </span>
-        {children}
-      </div>
-    </Link>
+    <a
+      href={href}
+      onClick={handleClick}
+      className={cn(
+        "flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md px-3 py-2 transition-colors",
+        active && "bg-blue-50 text-blue-600 font-medium"
+      )}
+    >
+      <span className="flex-shrink-0 w-5 h-5">{icon}</span>
+      <span className="flex-1 truncate">{children}</span>
+    </a>
   );
 };
 
-// Módulo del menú con hijos
-interface ModuleNavProps {
+// Componente de grupo de enlaces con submenú
+interface SidebarGroupProps {
   title: string;
   icon: React.ReactNode;
   children: React.ReactNode;
-  value: string;
   defaultOpen?: boolean;
+  active?: boolean;
 }
 
-const ModuleNav: React.FC<ModuleNavProps> = ({ title, icon, children, value, defaultOpen }) => {
+const SidebarGroup: React.FC<SidebarGroupProps> = ({ 
+  title, 
+  icon, 
+  children, 
+  defaultOpen = false,
+  active = false 
+}) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen || active);
+  
   return (
-    <AccordionItem value={value} className="border-none">
-      <AccordionTrigger className="py-2 hover:bg-gray-100 rounded-md px-3 text-gray-700">
-        <div className="flex items-center">
-          <span className="mr-3 text-gray-500">{icon}</span>
-          <span className="text-sm font-medium">{title}</span>
+    <div className="mb-1">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "flex items-center justify-between w-full text-left text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md px-3 py-2 transition-colors",
+          active && "bg-blue-50 text-blue-600 font-medium"
+        )}
+      >
+        <div className="flex items-center space-x-3">
+          <span className="flex-shrink-0 w-5 h-5">{icon}</span>
+          <span className="flex-1 truncate">{title}</span>
         </div>
-      </AccordionTrigger>
-      <AccordionContent className="pl-10 pt-1 pb-0">
-        <div className="space-y-1">
-          {children}
-        </div>
-      </AccordionContent>
-    </AccordionItem>
+        <span className="flex-shrink-0">
+          {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+        </span>
+      </button>
+      
+      {isOpen && (
+        <div className="pl-10 mt-1 space-y-1">{children}</div>
+      )}
+    </div>
   );
 };
 
-const AdminSidebarModular: React.FC = () => {
-  const [location, setLocation] = useLocation();
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  
-  // Cargar el usuario actual desde localStorage al inicializar
-  React.useEffect(() => {
-    const loadUser = () => {
-      try {
-        const userJson = localStorage.getItem('user');
-        if (userJson) {
-          const userData = JSON.parse(userJson);
-          setCurrentUser(userData);
-        }
-      } catch (error) {
-        console.error("Error al cargar el usuario:", error);
-      }
-    };
-    
-    // Cargar al inicio
-    loadUser();
-    
-    // También escuchar por cambios en localStorage (por ejemplo, al iniciar sesión)
-    const handleStorageChange = () => {
-      loadUser();
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Crear un evento personalizado para actualizar el usuario
-    const handleUserUpdate = () => {
-      loadUser();
-    };
-    
-    window.addEventListener('userUpdated', handleUserUpdate);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('userUpdated', handleUserUpdate);
-    };
-  }, []);
-  
-  // Identificar qué módulos deberían estar abiertos basado en la ruta actual
-  const getDefaultAccordionValue = () => {
-    if (location.startsWith('/admin/parks') || location.startsWith('/admin/amenities')) 
-      return ['spaces'];
-    if (location.startsWith('/admin/activities') || location.startsWith('/admin/incidents')) 
-      return ['activities'];
-    if (location.startsWith('/admin/documents') || location.startsWith('/admin/images') || location.startsWith('/admin/videos')) 
-      return ['media'];
-    if (location.startsWith('/admin/comments') || location.startsWith('/admin/users')) 
-      return ['community'];
-    if (location.startsWith('/admin/analytics') || location.startsWith('/admin/reports')) 
-      return ['analytics'];
-    if (location.startsWith('/admin/settings') || location.startsWith('/admin/municipalities'))
-      return ['system'];
-    
-    return [''];
+// Componente principal del sidebar
+interface AdminSidebarProps {
+  currentPath: string;
+  onCloseMobileMenu?: () => void;
+}
+
+const AdminSidebarModular: React.FC<AdminSidebarProps> = ({ 
+  currentPath,
+  onCloseMobileMenu
+}) => {
+  // Verifica si una ruta está activa
+  const isActive = (path: string) => {
+    if (path === "/admin" && currentPath === "/admin") {
+      return true;
+    }
+    if (path !== "/admin" && currentPath.startsWith(path)) {
+      return true;
+    }
+    return false;
   };
   
-  // Cerrar sesión
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    setCurrentUser(null);
-    setLocation('/admin/login');
+  // Verifica si una ruta de grupo está activa
+  const isGroupActive = (paths: string[]) => {
+    return paths.some(path => currentPath.startsWith(path));
   };
   
   return (
-    <div className="h-screen border-r bg-white flex flex-col">
-      <div className="p-4 flex items-center">
-        <svg className="h-8 w-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M5 16c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm4 8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm7.5-4c.28 0 .5.22.5.5s-.22.5-.5.5-.5-.22-.5-.5.22-.5.5-.5zM5 12c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm7 0c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm1-8.5c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zM17 12c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm2-5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-7-10c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-4-8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path>
-        </svg>
-        <h1 className="ml-2 text-xl font-heading font-semibold text-gray-900">
-          Admin Panel
-        </h1>
+    <aside className="h-full flex flex-col bg-white border-r border-gray-200">
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <Logo />
+          {onCloseMobileMenu && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={onCloseMobileMenu}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
       </div>
       
-      <Separator />
-      
-      <ScrollArea className="flex-1 py-2">
-        <nav className="px-2 space-y-1">
-          <NavItem 
-            href="/admin" 
-            icon={<Home className="h-5 w-5" />}
-            active={location === '/admin'}
-          >
-            Dashboard
-          </NavItem>
-          
-          <div className="pt-3 pb-1">
-            <Accordion type="multiple" defaultValue={getDefaultAccordionValue()} className="space-y-1">
-              {/* Módulo - Usuarios */}
-              <ModuleNav 
-                title="Usuarios" 
-                icon={<Users className="h-5 w-5" />} 
-                value="users"
-                defaultOpen={location.startsWith('/admin/users') || location.startsWith('/admin/permissions')}
-              >
-                <NavItem 
-                  href="/admin/users" 
-                  icon={<UserCircle className="h-4 w-4" />}
-                  active={location === '/admin/users'}
-                >
-                  Lista de Usuarios
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/permissions" 
-                  icon={<FileSignature className="h-4 w-4" />}
-                  active={location === '/admin/permissions'}
-                >
-                  Permisos de Roles
-                </NavItem>
-              </ModuleNav>
-              
-              {/* Módulo - Actividades */}
-              <ModuleNav 
-                title="Actividades" 
-                icon={<Calendar className="h-5 w-5" />} 
-                value="programming"
-              >
-
-                <NavItem 
-                  href="/admin/organizador/catalogo/crear" 
-                  icon={<PlusCircle className="h-4 w-4" />}
-                  active={location === '/admin/organizador/catalogo/crear'}
-                >
-                  Nueva
-                </NavItem>
-                <NavItem 
-                  href="/admin/organizador/catalogo/ver" 
-                  icon={<ListChecks className="h-4 w-4" />}
-                  active={location === '/admin/organizador/catalogo/ver'}
-                >
-                  Disponibles
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/activities/calendar" 
-                  icon={<Calendar className="h-4 w-4" />}
-                  active={location.startsWith('/admin/activities/calendar')}
-                >
-                  Calendario
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/instructors" 
-                  icon={<GraduationCap className="h-4 w-4" />}
-                  active={location === '/admin/instructors' || location === '/admin/instructors/new' || location === '/admin/instructors/edit'}
-                >
-                  Instructores
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/instructors/evaluations" 
-                  icon={<Star className="h-4 w-4" />}
-                  active={location.startsWith('/admin/instructors/evaluations')}
-                >
-                  Evaluaciones
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/organizador" 
-                  icon={<FileText className="h-4 w-4" />}
-                  active={location === '/admin/organizador'}
-                >
-                  Reportes
-                </NavItem>
-              </ModuleNav>
-              
-              {/* Módulo - Activos */}
-              <ModuleNav 
-                title="Activos" 
-                icon={<Tag className="h-5 w-5" />} 
-                value="assets"
-              >
-                <NavItem 
-                  href="/admin/assets/dashboard" 
-                  icon={<BarChart3 className="h-4 w-4" />}
-                  active={location.startsWith('/admin/assets/dashboard')}
-                >
-                  Dashboard
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/assets" 
-                  icon={<Tag className="h-4 w-4" />}
-                  active={location === '/admin/assets'}
-                >
-                  Lista de Activos
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/assets/categories" 
-                  icon={<ListFilter className="h-4 w-4" />}
-                  active={location.startsWith('/admin/assets/categories')}
-                >
-                  Categorías
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/assets/inventory" 
-                  icon={<ClipboardList className="h-4 w-4" />}
-                  active={location.startsWith('/admin/assets/inventory')}
-                >
-                  Inventario
-                </NavItem>
-              </ModuleNav>
-              
-              {/* Módulo - Operaciones */}
-              <ModuleNav 
-                title="Operaciones" 
-                icon={<Building className="h-5 w-5" />} 
-                value="operations"
-              >
-                <NavItem 
-                  href="/admin/parks" 
-                  icon={<Map className="h-4 w-4" />}
-                  active={location === '/admin/parks'}
-                >
-                  Parques
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/amenities" 
-                  icon={<SquareCheck className="h-4 w-4" />}
-                  active={location.startsWith('/admin/amenities')}
-                >
-                  Amenidades
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/documents" 
-                  icon={<FileText className="h-4 w-4" />}
-                  active={location.startsWith('/admin/documents')}
-                >
-                  Documentos
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/comments" 
-                  icon={<MessageSquare className="h-4 w-4" />}
-                  active={location.startsWith('/admin/comments')}
-                >
-                  Comentarios
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/incidents" 
-                  icon={<AlertTriangle className="h-4 w-4" />}
-                  active={location.startsWith('/admin/incidents')}
-                >
-                  Incidencias
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/projects" 
-                  icon={<Wrench className="h-4 w-4" />}
-                  active={location.startsWith('/admin/projects')}
-                >
-                  Proyectos de Capital
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/operations/reports" 
-                  icon={<FileText className="h-4 w-4" />}
-                  active={location.startsWith('/admin/operations/reports')}
-                >
-                  Reportes
-                </NavItem>
-              </ModuleNav>
-              
-              {/* Módulo - Finanzas */}
-              <ModuleNav 
-                title="Finanzas" 
-                icon={<DollarSign className="h-5 w-5" />} 
-                value="finance"
-              >
-                <NavItem 
-                  href="/admin/finance/expenses" 
-                  icon={<ArrowDown className="h-4 w-4" />}
-                  active={location.startsWith('/admin/finance/expenses')}
-                >
-                  Egresos
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/finance/income" 
-                  icon={<ArrowUp className="h-4 w-4" />}
-                  active={location.startsWith('/admin/finance/income')}
-                >
-                  Ingresos
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/finance/cashflow" 
-                  icon={<LineChart className="h-4 w-4" />}
-                  active={location.startsWith('/admin/finance/cashflow')}
-                >
-                  Flujo de Efectivo
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/finance/calculator" 
-                  icon={<Calculator className="h-4 w-4" />}
-                  active={location.startsWith('/admin/finance/calculator')}
-                >
-                  Calculadora
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/finance/kpi" 
-                  icon={<Gauge className="h-4 w-4" />}
-                  active={location.startsWith('/admin/finance/kpi')}
-                >
-                  Indicadores clave
-                </NavItem>
-              </ModuleNav>
-              
-              {/* Módulo - Marketing */}
-              <ModuleNav 
-                title="Marketing" 
-                icon={<MessageSquare className="h-5 w-5" />} 
-                value="communication"
-              >
-                <NavItem 
-                  href="/admin/marketing/events" 
-                  icon={<Calendar className="h-4 w-4" />}
-                  active={location.startsWith('/admin/marketing/events')}
-                >
-                  Eventos
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/marketing/surveys" 
-                  icon={<ClipboardList className="h-4 w-4" />}
-                  active={location.startsWith('/admin/marketing/surveys')}
-                >
-                  Encuestas
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/marketing/sponsors" 
-                  icon={<Award className="h-4 w-4" />}
-                  active={location.startsWith('/admin/marketing/sponsors')}
-                >
-                  Patrocinios
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/marketing/reports" 
-                  icon={<FileText className="h-4 w-4" />}
-                  active={location.startsWith('/admin/marketing/reports')}
-                >
-                  Reportes
-                </NavItem>
-              </ModuleNav>
-              
-              {/* Módulo - Voluntariado */}
-              <ModuleNav 
-                title="Voluntariado" 
-                icon={<HeartHandshake className="h-5 w-5" />} 
-                value="volunteers"
-              >
-                <NavItem 
-                  href="/admin/volunteers" 
-                  icon={<Users className="h-4 w-4" />}
-                  active={location === '/admin/volunteers'}
-                >
-                  Voluntarios
-                </NavItem>
-                
-
-                <NavItem 
-                  href="/admin/volunteers/participations" 
-                  icon={<CalendarClock className="h-4 w-4" />}
-                  active={location.startsWith('/admin/volunteers/participations')}
-                >
-                  Participaciones
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/volunteers/evaluations" 
-                  icon={<CheckSquare className="h-4 w-4" />}
-                  active={location.startsWith('/admin/volunteers/evaluations')}
-                >
-                  Evaluaciones
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/volunteers/recognitions" 
-                  icon={<Award className="h-4 w-4" />}
-                  active={location.startsWith('/admin/volunteers/recognitions')}
-                >
-                  Reconocimientos
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/volunteers/dashboard" 
-                  icon={<BarChart className="h-4 w-4" />}
-                  active={location === '/admin/volunteers/dashboard'}
-                >
-                  Reportes
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/volunteers/settings" 
-                  icon={<Settings className="h-4 w-4" />}
-                  active={location === '/admin/volunteers/settings'}
-                >
-                  Configuración
-                </NavItem>
-              </ModuleNav>
-              
-              {/* Módulo - Concesiones */}
-              <ModuleNav 
-                title="Concesiones" 
-                icon={<Store className="h-5 w-5" />} 
-                value="concessions"
-              >
-                <NavItem 
-                  href="/admin/concessions/registry" 
-                  icon={<Clipboard className="h-4 w-4" />}
-                  active={location.startsWith('/admin/concessions/registry')}
-                >
-                  Registro Concesionarios
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/concessions/contracts" 
-                  icon={<FileSignature className="h-4 w-4" />}
-                  active={location.startsWith('/admin/concessions/contracts')}
-                >
-                  Contratos
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/concessions/forms" 
-                  icon={<FileText className="h-4 w-4" />}
-                  active={location.startsWith('/admin/concessions/forms')}
-                >
-                  Formatos
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/concessions/reports" 
-                  icon={<FileText className="h-4 w-4" />}
-                  active={location.startsWith('/admin/concessions/reports')}
-                >
-                  Reportes
-                </NavItem>
-              </ModuleNav>
-              
-              {/* Módulo - RH */}
-              <ModuleNav 
-                title="RH" 
-                icon={<Users className="h-5 w-5" />} 
-                value="hr"
-              >
-                <NavItem 
-                  href="/admin/hr/personnel" 
-                  icon={<UserCircle className="h-4 w-4" />}
-                  active={location.startsWith('/admin/hr/personnel')}
-                >
-                  Registro Personal
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/hr/roles" 
-                  icon={<Clock className="h-4 w-4" />}
-                  active={location.startsWith('/admin/hr/roles')}
-                >
-                  Roles y Turnos
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/hr/training" 
-                  icon={<History className="h-4 w-4" />}
-                  active={location.startsWith('/admin/hr/training')}
-                >
-                  Historial de Formación
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/hr/evaluation" 
-                  icon={<ClipboardCheck className="h-4 w-4" />}
-                  active={location.startsWith('/admin/hr/evaluation')}
-                >
-                  Evaluación y Seguimiento
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/hr/profiles" 
-                  icon={<FileDescription className="h-4 w-4" />}
-                  active={location.startsWith('/admin/hr/profiles')}
-                >
-                  Perfiles de Puesto
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/hr/organization" 
-                  icon={<Network className="h-4 w-4" />}
-                  active={location.startsWith('/admin/hr/organization')}
-                >
-                  Organigrama
-                </NavItem>
-              </ModuleNav>
-              
-              {/* Módulo - Análisis y Reportes */}
-              <ModuleNav 
-                title="Análisis y Reportes" 
-                icon={<BarChart className="h-5 w-5" />} 
-                value="analytics"
-              >
-                <NavItem 
-                  href="/admin/analytics" 
-                  icon={<BarChart className="h-4 w-4" />}
-                  active={location.startsWith('/admin/analytics')}
-                >
-                  Dashboard Analítico
-                </NavItem>
-                
-                <NavItem 
-                  href="/admin/reports" 
-                  icon={<Download className="h-4 w-4" />}
-                  active={location.startsWith('/admin/reports')}
-                >
-                  Exportar Reportes
-                </NavItem>
-              </ModuleNav>
-            </Accordion>
-          </div>
-        </nav>
-      </ScrollArea>
-      
-      <div className="p-4 border-t">
-        <div className="flex items-center mb-4">
-          <div className="bg-gray-200 rounded-full h-10 w-10 flex items-center justify-center text-gray-600">
-            <span className="font-medium">
-              {currentUser ? (currentUser.fullName || currentUser.username || 'User').substring(0, 2).toUpperCase() : 'AD'}
-            </span>
-          </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium text-gray-900">
-              {currentUser ? (currentUser.fullName || currentUser.username) : 'Usuario'}
-            </p>
-            <p className="text-xs text-gray-500">
-              {currentUser ? currentUser.email || 'Sin correo' : 'Sin información'}
-            </p>
-          </div>
-        </div>
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        <SidebarLink 
+          href="/admin" 
+          icon={<Home />} 
+          active={currentPath === "/admin"}
+        >
+          Dashboard
+        </SidebarLink>
         
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm" className="flex-1">
-            <Settings className="h-4 w-4 mr-1" />
-            Cuenta
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="flex-1 text-red-500 hover:bg-red-50 hover:text-red-600"
-            onClick={handleLogout}
+        <SidebarLink 
+          href="/admin/parks" 
+          icon={<Landmark />} 
+          active={isActive("/admin/parks")}
+        >
+          Parques
+        </SidebarLink>
+        
+        <SidebarGroup 
+          title="Operaciones" 
+          icon={<Activity />}
+          defaultOpen={true}
+          active={isGroupActive([
+            "/admin/organizador", 
+            "/admin/activities",
+            "/admin/incidents",
+            "/admin/amenities"
+          ])}
+        >
+          <SidebarLink 
+            href="/admin/organizador" 
+            active={isActive("/admin/organizador")}
           >
-            <LogOut className="h-4 w-4 mr-1" />
-            Salir
-          </Button>
-        </div>
-      </div>
-    </div>
+            Actividades
+          </SidebarLink>
+          
+          <SidebarLink 
+            href="/admin/activities/calendar" 
+            active={isActive("/admin/activities/calendar")}
+          >
+            Calendario
+          </SidebarLink>
+          
+          <SidebarLink 
+            href="/admin/incidents" 
+            active={isActive("/admin/incidents")}
+          >
+            Incidencias
+          </SidebarLink>
+          
+          <SidebarLink 
+            href="/admin/dashboard-incidencias" 
+            active={isActive("/admin/dashboard-incidencias")}
+          >
+            <span className="flex items-center font-bold text-red-600">
+              <BarChart className="h-4 w-4 mr-2" />
+              Dashboard Incidencias
+            </span>
+          </SidebarLink>
+          
+          <SidebarLink 
+            href="/admin/amenities" 
+            active={isActive("/admin/amenities")}
+          >
+            Amenidades
+          </SidebarLink>
+        </SidebarGroup>
+        
+        <SidebarGroup 
+          title="Personas" 
+          icon={<Users />}
+          active={isGroupActive([
+            "/admin/volunteers", 
+            "/admin/instructors"
+          ])}
+        >
+          <SidebarLink 
+            href="/admin/volunteers" 
+            active={isActive("/admin/volunteers")}
+          >
+            Voluntarios
+          </SidebarLink>
+          
+          <SidebarLink 
+            href="/admin/instructors" 
+            active={isActive("/admin/instructors")}
+          >
+            Instructores
+          </SidebarLink>
+        </SidebarGroup>
+        
+        <SidebarGroup 
+          title="Usuarios" 
+          icon={<User />}
+          active={isGroupActive([
+            "/admin/users", 
+            "/admin/permissions"
+          ])}
+        >
+          <SidebarLink 
+            href="/admin/users" 
+            active={isActive("/admin/users")}
+          >
+            Lista de Usuarios
+          </SidebarLink>
+          
+          <SidebarLink 
+            href="/admin/permissions" 
+            active={isActive("/admin/permissions")}
+          >
+            Permisos de Roles
+          </SidebarLink>
+        </SidebarGroup>
+        
+        <SidebarLink 
+          href="/admin/assets" 
+          icon={<Package />} 
+          active={isActive("/admin/assets")}
+        >
+          Activos
+        </SidebarLink>
+        
+        <SidebarLink 
+          href="/admin/documents" 
+          icon={<FileText />} 
+          active={isActive("/admin/documents")}
+        >
+          Documentos
+        </SidebarLink>
+        
+        <SidebarLink 
+          href="/admin/comments" 
+          icon={<MessageSquare />} 
+          active={isActive("/admin/comments")}
+        >
+          Comentarios
+        </SidebarLink>
+        
+        <SidebarLink 
+          href="/admin/analytics" 
+          icon={<BarChart />} 
+          active={isActive("/admin/analytics")}
+        >
+          Analítica
+        </SidebarLink>
+        
+        <SidebarLink 
+          href="/admin/settings" 
+          icon={<Settings />} 
+          active={isActive("/admin/settings")}
+        >
+          Configuración
+        </SidebarLink>
+      </nav>
+    </aside>
   );
 };
 

@@ -112,6 +112,13 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/incidentes-dashboard')))}
           </Suspense>
         </Route>
+        
+        {/* Nueva página dedicada para acceso al dashboard de incidencias */}
+        <Route path="/admin/dashboard-incidencias">
+          <Suspense fallback={<div className="p-8 text-center">Cargando acceso al dashboard...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/dashboard-incidencias')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/users" component={AdminUsers} />
         <Route path="/admin/amenities" component={AdminAmenities} />
         <Route path="/admin/settings" component={AdminSettings} />
