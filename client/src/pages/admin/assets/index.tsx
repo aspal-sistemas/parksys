@@ -223,14 +223,14 @@ const AssetsPage: React.FC = () => {
       </Helmet>
       
       <div className="container mx-auto px-4 py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
+        <div className="mb-6">
+          <div className="mb-4">
             <h1 className="text-3xl font-bold tracking-tight">Gestión de Activos</h1>
             <p className="text-muted-foreground">
               Administra el inventario de activos físicos de los parques y espacios públicos.
             </p>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2">
             <Button 
               variant="outline" 
               onClick={() => {
