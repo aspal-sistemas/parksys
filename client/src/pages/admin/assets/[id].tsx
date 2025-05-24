@@ -1059,23 +1059,72 @@ const AssetDetailPage: React.FC = () => {
                   )}
                 />
                 
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ubicación</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Ubicación específica dentro del parque" 
-                          {...field} 
-                          value={field.value || ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-4 border p-4 rounded-md bg-slate-50">
+                  <h3 className="font-medium text-sm">Ubicación y Geolocalización</h3>
+                  
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Descripción de Ubicación</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Ej: Cerca de la entrada principal" 
+                            {...field} 
+                            value={field.value || ''}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Describe dónde se encuentra este activo dentro del parque
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="latitude"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Latitud</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Ej: 19.432608" 
+                            {...field} 
+                            value={field.value || ''}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Coordenada numérica (+ norte / - sur)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="longitude"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Longitud</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Ej: -99.133209" 
+                            {...field} 
+                            value={field.value || ''}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Coordenada numérica (+ este / - oeste)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
               
               <FormField
