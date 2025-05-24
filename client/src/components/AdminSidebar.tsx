@@ -220,6 +220,13 @@ const AdminSidebar: React.FC = () => {
             value="assets"
           >
             <NavItem 
+              href="/admin/assets/categories" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/categories')}
+            >
+              Categorías
+            </NavItem>
+            <NavItem 
               href="/admin/assets" 
               icon={<Boxes className="h-5 w-5" />}
               active={location === '/admin/assets' || 
@@ -236,13 +243,6 @@ const AdminSidebar: React.FC = () => {
               Nuevo Activo
             </NavItem>
             */}
-            <NavItem 
-              href="/admin/assets/categories" 
-              icon={<Tag className="h-5 w-5" />}
-              active={location.startsWith('/admin/assets/categories')}
-            >
-              Categorías
-            </NavItem>
             <NavItem 
               href="/admin/assets/inventory" 
               icon={<Package className="h-5 w-5" />}
