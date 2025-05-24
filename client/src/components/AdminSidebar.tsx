@@ -115,7 +115,25 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
 
 const AdminSidebar: React.FC = () => {
   const [location] = useLocation();
-  const [defaultAccordion, setDefaultAccordion] = useState<string[]>(['users']);
+  
+  // Determinar qué sección debe estar abierta basado en la URL actual
+  const getInitialOpenSections = () => {
+    if (location.startsWith('/admin/assets')) return ['assets'];
+    if (location.startsWith('/admin/activities')) return ['activities'];
+    if (location.startsWith('/admin/instructors')) return ['activities']; // Los instructores están bajo actividades
+    if (location.startsWith('/admin/parks') || 
+        location.startsWith('/admin/amenities') || 
+        location.startsWith('/admin/incidents')) return ['operations'];
+    if (location.startsWith('/admin/volunteers')) return ['volunteers'];
+    if (location.startsWith('/admin/finance')) return ['finance'];
+    if (location.startsWith('/admin/marketing')) return ['marketing'];
+    if (location.startsWith('/admin/concessions')) return ['concessions'];
+    if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions')) return ['users'];
+    if (location.startsWith('/admin/settings')) return ['settings'];
+    return []; // Ninguna sección abierta por defecto
+  };
+  
+  const [defaultAccordion, setDefaultAccordion] = useState<string[]>(getInitialOpenSections());
   
   return (
     <div className="h-screen border-r bg-white flex flex-col">
