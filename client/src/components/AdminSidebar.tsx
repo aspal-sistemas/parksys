@@ -464,6 +464,27 @@ const AdminSidebar: React.FC = () => {
               Configuración
             </NavItem>
           </ModuleNav>
+          
+          <ModuleNav 
+            title="Análisis y Reportes" 
+            icon={<BarChart className="h-5 w-5" />}
+            value="analytics"
+          >
+            <NavItem 
+              href="/admin/analytics" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location === '/admin/analytics'}
+            >
+              Análisis y Reportes
+            </NavItem>
+            <NavItem 
+              href="/admin/settings" 
+              icon={<Settings className="h-5 w-5" />}
+              active={location === '/admin/settings'}
+            >
+              Configuración
+            </NavItem>
+          </ModuleNav>
         </Accordion>
       </ScrollArea>
       
