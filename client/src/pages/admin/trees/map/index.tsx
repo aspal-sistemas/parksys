@@ -500,15 +500,14 @@ function TreeMapPage() {
           </div>
         </div>
         
-        <Tabs value={activeView} onValueChange={setActiveView} className="mb-6">
-          <TabsList className="grid grid-cols-2 w-[300px]">
+        <Tabs defaultValue="mapa" value={activeView} onValueChange={setActiveView}>
+          <TabsList className="grid grid-cols-2 w-[300px] mb-6">
             <TabsTrigger value="mapa">Vista de Mapa</TabsTrigger>
             <TabsTrigger value="categorias">Categorías</TabsTrigger>
           </TabsList>
-        </Tabs>
-        
-        <TabsContent value="mapa" className="mt-0">
-          <Card className="mb-6">
+          
+          <TabsContent value="mapa">
+            <Card className="mb-6">
             <CardHeader className="pb-3">
               <CardTitle>Filtros de Búsqueda</CardTitle>
               <CardDescription>
@@ -742,8 +741,8 @@ function TreeMapPage() {
           </div>
         </TabsContent>
         
-        <TabsContent value="categorias" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <TabsContent value="categorias" className="mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Categorías por edad */}
             <Card>
               <CardHeader>
@@ -1013,7 +1012,8 @@ function TreeMapPage() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
+          </TabsContent>
+        </Tabs>
       </div>
     </AdminLayout>
   );
