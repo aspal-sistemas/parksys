@@ -289,61 +289,59 @@ const AssetMapPage: React.FC = () => {
             <CardTitle className="text-lg font-medium">Mapa de Ubicación de Activos (Simplificado)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg overflow-hidden relative w-full h-[600px] bg-blue-50">
-              {/* Mapa simplificado para visualización de activos */}
+            <div className="rounded-lg overflow-hidden relative w-full h-[600px] bg-blue-50 border border-blue-100">
+              {/* Cuadrícula de fondo para simular mapa */}
+              <div className="absolute inset-0 z-0" style={{ 
+                backgroundImage: 'linear-gradient(#e5f0ff 1px, transparent 1px), linear-gradient(90deg, #e5f0ff 1px, transparent 1px)',
+                backgroundSize: '50px 50px' 
+              }}>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 to-green-50/80 flex items-center justify-center">
+                  <p className="text-blue-500 text-lg font-medium opacity-30">Representación visual de activos</p>
+                </div>
+              </div>
+              
+              {/* Activos distribuidos en el mapa */}
               <div className="absolute inset-0">
-                {/* Activos en el mapa */}
                 {filteredAssets.map((asset, index) => {
                   if (!asset.latitude || !asset.longitude) return null;
                   
-                  // Calcular posición aproximada para simulación visual
+                  // Calcular posición para distribuir visualmente los puntos
+                  // Usamos una distribución simplificada basada en el índice para garantizar visibilidad
+                  const offsetX = (index % 5) * 15 + 10;  // 5 columnas con espaciado
+                  const offsetY = Math.floor(index / 5) * 15 + 10;  // Filas espaciadas
+
                   const category = categories?.find(cat => cat.id === asset.categoryId);
                   const color = category?.color || '#3B82F6';
-                  
-                  // Posición relativa calculada a partir de lat/long original
-                  // Para una simulación más distribuida visualmente
-                  const lat = parseFloat(asset.latitude);
-                  const lng = parseFloat(asset.longitude);
-                  
-                  // Convertir coordenadas a posición en la caja visual
-                  // (Esta es una aproximación simple que no refleja la geografía real)
-                  const posLeft = ((lng + 180) / 360) * 100; // Normalizar longitud a 0-100%
-                  const posTop = ((90 - lat) / 180) * 100;  // Normalizar latitud a 0-100%
                   
                   return (
                     <div 
                       key={asset.id}
-                      className="absolute w-6 h-6 rounded-full border-2 border-white shadow-md cursor-pointer z-10 flex items-center justify-center transition-all hover:w-8 hover:h-8 hover:z-20"
+                      className="absolute w-8 h-8 rounded-full border-2 border-white shadow-md cursor-pointer z-10 flex items-center justify-center transition-all hover:w-10 hover:h-10 hover:z-20"
                       style={{ 
                         backgroundColor: color,
-                        left: `${posLeft}%`, 
-                        top: `${posTop}%`,
+                        left: `${offsetX}%`, 
+                        top: `${offsetY}%`,
                         transform: 'translate(-50%, -50%)'
                       }}
                       title={asset.name}
                       onClick={() => setSelectedAsset(asset)}
                     >
-                      <MapPin className="w-3 h-3 text-white" />
+                      <MapPin className="w-4 h-4 text-white" />
                     </div>
                   );
                 })}
-                
-                {/* Mapa de fondo con gradiente */}
-                <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center">
-                  <p className="text-blue-500 text-lg font-medium">Representación visual de activos</p>
-                </div>
-                
-                {/* Leyenda de categorías */}
-                <div className="absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow z-30 max-w-xs">
-                  <h4 className="font-medium mb-2 text-sm">Categorías</h4>
-                  <div className="space-y-1">
-                    {categories.map(category => (
-                      <div key={category.id} className="flex items-center text-xs">
-                        <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: category.color }}></div>
-                        <span>{category.name}</span>
-                      </div>
-                    ))}
-                  </div>
+              </div>
+              
+              {/* Leyenda de categorías */}
+              <div className="absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow z-30 max-w-xs">
+                <h4 className="font-medium mb-2 text-sm">Categorías</h4>
+                <div className="space-y-1">
+                  {categories.map(category => (
+                    <div key={category.id} className="flex items-center text-xs">
+                      <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: category.color }}></div>
+                      <span>{category.name}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
               
@@ -384,7 +382,7 @@ const AssetMapPage: React.FC = () => {
                       variant="outline" 
                       size="sm" 
                       className="w-full" 
-                      onClick={() => setLocation(`/admin/assets/${selectedAsset.id}`)}
+                      onClick={() => window.location.href = `/admin/assets/${selectedAsset.id}`}
                     >
                       Ver detalles completos
                     </Button>
