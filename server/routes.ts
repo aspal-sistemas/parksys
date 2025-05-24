@@ -102,6 +102,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas del módulo de inventario de árboles
   registerTreeInventoryRoutes(app, apiRouter, isAuthenticated);
   
+  // Registramos las rutas de estadísticas de árboles
+  registerTreeStatsRoutes(app, apiRouter);
+  
   // Registramos las rutas del módulo de usuarios
   registerUserRoutes(app, apiRouter);
   
