@@ -385,6 +385,76 @@ const AdminSidebar: React.FC = () => {
               Dashboard de Activos
             </NavItem>
           </ModuleNav>
+          
+          <ModuleNav 
+            title="Voluntarios" 
+            icon={<Users className="h-5 w-5" />}
+            value="volunteers"
+          >
+            <NavItem 
+              href="/admin/volunteers" 
+              icon={<Users className="h-5 w-5" />}
+              active={location === '/admin/volunteers'}
+            >
+              Gestión de Voluntarios
+            </NavItem>
+            <NavItem 
+              href="/admin/volunteers/new" 
+              icon={<User className="h-5 w-5" />}
+              active={location === '/admin/volunteers/new'}
+            >
+              Nuevo Voluntario
+            </NavItem>
+            <NavItem 
+              href="/admin/volunteers/edit" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location === '/admin/volunteers/edit'}
+            >
+              Editar Voluntario
+            </NavItem>
+            <NavItem 
+              href="/admin/volunteers/convert" 
+              icon={<Workflow className="h-5 w-5" />}
+              active={location.startsWith('/admin/volunteers/convert')}
+            >
+              Convertir Usuario
+            </NavItem>
+            <NavItem 
+              href="/admin/volunteers/participations" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location === '/admin/volunteers/participations'}
+            >
+              Participaciones
+            </NavItem>
+            <NavItem 
+              href="/admin/volunteers/evaluations" 
+              icon={<Clipboard className="h-5 w-5" />}
+              active={location === '/admin/volunteers/evaluations'}
+            >
+              Evaluaciones
+            </NavItem>
+            <NavItem 
+              href="/admin/volunteers/recognitions" 
+              icon={<Award className="h-5 w-5" />}
+              active={location === '/admin/volunteers/recognitions'}
+            >
+              Reconocimientos
+            </NavItem>
+            <NavItem 
+              href="/admin/volunteers/dashboard" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location === '/admin/volunteers/dashboard'}
+            >
+              Dashboard
+            </NavItem>
+            <NavItem 
+              href="/admin/volunteers/settings" 
+              icon={<Settings className="h-5 w-5" />}
+              active={location === '/admin/volunteers/settings'}
+            >
+              Configuración
+            </NavItem>
+          </ModuleNav>
         </Accordion>
       </ScrollArea>
       
