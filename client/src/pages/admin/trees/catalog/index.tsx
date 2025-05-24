@@ -29,7 +29,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import AdminLayout from '@/components/AdminLayout';
-import { Leaf, Search, Plus, TreePine, Filter, CircleCheck, CircleAlert } from 'lucide-react';
+import { Leaf, Search, Plus, TreePine, Filter, CircleCheck, CircleAlert, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -329,8 +329,9 @@ function TreeSpeciesCatalog() {
                               e.stopPropagation();
                               handleViewDetails(species.id);
                             }}
+                            className="text-green-600 hover:text-green-800 hover:bg-green-50"
                           >
-                            Ver Detalles
+                            <Eye className="h-4 w-4 mr-1" /> Ver
                           </Button>
                         </TableCell>
                       </TableRow>
