@@ -232,7 +232,7 @@ const AdminSidebar: React.FC = () => {
               active={location === '/admin/assets' || 
                      (location.startsWith('/admin/assets/') && location.includes('/admin/assets/[id]'))}
             >
-              Gestión de Activos
+              Gestión
             </NavItem>
             {/* Submenú oculto: Nuevo Activo
             <NavItem 
