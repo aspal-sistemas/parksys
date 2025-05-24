@@ -8,95 +8,98 @@ export async function createTreeTables() {
   try {
     console.log("Creando tablas para el módulo de arbolado...");
     
-    // Crear tabla de especies de árboles
-    await db.query(`
+    // Verificar si las tablas ya existen
+    const tableExists = await db.execute(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'tree_species'
+      );
+    `);
+    
+    if (tableExists.rows[0].exists) {
+      console.log("Las tablas del módulo de arbolado ya existen.");
+      return { success: true, message: "Las tablas ya existen" };
+    }
+    
+    // Crear las tablas en orden: primero especies, luego árboles, luego mantenimientos
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS tree_species (
         id SERIAL PRIMARY KEY,
-        common_name TEXT NOT NULL,
-        scientific_name TEXT NOT NULL,
-        family TEXT,
-        origin TEXT,
-        climate_zone TEXT,
-        growth_rate TEXT,
-        height_mature DECIMAL(5,2),
-        canopy_diameter DECIMAL(5,2),
+        common_name VARCHAR(255) NOT NULL,
+        scientific_name VARCHAR(255) NOT NULL,
+        family VARCHAR(100),
+        origin VARCHAR(100),
+        climate_zone VARCHAR(100),
+        growth_rate VARCHAR(50),
+        height_mature INTEGER,
+        canopy_diameter INTEGER,
         lifespan INTEGER,
-        image_url TEXT,
         description TEXT,
         maintenance_requirements TEXT,
-        water_requirements TEXT,
-        sun_requirements TEXT,
-        soil_requirements TEXT,
+        water_requirements VARCHAR(50),
+        sun_requirements VARCHAR(50),
+        soil_requirements VARCHAR(100),
         ecological_benefits TEXT,
-        ornamental_value TEXT,
+        ornamental_value VARCHAR(50),
         common_uses TEXT,
         is_endangered BOOLEAN DEFAULT false,
-        icon_color TEXT DEFAULT '#4CAF50',
-        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        icon_color VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-    `);
-    console.log("Tabla tree_species creada correctamente");
-
-    // Crear tabla de árboles individuales
-    await db.query(`
+      
       CREATE TABLE IF NOT EXISTS trees (
         id SERIAL PRIMARY KEY,
-        species_id INTEGER NOT NULL REFERENCES tree_species(id),
-        park_id INTEGER NOT NULL REFERENCES parks(id),
-        identifier TEXT,
+        species_id INTEGER REFERENCES tree_species(id),
+        park_id INTEGER REFERENCES parks(id),
+        location_description VARCHAR(255),
+        latitude DECIMAL(10, 8),
+        longitude DECIMAL(11, 8),
+        height DECIMAL(5, 2),
+        trunk_diameter DECIMAL(5, 2),
+        condition VARCHAR(50),
+        health_status VARCHAR(50),
         planting_date DATE,
-        height DECIMAL(4,2),
-        diameter DECIMAL(4,2),
-        health_status TEXT DEFAULT 'bueno',
-        location_description TEXT,
-        latitude TEXT,
-        longitude TEXT,
-        last_inspection_date DATE,
         notes TEXT,
-        image_url TEXT,
-        is_protected BOOLEAN DEFAULT false,
-        age_estimate INTEGER,
-        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        last_maintenance_date DATE,
+        created_by INTEGER REFERENCES users(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-    `);
-    console.log("Tabla trees creada correctamente");
-
-    // Crear tabla de mantenimiento de árboles
-    await db.query(`
+      
       CREATE TABLE IF NOT EXISTS tree_maintenances (
         id SERIAL PRIMARY KEY,
-        tree_id INTEGER NOT NULL REFERENCES trees(id),
-        maintenance_type TEXT NOT NULL,
+        tree_id INTEGER REFERENCES trees(id),
         maintenance_date DATE NOT NULL,
-        performed_by TEXT,
-        user_id INTEGER,
+        maintenance_type VARCHAR(100) NOT NULL,
         description TEXT,
-        cost DECIMAL(8,2),
-        health_before_service TEXT,
-        health_after_service TEXT,
-        image_url TEXT,
+        performed_by INTEGER REFERENCES users(id),
         notes TEXT,
-        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+        next_maintenance_date DATE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+      
+      -- Índices para mejorar el rendimiento de consultas comunes
+      CREATE INDEX idx_trees_species_id ON trees(species_id);
+      CREATE INDEX idx_trees_park_id ON trees(park_id);
+      CREATE INDEX idx_tree_maintenances_tree_id ON tree_maintenances(tree_id);
+      CREATE INDEX idx_trees_health_status ON trees(health_status);
     `);
-    console.log("Tabla tree_maintenances creada correctamente");
-
-    console.log("Todas las tablas del módulo de arbolado creadas correctamente.");
     
-    return { success: true, message: "Tablas de arbolado creadas correctamente" };
+    console.log("Tablas para el módulo de arbolado creadas correctamente.");
+    return { success: true, message: "Tablas creadas correctamente" };
   } catch (error) {
     console.error("Error al crear las tablas del módulo de arbolado:", error);
-    return { success: false, message: "Error al crear las tablas", error };
+    return { success: false, message: "Error al crear tablas", error };
   }
 }
 
 // Ejecutar si este archivo se ejecuta directamente
 if (require.main === module) {
   createTreeTables()
-    .then(() => {
-      console.log("Proceso completado");
+    .then((result) => {
+      console.log("Resultado:", result);
       process.exit(0);
     })
     .catch((error) => {
