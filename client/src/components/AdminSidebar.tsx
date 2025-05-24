@@ -15,7 +15,10 @@ import {
   Package,
   Shield,
   User,
-  ListFilter
+  ListFilter,
+  Workflow,
+  Building,
+  Upload
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -189,6 +192,41 @@ const AdminSidebar: React.FC = () => {
               active={location.startsWith('/admin/organizador/catalogo/crear')}
             >
               Crear Actividad en Catálogo
+            </NavItem>
+          </ModuleNav>
+          
+          <ModuleNav 
+            title="Operaciones" 
+            icon={<Workflow className="h-5 w-5" />}
+            value="operations"
+          >
+            <NavItem 
+              href="/admin/parks" 
+              icon={<Map className="h-5 w-5" />}
+              active={location.startsWith('/admin/parks') && !location.startsWith('/admin/parks-import')}
+            >
+              Parques
+            </NavItem>
+            <NavItem 
+              href="/admin/parks-import" 
+              icon={<Upload className="h-5 w-5" />}
+              active={location.startsWith('/admin/parks-import')}
+            >
+              Importar Parques
+            </NavItem>
+            <NavItem 
+              href="/admin/amenities" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location.startsWith('/admin/amenities')}
+            >
+              Amenidades
+            </NavItem>
+            <NavItem 
+              href="/admin/incidents" 
+              icon={<Bell className="h-5 w-5" />}
+              active={location.startsWith('/admin/incidents')}
+            >
+              Incidencias
             </NavItem>
           </ModuleNav>
         </Accordion>
