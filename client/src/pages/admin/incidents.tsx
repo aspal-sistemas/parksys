@@ -814,6 +814,48 @@ const AdminIncidents = () => {
 
   return (
     <AdminLayout title="Gestión de Incidencias">
+      {/* Modal para reportar problemas de activos */}
+      {showAssetIncidentForm && (
+        <Dialog open={showAssetIncidentForm} onOpenChange={(open) => {
+          if (!open) {
+            setShowAssetIncidentForm(false);
+            // Limpiar el parámetro de la URL
+            const url = new URL(window.location.href);
+            url.searchParams.delete('reportType');
+            window.history.replaceState({}, '', url.toString());
+          }
+        }}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-xl">Reportar problema con activo</DialogTitle>
+            </DialogHeader>
+            
+            <AssetIncidentForm 
+              onClose={() => {
+                setShowAssetIncidentForm(false);
+                // Limpiar el parámetro de la URL
+                const url = new URL(window.location.href);
+                url.searchParams.delete('reportType');
+                window.history.replaceState({}, '', url.toString());
+              }}
+              onSuccess={() => {
+                setShowAssetIncidentForm(false);
+                toast({
+                  title: "Problema reportado",
+                  description: "Se ha registrado el problema con el activo correctamente",
+                });
+                // Limpiar el parámetro de la URL
+                const url = new URL(window.location.href);
+                url.searchParams.delete('reportType');
+                window.history.replaceState({}, '', url.toString());
+                // Recargar los datos
+                refetchIncidents();
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+      
       <div className="space-y-6">
         {/* Header with stats */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
