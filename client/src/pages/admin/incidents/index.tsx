@@ -331,23 +331,35 @@ const IncidentsPage = () => {
   return (
     <AdminLayout>
       <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center mb-6">
           <h1 className="text-2xl font-bold">Gestión de Incidencias</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleManageCategories}>
-              <Bookmark className="h-4 w-4 mr-2" />
-              Categorías
-            </Button>
+          
+          {/* Botones de acción principales */}
+          <div className="flex flex-wrap gap-3">
+            <a href="/admin/incidents/dashboard" className="no-underline">
+              <Button 
+                variant="default" 
+                className="bg-blue-600 hover:bg-blue-700 text-lg px-5 py-2 h-auto"
+              >
+                <BarChart className="h-5 w-5 mr-2" />
+                Dashboard
+              </Button>
+            </a>
+            
             <Button 
               variant="outline" 
-              className="border-blue-300 hover:bg-blue-50"
-              onClick={handleViewDashboard}
+              onClick={handleManageCategories}
+              className="text-lg px-5 py-2 h-auto"
             >
-              <BarChart className="h-4 w-4 mr-2 text-blue-600" />
-              Dashboard
+              <Bookmark className="h-5 w-5 mr-2" />
+              Categorías
             </Button>
-            <Button onClick={handleNewIncident}>
-              <Plus className="h-4 w-4 mr-2" />
+            
+            <Button 
+              onClick={handleNewIncident}
+              className="text-lg px-5 py-2 h-auto"
+            >
+              <Plus className="h-5 w-5 mr-2" />
               Nueva Incidencia
             </Button>
           </div>
