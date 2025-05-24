@@ -9,7 +9,9 @@ import {
   Bell, 
   Users, 
   Settings, 
-  LogOut
+  LogOut,
+  Tag,
+  BarChart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -25,16 +27,13 @@ interface NavItemProps {
 const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active }) => {
   return (
     <Link href={href}>
-      <div className={`flex items-center pl-3 pr-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer ${
-        active 
-          ? 'bg-primary text-primary-foreground' 
-          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-      }`}>
-        <span className={`mr-3 ${active ? 'text-primary-foreground' : 'text-gray-500'}`}>
-          {icon}
-        </span>
-        {children}
-      </div>
+      <Button 
+        variant={active ? "secondary" : "ghost"} 
+        className="w-full justify-start"
+      >
+        {icon}
+        <span className="ml-2">{children}</span>
+      </Button>
     </Link>
   );
 };
@@ -74,6 +73,14 @@ const AdminSidebar: React.FC = () => {
           </NavItem>
           
           <NavItem 
+            href="/admin/parks" 
+            icon={<Map className="h-5 w-5" />}
+            active={location.startsWith('/admin/parks')}
+          >
+            Parques
+          </NavItem>
+          
+          <NavItem 
             href="/admin/activities" 
             icon={<Calendar className="h-5 w-5" />}
             active={location.startsWith('/admin/activities')}
@@ -82,11 +89,19 @@ const AdminSidebar: React.FC = () => {
           </NavItem>
           
           <NavItem 
-            href="/admin/assets" 
+            href="/admin/documents" 
             icon={<FileText className="h-5 w-5" />}
-            active={location.startsWith('/admin/assets')}
+            active={location.startsWith('/admin/documents')}
           >
-            Activos
+            Documentos
+          </NavItem>
+          
+          <NavItem 
+            href="/admin/comments" 
+            icon={<MessageSquare className="h-5 w-5" />}
+            active={location.startsWith('/admin/comments')}
+          >
+            Comentarios
           </NavItem>
           
           <NavItem 
@@ -98,27 +113,43 @@ const AdminSidebar: React.FC = () => {
           </NavItem>
           
           <NavItem 
-            href="/admin/incidents/dashboard" 
-            icon={<Bell className="h-5 w-5" />}
-            active={location.startsWith('/admin/incidents/dashboard')}
+            href="/admin/analytics" 
+            icon={<BarChart className="h-5 w-5" />}
+            active={location.startsWith('/admin/analytics')}
           >
-            Dashboard Incidencias
+            Análisis
           </NavItem>
           
           <NavItem 
-            href="/admin/parks" 
-            icon={<Map className="h-5 w-5" />}
-            active={location.startsWith('/admin/parks')}
+            href="/admin/amenities" 
+            icon={<Tag className="h-5 w-5" />}
+            active={location.startsWith('/admin/amenities')}
           >
-            Parques
+            Amenidades
           </NavItem>
           
           <NavItem 
-            href="/admin/comments" 
-            icon={<MessageSquare className="h-5 w-5" />}
-            active={location.startsWith('/admin/comments')}
+            href="/admin/assets" 
+            icon={<FileText className="h-5 w-5" />}
+            active={location.startsWith('/admin/assets')}
           >
-            Comentarios
+            Activos
+          </NavItem>
+          
+          <NavItem 
+            href="/admin/volunteers" 
+            icon={<Users className="h-5 w-5" />}
+            active={location.startsWith('/admin/volunteers')}
+          >
+            Voluntarios
+          </NavItem>
+          
+          <NavItem 
+            href="/admin/settings" 
+            icon={<Settings className="h-5 w-5" />}
+            active={location.startsWith('/admin/settings')}
+          >
+            Configuración
           </NavItem>
         </nav>
       </ScrollArea>
