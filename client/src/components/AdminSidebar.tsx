@@ -42,7 +42,7 @@ import {
   Clipboard,
   BadgeCheck,
   LayoutGrid,
-  Flower2 as Flower,
+  Leaf,
   FileEdit,
   Scissors
 } from 'lucide-react';
