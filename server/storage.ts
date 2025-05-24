@@ -3588,10 +3588,6 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
   }
-}
-
-// Use database storage
-
 
   // Implementación de métodos para el módulo mejorado de incidencias
   

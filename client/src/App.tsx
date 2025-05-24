@@ -91,6 +91,21 @@ function Router() {
         <Route path="/admin/documents" component={AdminDocuments} />
         <Route path="/admin/comments" component={AdminComments} />
         <Route path="/admin/incidents" component={AdminIncidents} />
+        <Route path="/admin/incidents/dashboard">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de incidencias...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/incidents/dashboard')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/incidents/categories">
+          <Suspense fallback={<div className="p-8 text-center">Cargando categorías de incidencias...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/incidents/categories')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/incidents/:id">
+          <Suspense fallback={<div className="p-8 text-center">Cargando detalles de incidencia...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/incidents/[id]')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/users" component={AdminUsers} />
         <Route path="/admin/amenities" component={AdminAmenities} />
         <Route path="/admin/settings" component={AdminSettings} />
