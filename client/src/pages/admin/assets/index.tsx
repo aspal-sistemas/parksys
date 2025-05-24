@@ -465,14 +465,14 @@ const AssetsPage: React.FC = () => {
                     <TableHead>Último Mantenimiento</TableHead>
                     <TableHead>Próximo Mantenimiento</TableHead>
                     <TableHead>Valor</TableHead>
+                    <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredAssets.map((asset) => (
                     <TableRow 
                       key={asset.id} 
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => handleViewAsset(asset.id)}
+                      className="hover:bg-muted/50"
                     >
                       <TableCell className="font-medium">{asset.name}</TableCell>
                       <TableCell>{asset.categoryName}</TableCell>
@@ -508,6 +508,32 @@ const AssetsPage: React.FC = () => {
                           ? `$${asset.acquisitionCost.toLocaleString('es-MX')}` 
                           : 'N/A'
                         }
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleViewAsset(asset.id)}
+                          >
+                            <Eye className="h-4 w-4" />
+                            <span className="sr-only">Ver detalles</span>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Redirigir a incidencias con parámetro para reportar problema
+                              window.location.href = `/admin/incidents?reportType=asset&assetId=${asset.id}`;
+                            }}
+                          >
+                            <AlertTriangle className="h-4 w-4" />
+                            <span className="sr-only">Reportar problema</span>
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
