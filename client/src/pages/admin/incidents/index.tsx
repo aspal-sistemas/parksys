@@ -336,13 +336,13 @@ const IncidentsPage = () => {
           
           {/* Botones de acción principales */}
           <div className="flex flex-wrap gap-3">
-            <a href="/admin/incidents/dashboard" className="no-underline">
+            <a href="/admin/incidents/dashboard" className="no-underline w-full sm:w-auto mb-4 sm:mb-0 block">
               <Button 
                 variant="default" 
-                className="bg-blue-600 hover:bg-blue-700 text-lg px-5 py-2 h-auto"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3 h-auto border-4 border-blue-300"
               >
-                <BarChart className="h-5 w-5 mr-2" />
-                Dashboard
+                <BarChart className="h-6 w-6 mr-3" />
+                Dashboard de Incidencias
               </Button>
             </a>
             
