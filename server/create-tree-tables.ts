@@ -95,15 +95,5 @@ export async function createTreeTables() {
   }
 }
 
-// Ejecutar si este archivo se ejecuta directamente
-if (require.main === module) {
-  createTreeTables()
-    .then((result) => {
-      console.log("Resultado:", result);
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error("Error en el proceso:", error);
-      process.exit(1);
-    });
-}
+// Para ES modules no podemos usar require.main === module
+// En lugar de eso, exportamos la función directamente

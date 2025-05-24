@@ -57,11 +57,19 @@ app.use((req, res, next) => {
 });
 
 import { seedDatabase } from "./seed";
+import { createTreeTables } from "./create-tree-tables";
+import { seedTreeSpecies } from "./seed-tree-species";
 
 (async () => {
   try {
     // Inicializar la base de datos con datos predeterminados
     await seedDatabase();
+    
+    // Crear tablas del módulo de arbolado
+    await createTreeTables();
+    
+    // Cargar especies de árboles de muestra
+    await seedTreeSpecies();
   } catch (error) {
     console.error("Error al inicializar la base de datos:", error);
   }
