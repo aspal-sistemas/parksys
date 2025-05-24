@@ -485,6 +485,13 @@ const AdminSidebar: React.FC = () => {
             value="concessions"
           >
             <NavItem 
+              href="/admin/concessions/catalog" 
+              icon={<ListChecks className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/catalog')}
+            >
+              Catálogo
+            </NavItem>
+            <NavItem 
               href="/admin/concessions/contracts" 
               icon={<FileText className="h-5 w-5" />}
               active={location.startsWith('/admin/concessions/contracts')}
@@ -499,11 +506,18 @@ const AdminSidebar: React.FC = () => {
               Concesionarios
             </NavItem>
             <NavItem 
-              href="/admin/concessions/catalog" 
-              icon={<ListChecks className="h-5 w-5" />}
-              active={location.startsWith('/admin/concessions/catalog')}
+              href="/admin/concessions/payments" 
+              icon={<CreditCard className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/payments')}
             >
-              Catálogo
+              Pagos
+            </NavItem>
+            <NavItem 
+              href="/admin/concessions/control" 
+              icon={<ClipboardCheck className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/control')}
+            >
+              Control
             </NavItem>
             <NavItem 
               href="/admin/concessions/reports" 
