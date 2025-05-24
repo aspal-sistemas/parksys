@@ -921,7 +921,7 @@ export const treeSpecies = pgTable("tree_species", {
   heightMature: decimal("height_mature", { precision: 5, scale: 2 }), // altura máxima en metros
   canopyDiameter: decimal("canopy_diameter", { precision: 5, scale: 2 }), // diámetro de copa en metros
   lifespan: integer("lifespan"), // años aproximados
-  imageUrl: text("image_url"),
+  imageUrl: text("image_url"), // URL de la imagen
   description: text("description"),
   maintenanceRequirements: text("maintenance_requirements"),
   waterRequirements: text("water_requirements"), // Bajo, Medio, Alto

@@ -35,6 +35,7 @@ export async function createTreeTables() {
         height_mature INTEGER,
         canopy_diameter INTEGER,
         lifespan INTEGER,
+        image_url TEXT,
         description TEXT,
         maintenance_requirements TEXT,
         water_requirements VARCHAR(50),
