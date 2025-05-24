@@ -17,6 +17,7 @@ import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { sql } from 'drizzle-orm';
 import { getTreeInventory } from './tree_inventory_raw';
+import { getTreeDetails } from './tree_details_route';
 
 /**
  * Registra las rutas relacionadas con el módulo de arbolado
@@ -147,6 +148,9 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   
   // Usar la implementación de inventario adaptada a la estructura real de la tabla
   apiRouter.get("/trees", getTreeInventory);
+  
+  // Ruta para obtener detalles de un árbol específico
+  apiRouter.get("/trees/:id", getTreeDetails);
   
   // Obtener todas las especies de árboles
   apiRouter.get("/tree-species", async (req: Request, res: Response) => {
