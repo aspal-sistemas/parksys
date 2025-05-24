@@ -372,12 +372,26 @@ const AssetMapPage: React.FC = () => {
                   <div className="mt-3 pt-3 border-t border-gray-100">
                     <p className="text-xs text-gray-600">Ubicación: {selectedAsset.locationDescription || 'No especificada'}</p>
                     <p className="text-xs text-gray-600">Parque: {selectedAsset.parkName}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Coordenadas: {selectedAsset.latitude}, {selectedAsset.longitude}
-                    </p>
+                    
+                    {/* Sección de coordenadas con edición rápida */}
+                    {selectedAsset.latitude && selectedAsset.longitude ? (
+                      <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-100">
+                        <p className="text-xs font-medium text-blue-700">Coordenadas:</p>
+                        <p className="text-xs text-blue-600 mt-1">
+                          {selectedAsset.latitude}, {selectedAsset.longitude}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="mt-2 p-2 bg-amber-50 rounded border border-amber-100">
+                        <p className="text-xs font-medium text-amber-700">Sin coordenadas</p>
+                        <p className="text-xs text-amber-600 mt-1">
+                          Este activo no tiene coordenadas asignadas
+                        </p>
+                      </div>
+                    )}
                   </div>
                   
-                  <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
                     <Button 
                       variant="outline" 
                       size="sm" 
@@ -385,6 +399,24 @@ const AssetMapPage: React.FC = () => {
                       onClick={() => window.location.href = `/admin/assets/${selectedAsset.id}`}
                     >
                       Ver detalles completos
+                    </Button>
+                    
+                    {/* Añadir botón para editar coordenadas */}
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      className="w-full bg-blue-600" 
+                      onClick={() => {
+                        // Usar coordenadas de ejemplo para la Ciudad de México si no hay coordenadas
+                        const defaultLat = "19.432608";
+                        const defaultLng = "-99.133209";
+                        
+                        // Formar URL con parámetros para mostrar ejemplos en la página de edición
+                        const editUrl = `/admin/assets/${selectedAsset.id}?mode=edit&lat=${selectedAsset.latitude || defaultLat}&lng=${selectedAsset.longitude || defaultLng}`;
+                        window.location.href = editUrl;
+                      }}
+                    >
+                      Editar Coordenadas
                     </Button>
                   </div>
                 </div>
