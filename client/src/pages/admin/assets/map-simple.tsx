@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { MapPin, List, AlertTriangle } from 'lucide-react';
+import { MapPin, List, AlertTriangle, Filter } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -46,6 +46,13 @@ interface Asset {
   locationDescription: string | null;
   categoryName?: string;
   parkName?: string;
+  // Nuevos campos para filtros avanzados
+  nextMaintenanceDate?: string | null;
+  acquisitionDate?: string | null;
+  acquisitionCost?: number | null;
+  lastMaintenanceDate?: string | null;
+  maintenanceFrequency?: number | null;
+  maintenanceStatus?: string | null;
 }
 
 interface Park {
@@ -126,6 +133,10 @@ const AssetMapPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<number | 'all'>('all');
   const [selectedStatus, setSelectedStatus] = useState<string | 'all'>('all');
   const [selectedCondition, setSelectedCondition] = useState<string | 'all'>('all');
+  const [needsMaintenance, setNeedsMaintenance] = useState<boolean | 'all'>('all');
+  const [dateRange, setDateRange] = useState<'all' | 'recent' | 'last30' | 'last90' | 'lastYear'>('all');
+  const [valueRange, setValueRange] = useState<'all' | 'low' | 'medium' | 'high'>('all');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
   // Consultar datos de activos
@@ -154,14 +165,76 @@ const AssetMapPage: React.FC = () => {
   // Filtrar activos según criterios seleccionados
   const filteredAssets = React.useMemo(() => {
     return assets.filter(asset => {
+      // Filtros básicos
       const matchesPark = selectedPark === 'all' || asset.parkId === selectedPark;
       const matchesCategory = selectedCategory === 'all' || asset.categoryId === selectedCategory;
       const matchesStatus = selectedStatus === 'all' || asset.status === selectedStatus;
       const matchesCondition = selectedCondition === 'all' || asset.condition === selectedCondition;
       
-      return matchesPark && matchesCategory && matchesStatus && matchesCondition;
+      // Filtros avanzados
+      let matchesMaintenanceNeeds = true;
+      let matchesDateRange = true;
+      let matchesValueRange = true;
+      
+      // Verificar si necesita mantenimiento
+      if (needsMaintenance !== 'all') {
+        const hasUpcomingMaintenance = asset.nextMaintenanceDate && new Date(asset.nextMaintenanceDate) <= new Date();
+        matchesMaintenanceNeeds = needsMaintenance === hasUpcomingMaintenance;
+      }
+      
+      // Filtrar por fecha de adquisición
+      if (dateRange !== 'all' && asset.acquisitionDate) {
+        const acquisitionDate = new Date(asset.acquisitionDate);
+        const now = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(now.getDate() - 30);
+        const ninetyDaysAgo = new Date();
+        ninetyDaysAgo.setDate(now.getDate() - 90);
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(now.getFullYear() - 1);
+        
+        switch (dateRange) {
+          case 'recent':
+            // Últimos 7 días
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(now.getDate() - 7);
+            matchesDateRange = acquisitionDate >= sevenDaysAgo;
+            break;
+          case 'last30':
+            matchesDateRange = acquisitionDate >= thirtyDaysAgo;
+            break;
+          case 'last90':
+            matchesDateRange = acquisitionDate >= ninetyDaysAgo;
+            break;
+          case 'lastYear':
+            matchesDateRange = acquisitionDate >= oneYearAgo;
+            break;
+        }
+      }
+      
+      // Filtrar por valor (costo de adquisición)
+      if (valueRange !== 'all' && asset.acquisitionCost !== null && asset.acquisitionCost !== undefined) {
+        switch (valueRange) {
+          case 'low':
+            // Menos de $1,000
+            matchesValueRange = asset.acquisitionCost < 1000;
+            break;
+          case 'medium':
+            // Entre $1,000 y $10,000
+            matchesValueRange = asset.acquisitionCost >= 1000 && asset.acquisitionCost <= 10000;
+            break;
+          case 'high':
+            // Más de $10,000
+            matchesValueRange = asset.acquisitionCost > 10000;
+            break;
+        }
+      }
+      
+      return matchesPark && matchesCategory && matchesStatus && matchesCondition && 
+             matchesMaintenanceNeeds && matchesDateRange && matchesValueRange;
     });
-  }, [assets, selectedPark, selectedCategory, selectedStatus, selectedCondition]);
+  }, [assets, selectedPark, selectedCategory, selectedStatus, selectedCondition, 
+      needsMaintenance, dateRange, valueRange]);
 
   // Determinar si hay activos sin coordenadas de geolocalización
   const unlocatedAssets = assets?.filter(asset => !asset.latitude || !asset.longitude) || [];
@@ -224,8 +297,8 @@ const AssetMapPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* Filtros */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Filtros Básicos */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <Select value={selectedPark.toString()} onValueChange={(value) => setSelectedPark(value === 'all' ? 'all' : parseInt(value))}>
             <SelectTrigger>
               <SelectValue placeholder="Seleccione un parque" />
@@ -282,6 +355,83 @@ const AssetMapPage: React.FC = () => {
             </SelectContent>
           </Select>
         </div>
+        
+        {/* Botón para mostrar/ocultar filtros avanzados */}
+        <div className="flex justify-between items-center mb-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="text-sm"
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            {showAdvancedFilters ? 'Ocultar filtros avanzados' : 'Mostrar filtros avanzados'}
+          </Button>
+          
+          {/* Contador de activos filtrados */}
+          <div className="text-sm text-muted-foreground">
+            Mostrando {filteredAssets.length} de {assets.length} activos
+          </div>
+        </div>
+        
+        {/* Filtros Avanzados (colapsables) */}
+        {showAdvancedFilters && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 border rounded-md bg-slate-50">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Mantenimiento</label>
+              <Select 
+                value={needsMaintenance === 'all' ? 'all' : needsMaintenance ? 'true' : 'false'} 
+                onValueChange={(value) => setNeedsMaintenance(value === 'all' ? 'all' : value === 'true')}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Estado de mantenimiento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los activos</SelectItem>
+                  <SelectItem value="true">Requiere mantenimiento</SelectItem>
+                  <SelectItem value="false">Al día</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Fecha de adquisición</label>
+              <Select 
+                value={dateRange} 
+                onValueChange={(value: any) => setDateRange(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccione rango de fecha" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Cualquier fecha</SelectItem>
+                  <SelectItem value="recent">Últimos 7 días</SelectItem>
+                  <SelectItem value="last30">Últimos 30 días</SelectItem>
+                  <SelectItem value="last90">Últimos 90 días</SelectItem>
+                  <SelectItem value="lastYear">Último año</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Valor del activo</label>
+              <Select 
+                value={valueRange} 
+                onValueChange={(value: any) => setValueRange(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccione rango de valor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Cualquier valor</SelectItem>
+                  <SelectItem value="low">Bajo (&lt; $1,000)</SelectItem>
+                  <SelectItem value="medium">Medio ($1,000 - $10,000)</SelectItem>
+                  <SelectItem value="high">Alto (&gt; $10,000)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
 
         {/* Contenedor del mapa (versión simplificada) */}
         <Card className="mb-6">
