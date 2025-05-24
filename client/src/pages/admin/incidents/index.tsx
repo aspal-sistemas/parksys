@@ -330,15 +330,19 @@ const IncidentsPage = () => {
 
   return (
     <AdminLayout>
-      <div className="bg-blue-100 border-b border-blue-300 p-4 shadow-md mb-4">
-        <div className="container mx-auto flex items-center justify-between">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 shadow-lg mb-6 rounded-lg border-2 border-blue-400 animate-pulse">
+        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center">
-            <BarChart className="h-6 w-6 text-blue-600 mr-2" />
-            <p className="font-medium">Visualiza las estadísticas de incidencias en el dashboard</p>
+            <BarChart className="h-8 w-8 text-white mr-3" />
+            <div>
+              <h3 className="text-xl font-bold mb-1">Dashboard de Incidencias</h3>
+              <p className="font-medium">Visualiza estadísticas, tendencias y métricas en tiempo real</p>
+            </div>
           </div>
-          <a href="/admin/incidents/dashboard" className="no-underline">
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              Ver Dashboard
+          <a href="/admin/incidents/dashboard" className="no-underline w-full md:w-auto">
+            <Button className="bg-white text-blue-700 hover:bg-blue-50 text-lg px-8 py-3 h-auto font-bold w-full">
+              <BarChart className="h-6 w-6 mr-2" />
+              ACCEDER AL DASHBOARD
             </Button>
           </a>
         </div>
