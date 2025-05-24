@@ -279,6 +279,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/trees/catalog/[id]/index')))}
           </Suspense>
         </Route>
+        <Route path="/admin/trees/catalog/:id/edit">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de edición de especie arbórea...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/catalog/[id]/edit/index')))}
+          </Suspense>
+        </Route>
         
         <Route component={NotFound} />
       </Switch>
