@@ -385,7 +385,7 @@ const AdminSidebar: React.FC = () => {
             >
               <NavItem 
                 href="/admin/incidents" 
-                icon={<ClipboardList className="h-5 w-5" />}
+                icon={<FileText className="h-5 w-5" />}
                 active={location === '/admin/incidents' || (location.startsWith('/admin/incidents/') && location.includes('/admin/incidents/[id]'))}
               >
                 Listado
