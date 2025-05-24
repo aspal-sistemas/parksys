@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
 import { 
   AlertTriangle, 
   Clock, 
@@ -276,7 +275,8 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
       'maintenance': 'Mantenimiento',
       'safety': 'Seguridad',
       'accessibility': 'Accesibilidad',
-      'other': 'Otro'
+      'other': 'Otro',
+      'asset_issue': 'Problema con Activo'
     };
     return categoryMap[category] || category;
   };
@@ -340,33 +340,7 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
             {incident.status !== 'rejected' && (
               <Button 
                 variant="destructive" 
-                onClick={() => {
-                  console.log("Rechazando incidencia:", incident.id);
-                  fetch(`/api/incidents/${incident.id}/status`, {
-                    method: 'PUT',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': 'Bearer direct-token-admin',
-                      'X-User-Id': '1'
-                    },
-                    body: JSON.stringify({ status: 'rejected' }),
-                  })
-                  .then(response => {
-                    if (response.ok) {
-                      console.log("Incidencia rechazada correctamente");
-                      // Actualizamos la página para reflejar los cambios
-                      window.location.reload();
-                      setTimeout(() => onClose(), 500);
-                    } else {
-                      console.error("Error al rechazar incidencia");
-                      alert("Error: No se pudo rechazar la incidencia");
-                    }
-                  })
-                  .catch(error => {
-                    console.error("Error al procesar la solicitud:", error);
-                    alert("Error de conexión");
-                  });
-                }}
+                onClick={() => onStatusChange(incident.id, 'rejected')}
                 disabled={isUpdating}
                 className="sm:flex-1"
               >
@@ -378,33 +352,7 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
             {incident.status !== 'in_progress' && incident.status !== 'resolved' && (
               <Button 
                 variant="default" 
-                onClick={() => {
-                  console.log("Cambiando a En proceso:", incident.id);
-                  fetch(`/api/incidents/${incident.id}/status`, {
-                    method: 'PUT',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': 'Bearer direct-token-admin',
-                      'X-User-Id': '1'
-                    },
-                    body: JSON.stringify({ status: 'in_progress' }),
-                  })
-                  .then(response => {
-                    if (response.ok) {
-                      console.log("Incidencia actualizada a En proceso");
-                      // Actualizamos la página para reflejar los cambios
-                      window.location.reload();
-                      setTimeout(() => onClose(), 500);
-                    } else {
-                      console.error("Error al actualizar incidencia");
-                      alert("Error: No se pudo actualizar la incidencia");
-                    }
-                  })
-                  .catch(error => {
-                    console.error("Error al procesar la solicitud:", error);
-                    alert("Error de conexión");
-                  });
-                }}
+                onClick={() => onStatusChange(incident.id, 'in_progress')}
                 disabled={isUpdating}
                 className="sm:flex-1"
               >
@@ -416,33 +364,7 @@ const IncidentDetail: React.FC<IncidentDetailProps> = ({
             {incident.status !== 'resolved' && (
               <Button 
                 variant="default" 
-                onClick={() => {
-                  console.log("Marcando como Resuelta:", incident.id);
-                  fetch(`/api/incidents/${incident.id}/status`, {
-                    method: 'PUT',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': 'Bearer direct-token-admin',
-                      'X-User-Id': '1'
-                    },
-                    body: JSON.stringify({ status: 'resolved' }),
-                  })
-                  .then(response => {
-                    if (response.ok) {
-                      console.log("Incidencia marcada como resuelta");
-                      // Actualizamos la página para reflejar los cambios
-                      window.location.reload();
-                      setTimeout(() => onClose(), 500);
-                    } else {
-                      console.error("Error al resolver incidencia");
-                      alert("Error: No se pudo marcar la incidencia como resuelta");
-                    }
-                  })
-                  .catch(error => {
-                    console.error("Error al procesar la solicitud:", error);
-                    alert("Error de conexión");
-                  });
-                }}
+                onClick={() => onStatusChange(incident.id, 'resolved')}
                 disabled={isUpdating}
                 className="sm:flex-1 bg-green-600 hover:bg-green-700"
               >
@@ -469,14 +391,13 @@ const AdminIncidents = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterPark, setFilterPark] = useState<string>('');
-  const [filterStatus, setFilterStatus] = useState<string>('');
-  const [filterCategory, setFilterCategory] = useState<string>('');
+  const [filterPark, setFilterPark] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
   const [sortField, setSortField] = useState<string>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [showAssetIncidentForm, setShowAssetIncidentForm] = useState(false);
-  const [location, setLocation] = useLocation();
   
   // Detectar si se está accediendo desde el módulo de activos
   useEffect(() => {
@@ -638,7 +559,6 @@ const AdminIncidents = () => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Error al actualizar incidencia (${response.status}): ${errorText}`);
-        alert(`Error: ${errorText}`); // Mostramos un alerta para depuración
         throw new Error(`Error al actualizar el estado de la incidencia: ${response.statusText}`);
       }
       
@@ -695,59 +615,89 @@ const AdminIncidents = () => {
     return [...incidents].filter(incident => {
       // Apply search filter
       if (searchQuery && 
-          !incident.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !incident.description.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !incident.reporterName.toLowerCase().includes(searchQuery.toLowerCase())) {
+          !incident.title?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          !incident.description?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          !incident.reporterName?.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
       
       // Apply park filter
-      if (filterPark && incident.parkId.toString() !== filterPark) {
+      if (filterPark !== 'all' && incident.parkId.toString() !== filterPark) {
         return false;
       }
       
       // Apply status filter
-      if (filterStatus && incident.status !== filterStatus) {
+      if (filterStatus !== 'all' && incident.status !== filterStatus) {
         return false;
       }
       
       // Apply category filter
-      if (filterCategory && incident.category !== filterCategory) {
+      if (filterCategory !== 'all' && incident.category !== filterCategory) {
         return false;
       }
       
       return true;
     }).sort((a, b) => {
-      // Apply sorting
-      if (sortField === 'title') {
-        return sortDirection === 'asc' 
-          ? a.title.localeCompare(b.title) 
-          : b.title.localeCompare(a.title);
-      }
+      // Sort by selected field
+      const aValue = a[sortField as keyof Incident];
+      const bValue = b[sortField as keyof Incident];
       
       if (sortField === 'createdAt') {
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
-        return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+        const aDate = new Date(aValue as string | Date);
+        const bDate = new Date(bValue as string | Date);
+        return sortDirection === 'asc' ? aDate.getTime() - bDate.getTime() : bDate.getTime() - aDate.getTime();
       }
       
-      if (sortField === 'status') {
-        return sortDirection === 'asc' 
-          ? a.status.localeCompare(b.status) 
-          : b.status.localeCompare(a.status);
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortDirection === 'asc' ? 
+          aValue.localeCompare(bValue) : 
+          bValue.localeCompare(aValue);
       }
       
-      // Default sort by date
-      const dateA = new Date(a.createdAt).getTime();
-      const dateB = new Date(b.createdAt).getTime();
-      return dateB - dateA;
+      // Fallback for other types
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
     });
   }, [incidents, searchQuery, filterPark, filterStatus, filterCategory, sortField, sortDirection]);
 
   // Get park name by ID
   const getParkName = (parkId: number) => {
     const park = parks.find(p => p.id === parkId);
-    return park ? park.name : 'Desconocido';
+    return park ? park.name : `Parque ${parkId}`;
+  };
+
+  // Handle status change
+  const handleStatusChange = (incidentId: number, newStatus: string) => {
+    updateStatusMutation.mutate({ incidentId, status: newStatus });
+  };
+
+  // Handle sort toggle
+  const handleSortToggle = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Handle clearing filters
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setFilterPark('all');
+    setFilterStatus('all');
+    setFilterCategory('all');
+  };
+
+  // Handle incident selection
+  const handleIncidentClick = (incident: Incident) => {
+    setSelectedIncident(incident);
+  };
+
+  // Handle incident detail close
+  const handleIncidentDetailClose = () => {
+    setSelectedIncident(null);
   };
 
   // Get status badge
@@ -774,42 +724,10 @@ const AdminIncidents = () => {
       'maintenance': 'Mantenimiento',
       'safety': 'Seguridad',
       'accessibility': 'Accesibilidad',
-      'other': 'Otro'
+      'other': 'Otro',
+      'asset_issue': 'Problema con Activo'
     };
     return categoryMap[category] || category;
-  };
-
-  // Handle status change
-  const handleStatusChange = (incidentId: number, newStatus: string) => {
-    updateStatusMutation.mutate({ incidentId, status: newStatus });
-  };
-
-  // Handle sort toggle
-  const handleSortToggle = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  // Handle clearing filters
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setFilterPark('');
-    setFilterStatus('');
-    setFilterCategory('');
-  };
-
-  // Handle incident selection
-  const handleIncidentClick = (incident: Incident) => {
-    setSelectedIncident(incident);
-  };
-
-  // Handle incident detail close
-  const handleIncidentDetailClose = () => {
-    setSelectedIncident(null);
   };
 
   return (
@@ -887,64 +805,76 @@ const AdminIncidents = () => {
           </div>
         </div>
         
-        {/* Search and filter bar */}
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-3 bg-white p-4 rounded-lg shadow-sm">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Buscar incidencias..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        {/* Action and filter bar */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-white p-4 rounded-lg shadow-sm">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-3 flex-grow">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Buscar incidencias..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            <Select value={filterPark} onValueChange={setFilterPark}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Parque" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los parques</SelectItem>
+                {parks.map((park: any) => (
+                  <SelectItem key={park.id} value={park.id.toString()}>
+                    {park.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="pending">Pendientes</SelectItem>
+                <SelectItem value="in_progress">En proceso</SelectItem>
+                <SelectItem value="resolved">Resueltos</SelectItem>
+                <SelectItem value="rejected">Rechazados</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las categorías</SelectItem>
+                {categories.map(category => (
+                  <SelectItem key={category} value={category}>
+                    {getCategoryLabel(category)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {(searchQuery || filterPark !== 'all' || filterStatus !== 'all' || filterCategory !== 'all') && (
+              <Button variant="ghost" onClick={handleClearFilters} aria-label="Limpiar filtros">
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
-          
-          <Select value={filterPark} onValueChange={setFilterPark}>
-            <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder="Parque" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los parques</SelectItem>
-              {parks.map(park => (
-                <SelectItem key={park.id} value={park.id.toString()}>
-                  {park.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los estados</SelectItem>
-              <SelectItem value="pending">Pendientes</SelectItem>
-              <SelectItem value="in_progress">En proceso</SelectItem>
-              <SelectItem value="resolved">Resueltos</SelectItem>
-              <SelectItem value="rejected">Rechazados</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Categoría" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas las categorías</SelectItem>
-              {categories.map(category => (
-                <SelectItem key={category} value={category}>
-                  {getCategoryLabel(category)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {(searchQuery || filterPark || filterStatus || filterCategory) && (
-            <Button variant="ghost" onClick={handleClearFilters} aria-label="Limpiar filtros">
-              <X className="h-4 w-4" />
-            </Button>
-          )}
+
+          {/* Add Report Incident button */}
+          <Button 
+            variant="default"
+            onClick={() => setShowAssetIncidentForm(true)}
+            className="whitespace-nowrap"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Reportar Incidencia
+          </Button>
         </div>
         
         {/* Incidents table */}
@@ -969,7 +899,7 @@ const AdminIncidents = () => {
             <div className="py-32 flex justify-center">
               <div className="text-center">
                 <p className="text-gray-500 mb-2">No se encontraron incidencias</p>
-                {(searchQuery || filterPark || filterStatus || filterCategory) && (
+                {(searchQuery || filterPark !== 'all' || filterStatus !== 'all' || filterCategory !== 'all') && (
                   <Button variant="outline" onClick={handleClearFilters}>
                     Limpiar filtros
                   </Button>
@@ -992,59 +922,25 @@ const AdminIncidents = () => {
                       )}
                     </button>
                   </TableHead>
-                  <TableHead>
-                    <button 
-                      className="flex items-center"
-                      onClick={() => handleSortToggle('createdAt')}
-                    >
-                      Fecha
-                      {sortField === 'createdAt' && (
-                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'rotate-0' : 'rotate-180'}`} />
-                      )}
-                    </button>
-                  </TableHead>
-                  <TableHead>Reportado por</TableHead>
                   <TableHead>Parque</TableHead>
                   <TableHead>Categoría</TableHead>
-                  <TableHead>
-                    <button 
-                      className="flex items-center"
-                      onClick={() => handleSortToggle('status')}
-                    >
-                      Estado
-                      {sortField === 'status' && (
-                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'rotate-0' : 'rotate-180'}`} />
-                      )}
-                    </button>
-                  </TableHead>
+                  <TableHead>Estado</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredIncidents.map(incident => (
                   <TableRow 
-                    key={incident.id} 
+                    key={incident.id}
                     className="cursor-pointer hover:bg-gray-50"
                     onClick={() => handleIncidentClick(incident)}
                   >
                     <TableCell className="font-medium">{incident.id}</TableCell>
                     <TableCell>
-                      <div className="flex items-center">
-                        <AlertTriangle className={`h-4 w-4 mr-2 ${
-                          incident.status === 'pending' ? 'text-yellow-500' :
-                          incident.status === 'in_progress' ? 'text-blue-500' :
-                          incident.status === 'resolved' ? 'text-green-500' :
-                          'text-red-500'
-                        }`} />
-                        <span>{incident.title}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatDate(incident.createdAt)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center mr-2">
-                          <User className="h-3 w-3 text-gray-500" />
-                        </div>
-                        <span>{incident.reporterName}</span>
+                      <div>
+                        <p className="font-medium">{incident.title}</p>
+                        <p className="text-sm text-gray-500 truncate max-w-[300px]">
+                          {incident.description}
+                        </p>
                       </div>
                     </TableCell>
                     <TableCell>{getParkName(incident.parkId)}</TableCell>
