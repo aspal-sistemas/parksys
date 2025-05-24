@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AdminSidebarModular from './AdminSidebarModular';
+import AdminSidebar from './AdminSidebar';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -28,7 +28,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
         md:relative md:translate-x-0 md:shadow-none
         ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <AdminSidebarModular />
+        <AdminSidebar />
       </div>
       
       {/* Main Content */}
