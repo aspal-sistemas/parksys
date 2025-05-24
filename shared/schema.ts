@@ -938,32 +938,25 @@ export const treeSpecies = pgTable("tree_species", {
 
 export const trees = pgTable("trees", {
   id: serial("id").primaryKey(),
-  code: text("code").notNull(), // Identificador único del árbol (código QR o similar)
-  speciesId: integer("species_id").notNull().references(() => treeSpecies.id),
-  parkId: integer("park_id").notNull().references(() => parks.id),
-  latitude: text("latitude").notNull(),
-  longitude: text("longitude").notNull(),
-  plantingDate: date("planting_date"), // Fecha de plantación (si se conoce)
-  developmentStage: text("development_stage"), // Etapa de desarrollo: Juvenil, Maduro, Senescente
-  ageEstimate: integer("age_estimate"), // Edad aproximada en años
-  height: decimal("height", { precision: 5, scale: 2 }), // Altura en metros
-  diameter: decimal("diameter", { precision: 5, scale: 2 }), // Diámetro a la altura del pecho (DAP) en cm
-  canopyCoverage: decimal("canopy_coverage", { precision: 5, scale: 2 }), // Cobertura de copa en metros cuadrados
-  healthStatus: text("health_status").default("Bueno"), // Estado general: Bueno, Regular, Malo, Crítico
-  physicalCondition: text("physical_condition"), // Detalles del estado físico (vigor, inclinación, etc)
-  hasHollows: boolean("has_hollows").default(false), // Presencia de huecos
-  hasExposedRoots: boolean("has_exposed_roots").default(false), // Raíces expuestas
-  hasPests: boolean("has_pests").default(false), // Presencia de plagas
-  observations: text("observations"), // Observaciones adicionales
-  lastInspectionDate: date("last_inspection_date"), // Fecha de última inspección
-  isProtected: boolean("is_protected").default(false), // Árbol con protección especial
-  locationDescription: text("location_description"), // Descripción de la ubicación dentro del parque
-  imageUrl: text("image_url"), // Foto del árbol
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  isRemoved: boolean("is_removed").default(false), // Para marcar árboles talados o removidos
-  removalDate: date("removal_date"), // Fecha en que se removió el árbol
-  removalReason: text("removal_reason"), // Motivo de la remoción
+  species_id: integer("species_id").references(() => treeSpecies.id),
+  park_id: integer("park_id").references(() => parks.id),
+  last_maintenance_date: date("last_maintenance_date"),
+  created_by: integer("created_by"),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  updated_at: timestamp("updated_at").notNull().defaultNow(),
+  // Datos de geolocalización
+  latitude: decimal("latitude"),
+  longitude: decimal("longitude"),
+  // Datos físicos
+  height: decimal("height"),
+  trunk_diameter: decimal("trunk_diameter"),
+  // Datos administrativos
+  planting_date: date("planting_date"),
+  location_description: varchar("location_description", { length: 255 }),
+  notes: text("notes"),
+  // Estado
+  condition: varchar("condition", { length: 50 }),
+  health_status: varchar("health_status", { length: 50 })
 });
 
 export const treeMaintenances = pgTable("tree_maintenances", {

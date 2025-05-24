@@ -378,10 +378,10 @@ export default function TreeEnvironmentalManagement() {
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Cobertura de Copa</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-500">Condición</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg font-medium">{formatNumber(selectedTree.canopyCoverage, "m²")}</p>
+              <p className="text-lg font-medium">{selectedTree.condition || "No especificada"}</p>
             </CardContent>
           </Card>
         </div>
@@ -401,7 +401,7 @@ export default function TreeEnvironmentalManagement() {
                 <DialogHeader>
                   <DialogTitle>Nuevo Cálculo de Servicios Ambientales</DialogTitle>
                   <DialogDescription>
-                    Registra un nuevo cálculo de beneficios ambientales para el árbol {selectedTree.code}
+                    Registra un nuevo cálculo de beneficios ambientales para el árbol #{selectedTree.id}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
