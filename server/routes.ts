@@ -17,6 +17,7 @@ import { registerAssetRoutes } from "./asset_routes";
 import { registerMaintenanceRoutes } from "./maintenance_routes";
 import { registerAssetAssignmentRoutes } from "./asset_assignment_routes";
 import { registerTreeRoutes } from "./tree_routes";
+import { registerTreeInventoryRoutes } from "./tree_inventory_routes";
 import { activityRouter } from "./activityRoutes";
 import directRouter from "./directRoutes";
 import { 
