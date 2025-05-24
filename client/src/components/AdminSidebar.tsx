@@ -172,14 +172,14 @@ const AdminSidebar: React.FC = () => {
               icon={<User className="h-5 w-5" />}
               active={location === '/admin/users'}
             >
-              Lista de Usuarios
+              Lista
             </NavItem>
             <NavItem 
               href="/admin/permissions" 
               icon={<Shield className="h-5 w-5" />}
               active={location === '/admin/permissions'}
             >
-              Permisos de Roles
+              Permisos
             </NavItem>
           </ModuleNav>
           
