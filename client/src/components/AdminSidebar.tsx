@@ -212,15 +212,6 @@ const AdminSidebar: React.FC = () => {
             >
               Instructores
             </NavItem>
-            
-            {/* Sección de Evaluaciones */}
-            <NavItem 
-              href="/admin/evaluaciones" 
-              icon={<BadgeCheck className="h-5 w-5" />}
-              active={location.startsWith('/admin/evaluaciones')}
-            >
-              Evaluaciones Generales
-            </NavItem>
           </ModuleNav>
           
           <ModuleNav 
