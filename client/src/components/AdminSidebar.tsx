@@ -382,7 +382,7 @@ const AdminSidebar: React.FC = () => {
               icon={<Bell className="h-5 w-5" />}
               active={location === '/admin/incidents' || (location.startsWith('/admin/incidents/') && location.includes('/admin/incidents/[id]'))}
             >
-              Gestión de Incidencias
+              Incidencias
             </NavItem>
             <NavItem 
               href="/admin/incidents/categories" 
