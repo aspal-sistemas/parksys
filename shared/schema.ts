@@ -156,6 +156,8 @@ export const incidentCategories = pgTable("incident_categories", {
   name: text("name").notNull(),
   description: text("description"),
   icon: text("icon"),
+  priority: text("priority").default("medium"), // prioridad predeterminada para esta categoría
+  color: text("color"), // para representación visual
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -165,6 +167,41 @@ export const incidentSubcategories = pgTable("incident_subcategories", {
   name: text("name").notNull(),
   description: text("description"),
   estimatedResolutionTime: integer("estimated_resolution_time"), // en horas
+  severity: text("severity").default("medium"), // severidad predeterminada
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Tabla para comentarios de incidentes
+export const incidentComments = pgTable("incident_comments", {
+  id: serial("id").primaryKey(),
+  incidentId: integer("incident_id").notNull(),
+  userId: integer("user_id").notNull(),
+  content: text("content").notNull(),
+  attachments: text("attachments").array(), // URLs de archivos adjuntos
+  isPrivate: boolean("is_private").default(false), // para comentarios internos vs. públicos
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Tabla para historial de acciones sobre incidentes
+export const incidentHistory = pgTable("incident_history", {
+  id: serial("id").primaryKey(),
+  incidentId: integer("incident_id").notNull(),
+  userId: integer("user_id").notNull(),
+  action: text("action").notNull(), // created, updated, assigned, statusChanged, etc.
+  details: jsonb("details"), // detalles específicos de la acción
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Tabla para notificaciones sobre incidentes
+export const incidentNotifications = pgTable("incident_notifications", {
+  id: serial("id").primaryKey(),
+  incidentId: integer("incident_id").notNull(),
+  userId: integer("user_id").notNull(),
+  type: text("type").notNull(), // reminder, update, assignment, etc.
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false),
+  scheduledFor: timestamp("scheduled_for"), // para notificaciones programadas
+  sentAt: timestamp("sent_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -224,7 +261,33 @@ export const insertParkLocationSchema = createInsertSchema(parkLocations).omit({
 export const insertActivityCatalogSchema = createInsertSchema(activityCatalog).omit({ id: true, createdAt: true });
 export const insertActivitySchema = createInsertSchema(activities).omit({ id: true, createdAt: true });
 export const insertCommentSchema = createInsertSchema(comments).omit({ id: true, createdAt: true, isApproved: true });
-export const insertIncidentSchema = createInsertSchema(incidents).omit({ id: true, createdAt: true, updatedAt: true, status: true });
+
+// Esquemas de inserción para el módulo de incidencias mejorado
+export const insertIncidentCategorySchema = createInsertSchema(incidentCategories).omit({ id: true, createdAt: true });
+export const insertIncidentSubcategorySchema = createInsertSchema(incidentSubcategories).omit({ id: true, createdAt: true });
+export const insertIncidentCommentSchema = createInsertSchema(incidentComments).omit({ id: true, createdAt: true });
+export const insertIncidentHistorySchema = createInsertSchema(incidentHistory).omit({ id: true, createdAt: true });
+export const insertIncidentNotificationSchema = createInsertSchema(incidentNotifications).omit({ id: true, createdAt: true, sentAt: true, isRead: true });
+
+// Esquema de inserción para incidentes con validaciones
+export const insertIncidentSchema = createInsertSchema(incidents)
+  .omit({ 
+    id: true, 
+    createdAt: true, 
+    updatedAt: true, 
+    status: true, 
+    priority: true,
+    severity: true,
+    resolutionDate: true
+  })
+  .extend({
+    title: z.string().min(5, "El título debe tener al menos 5 caracteres"),
+    description: z.string().min(10, "La descripción debe tener al menos 10 caracteres"),
+    reporterName: z.string().min(3, "El nombre del reportante debe tener al menos 3 caracteres"),
+    reporterEmail: z.string().email("Debe proporcionar un correo electrónico válido").optional().nullable(),
+    reporterPhone: z.string().optional().nullable(),
+    location: z.string().optional().nullable(),
+  });
 // Asset schemas will be defined later
 
 // TYPES
@@ -261,8 +324,24 @@ export type InsertActivity = z.infer<typeof insertActivitySchema>;
 export type Comment = typeof comments.$inferSelect;
 export type InsertComment = z.infer<typeof insertCommentSchema>;
 
+// Tipos para el módulo de incidencias mejorado
 export type Incident = typeof incidents.$inferSelect;
 export type InsertIncident = z.infer<typeof insertIncidentSchema>;
+
+export type IncidentCategory = typeof incidentCategories.$inferSelect;
+export type InsertIncidentCategory = z.infer<typeof insertIncidentCategorySchema>;
+
+export type IncidentSubcategory = typeof incidentSubcategories.$inferSelect;
+export type InsertIncidentSubcategory = z.infer<typeof insertIncidentSubcategorySchema>;
+
+export type IncidentComment = typeof incidentComments.$inferSelect;
+export type InsertIncidentComment = z.infer<typeof insertIncidentCommentSchema>;
+
+export type IncidentHistory = typeof incidentHistory.$inferSelect;
+export type InsertIncidentHistory = z.infer<typeof insertIncidentHistorySchema>;
+
+export type IncidentNotification = typeof incidentNotifications.$inferSelect;
+export type InsertIncidentNotification = z.infer<typeof insertIncidentNotificationSchema>;
 
 // Asset types will be defined in a separate file
 
@@ -403,10 +482,71 @@ export const commentsRelations = relations(comments, ({ one }) => ({
   }),
 }));
 
-export const incidentsRelations = relations(incidents, ({ one }) => ({
+export const incidentsRelations = relations(incidents, ({ one, many }) => ({
   park: one(parks, {
     fields: [incidents.parkId],
     references: [parks.id],
+  }),
+  category: one(incidentCategories, {
+    fields: [incidents.categoryId],
+    references: [incidentCategories.id],
+  }),
+  subcategory: one(incidentSubcategories, {
+    fields: [incidents.subcategoryId],
+    references: [incidentSubcategories.id],
+  }),
+  assignedTo: one(users, {
+    fields: [incidents.assignedToId],
+    references: [users.id],
+  }),
+  comments: many(incidentComments),
+  history: many(incidentHistory),
+  notifications: many(incidentNotifications),
+}));
+
+export const incidentCategoriesRelations = relations(incidentCategories, ({ many }) => ({
+  subcategories: many(incidentSubcategories),
+  incidents: many(incidents),
+}));
+
+export const incidentSubcategoriesRelations = relations(incidentSubcategories, ({ one, many }) => ({
+  category: one(incidentCategories, {
+    fields: [incidentSubcategories.categoryId],
+    references: [incidentCategories.id],
+  }),
+  incidents: many(incidents),
+}));
+
+export const incidentCommentsRelations = relations(incidentComments, ({ one }) => ({
+  incident: one(incidents, {
+    fields: [incidentComments.incidentId],
+    references: [incidents.id],
+  }),
+  user: one(users, {
+    fields: [incidentComments.userId],
+    references: [users.id],
+  }),
+}));
+
+export const incidentHistoryRelations = relations(incidentHistory, ({ one }) => ({
+  incident: one(incidents, {
+    fields: [incidentHistory.incidentId],
+    references: [incidents.id],
+  }),
+  user: one(users, {
+    fields: [incidentHistory.userId],
+    references: [users.id],
+  }),
+}));
+
+export const incidentNotificationsRelations = relations(incidentNotifications, ({ one }) => ({
+  incident: one(incidents, {
+    fields: [incidentNotifications.incidentId],
+    references: [incidents.id],
+  }),
+  user: one(users, {
+    fields: [incidentNotifications.userId],
+    references: [users.id],
   }),
 }));
 

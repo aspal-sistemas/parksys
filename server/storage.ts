@@ -142,9 +142,55 @@ export interface IStorage {
   // Incident operations
   getIncident(id: number): Promise<Incident | undefined>;
   getParkIncidents(parkId: number): Promise<Incident[]>;
-  getAllIncidents(): Promise<Incident[]>;
+  getAllIncidents(filters?: Partial<{
+    categoryId: number;
+    subcategoryId: number;
+    status: string;
+    priority: string;
+    severity: string;
+    assignedToId: number;
+    search: string;
+    assetId: number;
+    fromDate: Date;
+    toDate: Date;
+  }>): Promise<Incident[]>;
   createIncident(incident: InsertIncident): Promise<Incident>;
   updateIncidentStatus(id: number, status: string): Promise<Incident | undefined>;
+  updateIncident(id: number, incident: Partial<InsertIncident>): Promise<Incident | undefined>;
+  deleteIncident(id: number): Promise<boolean>;
+  assignIncident(id: number, userId: number): Promise<Incident | undefined>;
+  resolveIncident(id: number, resolutionNotes: string): Promise<Incident | undefined>;
+  
+  // Incident category operations
+  getIncidentCategory(id: number): Promise<IncidentCategory | undefined>;
+  getIncidentCategories(): Promise<IncidentCategory[]>;
+  createIncidentCategory(category: InsertIncidentCategory): Promise<IncidentCategory>;
+  updateIncidentCategory(id: number, category: Partial<InsertIncidentCategory>): Promise<IncidentCategory | undefined>;
+  deleteIncidentCategory(id: number): Promise<boolean>;
+  
+  // Incident subcategory operations
+  getIncidentSubcategory(id: number): Promise<IncidentSubcategory | undefined>;
+  getIncidentSubcategories(categoryId?: number): Promise<IncidentSubcategory[]>;
+  createIncidentSubcategory(subcategory: InsertIncidentSubcategory): Promise<IncidentSubcategory>;
+  updateIncidentSubcategory(id: number, subcategory: Partial<InsertIncidentSubcategory>): Promise<IncidentSubcategory | undefined>;
+  deleteIncidentSubcategory(id: number): Promise<boolean>;
+  
+  // Incident comment operations
+  getIncidentComment(id: number): Promise<IncidentComment | undefined>;
+  getIncidentComments(incidentId: number): Promise<IncidentComment[]>;
+  createIncidentComment(comment: InsertIncidentComment): Promise<IncidentComment>;
+  deleteIncidentComment(id: number): Promise<boolean>;
+  
+  // Incident history operations
+  getIncidentHistory(incidentId: number): Promise<IncidentHistory[]>;
+  createIncidentHistoryEntry(entry: InsertIncidentHistory): Promise<IncidentHistory>;
+  
+  // Incident notification operations
+  getIncidentNotifications(userId: number): Promise<IncidentNotification[]>;
+  getIncidentNotification(id: number): Promise<IncidentNotification | undefined>;
+  createIncidentNotification(notification: InsertIncidentNotification): Promise<IncidentNotification>;
+  markNotificationAsRead(id: number): Promise<IncidentNotification | undefined>;
+  deleteIncidentNotification(id: number): Promise<boolean>;
 
   // Volunteer operations
   getVolunteerById(id: number): Promise<Volunteer | undefined>;
