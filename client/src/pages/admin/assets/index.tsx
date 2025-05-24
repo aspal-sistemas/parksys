@@ -239,6 +239,16 @@ const AssetsPage: React.FC = () => {
             <MapPin className="mr-2 h-4 w-4" />
             Ver Mapa
           </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              // Navegación forzada debido a problemas con el router
+              window.location.href = '/admin/assets/maintenance/calendar';
+            }}
+          >
+            <Clock className="mr-2 h-4 w-4" />
+            Calendario de Mantenimiento
+          </Button>
           <Button onClick={handleAddAsset}>
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Activo
