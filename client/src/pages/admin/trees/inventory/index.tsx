@@ -158,6 +158,46 @@ function TreeInventoryPage() {
   const handleAddTree = () => {
     setLocation('/admin/trees/inventory/new');
   };
+  
+  // Función para cargar árboles de muestra
+  const handleSeedTrees = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      const userRole = localStorage.getItem('userRole');
+      
+      const response = await fetch('/api/trees/seed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-User-Id': userId || '',
+          'X-User-Role': userRole || ''
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al cargar árboles de muestra');
+      }
+      
+      const data = await response.json();
+      
+      toast({
+        title: "Éxito",
+        description: data.message,
+        variant: "default",
+      });
+      
+      // Recargar los datos después de agregar los árboles
+      window.location.reload();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los árboles de muestra. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleViewDetails = (id: number) => {
     setLocation(`/admin/trees/inventory/${id}`);
