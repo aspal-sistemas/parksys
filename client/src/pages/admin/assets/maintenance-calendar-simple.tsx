@@ -132,7 +132,7 @@ const MaintenanceCalendarSimplePage = () => {
               </p>
             </div>
           </div>
-          <Button>
+          <Button onClick={() => setLocation('/admin/assets/maintenance/schedule')}>
             <Plus className="mr-2 h-4 w-4" />
             Programar Mantenimiento
           </Button>
