@@ -195,13 +195,6 @@ const AdminSidebar: React.FC = () => {
             
             {/* Sección de Catálogo */}
             <NavItem 
-              href="/admin/organizador/catalogo/crear" 
-              icon={<FileText className="h-5 w-5" />}
-              active={location.startsWith('/admin/organizador/catalogo/crear')}
-            >
-              Crear en Catálogo
-            </NavItem>
-            <NavItem 
               href="/admin/organizador" 
               icon={<ListFilter className="h-5 w-5" />}
               active={location.startsWith('/admin/organizador') && 
