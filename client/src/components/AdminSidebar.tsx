@@ -14,7 +14,8 @@ import {
   BarChart,
   Package,
   Shield,
-  User
+  User,
+  ListFilter
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -137,6 +138,34 @@ const AdminSidebar: React.FC = () => {
               active={location === '/admin/permissions'}
             >
               Permisos de Roles
+            </NavItem>
+          </ModuleNav>
+          
+          <ModuleNav 
+            title="Actividades" 
+            icon={<Calendar className="h-5 w-5" />}
+            value="activities"
+          >
+            <NavItem 
+              href="/admin/activities" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/activities') && !location.startsWith('/admin/activities/calendar')}
+            >
+              Gestión de Actividades
+            </NavItem>
+            <NavItem 
+              href="/admin/activities/calendar" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/activities/calendar')}
+            >
+              Calendario
+            </NavItem>
+            <NavItem 
+              href="/admin/organizador" 
+              icon={<ListFilter className="h-5 w-5" />}
+              active={location.startsWith('/admin/organizador')}
+            >
+              Organizador
             </NavItem>
           </ModuleNav>
         </Accordion>
