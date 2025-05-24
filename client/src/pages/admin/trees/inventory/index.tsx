@@ -144,13 +144,16 @@ function TreeInventoryPage() {
     },
   });
 
-  if (error) {
-    toast({
-      title: "Error",
-      description: "No se pudo cargar el inventario de árboles. Por favor, intenta nuevamente.",
-      variant: "destructive",
-    });
-  }
+  // Usamos useEffect para evitar re-renders infinitos al mostrar el toast
+  React.useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar el inventario de árboles. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
 
   const handleAddTree = () => {
     setLocation('/admin/trees/inventory/new');
