@@ -74,6 +74,13 @@ const AssetIncidentForm: React.FC<AssetIncidentFormProps> = ({ onClose, onSucces
   // Consultar datos de activos
   const { data: assets = [], isLoading: isLoadingAssets } = useQuery({
     queryKey: ['/api/assets'],
+    onSuccess: (data) => {
+      // Si hay un ID de activo preseleccionado (desde la página de activos)
+      if (window.selectedAssetId) {
+        setSelectedAssetId(window.selectedAssetId);
+        window.selectedAssetId = undefined; // Limpiamos la variable global
+      }
+    }
   });
 
   // Manejar envío del formulario
@@ -399,13 +406,28 @@ const AdminIncidents = () => {
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [showAssetIncidentForm, setShowAssetIncidentForm] = useState(false);
   
+  // Variable global con TypeScript
+  declare global {
+    interface Window {
+      selectedAssetId?: string;
+    }
+  }
+
   // Detectar si se está accediendo desde el módulo de activos
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const reportType = params.get('reportType');
+    const assetId = params.get('assetId');
     
     if (reportType === 'asset') {
       setShowAssetIncidentForm(true);
+      
+      // Si hay un ID de activo específico, lo seleccionamos automáticamente
+      if (assetId) {
+        // Guardamos el ID del activo para usarlo cuando se cargue el formulario
+        // Esta variable se utilizará en el componente AssetIncidentForm
+        window.selectedAssetId = assetId;
+      }
     }
   }, []);
 
