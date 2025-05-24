@@ -141,7 +141,7 @@ const AdminSidebarModular: React.FC<AdminSidebarProps> = ({
     if (path === "/admin" && currentPath === "/admin") {
       return true;
     }
-    if (path !== "/admin" && currentPath.startsWith(path)) {
+    if (path !== "/admin" && currentPath && currentPath.startsWith(path)) {
       return true;
     }
     return false;
@@ -149,7 +149,7 @@ const AdminSidebarModular: React.FC<AdminSidebarProps> = ({
   
   // Verifica si una ruta de grupo está activa
   const isGroupActive = (paths: string[]) => {
-    return paths.some(path => currentPath.startsWith(path));
+    return currentPath && paths.some(path => currentPath.startsWith(path));
   };
   
   return (
