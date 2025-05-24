@@ -18,6 +18,8 @@ import {
   ListFilter,
   Workflow,
   Building,
+  CreditCard,
+  ClipboardCheck,
   Upload,
   Archive,
   Boxes,
