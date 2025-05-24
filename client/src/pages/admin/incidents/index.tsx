@@ -330,6 +330,27 @@ const IncidentsPage = () => {
 
   return (
     <AdminLayout>
+      <script dangerouslySetInnerHTML={{ __html: `
+        // Insertar botón directamente en el DOM
+        document.addEventListener('DOMContentLoaded', function() {
+          const button = document.createElement('a');
+          button.href = '/admin/incidents/dashboard';
+          button.innerHTML = 'IR AL DASHBOARD DE INCIDENCIAS';
+          button.style.position = 'fixed';
+          button.style.top = '70px';
+          button.style.right = '20px';
+          button.style.zIndex = '9999';
+          button.style.background = 'red';
+          button.style.color = 'white';
+          button.style.padding = '15px 20px';
+          button.style.borderRadius = '8px';
+          button.style.textDecoration = 'none';
+          button.style.fontWeight = 'bold';
+          button.style.fontSize = '16px';
+          button.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+          document.body.appendChild(button);
+        });
+      `}} />
       <div style={{
         margin: '20px 0',
         padding: '20px',
