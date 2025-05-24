@@ -402,11 +402,20 @@ function TreeSpeciesDetail() {
           {/* Pestaña de Cultivo y Cuidado */}
           <TabsContent value="cultivo-cuidado">
             <Card>
-              <CardHeader>
-                <CardTitle>Cultivo y Cuidado</CardTitle>
-                <CardDescription>
-                  Requerimientos y cuidados necesarios para el óptimo desarrollo
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Cultivo y Cuidado</CardTitle>
+                  <CardDescription>
+                    Requerimientos y cuidados necesarios para el óptimo desarrollo
+                  </CardDescription>
+                </div>
+                <Button 
+                  variant="outline"
+                  onClick={handleEdit}
+                  className="flex items-center text-green-600 hover:bg-green-50"
+                >
+                  <Edit className="mr-2 h-4 w-4" /> Editar
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
