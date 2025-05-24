@@ -257,6 +257,7 @@ const AdminSidebar: React.FC = () => {
             >
               Mapa de Activos
             </NavItem>
+            {/* Submenú oculto: Mapa Simplificado
             <NavItem 
               href="/admin/assets/map-simple" 
               icon={<MapPin className="h-5 w-5" />}
@@ -264,6 +265,7 @@ const AdminSidebar: React.FC = () => {
             >
               Mapa Simplificado
             </NavItem>
+            */}
             {/* Submenú oculto: Calendario de Mantenimiento
             <NavItem 
               href="/admin/assets/maintenance-calendar" 
