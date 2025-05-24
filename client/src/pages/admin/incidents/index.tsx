@@ -330,22 +330,35 @@ const IncidentsPage = () => {
 
   return (
     <AdminLayout>
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 shadow-lg mb-6 rounded-lg border-2 border-blue-400 animate-pulse">
-        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center">
-            <BarChart className="h-8 w-8 text-white mr-3" />
-            <div>
-              <h3 className="text-xl font-bold mb-1">Dashboard de Incidencias</h3>
-              <p className="font-medium">Visualiza estadísticas, tendencias y métricas en tiempo real</p>
-            </div>
-          </div>
-          <a href="/admin/incidents/dashboard" className="no-underline w-full md:w-auto">
-            <Button className="bg-white text-blue-700 hover:bg-blue-50 text-lg px-8 py-3 h-auto font-bold w-full">
-              <BarChart className="h-6 w-6 mr-2" />
-              ACCEDER AL DASHBOARD
-            </Button>
-          </a>
-        </div>
+      <div style={{
+        margin: '20px 0',
+        padding: '20px',
+        background: 'red',
+        color: 'white',
+        border: '5px solid black',
+        borderRadius: '10px',
+        textAlign: 'center',
+        fontSize: '24px',
+        fontWeight: 'bold'
+      }}>
+        <a 
+          href="/admin/incidents/dashboard" 
+          style={{
+            display: 'block',
+            padding: '15px',
+            background: 'yellow',
+            color: 'black',
+            textDecoration: 'none',
+            borderRadius: '8px',
+            border: '3px solid black',
+            margin: '10px auto',
+            maxWidth: '500px',
+            fontSize: '24px',
+            fontWeight: 'bold'
+          }}
+        >
+          ACCEDER AL DASHBOARD DE INCIDENCIAS
+        </a>
       </div>
       <div className="container mx-auto py-6">
         <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center mb-6">
