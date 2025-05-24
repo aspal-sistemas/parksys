@@ -28,6 +28,15 @@ import {
   MapPin,
   GraduationCap,
   Award,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  ArrowRightLeft,
+  Calculator,
+  Megaphone,
+  Handshake,
+  Store,
+  ListChecks,
   Clipboard,
   BadgeCheck,
   LayoutGrid
@@ -243,6 +252,98 @@ const AdminSidebar: React.FC = () => {
           </ModuleNav>
           
           <ModuleNav 
+            title="Activos" 
+            icon={<Archive className="h-5 w-5" />}
+            value="assets"
+          >
+            <NavItem 
+              href="/admin/assets" 
+              icon={<Boxes className="h-5 w-5" />}
+              active={location === '/admin/assets' || 
+                     (location.startsWith('/admin/assets/') && location.includes('/admin/assets/[id]'))}
+            >
+              Gestión de Activos
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/new" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/new')}
+            >
+              Nuevo Activo
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/categories" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/categories')}
+            >
+              Categorías
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/inventory" 
+              icon={<Package className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/inventory')}
+            >
+              Inventario
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/map" 
+              icon={<Map className="h-5 w-5" />}
+              active={location === '/admin/assets/map'}
+            >
+              Mapa de Activos
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/map-simple" 
+              icon={<MapPin className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/map-simple')}
+            >
+              Mapa Simplificado
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/maintenance-calendar" 
+              icon={<CalendarDays className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/maintenance-calendar')}
+            >
+              Calendario de Mantenimiento
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/schedule-maintenance" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/schedule-maintenance')}
+            >
+              Programar Mantenimiento
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/assign-manager" 
+              icon={<User className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/assign-manager')}
+            >
+              Asignar Responsable
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/assign-equipment" 
+              icon={<Box className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/assign-equipment')}
+            >
+              Asignar Equipamiento
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/report-issue" 
+              icon={<Bell className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/report-issue')}
+            >
+              Reportar Incidencia
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/dashboard" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/dashboard')}
+            >
+              Dashboard de Activos
+            </NavItem>
+          </ModuleNav>
+          
+          <ModuleNav 
             title="Operaciones" 
             icon={<Workflow className="h-5 w-5" />}
             value="operations"
@@ -299,6 +400,111 @@ const AdminSidebar: React.FC = () => {
                      location.startsWith('/admin/incidentes-dashboard')}
             >
               Dashboard de Incidencias
+            </NavItem>
+          </ModuleNav>
+          
+          <ModuleNav 
+            title="Finanzas" 
+            icon={<DollarSign className="h-5 w-5" />}
+            value="finances"
+          >
+            <NavItem 
+              href="/admin/finances/income" 
+              icon={<TrendingUp className="h-5 w-5" />}
+              active={location.startsWith('/admin/finances/income')}
+            >
+              Ingresos
+            </NavItem>
+            <NavItem 
+              href="/admin/finances/expenses" 
+              icon={<TrendingDown className="h-5 w-5" />}
+              active={location.startsWith('/admin/finances/expenses')}
+            >
+              Egresos
+            </NavItem>
+            <NavItem 
+              href="/admin/finances/flow" 
+              icon={<ArrowRightLeft className="h-5 w-5" />}
+              active={location.startsWith('/admin/finances/flow')}
+            >
+              Flujo
+            </NavItem>
+            <NavItem 
+              href="/admin/finances/calculator" 
+              icon={<Calculator className="h-5 w-5" />}
+              active={location.startsWith('/admin/finances/calculator')}
+            >
+              Calculadora
+            </NavItem>
+            <NavItem 
+              href="/admin/finances/reports" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/finances/reports')}
+            >
+              Reportes
+            </NavItem>
+          </ModuleNav>
+          
+          <ModuleNav 
+            title="Marketing" 
+            icon={<Megaphone className="h-5 w-5" />}
+            value="marketing"
+          >
+            <NavItem 
+              href="/admin/marketing/events" 
+              icon={<CalendarDays className="h-5 w-5" />}
+              active={location.startsWith('/admin/marketing/events')}
+            >
+              Eventos
+            </NavItem>
+            <NavItem 
+              href="/admin/marketing/sponsors" 
+              icon={<Handshake className="h-5 w-5" />}
+              active={location.startsWith('/admin/marketing/sponsors')}
+            >
+              Patrocinios
+            </NavItem>
+            <NavItem 
+              href="/admin/marketing/reports" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/marketing/reports')}
+            >
+              Reportes
+            </NavItem>
+          </ModuleNav>
+          
+          <ModuleNav 
+            title="Concesiones" 
+            icon={<Store className="h-5 w-5" />}
+            value="concessions"
+          >
+            <NavItem 
+              href="/admin/concessions/contracts" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/contracts')}
+            >
+              Contratos
+            </NavItem>
+            <NavItem 
+              href="/admin/concessions/concessionaires" 
+              icon={<Building className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/concessionaires')}
+            >
+              Concesionarios
+            </NavItem>
+            <NavItem 
+              href="/admin/concessions/catalog" 
+              icon={<ListChecks className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/catalog')}
+            >
+              Catálogo
+            </NavItem>
+            <NavItem 
+              href="/admin/concessions/reports" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/reports')}
+            >
+              Reportes
             </NavItem>
           </ModuleNav>
           
