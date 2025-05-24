@@ -218,6 +218,15 @@ const AdminSidebar: React.FC = () => {
               Organizador
             </NavItem>
             
+            {/* Sección de Instructores */}
+            <NavItem 
+              href="/admin/instructors" 
+              icon={<GraduationCap className="h-5 w-5" />}
+              active={location === '/admin/instructors'}
+            >
+              Instructores
+            </NavItem>
+            
             {/* Sección de Evaluaciones */}
             <NavItem 
               href="/admin/evaluaciones" 
@@ -225,41 +234,6 @@ const AdminSidebar: React.FC = () => {
               active={location.startsWith('/admin/evaluaciones')}
             >
               Evaluaciones Generales
-            </NavItem>
-          </ModuleNav>
-          
-          <ModuleNav 
-            title="Instructores" 
-            icon={<GraduationCap className="h-5 w-5" />}
-            value="instructors"
-          >
-            <NavItem 
-              href="/admin/instructors" 
-              icon={<Users className="h-5 w-5" />}
-              active={location === '/admin/instructors'}
-            >
-              Listado de Instructores
-            </NavItem>
-            <NavItem 
-              href="/admin/instructors/detail" 
-              icon={<User className="h-5 w-5" />}
-              active={location.startsWith('/admin/instructors/detail')}
-            >
-              Detalle de Instructor
-            </NavItem>
-            <NavItem 
-              href="/admin/instructors/cards" 
-              icon={<LayoutGrid className="h-5 w-5" />}
-              active={location.startsWith('/admin/instructors/cards')}
-            >
-              Tarjetas de Instructores
-            </NavItem>
-            <NavItem 
-              href="/admin/instructors/evaluations" 
-              icon={<Clipboard className="h-5 w-5" />}
-              active={location.startsWith('/admin/instructors/evaluations')}
-            >
-              Evaluaciones de Instructores
             </NavItem>
           </ModuleNav>
           
