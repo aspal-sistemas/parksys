@@ -314,9 +314,9 @@ export default function VolunteerDashboard() {
           <div className="flex gap-2">
             <Button 
               variant="outline"
-              onClick={() => setLocation(`/admin/volunteers/edit/${volunteerInfo.id}`)}
+              onClick={() => setLocation(`/admin/users/${volunteerInfo.id}`)}
             >
-              Editar perfil
+              Editar perfil en Usuarios
             </Button>
           </div>
         </div>
