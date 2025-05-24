@@ -3593,4 +3593,380 @@ export class DatabaseStorage implements IStorage {
 // Use database storage
 
 
+  // Implementación de métodos para el módulo mejorado de incidencias
+  
+  // Métodos para manejo de categorías de incidentes
+  async getIncidentCategory(id: number): Promise<IncidentCategory | undefined> {
+    try {
+      const [category] = await db.select().from(incidentCategories).where(eq(incidentCategories.id, id));
+      return category;
+    } catch (error) {
+      console.error("Error al obtener categoría de incidente:", error);
+      return undefined;
+    }
+  }
+
+  async getIncidentCategories(): Promise<IncidentCategory[]> {
+    try {
+      return await db.select().from(incidentCategories);
+    } catch (error) {
+      console.error("Error al obtener categorías de incidentes:", error);
+      return [];
+    }
+  }
+
+  async createIncidentCategory(category: InsertIncidentCategory): Promise<IncidentCategory> {
+    try {
+      const [newCategory] = await db.insert(incidentCategories).values(category).returning();
+      return newCategory;
+    } catch (error) {
+      console.error("Error al crear categoría de incidente:", error);
+      throw error;
+    }
+  }
+
+  async updateIncidentCategory(id: number, category: Partial<InsertIncidentCategory>): Promise<IncidentCategory | undefined> {
+    try {
+      const [updated] = await db.update(incidentCategories)
+        .set(category)
+        .where(eq(incidentCategories.id, id))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error("Error al actualizar categoría de incidente:", error);
+      return undefined;
+    }
+  }
+
+  async deleteIncidentCategory(id: number): Promise<boolean> {
+    try {
+      await db.delete(incidentCategories).where(eq(incidentCategories.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error al eliminar categoría de incidente:", error);
+      return false;
+    }
+  }
+
+  // Métodos para manejo de subcategorías de incidentes
+  async getIncidentSubcategory(id: number): Promise<IncidentSubcategory | undefined> {
+    try {
+      const [subcategory] = await db.select().from(incidentSubcategories).where(eq(incidentSubcategories.id, id));
+      return subcategory;
+    } catch (error) {
+      console.error("Error al obtener subcategoría de incidente:", error);
+      return undefined;
+    }
+  }
+
+  async getIncidentSubcategories(categoryId?: number): Promise<IncidentSubcategory[]> {
+    try {
+      if (categoryId) {
+        return await db.select().from(incidentSubcategories).where(eq(incidentSubcategories.categoryId, categoryId));
+      }
+      return await db.select().from(incidentSubcategories);
+    } catch (error) {
+      console.error("Error al obtener subcategorías de incidentes:", error);
+      return [];
+    }
+  }
+
+  async createIncidentSubcategory(subcategory: InsertIncidentSubcategory): Promise<IncidentSubcategory> {
+    try {
+      const [newSubcategory] = await db.insert(incidentSubcategories).values(subcategory).returning();
+      return newSubcategory;
+    } catch (error) {
+      console.error("Error al crear subcategoría de incidente:", error);
+      throw error;
+    }
+  }
+
+  async updateIncidentSubcategory(id: number, subcategory: Partial<InsertIncidentSubcategory>): Promise<IncidentSubcategory | undefined> {
+    try {
+      const [updated] = await db.update(incidentSubcategories)
+        .set(subcategory)
+        .where(eq(incidentSubcategories.id, id))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error("Error al actualizar subcategoría de incidente:", error);
+      return undefined;
+    }
+  }
+
+  async deleteIncidentSubcategory(id: number): Promise<boolean> {
+    try {
+      await db.delete(incidentSubcategories).where(eq(incidentSubcategories.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error al eliminar subcategoría de incidente:", error);
+      return false;
+    }
+  }
+
+  // Métodos para la gestión mejorada de incidentes
+  async updateIncident(id: number, incidentData: Partial<InsertIncident>): Promise<Incident | undefined> {
+    try {
+      const [updated] = await db.update(incidents)
+        .set({
+          ...incidentData,
+          updatedAt: new Date()
+        })
+        .where(eq(incidents.id, id))
+        .returning();
+      
+      // Registrar actualización en historial
+      if (updated) {
+        await this.createIncidentHistoryEntry({
+          incidentId: id,
+          userId: 1, // Podría mejorarse para usar el ID del usuario actual
+          action: "updated",
+          details: incidentData
+        });
+      }
+      
+      return updated;
+    } catch (error) {
+      console.error("Error al actualizar incidente:", error);
+      return undefined;
+    }
+  }
+
+  async deleteIncident(id: number): Promise<boolean> {
+    try {
+      await db.delete(incidents).where(eq(incidents.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error al eliminar incidente:", error);
+      return false;
+    }
+  }
+
+  async assignIncident(id: number, userId: number): Promise<Incident | undefined> {
+    try {
+      const [updated] = await db.update(incidents)
+        .set({
+          assignedToId: userId,
+          status: "in_progress",
+          updatedAt: new Date()
+        })
+        .where(eq(incidents.id, id))
+        .returning();
+      
+      // Registrar asignación en historial
+      if (updated) {
+        await this.createIncidentHistoryEntry({
+          incidentId: id,
+          userId: userId,
+          action: "assigned",
+          details: { assignedTo: userId }
+        });
+        
+        // Crear notificación para el usuario asignado
+        await this.createIncidentNotification({
+          incidentId: id,
+          userId: userId,
+          type: "assignment",
+          message: `Se te ha asignado el incidente #${id}`
+        });
+      }
+      
+      return updated;
+    } catch (error) {
+      console.error("Error al asignar incidente:", error);
+      return undefined;
+    }
+  }
+
+  async resolveIncident(id: number, resolutionNotes: string): Promise<Incident | undefined> {
+    try {
+      const [updated] = await db.update(incidents)
+        .set({
+          status: "resolved",
+          resolutionNotes,
+          resolutionDate: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(incidents.id, id))
+        .returning();
+      
+      // Registrar resolución en historial
+      if (updated) {
+        await this.createIncidentHistoryEntry({
+          incidentId: id,
+          userId: updated.assignedToId || 1,
+          action: "resolved",
+          details: { resolutionNotes }
+        });
+      }
+      
+      return updated;
+    } catch (error) {
+      console.error("Error al resolver incidente:", error);
+      return undefined;
+    }
+  }
+
+  // Métodos para comentarios de incidentes
+  async getIncidentComment(id: number): Promise<IncidentComment | undefined> {
+    try {
+      const [comment] = await db.select().from(incidentComments).where(eq(incidentComments.id, id));
+      return comment;
+    } catch (error) {
+      console.error("Error al obtener comentario de incidente:", error);
+      return undefined;
+    }
+  }
+
+  async getIncidentComments(incidentId: number): Promise<IncidentComment[]> {
+    try {
+      const comments = await db.select()
+        .from(incidentComments)
+        .where(eq(incidentComments.incidentId, incidentId))
+        .orderBy(asc(incidentComments.createdAt));
+      
+      return comments;
+    } catch (error) {
+      console.error("Error al obtener comentarios de incidente:", error);
+      return [];
+    }
+  }
+
+  async createIncidentComment(comment: InsertIncidentComment): Promise<IncidentComment> {
+    try {
+      const [newComment] = await db.insert(incidentComments).values(comment).returning();
+      
+      // Registrar en el historial que se añadió un comentario
+      await this.createIncidentHistoryEntry({
+        incidentId: comment.incidentId,
+        userId: comment.userId,
+        action: "commented",
+        details: { commentId: newComment.id }
+      });
+      
+      // Notificar a los involucrados
+      const incident = await this.getIncident(comment.incidentId);
+      if (incident && incident.assignedToId && incident.assignedToId !== comment.userId) {
+        await this.createIncidentNotification({
+          incidentId: comment.incidentId,
+          userId: incident.assignedToId,
+          type: "comment",
+          message: `Nuevo comentario en el incidente #${comment.incidentId}`
+        });
+      }
+      
+      return newComment;
+    } catch (error) {
+      console.error("Error al crear comentario de incidente:", error);
+      throw error;
+    }
+  }
+
+  async deleteIncidentComment(id: number): Promise<boolean> {
+    try {
+      const [comment] = await db.select().from(incidentComments).where(eq(incidentComments.id, id));
+      if (!comment) return false;
+      
+      await db.delete(incidentComments).where(eq(incidentComments.id, id));
+      
+      // Registrar en el historial que se eliminó un comentario
+      await this.createIncidentHistoryEntry({
+        incidentId: comment.incidentId,
+        userId: comment.userId,
+        action: "deleted_comment",
+        details: { commentId: id }
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Error al eliminar comentario de incidente:", error);
+      return false;
+    }
+  }
+
+  // Métodos para historial de incidentes
+  async getIncidentHistory(incidentId: number): Promise<IncidentHistory[]> {
+    try {
+      const history = await db.select()
+        .from(incidentHistory)
+        .where(eq(incidentHistory.incidentId, incidentId))
+        .orderBy(desc(incidentHistory.createdAt));
+      
+      return history;
+    } catch (error) {
+      console.error("Error al obtener historial de incidente:", error);
+      return [];
+    }
+  }
+
+  async createIncidentHistoryEntry(entry: InsertIncidentHistory): Promise<IncidentHistory> {
+    try {
+      const [newEntry] = await db.insert(incidentHistory).values(entry).returning();
+      return newEntry;
+    } catch (error) {
+      console.error("Error al crear entrada en historial de incidente:", error);
+      throw error;
+    }
+  }
+
+  // Métodos para notificaciones de incidentes
+  async getIncidentNotification(id: number): Promise<IncidentNotification | undefined> {
+    try {
+      const [notification] = await db.select().from(incidentNotifications).where(eq(incidentNotifications.id, id));
+      return notification;
+    } catch (error) {
+      console.error("Error al obtener notificación de incidente:", error);
+      return undefined;
+    }
+  }
+
+  async getIncidentNotifications(userId: number): Promise<IncidentNotification[]> {
+    try {
+      const notifications = await db.select()
+        .from(incidentNotifications)
+        .where(eq(incidentNotifications.userId, userId))
+        .orderBy(desc(incidentNotifications.createdAt));
+      
+      return notifications;
+    } catch (error) {
+      console.error("Error al obtener notificaciones de incidentes:", error);
+      return [];
+    }
+  }
+
+  async createIncidentNotification(notification: InsertIncidentNotification): Promise<IncidentNotification> {
+    try {
+      const [newNotification] = await db.insert(incidentNotifications).values(notification).returning();
+      return newNotification;
+    } catch (error) {
+      console.error("Error al crear notificación de incidente:", error);
+      throw error;
+    }
+  }
+
+  async markNotificationAsRead(id: number): Promise<IncidentNotification | undefined> {
+    try {
+      const [updated] = await db.update(incidentNotifications)
+        .set({ isRead: true })
+        .where(eq(incidentNotifications.id, id))
+        .returning();
+      
+      return updated;
+    } catch (error) {
+      console.error("Error al marcar notificación como leída:", error);
+      return undefined;
+    }
+  }
+
+  async deleteIncidentNotification(id: number): Promise<boolean> {
+    try {
+      await db.delete(incidentNotifications).where(eq(incidentNotifications.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error al eliminar notificación de incidente:", error);
+      return false;
+    }
+  }
+}
+
 export const storage = new DatabaseStorage();
