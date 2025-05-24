@@ -413,6 +413,21 @@ const IncidentsPage = () => {
               <Plus className="h-5 w-5 mr-2" />
               Nueva Incidencia
             </Button>
+            
+            <a href="/admin/incidents/dashboard" style={{
+              display: 'inline-block',
+              background: 'red',
+              color: 'white',
+              padding: '10px 20px',
+              borderRadius: '6px',
+              textDecoration: 'none',
+              fontWeight: 'bold',
+              marginLeft: '10px',
+              border: '2px solid black'
+            }}>
+              <BarChart style={{display: 'inline-block', marginRight: '8px', verticalAlign: 'middle'}} />
+              DASHBOARD
+            </a>
           </div>
         </div>
         
