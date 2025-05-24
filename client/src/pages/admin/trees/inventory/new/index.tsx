@@ -39,7 +39,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, MapPin, Ruler, ArrowLeft, Leaf } from 'lucide-react';
+import { Loader2, MapPin, Ruler, ArrowLeft, Sprout } from 'lucide-react';
 
 // Esquema de validación para el formulario
 const treeSchema = z.object({
