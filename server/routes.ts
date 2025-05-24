@@ -17,7 +17,8 @@ import { registerAssetRoutes } from "./asset_routes";
 import { registerMaintenanceRoutes } from "./maintenance_routes";
 import { registerAssetAssignmentRoutes } from "./asset_assignment_routes";
 import { registerTreeRoutes } from "./tree_routes";
-import { registerTreeInventoryRoutes } from "./tree_inventory_routes";
+// Comentamos la importación de tree_inventory_routes para evitar conflictos de rutas
+// import { registerTreeInventoryRoutes } from "./tree_inventory_routes";
 import { registerTreeStatsRoutes } from "./tree_stats_routes";
 import { activityRouter } from "./activityRoutes";
 import directRouter from "./directRoutes";
@@ -100,7 +101,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerTreeRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de inventario de árboles
-  registerTreeInventoryRoutes(app, apiRouter, isAuthenticated);
+  // Comentamos esta línea para evitar conflictos con las rutas en tree_routes.ts
+  // registerTreeInventoryRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas de estadísticas de árboles
   registerTreeStatsRoutes(app, apiRouter);

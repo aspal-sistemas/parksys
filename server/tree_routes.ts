@@ -152,6 +152,9 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   // Ruta para obtener detalles de un árbol específico
   apiRouter.get("/trees/:id", getTreeDetails);
   
+  // Desactivar la ruta en tree_inventory_routes.ts que causa conflicto
+  // Ya estamos usando getTreeDetails que es una implementación compatible con la estructura real
+  
   // Obtener todas las especies de árboles
   apiRouter.get("/tree-species", async (req: Request, res: Response) => {
     try {
