@@ -284,6 +284,28 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/trees/catalog/[id]/edit/index')))}
           </Suspense>
         </Route>
+
+        {/* Rutas del Inventario de Árboles */}
+        <Route path="/admin/trees/inventory">
+          <Suspense fallback={<div className="p-8 text-center">Cargando inventario de árboles...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/inventory/index')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/trees/inventory/new">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de nuevo árbol...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/inventory/new/index')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/trees/inventory/:id">
+          <Suspense fallback={<div className="p-8 text-center">Cargando detalles del árbol...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/inventory/[id]/index')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/trees/inventory/:id/edit">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de edición del árbol...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/inventory/[id]/edit/index')))}
+          </Suspense>
+        </Route>
         
         <Route component={NotFound} />
       </Switch>
