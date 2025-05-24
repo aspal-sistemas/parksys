@@ -263,6 +263,13 @@ function Router() {
           </Suspense>
         </Route>
         
+        {/* Rutas para el módulo de árboles */}
+        <Route path="/admin/trees/catalog">
+          <Suspense fallback={<div className="p-8 text-center">Cargando catálogo de especies arbóreas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/catalog/index')))}
+          </Suspense>
+        </Route>
+        
         <Route component={NotFound} />
       </Switch>
     </div>
