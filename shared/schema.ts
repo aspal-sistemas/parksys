@@ -151,14 +151,63 @@ export const comments = pgTable("comments", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const incidentCategories = pgTable("incident_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  icon: text("icon"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const incidentSubcategories = pgTable("incident_subcategories", {
+  id: serial("id").primaryKey(),
+  categoryId: integer("category_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  estimatedResolutionTime: integer("estimated_resolution_time"), // en horas
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const incidents = pgTable("incidents", {
   id: serial("id").primaryKey(),
   parkId: integer("park_id").notNull(),
+  
+  // Información del reportante
   reporterName: text("reporter_name").notNull(),
   reporterEmail: text("reporter_email"),
   reporterPhone: text("reporter_phone"),
+  
+  // Detalles del incidente
+  title: text("title").notNull(),
   description: text("description").notNull(),
-  status: text("status").notNull().default("pending"),
+  location: text("location"), // Ubicación dentro del parque
+  
+  // Categorización
+  categoryId: integer("category_id"),
+  subcategoryId: integer("subcategory_id"),
+  
+  // Estado y prioridad
+  status: text("status").notNull().default("pending"), // pending, in_progress, resolved, rejected
+  priority: text("priority").default("medium"), // low, medium, high, critical
+  severity: text("severity").default("medium"), // low, medium, high
+  
+  // Asignación y gestión
+  assignedToId: integer("assigned_to_id"), // ID del usuario responsable
+  dueDate: timestamp("due_date"), // Fecha límite para resolver
+  
+  // Resolución
+  resolutionNotes: text("resolution_notes"),
+  resolutionDate: timestamp("resolution_date"),
+  resolutionCost: decimal("resolution_cost", { precision: 10, scale: 2 }),
+  
+  // Integración con mantenimiento
+  maintenanceId: integer("maintenance_id"), // Si generó una tarea de mantenimiento
+  assetId: integer("asset_id"), // Si está relacionado con un activo
+  
+  // Multimedia
+  attachments: text("attachments").array(), // URLs de archivos adjuntos
+  
+  // Campos de auditoría
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
