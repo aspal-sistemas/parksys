@@ -18,7 +18,9 @@ import {
   AlertTriangle,
   School,
   Shield,
-  User
+  User,
+  Database,
+  Layers
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -120,6 +122,15 @@ const AdminSidebar: React.FC = () => {
             Incidentes
           </NavItem>
           
+          {/* Dashboard de incidencias - Acceso directo destacado */}
+          <NavItem 
+            href="/admin/incidents/dashboard" 
+            icon={<BarChart className="h-5 w-5" />}
+            active={location.startsWith('/admin/incidents/dashboard')}
+          >
+            Dashboard Incidencias
+          </NavItem>
+          
           <NavItem 
             href="/admin/users" 
             icon={<Users className="h-5 w-5" />}
@@ -186,7 +197,22 @@ const AdminSidebar: React.FC = () => {
           >
             Análisis y Reportes
           </NavItem>
-
+          
+          <NavItem 
+            href="/admin/assets" 
+            icon={<Layers className="h-5 w-5" />}
+            active={location.startsWith('/admin/assets')}
+          >
+            Activos
+          </NavItem>
+          
+          <NavItem 
+            href="/admin/volunteers" 
+            icon={<Users className="h-5 w-5" />}
+            active={location.startsWith('/admin/volunteers')}
+          >
+            Voluntarios
+          </NavItem>
 
         </nav>
       </ScrollArea>
