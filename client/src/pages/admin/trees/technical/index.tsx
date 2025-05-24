@@ -372,27 +372,27 @@ export default function TreeTechnicalManagement() {
         <TableBody>
           {sortedTrees.map((tree) => (
             <TableRow key={tree.id} className="cursor-pointer hover:bg-gray-50">
-              <TableCell className="font-medium">{tree.code}</TableCell>
+              <TableCell className="font-medium">{tree.id}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  {tree.species?.imageUrl ? (
+                  {tree.species?.image_url ? (
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={tree.species.imageUrl} alt={tree.species.commonName} />
-                      <AvatarFallback>{tree.species.commonName?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      <AvatarImage src={tree.species.image_url} alt={tree.species.common_name} />
+                      <AvatarFallback>{tree.species.common_name?.substring(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                   ) : (
                     <TreeDeciduous className="h-5 w-5 text-green-600" />
                   )}
                   <div>
-                    <div>{tree.species?.commonName}</div>
-                    <div className="text-xs text-gray-500 italic">{tree.species?.scientificName}</div>
+                    <div>{tree.species?.common_name}</div>
+                    <div className="text-xs text-gray-500 italic">{tree.species?.scientific_name}</div>
                   </div>
                 </div>
               </TableCell>
               <TableCell>{tree.park?.name}</TableCell>
               <TableCell>
-                <Badge variant={tree.healthStatus === "bueno" ? "outline" : "secondary"}>
-                  {tree.healthStatus}
+                <Badge variant={tree.health_status === "bueno" ? "outline" : "secondary"}>
+                  {tree.health_status}
                 </Badge>
               </TableCell>
               <TableCell>
@@ -431,9 +431,9 @@ export default function TreeTechnicalManagement() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold">{selectedTree.code}</h2>
+            <h2 className="text-2xl font-bold">Árbol #{selectedTree.id}</h2>
             <p className="text-gray-500">
-              {selectedTree.species?.commonName} ({selectedTree.species?.scientificName})
+              {selectedTree.species?.common_name} ({selectedTree.species?.scientific_name})
             </p>
           </div>
           <Button variant="outline" onClick={handleCloseDetails}>
@@ -457,7 +457,7 @@ export default function TreeTechnicalManagement() {
             </CardHeader>
             <CardContent>
               <Badge variant="outline" className="text-lg font-medium">
-                {selectedTree.healthStatus}
+                {selectedTree.health_status}
               </Badge>
             </CardContent>
           </Card>
@@ -501,7 +501,7 @@ export default function TreeTechnicalManagement() {
                   <DialogHeader>
                     <DialogTitle>Nueva Evaluación de Riesgo</DialogTitle>
                     <DialogDescription>
-                      Registra una nueva evaluación de riesgo para el árbol {selectedTree.code}
+                      Registra una nueva evaluación de riesgo para el árbol #{selectedTree.id}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
@@ -671,7 +671,7 @@ export default function TreeTechnicalManagement() {
                   <DialogHeader>
                     <DialogTitle>Nueva Intervención</DialogTitle>
                     <DialogDescription>
-                      Registra una nueva intervención para el árbol {selectedTree.code}
+                      Registra una nueva intervención para el árbol #{selectedTree.id}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
