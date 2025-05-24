@@ -355,7 +355,7 @@ const AdminSidebar: React.FC = () => {
           
           <ModuleNav 
             title="Arbolado" 
-            icon={<Flower className="h-5 w-5" />}
+            icon={<DollarSign className="h-5 w-5" />}
             value="trees"
           >
             <NavItem 
