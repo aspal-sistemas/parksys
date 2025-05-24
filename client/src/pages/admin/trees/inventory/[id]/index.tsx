@@ -39,7 +39,7 @@ import {
   Edit,
   ExternalLink,
   MapPin,
-  Tree,
+  Leaf,
   Calendar,
   Ruler,
   CircleCheck,
@@ -212,7 +212,7 @@ function TreeDetailPage() {
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold text-green-800 flex items-center">
-                  <Tree className="mr-2 h-8 w-8" />
+                  <Leaf className="mr-2 h-8 w-8" />
                   {`${tree.code} - ${tree.speciesName}`}
                 </h1>
                 <div className="flex gap-2">
@@ -366,7 +366,7 @@ function TreeDetailPage() {
                           <span className="font-medium text-lg text-gray-800">{tree.diameter ? `${tree.diameter} cm` : '-'}</span>
                         </div>
                         <div className="bg-gray-50 p-3 rounded-lg flex flex-col items-center justify-center">
-                          <Tree className="h-5 w-5 text-green-600 mb-1" />
+                          <Leaf className="h-5 w-5 text-green-600 mb-1" />
                           <span className="text-sm text-gray-500">Cobertura Copa</span>
                           <span className="font-medium text-lg text-gray-800">{tree.canopyCoverage ? `${tree.canopyCoverage} m²` : '-'}</span>
                         </div>
@@ -400,7 +400,7 @@ function TreeDetailPage() {
                       </div>
                     ) : (
                       <div className="aspect-square bg-gray-100 rounded-md flex items-center justify-center mb-4">
-                        <Tree className="h-16 w-16 text-gray-300" />
+                        <Leaf className="h-16 w-16 text-gray-300" />
                       </div>
                     )}
 
