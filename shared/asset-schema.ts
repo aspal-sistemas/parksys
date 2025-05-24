@@ -52,16 +52,19 @@ export const assetMaintenances = pgTable("asset_maintenances", {
   id: serial("id").primaryKey(),
   assetId: integer("asset_id").notNull(),
   maintenanceType: text("maintenance_type").notNull(), // preventive, corrective, inspection
-  performedBy: text("performed_by").notNull(), // Quién realizó el mantenimiento
-  performerId: integer("performer_id"), // ID del usuario en el sistema si está registrado
   date: date("date").notNull(),
-  cost: decimal("cost", { precision: 10, scale: 2 }),
   description: text("description").notNull(),
+  estimatedCost: decimal("estimated_cost", { precision: 10, scale: 2 }),
+  actualCost: decimal("actual_cost", { precision: 10, scale: 2 }),
+  priority: text("priority").notNull().default("medium"), // low, medium, high
+  assignedToId: integer("assigned_to_id"), // Técnico asignado al mantenimiento
+  notes: text("notes"), // Notas adicionales para la programación
   findings: text("findings"), // Hallazgos durante el mantenimiento
   actions: text("actions"), // Acciones realizadas
-  nextMaintenanceDate: date("next_maintenance_date"),
+  completionNotes: text("completion_notes"), // Notas sobre la finalización
   photos: text("photos").array(), // Fotos del mantenimiento
-  status: text("status").notNull().default("completed"), // scheduled, in-progress, completed, cancelled
+  status: text("status").notNull().default("scheduled"), // scheduled, in-progress, completed, cancelled
+  completedAt: timestamp("completed_at"), // Fecha de finalización real
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -113,10 +116,10 @@ export const assetMaintenancesRelations = relations(assetMaintenances, ({ one })
     fields: [assetMaintenances.assetId],
     references: [assets.id]
   }),
-  performer: one(users, {
-    fields: [assetMaintenances.performerId],
+  assignedTo: one(users, {
+    fields: [assetMaintenances.assignedToId],
     references: [users.id],
-    relationName: "maintenancePerformer"
+    relationName: "maintenanceAssignee"
   })
 }));
 

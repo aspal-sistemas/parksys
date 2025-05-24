@@ -14,6 +14,7 @@ import { registerVolunteerRoutes } from "./volunteerRoutes";
 import { registerInstructorRoutes } from "./instructorRoutes";
 import { registerPublicRoutes } from "./publicRoutes";
 import { registerAssetRoutes } from "./asset_routes";
+import { registerMaintenanceRoutes } from "./maintenance_routes";
 import { activityRouter } from "./activityRoutes";
 import directRouter from "./directRoutes";
 import { 
