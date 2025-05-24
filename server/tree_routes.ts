@@ -22,8 +22,8 @@ import { fromZodError } from "zod-validation-error";
  * @param apiRouter Router de la API
  * @param isAuthenticated Middleware de autenticación
  */
-// Importación simple que evita problemas de circular dependencies
-// La función loadTreeInventory se cargará bajo demanda
+// Importamos las dependencias necesarias
+import { sql } from 'drizzle-orm';
 
 export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
   // Endpoint para cargar árboles de muestra en el inventario

@@ -48,7 +48,8 @@ import {
   TreeDeciduous, 
   CircleCheck, 
   CircleAlert, 
-  Info 
+  Info,
+  Sprout
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -372,11 +373,21 @@ function TreeInventoryPage() {
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
               <CardTitle>Listado de Árboles</CardTitle>
-              {treeInventory && (
-                <div className="text-sm text-gray-500">
-                  Total: {treeInventory.total} árboles
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                <Button 
+                  onClick={handleSeedTrees} 
+                  variant="outline"
+                  className="border-green-600 text-green-700 hover:bg-green-50"
+                  size="sm"
+                >
+                  <Sprout className="mr-2 h-4 w-4" /> Cargar 50 Árboles
+                </Button>
+                {treeInventory && (
+                  <div className="text-sm text-gray-500">
+                    Total: {treeInventory.total} árboles
+                  </div>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
