@@ -330,6 +330,19 @@ const IncidentsPage = () => {
 
   return (
     <AdminLayout>
+      <div className="bg-blue-100 border-b border-blue-300 p-4 shadow-md mb-4">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center">
+            <BarChart className="h-6 w-6 text-blue-600 mr-2" />
+            <p className="font-medium">Visualiza las estadísticas de incidencias en el dashboard</p>
+          </div>
+          <a href="/admin/incidents/dashboard" className="no-underline">
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              Ver Dashboard
+            </Button>
+          </a>
+        </div>
+      </div>
       <div className="container mx-auto py-6">
         <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center mb-6">
           <h1 className="text-2xl font-bold">Gestión de Incidencias</h1>
