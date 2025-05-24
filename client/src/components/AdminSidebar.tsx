@@ -255,7 +255,7 @@ const AdminSidebar: React.FC = () => {
               icon={<Map className="h-5 w-5" />}
               active={location === '/admin/assets/map'}
             >
-              Mapa de Activos
+              Mapa
             </NavItem>
             {/* Submenú oculto: Mapa Simplificado
             <NavItem 
@@ -314,7 +314,7 @@ const AdminSidebar: React.FC = () => {
               icon={<BarChart className="h-5 w-5" />}
               active={location.startsWith('/admin/assets/dashboard')}
             >
-              Dashboard de Activos
+              Dashboard
             </NavItem>
           </ModuleNav>
           
