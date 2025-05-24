@@ -302,6 +302,7 @@ const AdminSidebar: React.FC = () => {
               Asignar Equipamiento
             </NavItem>
             */}
+            {/* Submenú eliminado: Reportar Incidencia
             <NavItem 
               href="/admin/assets/report-issue" 
               icon={<Bell className="h-5 w-5" />}
@@ -309,6 +310,7 @@ const AdminSidebar: React.FC = () => {
             >
               Reportar Incidencia
             </NavItem>
+            */}
             <NavItem 
               href="/admin/assets/dashboard" 
               icon={<BarChart className="h-5 w-5" />}
