@@ -13,7 +13,8 @@ export async function getParksDirectly(filters?: any) {
         area, foundation_year as "foundationYear",
         administrator, conservation_status as "conservationStatus",
         regulation_url as "regulationUrl", opening_hours as "openingHours", 
-        contact_email as "contactEmail", contact_phone as "contactPhone"
+        contact_email as "contactEmail", contact_phone as "contactPhone",
+        video_url as "videoUrl"
       FROM parks
       WHERE 1=1
     `;
