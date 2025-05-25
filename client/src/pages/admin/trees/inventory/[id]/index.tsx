@@ -126,7 +126,15 @@ function TreeDetailPage() {
   };
 
   // Obtener badge de estado de salud
-  const getHealthStatusBadge = (status: string) => {
+  const getHealthStatusBadge = (status: string | null | undefined) => {
+    if (!status) {
+      return (
+        <Badge variant="outline">
+          No evaluado
+        </Badge>
+      );
+    }
+    
     switch (status.toLowerCase()) {
       case 'bueno':
         return (
