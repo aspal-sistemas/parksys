@@ -11,6 +11,15 @@ import {
 } from "../shared/events-schema";
 import { parks } from "../shared/schema";
 import { eq, and, desc, gte, sql, inArray } from "drizzle-orm";
+import { z } from "zod";
+
+// Esquema de validación para registro de participantes
+const registerParticipantSchema = z.object({
+  name: z.string().min(3, "El nombre es requerido y debe tener al menos 3 caracteres"),
+  email: z.string().email("Debe proporcionar un email válido"),
+  phone: z.string().optional(),
+  notes: z.string().optional(),
+});
 
 // Obtener todos los eventos con filtros opcionales
 export async function getAllEvents(req: Request, res: Response) {
@@ -416,5 +425,212 @@ export async function getEventReferenceData(req: Request, res: Response) {
   } catch (error) {
     console.error("Error al obtener datos de referencia:", error);
     return res.status(500).json({ message: "Error al obtener datos de referencia", error });
+  }
+}
+
+// Obtener participantes de un evento
+export async function getEventParticipants(req: Request, res: Response) {
+  try {
+    const eventId = parseInt(req.params.id);
+    
+    // Validar que el ID sea un número válido
+    if (isNaN(eventId)) {
+      return res.status(400).json({ message: "ID de evento inválido" });
+    }
+    
+    // Verificar que el evento existe
+    const [event] = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, eventId));
+    
+    if (!event) {
+      return res.status(404).json({ message: "Evento no encontrado" });
+    }
+    
+    // Obtener los participantes
+    const participants = await db
+      .select()
+      .from(eventRegistrations)
+      .where(eq(eventRegistrations.eventId, eventId))
+      .orderBy(desc(eventRegistrations.registrationDate));
+    
+    // Mapear los datos para ajustarlos al formato esperado por el frontend
+    const formattedParticipants = participants.map(p => ({
+      id: p.id,
+      eventId: p.eventId,
+      name: p.fullName,
+      email: p.email,
+      phone: p.phone,
+      status: p.status,
+      notes: p.notes,
+      registrationDate: p.registrationDate,
+    }));
+    
+    return res.json(formattedParticipants);
+  } catch (error) {
+    console.error("Error al obtener participantes:", error);
+    return res.status(500).json({ message: "Error al obtener participantes", error });
+  }
+}
+
+// Registrar un nuevo participante en un evento
+export async function registerParticipant(req: Request, res: Response) {
+  try {
+    const eventId = parseInt(req.params.id);
+    
+    // Validar que el ID sea un número válido
+    if (isNaN(eventId)) {
+      return res.status(400).json({ message: "ID de evento inválido" });
+    }
+    
+    // Verificar que el evento existe
+    const [event] = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, eventId));
+    
+    if (!event) {
+      return res.status(404).json({ message: "Evento no encontrado" });
+    }
+    
+    // Validar datos del formulario
+    const validationResult = registerParticipantSchema.safeParse(req.body);
+    
+    if (!validationResult.success) {
+      return res.status(400).json({ 
+        message: "Datos inválidos", 
+        errors: validationResult.error.errors 
+      });
+    }
+    
+    const { name, email, phone, notes } = req.body;
+    
+    // Verificar si ya existe un registro con el mismo email para este evento
+    if (email) {
+      const existingRegistration = await db
+        .select()
+        .from(eventRegistrations)
+        .where(
+          and(
+            eq(eventRegistrations.eventId, eventId),
+            eq(eventRegistrations.email, email)
+          )
+        );
+      
+      if (existingRegistration.length > 0) {
+        return res.status(409).json({ 
+          message: "Este email ya está registrado para este evento" 
+        });
+      }
+    }
+    
+    // Verificar capacidad del evento
+    if (event.capacity) {
+      const currentParticipants = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(eventRegistrations)
+        .where(eq(eventRegistrations.eventId, eventId));
+      
+      const count = Number(currentParticipants[0].count);
+      
+      if (count >= event.capacity) {
+        return res.status(409).json({ 
+          message: "El evento ha alcanzado su capacidad máxima" 
+        });
+      }
+    }
+    
+    // Registrar al participante
+    const [registration] = await db
+      .insert(eventRegistrations)
+      .values({
+        eventId,
+        fullName: name,
+        email,
+        phone: phone || null,
+        notes: notes || null,
+        status: "registered",
+        registrationDate: new Date(),
+      })
+      .returning();
+    
+    // Mapear los datos para ajustarlos al formato esperado por el frontend
+    const formattedRegistration = {
+      id: registration.id,
+      eventId: registration.eventId,
+      name: registration.fullName,
+      email: registration.email,
+      phone: registration.phone,
+      status: registration.status,
+      notes: registration.notes,
+      registrationDate: registration.registrationDate,
+    };
+    
+    return res.status(201).json(formattedRegistration);
+  } catch (error) {
+    console.error("Error al registrar participante:", error);
+    return res.status(500).json({ message: "Error al registrar participante", error });
+  }
+}
+
+// Actualizar estado de un participante
+export async function updateParticipantStatus(req: Request, res: Response) {
+  try {
+    const eventId = parseInt(req.params.eventId);
+    const participantId = parseInt(req.params.id);
+    const { status } = req.body;
+    
+    // Validar que los IDs sean números válidos
+    if (isNaN(eventId) || isNaN(participantId)) {
+      return res.status(400).json({ message: "IDs inválidos" });
+    }
+    
+    // Validar el estado
+    if (!["registered", "confirmed", "attended", "cancelled"].includes(status)) {
+      return res.status(400).json({ message: "Estado inválido" });
+    }
+    
+    // Verificar que el registro existe
+    const [existingRegistration] = await db
+      .select()
+      .from(eventRegistrations)
+      .where(
+        and(
+          eq(eventRegistrations.id, participantId),
+          eq(eventRegistrations.eventId, eventId)
+        )
+      );
+    
+    if (!existingRegistration) {
+      return res.status(404).json({ message: "Registro de participante no encontrado" });
+    }
+    
+    // Actualizar el estado
+    const [updatedRegistration] = await db
+      .update(eventRegistrations)
+      .set({
+        status,
+        updatedAt: new Date()
+      })
+      .where(eq(eventRegistrations.id, participantId))
+      .returning();
+    
+    // Mapear los datos para ajustarlos al formato esperado por el frontend
+    const formattedRegistration = {
+      id: updatedRegistration.id,
+      eventId: updatedRegistration.eventId,
+      name: updatedRegistration.fullName,
+      email: updatedRegistration.email,
+      phone: updatedRegistration.phone,
+      status: updatedRegistration.status,
+      notes: updatedRegistration.notes,
+      registrationDate: updatedRegistration.registrationDate,
+    };
+    
+    return res.json(formattedRegistration);
+  } catch (error) {
+    console.error("Error al actualizar estado del participante:", error);
+    return res.status(500).json({ message: "Error al actualizar estado del participante", error });
   }
 }
