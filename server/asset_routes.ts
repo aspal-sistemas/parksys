@@ -400,7 +400,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
     }
   });
 
-  apiRouter.post("/assets/:id/maintenances", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.post("/assets/:id/maintenances", async (req: Request, res: Response) => {
     try {
       const assetId = parseInt(req.params.id);
       if (isNaN(assetId)) {
@@ -450,23 +450,20 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
       // Insertar el nuevo mantenimiento
       const maintenanceResult = await pool.query(
         `INSERT INTO asset_maintenances 
-          (asset_id, date, maintenance_type, description, performed_by, notes, 
-           next_maintenance_date, estimated_cost, actual_cost, status, photos, documents, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
+          (asset_id, date, maintenance_type, description, performed_by, 
+           next_maintenance_date, cost, status, photos, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
          RETURNING *`,
         [
           assetId, 
           formattedDate, 
           maintenanceType, 
           description, 
-          performedBy || (req.user as any)?.id || 1, 
-          notes || null,
+          performedBy || (req.user as any)?.id || 1,
           formattedNextDate,
           estimatedCost || null,
-          actualCost || null,
-          status || 'completed',
-          photos || null,
-          documents || null
+          status || 'active',
+          photos || null
         ]
       );
       
