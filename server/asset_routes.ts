@@ -521,6 +521,159 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
     }
   });
 
+  // Eliminar mantenimiento de activo
+  apiRouter.delete("/assets/:assetId/maintenances/:id", async (req: Request, res: Response) => {
+    try {
+      const assetId = parseInt(req.params.assetId);
+      const maintenanceId = parseInt(req.params.id);
+      
+      if (isNaN(assetId) || isNaN(maintenanceId)) {
+        return res.status(400).json({ message: "ID de activo o mantenimiento inválido" });
+      }
+
+      // Importar la conexión a la BD desde el módulo db.ts
+      const { pool } = await import('./db');
+      
+      // Verificar que el mantenimiento existe y pertenece al activo
+      const maintenanceResult = await pool.query(
+        "SELECT * FROM asset_maintenances WHERE id = $1 AND asset_id = $2", 
+        [maintenanceId, assetId]
+      );
+      
+      if (maintenanceResult.rows.length === 0) {
+        return res.status(404).json({ message: "Mantenimiento no encontrado o no pertenece al activo indicado" });
+      }
+
+      // En lugar de eliminar el registro, lo marcamos como inactivo
+      await pool.query(
+        `UPDATE asset_maintenances 
+         SET status = 'cancelled', updated_at = NOW()
+         WHERE id = $1 AND asset_id = $2`,
+        [maintenanceId, assetId]
+      );
+      
+      // También agregamos una entrada en el historial del activo
+      await pool.query(
+        `INSERT INTO asset_history 
+          (asset_id, date, action, description, changed_by)
+         VALUES ($1, NOW(), 'maintenance_cancelled', $2, $3)`,
+        [
+          assetId,
+          `Se canceló el mantenimiento #${maintenanceId}`,
+          req.body.userId || 1
+        ]
+      );
+      
+      res.json({ message: "Mantenimiento cancelado correctamente" });
+    } catch (error) {
+      console.error(`Error al eliminar mantenimiento:`, error);
+      res.status(500).json({ message: "Error al eliminar mantenimiento" });
+    }
+  });
+  
+  // Actualizar mantenimiento de activo
+  apiRouter.put("/assets/:assetId/maintenances/:id", async (req: Request, res: Response) => {
+    try {
+      const assetId = parseInt(req.params.assetId);
+      const maintenanceId = parseInt(req.params.id);
+      
+      if (isNaN(assetId) || isNaN(maintenanceId)) {
+        return res.status(400).json({ message: "ID de activo o mantenimiento inválido" });
+      }
+
+      // Importar la conexión a la BD desde el módulo db.ts
+      const { pool } = await import('./db');
+      
+      // Verificar que el mantenimiento existe y pertenece al activo
+      const maintenanceResult = await pool.query(
+        "SELECT * FROM asset_maintenances WHERE id = $1 AND asset_id = $2", 
+        [maintenanceId, assetId]
+      );
+      
+      if (maintenanceResult.rows.length === 0) {
+        return res.status(404).json({ message: "Mantenimiento no encontrado o no pertenece al activo indicado" });
+      }
+
+      const { 
+        date, 
+        maintenanceType, 
+        description, 
+        performedBy, 
+        status,
+        nextMaintenanceDate,
+        cost,
+        photos 
+      } = req.body;
+
+      // Formatear las fechas correctamente para PostgreSQL
+      const formattedDate = date ? new Date(date).toISOString() : null;
+      const formattedNextDate = nextMaintenanceDate ? new Date(nextMaintenanceDate).toISOString() : null;
+      
+      // Actualizar el mantenimiento
+      const updateResult = await pool.query(
+        `UPDATE asset_maintenances 
+         SET date = COALESCE($1, date),
+             maintenance_type = COALESCE($2, maintenance_type),
+             description = COALESCE($3, description),
+             performed_by = COALESCE($4, performed_by),
+             status = COALESCE($5, status),
+             next_maintenance_date = COALESCE($6, next_maintenance_date),
+             cost = COALESCE($7, cost),
+             photos = COALESCE($8, photos),
+             updated_at = NOW()
+         WHERE id = $9 AND asset_id = $10
+         RETURNING *`,
+        [
+          formattedDate, 
+          maintenanceType, 
+          description, 
+          performedBy,
+          status,
+          formattedNextDate,
+          cost,
+          photos ? JSON.stringify(photos) : null,
+          maintenanceId,
+          assetId
+        ]
+      );
+      
+      if (updateResult.rows.length === 0) {
+        return res.status(500).json({ message: "Error al actualizar el mantenimiento" });
+      }
+      
+      // Obtener información del usuario que realizó el mantenimiento
+      const userResult = await pool.query(
+        "SELECT username FROM users WHERE id = $1",
+        [updateResult.rows[0].performed_by]
+      );
+      
+      const maintenance = updateResult.rows[0];
+      const performedByName = userResult.rows.length > 0 ? userResult.rows[0].username : null;
+      
+      // Transformar los datos para la respuesta
+      const transformedMaintenance = {
+        id: maintenance.id,
+        assetId: maintenance.asset_id,
+        date: maintenance.date,
+        maintenanceType: maintenance.maintenance_type,
+        description: maintenance.description,
+        status: maintenance.status,
+        performedBy: maintenance.performed_by,
+        performedByName,
+        nextMaintenanceDate: maintenance.next_maintenance_date,
+        cost: maintenance.cost,
+        photos: maintenance.photos || [],
+        createdAt: maintenance.created_at,
+        updatedAt: maintenance.updated_at
+      };
+      
+      res.json(transformedMaintenance);
+    } catch (error) {
+      console.error(`Error al actualizar mantenimiento:`, error);
+      res.status(500).json({ message: "Error al actualizar mantenimiento" });
+    }
+  });
+
   // Rutas para historial de activos
   apiRouter.get("/assets/:id/history", async (req: Request, res: Response) => {
     try {
