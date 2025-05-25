@@ -4,11 +4,25 @@ import {
   type User, type InsertUser, type Municipality, type InsertMunicipality, type Park, type InsertPark, 
   type ParkImage, type InsertParkImage, type Amenity, type InsertAmenity, type ParkAmenity, type InsertParkAmenity,
   type Document, type InsertDocument, type Activity, type InsertActivity, type Comment, type InsertComment, 
-  type Incident, type InsertIncident, type ExtendedPark, PARK_TYPES, DEFAULT_AMENITIES,
+  type Incident, type InsertIncident, type ExtendedPark, PARK_TYPES,
   type Volunteer, type InsertVolunteer, type VolunteerParticipation, type InsertVolunteerParticipation,
   type VolunteerEvaluation, type InsertVolunteerEvaluation, type VolunteerRecognition, type InsertVolunteerRecognition,
   type ExtendedVolunteer
 } from "@shared/schema";
+
+// Definición local de DEFAULT_AMENITIES para mantener compatibilidad
+const DEFAULT_AMENITIES = [
+  "Juegos Infantiles", 
+  "Área de Picnic", 
+  "Baños", 
+  "Estacionamiento", 
+  "Senderos", 
+  "Área Deportiva",
+  "Fuente", 
+  "Iluminación", 
+  "Bancas", 
+  "Área de Mascotas"
+];
 import {
   assetCategories, assets, assetMaintenances, assetHistory,
   type AssetCategory, type InsertAssetCategory, type Asset, type InsertAsset,
