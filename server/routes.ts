@@ -202,7 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/parks", async (req: Request, res: Response) => {
     try {
       // Importamos la base de datos directamente
-      const { db } = await import('./db');
+      const { pool } = await import('./db');
       
       // Construimos la consulta SQL básica
       let queryStr = `
@@ -213,7 +213,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           area, foundation_year as "foundationYear",
           administrator, conservation_status as "conservationStatus",
           regulation_url as "regulationUrl", opening_hours as "openingHours", 
-          contact_email as "contactEmail", contact_phone as "contactPhone"
+          contact_email as "contactEmail", contact_phone as "contactPhone",
+          video_url as "videoUrl"
         FROM parks
         WHERE 1=1
       `;
@@ -250,8 +251,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Ordenar por nombre
       queryStr += ` ORDER BY name`;
       
-      // Ejecutar la consulta
-      const result = await db.execute(queryStr, params);
+      // Ejecutar la consulta para obtener los datos básicos de los parques
+      const result = await pool.query(queryStr, params);
       
       // Transformar los resultados
       const parks = result.rows.map(park => ({
