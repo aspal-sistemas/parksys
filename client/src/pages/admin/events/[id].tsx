@@ -1072,6 +1072,188 @@ const EventDetailPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Diálogo para registrar participante */}
+      <Dialog open={isRegisterDialogOpen} onOpenChange={setIsRegisterDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Registrar nuevo participante</DialogTitle>
+            <DialogDescription>
+              Complete el formulario para registrar un nuevo participante en el evento.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleRegisterSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Nombre
+                </Label>
+                <Input
+                  id="name"
+                  value={registerForm.name}
+                  onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="email" className="text-right">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={registerForm.email}
+                  onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="phone" className="text-right">
+                  Teléfono
+                </Label>
+                <Input
+                  id="phone"
+                  value={registerForm.phone}
+                  onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="notes" className="text-right">
+                  Notas
+                </Label>
+                <Textarea
+                  id="notes"
+                  value={registerForm.notes}
+                  onChange={(e) => setRegisterForm({ ...registerForm, notes: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={registerParticipant.isPending}>
+                {registerParticipant.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Registrando...
+                  </>
+                ) : (
+                  "Registrar participante"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Diálogo para asignar o editar recurso */}
+      <Dialog open={isResourceDialogOpen} onOpenChange={setIsResourceDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{isEditingResource ? "Editar recurso" : "Asignar nuevo recurso"}</DialogTitle>
+            <DialogDescription>
+              {isEditingResource 
+                ? "Actualice la información del recurso asignado al evento." 
+                : "Complete el formulario para asignar un nuevo recurso al evento."}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleResourceSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="resourceType" className="text-right">
+                  Tipo
+                </Label>
+                <Select 
+                  value={resourceForm.resourceType}
+                  onValueChange={(value) => setResourceForm({ ...resourceForm, resourceType: value })}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione un tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="espacio">Espacio</SelectItem>
+                    <SelectItem value="equipamiento">Equipamiento</SelectItem>
+                    <SelectItem value="servicio">Servicio</SelectItem>
+                    <SelectItem value="personal">Personal</SelectItem>
+                    <SelectItem value="otro">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="resourceName" className="text-right">
+                  Nombre
+                </Label>
+                <Input
+                  id="resourceName"
+                  value={resourceForm.resourceName}
+                  onChange={(e) => setResourceForm({ ...resourceForm, resourceName: e.target.value })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="quantity" className="text-right">
+                  Cantidad
+                </Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  min="1"
+                  value={resourceForm.quantity}
+                  onChange={(e) => setResourceForm({ ...resourceForm, quantity: parseInt(e.target.value) || 1 })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="notes" className="text-right">
+                  Notas
+                </Label>
+                <Textarea
+                  id="notes"
+                  value={resourceForm.notes}
+                  onChange={(e) => setResourceForm({ ...resourceForm, notes: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setIsResourceDialogOpen(false);
+                  setIsEditingResource(false);
+                  setCurrentResourceId(null);
+                  setResourceForm({
+                    resourceType: "espacio",
+                    resourceName: "",
+                    quantity: 1,
+                    notes: "",
+                  });
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={assignResource.isPending || updateResource.isPending}
+              >
+                {(assignResource.isPending || updateResource.isPending) ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {isEditingResource ? "Actualizando..." : "Asignando..."}
+                  </>
+                ) : (
+                  isEditingResource ? "Actualizar recurso" : "Asignar recurso"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
