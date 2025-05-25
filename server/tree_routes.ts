@@ -154,41 +154,53 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
     try {
       const { id } = req.params;
       
-      // Obtener el árbol con su especie y parque
-      const [tree] = await db
-        .select()
-        .from(trees)
-        .where(eq(trees.id, Number(id)));
+      // Obtener el árbol usando SQL directo
+      const treeResult = await db.execute(sql`
+        SELECT * FROM trees WHERE id = ${Number(id)}
+      `);
       
-      if (!tree) {
+      if (!treeResult.rows || treeResult.rows.length === 0) {
         return res.status(404).json({ error: "Árbol no encontrado" });
       }
       
+      const tree = treeResult.rows[0];
+      
       // Obtener la especie del árbol
-      const [species] = await db
-        .select()
-        .from(treeSpecies)
-        .where(eq(treeSpecies.id, tree.speciesId));
+      const speciesResult = await db.execute(sql`
+        SELECT * FROM tree_species WHERE id = ${tree.species_id}
+      `);
       
       // Obtener el parque del árbol
-      const [park] = await db
-        .select()
-        .from(parks)
-        .where(eq(parks.id, tree.parkId));
+      const parkResult = await db.execute(sql`
+        SELECT id, name FROM parks WHERE id = ${tree.park_id}
+      `);
       
       // Obtener los mantenimientos del árbol
-      const maintenances = await db
-        .select()
-        .from(treeMaintenances)
-        .where(eq(treeMaintenances.treeId, tree.id))
-        .orderBy(desc(treeMaintenances.maintenanceDate));
+      const maintenancesResult = await db.execute(sql`
+        SELECT * FROM tree_maintenances 
+        WHERE tree_id = ${tree.id}
+        ORDER BY maintenance_date DESC
+      `);
       
-      // Construir la respuesta completa
+      // Formatear el resultado
       const treeDetails = {
-        ...tree,
-        species,
-        park,
-        maintenances
+        id: tree.id,
+        code: `ARB-${tree.id.toString().padStart(5, '0')}`,
+        speciesId: tree.species_id,
+        parkId: tree.park_id,
+        speciesName: speciesResult.rows[0]?.common_name || 'Desconocida',
+        scientificName: speciesResult.rows[0]?.scientific_name || '',
+        parkName: parkResult.rows[0]?.name || 'Desconocido',
+        latitude: tree.latitude,
+        longitude: tree.longitude,
+        height: tree.height,
+        diameter: tree.trunk_diameter,
+        healthStatus: tree.health_status || 'No evaluado',
+        condition: tree.condition,
+        locationDescription: tree.location_description,
+        plantingDate: tree.planting_date,
+        notes: tree.notes,
+        maintenances: maintenancesResult.rows || []
       };
       
       res.json({ data: treeDetails });
