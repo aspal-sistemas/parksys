@@ -375,6 +375,13 @@ const AdminSidebar: React.FC = () => {
               Inventario
             </NavItem>
             <NavItem 
+              href="/admin/trees/maintenance" 
+              icon={<Wrench className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/maintenance')}
+            >
+              Mantenimiento
+            </NavItem>
+            <NavItem 
               href="/admin/trees/map" 
               icon={<Map className="h-5 w-5" />}
               active={location.startsWith('/admin/trees/map')}

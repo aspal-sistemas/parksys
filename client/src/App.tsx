@@ -333,6 +333,13 @@ function Router() {
           </Suspense>
         </Route>
         
+        {/* Ruta para Gestión de Mantenimiento de Árboles */}
+        <Route path="/admin/trees/maintenance">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de mantenimiento de árboles...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/maintenance/index')))}
+          </Suspense>
+        </Route>
+        
         <Route component={NotFound} />
       </Switch>
     </div>
