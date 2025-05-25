@@ -214,11 +214,204 @@ const EventDetailPage = () => {
       });
     },
   });
+  
+  // Mutación para asignar un nuevo recurso al evento
+  const assignResource = useMutation({
+    mutationFn: async (data: ResourceFormData) => {
+      const response = await fetch(`/api/events/${id}/resources`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": localStorage.getItem("token") || "",
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al asignar recurso");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidamos la consulta para actualizar la lista de recursos
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/resources`] });
+      setIsResourceDialogOpen(false);
+      setResourceForm({
+        resourceType: "espacio",
+        resourceName: "",
+        quantity: 1,
+        notes: "",
+      });
+      toast({
+        title: "Recurso asignado",
+        description: "El recurso ha sido asignado exitosamente al evento.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error al asignar recurso",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Mutación para actualizar un recurso
+  const updateResource = useMutation({
+    mutationFn: async ({ resourceId, data }: { resourceId: number, data: ResourceFormData }) => {
+      const response = await fetch(`/api/events/${id}/resources/${resourceId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": localStorage.getItem("token") || "",
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al actualizar recurso");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidamos la consulta para actualizar la lista de recursos
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/resources`] });
+      setIsResourceDialogOpen(false);
+      setIsEditingResource(false);
+      setCurrentResourceId(null);
+      setResourceForm({
+        resourceType: "espacio",
+        resourceName: "",
+        quantity: 1,
+        notes: "",
+      });
+      toast({
+        title: "Recurso actualizado",
+        description: "El recurso ha sido actualizado exitosamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error al actualizar recurso",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Mutación para cambiar el estado de un recurso
+  const updateResourceStatus = useMutation({
+    mutationFn: async ({ resourceId, status }: { resourceId: number, status: string }) => {
+      const response = await fetch(`/api/events/${id}/resources/${resourceId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": localStorage.getItem("token") || "",
+        },
+        body: JSON.stringify({ status }),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al actualizar estado del recurso");
+      }
+      
+      return response.json();
+    },
+    onSuccess: (_, variables) => {
+      // Invalidamos la consulta para actualizar la lista de recursos
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/resources`] });
+      toast({
+        title: "Estado actualizado",
+        description: `El recurso ha sido marcado como ${resourceStatusTranslations[variables.status] || variables.status}.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error al actualizar estado",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Mutación para eliminar un recurso
+  const deleteResource = useMutation({
+    mutationFn: async (resourceId: number) => {
+      const response = await fetch(`/api/events/${id}/resources/${resourceId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": localStorage.getItem("token") || "",
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al eliminar recurso");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidamos la consulta para actualizar la lista de recursos
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/resources`] });
+      toast({
+        title: "Recurso eliminado",
+        description: "El recurso ha sido eliminado exitosamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error al eliminar recurso",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
-  // Función para manejar el envío del formulario de registro
+  // Función para manejar el envío del formulario de registro de participantes
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     registerParticipant.mutate(registerForm);
+  };
+  
+  // Función para manejar el envío del formulario de recursos
+  const handleResourceSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (isEditingResource && currentResourceId) {
+      updateResource.mutate({
+        resourceId: currentResourceId,
+        data: resourceForm
+      });
+    } else {
+      assignResource.mutate(resourceForm);
+    }
+  };
+  
+  // Función para editar un recurso
+  const handleEditResource = (resource: Resource) => {
+    setIsEditingResource(true);
+    setCurrentResourceId(resource.id);
+    setResourceForm({
+      resourceType: resource.resourceType,
+      resourceName: resource.resourceName,
+      quantity: resource.quantity,
+      notes: resource.notes || "",
+    });
+    setIsResourceDialogOpen(true);
+  };
+  
+  // Función para cambiar el estado de un recurso
+  const handleResourceStatusChange = (resourceId: number, status: string) => {
+    updateResourceStatus.mutate({ resourceId, status });
+  };
+  
+  // Función para eliminar un recurso
+  const handleDeleteResource = (resourceId: number) => {
+    if (confirm("¿Estás seguro de que deseas eliminar este recurso?")) {
+      deleteResource.mutate(resourceId);
+    }
   };
 
   // Si está cargando, mostramos un spinner
