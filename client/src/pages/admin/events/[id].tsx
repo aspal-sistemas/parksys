@@ -311,6 +311,12 @@ const EventDetailPage = () => {
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Volver
               </Button>
+              <Button asChild variant="secondary">
+                <Link href={`/admin/events/participants/${id}`}>
+                  <Users className="mr-2 h-4 w-4" />
+                  Participantes
+                </Link>
+              </Button>
               <Button asChild>
                 <Link href={`/admin/events/${id}/edit`}>
                   <Edit className="mr-2 h-4 w-4" />
