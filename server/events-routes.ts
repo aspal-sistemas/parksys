@@ -27,6 +27,21 @@ import {
   getEventResourcesSummary
 } from "./events-resources-handlers";
 
+import {
+  getEventEvaluations,
+  createEventEvaluation,
+  updateEventEvaluation,
+  deleteEventEvaluation
+} from "./events-evaluations-handlers";
+
+import {
+  getEventVolunteers,
+  assignVolunteerToEvent,
+  updateVolunteerAssignment,
+  removeVolunteerFromEvent,
+  getAvailableVolunteers
+} from "./events-volunteers-handlers";
+
 export const eventRouter = Router();
 
 // Rutas públicas (no requieren autenticación)
@@ -67,4 +82,19 @@ export function registerEventRoutes(app: any, apiRouter: Router, isAuthenticated
   apiRouter.put("/events/:id/resources/:resourceId", isAuthenticated, updateEventResource);
   apiRouter.put("/events/:id/resources/:resourceId/status", isAuthenticated, updateResourceStatus);
   apiRouter.delete("/events/:id/resources/:resourceId", isAuthenticated, removeEventResource);
+  
+  // Rutas para evaluaciones de eventos
+  apiRouter.get("/events/:id/evaluations", getEventEvaluations);
+  apiRouter.post("/events/:id/evaluations", createEventEvaluation);
+  apiRouter.put("/events/:id/evaluations/:evaluationId", isAuthenticated, updateEventEvaluation);
+  apiRouter.delete("/events/:id/evaluations/:evaluationId", isAuthenticated, deleteEventEvaluation);
+  
+  // Rutas para voluntarios de eventos
+  apiRouter.get("/events/:id/volunteers", getEventVolunteers);
+  apiRouter.post("/events/:id/volunteers", isAuthenticated, assignVolunteerToEvent);
+  apiRouter.put("/events/:id/volunteers/:assignmentId", isAuthenticated, updateVolunteerAssignment);
+  apiRouter.delete("/events/:id/volunteers/:assignmentId", isAuthenticated, removeVolunteerFromEvent);
+  
+  // Ruta para obtener voluntarios disponibles
+  apiRouter.get("/volunteers/available", getAvailableVolunteers);
 }
