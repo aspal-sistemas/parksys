@@ -32,7 +32,7 @@ import {
 } from "./api/parksImport";
 import { registerUserRoutes } from "./userRoutes";
 import { updateSkillsRouter } from "./updateSkills";
-import { registerEventRoutes } from "./events_routes";
+import { registerEventRoutes } from "./events-routes";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
   insertActivitySchema, insertDocumentSchema, insertParkImageSchema,
