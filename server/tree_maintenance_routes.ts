@@ -55,7 +55,7 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
       const maintenances = result.rows.map(m => ({
         id: m.id,
         treeId: m.tree_id,
-        treeCode: `ARB-${m.tree_id.toString().padStart(5, '0')}`,
+        treeCode: `ARB-${m.tree_id?.toString().padStart(5, '0')}`,
         maintenanceType: m.maintenance_type,
         maintenanceDate: m.maintenance_date,
         performedBy: m.performed_by,

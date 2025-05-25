@@ -44,8 +44,8 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
 
       // Obtener registros de mantenimiento para este árbol
       const maintenanceRecords = await db.select().from(treeMaintenances)
-        .where(eq(treeMaintenances.treeId, treeId))
-        .orderBy(desc(treeMaintenances.maintenanceDate));
+        .where(eq(treeMaintenances.tree_id, treeId))
+        .orderBy(desc(treeMaintenances.maintenance_date));
       
       res.json({ data: maintenanceRecords });
     } catch (error) {
@@ -73,7 +73,7 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
       // Validar datos de entrada
       const validatedData = insertTreeMaintenanceSchema.parse({
         ...req.body,
-        treeId
+        tree_id: treeId
       });
       
       // Insertar registro de mantenimiento

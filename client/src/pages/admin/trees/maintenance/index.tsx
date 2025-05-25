@@ -69,12 +69,13 @@ export default function TreeMaintenancePage() {
   // Cargar todos los mantenimientos
   const { data: maintenances, isLoading: loadingMaintenances } = useQuery({
     queryKey: ['/api/trees/maintenances'],
-    select: (data) => data.data,
+    select: (data: any) => data.data,
   });
 
   // Cargar estadísticas de mantenimiento
   const { data: stats, isLoading: loadingStats } = useQuery({
     queryKey: ['/api/trees/maintenances/stats'],
+    select: (data: any) => data || { total: 0, recent: 0, byType: [], byMonth: [] },
   });
 
   // Filtrar mantenimientos según búsqueda y tipo
@@ -129,8 +130,7 @@ export default function TreeMaintenancePage() {
       
       toast({
         title: "Mantenimiento registrado",
-        description: "El registro de mantenimiento se ha guardado correctamente",
-        variant: "success",
+        description: "El registro de mantenimiento se ha guardado correctamente"
       });
       
       setOpen(false);
