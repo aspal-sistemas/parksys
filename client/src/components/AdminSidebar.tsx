@@ -193,13 +193,6 @@ const AdminSidebar: React.FC = () => {
               Lista
             </NavItem>
             <NavItem 
-              href="/admin/users/concessionaires" 
-              icon={<Store className="h-5 w-5" />}
-              active={location === '/admin/users/concessionaires'}
-            >
-              Concesionarios
-            </NavItem>
-            <NavItem 
               href="/admin/permissions" 
               icon={<Shield className="h-5 w-5" />}
               active={location === '/admin/permissions'}

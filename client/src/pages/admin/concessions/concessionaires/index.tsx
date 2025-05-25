@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Plus, Edit, FileText, History, Star, Users, AlertTriangle, CheckCircle, XCircle, Search, FileUp } from "lucide-react";
+import { Plus, Edit, FileText, History, Star, Users, AlertTriangle, CheckCircle, XCircle, Search, FileUp, Loader2, UserRound } from "lucide-react";
 
 // Esquema de validación para el formulario de concesionario
 const concessionaireSchema = z.object({
