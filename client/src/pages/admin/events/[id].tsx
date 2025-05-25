@@ -51,6 +51,8 @@ import {
   Building, 
   Mail, 
   Phone,
+  ClipboardX,
+  UserX,
   ArrowLeft,
   ChevronRight,
   UserPlus,
