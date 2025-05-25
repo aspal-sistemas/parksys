@@ -600,7 +600,7 @@ const EventDetailPage = () => {
           onValueChange={setActiveTab}
           className="mt-6"
         >
-          <TabsList className="grid w-full grid-cols-3 max-w-md">
+          <TabsList className="grid w-full grid-cols-5 max-w-3xl">
             <TabsTrigger value="details">
               <Calendar className="h-4 w-4 mr-2" />
               Detalles
@@ -612,6 +612,14 @@ const EventDetailPage = () => {
             <TabsTrigger value="resources">
               <FileCog className="h-4 w-4 mr-2" />
               Recursos
+            </TabsTrigger>
+            <TabsTrigger value="evaluations">
+              <ListChecks className="h-4 w-4 mr-2" />
+              Evaluaciones
+            </TabsTrigger>
+            <TabsTrigger value="volunteers">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Voluntarios
             </TabsTrigger>
           </TabsList>
 
