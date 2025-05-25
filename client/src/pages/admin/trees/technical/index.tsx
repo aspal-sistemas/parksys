@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { TreeDeciduous, AlertTriangle, Wrench, Clock, CalendarCheck2, Flower2 } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
 
 import {
   Card,
