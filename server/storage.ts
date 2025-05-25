@@ -25,6 +25,12 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<any>;
   getUsers(): Promise<any[]>;
   getUserByEmail(email: string): Promise<any>;
+  getAssetCategories(): Promise<any[]>;
+  getAssetCategory(id: number): Promise<any>;
+  getCategoryAssets(categoryId: number): Promise<any[]>;
+  createAssetCategory(category: any): Promise<any>;
+  updateAssetCategory(id: number, category: any): Promise<any>;
+  deleteAssetCategory(id: number): Promise<boolean>;
 }
 
 // Implementación simplificada
@@ -187,6 +193,163 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error al obtener usuario por email:", error);
       return undefined;
+    }
+  }
+  
+  async getAssetCategories(): Promise<any[]> {
+    try {
+      const result = await db.execute(`
+        SELECT id, name, description, icon, color, parent_id as "parentId",
+               created_at as "createdAt", updated_at as "updatedAt"
+        FROM asset_categories
+        ORDER BY name
+      `);
+      
+      // Añadir propiedades predeterminadas para mantener compatibilidad con el frontend
+      return (result.rows || []).map(category => ({
+        ...category,
+        iconType: "system",
+        customIconUrl: null
+      }));
+    } catch (error) {
+      console.error("Error al obtener categorías de activos:", error);
+      return [];
+    }
+  }
+  
+  async getAssetCategory(id: number): Promise<any> {
+    try {
+      const result = await db.execute(`
+        SELECT id, name, description, icon, color, parent_id as "parentId",
+               created_at as "createdAt", updated_at as "updatedAt"
+        FROM asset_categories
+        WHERE id = $1
+      `, [id]);
+      
+      if (result.rows && result.rows.length > 0) {
+        // Añadir propiedades predeterminadas para mantener compatibilidad con el frontend
+        return {
+          ...result.rows[0],
+          iconType: "system",
+          customIconUrl: null
+        };
+      }
+      
+      return undefined;
+    } catch (error) {
+      console.error(`Error al obtener categoría de activo ${id}:`, error);
+      return undefined;
+    }
+  }
+  
+  async getCategoryAssets(categoryId: number): Promise<any[]> {
+    try {
+      const result = await db.execute(`
+        SELECT id, name
+        FROM assets
+        WHERE category_id = $1
+      `, [categoryId]);
+      return result.rows || [];
+    } catch (error) {
+      console.error(`Error al obtener activos de la categoría ${categoryId}:`, error);
+      return [];
+    }
+  }
+  
+  async createAssetCategory(category: any): Promise<any> {
+    try {
+      const { name, description, icon, iconType, customIconUrl, color } = category;
+      const result = await db.execute(`
+        INSERT INTO asset_categories (
+          name, description, icon, icon_type, custom_icon_url, color, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, NOW(), NOW()
+        ) RETURNING id, name, description, icon, icon_type as "iconType", 
+                   custom_icon_url as "customIconUrl", color,
+                   created_at as "createdAt", updated_at as "updatedAt"
+      `, [name, description, icon, iconType, customIconUrl, color]);
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error al crear categoría de activo:", error);
+      throw error;
+    }
+  }
+  
+  async updateAssetCategory(id: number, category: any): Promise<any> {
+    try {
+      // Construir query dinámica para actualizar solo los campos proporcionados
+      let setClause = [];
+      let params = [];
+      let paramIndex = 1;
+      
+      if (category.name !== undefined) {
+        setClause.push(`name = $${paramIndex++}`);
+        params.push(category.name);
+      }
+      
+      if (category.description !== undefined) {
+        setClause.push(`description = $${paramIndex++}`);
+        params.push(category.description);
+      }
+      
+      if (category.icon !== undefined) {
+        setClause.push(`icon = $${paramIndex++}`);
+        params.push(category.icon);
+      }
+      
+      if (category.iconType !== undefined) {
+        setClause.push(`icon_type = $${paramIndex++}`);
+        params.push(category.iconType);
+      }
+      
+      if (category.customIconUrl !== undefined) {
+        setClause.push(`custom_icon_url = $${paramIndex++}`);
+        params.push(category.customIconUrl);
+      }
+      
+      if (category.color !== undefined) {
+        setClause.push(`color = $${paramIndex++}`);
+        params.push(category.color);
+      }
+      
+      setClause.push(`updated_at = NOW()`);
+      
+      if (setClause.length === 0) {
+        return this.getAssetCategory(id); // No hay nada que actualizar
+      }
+      
+      // Agregar el ID como último parámetro
+      params.push(id);
+      
+      const result = await db.execute(`
+        UPDATE asset_categories
+        SET ${setClause.join(', ')}
+        WHERE id = $${paramIndex}
+        RETURNING id, name, description, icon, icon_type as "iconType", 
+                 custom_icon_url as "customIconUrl", color,
+                 created_at as "createdAt", updated_at as "updatedAt"
+      `, params);
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error(`Error al actualizar categoría de activo ${id}:`, error);
+      throw error;
+    }
+  }
+  
+  async deleteAssetCategory(id: number): Promise<boolean> {
+    try {
+      const result = await db.execute(`
+        DELETE FROM asset_categories
+        WHERE id = $1
+        RETURNING id
+      `, [id]);
+      
+      return result.rows && result.rows.length > 0;
+    } catch (error) {
+      console.error(`Error al eliminar categoría de activo ${id}:`, error);
+      return false;
     }
   }
 }
