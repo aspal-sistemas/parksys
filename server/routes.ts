@@ -27,6 +27,9 @@ import directRouter from "./directRoutes";
 import { registerConcessionRoutes } from "./concession-routes";
 import { registerConcessionContractsRoutes } from "./concession-contracts-routes";
 import { registerUsersConcessionairesRoutes } from "./users-concessionaires-routes";
+import { registerConcessionLocationRoutes } from "./concession-locations-routes";
+import { registerConcessionPaymentRoutes } from "./concession-payments-routes";
+import { registerConcessionEvaluationRoutes } from "./concession-evaluations-routes";
 import { 
   uploadParkFile, 
   handleMulterErrors, 

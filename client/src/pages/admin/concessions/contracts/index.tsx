@@ -129,7 +129,7 @@ export default function ConcessionContracts() {
 
   // Obtener lista de parques
   const { data: parks, isLoading: isLoadingParks } = useQuery({
-    queryKey: ["/api/parks/list"],
+    queryKey: ["/api/parks"],
   });
 
   // Obtener lista de concesionarios

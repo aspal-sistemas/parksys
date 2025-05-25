@@ -394,6 +394,25 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/concessions/contracts/index')))}
           </Suspense>
         </Route>
+
+        {/* Nuevas rutas para el módulo extendido de concesiones */}
+        <Route path="/admin/concessions/locations">
+          <Suspense fallback={<div className="p-8 text-center">Cargando ubicaciones de concesiones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/concessions/locations/index')))}
+          </Suspense>
+        </Route>
+
+        <Route path="/admin/concessions/payments">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión financiera de concesiones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/concessions/payments/index')))}
+          </Suspense>
+        </Route>
+
+        <Route path="/admin/concessions/evaluations">
+          <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de concesiones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/concessions/evaluations/index')))}
+          </Suspense>
+        </Route>
         
         <Route component={NotFound} />
       </Switch>

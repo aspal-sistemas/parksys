@@ -775,8 +775,12 @@ export const parksRelations = relations(parks, ({ one }) => ({
   })
 }));
 
-// Enumeración para el nivel de impacto ambiental/social
+// Enumeraciones
 export const impactLevelEnum = pgEnum('impact_level', ['bajo', 'medio', 'alto', 'muy_alto']);
+export const paymentStatusEnum = pgEnum('payment_status', ['pending', 'paid', 'overdue', 'cancelled', 'refunded']);
+export const paymentTypeEnum = pgEnum('payment_type', ['monthly', 'quarterly', 'biannual', 'annual', 'one_time', 'variable']);
+export const evaluationStatusEnum = pgEnum('evaluation_status', ['draft', 'completed', 'pending_review', 'approved', 'rejected']);
+export const sanctionStatusEnum = pgEnum('sanction_status', ['pending', 'resolved', 'appealed', 'cancelled']);
 
 // Tabla para el catálogo de tipos de concesiones
 export const concessionTypes = pgTable("concession_types", {
@@ -854,8 +858,104 @@ export const concessionContracts = pgTable("concession_contracts", {
   updatedAt: timestamp("updated_at").notNull().defaultNow()
 });
 
+// Tabla para ubicación y georreferenciación de concesiones
+export const concessionLocations = pgTable("concession_locations", {
+  id: serial("id").primaryKey(),
+  contractId: integer("contract_id").notNull(),
+  zoneName: varchar("zone_name", { length: 100 }),
+  subzoneName: varchar("subzone_name", { length: 100 }),
+  coordinates: text("coordinates"), // Almacenamos como texto 'lat,lng'
+  areaSqm: decimal("area_sqm", { precision: 10, scale: 2 }).notNull(),
+  mapReference: text("map_reference"),
+  locationDescription: text("location_description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+// Tabla para gestión financiera de concesiones
+export const concessionPayments = pgTable("concession_payments", {
+  id: serial("id").primaryKey(),
+  contractId: integer("contract_id").notNull(),
+  paymentDate: date("payment_date").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  paymentType: paymentTypeEnum("payment_type").notNull(),
+  paymentStatus: paymentStatusEnum("payment_status").notNull().default('pending'),
+  invoiceNumber: varchar("invoice_number", { length: 100 }),
+  invoiceUrl: text("invoice_url"),
+  notes: text("notes"),
+  createdById: integer("created_by_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+// Tabla para evaluación y cumplimiento de concesiones
+export const concessionEvaluations = pgTable("concession_evaluations", {
+  id: serial("id").primaryKey(),
+  contractId: integer("contract_id").notNull(),
+  evaluationDate: date("evaluation_date").notNull(),
+  evaluatorId: integer("evaluator_id"),
+  sanitaryRating: integer("sanitary_rating"),
+  operationalRating: integer("operational_rating"),
+  technicalRating: integer("technical_rating"),
+  complianceRating: integer("compliance_rating"),
+  customerSatisfactionRating: integer("customer_satisfaction_rating"),
+  overallRating: decimal("overall_rating", { precision: 3, scale: 1 }),
+  findings: text("findings"),
+  recommendations: text("recommendations"),
+  followUpRequired: boolean("follow_up_required").default(false),
+  followUpDate: date("follow_up_date"),
+  status: evaluationStatusEnum("status").default('draft'),
+  attachments: text("attachments").array(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+// Tabla para checklists personalizables
+export const concessionEvaluationChecklists = pgTable("concession_evaluation_checklists", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  category: varchar("category", { length: 50 }).notNull(),
+  items: jsonb("items").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdById: integer("created_by_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+// Tabla para sanciones e incidencias
+export const concessionSanctions = pgTable("concession_sanctions", {
+  id: serial("id").primaryKey(),
+  contractId: integer("contract_id").notNull(),
+  evaluationId: integer("evaluation_id"),
+  sanctionDate: date("sanction_date").notNull(),
+  sanctionType: varchar("sanction_type", { length: 100 }).notNull(),
+  description: text("description").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }),
+  resolutionStatus: sanctionStatusEnum("resolution_status").default('pending'),
+  resolutionDate: date("resolution_date"),
+  resolutionNotes: text("resolution_notes"),
+  createdById: integer("created_by_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
 export type ConcessionContract = typeof concessionContracts.$inferSelect;
 export type InsertConcessionContract = typeof concessionContracts.$inferInsert;
+
+export type ConcessionLocation = typeof concessionLocations.$inferSelect;
+export type InsertConcessionLocation = typeof concessionLocations.$inferInsert;
+
+export type ConcessionPayment = typeof concessionPayments.$inferSelect;
+export type InsertConcessionPayment = typeof concessionPayments.$inferInsert;
+
+export type ConcessionEvaluation = typeof concessionEvaluations.$inferSelect;
+export type InsertConcessionEvaluation = typeof concessionEvaluations.$inferInsert;
+
+export type ConcessionEvaluationChecklist = typeof concessionEvaluationChecklists.$inferSelect;
+export type InsertConcessionEvaluationChecklist = typeof concessionEvaluationChecklists.$inferInsert;
+
+export type ConcessionSanction = typeof concessionSanctions.$inferSelect;
+export type InsertConcessionSanction = typeof concessionSanctions.$inferInsert;
 
 export const insertConcessionContractSchema = createInsertSchema(concessionContracts).omit({
   id: true,
@@ -864,8 +964,38 @@ export const insertConcessionContractSchema = createInsertSchema(concessionContr
   updatedAt: true
 });
 
+export const insertConcessionLocationSchema = createInsertSchema(concessionLocations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertConcessionPaymentSchema = createInsertSchema(concessionPayments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertConcessionEvaluationSchema = createInsertSchema(concessionEvaluations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertConcessionEvaluationChecklistSchema = createInsertSchema(concessionEvaluationChecklists).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertConcessionSanctionSchema = createInsertSchema(concessionSanctions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
 // Relaciones para los contratos de concesiones
-export const concessionContractsRelations = relations(concessionContracts, ({ one }) => ({
+export const concessionContractsRelations = relations(concessionContracts, ({ one, many }) => ({
   park: one(parks, {
     fields: [concessionContracts.parkId],
     references: [parks.id]
@@ -877,6 +1007,52 @@ export const concessionContractsRelations = relations(concessionContracts, ({ on
   concessionType: one(concessionTypes, {
     fields: [concessionContracts.concessionTypeId],
     references: [concessionTypes.id]
+  }),
+  // Nuevas relaciones para las funcionalidades extendidas
+  locations: many(concessionLocations),
+  payments: many(concessionPayments),
+  evaluations: many(concessionEvaluations),
+  sanctions: many(concessionSanctions)
+}));
+
+// Relaciones para ubicaciones de concesiones
+export const concessionLocationsRelations = relations(concessionLocations, ({ one }) => ({
+  contract: one(concessionContracts, {
+    fields: [concessionLocations.contractId],
+    references: [concessionContracts.id]
+  })
+}));
+
+// Relaciones para pagos de concesiones
+export const concessionPaymentsRelations = relations(concessionPayments, ({ one }) => ({
+  contract: one(concessionContracts, {
+    fields: [concessionPayments.contractId],
+    references: [concessionContracts.id]
+  })
+}));
+
+// Relaciones para evaluaciones de concesiones
+export const concessionEvaluationsRelations = relations(concessionEvaluations, ({ one, many }) => ({
+  contract: one(concessionContracts, {
+    fields: [concessionEvaluations.contractId],
+    references: [concessionContracts.id]
+  }),
+  evaluator: one(users, {
+    fields: [concessionEvaluations.evaluatorId],
+    references: [users.id]
+  }),
+  sanctions: many(concessionSanctions)
+}));
+
+// Relaciones para sanciones de concesiones
+export const concessionSanctionsRelations = relations(concessionSanctions, ({ one }) => ({
+  contract: one(concessionContracts, {
+    fields: [concessionSanctions.contractId],
+    references: [concessionContracts.id]
+  }),
+  evaluation: one(concessionEvaluations, {
+    fields: [concessionSanctions.evaluationId],
+    references: [concessionEvaluations.id]
   })
 }));
 
