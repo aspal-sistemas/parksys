@@ -179,6 +179,18 @@ function Router() {
           </Suspense>
         </Route>
         
+        {/* Rutas para el módulo de eventos */}
+        <Route path="/admin/events">
+          <Suspense fallback={<div className="p-8 text-center">Cargando eventos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/events/index')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/events/new">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de nuevo evento...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/events/new')))}
+          </Suspense>
+        </Route>
+        
         {/* Ruta para el calendario de actividades */}
         <Route path="/admin/activities/calendar">
           <Suspense fallback={<div className="p-8 text-center">Cargando calendario de actividades...</div>}>

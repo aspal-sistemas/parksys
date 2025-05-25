@@ -1,4 +1,6 @@
-import React from 'react';
+import React from "react";
+import { LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -11,22 +13,16 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   icon,
   title,
   description,
-  actions
+  actions,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center text-center p-10 bg-muted/20 rounded-lg border border-dashed">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+    <div className="flex flex-col items-center justify-center py-12 px-4 text-center border rounded-lg bg-background/50">
+      <div className="text-muted-foreground mb-4 h-12 w-12 flex items-center justify-center">
         {icon}
       </div>
-      <h3 className="mt-6 text-xl font-semibold">{title}</h3>
-      <p className="mt-2 text-sm text-muted-foreground max-w-md">
-        {description}
-      </p>
-      {actions && (
-        <div className="mt-6">
-          {actions}
-        </div>
-      )}
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground max-w-md mb-6">{description}</p>
+      {actions && <div className="flex gap-2">{actions}</div>}
     </div>
   );
 };

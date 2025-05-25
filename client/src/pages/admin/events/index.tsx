@@ -1,327 +1,337 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
-import { Calendar, Edit, Eye, Trash2, Filter, Search, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link, useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import EmptyState from "@/components/EmptyState";
+import PageHeader from "@/components/PageHeader";
+import { 
+  Calendar, 
+  ChevronRight, 
+  Filter, 
+  PlusCircle, 
+  Search,
+  CalendarDays
+} from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
-// Componentes UI
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
+// Definimos los tipos que necesitamos para los eventos
+interface Event {
+  id: number;
+  title: string;
+  description: string | null;
+  eventType: string;
+  targetAudience: string | null;
+  status: string;
+  startDate: string;
+  endDate: string | null;
+  location: string | null;
+  capacity: number | null;
+  registrationType: string;
+  organizerName: string | null;
+  parks?: { id: number; name: string }[];
+}
 
-// Layout y componentes propios
-import AdminLayout from '@/components/AdminLayout';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
-import EmptyState from '@/components/EmptyState';
-import PageHeader from '@/components/PageHeader';
+const EventsPage: React.FC = () => {
+  const [, navigate] = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
 
-const EventStatusBadge = ({ status }: { status: string }) => {
-  const getStatusStyles = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return 'bg-gray-200 text-gray-800 hover:bg-gray-300';
-      case 'published':
-        return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'canceled':
-        return 'bg-red-100 text-red-800 hover:bg-red-200';
-      case 'postponed':
-        return 'bg-amber-100 text-amber-800 hover:bg-amber-200';
-      default:
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return 'Borrador';
-      case 'published':
-        return 'Publicado';
-      case 'canceled':
-        return 'Cancelado';
-      case 'postponed':
-        return 'Pospuesto';
-      default:
-        return status;
-    }
-  };
-
-  return (
-    <Badge className={getStatusStyles(status)} variant="outline">
-      {getStatusLabel(status)}
-    </Badge>
-  );
-};
-
-const EventsList = () => {
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-
-  // Obtener la lista de eventos
-  const { data: events, isLoading, error, refetch } = useQuery({
-    queryKey: ['/api/events'],
-    retry: false,
+  // Obtenemos los eventos desde el servidor
+  const { data, isLoading, error } = useQuery<Event[]>({
+    queryKey: ["/api/events"],
   });
 
-  // Obtener datos de referencia para eventos (tipos, audiencias, estados)
-  const { data: refData } = useQuery({
-    queryKey: ['/api/events-reference-data'],
-    retry: false,
-  });
-
-  // Función para manejar la eliminación de un evento
-  const handleDelete = async (id: number) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este evento? Esta acción no se puede deshacer.')) {
-      try {
-        const response = await fetch(`/api/events/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-User-Id': localStorage.getItem('userId') || '',
-            'X-User-Role': localStorage.getItem('userRole') || '',
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          }
-        });
-
-        if (response.ok) {
-          toast({
-            title: 'Evento eliminado',
-            description: 'El evento ha sido eliminado correctamente.',
-            variant: 'default',
-          });
-          refetch();
-        } else {
-          const error = await response.json();
-          throw new Error(error.message || 'Error al eliminar el evento');
-        }
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: error instanceof Error ? error.message : 'Error al eliminar el evento',
-          variant: 'destructive',
-        });
-      }
-    }
-  };
-
-  // Filtrar los eventos según los criterios de búsqueda y filtros
-  const filteredEvents = events && Array.isArray(events) ? events.filter(event => {
-    const matchesSearch = searchTerm === '' || 
-      event.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      (event.description && event.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesType = filterType === 'all' || event.eventType === filterType;
-    const matchesStatus = filterStatus === 'all' || event.status === filterStatus;
-    
-    return matchesSearch && matchesType && matchesStatus;
-  }) : [];
-
-  // Estados de carga y error
-  if (isLoading) {
+  // Si hay un error en la carga de datos
+  if (error) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-10 w-1/3" />
-          <Skeleton className="h-10 w-1/4" />
-        </div>
-        <Skeleton className="h-8 w-full" />
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full" />
-        ))}
+      <div className="container mx-auto py-6">
+        <PageHeader
+          title="Eventos"
+          description="Gestiona los eventos de los parques"
+          actions={
+            <Button asChild>
+              <Link href="/admin/events/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Nuevo Evento
+              </Link>
+            </Button>
+          }
+        />
+        <Card className="bg-destructive/10 border-destructive">
+          <CardHeader>
+            <CardTitle>Error al cargar los eventos</CardTitle>
+            <CardDescription>
+              Hubo un problema al obtener los datos. Intenta recargar la página.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <EmptyState
-        icon={<AlertCircle className="h-10 w-10 text-red-500" />}
-        title="Error al cargar los eventos"
-        description="No se pudieron cargar los eventos. Por favor, intenta recargar la página."
-        actions={
-          <Button onClick={() => refetch()}>
-            Reintentar
-          </Button>
-        }
-      />
-    );
-  }
+  // Filtrar eventos por búsqueda, estado y tipo
+  const filteredEvents = data
+    ? data.filter((event) => {
+        const matchesSearch =
+          !searchQuery ||
+          event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (event.description &&
+            event.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  if (!events || !Array.isArray(events) || events.length === 0) {
-    return (
-      <EmptyState
-        icon={<Calendar className="h-10 w-10 text-muted-foreground" />}
-        title="No hay eventos"
-        description="No se encontraron eventos. Crea uno nuevo para comenzar."
-        actions={
-          <Button onClick={() => setLocation('/admin/events/new')}>
-            Crear evento
-          </Button>
-        }
-      />
-    );
-  }
+        const matchesStatus =
+          statusFilter === "all" || event.status === statusFilter;
+
+        const matchesType = typeFilter === "all" || event.eventType === typeFilter;
+
+        return matchesSearch && matchesStatus && matchesType;
+      })
+    : [];
+
+  // Obtener los tipos de eventos únicos para los filtros
+  const eventTypes = data
+    ? Array.from(new Set(data.map((event) => event.eventType)))
+    : [];
+
+  // Generar un mapa de colores para los diferentes tipos de eventos
+  const typeColorMap: Record<string, string> = {
+    cultural: "bg-indigo-100 text-indigo-800 border-indigo-300",
+    sports: "bg-green-100 text-green-800 border-green-300",
+    environmental: "bg-emerald-100 text-emerald-800 border-emerald-300",
+    social: "bg-orange-100 text-orange-800 border-orange-300",
+    educational: "bg-blue-100 text-blue-800 border-blue-300",
+    default: "bg-gray-100 text-gray-800 border-gray-300",
+  };
+
+  // Obtener los estados de eventos únicos para los filtros
+  const eventStatuses = data
+    ? Array.from(new Set(data.map((event) => event.status)))
+    : [];
+
+  // Generar un mapa de colores para los diferentes estados
+  const statusColorMap: Record<string, string> = {
+    draft: "bg-gray-100 text-gray-800",
+    published: "bg-green-100 text-green-800",
+    canceled: "bg-red-100 text-red-800",
+    postponed: "bg-amber-100 text-amber-800",
+    completed: "bg-blue-100 text-blue-800",
+    default: "bg-gray-100 text-gray-800",
+  };
+
+  // Traducir tipos de eventos a español
+  const eventTypeTranslations: Record<string, string> = {
+    cultural: "Cultural",
+    sports: "Deportivo",
+    environmental: "Ambiental",
+    social: "Social",
+    educational: "Educativo",
+  };
+
+  // Traducir estados a español
+  const statusTranslations: Record<string, string> = {
+    draft: "Borrador",
+    published: "Publicado",
+    canceled: "Cancelado",
+    postponed: "Pospuesto",
+    completed: "Completado",
+  };
 
   return (
-    <div className="space-y-4">
-      {/* Filtros y búsqueda */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
+    <div className="container mx-auto py-6">
+      <PageHeader
+        title="Eventos"
+        description="Gestiona los eventos de los parques"
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link href="/admin/events/calendar">
+                <CalendarDays className="mr-2 h-4 w-4" />
+                Calendario
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/admin/events/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Nuevo Evento
+              </Link>
+            </Button>
+          </>
+        }
+      />
+
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="relative flex-grow">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Buscar eventos..."
             className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Select
-          value={filterType}
-          onValueChange={setFilterType}
-        >
-          <SelectTrigger className="w-full md:w-[180px]">
-            <SelectValue placeholder="Tipo de evento" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos los tipos</SelectItem>
-            {refData?.eventTypes?.map((type: string) => (
-              <SelectItem key={type} value={type}>
-                {type === 'cultural' ? 'Cultural' : 
-                 type === 'sports' ? 'Deportivo' : 
-                 type === 'environmental' ? 'Ambiental' : 
-                 type === 'social' ? 'Social' : 
-                 type === 'other' ? 'Otro' : type}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={filterStatus}
-          onValueChange={setFilterStatus}
-        >
-          <SelectTrigger className="w-full md:w-[180px]">
-            <SelectValue placeholder="Estado" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos los estados</SelectItem>
-            {refData?.eventStatuses?.map((status: string) => (
-              <SelectItem key={status} value={status}>
-                {status === 'draft' ? 'Borrador' : 
-                 status === 'published' ? 'Publicado' : 
-                 status === 'canceled' ? 'Cancelado' : 
-                 status === 'postponed' ? 'Pospuesto' : status}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button onClick={() => setLocation('/admin/events/new')} className="md:w-auto w-full">
-          Crear evento
-        </Button>
+        <div className="flex gap-2">
+          <div className="w-40">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <Filter className="mr-2 h-4 w-4" />
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                {eventStatuses.map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {statusTranslations[status] || status}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-40">
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger>
+                <Filter className="mr-2 h-4 w-4" />
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los tipos</SelectItem>
+                {eventTypes.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {eventTypeTranslations[type] || type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
-      {/* Tabla de eventos */}
       <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Título</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredEvents.map((event) => (
-                <TableRow key={event.id}>
-                  <TableCell className="font-medium">{event.title}</TableCell>
-                  <TableCell>
-                    {event.eventType === 'cultural' ? 'Cultural' : 
-                     event.eventType === 'sports' ? 'Deportivo' : 
-                     event.eventType === 'environmental' ? 'Ambiental' : 
-                     event.eventType === 'social' ? 'Social' : 
-                     event.eventType === 'other' ? 'Otro' : event.eventType}
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(event.startDate), 'dd/MM/yyyy', { locale: es })}
-                  </TableCell>
-                  <TableCell>
-                    <EventStatusBadge status={event.status} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setLocation(`/admin/events/${event.id}`)}
-                        title="Ver detalles"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setLocation(`/admin/events/${event.id}/edit`)}
-                        title="Editar"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(event.id)}
-                        title="Eliminar"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : filteredEvents.length === 0 ? (
+          <CardContent className="p-6">
+            <EmptyState
+              icon={<Calendar className="h-10 w-10" />}
+              title="No hay eventos"
+              description={
+                searchQuery || statusFilter !== "all" || typeFilter !== "all"
+                  ? "No se encontraron eventos con los filtros aplicados."
+                  : "Aún no se han creado eventos. Crea tu primer evento para comenzar."
+              }
+              actions={
+                <Button asChild>
+                  <Link href="/admin/events/new">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Nuevo Evento
+                  </Link>
+                </Button>
+              }
+            />
+          </CardContent>
+        ) : (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Ubicación</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
+              </TableHeader>
+              <TableBody>
+                {filteredEvents.map((event) => {
+                  const formattedDate = event.startDate
+                    ? format(new Date(event.startDate), "dd MMM yyyy", { locale: es })
+                    : "Sin fecha";
+                  
+                  return (
+                    <TableRow key={event.id}>
+                      <TableCell className="font-medium">
+                        <div className="max-w-xs truncate">{event.title}</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          ID: {event.id}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            typeColorMap[event.eventType] || typeColorMap.default
+                          }
+                        >
+                          {eventTypeTranslations[event.eventType] || event.eventType}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3 text-muted-foreground" />
+                          <span>{formattedDate}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          className={
+                            statusColorMap[event.status] || statusColorMap.default
+                          }
+                        >
+                          {statusTranslations[event.status] || event.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-xs truncate">
+                          {event.location || "Sin ubicación"}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/admin/events/${event.id}`)}
+                        >
+                          <span className="sr-only">Ver detalles</span>
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </Card>
     </div>
-  );
-};
-
-const EventsPage = () => {
-  return (
-    <AdminLayout>
-      <div className="space-y-6">
-        <PageHeader
-          title="Eventos"
-          description="Gestiona los eventos y actividades programadas en los parques."
-          actions={
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => window.location.href = '/admin/events/calendar'}>
-                <Calendar className="mr-2 h-4 w-4" />
-                Ver calendario
-              </Button>
-              <Button onClick={() => window.location.href = '/admin/events/new'}>
-                Crear evento
-              </Button>
-            </div>
-          }
-        />
-        <Separator />
-        <EventsList />
-      </div>
-    </AdminLayout>
   );
 };
 
