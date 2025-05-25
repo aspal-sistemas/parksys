@@ -42,12 +42,45 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         return res.status(404).json({ error: "Árbol no encontrado" });
       }
 
-      // Obtener registros de mantenimiento para este árbol
-      const maintenanceRecords = await db.select().from(treeMaintenances)
-        .where(eq(treeMaintenances.tree_id, treeId))
-        .orderBy(desc(treeMaintenances.maintenance_date));
+      // Consulta directa SQL para evitar problemas de columnas
+      const result = await db.execute(sql`
+        SELECT 
+          tm.id, 
+          tm.tree_id, 
+          tm.maintenance_type, 
+          tm.maintenance_date, 
+          tm.description,
+          tm.performed_by, 
+          tm.notes, 
+          tm.next_maintenance_date,
+          tm.created_at,
+          u.username AS performed_by_username,
+          u.full_name AS performed_by_name
+        FROM 
+          tree_maintenances tm
+        LEFT JOIN 
+          users u ON tm.performed_by = u.id
+        WHERE 
+          tm.tree_id = ${treeId}
+        ORDER BY 
+          tm.maintenance_date DESC
+      `);
       
-      res.json({ data: maintenanceRecords });
+      // Procesar resultados
+      const maintenances = result.rows.map(m => ({
+        id: m.id,
+        treeId: m.tree_id,
+        maintenanceType: m.maintenance_type,
+        maintenanceDate: m.maintenance_date,
+        description: m.description,
+        performedBy: m.performed_by,
+        performedByName: m.performed_by_name || m.performed_by_username || 'No asignado',
+        notes: m.notes || '',
+        nextMaintenanceDate: m.next_maintenance_date,
+        createdAt: m.created_at
+      }));
+      
+      res.json({ data: maintenances });
     } catch (error) {
       console.error("Error al obtener registros de mantenimiento:", error);
       res.status(500).json({ error: "Error al obtener registros de mantenimiento" });
@@ -307,8 +340,7 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
           maintenance_date, 
           performed_by, 
           notes, 
-          created_at, 
-          updated_at
+          created_at
         ) 
         VALUES (
           ${Number(id)}, 
@@ -316,7 +348,6 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
           ${maintenanceDate}, 
           ${performedBy || null}, 
           ${notes || null}, 
-          NOW(), 
           NOW()
         )
         RETURNING *
@@ -338,8 +369,7 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         maintenanceDate: maintenance.maintenance_date,
         performedBy: maintenance.performed_by,
         notes: maintenance.notes,
-        createdAt: maintenance.created_at,
-        updatedAt: maintenance.updated_at
+        createdAt: maintenance.created_at
       };
       
       res.status(201).json({ data: formattedMaintenance });
