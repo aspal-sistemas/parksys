@@ -747,18 +747,53 @@ async function seedGuadalajaraData() {
 export async function seedDatabase() {
   console.log("Inicializando datos en la base de datos...");
   
-  // Verificar si ya existen amenidades
-  const existingAmenities = await db.select().from(amenities);
-  
-  // Si no hay amenidades, insertar las predeterminadas
-  if (existingAmenities.length === 0) {
-    console.log("Insertando amenidades predeterminadas...");
+  try {
+    // Verificar si la tabla amenities existe
+    const tableExists = await db.execute(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'amenities'
+      );
+    `);
     
-    await db.insert(amenities).values(DEFAULT_AMENITIES);
+    if (!tableExists.rows[0].exists) {
+      console.log("La tabla amenities no existe. Creándola...");
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS amenities (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          icon VARCHAR(255),
+          category VARCHAR(100)
+        );
+      `);
+    }
     
-    console.log(`${DEFAULT_AMENITIES.length} amenidades insertadas correctamente.`);
-  } else {
-    console.log(`Ya existen ${existingAmenities.length} amenidades en la base de datos.`);
+    // Verificar si ya existen amenidades usando una consulta SQL directa
+    const existingAmenitiesCount = await db.execute(`
+      SELECT COUNT(*) FROM amenities;
+    `);
+    
+    // Si no hay amenidades, insertar las predeterminadas
+    if (parseInt(existingAmenitiesCount.rows[0].count) === 0) {
+      console.log("Insertando amenidades predeterminadas...");
+      
+      // Insertar cada amenidad una por una para evitar problemas con el esquema
+      for (const amenity of DEFAULT_AMENITIES) {
+        await db.execute(`
+          INSERT INTO amenities (id, name, icon, category)
+          VALUES ($1, $2, $3, $4)
+          ON CONFLICT (id) DO NOTHING;
+        `, [amenity.id, amenity.name, amenity.icon, amenity.category]);
+      }
+      
+      console.log(`${DEFAULT_AMENITIES.length} amenidades insertadas correctamente.`);
+    } else {
+      console.log(`Ya existen ${existingAmenitiesCount.rows[0].count} amenidades en la base de datos.`);
+    }
+  } catch (error) {
+    console.error("Error al verificar o insertar amenidades:", error);
+    throw error;
   }
   
   // Cargar datos específicos para Guadalajara

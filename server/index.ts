@@ -60,18 +60,39 @@ import { seedDatabase } from "./seed";
 import { createTreeTables } from "./create-tree-tables";
 import { seedTreeSpecies } from "./seed-tree-species";
 
+import { initializeDatabase } from "./initialize-db";
+
 (async () => {
   try {
-    // Inicializar la base de datos con datos predeterminados
-    await seedDatabase();
+    // Inicializar la estructura de la base de datos
+    await initializeDatabase();
+    
+    // Intentar inicializar los datos predeterminados
+    try {
+      await seedDatabase();
+    } catch (error) {
+      console.error("Error al cargar datos iniciales:", error);
+      // Continuamos con la ejecución aunque haya un error en la carga de datos
+    }
     
     // Crear tablas del módulo de arbolado
-    await createTreeTables();
+    try {
+      await createTreeTables();
+    } catch (error) {
+      console.error("Error al crear tablas de arbolado:", error);
+      // Continuamos con la ejecución aunque haya un error
+    }
     
     // Cargar especies de árboles de muestra
-    await seedTreeSpecies();
+    try {
+      await seedTreeSpecies();
+    } catch (error) {
+      console.error("Error al cargar especies de árboles:", error);
+      // Continuamos con la ejecución aunque haya un error
+    }
   } catch (error) {
-    console.error("Error al inicializar la base de datos:", error);
+    console.error("Error crítico al inicializar la base de datos:", error);
+    // Continuamos con la ejecución aunque haya un error
   }
   
   const server = await registerRoutes(app);

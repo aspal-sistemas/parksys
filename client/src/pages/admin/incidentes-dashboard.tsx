@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { AdminLayout } from '@/components/AdminLayout';
+import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { BarChart } from 'lucide-react';
 import { useLocation } from 'wouter';
