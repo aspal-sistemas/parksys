@@ -632,6 +632,48 @@ const AdminSidebar: React.FC = () => {
           </ModuleNav>
           
           <ModuleNav 
+            title="RH" 
+            icon={<Users className="h-5 w-5" />}
+            value="rh"
+          >
+            <NavItem 
+              href="/admin/rh/employees" 
+              icon={<Users className="h-5 w-5" />}
+              active={location === '/admin/rh/employees'}
+            >
+              Empleados
+            </NavItem>
+            <NavItem 
+              href="/admin/rh/positions" 
+              icon={<Award className="h-5 w-5" />}
+              active={location === '/admin/rh/positions'}
+            >
+              Puestos
+            </NavItem>
+            <NavItem 
+              href="/admin/rh/departments" 
+              icon={<Building className="h-5 w-5" />}
+              active={location === '/admin/rh/departments'}
+            >
+              Departamentos
+            </NavItem>
+            <NavItem 
+              href="/admin/rh/attendance" 
+              icon={<ClipboardCheck className="h-5 w-5" />}
+              active={location === '/admin/rh/attendance'}
+            >
+              Asistencia
+            </NavItem>
+            <NavItem 
+              href="/admin/rh/payroll" 
+              icon={<Calculator className="h-5 w-5" />}
+              active={location === '/admin/rh/payroll'}
+            >
+              Nómina
+            </NavItem>
+          </ModuleNav>
+          
+          <ModuleNav 
             title="Voluntarios" 
             icon={<Users className="h-5 w-5" />}
             value="volunteers"
