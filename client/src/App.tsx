@@ -200,6 +200,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/events/edit')))}
           </Suspense>
         </Route>
+        <Route path="/admin/events/participants/:id">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de participantes...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/events/participants/[id]')))}
+          </Suspense>
+        </Route>
         
         {/* Ruta para el calendario de actividades */}
         <Route path="/admin/activities/calendar">
