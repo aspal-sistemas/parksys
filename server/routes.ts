@@ -201,19 +201,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all parks with option to filter
   apiRouter.get("/parks", async (req: Request, res: Response) => {
     try {
-      // Importamos nuestras consultas directas
-      const { getParksDirectly } = await import('./direct-queries');
+      // Importamos la base de datos directamente
+      const { db } = await import('./db');
       
-      // Preparamos los filtros desde la petición
-      const filters = {
-        municipalityId: req.query.municipalityId ? Number(req.query.municipalityId) : undefined,
-        parkType: req.query.parkType ? String(req.query.parkType) : undefined,
-        postalCode: req.query.postalCode ? String(req.query.postalCode) : undefined,
-        search: req.query.search ? String(req.query.search) : undefined
-      };
+      // Construimos la consulta SQL básica
+      let queryStr = `
+        SELECT 
+          id, name, municipality_id as "municipalityId", 
+          park_type as "parkType", description, address, 
+          postal_code as "postalCode", latitude, longitude, 
+          area, foundation_year as "foundationYear",
+          administrator, conservation_status as "conservationStatus",
+          regulation_url as "regulationUrl", opening_hours as "openingHours", 
+          contact_email as "contactEmail", contact_phone as "contactPhone"
+        FROM parks
+        WHERE 1=1
+      `;
       
-      // Obtenemos los parques usando nuestra consulta directa
-      const parks = await getParksDirectly(filters);
+      const params: any[] = [];
+      let paramIndex = 1;
+      
+      // Añadimos filtros si existen
+      if (req.query.municipalityId) {
+        queryStr += ` AND municipality_id = $${paramIndex++}`;
+        params.push(Number(req.query.municipalityId));
+      }
+      
+      if (req.query.parkType) {
+        queryStr += ` AND park_type = $${paramIndex++}`;
+        params.push(String(req.query.parkType));
+      }
+      
+      if (req.query.postalCode) {
+        queryStr += ` AND postal_code = $${paramIndex++}`;
+        params.push(String(req.query.postalCode));
+      }
+      
+      if (req.query.search) {
+        queryStr += ` AND (
+          name ILIKE $${paramIndex} OR
+          COALESCE(description, '') ILIKE $${paramIndex} OR
+          address ILIKE $${paramIndex}
+        )`;
+        params.push(`%${req.query.search}%`);
+        paramIndex++;
+      }
+      
+      // Ordenar por nombre
+      queryStr += ` ORDER BY name`;
+      
+      // Ejecutar la consulta
+      const result = await db.execute(queryStr, params);
+      
+      // Transformar los resultados
+      const parks = result.rows.map(park => ({
+        ...park,
+        // Añadimos estos campos para compatibilidad con la interfaz esperada
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        active: true,
+        surfaceArea: park.area || null,
+        closingHours: null,
+        mainImageUrl: null,
+        // Añadimos estructuras vacías para los datos relacionados
+        amenities: [],
+        activities: [],
+        documents: [],
+        images: [],
+        trees: {
+          total: 0,
+          bySpecies: {},
+          byHealth: {
+            'Bueno': 0,
+            'Regular': 0,
+            'Malo': 0,
+            'Desconocido': 0
+          }
+        }
+      }));
       
       // Respondemos con los parques
       res.json(parks);
