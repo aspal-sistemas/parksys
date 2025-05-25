@@ -7,13 +7,14 @@ import {
   Plus, 
   Edit, 
   Trash2, 
-  FileText, 
-  Download,
+  Search,
+  FileText,
   Calendar,
-  Tag,
   CheckCircle,
-  XCircle,
-  AlertCircle
+  AlertCircle,
+  ClockIcon,
+  Download,
+  Receipt
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -82,12 +83,12 @@ import {
 // Esquema para validación del formulario de pagos
 const paymentSchema = z.object({
   contractId: z.string().min(1, "Debes seleccionar un contrato"),
+  amount: z.string().min(1, "El monto es obligatorio"),
   paymentDate: z.string().min(1, "La fecha de pago es obligatoria"),
-  amount: z.string().min(1, "El monto del pago es obligatorio"),
   paymentType: z.string().min(1, "El tipo de pago es obligatorio"),
-  paymentStatus: z.string().min(1, "El estado del pago es obligatorio"),
   invoiceNumber: z.string().optional(),
-  invoiceUrl: z.string().optional(),
+  invoiceFile: z.instanceof(File).optional(),
+  status: z.enum(["paid", "pending", "late", "cancelled"]).default("paid"),
   notes: z.string().optional()
 });
 
@@ -119,12 +120,11 @@ export default function ConcessionPayments() {
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       contractId: "",
-      paymentDate: "",
       amount: "",
-      paymentType: "monthly",
-      paymentStatus: "pending",
+      paymentDate: "",
+      paymentType: "",
       invoiceNumber: "",
-      invoiceUrl: "",
+      status: "paid",
       notes: ""
     },
   });
@@ -134,12 +134,11 @@ export default function ConcessionPayments() {
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       contractId: "",
-      paymentDate: "",
       amount: "",
+      paymentDate: "",
       paymentType: "",
-      paymentStatus: "",
       invoiceNumber: "",
-      invoiceUrl: "",
+      status: "paid",
       notes: ""
     },
   });
@@ -147,20 +146,33 @@ export default function ConcessionPayments() {
   // Mutación para crear un nuevo pago
   const createMutation = useMutation({
     mutationFn: async (data: PaymentFormValues) => {
+      const formData = new FormData();
+      
+      // Agregar todos los campos de texto al FormData
+      Object.entries(data).forEach(([key, value]) => {
+        if (key !== 'invoiceFile') {
+          formData.append(key, value?.toString() || '');
+        }
+      });
+      
+      // Agregar el archivo de factura si existe
+      if (data.invoiceFile) {
+        formData.append('invoiceFile', data.invoiceFile);
+      }
+      
       const response = await fetch("/api/concession-payments", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           "Authorization": localStorage.getItem("token") || "",
           "X-User-Id": localStorage.getItem("userId") || "",
           "X-User-Role": localStorage.getItem("userRole") || "",
         },
-        body: JSON.stringify(data),
+        body: formData,
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Error al crear el pago");
+        throw new Error(error.message || "Error al registrar el pago");
       }
 
       return await response.json();
@@ -187,15 +199,28 @@ export default function ConcessionPayments() {
   const updateMutation = useMutation({
     mutationFn: async (data: PaymentFormValues & { id: number }) => {
       const { id, ...updateData } = data;
+      const formData = new FormData();
+      
+      // Agregar todos los campos de texto al FormData
+      Object.entries(updateData).forEach(([key, value]) => {
+        if (key !== 'invoiceFile') {
+          formData.append(key, value?.toString() || '');
+        }
+      });
+      
+      // Agregar el archivo de factura si existe
+      if (data.invoiceFile) {
+        formData.append('invoiceFile', data.invoiceFile);
+      }
+      
       const response = await fetch(`/api/concession-payments/${id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           "Authorization": localStorage.getItem("token") || "",
           "X-User-Id": localStorage.getItem("userId") || "",
           "X-User-Role": localStorage.getItem("userRole") || "",
         },
-        body: JSON.stringify(updateData),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -276,12 +301,11 @@ export default function ConcessionPayments() {
     setCurrentPayment(payment);
     editForm.reset({
       contractId: payment.contractId.toString(),
-      paymentDate: payment.paymentDate,
       amount: payment.amount.toString(),
+      paymentDate: payment.paymentDate,
       paymentType: payment.paymentType,
-      paymentStatus: payment.paymentStatus,
       invoiceNumber: payment.invoiceNumber || "",
-      invoiceUrl: payment.invoiceUrl || "",
+      status: payment.status,
       notes: payment.notes || ""
     });
     setIsEditDialogOpen(true);
@@ -308,25 +332,19 @@ export default function ConcessionPayments() {
     ? payments.filter((payment: any) => {
         const matchesSearch =
           searchTerm === "" ||
-          payment.contractName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          payment.parkName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          payment.concessionaireName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           payment.invoiceNumber?.toLowerCase().includes(searchTerm.toLowerCase());
         
         const matchesStatus = 
           statusFilter === "all" || 
-          payment.paymentStatus === statusFilter;
+          payment.status === statusFilter;
         
         return matchesSearch && matchesStatus;
       })
     : [];
 
-  // Función para obtener el nombre de contrato a partir de su ID
-  const getContractName = (contractId: number) => {
-    if (!contracts) return "Desconocido";
-    const contract = contracts.find((c: any) => c.id === contractId);
-    return contract ? `${contract.parkName} - ${contract.concessionaireName}` : "Desconocido";
-  };
-
-  // Función para formatear fechas
+  // Función para formatear las fechas
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
     try {
@@ -344,46 +362,29 @@ export default function ConcessionPayments() {
     }).format(amount);
   };
 
-  // Función para obtener el badge de estado de pago
+  // Función para obtener el badge de estado
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "paid":
         return <Badge className="bg-green-100 text-green-800">Pagado</Badge>;
       case "pending":
         return <Badge className="bg-yellow-100 text-yellow-800">Pendiente</Badge>;
-      case "overdue":
-        return <Badge className="bg-red-100 text-red-800">Vencido</Badge>;
+      case "late":
+        return <Badge className="bg-red-100 text-red-800">Atrasado</Badge>;
       case "cancelled":
         return <Badge className="bg-gray-100 text-gray-800">Cancelado</Badge>;
-      case "refunded":
-        return <Badge className="bg-blue-100 text-blue-800">Reembolsado</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
   };
 
-  // Función para obtener el nombre del tipo de pago
-  const getPaymentTypeName = (type: string) => {
-    switch (type) {
-      case "monthly":
-        return "Mensual";
-      case "quarterly":
-        return "Trimestral";
-      case "biannual":
-        return "Semestral";
-      case "annual":
-        return "Anual";
-      case "one_time":
-        return "Único";
-      case "variable":
-        return "Variable";
-      default:
-        return type;
-    }
-  };
-
   // Estado de carga de datos para el formulario
   const isFormDataLoading = isLoadingContracts;
+
+  // Calcular el total de pagos
+  const totalPayments = filteredPayments ? filteredPayments.reduce((total: number, payment: any) => {
+    return payment.status === 'paid' ? total + Number(payment.amount) : total;
+  }, 0) : 0;
 
   return (
     <AdminLayout>
@@ -400,7 +401,7 @@ export default function ConcessionPayments() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Gestión Financiera de Concesiones</h1>
             <p className="text-muted-foreground">
-              Administra los pagos, facturación y control financiero de las concesiones
+              Administra los pagos y finanzas de las concesiones en los parques
             </p>
           </div>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -410,7 +411,7 @@ export default function ConcessionPayments() {
                 Registrar pago
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>Registrar nuevo pago</DialogTitle>
                 <DialogDescription>
@@ -457,12 +458,12 @@ export default function ConcessionPayments() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={createForm.control}
-                      name="paymentDate"
+                      name="amount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Fecha de pago</FormLabel>
+                          <FormLabel>Monto (MXN)</FormLabel>
                           <FormControl>
-                            <Input type="date" {...field} />
+                            <Input placeholder="Ej. 5000.00" {...field} type="number" min="0" step="0.01" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -471,47 +472,42 @@ export default function ConcessionPayments() {
                     
                     <FormField
                       control={createForm.control}
-                      name="amount"
+                      name="paymentDate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Monto</FormLabel>
+                          <FormLabel>Fecha de Pago</FormLabel>
                           <FormControl>
-                            <Input 
-                              type="number" 
-                              placeholder="Monto del pago" 
-                              step="0.01"
-                              {...field} 
-                            />
+                            <Input type="date" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={createForm.control}
                       name="paymentType"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tipo de pago</FormLabel>
+                          <FormLabel>Tipo de Pago</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Selecciona tipo" />
+                                <SelectValue placeholder="Selecciona un tipo" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="monthly">Mensual</SelectItem>
-                              <SelectItem value="quarterly">Trimestral</SelectItem>
-                              <SelectItem value="biannual">Semestral</SelectItem>
-                              <SelectItem value="annual">Anual</SelectItem>
-                              <SelectItem value="one_time">Único</SelectItem>
-                              <SelectItem value="variable">Variable</SelectItem>
+                              <SelectItem value="transfer">Transferencia</SelectItem>
+                              <SelectItem value="cash">Efectivo</SelectItem>
+                              <SelectItem value="check">Cheque</SelectItem>
+                              <SelectItem value="credit_card">Tarjeta de Crédito</SelectItem>
+                              <SelectItem value="debit_card">Tarjeta de Débito</SelectItem>
+                              <SelectItem value="other">Otro</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -521,7 +517,7 @@ export default function ConcessionPayments() {
                     
                     <FormField
                       control={createForm.control}
-                      name="paymentStatus"
+                      name="status"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Estado</FormLabel>
@@ -531,15 +527,14 @@ export default function ConcessionPayments() {
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Selecciona estado" />
+                                <SelectValue placeholder="Selecciona un estado" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="pending">Pendiente</SelectItem>
                               <SelectItem value="paid">Pagado</SelectItem>
-                              <SelectItem value="overdue">Vencido</SelectItem>
+                              <SelectItem value="pending">Pendiente</SelectItem>
+                              <SelectItem value="late">Atrasado</SelectItem>
                               <SelectItem value="cancelled">Cancelado</SelectItem>
-                              <SelectItem value="refunded">Reembolsado</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -547,16 +542,16 @@ export default function ConcessionPayments() {
                       )}
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={createForm.control}
                       name="invoiceNumber"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Número de factura (opcional)</FormLabel>
+                          <FormLabel>Número de Factura/CFDI</FormLabel>
                           <FormControl>
-                            <Input placeholder="Número o referencia de factura" {...field} />
+                            <Input placeholder="Ej. A-12345" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -565,37 +560,46 @@ export default function ConcessionPayments() {
                     
                     <FormField
                       control={createForm.control}
-                      name="invoiceUrl"
-                      render={({ field }) => (
+                      name="invoiceFile"
+                      render={({ field: { value, onChange, ...field } }) => (
                         <FormItem>
-                          <FormLabel>URL de factura (opcional)</FormLabel>
+                          <FormLabel>Archivo de Factura</FormLabel>
                           <FormControl>
-                            <Input placeholder="URL del documento de factura" {...field} />
+                            <Input 
+                              {...field} 
+                              type="file" 
+                              accept=".pdf,.xml"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  onChange(file);
+                                }
+                              }}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  
+
                   <FormField
                     control={createForm.control}
                     name="notes"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Notas (opcional)</FormLabel>
+                        <FormLabel>Notas</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="Observaciones o notas adicionales" 
+                            placeholder="Cualquier información adicional sobre el pago" 
                             {...field} 
-                            className="min-h-[100px]"
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <DialogFooter>
                     <Button type="submit" disabled={createMutation.isPending}>
                       {createMutation.isPending ? "Guardando..." : "Registrar pago"}
@@ -606,180 +610,340 @@ export default function ConcessionPayments() {
             </DialogContent>
           </Dialog>
         </div>
-        
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Ingresos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatAmount(totalPayments)}</div>
+              <p className="text-xs text-muted-foreground">
+                Total de pagos recibidos
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Pagos Recientes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {filteredPayments && filteredPayments.filter((p: any) => p.status === "paid").length}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Pagos registrados
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Pagos Pendientes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {filteredPayments && filteredPayments.filter((p: any) => p.status === "pending" || p.status === "late").length}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Pagos por cobrar
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex gap-4 mb-6">
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar pagos..."
+              className="pl-8"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <Select
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filtrar por estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los estados</SelectItem>
+              <SelectItem value="paid">Pagados</SelectItem>
+              <SelectItem value="pending">Pendientes</SelectItem>
+              <SelectItem value="late">Atrasados</SelectItem>
+              <SelectItem value="cancelled">Cancelados</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex justify-between items-center mb-2">
-              <CardTitle>Historial de pagos</CardTitle>
-              <div className="relative w-64">
-                <Input
-                  type="text"
-                  placeholder="Buscar pagos..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-                <DollarSign className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium">Filtrar por estado:</span>
-              <Select
-                value={statusFilter}
-                onValueChange={setStatusFilter}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filtrar por estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="pending">Pendientes</SelectItem>
-                  <SelectItem value="paid">Pagados</SelectItem>
-                  <SelectItem value="overdue">Vencidos</SelectItem>
-                  <SelectItem value="cancelled">Cancelados</SelectItem>
-                  <SelectItem value="refunded">Reembolsados</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Separator />
+            <CardTitle>Registro de Pagos</CardTitle>
+            <CardDescription>
+              Historial de pagos de las concesiones
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoadingPayments ? (
-              <div className="flex justify-center items-center h-40">
-                <p>Cargando pagos...</p>
-              </div>
-            ) : filteredPayments.length === 0 ? (
-              <div className="text-center py-8">
-                <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                <h3 className="text-lg font-medium">No hay pagos registrados</h3>
-                <p className="text-muted-foreground">
-                  {searchTerm || statusFilter !== "all"
-                    ? "No se encontraron pagos que coincidan con tu búsqueda o filtro" 
-                    : "Comienza registrando el primer pago de concesión"}
-                </p>
-              </div>
-            ) : (
+            <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Contrato</TableHead>
-                    <TableHead>Fecha</TableHead>
+                    <TableHead>Concesionario</TableHead>
+                    <TableHead>Parque</TableHead>
                     <TableHead>Monto</TableHead>
-                    <TableHead>Tipo</TableHead>
+                    <TableHead>Fecha</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Factura</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
+                    <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredPayments.map((payment: any) => (
-                    <TableRow key={payment.id}>
-                      <TableCell className="font-medium">{getContractName(payment.contractId)}</TableCell>
-                      <TableCell>{formatDate(payment.paymentDate)}</TableCell>
-                      <TableCell>{formatAmount(payment.amount)}</TableCell>
-                      <TableCell>{getPaymentTypeName(payment.paymentType)}</TableCell>
-                      <TableCell>{getStatusBadge(payment.paymentStatus)}</TableCell>
-                      <TableCell>
-                        {payment.invoiceNumber ? (
-                          <Badge variant="outline">{payment.invoiceNumber}</Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleView(payment)}
-                            title="Ver detalles"
-                          >
-                            <FileText className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleEdit(payment)}
-                            title="Editar"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <AlertDialog open={isDeleteDialogOpen && currentPayment?.id === payment.id} onOpenChange={setIsDeleteDialogOpen}>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleDelete(payment)}
-                                title="Eliminar"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Esta acción no se puede deshacer. Se eliminará permanentemente
-                                  el registro del pago del sistema.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={confirmDelete}>
-                                  {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
+                  {isLoadingPayments ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-4">
+                        Cargando pagos...
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : filteredPayments && filteredPayments.length > 0 ? (
+                    filteredPayments.map((payment: any) => (
+                      <TableRow key={payment.id}>
+                        <TableCell>{payment.concessionaireName}</TableCell>
+                        <TableCell>{payment.parkName}</TableCell>
+                        <TableCell>{formatAmount(payment.amount)}</TableCell>
+                        <TableCell>{formatDate(payment.paymentDate)}</TableCell>
+                        <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                        <TableCell>
+                          {payment.invoiceNumber ? (
+                            <div className="flex items-center gap-1">
+                              <Receipt size={14} className="text-gray-500" />
+                              <span className="text-sm">{payment.invoiceNumber}</span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-500">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleView(payment)}
+                              title="Ver detalles"
+                            >
+                              <FileText size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(payment)}
+                              title="Editar"
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(payment)}
+                              title="Eliminar"
+                              className="text-destructive"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-4">
+                        No hay pagos registrados. Registra un pago usando el botón "Registrar pago".
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
-            )}
+            </div>
           </CardContent>
         </Card>
-        
-        {/* Diálogo para editar pago */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Editar registro de pago</DialogTitle>
-              <DialogDescription>
-                Modifica la información del pago de concesión
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...editForm}>
-              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+      </div>
+
+      {/* Diálogo para ver detalles de pago */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Detalles del Pago</DialogTitle>
+          </DialogHeader>
+          {currentPayment && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium">Contrato</h3>
+                  <p className="text-sm text-gray-500">{currentPayment.contractName || "No disponible"}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Parque</h3>
+                  <p className="text-sm text-gray-500">{currentPayment.parkName}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Concesionario</h3>
+                  <p className="text-sm text-gray-500">{currentPayment.concessionaireName}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Fecha de Pago</h3>
+                  <p className="text-sm text-gray-500">{formatDate(currentPayment.paymentDate)}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Monto</h3>
+                  <p className="text-sm text-gray-500">{formatAmount(currentPayment.amount)}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Tipo de Pago</h3>
+                  <p className="text-sm text-gray-500">
+                    {currentPayment.paymentType === "transfer" ? "Transferencia" :
+                     currentPayment.paymentType === "cash" ? "Efectivo" :
+                     currentPayment.paymentType === "check" ? "Cheque" :
+                     currentPayment.paymentType === "credit_card" ? "Tarjeta de Crédito" :
+                     currentPayment.paymentType === "debit_card" ? "Tarjeta de Débito" :
+                     "Otro"}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Estado</h3>
+                  <div className="mt-1">{getStatusBadge(currentPayment.status)}</div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Factura/CFDI</h3>
+                  <p className="text-sm text-gray-500">{currentPayment.invoiceNumber || "No disponible"}</p>
+                </div>
+              </div>
+              
+              {currentPayment.invoiceUrl && (
+                <div>
+                  <h3 className="text-sm font-medium">Archivo de Factura</h3>
+                  <div className="mt-2">
+                    <Button variant="outline" size="sm" className="gap-2" asChild>
+                      <a href={currentPayment.invoiceUrl} target="_blank" rel="noopener noreferrer">
+                        <Download size={14} />
+                        Descargar factura
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              <div>
+                <h3 className="text-sm font-medium">Notas</h3>
+                <p className="text-sm text-gray-500">{currentPayment.notes || "Sin notas adicionales"}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para editar pago */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Editar Pago</DialogTitle>
+            <DialogDescription>
+              Modifica la información del pago
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+              <FormField
+                control={editForm.control}
+                name="contractId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contrato de Concesión</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={true} // No permitir cambiar el contrato
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un contrato" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {isLoadingContracts ? (
+                          <SelectItem value="loading">Cargando contratos...</SelectItem>
+                        ) : contracts && contracts.length > 0 ? (
+                          contracts.map((contract: any) => (
+                            <SelectItem key={contract.id} value={contract.id.toString()}>
+                              {contract.parkName} - {contract.concessionaireName}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="empty">No hay contratos disponibles</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={editForm.control}
-                  name="contractId"
+                  name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Contrato de Concesión</FormLabel>
+                      <FormLabel>Monto (MXN)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ej. 5000.00" {...field} type="number" min="0" step="0.01" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={editForm.control}
+                  name="paymentDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fecha de Pago</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="paymentType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Pago</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
-                        disabled={isFormDataLoading}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona un contrato" />
+                            <SelectValue placeholder="Selecciona un tipo" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {isLoadingContracts ? (
-                            <SelectItem value="loading">Cargando contratos...</SelectItem>
-                          ) : contracts && contracts.length > 0 ? (
-                            contracts.map((contract: any) => (
-                              <SelectItem key={contract.id} value={contract.id.toString()}>
-                                {contract.parkName} - {contract.concessionaireName}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="empty">No hay contratos disponibles</SelectItem>
-                          )}
+                          <SelectItem value="transfer">Transferencia</SelectItem>
+                          <SelectItem value="cash">Efectivo</SelectItem>
+                          <SelectItem value="check">Cheque</SelectItem>
+                          <SelectItem value="credit_card">Tarjeta de Crédito</SelectItem>
+                          <SelectItem value="debit_card">Tarjeta de Débito</SelectItem>
+                          <SelectItem value="other">Otro</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -787,254 +951,121 @@ export default function ConcessionPayments() {
                   )}
                 />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="paymentDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fecha de pago</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={editForm.control}
-                    name="amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Monto</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="Monto del pago" 
-                            step="0.01"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="paymentType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo de pago</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecciona tipo" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="monthly">Mensual</SelectItem>
-                            <SelectItem value="quarterly">Trimestral</SelectItem>
-                            <SelectItem value="biannual">Semestral</SelectItem>
-                            <SelectItem value="annual">Anual</SelectItem>
-                            <SelectItem value="one_time">Único</SelectItem>
-                            <SelectItem value="variable">Variable</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={editForm.control}
-                    name="paymentStatus"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Estado</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecciona estado" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="pending">Pendiente</SelectItem>
-                            <SelectItem value="paid">Pagado</SelectItem>
-                            <SelectItem value="overdue">Vencido</SelectItem>
-                            <SelectItem value="cancelled">Cancelado</SelectItem>
-                            <SelectItem value="refunded">Reembolsado</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="invoiceNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Número de factura (opcional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Número o referencia de factura" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={editForm.control}
-                    name="invoiceUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>URL de factura (opcional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="URL del documento de factura" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
                 <FormField
                   control={editForm.control}
-                  name="notes"
+                  name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notas (opcional)</FormLabel>
+                      <FormLabel>Estado</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona un estado" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="paid">Pagado</SelectItem>
+                          <SelectItem value="pending">Pendiente</SelectItem>
+                          <SelectItem value="late">Atrasado</SelectItem>
+                          <SelectItem value="cancelled">Cancelado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="invoiceNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Número de Factura/CFDI</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Observaciones o notas adicionales" 
-                          {...field} 
-                          className="min-h-[100px]"
-                        />
+                        <Input placeholder="Ej. A-12345" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 
-                <DialogFooter>
-                  <Button type="submit" disabled={updateMutation.isPending}>
-                    {updateMutation.isPending ? "Guardando cambios..." : "Guardar cambios"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-        
-        {/* Diálogo para ver detalles del pago */}
-        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Detalles del pago</DialogTitle>
-              <DialogDescription>
-                Información completa del registro de pago
-              </DialogDescription>
-            </DialogHeader>
-            {currentPayment && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Contrato</p>
-                    <p className="font-medium">{getContractName(currentPayment.contractId)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Monto</p>
-                    <p className="font-medium text-lg">{formatAmount(currentPayment.amount)}</p>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Fecha de pago</p>
-                    <div className="flex items-center mt-1">
-                      <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <p>{formatDate(currentPayment.paymentDate)}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Estado</p>
-                    <div className="mt-1">
-                      {getStatusBadge(currentPayment.paymentStatus)}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Tipo de pago</p>
-                    <div className="flex items-center mt-1">
-                      <Tag className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <p>{getPaymentTypeName(currentPayment.paymentType)}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Factura</p>
-                    <p className="mt-1">
-                      {currentPayment.invoiceNumber || "No disponible"}
-                    </p>
-                  </div>
-                </div>
-                
-                {currentPayment.invoiceUrl && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Documento de factura</p>
-                    <div className="mt-1">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="gap-2" 
-                        onClick={() => window.open(currentPayment.invoiceUrl, '_blank')}
-                      >
-                        <Download className="h-4 w-4" />
-                        Ver factura
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                
-                {currentPayment.notes && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Notas</p>
-                    <p className="mt-1 p-2 bg-muted rounded-md text-sm">
-                      {currentPayment.notes}
-                    </p>
-                  </div>
-                )}
-                
-                <Separator />
-                
-                <div className="text-sm text-muted-foreground">
-                  <p>ID de registro: {currentPayment.id}</p>
-                  <p>Fecha de registro: {formatDate(currentPayment.createdAt)}</p>
-                  {currentPayment.createdById && (
-                    <p>Registrado por: ID {currentPayment.createdById}</p>
+                <FormField
+                  control={editForm.control}
+                  name="invoiceFile"
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <FormItem>
+                      <FormLabel>Archivo de Factura</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          type="file" 
+                          accept=".pdf,.xml"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              onChange(file);
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        {currentPayment?.invoiceUrl ? "Ya hay un archivo cargado. Sube uno nuevo para reemplazarlo." : ""}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
+                />
               </div>
-            )}
-          </DialogContent>
-        </Dialog>
-      </div>
+
+              <FormField
+                control={editForm.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notas</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Cualquier información adicional sobre el pago" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button type="submit" disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? "Guardando..." : "Guardar cambios"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para confirmar eliminación */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente el registro de pago.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }

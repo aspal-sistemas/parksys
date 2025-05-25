@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
 import AdminLayout from "@/components/AdminLayout";
@@ -7,11 +7,10 @@ import {
   Plus, 
   Edit, 
   Trash2, 
-  Map, 
-  Ruler,
-  Layers,
-  Building,
-  ZoomIn
+  Search,
+  Maximize,
+  Square,
+  FileText
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -75,15 +74,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-// Esquema para validación del formulario de ubicaciones
+// Esquema para validación del formulario de ubicación
 const locationSchema = z.object({
   contractId: z.string().min(1, "Debes seleccionar un contrato"),
-  zoneName: z.string().min(1, "El nombre de la zona es obligatorio"),
-  subzoneName: z.string().optional(),
-  coordinates: z.string().regex(/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/, "Formato inválido. Debe ser lat,lng"),
-  areaSqm: z.string().min(1, "La superficie es obligatoria"),
-  mapReference: z.string().optional(),
-  locationDescription: z.string().optional()
+  parkZoneId: z.string().optional(),
+  latitude: z.string().optional(),
+  longitude: z.string().optional(),
+  areaSize: z.string().min(1, "La superficie es obligatoria"),
+  locationDescription: z.string().optional(),
+  polygonCoordinates: z.string().optional()
 });
 
 type LocationFormValues = z.infer<typeof locationSchema>;
@@ -91,10 +90,11 @@ type LocationFormValues = z.infer<typeof locationSchema>;
 export default function ConcessionLocations() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isViewMapDialogOpen, setIsViewMapDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const mapRef = useRef(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -108,17 +108,22 @@ export default function ConcessionLocations() {
     queryKey: ["/api/concession-contracts"],
   });
 
+  // Obtener lista de zonas de parques
+  const { data: parkZones, isLoading: isLoadingParkZones } = useQuery({
+    queryKey: ["/api/park-zones"],
+  });
+
   // Formulario para crear una nueva ubicación
   const createForm = useForm<LocationFormValues>({
     resolver: zodResolver(locationSchema),
     defaultValues: {
       contractId: "",
-      zoneName: "",
-      subzoneName: "",
-      coordinates: "",
-      areaSqm: "",
-      mapReference: "",
-      locationDescription: ""
+      parkZoneId: "",
+      latitude: "",
+      longitude: "",
+      areaSize: "",
+      locationDescription: "",
+      polygonCoordinates: ""
     },
   });
 
@@ -127,12 +132,12 @@ export default function ConcessionLocations() {
     resolver: zodResolver(locationSchema),
     defaultValues: {
       contractId: "",
-      zoneName: "",
-      subzoneName: "",
-      coordinates: "",
-      areaSqm: "",
-      mapReference: "",
-      locationDescription: ""
+      parkZoneId: "",
+      latitude: "",
+      longitude: "",
+      areaSize: "",
+      locationDescription: "",
+      polygonCoordinates: ""
     },
   });
 
@@ -268,19 +273,19 @@ export default function ConcessionLocations() {
     setCurrentLocation(location);
     editForm.reset({
       contractId: location.contractId.toString(),
-      zoneName: location.zoneName,
-      subzoneName: location.subzoneName || "",
-      coordinates: location.coordinates,
-      areaSqm: location.areaSqm.toString(),
-      mapReference: location.mapReference || "",
-      locationDescription: location.locationDescription || ""
+      parkZoneId: location.parkZoneId?.toString() || "",
+      latitude: location.latitude?.toString() || "",
+      longitude: location.longitude?.toString() || "",
+      areaSize: location.areaSize?.toString() || "",
+      locationDescription: location.locationDescription || "",
+      polygonCoordinates: location.polygonCoordinates ? JSON.stringify(location.polygonCoordinates) : ""
     });
     setIsEditDialogOpen(true);
   };
 
-  const handleViewMap = (location: any) => {
+  const handleView = (location: any) => {
     setCurrentLocation(location);
-    setIsViewMapDialogOpen(true);
+    setIsViewDialogOpen(true);
   };
 
   const handleDelete = (location: any) => {
@@ -297,24 +302,18 @@ export default function ConcessionLocations() {
   // Filtra las ubicaciones según términos de búsqueda
   const filteredLocations = locations
     ? locations.filter((location: any) => {
-        return (
+        const matchesSearch =
           searchTerm === "" ||
           location.contractName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          location.zoneName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          location.subzoneName?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+          location.parkName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          location.locationDescription?.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        return matchesSearch;
       })
     : [];
 
-  // Función para obtener el nombre de contrato a partir de su ID
-  const getContractName = (contractId: number) => {
-    if (!contracts) return "Desconocido";
-    const contract = contracts.find((c: any) => c.id === contractId);
-    return contract ? `${contract.parkName} - ${contract.concessionaireName}` : "Desconocido";
-  };
-
   // Estado de carga de datos para el formulario
-  const isFormDataLoading = isLoadingContracts;
+  const isFormDataLoading = isLoadingContracts || isLoadingParkZones;
 
   return (
     <AdminLayout>
@@ -322,7 +321,7 @@ export default function ConcessionLocations() {
         <title>Ubicaciones de Concesiones | ParquesMX</title>
         <meta 
           name="description" 
-          content="Gestiona las ubicaciones georreferenciadas de concesiones para los parques" 
+          content="Gestiona la ubicación y georreferenciación de las concesiones en los parques" 
         />
       </Helmet>
 
@@ -331,7 +330,7 @@ export default function ConcessionLocations() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Ubicaciones de Concesiones</h1>
             <p className="text-muted-foreground">
-              Administra la georreferenciación y distribución espacial de las concesiones
+              Administra la ubicación y georreferenciación de las concesiones en los parques
             </p>
           </div>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -341,60 +340,46 @@ export default function ConcessionLocations() {
                 Nueva ubicación
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Registrar nueva ubicación de concesión</DialogTitle>
+                <DialogTitle>Agregar ubicación para concesión</DialogTitle>
                 <DialogDescription>
-                  Introduce la información de ubicación y georreferenciación
+                  Introduce la información de ubicación para la concesión
                 </DialogDescription>
               </DialogHeader>
               <Form {...createForm}>
                 <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
-                  <FormField
-                    control={createForm.control}
-                    name="contractId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Contrato de Concesión</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          disabled={isFormDataLoading}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecciona un contrato" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {isLoadingContracts ? (
-                              <SelectItem value="loading">Cargando contratos...</SelectItem>
-                            ) : contracts && contracts.length > 0 ? (
-                              contracts.map((contract: any) => (
-                                <SelectItem key={contract.id} value={contract.id.toString()}>
-                                  {contract.parkName} - {contract.concessionaireName}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem value="empty">No hay contratos disponibles</SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={createForm.control}
-                      name="zoneName"
+                      name="contractId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Zona</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Nombre de la zona" {...field} />
-                          </FormControl>
+                          <FormLabel>Contrato de Concesión</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            disabled={isFormDataLoading}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona un contrato" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {isLoadingContracts ? (
+                                <SelectItem value="loading">Cargando contratos...</SelectItem>
+                              ) : contracts && contracts.length > 0 ? (
+                                contracts.map((contract: any) => (
+                                  <SelectItem key={contract.id} value={contract.id.toString()}>
+                                    {contract.parkName} - {contract.concessionaireName}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="empty">No hay contratos disponibles</SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -402,32 +387,50 @@ export default function ConcessionLocations() {
                     
                     <FormField
                       control={createForm.control}
-                      name="subzoneName"
+                      name="parkZoneId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Subzona (opcional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Nombre de la subzona" {...field} />
-                          </FormControl>
+                          <FormLabel>Zona del Parque (Opcional)</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            disabled={isFormDataLoading}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona una zona" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {isLoadingParkZones ? (
+                                <SelectItem value="loading">Cargando zonas...</SelectItem>
+                              ) : parkZones && parkZones.length > 0 ? (
+                                parkZones.map((zone: any) => (
+                                  <SelectItem key={zone.id} value={zone.id.toString()}>
+                                    {zone.name}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="empty">No hay zonas disponibles</SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                       control={createForm.control}
-                      name="coordinates"
+                      name="latitude"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Coordenadas</FormLabel>
+                          <FormLabel>Latitud (Opcional)</FormLabel>
                           <FormControl>
-                            <Input placeholder="lat,lng (ej: 19.4326,-99.1332)" {...field} />
+                            <Input placeholder="Ej. 19.4326" {...field} />
                           </FormControl>
-                          <FormDescription>
-                            Formato: latitud,longitud
-                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -435,51 +438,64 @@ export default function ConcessionLocations() {
                     
                     <FormField
                       control={createForm.control}
-                      name="areaSqm"
+                      name="longitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Longitud (Opcional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ej. -99.1332" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={createForm.control}
+                      name="areaSize"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Superficie (m²)</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="Superficie en metros cuadrados" {...field} />
+                            <Input placeholder="Ej. 250" {...field} type="number" min="0" step="0.01" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  
-                  <FormField
-                    control={createForm.control}
-                    name="mapReference"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Referencia de mapa (opcional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="URL o referencia del mapa" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={createForm.control}
-                    name="locationDescription"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descripción de la ubicación</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Describe la ubicación y sus características" 
-                            {...field} 
-                            className="min-h-[100px]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
+
+                  <div className="grid grid-cols-1 gap-4">
+                    <FormField
+                      control={createForm.control}
+                      name="locationDescription"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Descripción de la Ubicación</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Describe la ubicación de la concesión dentro del parque" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="h-80 bg-gray-100 rounded-md p-4 flex items-center justify-center">
+                    <div className="text-center">
+                      <MapPin className="mx-auto mb-2 h-10 w-10 text-gray-400" />
+                      <p className="text-gray-500">
+                        Visualizador de mapa (en desarrollo)
+                      </p>
+                      <p className="text-sm text-gray-400 mt-1">
+                        Pronto podrás seleccionar ubicaciones en el mapa
+                      </p>
+                    </div>
+                  </div>
+
                   <DialogFooter>
                     <Button type="submit" disabled={createMutation.isPending}>
                       {createMutation.isPending ? "Guardando..." : "Guardar ubicación"}
@@ -490,127 +506,171 @@ export default function ConcessionLocations() {
             </DialogContent>
           </Dialog>
         </div>
-        
+
+        <div className="mb-6">
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar ubicaciones..."
+              className="pl-8"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex justify-between items-center">
-              <CardTitle>Ubicaciones registradas</CardTitle>
-              <div className="relative w-64">
-                <Input
-                  type="text"
-                  placeholder="Buscar ubicaciones..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-                <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              </div>
-            </div>
-            <Separator />
+            <CardTitle>Ubicaciones de Concesiones</CardTitle>
+            <CardDescription>
+              Lista de ubicaciones registradas para las concesiones
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoadingLocations ? (
-              <div className="flex justify-center items-center h-40">
-                <p>Cargando ubicaciones...</p>
-              </div>
-            ) : filteredLocations.length === 0 ? (
-              <div className="text-center py-8">
-                <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                <h3 className="text-lg font-medium">No hay ubicaciones registradas</h3>
-                <p className="text-muted-foreground">
-                  {searchTerm 
-                    ? "No se encontraron ubicaciones que coincidan con tu búsqueda" 
-                    : "Comienza registrando la primera ubicación de concesión"}
-                </p>
-              </div>
-            ) : (
+            <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Contrato</TableHead>
-                    <TableHead>Zona</TableHead>
-                    <TableHead>Subzona</TableHead>
+                    <TableHead>Parque</TableHead>
+                    <TableHead>Concesionario</TableHead>
+                    <TableHead>Ubicación</TableHead>
                     <TableHead>Superficie (m²)</TableHead>
-                    <TableHead>Coordenadas</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
+                    <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredLocations.map((location: any) => (
-                    <TableRow key={location.id}>
-                      <TableCell className="font-medium">{getContractName(location.contractId)}</TableCell>
-                      <TableCell>{location.zoneName}</TableCell>
-                      <TableCell>{location.subzoneName || "—"}</TableCell>
-                      <TableCell>{location.areaSqm} m²</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{location.coordinates}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleViewMap(location)}
-                            title="Ver en mapa"
-                          >
-                            <Map className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleEdit(location)}
-                            title="Editar"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <AlertDialog open={isDeleteDialogOpen && currentLocation?.id === location.id} onOpenChange={setIsDeleteDialogOpen}>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleDelete(location)}
-                                title="Eliminar"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Esta acción no se puede deshacer. Se eliminará permanentemente
-                                  la ubicación de la concesión del sistema.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={confirmDelete}>
-                                  {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
+                  {isLoadingLocations ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-4">
+                        Cargando ubicaciones...
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : filteredLocations && filteredLocations.length > 0 ? (
+                    filteredLocations.map((location: any) => (
+                      <TableRow key={location.id}>
+                        <TableCell>{location.parkName}</TableCell>
+                        <TableCell>{location.concessionaireName}</TableCell>
+                        <TableCell>
+                          {location.locationDescription || 
+                            (location.latitude && location.longitude ? 
+                              `${location.latitude}, ${location.longitude}` : 
+                              "No especificada")}
+                        </TableCell>
+                        <TableCell>{location.areaSize} m²</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleView(location)}
+                              title="Ver detalles"
+                            >
+                              <FileText size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(location)}
+                              title="Editar"
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(location)}
+                              title="Eliminar"
+                              className="text-destructive"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-4">
+                        No hay ubicaciones registradas. Agrega una ubicación usando el botón "Nueva ubicación".
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
-            )}
+            </div>
           </CardContent>
         </Card>
-        
-        {/* Diálogo para editar ubicación */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Editar ubicación de concesión</DialogTitle>
-              <DialogDescription>
-                Modifica la información de ubicación y georreferenciación
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...editForm}>
-              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+      </div>
+
+      {/* Diálogo para ver detalles de ubicación */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="sm:max-w-[750px]">
+          <DialogHeader>
+            <DialogTitle>Detalles de la Ubicación</DialogTitle>
+          </DialogHeader>
+          {currentLocation && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium">Contrato</h3>
+                  <p className="text-sm text-gray-500">{currentLocation.contractName}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Parque</h3>
+                  <p className="text-sm text-gray-500">{currentLocation.parkName}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Concesionario</h3>
+                  <p className="text-sm text-gray-500">{currentLocation.concessionaireName}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Zona del Parque</h3>
+                  <p className="text-sm text-gray-500">{currentLocation.zoneName || "No especificada"}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Coordenadas</h3>
+                  <p className="text-sm text-gray-500">
+                    {currentLocation.latitude && currentLocation.longitude ? 
+                      `${currentLocation.latitude}, ${currentLocation.longitude}` : 
+                      "No especificadas"}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">Superficie</h3>
+                  <p className="text-sm text-gray-500">{currentLocation.areaSize} m²</p>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium">Descripción de la Ubicación</h3>
+                <p className="text-sm text-gray-500">{currentLocation.locationDescription || "Sin descripción"}</p>
+              </div>
+              
+              <div className="h-80 bg-gray-100 rounded-md p-4 flex items-center justify-center">
+                <div className="text-center">
+                  <MapPin className="mx-auto mb-2 h-10 w-10 text-gray-400" />
+                  <p className="text-gray-500">
+                    Visualizador de mapa (en desarrollo)
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para editar ubicación */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Ubicación</DialogTitle>
+            <DialogDescription>
+              Modifica la información de ubicación para esta concesión
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={editForm.control}
                   name="contractId"
@@ -620,7 +680,7 @@ export default function ConcessionLocations() {
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
-                        disabled={isFormDataLoading}
+                        disabled={true} // No permitir cambiar el contrato
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -646,77 +706,51 @@ export default function ConcessionLocations() {
                   )}
                 />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="zoneName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Zona</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nombre de la zona" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={editForm.control}
-                    name="subzoneName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Subzona (opcional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nombre de la subzona" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="coordinates"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Coordenadas</FormLabel>
-                        <FormControl>
-                          <Input placeholder="lat,lng (ej: 19.4326,-99.1332)" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Formato: latitud,longitud
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={editForm.control}
-                    name="areaSqm"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Superficie (m²)</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="Superficie en metros cuadrados" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
                 <FormField
                   control={editForm.control}
-                  name="mapReference"
+                  name="parkZoneId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Referencia de mapa (opcional)</FormLabel>
+                      <FormLabel>Zona del Parque (Opcional)</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={isFormDataLoading}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona una zona" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {isLoadingParkZones ? (
+                            <SelectItem value="loading">Cargando zonas...</SelectItem>
+                          ) : parkZones && parkZones.length > 0 ? (
+                            parkZones.map((zone: any) => (
+                              <SelectItem key={zone.id} value={zone.id.toString()}>
+                                {zone.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="empty">No hay zonas disponibles</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="latitude"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Latitud (Opcional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="URL o referencia del mapa" {...field} />
+                        <Input placeholder="Ej. 19.4326" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -725,78 +759,91 @@ export default function ConcessionLocations() {
                 
                 <FormField
                   control={editForm.control}
+                  name="longitude"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Longitud (Opcional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ej. -99.1332" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={editForm.control}
+                  name="areaSize"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Superficie (m²)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ej. 250" {...field} type="number" min="0" step="0.01" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                <FormField
+                  control={editForm.control}
                   name="locationDescription"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Descripción de la ubicación</FormLabel>
+                      <FormLabel>Descripción de la Ubicación</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Describe la ubicación y sus características" 
+                          placeholder="Describe la ubicación de la concesión dentro del parque" 
                           {...field} 
-                          className="min-h-[100px]"
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
-                <DialogFooter>
-                  <Button type="submit" disabled={updateMutation.isPending}>
-                    {updateMutation.isPending ? "Guardando cambios..." : "Guardar cambios"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-        
-        {/* Diálogo para visualizar mapa */}
-        <Dialog open={isViewMapDialogOpen} onOpenChange={setIsViewMapDialogOpen}>
-          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Vista de mapa</DialogTitle>
-              <DialogDescription>
-                {currentLocation && (
-                  <span>
-                    {getContractName(currentLocation.contractId)} - {currentLocation.zoneName}
-                    {currentLocation.subzoneName && `, ${currentLocation.subzoneName}`}
-                  </span>
-                )}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="h-[400px] w-full bg-slate-100 rounded-md flex flex-col items-center justify-center">
-              <Map className="h-12 w-12 text-slate-400 mb-2" />
-              <p className="text-slate-500">
-                Aquí se mostraría la visualización del mapa con la ubicación seleccionada.
-              </p>
-              {currentLocation && (
-                <div className="mt-4 flex flex-col items-center">
-                  <Badge variant="outline" className="mb-2">{currentLocation.coordinates}</Badge>
-                  <span className="text-sm text-slate-500">Superficie: {currentLocation.areaSqm} m²</span>
-                </div>
-              )}
-            </div>
-            <div className="mt-4">
-              <h3 className="font-medium mb-2">Detalles de la ubicación</h3>
-              {currentLocation && (
-                <div className="space-y-2 text-sm">
-                  <p>
-                    <span className="font-semibold">Descripción:</span>{" "}
-                    {currentLocation.locationDescription || "Sin descripción"}
+              </div>
+
+              <div className="h-80 bg-gray-100 rounded-md p-4 flex items-center justify-center">
+                <div className="text-center">
+                  <MapPin className="mx-auto mb-2 h-10 w-10 text-gray-400" />
+                  <p className="text-gray-500">
+                    Visualizador de mapa (en desarrollo)
                   </p>
-                  {currentLocation.mapReference && (
-                    <p>
-                      <span className="font-semibold">Referencia:</span>{" "}
-                      {currentLocation.mapReference}
-                    </p>
-                  )}
+                  <p className="text-sm text-gray-400 mt-1">
+                    Pronto podrás seleccionar ubicaciones en el mapa
+                  </p>
                 </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+              </div>
+
+              <DialogFooter>
+                <Button type="submit" disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? "Guardando..." : "Guardar cambios"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para confirmar eliminación */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente la ubicación de la concesión.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }
