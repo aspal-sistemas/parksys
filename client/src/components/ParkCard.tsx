@@ -4,7 +4,8 @@ import { ExtendedPark } from '@shared/schema';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import AmenityIcon from '@/components/ui/amenity-icon';
+import { FileImage } from 'lucide-react';
+import AmenityIcon from '@/components/AmenityIcon';
 
 interface ParkCardProps {
   park: ExtendedPark;
@@ -43,12 +44,22 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
   return (
     <Card className="park-card overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col">
       {/* Park image */}
-      <div className="w-full h-40 overflow-hidden">
-        <img 
-          src={park.primaryImage || 'https://placehold.co/600x400/e2e8f0/64748b?text=Sin+Imagen'} 
-          alt={park.name} 
-          className="w-full h-full object-cover"
-        />
+      <div className="w-full h-40 overflow-hidden relative">
+        {park.primaryImage ? (
+          <img 
+            src={park.primaryImage} 
+            alt={park.name} 
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              // Si la imagen falla al cargar, mostrar un fallback
+              e.currentTarget.src = 'https://placehold.co/600x400/e2e8f0/64748b?text=Sin+Imagen';
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <FileImage className="h-12 w-12 text-gray-400" />
+          </div>
+        )}
       </div>
       
       <CardContent className="p-4 flex-1 flex flex-col">

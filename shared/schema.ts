@@ -283,6 +283,8 @@ export type ExtendedPark = typeof parks.$inferSelect & {
   municipality?: typeof municipalities.$inferSelect;
   amenities?: typeof amenities.$inferSelect[];
   images?: typeof parkImages.$inferSelect[];
+  primaryImage?: string | null;
+  mainImageUrl?: string | null;
 };
 
 export type ExtendedVolunteer = typeof volunteers.$inferSelect & {

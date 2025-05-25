@@ -93,7 +93,34 @@ export async function getParksDirectly(filters?: any) {
         console.error(`Error al obtener imagen para parque ${park.id}:`, err);
       }
       
-      // Agregar el parque con su imagen al array
+      // Obtener amenidades del parque
+      let amenities = [];
+      try {
+        // Verificar si la tabla park_amenities existe
+        const amenitiesTableExists = await pool.query(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_name = 'park_amenities'
+          ) as exists
+        `);
+        
+        if (amenitiesTableExists.rows[0].exists) {
+          // Consultamos las amenidades relacionadas con este parque
+          const amenitiesQuery = `
+            SELECT a.id, a.name, a.icon, a.custom_icon_url as "customIconUrl"
+            FROM amenities a
+            INNER JOIN park_amenities pa ON a.id = pa.amenity_id
+            WHERE pa.park_id = $1
+          `;
+          
+          const amenitiesResult = await pool.query(amenitiesQuery, [park.id]);
+          amenities = amenitiesResult.rows || [];
+        }
+      } catch (err) {
+        console.error(`Error al obtener amenidades para parque ${park.id}:`, err);
+      }
+
+      // Agregar el parque con su imagen y amenidades al array
       parksWithImages.push({
         ...park,
         createdAt: new Date(),
@@ -102,7 +129,8 @@ export async function getParksDirectly(filters?: any) {
         surfaceArea: park.area || null,
         closingHours: null,
         mainImageUrl: primaryImage,
-        primaryImage: primaryImage  // Este campo es el que usa ParkCard
+        primaryImage: primaryImage,  // Este campo es el que usa ParkCard
+        amenities: amenities        // Añadimos las amenidades
       });
     }
     
