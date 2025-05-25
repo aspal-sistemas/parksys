@@ -6,17 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Plus, Edit, FileText, AlertTriangle, Search } from "lucide-react";
+import { Plus, Edit, FileText, History, Star, Users, AlertTriangle, CheckCircle, XCircle, Search, FileUp } from "lucide-react";
 
 // Esquema de validación para el formulario de concesionario
 const concessionaireSchema = z.object({
@@ -47,6 +48,7 @@ export default function ConcessionairesPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedConcessionaire, setSelectedConcessionaire] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState("listado");
   const [searchTerm, setSearchTerm] = useState("");
   
   const { toast } = useToast();
@@ -205,7 +207,7 @@ export default function ConcessionairesPage() {
   };
 
   // Filtrar concesionarios por término de búsqueda
-  const filteredConcessionaires = searchTerm && Array.isArray(concessionaires)
+  const filteredConcessionaires = Array.isArray(concessionaires) && searchTerm
     ? concessionaires.filter((c: any) => 
         c.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
         c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -246,151 +248,234 @@ export default function ConcessionairesPage() {
               </DialogHeader>
               <Form {...createForm}>
                 <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={createForm.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nombre de Usuario *</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={createForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Contraseña *</FormLabel>
-                          <FormControl>
-                            <Input type="password" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <FormField
-                    control={createForm.control}
-                    name="fullName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre Completo *</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={createForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Correo Electrónico *</FormLabel>
-                          <FormControl>
-                            <Input type="email" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={createForm.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Teléfono</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <FormField
-                    control={createForm.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo de Concesionario *</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecciona un tipo" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="persona_fisica">Persona Física</SelectItem>
-                            <SelectItem value="persona_moral">Persona Moral</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={createForm.control}
-                    name="rfc"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>RFC *</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={createForm.control}
-                    name="taxAddress"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Dirección Fiscal *</FormLabel>
-                        <FormControl>
-                          <Textarea {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={createForm.control}
-                    name="legalRepresentative"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Representante Legal</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={createForm.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notas</FormLabel>
-                        <FormControl>
-                          <Textarea {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Tabs para el formulario de registro */}
+                  <Tabs defaultValue="datos" className="w-full">
+                    <TabsList className="grid grid-cols-3 w-full mb-4">
+                      <TabsTrigger value="datos">
+                        <Users className="h-4 w-4 mr-2" />
+                        Datos Generales
+                      </TabsTrigger>
+                      <TabsTrigger value="documentos">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Documentación
+                      </TabsTrigger>
+                      <TabsTrigger value="evaluaciones">
+                        <Star className="h-4 w-4 mr-2" />
+                        Evaluaciones
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="datos">
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={createForm.control}
+                            name="username"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nombre de Usuario *</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={createForm.control}
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Contraseña *</FormLabel>
+                                <FormControl>
+                                  <Input type="password" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <FormField
+                          control={createForm.control}
+                          name="fullName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nombre Completo *</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={createForm.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Correo Electrónico *</FormLabel>
+                                <FormControl>
+                                  <Input type="email" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={createForm.control}
+                            name="phone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Teléfono</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <FormField
+                          control={createForm.control}
+                          name="type"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Tipo de Concesionario *</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona un tipo" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="persona_fisica">Persona Física</SelectItem>
+                                  <SelectItem value="persona_moral">Persona Moral</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="rfc"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>RFC *</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="taxAddress"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Dirección Fiscal *</FormLabel>
+                              <FormControl>
+                                <Textarea {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="legalRepresentative"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Representante Legal</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="notes"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Notas</FormLabel>
+                              <FormControl>
+                                <Textarea {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="documentos">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Documentación Requerida</CardTitle>
+                          <CardDescription>
+                            Gestiona los documentos legales y administrativos del concesionario
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                              Una vez registrado el concesionario, podrás cargar sus documentos desde la sección de documentos.
+                            </p>
+                            <div className="grid grid-cols-1 gap-4">
+                              <div className="border rounded-md p-4">
+                                <h3 className="font-medium mb-2">Documentos Requeridos:</h3>
+                                <ul className="list-disc pl-5 space-y-1 text-sm">
+                                  <li>Identificación oficial vigente</li>
+                                  <li>Comprobante de domicilio (no mayor a 3 meses)</li>
+                                  <li>Constancia de situación fiscal</li>
+                                  <li>Acta constitutiva (solo para personas morales)</li>
+                                  <li>Poder notarial del representante legal (solo para personas morales)</li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+
+                    <TabsContent value="evaluaciones">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Evaluaciones de Desempeño</CardTitle>
+                          <CardDescription>
+                            Historial de evaluaciones y calificaciones del concesionario
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                              Una vez registrado el concesionario, podrás registrar evaluaciones periódicas de su desempeño.
+                            </p>
+                            <div className="grid grid-cols-1 gap-4">
+                              <div className="border rounded-md p-4">
+                                <h3 className="font-medium mb-2">Criterios de Evaluación:</h3>
+                                <ul className="list-disc pl-5 space-y-1 text-sm">
+                                  <li>Cumplimiento de normativa municipal</li>
+                                  <li>Calidad del servicio</li>
+                                  <li>Limpieza y mantenimiento del área</li>
+                                  <li>Atención al público</li>
+                                  <li>Impacto ambiental y sustentabilidad</li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+                  </Tabs>
+
                   <DialogFooter>
                     <Button 
                       type="submit" 
@@ -405,84 +490,95 @@ export default function ConcessionairesPage() {
           </Dialog>
         </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-center">
-              <CardTitle>Concesionarios Registrados</CardTitle>
-              <div className="relative w-64">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nombre o RFC"
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-            <CardDescription>
-              Listado de personas físicas y morales autorizadas para operar concesiones
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoadingConcessionaires ? (
-              <p className="text-center py-4">Cargando concesionarios...</p>
-            ) : !Array.isArray(filteredConcessionaires) || filteredConcessionaires.length === 0 ? (
-              <div className="text-center py-8">
-                <AlertTriangle className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
-                <p className="text-lg font-medium">No hay concesionarios registrados</p>
-                <p className="text-muted-foreground">
-                  {searchTerm ? "No se encontraron resultados para tu búsqueda" : "Registra el primer concesionario haciendo clic en 'Nuevo Concesionario'"}
-                </p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Correo</TableHead>
-                    <TableHead>RFC</TableHead>
-                    <TableHead>Representante Legal</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredConcessionaires.map((concessionaire: any) => (
-                    <TableRow key={concessionaire.id}>
-                      <TableCell className="font-medium">{concessionaire.fullName}</TableCell>
-                      <TableCell>{concessionaire.email}</TableCell>
-                      <TableCell>{concessionaire.concessionaireProfile?.rfc}</TableCell>
-                      <TableCell>{concessionaire.concessionaireProfile?.legalRepresentative || "-"}</TableCell>
-                      <TableCell>{renderStatus(concessionaire.concessionaireProfile?.status || "activo")}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex space-x-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleEdit(concessionaire)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Editar
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            asChild
-                          >
-                            <a href={`/admin/users/concessionaires/${concessionaire.id}/documents`}>
-                              <FileText className="h-4 w-4 mr-1" />
-                              Documentos
-                            </a>
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-1 w-[400px]">
+            <TabsTrigger value="listado">
+              <Users className="h-4 w-4 mr-2" />
+              Listado
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="listado">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <CardTitle>Concesionarios Registrados</CardTitle>
+                  <div className="relative w-64">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar por nombre o RFC"
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <CardDescription>
+                  Listado de personas físicas y morales autorizadas para operar concesiones
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingConcessionaires ? (
+                  <p className="text-center py-4">Cargando concesionarios...</p>
+                ) : !Array.isArray(filteredConcessionaires) || filteredConcessionaires.length === 0 ? (
+                  <div className="text-center py-8">
+                    <AlertTriangle className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
+                    <p className="text-lg font-medium">No hay concesionarios registrados</p>
+                    <p className="text-muted-foreground">
+                      {searchTerm ? "No se encontraron resultados para tu búsqueda" : "Registra el primer concesionario haciendo clic en 'Nuevo Concesionario'"}
+                    </p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nombre</TableHead>
+                        <TableHead>Correo</TableHead>
+                        <TableHead>RFC</TableHead>
+                        <TableHead>Representante Legal</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredConcessionaires.map((concessionaire: any) => (
+                        <TableRow key={concessionaire.id}>
+                          <TableCell className="font-medium">{concessionaire.fullName}</TableCell>
+                          <TableCell>{concessionaire.email}</TableCell>
+                          <TableCell>{concessionaire.concessionaireProfile?.rfc}</TableCell>
+                          <TableCell>{concessionaire.concessionaireProfile?.legalRepresentative || "-"}</TableCell>
+                          <TableCell>{renderStatus(concessionaire.concessionaireProfile?.status || "activo")}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex space-x-2">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEdit(concessionaire)}
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                Editar
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                asChild
+                              >
+                                <a href={`/admin/users/concessionaires/${concessionaire.id}/documents`}>
+                                  <FileText className="h-4 w-4 mr-1" />
+                                  Documentos
+                                </a>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Diálogo para editar concesionario */}
