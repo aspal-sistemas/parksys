@@ -17,6 +17,16 @@ import {
   getEventParticipantsSummary
 } from "./events-participants-handlers";
 
+import {
+  getEventResources,
+  getEventResource,
+  assignResourceToEvent,
+  updateEventResource,
+  removeEventResource,
+  updateResourceStatus,
+  getEventResourcesSummary
+} from "./events-resources-handlers";
+
 export const eventRouter = Router();
 
 // Rutas públicas (no requieren autenticación)
@@ -48,4 +58,13 @@ export function registerEventRoutes(app: any, apiRouter: Router, isAuthenticated
   apiRouter.post("/events/:id/participants", registerParticipant);
   apiRouter.put("/events/:id/participants/:participantId/status", isAuthenticated, updateParticipantStatus);
   apiRouter.delete("/events/:id/participants/:participantId", isAuthenticated, removeParticipant);
+  
+  // Rutas para recursos de eventos
+  apiRouter.get("/events/:id/resources", getEventResources);
+  apiRouter.get("/events/:id/resources/summary", getEventResourcesSummary);
+  apiRouter.get("/events/:id/resources/:resourceId", getEventResource);
+  apiRouter.post("/events/:id/resources", isAuthenticated, assignResourceToEvent);
+  apiRouter.put("/events/:id/resources/:resourceId", isAuthenticated, updateEventResource);
+  apiRouter.put("/events/:id/resources/:resourceId/status", isAuthenticated, updateResourceStatus);
+  apiRouter.delete("/events/:id/resources/:resourceId", isAuthenticated, removeEventResource);
 }

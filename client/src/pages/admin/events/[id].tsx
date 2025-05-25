@@ -47,7 +47,15 @@ import {
   ChevronRight,
   UserPlus,
   FileCog,
-  ListChecks
+  ListChecks,
+  Package,
+  PackageX,
+  CheckCircle,
+  XCircle,
+  Trash,
+  Plus,
+  ExternalLink,
+  MoreHorizontal
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
