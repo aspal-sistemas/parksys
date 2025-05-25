@@ -449,35 +449,79 @@ export class DatabaseStorage implements IStorage {
         return undefined;
       }
       
-      const result = await db.execute(`
-        SELECT a.id, a.name, a.description, a.serial_number as "serialNumber", 
-               a.category_id as "categoryId", a.park_id as "parkId", 
-               a.location_description as "locationDescription", a.latitude, a.longitude,
-               a.acquisition_date as "acquisitionDate", a.acquisition_cost as "acquisitionCost",
-               a.current_value as "currentValue", a.manufacturer, a.model, a.status, a.condition,
-               a.maintenance_frequency as "maintenanceFrequency", 
-               a.last_maintenance_date as "lastMaintenanceDate",
-               a.next_maintenance_date as "nextMaintenanceDate",
-               a.expected_lifespan as "expectedLifespan", a.notes, 
-               a.qr_code as "qrCode", a.responsible_person_id as "responsiblePersonId",
-               a.created_at as "createdAt", a.updated_at as "updatedAt",
-               c.name as "categoryName", c.icon as "categoryIcon", c.color as "categoryColor",
-               p.name as "parkName"
-        FROM assets a
-        LEFT JOIN asset_categories c ON a.category_id = c.id
-        LEFT JOIN parks p ON a.park_id = p.id
-        WHERE a.id = $1
-      `, [assetId]);
+      // Usamos una consulta SQL mucho más simple
+      const query = "SELECT * FROM assets WHERE id = $1";
+      console.log("Ejecutando consulta:", query, "con ID:", assetId);
+      
+      const result = await pool.query(query, [assetId]);
       
       if (result.rows && result.rows.length > 0) {
-        // Añadir propiedades adicionales para compatibilidad con frontend
+        // Obtenemos información de la categoría y parque por separado
+        const asset = result.rows[0];
+        
+        // Obtener datos de la categoría si existe
+        let categoryData = { name: 'Sin categoría', icon: 'box', color: '#666666' };
+        if (asset.category_id) {
+          const categoryQuery = "SELECT name, icon, color FROM asset_categories WHERE id = $1";
+          console.log("Ejecutando consulta de categoría:", categoryQuery, "con ID:", asset.category_id);
+          
+          const categoryResult = await pool.query(categoryQuery, [asset.category_id]);
+          if (categoryResult.rows && categoryResult.rows.length > 0) {
+            categoryData = categoryResult.rows[0];
+          }
+        }
+        
+        // Obtener datos del parque si existe
+        let parkName = 'Sin asignar';
+        if (asset.park_id) {
+          const parkQuery = "SELECT name FROM parks WHERE id = $1";
+          console.log("Ejecutando consulta de parque:", parkQuery, "con ID:", asset.park_id);
+          
+          const parkResult = await pool.query(parkQuery, [asset.park_id]);
+          if (parkResult.rows && parkResult.rows.length > 0) {
+            parkName = parkResult.rows[0].name;
+          }
+        }
+        
+        // Transformar a formato camelCase para el frontend
         return {
-          ...result.rows[0],
-          photos: result.rows[0].photos || [],
-          documents: result.rows[0].documents || [],
-          // Añadir iconType para compatibilidad
+          id: asset.id,
+          name: asset.name,
+          description: asset.description,
+          serialNumber: asset.serial_number,
+          categoryId: asset.category_id,
+          parkId: asset.park_id,
+          locationDescription: asset.location_description,
+          latitude: asset.latitude,
+          longitude: asset.longitude,
+          acquisitionDate: asset.acquisition_date,
+          acquisitionCost: asset.acquisition_cost,
+          currentValue: asset.current_value,
+          manufacturer: asset.manufacturer,
+          model: asset.model,
+          status: asset.status,
+          condition: asset.condition,
+          maintenanceFrequency: asset.maintenance_frequency,
+          lastMaintenanceDate: asset.last_maintenance_date,
+          nextMaintenanceDate: asset.next_maintenance_date,
+          expectedLifespan: asset.expected_lifespan,
+          notes: asset.notes,
+          qrCode: asset.qr_code,
+          responsiblePersonId: asset.responsible_person_id,
+          createdAt: asset.created_at,
+          updatedAt: asset.updated_at,
+          photos: asset.photos || [],
+          documents: asset.documents || [],
+          
+          // Datos de categoría
+          categoryName: categoryData.name,
+          categoryIcon: categoryData.icon,
+          categoryColor: categoryData.color,
           categoryIconType: "system",
-          categoryCustomIconUrl: null
+          categoryCustomIconUrl: null,
+          
+          // Datos de parque
+          parkName: parkName
         };
       }
       
