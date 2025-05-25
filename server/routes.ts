@@ -201,87 +201,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all parks with option to filter
   apiRouter.get("/parks", async (req: Request, res: Response) => {
     try {
-      // Importamos la base de datos directamente
-      const { pool } = await import('./db');
+      // Importamos la función de consulta directa que maneja las imágenes
+      const { getParksDirectly } = await import('./direct-park-queries');
       
-      // Construimos la consulta SQL básica
-      let queryStr = `
-        SELECT 
-          id, name, municipality_id as "municipalityId", 
-          park_type as "parkType", description, address, 
-          postal_code as "postalCode", latitude, longitude, 
-          area, foundation_year as "foundationYear",
-          administrator, conservation_status as "conservationStatus",
-          regulation_url as "regulationUrl", opening_hours as "openingHours", 
-          contact_email as "contactEmail", contact_phone as "contactPhone",
-          video_url as "videoUrl"
-        FROM parks
-        WHERE 1=1
-      `;
+      // Preparamos los filtros basados en los parámetros de la consulta
+      const filters: any = {};
       
-      const params: any[] = [];
-      let paramIndex = 1;
-      
-      // Añadimos filtros si existen
       if (req.query.municipalityId) {
-        queryStr += ` AND municipality_id = $${paramIndex++}`;
-        params.push(Number(req.query.municipalityId));
+        filters.municipalityId = Number(req.query.municipalityId);
       }
       
       if (req.query.parkType) {
-        queryStr += ` AND park_type = $${paramIndex++}`;
-        params.push(String(req.query.parkType));
+        filters.parkType = String(req.query.parkType);
       }
       
       if (req.query.postalCode) {
-        queryStr += ` AND postal_code = $${paramIndex++}`;
-        params.push(String(req.query.postalCode));
+        filters.postalCode = String(req.query.postalCode);
       }
       
       if (req.query.search) {
-        queryStr += ` AND (
-          name ILIKE $${paramIndex} OR
-          COALESCE(description, '') ILIKE $${paramIndex} OR
-          address ILIKE $${paramIndex}
-        )`;
-        params.push(`%${req.query.search}%`);
-        paramIndex++;
+        filters.search = String(req.query.search);
       }
       
-      // Ordenar por nombre
-      queryStr += ` ORDER BY name`;
+      // Obtenemos los parques con sus imágenes y amenidades
+      const parks = await getParksDirectly(filters);
       
-      // Ejecutar la consulta para obtener los datos básicos de los parques
-      const result = await pool.query(queryStr, params);
-      
-      // Transformar los resultados
-      const parks = result.rows.map(park => ({
-        ...park,
-        // Añadimos estos campos para compatibilidad con la interfaz esperada
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        active: true,
-        surfaceArea: park.area || null,
-        closingHours: null,
-        mainImageUrl: null,
-        // Añadimos estructuras vacías para los datos relacionados
-        amenities: [],
-        activities: [],
-        documents: [],
-        images: [],
-        trees: {
-          total: 0,
-          bySpecies: {},
-          byHealth: {
-            'Bueno': 0,
-            'Regular': 0,
-            'Malo': 0,
-            'Desconocido': 0
-          }
-        }
-      }));
-      
-      // Respondemos con los parques
+      // Respondemos con los parques completos
       res.json(parks);
     } catch (error) {
       console.error("Error al obtener parques:", error);
