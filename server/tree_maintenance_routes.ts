@@ -25,7 +25,7 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
   // Obtener todos los mantenimientos de árboles (con información detallada de cada árbol)
   apiRouter.get("/trees/maintenances", async (req: Request, res: Response) => {
     try {
-      // Consulta para obtener todos los mantenimientos con información de árboles
+      // Consulta para obtener todos los mantenimientos con información de árboles y usuarios
       const result = await db.execute(sql`
         SELECT 
           tm.*,
@@ -34,7 +34,9 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
           p.id AS park_id,
           p.name AS park_name,
           ts.common_name AS species_name,
-          ts.scientific_name
+          ts.scientific_name,
+          u.username AS performed_by_username,
+          u.full_name AS performed_by_name
         FROM 
           tree_maintenances tm
         JOIN 
@@ -43,6 +45,8 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
           parks p ON t.park_id = p.id
         LEFT JOIN 
           tree_species ts ON t.species_id = ts.id
+        LEFT JOIN
+          users u ON tm.performed_by = u.id
         ORDER BY 
           tm.maintenance_date DESC
       `);
@@ -55,10 +59,11 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
       const maintenances = result.rows.map(m => ({
         id: m.id,
         treeId: m.tree_id,
-        treeCode: `ARB-${(m.tree_id ? m.tree_id.toString() : '0').padStart(5, '0')}`,
+        treeCode: `ARB-${(m.tree_id ? parseInt(m.tree_id) : 0).toString().padStart(5, '0')}`,
         maintenanceType: m.maintenance_type,
         maintenanceDate: m.maintenance_date,
         performedBy: m.performed_by,
+        performedByName: m.performed_by_name || m.performed_by_username || 'Usuario',
         notes: m.notes,
         createdAt: m.created_at,
         parkId: m.park_id,

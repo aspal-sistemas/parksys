@@ -247,6 +247,7 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         maintenanceType: m.maintenance_type,
         maintenanceDate: m.maintenance_date,
         performedBy: m.performed_by,
+        performedByName: m.full_name || m.username || 'Usuario',
         notes: m.notes,
         createdAt: m.created_at,
         updatedAt: m.updated_at
@@ -356,9 +357,11 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
       
       // Obtener los mantenimientos del árbol
       const maintenancesResult = await db.execute(sql`
-        SELECT * FROM tree_maintenances 
-        WHERE tree_id = ${tree.id}
-        ORDER BY maintenance_date DESC
+        SELECT tm.*, u.username, u.full_name 
+        FROM tree_maintenances tm
+        LEFT JOIN users u ON tm.performed_by = u.id
+        WHERE tm.tree_id = ${parseInt(tree.id)}
+        ORDER BY tm.maintenance_date DESC
       `);
       
       // Formatear el resultado
