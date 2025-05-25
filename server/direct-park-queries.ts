@@ -74,14 +74,47 @@ export async function getParksDirectly(filters?: any) {
         `);
         
         if (tableExists.rows[0].exists) {
-          // Obtener la imagen principal del parque
-          const imageQuery = `
-            SELECT image_url 
-            FROM park_images 
-            WHERE park_id = $1
-            ORDER BY is_primary DESC
-            LIMIT 1
-          `;
+          // Consultamos los campos disponibles en la tabla
+          const columnsResult = await pool.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'park_images'
+          `);
+          
+          const columns = columnsResult.rows.map(row => row.column_name);
+          console.log(`Columnas en park_images para park ${park.id}:`, columns.join(', '));
+          
+          // Verificamos qué nombre tiene la columna de imagen
+          const imageUrlColumn = columns.includes('image_url') ? 'image_url' : 
+                               columns.includes('url') ? 'url' : null;
+                               
+          // Verificamos qué nombre tiene la columna de imagen principal
+          const isPrimaryColumn = columns.includes('is_primary') ? 'is_primary' : 
+                               columns.includes('primary') ? 'primary' : null;
+          
+          if (!imageUrlColumn) {
+            console.error("No se encontró una columna para la URL de imagen");
+            return;
+          }
+          
+          // Construir la consulta según los campos disponibles
+          let imageQuery;
+          if (isPrimaryColumn) {
+            imageQuery = `
+              SELECT ${imageUrlColumn} as image_url 
+              FROM park_images 
+              WHERE park_id = $1
+              ORDER BY ${isPrimaryColumn} DESC
+              LIMIT 1
+            `;
+          } else {
+            imageQuery = `
+              SELECT ${imageUrlColumn} as image_url
+              FROM park_images 
+              WHERE park_id = $1
+              LIMIT 1
+            `;
+          }
           
           const imageResult = await pool.query(imageQuery, [park.id]);
           
