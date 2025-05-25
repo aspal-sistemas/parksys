@@ -58,7 +58,7 @@ interface Event {
   parks?: { id: number; name: string }[];
 }
 
-const EventsPage: React.FC = () => {
+const EventsPage = () => {
   const [, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -72,28 +72,30 @@ const EventsPage: React.FC = () => {
   // Si hay un error en la carga de datos
   if (error) {
     return (
-      <div className="container mx-auto py-6">
-        <PageHeader
-          title="Eventos"
-          description="Gestiona los eventos de los parques"
-          actions={
-            <Button asChild>
-              <Link href="/admin/events/new">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Nuevo Evento
-              </Link>
-            </Button>
-          }
-        />
-        <Card className="bg-destructive/10 border-destructive">
-          <CardHeader>
-            <CardTitle>Error al cargar los eventos</CardTitle>
-            <CardDescription>
-              Hubo un problema al obtener los datos. Intenta recargar la página.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
+      <AdminLayout>
+        <div className="container mx-auto py-6">
+          <PageHeader
+            title="Eventos"
+            description="Gestiona los eventos de los parques"
+            actions={
+              <Button asChild>
+                <Link href="/admin/events/new">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Nuevo Evento
+                </Link>
+              </Button>
+            }
+          />
+          <Card className="bg-destructive/10 border-destructive">
+            <CardHeader>
+              <CardTitle>Error al cargar los eventos</CardTitle>
+              <CardDescription>
+                Hubo un problema al obtener los datos. Intenta recargar la página.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </AdminLayout>
     );
   }
 
@@ -187,153 +189,154 @@ const EventsPage: React.FC = () => {
           }
         />
 
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <div className="relative flex-grow">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Buscar eventos..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-2">
-          <div className="w-40">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                {eventStatuses.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {statusTranslations[status] || status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="w-40">
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger>
-                <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los tipos</SelectItem>
-                {eventTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {eventTypeTranslations[type] || type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      <Card>
-        {isLoading ? (
-          <LoadingSpinner />
-        ) : filteredEvents.length === 0 ? (
-          <CardContent className="p-6">
-            <EmptyState
-              icon={<Calendar className="h-10 w-10" />}
-              title="No hay eventos"
-              description={
-                searchQuery || statusFilter !== "all" || typeFilter !== "all"
-                  ? "No se encontraron eventos con los filtros aplicados."
-                  : "Aún no se han creado eventos. Crea tu primer evento para comenzar."
-              }
-              actions={
-                <Button asChild>
-                  <Link href="/admin/events/new">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Nuevo Evento
-                  </Link>
-                </Button>
-              }
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="relative flex-grow">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar eventos..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </CardContent>
-        ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Ubicación</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredEvents.map((event) => {
-                  const formattedDate = event.startDate
-                    ? format(new Date(event.startDate), "dd MMM yyyy", { locale: es })
-                    : "Sin fecha";
-                  
-                  return (
-                    <TableRow key={event.id}>
-                      <TableCell className="font-medium">
-                        <div className="max-w-xs truncate">{event.title}</div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          ID: {event.id}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={
-                            typeColorMap[event.eventType] || typeColorMap.default
-                          }
-                        >
-                          {eventTypeTranslations[event.eventType] || event.eventType}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3 text-muted-foreground" />
-                          <span>{formattedDate}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="secondary"
-                          className={
-                            statusColorMap[event.status] || statusColorMap.default
-                          }
-                        >
-                          {statusTranslations[event.status] || event.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="max-w-xs truncate">
-                          {event.location || "Sin ubicación"}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/admin/events/${event.id}`)}
-                        >
-                          <span className="sr-only">Ver detalles</span>
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
           </div>
-        )}
-      </Card>
-    </div>
+          <div className="flex gap-2">
+            <div className="w-40">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los estados</SelectItem>
+                  {eventStatuses.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {statusTranslations[status] || status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-40">
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger>
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los tipos</SelectItem>
+                  {eventTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {eventTypeTranslations[type] || type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        <Card>
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : filteredEvents.length === 0 ? (
+            <CardContent className="p-6">
+              <EmptyState
+                icon={<Calendar className="h-10 w-10" />}
+                title="No hay eventos"
+                description={
+                  searchQuery || statusFilter !== "all" || typeFilter !== "all"
+                    ? "No se encontraron eventos con los filtros aplicados."
+                    : "Aún no se han creado eventos. Crea tu primer evento para comenzar."
+                }
+                actions={
+                  <Button asChild>
+                    <Link href="/admin/events/new">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Nuevo Evento
+                    </Link>
+                  </Button>
+                }
+              />
+            </CardContent>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Ubicación</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEvents.map((event) => {
+                    const formattedDate = event.startDate
+                      ? format(new Date(event.startDate), "dd MMM yyyy", { locale: es })
+                      : "Sin fecha";
+                    
+                    return (
+                      <TableRow key={event.id}>
+                        <TableCell className="font-medium">
+                          <div className="max-w-xs truncate">{event.title}</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            ID: {event.id}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={
+                              typeColorMap[event.eventType] || typeColorMap.default
+                            }
+                          >
+                            {eventTypeTranslations[event.eventType] || event.eventType}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3 text-muted-foreground" />
+                            <span>{formattedDate}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="secondary"
+                            className={
+                              statusColorMap[event.status] || statusColorMap.default
+                            }
+                          >
+                            {statusTranslations[event.status] || event.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="max-w-xs truncate">
+                            {event.location || "Sin ubicación"}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/admin/events/${event.id}`)}
+                          >
+                            <span className="sr-only">Ver detalles</span>
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </Card>
+      </div>
+    </AdminLayout>
   );
 };
 
