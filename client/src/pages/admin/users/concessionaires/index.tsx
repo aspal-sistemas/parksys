@@ -408,21 +408,7 @@ export default function ConcessionairesPage() {
           </Dialog>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 w-[400px]">
-            <TabsTrigger value="listado">
-              <Users className="h-4 w-4 mr-2" />
-              Listado
-            </TabsTrigger>
-            <TabsTrigger value="documentos">
-              <FileText className="h-4 w-4 mr-2" />
-              Documentación
-            </TabsTrigger>
-            <TabsTrigger value="evaluaciones">
-              <Star className="h-4 w-4 mr-2" />
-              Evaluaciones
-            </TabsTrigger>
-          </TabsList>
+        <div className="w-full">
           
           <TabsContent value="listado">
             <Card>
