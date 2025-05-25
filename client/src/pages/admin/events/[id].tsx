@@ -1900,6 +1900,196 @@ const EventDetailPage = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Diálogo para agregar o editar evaluación */}
+      <Dialog open={isEvaluationDialogOpen} onOpenChange={setIsEvaluationDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{isEditingEvaluation ? "Editar evaluación" : "Agregar evaluación"}</DialogTitle>
+            <DialogDescription>
+              {isEditingEvaluation 
+                ? "Actualice la información de la evaluación del evento." 
+                : "Complete el formulario para agregar una nueva evaluación del evento."}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEvaluationSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="evaluationType" className="text-right">
+                  Tipo
+                </Label>
+                <Select 
+                  value={evaluationForm.evaluationType}
+                  onValueChange={(value) => setEvaluationForm({...evaluationForm, evaluationType: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccionar tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="satisfaccion">Satisfacción del público</SelectItem>
+                    <SelectItem value="organizacion">Organización</SelectItem>
+                    <SelectItem value="impacto">Impacto</SelectItem>
+                    <SelectItem value="logistica">Logística</SelectItem>
+                    <SelectItem value="participacion">Participación</SelectItem>
+                    <SelectItem value="otro">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="score" className="text-right">
+                  Puntuación
+                </Label>
+                <div className="col-span-3 flex items-center space-x-2">
+                  <div className="flex items-center">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Button
+                        key={i}
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="p-0 h-8 w-8"
+                        onClick={() => setEvaluationForm({
+                          ...evaluationForm,
+                          score: i + 1
+                        })}
+                      >
+                        <Star
+                          className={`h-6 w-6 ${
+                            i < evaluationForm.score
+                              ? "text-yellow-500 fill-yellow-500"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      </Button>
+                    ))}
+                  </div>
+                  <span className="ml-2 text-sm font-medium">{evaluationForm.score}/5</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="comments" className="text-right">
+                  Comentarios
+                </Label>
+                <Textarea
+                  id="comments"
+                  value={evaluationForm.comments}
+                  onChange={(e) => setEvaluationForm({...evaluationForm, comments: e.target.value})}
+                  className="col-span-3"
+                  placeholder="Comentarios adicionales sobre la evaluación"
+                  rows={4}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsEvaluationDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={createEvaluation.isPending || updateEvaluation.isPending}>
+                {createEvaluation.isPending || updateEvaluation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  "Guardar"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para asignar o editar voluntario */}
+      <Dialog open={isVolunteerDialogOpen} onOpenChange={setIsVolunteerDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{isEditingVolunteer ? "Editar asignación" : "Asignar voluntario"}</DialogTitle>
+            <DialogDescription>
+              {isEditingVolunteer 
+                ? "Actualice la información de la asignación del voluntario." 
+                : "Complete el formulario para asignar un voluntario al evento."}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleVolunteerSubmit}>
+            <div className="grid gap-4 py-4">
+              {!isEditingVolunteer && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="volunteerId" className="text-right">
+                    Voluntario
+                  </Label>
+                  <Select 
+                    value={volunteerForm.volunteerId.toString()} 
+                    onValueChange={(value) => setVolunteerForm({...volunteerForm, volunteerId: parseInt(value)})}
+                    disabled={isEditingVolunteer}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Seleccionar voluntario" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableVolunteers?.map((volunteer) => (
+                        <SelectItem key={volunteer.id} value={volunteer.id.toString()}>
+                          {volunteer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="role" className="text-right">
+                  Rol
+                </Label>
+                <Select 
+                  value={volunteerForm.role}
+                  onValueChange={(value) => setVolunteerForm({...volunteerForm, role: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccionar rol" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="coordinador">Coordinador</SelectItem>
+                    <SelectItem value="asistente">Asistente</SelectItem>
+                    <SelectItem value="logistica">Logística</SelectItem>
+                    <SelectItem value="guia">Guía/Orientador</SelectItem>
+                    <SelectItem value="fotografo">Fotógrafo</SelectItem>
+                    <SelectItem value="seguridad">Seguridad</SelectItem>
+                    <SelectItem value="primeros_auxilios">Primeros Auxilios</SelectItem>
+                    <SelectItem value="otro">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="notes" className="text-right">
+                  Notas
+                </Label>
+                <Textarea
+                  id="notes"
+                  value={volunteerForm.notes}
+                  onChange={(e) => setVolunteerForm({...volunteerForm, notes: e.target.value})}
+                  className="col-span-3"
+                  placeholder="Notas adicionales sobre la asignación"
+                  rows={4}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsVolunteerDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={assignVolunteer.isPending || updateVolunteerAssignment.isPending}>
+                {assignVolunteer.isPending || updateVolunteerAssignment.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  "Guardar"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
