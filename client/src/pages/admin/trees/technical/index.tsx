@@ -772,6 +772,6 @@ export default function TreeTechnicalManagement() {
       ) : (
         renderTreeDetails()
       )}
-    </div>
+    </AdminLayout>
   );
 }

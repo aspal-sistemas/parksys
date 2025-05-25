@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { TreeDeciduous, LineChart, CloudRain, Waves, Wind, Thermometer, Leaf, AlertTriangle } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
 
 import {
   Card,
@@ -586,7 +587,10 @@ export default function TreeEnvironmentalManagement() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-8">
+    <AdminLayout
+      title="Gestión Ambiental de Arbolado"
+      subtitle="Evalúa y gestiona los servicios ambientales proporcionados por árboles en parques"
+    >
       <Helmet>
         <title>Gestión Ambiental de Arbolado | ParquesMX</title>
       </Helmet>
@@ -639,6 +643,6 @@ export default function TreeEnvironmentalManagement() {
       ) : (
         renderTreeDetails()
       )}
-    </div>
+    </AdminLayout>
   );
 }
