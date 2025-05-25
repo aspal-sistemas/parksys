@@ -709,3 +709,73 @@ export const parksRelations = relations(parks, ({ one }) => ({
     references: [municipalities.id],
   })
 }));
+
+// Enumeración para el nivel de impacto ambiental/social
+export const impactLevelEnum = pgEnum('impact_level', ['bajo', 'medio', 'alto', 'muy_alto']);
+
+// Tabla para el catálogo de tipos de concesiones
+export const concessionTypes = pgTable("concession_types", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description").notNull(),
+  technicalRequirements: text("technical_requirements"),
+  legalRequirements: text("legal_requirements"),
+  operatingRules: text("operating_rules"),
+  impactLevel: impactLevelEnum("impact_level").notNull().default('bajo'),
+  isActive: boolean("is_active").notNull().default(true),
+  createdById: integer("created_by_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+export type ConcessionType = typeof concessionTypes.$inferSelect;
+export type InsertConcessionType = typeof concessionTypes.$inferInsert;
+
+export const insertConcessionTypeSchema = createInsertSchema(concessionTypes).omit({
+  id: true,
+  createdById: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Tabla para las concesiones asignadas a parques específicos
+export const concessions = pgTable("concessions", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").notNull(),
+  concessionTypeId: integer("concession_type_id").notNull(),
+  vendorName: varchar("vendor_name", { length: 100 }).notNull(),
+  vendorContact: varchar("vendor_contact", { length: 100 }),
+  vendorEmail: varchar("vendor_email", { length: 100 }),
+  vendorPhone: varchar("vendor_phone", { length: 20 }),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date"),
+  status: varchar("status", { length: 20 }).notNull().default('activa'),
+  location: text("location"),
+  notes: text("notes"),
+  contractFile: varchar("contract_file", { length: 255 }),
+  createdById: integer("created_by_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+export type Concession = typeof concessions.$inferSelect;
+export type InsertConcession = typeof concessions.$inferInsert;
+
+export const insertConcessionSchema = createInsertSchema(concessions).omit({
+  id: true,
+  createdById: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Relaciones para las concesiones
+export const concessionsRelations = relations(concessions, ({ one }) => ({
+  park: one(parks, {
+    fields: [concessions.parkId],
+    references: [parks.id]
+  }),
+  concessionType: one(concessionTypes, {
+    fields: [concessions.concessionTypeId],
+    references: [concessionTypes.id]
+  })
+}));
