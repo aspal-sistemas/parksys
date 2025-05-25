@@ -23,9 +23,9 @@ import { sql } from 'drizzle-orm';
  */
 export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
   // Obtener todos los mantenimientos de árboles (con información detallada de cada árbol)
-  apiRouter.get("/trees/maintenances", async (req: Request, res: Response) => {
+  apiRouter.get("/trees/maintenances", async (_req: Request, res: Response) => {
     try {
-      // Ejecutar la consulta SQL para obtener los mantenimientos con joins a tablas relacionadas
+      // Ejecutar la consulta SQL para obtener todos los mantenimientos con joins a tablas relacionadas
       const query = sql`
         SELECT 
           tm.id,
@@ -76,7 +76,7 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
           maintenanceType: m.maintenance_type || 'Desconocido',
           maintenanceDate: m.maintenance_date,
           performedBy: m.performed_by,
-          performedByName: m.performed_by_name || m.performed_by_username || `Usuario ${m.performed_by}`,
+          performedByName: m.performed_by_name || m.performed_by_username || `Usuario ${m.performed_by || ''}`,
           notes: m.notes || '',
           createdAt: m.created_at,
           parkId: m.park_id,
