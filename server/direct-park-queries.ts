@@ -120,6 +120,7 @@ export async function getParksDirectly(filters?: any) {
           
           if (imageResult.rows.length > 0) {
             primaryImage = imageResult.rows[0].image_url;
+            console.log(`Imagen principal para parque ${park.id}:`, primaryImage);
           }
         }
       } catch (err) {
