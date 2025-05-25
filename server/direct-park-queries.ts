@@ -56,16 +56,57 @@ export async function getParksDirectly(filters?: any) {
     // Ejecutar la consulta
     const result = await pool.query(queryStr, params);
     
-    // Transformar los resultados
-    return result.rows.map(park => ({
-      ...park,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      active: true,
-      surfaceArea: park.area || null,
-      closingHours: null,
-      mainImageUrl: null
-    }));
+    // Crear array para almacenar los parques con sus imágenes
+    const parksWithImages = [];
+    
+    // Procesar cada parque para añadir sus imágenes
+    for (const park of result.rows) {
+      // Buscar imágenes para este parque
+      let primaryImage = null;
+      
+      try {
+        // Verificar si la tabla park_images existe
+        const tableExists = await pool.query(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_name = 'park_images'
+          ) as exists
+        `);
+        
+        if (tableExists.rows[0].exists) {
+          // Obtener la imagen principal del parque
+          const imageQuery = `
+            SELECT image_url 
+            FROM park_images 
+            WHERE park_id = $1
+            ORDER BY is_primary DESC
+            LIMIT 1
+          `;
+          
+          const imageResult = await pool.query(imageQuery, [park.id]);
+          
+          if (imageResult.rows.length > 0) {
+            primaryImage = imageResult.rows[0].image_url;
+          }
+        }
+      } catch (err) {
+        console.error(`Error al obtener imagen para parque ${park.id}:`, err);
+      }
+      
+      // Agregar el parque con su imagen al array
+      parksWithImages.push({
+        ...park,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        active: true,
+        surfaceArea: park.area || null,
+        closingHours: null,
+        mainImageUrl: primaryImage,
+        primaryImage: primaryImage  // Este campo es el que usa ParkCard
+      });
+    }
+    
+    return parksWithImages;
   } catch (error) {
     console.error("Error al obtener parques:", error);
     return [];
