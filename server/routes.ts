@@ -294,124 +294,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/parks/:id", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
-      console.log("Consultando parque con ID:", parkId);
       
-      // Usamos el pool directamente para evitar problemas con el ORM
-      const { pool } = await import('./db');
+      // Importamos nuestro método optimizado
+      const { getParkByIdDirectly } = await import('./direct-park-queries');
       
-      // Obtenemos los datos básicos del parque
-      const parkResult = await pool.query(`
-        SELECT 
-          id, name, municipality_id as "municipalityId", 
-          park_type as "parkType", description, address, 
-          postal_code as "postalCode", latitude, longitude, 
-          area, foundation_year as "foundationYear",
-          administrator, conservation_status as "conservationStatus",
-          regulation_url as "regulationUrl", opening_hours as "openingHours", 
-          contact_email as "contactEmail", contact_phone as "contactPhone"
-        FROM parks
-        WHERE id = $1
-      `, [parkId]);
+      // Obtenemos el parque con todos sus datos relacionados
+      const park = await getParkByIdDirectly(parkId);
       
-      console.log("Resultados de la consulta de parque:", parkResult.rowCount);
-      
-      if (parkResult.rowCount === 0) {
+      if (!park) {
         return res.status(404).json({ message: "Park not found" });
       }
       
-      const park = parkResult.rows[0];
-      console.log("Datos básicos del parque obtenidos:", park.name);
-      
-      // Obtenemos amenidades del parque
-      const amenitiesResult = await pool.query(`
-        SELECT a.id, a.name, a.icon, a.category, a.icon_type as "iconType", a.custom_icon_url as "customIconUrl"
-        FROM amenities a
-        JOIN park_amenities pa ON a.id = pa.amenity_id
-        WHERE pa.park_id = $1
-      `, [parkId]);
-      
-      console.log("Amenidades encontradas:", amenitiesResult.rowCount);
-      
-      // Obtenemos imágenes del parque
-      const imagesResult = await pool.query(`
-        SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", 
-               position, description, caption
-        FROM park_images
-        WHERE park_id = $1
-        ORDER BY is_primary DESC, position ASC
-      `, [parkId]);
-      
-      console.log("Imágenes encontradas:", imagesResult.rowCount);
-      
-      // Obtenemos documentos del parque
-      const documentsResult = await pool.query(`
-        SELECT id, park_id as "parkId", name, file_url as "fileUrl", 
-               file_type as "fileType", description, uploaded_at as "uploadedAt"
-        FROM park_documents
-        WHERE park_id = $1
-      `, [parkId]);
-      
-      console.log("Documentos encontrados:", documentsResult.rowCount);
-      
-      // Obtenemos actividades del parque
-      const activitiesResult = await pool.query(`
-        SELECT id, park_id as "parkId", title, description, activity_type as "activityType", 
-               start_date as "startDate", end_date as "endDate", capacity, 
-               instructor_id as "instructorId", status, image_url as "imageUrl"
-        FROM activities
-        WHERE park_id = $1
-        ORDER BY start_date DESC
-      `, [parkId]);
-      
-      console.log("Actividades encontradas:", activitiesResult.rowCount);
-      
-      // Contamos árboles del parque para estadísticas básicas
-      const treeStatsResult = await pool.query(`
-        SELECT 
-          COUNT(*) as total,
-          COUNT(CASE WHEN health_condition = 'Bueno' THEN 1 END) as good,
-          COUNT(CASE WHEN health_condition = 'Regular' THEN 1 END) as regular,
-          COUNT(CASE WHEN health_condition = 'Malo' THEN 1 END) as bad,
-          COUNT(CASE WHEN health_condition IS NULL OR health_condition = '' THEN 1 END) as unknown
-        FROM trees
-        WHERE park_id = $1
-      `, [parkId]);
-      
-      console.log("Estadísticas de árboles obtenidas:", treeStatsResult.rows[0]?.total || 0);
-      
-      // Armamos el objeto de respuesta
-      const extendedPark = {
-        ...park,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        active: true,
-        surfaceArea: park.area || null,
-        closingHours: null,
-        mainImageUrl: null,
-        amenities: amenitiesResult.rows || [],
-        images: imagesResult.rows || [],
-        documents: documentsResult.rows || [],
-        activities: activitiesResult.rows || [],
-        trees: {
-          total: parseInt(treeStatsResult.rows[0]?.total || '0'),
-          byHealth: {
-            'Bueno': parseInt(treeStatsResult.rows[0]?.good || '0'),
-            'Regular': parseInt(treeStatsResult.rows[0]?.regular || '0'),
-            'Malo': parseInt(treeStatsResult.rows[0]?.bad || '0'),
-            'Desconocido': parseInt(treeStatsResult.rows[0]?.unknown || '0')
-          },
-          bySpecies: {}
-        }
-      };
-      
-      // Encontramos la imagen principal, si existe
-      const mainImage = extendedPark.images.find(img => img.isPrimary);
-      if (mainImage) {
-        extendedPark.mainImageUrl = mainImage.imageUrl;
-      }
-      
-      console.log("Enviando respuesta con parque extendido");
-      res.json(extendedPark);
+      // Enviamos la respuesta
+      res.json(park);
     } catch (error) {
       console.error("Error detallado al obtener parque:", error);
       res.status(500).json({ message: "Error fetching park" });
