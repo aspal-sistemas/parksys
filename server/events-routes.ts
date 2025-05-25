@@ -6,11 +6,16 @@ import {
   updateEvent,
   deleteEvent,
   getParkEvents,
-  getEventReferenceData,
+  getEventReferenceData
+} from "./events-handlers";
+
+import {
   getEventParticipants,
   registerParticipant,
-  updateParticipantStatus
-} from "./events-handlers";
+  updateParticipantStatus,
+  removeParticipant,
+  getEventParticipantsSummary
+} from "./events-participants-handlers";
 
 export const eventRouter = Router();
 
@@ -39,6 +44,8 @@ export function registerEventRoutes(app: any, apiRouter: Router, isAuthenticated
   
   // Rutas para participantes
   apiRouter.get("/events/:id/participants", getEventParticipants);
+  apiRouter.get("/events/:id/participants/summary", getEventParticipantsSummary);
   apiRouter.post("/events/:id/participants", registerParticipant);
-  apiRouter.put("/events/:eventId/participants/:id/status", isAuthenticated, updateParticipantStatus);
+  apiRouter.put("/events/:id/participants/:participantId/status", isAuthenticated, updateParticipantStatus);
+  apiRouter.delete("/events/:id/participants/:participantId", isAuthenticated, removeParticipant);
 }
