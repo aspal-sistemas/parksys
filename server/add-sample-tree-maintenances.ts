@@ -80,8 +80,7 @@ export async function addSampleTreeMaintenances() {
           maintenance_date: maintenanceDate.toISOString(),
           performed_by: personnel[Math.floor(Math.random() * personnel.length)],
           notes: notes[Math.floor(Math.random() * notes.length)],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          created_at: new Date()
         });
       }
     }
