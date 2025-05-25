@@ -32,6 +32,7 @@ import {
 } from "./api/parksImport";
 import { registerUserRoutes } from "./userRoutes";
 import { updateSkillsRouter } from "./updateSkills";
+import { registerEventRoutes } from "./events_routes";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
   insertActivitySchema, insertDocumentSchema, insertParkImageSchema,
@@ -102,6 +103,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas del módulo de arbolado
   registerTreeRoutes(app, apiRouter, isAuthenticated);
   registerTreeMaintenanceRoutes(app, apiRouter, isAuthenticated);
+  
+  // Registramos las rutas del módulo de eventos
+  registerEventRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de inventario de árboles
   // Comentamos esta línea para evitar conflictos con las rutas en tree_routes.ts
