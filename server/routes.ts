@@ -25,6 +25,7 @@ import { registerTreeDetailsRoutes } from "./tree_details_route";
 import { activityRouter } from "./activityRoutes";
 import directRouter from "./directRoutes";
 import { registerConcessionRoutes } from "./concession-routes";
+import { registerUsersConcessionairesRoutes } from "./users-concessionaires-routes";
 import { 
   uploadParkFile, 
   handleMulterErrors, 
@@ -141,6 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de concesiones
   registerConcessionRoutes(app, apiRouter, isAuthenticated);
+  registerUsersConcessionairesRoutes(app, apiRouter, isAuthenticated);
   
   // Endpoints para imágenes de perfil
   // Obtener la imagen de perfil de un usuario
