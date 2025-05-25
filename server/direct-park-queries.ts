@@ -153,22 +153,55 @@ export async function getParkByIdDirectly(parkId: number) {
       // Continuamos con el resto de consultas aunque esta falle
     }
     
-    // Obtener imágenes del parque - adaptado a la estructura real
+    // Obtener los nombres de columnas de la tabla park_images para adaptar la consulta
     try {
-      const imagesResult = await pool.query(`
-        SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", 
-               description, caption
+      // Primero, verificamos qué columnas existen en la tabla park_images
+      const imageColumns = await pool.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'park_images'
+      `);
+      
+      console.log("Columnas disponibles en park_images:", imageColumns.rows.map(r => r.column_name).join(', '));
+      
+      // Construimos una consulta dinámica basada en las columnas disponibles
+      const columnsArray = [];
+      
+      // Añadimos campos básicos que deben existir
+      columnsArray.push('id');
+      columnsArray.push('park_id as "parkId"');
+      
+      // Comprobamos campos opcionales
+      if (imageColumns.rows.some(col => col.column_name === 'image_url')) {
+        columnsArray.push('image_url as "imageUrl"');
+      }
+      if (imageColumns.rows.some(col => col.column_name === 'is_primary')) {
+        columnsArray.push('is_primary as "isPrimary"');
+      }
+      if (imageColumns.rows.some(col => col.column_name === 'description')) {
+        columnsArray.push('description');
+      }
+      if (imageColumns.rows.some(col => col.column_name === 'caption')) {
+        columnsArray.push('caption');
+      }
+      
+      // Ahora construimos y ejecutamos la consulta
+      const query = `
+        SELECT ${columnsArray.join(', ')}
         FROM park_images
         WHERE park_id = $1
-        ORDER BY is_primary DESC
-      `, [parkId]);
+        ${imageColumns.rows.some(col => col.column_name === 'is_primary') ? 'ORDER BY is_primary DESC' : ''}
+      `;
+      
+      console.log("Consulta de imágenes generada:", query);
+      const imagesResult = await pool.query(query, [parkId]);
       
       console.log("Imágenes encontradas:", imagesResult.rowCount);
       extendedPark.images = imagesResult.rows || [];
       
       // Encontrar la imagen principal, si existe
       const mainImage = extendedPark.images.find((img: any) => img.isPrimary);
-      if (mainImage) {
+      if (mainImage && mainImage.imageUrl) {
         extendedPark.mainImageUrl = mainImage.imageUrl;
       }
     } catch (err) {
@@ -179,16 +212,65 @@ export async function getParkByIdDirectly(parkId: number) {
     // Documentos - la tabla no existe, así que dejamos el array vacío
     console.log("Omitiendo consulta de documentos porque la tabla no existe");
     
-    // Obtener actividades del parque - adaptado a la estructura real
+    // Verificamos las columnas disponibles en la tabla activities
     try {
-      const activitiesResult = await pool.query(`
-        SELECT id, park_id as "parkId", title, description, type as "activityType", 
-               start_date as "startDate", end_date as "endDate", capacity, 
-               instructor_id as "instructorId", status, image_url as "imageUrl"
+      const activityColumns = await pool.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'activities'
+      `);
+      
+      console.log("Columnas disponibles en activities:", activityColumns.rows.map(r => r.column_name).join(', '));
+      
+      // Construimos columnas para la consulta
+      const columnsArray = [];
+      
+      // Añadimos campos básicos que deben existir
+      columnsArray.push('id');
+      columnsArray.push('park_id as "parkId"');
+      columnsArray.push('title');
+      
+      // Comprobamos campos opcionales
+      if (activityColumns.rows.some(col => col.column_name === 'description')) {
+        columnsArray.push('description');
+      }
+      
+      // Comprobamos si existe type o activity_type
+      if (activityColumns.rows.some(col => col.column_name === 'type')) {
+        columnsArray.push('type as "activityType"');
+      } else if (activityColumns.rows.some(col => col.column_name === 'activity_type')) {
+        columnsArray.push('activity_type as "activityType"');
+      }
+      
+      if (activityColumns.rows.some(col => col.column_name === 'start_date')) {
+        columnsArray.push('start_date as "startDate"');
+      }
+      if (activityColumns.rows.some(col => col.column_name === 'end_date')) {
+        columnsArray.push('end_date as "endDate"');
+      }
+      if (activityColumns.rows.some(col => col.column_name === 'capacity')) {
+        columnsArray.push('capacity');
+      }
+      if (activityColumns.rows.some(col => col.column_name === 'instructor_id')) {
+        columnsArray.push('instructor_id as "instructorId"');
+      }
+      if (activityColumns.rows.some(col => col.column_name === 'status')) {
+        columnsArray.push('status');
+      }
+      if (activityColumns.rows.some(col => col.column_name === 'image_url')) {
+        columnsArray.push('image_url as "imageUrl"');
+      }
+      
+      // Ahora construimos y ejecutamos la consulta
+      const query = `
+        SELECT ${columnsArray.join(', ')}
         FROM activities
         WHERE park_id = $1
-        ORDER BY start_date DESC
-      `, [parkId]);
+        ${activityColumns.rows.some(col => col.column_name === 'start_date') ? 'ORDER BY start_date DESC' : ''}
+      `;
+      
+      console.log("Consulta de actividades generada:", query);
+      const activitiesResult = await pool.query(query, [parkId]);
       
       console.log("Actividades encontradas:", activitiesResult.rowCount);
       extendedPark.activities = activitiesResult.rows || [];
@@ -199,26 +281,57 @@ export async function getParkByIdDirectly(parkId: number) {
     
     // Contar árboles del parque - adaptado a la estructura real
     try {
-      // Consultamos primero los campos disponibles en la tabla trees
+      // Verificamos si la tabla trees existe
+      const tableExists = await pool.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_name = 'trees'
+        ) as exists
+      `);
+      
+      // Si la tabla no existe, usamos valores predeterminados
+      if (!tableExists.rows[0].exists) {
+        console.log("La tabla trees no existe, usando valores predeterminados");
+        extendedPark.trees = {
+          total: 0,
+          byHealth: {
+            'Bueno': 0, 
+            'Regular': 0, 
+            'Malo': 0, 
+            'Desconocido': 0
+          },
+          bySpecies: {}
+        };
+        return;
+      }
+      
+      // Consultamos los campos disponibles en la tabla trees
       const treeColumns = await pool.query(`
         SELECT column_name 
         FROM information_schema.columns 
         WHERE table_name = 'trees'
       `);
       
-      // Verificamos si existe la columna health_condition
-      const hasHealthCondition = treeColumns.rows.some(col => col.column_name === 'health_condition');
+      console.log("Columnas disponibles en trees:", treeColumns.rows.map(r => r.column_name).join(', '));
+      
+      // Verificamos si existe la columna health_condition o estado
+      const healthColumnName = treeColumns.rows.find(col => 
+        col.column_name === 'health_condition' || 
+        col.column_name === 'estado' || 
+        col.column_name === 'health' || 
+        col.column_name === 'condition'
+      )?.column_name;
       
       // Construimos la consulta según los campos disponibles
       let treeQuery;
-      if (hasHealthCondition) {
+      if (healthColumnName) {
         treeQuery = `
           SELECT 
             COUNT(*) as total,
-            COUNT(CASE WHEN health_condition = 'Bueno' THEN 1 END) as good,
-            COUNT(CASE WHEN health_condition = 'Regular' THEN 1 END) as regular,
-            COUNT(CASE WHEN health_condition = 'Malo' THEN 1 END) as bad,
-            COUNT(CASE WHEN health_condition IS NULL OR health_condition = '' THEN 1 END) as unknown
+            COUNT(CASE WHEN ${healthColumnName} = 'Bueno' THEN 1 END) as good,
+            COUNT(CASE WHEN ${healthColumnName} = 'Regular' THEN 1 END) as regular,
+            COUNT(CASE WHEN ${healthColumnName} = 'Malo' THEN 1 END) as bad,
+            COUNT(CASE WHEN ${healthColumnName} IS NULL OR ${healthColumnName} = '' THEN 1 END) as unknown
           FROM trees
           WHERE park_id = $1
         `;
@@ -232,6 +345,7 @@ export async function getParkByIdDirectly(parkId: number) {
         `;
       }
       
+      console.log("Consulta de árboles generada:", treeQuery);
       const treeStatsResult = await pool.query(treeQuery, [parkId]);
       
       console.log("Estadísticas de árboles obtenidas:", treeStatsResult.rows[0]?.total || 0);
