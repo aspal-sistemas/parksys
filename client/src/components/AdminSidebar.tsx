@@ -143,6 +143,7 @@ const AdminSidebar: React.FC = () => {
         location.startsWith('/admin/incidents')) return ['operations'];
     if (location.startsWith('/admin/volunteers')) return ['volunteers'];
     if (location.startsWith('/admin/finance')) return ['finance'];
+    if (location.startsWith('/admin/events')) return ['events']; // Nueva sección principal de eventos
     if (location.startsWith('/admin/marketing')) return ['marketing'];
     if (location.startsWith('/admin/concessions')) return ['concessions'];
     if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions')) return ['users'];
@@ -531,18 +532,40 @@ const AdminSidebar: React.FC = () => {
             </NavItem>
           </ModuleNav>
           
+          {/* Menú principal de Eventos (movido desde Marketing) */}
+          <ModuleNav 
+            title="Eventos" 
+            icon={<CalendarDays className="h-5 w-5" />}
+            value="events"
+          >
+            <NavItem 
+              href="/admin/events" 
+              icon={<ListFilter className="h-5 w-5" />}
+              active={location.startsWith('/admin/events') && !location.startsWith('/admin/events/new')}
+            >
+              Listado
+            </NavItem>
+            <NavItem 
+              href="/admin/events/new" 
+              icon={<FileEdit className="h-5 w-5" />}
+              active={location.startsWith('/admin/events/new')}
+            >
+              Nuevo Evento
+            </NavItem>
+            <NavItem 
+              href="/admin/events/calendar" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/events/calendar')}
+            >
+              Calendario
+            </NavItem>
+          </ModuleNav>
+          
           <ModuleNav 
             title="Marketing" 
             icon={<Megaphone className="h-5 w-5" />}
             value="marketing"
           >
-            <NavItem 
-              href="/admin/marketing/events" 
-              icon={<CalendarDays className="h-5 w-5" />}
-              active={location.startsWith('/admin/marketing/events')}
-            >
-              Eventos
-            </NavItem>
             <NavItem 
               href="/admin/marketing/sponsors" 
               icon={<Handshake className="h-5 w-5" />}
