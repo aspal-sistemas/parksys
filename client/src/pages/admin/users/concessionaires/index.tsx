@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -478,6 +479,7 @@ export default function ConcessionairesPage() {
                           <TableCell>{concessionaire.concessionaireProfile?.legalRepresentative || "-"}</TableCell>
                           <TableCell>{renderStatus(concessionaire.concessionaireProfile?.status || "activo")}</TableCell>
                           <TableCell className="text-right">
+                            <div className="flex space-x-2">
                             <Button 
                               variant="ghost" 
                               size="sm"
@@ -486,6 +488,17 @@ export default function ConcessionairesPage() {
                               <Edit className="h-4 w-4 mr-1" />
                               Editar
                             </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              asChild
+                            >
+                              <a href={`/admin/users/concessionaires/${concessionaire.id}/documents`}>
+                                <FileText className="h-4 w-4 mr-1" />
+                                Documentos
+                              </a>
+                            </Button>
+                          </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -505,16 +518,71 @@ export default function ConcessionairesPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <FileUp className="h-10 w-10 text-blue-500 mx-auto mb-2" />
-                  <p className="text-lg font-medium">Módulo de Documentación</p>
-                  <p className="text-muted-foreground mb-4">
-                    Aquí podrás cargar y verificar documentos como RFC, identificaciones, actas constitutivas y más.
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Selecciona un concesionario en la pestaña de Listado para gestionar sus documentos.
-                  </p>
-                </div>
+                {isLoadingConcessionaires ? (
+                  <p className="text-center py-4">Cargando concesionarios...</p>
+                ) : filteredConcessionaires.length === 0 ? (
+                  <div className="text-center py-8">
+                    <AlertTriangle className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
+                    <p className="text-lg font-medium">No hay concesionarios registrados</p>
+                    <p className="text-muted-foreground">
+                      {searchTerm ? "No se encontraron resultados para tu búsqueda" : "Registra el primer concesionario haciendo clic en 'Nuevo Concesionario'"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="relative w-64 mb-4">
+                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Buscar por nombre o RFC"
+                        className="pl-8"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredConcessionaires.map((concessionaire: any) => (
+                        <Card key={concessionaire.id} className="overflow-hidden">
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center space-x-4">
+                              <Avatar className="h-10 w-10">
+                                <AvatarFallback>{concessionaire.fullName?.substring(0, 2).toUpperCase() || "CN"}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <CardTitle className="text-base">{concessionaire.fullName}</CardTitle>
+                                <CardDescription>{concessionaire.concessionaireProfile?.rfc || "Sin RFC"}</CardDescription>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <Badge className={
+                                  concessionaire.concessionaireProfile?.status === "activo" ? "bg-green-500" : 
+                                  concessionaire.concessionaireProfile?.status === "inactivo" ? "bg-gray-500" : 
+                                  "bg-red-500"
+                                }>
+                                  {concessionaire.concessionaireProfile?.status === "activo" ? "Activo" :
+                                  concessionaire.concessionaireProfile?.status === "inactivo" ? "Inactivo" :
+                                  "Suspendido"}
+                                </Badge>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                              >
+                                <a href={`/admin/users/concessionaires/${concessionaire.id}/documents`}>
+                                  <FileText className="h-4 w-4 mr-1" />
+                                  Ver Documentos
+                                </a>
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
