@@ -219,14 +219,11 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   // Usar la implementación de inventario adaptada a la estructura real de la tabla
   apiRouter.get("/trees", getTreeInventory);
   
-  // NOTA: Esta ruta se ha movido a tree_maintenance_routes.ts para evitar duplicidad
-  // Endpoint para obtener los mantenimientos de un árbol específico
-  /*
+  // Redirigir peticiones de mantenimiento por árbol a la ruta centralizada
   apiRouter.get("/trees/:id/maintenances", async (req: Request, res: Response) => {
-    // Ruta comentada para evitar conflictos, ahora está en tree_maintenance_routes.ts
+    // Redirigimos a la ruta central con el parámetro treeId
     res.redirect(307, `/api/trees/maintenances?treeId=${req.params.id}`);
   });
-  */
   
   // Endpoint para crear un nuevo mantenimiento
   apiRouter.post("/trees/:id/maintenances", isAuthenticated, async (req: Request, res: Response) => {

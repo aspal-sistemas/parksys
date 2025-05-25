@@ -25,76 +25,118 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
   // Obtener todos los mantenimientos de árboles (con información detallada de cada árbol)
   apiRouter.get("/trees/maintenances", async (req: Request, res: Response) => {
     try {
-      // Verificar si hay un parámetro de ID de árbol específico
-      const treeId = req.query.treeId ? parseInt(req.query.treeId as string) : null;
-
-      // Construir la consulta base
-      let queryStr = `
-        SELECT 
-          tm.id,
-          tm.tree_id,
-          tm.maintenance_type,
-          tm.maintenance_date,
-          tm.performed_by,
-          tm.notes,
-          tm.created_at,
-          t.species_id,
-          p.id AS park_id,
-          p.name AS park_name,
-          ts.common_name AS species_name,
-          ts.scientific_name,
-          u.username AS performed_by_username,
-          u.full_name AS performed_by_name
-        FROM 
-          tree_maintenances tm
-        LEFT JOIN 
-          trees t ON tm.tree_id = t.id
-        LEFT JOIN 
-          parks p ON t.park_id = p.id
-        LEFT JOIN 
-          tree_species ts ON t.species_id = ts.id
-        LEFT JOIN
-          users u ON tm.performed_by = u.id
-      `;
+      // Verificamos si hay datos de mantenimiento
+      const checkQuery = await db.execute(sql`
+        SELECT COUNT(*) as count FROM tree_maintenances
+      `);
       
-      // Añadir filtro por árbol si se proporciona
-      if (treeId && !isNaN(treeId)) {
-        queryStr += `WHERE tm.tree_id = ${treeId} `;
+      const totalCount = checkQuery.rows && checkQuery.rows[0] ? parseInt(String(checkQuery.rows[0].count)) : 0;
+      
+      if (totalCount === 0) {
+        return res.status(200).json({ data: [] });
       }
       
-      // Ordenar por fecha
-      queryStr += `ORDER BY tm.maintenance_date DESC`;
+      // Verificar si hay un parámetro de ID de árbol específico
+      const treeId = req.query.treeId ? parseInt(req.query.treeId as string) : null;
       
-      // Ejecutar la consulta
-      const result = await db.execute(sql.raw(queryStr));
+      // Si hay registros, procedemos con la consulta principal
+      let result;
       
-      if (!result.rows || result.rows.length === 0) {
+      if (treeId && !isNaN(treeId)) {
+        // Consulta filtrada por ID de árbol
+        result = await db.execute(sql`
+          SELECT 
+            tm.id,
+            tm.tree_id,
+            tm.maintenance_type,
+            tm.maintenance_date,
+            tm.performed_by,
+            tm.notes,
+            tm.created_at,
+            t.species_id,
+            p.id AS park_id,
+            p.name AS park_name,
+            ts.common_name AS species_name,
+            ts.scientific_name,
+            u.username AS performed_by_username,
+            u.full_name AS performed_by_name
+          FROM 
+            tree_maintenances tm
+          LEFT JOIN 
+            trees t ON tm.tree_id = t.id
+          LEFT JOIN 
+            parks p ON t.park_id = p.id
+          LEFT JOIN 
+            tree_species ts ON t.species_id = ts.id
+          LEFT JOIN
+            users u ON tm.performed_by = u.id
+          WHERE
+            tm.tree_id = ${treeId}
+          ORDER BY 
+            tm.maintenance_date DESC
+        `);
+      } else {
+        // Consulta sin filtro por ID
+        result = await db.execute(sql`
+          SELECT 
+            tm.id,
+            tm.tree_id,
+            tm.maintenance_type,
+            tm.maintenance_date,
+            tm.performed_by,
+            tm.notes,
+            tm.created_at,
+            t.species_id,
+            p.id AS park_id,
+            p.name AS park_name,
+            ts.common_name AS species_name,
+            ts.scientific_name,
+            u.username AS performed_by_username,
+            u.full_name AS performed_by_name
+          FROM 
+            tree_maintenances tm
+          LEFT JOIN 
+            trees t ON tm.tree_id = t.id
+          LEFT JOIN 
+            parks p ON t.park_id = p.id
+          LEFT JOIN 
+            tree_species ts ON t.species_id = ts.id
+          LEFT JOIN
+            users u ON tm.performed_by = u.id
+          ORDER BY 
+            tm.maintenance_date DESC
+        `);
+      }
+      
+      if (!result || !result.rows || result.rows.length === 0) {
         return res.status(200).json({ data: [] });
       }
 
-      // Procesar los resultados
+          // Procesar los resultados
       const formattedMaintenances = [];
       
-      for (const m of result.rows) {
-        // Asegurar que tree_id sea tratado como número o usar 0 si es nulo
-        const treeIdNum = m.tree_id ? parseInt(String(m.tree_id)) : 0;
-        
-        formattedMaintenances.push({
-          id: m.id,
-          treeId: treeIdNum,
-          treeCode: `ARB-${treeIdNum.toString().padStart(5, '0')}`,
-          maintenanceType: m.maintenance_type || 'Desconocido',
-          maintenanceDate: m.maintenance_date,
-          performedBy: m.performed_by,
-          performedByName: m.performed_by_name || m.performed_by_username || `Usuario ${m.performed_by || ''}`,
-          notes: m.notes || '',
-          createdAt: m.created_at,
-          parkId: m.park_id,
-          parkName: m.park_name || 'Desconocido',
-          speciesId: m.species_id,
-          speciesName: m.species_name || 'Desconocida',
-          scientificName: m.scientific_name || ''
-        });
+      if (result && result.rows) {
+        for (const m of result.rows) {
+          // Asegurar que tree_id sea tratado como número o usar 0 si es nulo
+          const treeIdNum = m.tree_id ? parseInt(String(m.tree_id)) : 0;
+          
+          formattedMaintenances.push({
+            id: m.id,
+            treeId: treeIdNum,
+            treeCode: `ARB-${treeIdNum.toString().padStart(5, '0')}`,
+            maintenanceType: m.maintenance_type || 'Desconocido',
+            maintenanceDate: m.maintenance_date,
+            performedBy: m.performed_by,
+            performedByName: m.performed_by_name || m.performed_by_username || `Usuario ${m.performed_by || ''}`,
+            notes: m.notes || '',
+            createdAt: m.created_at,
+            parkId: m.park_id,
+            parkName: m.park_name || 'Desconocido',
+            speciesId: m.species_id,
+            speciesName: m.species_name || 'Desconocida',
+            scientificName: m.scientific_name || ''
+          });
+        }
       }
       
       // Devolver los resultados formateados
