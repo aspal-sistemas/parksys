@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
+import AdminLayout from "@/components/AdminLayout";
 import { 
   AlertTriangle, 
   Plus, 
@@ -293,7 +294,7 @@ export default function ConcessionTypeCatalog() {
   };
 
   return (
-    <>
+    <AdminLayout>
       <Helmet>
         <title>Catálogo de Concesiones | ParquesMX</title>
         <meta 
@@ -687,6 +688,6 @@ export default function ConcessionTypeCatalog() {
           </Form>
         </DialogContent>
       </Dialog>
-    </>
+    </AdminLayout>
   );
 }
