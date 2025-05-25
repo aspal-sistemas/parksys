@@ -350,12 +350,49 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
   apiRouter.get("/assets/:id/maintenances", async (req: Request, res: Response) => {
     try {
       const assetId = parseInt(req.params.id);
-      const asset = await storage.getAsset(assetId);
-      if (!asset) {
+      if (isNaN(assetId)) {
+        console.error(`ID de activo inválido: ${req.params.id}`);
+        return res.status(400).json({ message: "ID de activo inválido" });
+      }
+
+      // Importar la conexión a la BD desde el módulo db.ts
+      const { pool } = await import('./db');
+      
+      // Verificar que el activo existe
+      const assetResult = await pool.query("SELECT * FROM assets WHERE id = $1", [assetId]);
+      if (assetResult.rows.length === 0) {
         return res.status(404).json({ message: "Activo no encontrado" });
       }
       
-      const maintenances = await storage.getAssetMaintenances(assetId);
+      // Consultar los mantenimientos del activo
+      const maintenanceResult = await pool.query(
+        `SELECT am.*, u.username as performed_by_name 
+         FROM asset_maintenances am
+         LEFT JOIN users u ON am.performed_by::integer = u.id
+         WHERE am.asset_id = $1::integer
+         ORDER BY am.date DESC`,
+        [assetId]
+      );
+      
+      // Transformar a formato para el frontend
+      const maintenances = maintenanceResult.rows.map(m => ({
+        id: m.id,
+        assetId: m.asset_id,
+        date: m.date,
+        maintenanceType: m.maintenance_type,
+        description: m.description,
+        status: m.status || 'completed',
+        performedBy: m.performed_by,
+        performedByName: m.performed_by_name,
+        notes: m.notes,
+        estimatedCost: m.estimated_cost,
+        actualCost: m.actual_cost,
+        nextMaintenanceDate: m.next_maintenance_date,
+        photos: m.photos || [],
+        documents: m.documents || [],
+        createdAt: m.created_at
+      }));
+      
       res.json(maintenances);
     } catch (error) {
       console.error(`Error al obtener mantenimientos del activo ${req.params.id}:`, error);
@@ -366,41 +403,121 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
   apiRouter.post("/assets/:id/maintenances", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const assetId = parseInt(req.params.id);
-      const asset = await storage.getAsset(assetId);
-      if (!asset) {
+      if (isNaN(assetId)) {
+        console.error(`ID de activo inválido: ${req.params.id}`);
+        return res.status(400).json({ message: "ID de activo inválido" });
+      }
+
+      // Importar la conexión a la BD desde el módulo db.ts
+      const { pool } = await import('./db');
+      
+      // Verificar que el activo existe
+      const assetResult = await pool.query("SELECT * FROM assets WHERE id = $1", [assetId]);
+      if (assetResult.rows.length === 0) {
         return res.status(404).json({ message: "Activo no encontrado" });
       }
-      
-      const parsedMaintenance = insertAssetMaintenanceSchema.safeParse({
-        ...req.body,
-        assetId
-      });
-      
-      if (!parsedMaintenance.success) {
-        return res.status(400).json({ message: "Datos de mantenimiento inválidos", errors: parsedMaintenance.error.format() });
+
+      // Validar los datos de entrada (se podría usar Zod aquí, pero para simplificar usamos validación manual)
+      const { 
+        date, 
+        maintenanceType, 
+        description, 
+        performedBy,
+        notes, 
+        nextMaintenanceDate,
+        estimatedCost,
+        actualCost,
+        status,
+        photos,
+        documents
+      } = req.body;
+
+      if (!date || !maintenanceType || !description) {
+        return res.status(400).json({ 
+          message: "Datos de mantenimiento inválidos", 
+          errors: {
+            date: !date ? "La fecha es requerida" : null,
+            maintenanceType: !maintenanceType ? "El tipo de mantenimiento es requerido" : null,
+            description: !description ? "La descripción es requerida" : null
+          }
+        });
       }
+
+      // Formatear la fecha correctamente para PostgreSQL
+      const formattedDate = new Date(date).toISOString();
+      const formattedNextDate = nextMaintenanceDate ? new Date(nextMaintenanceDate).toISOString() : null;
       
-      const maintenance = await storage.createAssetMaintenance(parsedMaintenance.data);
+      // Insertar el nuevo mantenimiento
+      const maintenanceResult = await pool.query(
+        `INSERT INTO asset_maintenances 
+          (asset_id, date, maintenance_type, description, performed_by, notes, 
+           next_maintenance_date, estimated_cost, actual_cost, status, photos, documents, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
+         RETURNING *`,
+        [
+          assetId, 
+          formattedDate, 
+          maintenanceType, 
+          description, 
+          performedBy || (req.user as any)?.id || 1, 
+          notes || null,
+          formattedNextDate,
+          estimatedCost || null,
+          actualCost || null,
+          status || 'completed',
+          photos || null,
+          documents || null
+        ]
+      );
+      
+      const maintenance = maintenanceResult.rows[0];
       
       // Actualizar fecha del último mantenimiento y próximo mantenimiento en el activo
-      await storage.updateAsset(assetId, {
-        lastMaintenanceDate: new Date(parsedMaintenance.data.date),
-        nextMaintenanceDate: parsedMaintenance.data.nextMaintenanceDate || null
-      });
+      await pool.query(
+        `UPDATE assets 
+         SET last_maintenance_date = $1, 
+             next_maintenance_date = $2,
+             updated_at = NOW()
+         WHERE id = $3`,
+        [formattedDate, formattedNextDate, assetId]
+      );
       
       // Crear entrada en el historial
-      await storage.createAssetHistoryEntry({
-        assetId,
-        changeType: "maintenance",
-        date: new Date(),
-        description: `Mantenimiento ${parsedMaintenance.data.maintenanceType}`,
-        changedBy: (req.user as any)?.id || 1, // ID del usuario o admin por defecto
-        previousValue: null,
-        newValue: maintenance,
-        notes: parsedMaintenance.data.description
-      });
+      await pool.query(
+        `INSERT INTO asset_history 
+          (asset_id, change_type, date, description, changed_by, previous_value, new_value, notes, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
+        [
+          assetId,
+          'maintenance',
+          new Date().toISOString(),
+          `Mantenimiento ${maintenanceType}`,
+          (req.user as any)?.id || 1,
+          null,
+          JSON.stringify(maintenance),
+          description
+        ]
+      );
       
-      res.status(201).json(maintenance);
+      // Transformar a formato para el frontend
+      const transformedMaintenance = {
+        id: maintenance.id,
+        assetId: maintenance.asset_id,
+        date: maintenance.date,
+        maintenanceType: maintenance.maintenance_type,
+        description: maintenance.description,
+        status: maintenance.status || 'completed',
+        performedBy: maintenance.performed_by,
+        notes: maintenance.notes,
+        estimatedCost: maintenance.estimated_cost,
+        actualCost: maintenance.actual_cost,
+        nextMaintenanceDate: maintenance.next_maintenance_date,
+        photos: maintenance.photos || [],
+        documents: maintenance.documents || [],
+        createdAt: maintenance.created_at
+      };
+      
+      res.status(201).json(transformedMaintenance);
     } catch (error) {
       console.error(`Error al crear mantenimiento para el activo ${req.params.id}:`, error);
       res.status(500).json({ message: "Error al crear mantenimiento" });
@@ -411,12 +528,45 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
   apiRouter.get("/assets/:id/history", async (req: Request, res: Response) => {
     try {
       const assetId = parseInt(req.params.id);
-      const asset = await storage.getAsset(assetId);
-      if (!asset) {
+      if (isNaN(assetId)) {
+        console.error(`ID de activo inválido: ${req.params.id}`);
+        return res.status(400).json({ message: "ID de activo inválido" });
+      }
+
+      // Importar la conexión a la BD desde el módulo db.ts
+      const { pool } = await import('./db');
+      
+      // Verificar que el activo existe
+      const assetResult = await pool.query("SELECT * FROM assets WHERE id = $1", [assetId]);
+      if (assetResult.rows.length === 0) {
         return res.status(404).json({ message: "Activo no encontrado" });
       }
       
-      const history = await storage.getAssetHistory(assetId);
+      // Consultar el historial del activo
+      const historyResult = await pool.query(
+        `SELECT ah.*, u.username as changed_by_name 
+         FROM asset_history ah
+         LEFT JOIN users u ON ah.changed_by::integer = u.id
+         WHERE ah.asset_id = $1::integer
+         ORDER BY ah.date DESC`,
+        [assetId]
+      );
+      
+      // Transformar a formato para el frontend
+      const history = historyResult.rows.map(h => ({
+        id: h.id,
+        assetId: h.asset_id,
+        date: h.date,
+        changeType: h.change_type,
+        description: h.description,
+        changedBy: h.changed_by,
+        changedByName: h.changed_by_name,
+        previousValue: h.previous_value,
+        newValue: h.new_value,
+        notes: h.notes,
+        createdAt: h.created_at
+      }));
+      
       res.json(history);
     } catch (error) {
       console.error(`Error al obtener historial del activo ${req.params.id}:`, error);
