@@ -219,46 +219,14 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   // Usar la implementación de inventario adaptada a la estructura real de la tabla
   apiRouter.get("/trees", getTreeInventory);
   
+  // NOTA: Esta ruta se ha movido a tree_maintenance_routes.ts para evitar duplicidad
   // Endpoint para obtener los mantenimientos de un árbol específico
+  /*
   apiRouter.get("/trees/:id/maintenances", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      
-      // Verificar que el árbol existe
-      const treeResult = await db.execute(sql`
-        SELECT * FROM trees WHERE id = ${Number(id)}
-      `);
-      
-      if (!treeResult.rows || treeResult.rows.length === 0) {
-        return res.status(404).json({ error: "Árbol no encontrado" });
-      }
-      
-      // Obtener los mantenimientos
-      const maintenancesResult = await db.execute(sql`
-        SELECT * FROM tree_maintenances 
-        WHERE tree_id = ${Number(id)}
-        ORDER BY maintenance_date DESC
-      `);
-      
-      // Formatear los resultados
-      const maintenances = maintenancesResult.rows.map(m => ({
-        id: m.id,
-        treeId: m.tree_id,
-        maintenanceType: m.maintenance_type,
-        maintenanceDate: m.maintenance_date,
-        performedBy: m.performed_by,
-        performedByName: m.full_name || m.username || 'Usuario',
-        notes: m.notes,
-        createdAt: m.created_at,
-        updatedAt: m.updated_at
-      }));
-      
-      res.json({ data: maintenances });
-    } catch (error) {
-      console.error("Error fetching tree maintenances:", error);
-      res.status(500).json({ error: "Error al obtener mantenimientos del árbol" });
-    }
+    // Ruta comentada para evitar conflictos, ahora está en tree_maintenance_routes.ts
+    res.redirect(307, `/api/trees/maintenances?treeId=${req.params.id}`);
   });
+  */
   
   // Endpoint para crear un nuevo mantenimiento
   apiRouter.post("/trees/:id/maintenances", isAuthenticated, async (req: Request, res: Response) => {

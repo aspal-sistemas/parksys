@@ -23,10 +23,13 @@ import { sql } from 'drizzle-orm';
  */
 export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
   // Obtener todos los mantenimientos de árboles (con información detallada de cada árbol)
-  apiRouter.get("/trees/maintenances", async (_req: Request, res: Response) => {
+  apiRouter.get("/trees/maintenances", async (req: Request, res: Response) => {
     try {
-      // Ejecutar la consulta SQL para obtener todos los mantenimientos con joins a tablas relacionadas
-      const query = sql`
+      // Verificar si hay un parámetro de ID de árbol específico
+      const treeId = req.query.treeId ? parseInt(req.query.treeId as string) : null;
+
+      // Construir la consulta base
+      let queryStr = `
         SELECT 
           tm.id,
           tm.tree_id,
@@ -52,11 +55,18 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
           tree_species ts ON t.species_id = ts.id
         LEFT JOIN
           users u ON tm.performed_by = u.id
-        ORDER BY 
-          tm.maintenance_date DESC
       `;
       
-      const result = await db.execute(query);
+      // Añadir filtro por árbol si se proporciona
+      if (treeId && !isNaN(treeId)) {
+        queryStr += `WHERE tm.tree_id = ${treeId} `;
+      }
+      
+      // Ordenar por fecha
+      queryStr += `ORDER BY tm.maintenance_date DESC`;
+      
+      // Ejecutar la consulta
+      const result = await db.execute(sql.raw(queryStr));
       
       if (!result.rows || result.rows.length === 0) {
         return res.status(200).json({ data: [] });
