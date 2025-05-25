@@ -219,10 +219,65 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   // Usar la implementación de inventario adaptada a la estructura real de la tabla
   apiRouter.get("/trees", getTreeInventory);
   
-  // Redirigir peticiones de mantenimiento por árbol a la ruta centralizada
+  // Endpoint para obtener los mantenimientos de un árbol específico
   apiRouter.get("/trees/:id/maintenances", async (req: Request, res: Response) => {
-    // Redirigimos a la ruta central con el parámetro treeId
-    res.redirect(307, `/api/trees/maintenances?treeId=${req.params.id}`);
+    try {
+      const treeId = Number(req.params.id);
+      
+      if (isNaN(treeId)) {
+        return res.status(400).json({ error: "ID de árbol no válido" });
+      }
+      
+      // Verificar que el árbol existe
+      const treeExists = await db.select({ id: trees.id }).from(trees).where(eq(trees.id, treeId));
+      
+      if (treeExists.length === 0) {
+        return res.status(404).json({ error: "Árbol no encontrado" });
+      }
+      
+      // Consulta directa SQL para evitar problemas de columnas
+      const result = await db.execute(sql`
+        SELECT 
+          tm.id, 
+          tm.tree_id, 
+          tm.maintenance_type, 
+          tm.maintenance_date, 
+          tm.description,
+          tm.performed_by, 
+          tm.notes, 
+          tm.next_maintenance_date,
+          tm.created_at,
+          u.username AS performed_by_username,
+          u.full_name AS performed_by_name
+        FROM 
+          tree_maintenances tm
+        LEFT JOIN 
+          users u ON tm.performed_by = u.id
+        WHERE 
+          tm.tree_id = ${treeId}
+        ORDER BY 
+          tm.maintenance_date DESC
+      `);
+      
+      // Procesar resultados
+      const maintenances = result.rows.map(m => ({
+        id: m.id,
+        treeId: m.tree_id,
+        maintenanceType: m.maintenance_type,
+        maintenanceDate: m.maintenance_date,
+        description: m.description,
+        performedBy: m.performed_by,
+        performedByName: m.performed_by_name || m.performed_by_username || 'No asignado',
+        notes: m.notes || '',
+        nextMaintenanceDate: m.next_maintenance_date,
+        createdAt: m.created_at
+      }));
+      
+      return res.status(200).json({ data: maintenances });
+    } catch (error) {
+      console.error("Error al obtener registros de mantenimiento:", error);
+      return res.status(500).json({ error: "Error al obtener registros de mantenimiento" });
+    }
   });
   
   // Endpoint para crear un nuevo mantenimiento
