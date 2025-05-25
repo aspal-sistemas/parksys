@@ -318,6 +318,13 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/trees/inventory/[id]/edit/index')))}
           </Suspense>
         </Route>
+        
+        {/* Ruta para Reportes de Árboles */}
+        <Route path="/admin/trees/reports">
+          <Suspense fallback={<div className="p-8 text-center">Cargando reportes de árboles...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/reports/index')))}
+          </Suspense>
+        </Route>
 
         {/* Rutas para Gestión Técnica de Árboles */}
         <Route path="/admin/trees/technical">
