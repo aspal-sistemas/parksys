@@ -221,7 +221,7 @@ export default function ConcessionairesPage() {
               Administra los concesionarios autorizados para operar en los parques
             </p>
           </div>
-          <Button className="gap-2" onClick={() => setShowNewConcessionaireDialog(true)}>
+          <Button className="gap-2" onClick={() => window.location.href = "/admin/users"}>
             <Plus size={16} />
             Nuevo Concesionario
           </Button>
