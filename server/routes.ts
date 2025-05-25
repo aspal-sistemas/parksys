@@ -107,6 +107,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Comentamos esta línea para evitar conflictos con las rutas en tree_routes.ts
   // registerTreeInventoryRoutes(app, apiRouter, isAuthenticated);
   
+  // Registramos las rutas para categorías de incidentes
+  try {
+    const { registerIncidentCategoriesRoutes } = await import("./incident_categories_routes");
+    registerIncidentCategoriesRoutes(app, apiRouter);
+    console.log("Rutas de categorías de incidentes registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de categorías de incidentes:", error);
+  }
+  
+  // Inicializamos tablas de categorías de incidentes
+  try {
+    const { createIncidentCategoriesTables } = await import("./create_incident_categories_tables");
+    await createIncidentCategoriesTables();
+    console.log("Tablas de categorías de incidentes inicializadas correctamente");
+  } catch (error) {
+    console.error("Error al inicializar tablas de categorías de incidentes:", error);
+  }
+  
   // Registramos las rutas de estadísticas de árboles
   registerTreeStatsRoutes(app, apiRouter);
   
