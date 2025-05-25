@@ -45,9 +45,9 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
     <Card className="park-card overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col">
       {/* Park image */}
       <div className="w-full h-40 overflow-hidden relative">
-        {park.primaryImage ? (
+        {park.primaryImage || park.mainImageUrl ? (
           <img 
-            src={park.primaryImage} 
+            src={park.primaryImage || park.mainImageUrl} 
             alt={park.name} 
             className="w-full h-full object-cover"
             onError={(e) => {
