@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileImage } from 'lucide-react';
-import AmenityIcon from '@/components/AmenityIcon';
+import AmenityIcon from '@/components/ui/amenity-icon';
 
 interface ParkCardProps {
   park: ExtendedPark;
@@ -79,7 +79,7 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
         <div className="flex flex-wrap gap-2 mt-2 mb-auto">
           {park.amenities && park.amenities.slice(0, 3).map((amenity) => (
             <span key={amenity.id} className="inline-flex items-center text-xs bg-gray-100 px-2 py-1 rounded text-gray-800">
-              <AmenityIcon name={amenity.icon} className="h-3 w-3 mr-1" />
+              <AmenityIcon name={amenity.icon || 'default'} className="h-3 w-3 mr-1" />
               {amenity.name}
             </span>
           ))}
