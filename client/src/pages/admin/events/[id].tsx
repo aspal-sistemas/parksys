@@ -34,6 +34,14 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
+import { 
   Calendar,
   CalendarDays, 
   Clock, 
@@ -939,20 +947,126 @@ const EventDetailPage = () => {
           {/* Pestaña de Recursos */}
           <TabsContent value="resources" className="mt-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Recursos Necesarios</CardTitle>
-                <CardDescription>
-                  Gestiona los recursos necesarios para el evento.
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Recursos Necesarios</CardTitle>
+                  <CardDescription>
+                    Gestiona los recursos necesarios para el evento.
+                  </CardDescription>
+                </div>
+                <Button 
+                  onClick={() => {
+                    setIsEditingResource(false);
+                    setCurrentResourceId(null);
+                    setResourceForm({
+                      resourceType: "espacio",
+                      resourceName: "",
+                      quantity: 1,
+                      notes: "",
+                    });
+                    setIsResourceDialogOpen(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Asignar Recurso
+                </Button>
               </CardHeader>
-              <CardContent className="py-8 text-center">
-                <ListChecks className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium mb-2">Próximamente</h3>
-                <p className="text-gray-500 mb-4 max-w-lg mx-auto">
-                  La gestión detallada de recursos estará disponible en una próxima actualización.
-                  Esta funcionalidad permitirá asignar personal, equipamiento y materiales
-                  necesarios para cada evento.
-                </p>
+              <CardContent>
+                {isLoadingResources ? (
+                  <div className="flex justify-center items-center py-8">
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <p className="text-sm text-muted-foreground">Cargando recursos...</p>
+                    </div>
+                  </div>
+                ) : resources && resources.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-3 font-medium">Tipo</th>
+                          <th className="text-left p-3 font-medium">Nombre</th>
+                          <th className="text-left p-3 font-medium">Cantidad</th>
+                          <th className="text-left p-3 font-medium">Estado</th>
+                          <th className="text-left p-3 font-medium">Notas</th>
+                          <th className="text-right p-3 font-medium">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {resources.map((resource) => (
+                          <tr key={resource.id} className="border-b hover:bg-muted/50">
+                            <td className="p-3">
+                              {resourceTypeTranslations[resource.resourceType] || resource.resourceType}
+                            </td>
+                            <td className="p-3 font-medium">{resource.resourceName}</td>
+                            <td className="p-3">{resource.quantity}</td>
+                            <td className="p-3">
+                              <Badge 
+                                variant={
+                                  resource.status === "confirmed" ? "success" : 
+                                  resource.status === "rejected" ? "destructive" : 
+                                  "outline"
+                                }
+                              >
+                                {resourceStatusTranslations[resource.status] || resource.status}
+                              </Badge>
+                            </td>
+                            <td className="p-3">{resource.notes || "-"}</td>
+                            <td className="p-3 text-right">
+                              <div className="flex justify-end items-center gap-2">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => handleEditResource(resource)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                
+                                {resource.status !== "confirmed" ? (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => handleResourceStatusChange(resource.id, "confirmed")}
+                                  >
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                  </Button>
+                                ) : (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => handleResourceStatusChange(resource.id, "pending")}
+                                  >
+                                    <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                                  </Button>
+                                )}
+                                
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => handleDeleteResource(resource.id)}
+                                >
+                                  <Trash className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="py-12 text-center">
+                    <Package className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No hay recursos asignados</h3>
+                    <p className="text-gray-500 mb-4 max-w-lg mx-auto">
+                      Aún no se han asignado recursos a este evento. Haz clic en "Asignar Recurso" para comenzar.
+                    </p>
+                    <p className="text-gray-500 mb-4 max-w-lg mx-auto">
+                      Esta funcionalidad permitirá asignar personal, equipamiento y materiales
+                      necesarios para cada evento.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
