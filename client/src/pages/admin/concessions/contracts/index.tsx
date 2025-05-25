@@ -476,7 +476,7 @@ export default function ConcessionContracts() {
                                 </FormControl>
                                 <SelectContent>
                                   {isLoadingParks ? (
-                                    <SelectItem value="">Cargando parques...</SelectItem>
+                                    <SelectItem value="loading">Cargando parques...</SelectItem>
                                   ) : parks && parks.length > 0 ? (
                                     parks.map((park: any) => (
                                       <SelectItem key={park.id} value={park.id.toString()}>
@@ -484,7 +484,7 @@ export default function ConcessionContracts() {
                                       </SelectItem>
                                     ))
                                   ) : (
-                                    <SelectItem value="">No hay parques disponibles</SelectItem>
+                                    <SelectItem value="empty">No hay parques disponibles</SelectItem>
                                   )}
                                 </SelectContent>
                               </Select>
@@ -511,7 +511,7 @@ export default function ConcessionContracts() {
                                 </FormControl>
                                 <SelectContent>
                                   {isLoadingConcessionaires ? (
-                                    <SelectItem value="">Cargando concesionarios...</SelectItem>
+                                    <SelectItem value="loading">Cargando concesionarios...</SelectItem>
                                   ) : concessionaires && concessionaires.length > 0 ? (
                                     concessionaires.map((concessionaire: any) => (
                                       <SelectItem key={concessionaire.id} value={concessionaire.id.toString()}>
@@ -519,7 +519,7 @@ export default function ConcessionContracts() {
                                       </SelectItem>
                                     ))
                                   ) : (
-                                    <SelectItem value="">No hay concesionarios disponibles</SelectItem>
+                                    <SelectItem value="loading">No hay concesionarios disponibles</SelectItem>
                                   )}
                                 </SelectContent>
                               </Select>
@@ -547,7 +547,7 @@ export default function ConcessionContracts() {
                               </FormControl>
                               <SelectContent>
                                 {isLoadingConcessionTypes ? (
-                                  <SelectItem value="">Cargando tipos de concesiones...</SelectItem>
+                                  <SelectItem value="loading">Cargando tipos de concesiones...</SelectItem>
                                 ) : concessionTypes && concessionTypes.length > 0 ? (
                                   concessionTypes.map((type: any) => (
                                     <SelectItem key={type.id} value={type.id.toString()}>
@@ -555,7 +555,7 @@ export default function ConcessionContracts() {
                                     </SelectItem>
                                   ))
                                 ) : (
-                                  <SelectItem value="">No hay tipos de concesiones disponibles</SelectItem>
+                                  <SelectItem value="loading">No hay tipos de concesiones disponibles</SelectItem>
                                 )}
                               </SelectContent>
                             </Select>
@@ -1165,7 +1165,7 @@ export default function ConcessionContracts() {
                               </FormControl>
                               <SelectContent>
                                 {isLoadingParks ? (
-                                  <SelectItem value="">Cargando parques...</SelectItem>
+                                  <SelectItem value="loading">Cargando parques...</SelectItem>
                                 ) : parks && parks.length > 0 ? (
                                   parks.map((park: any) => (
                                     <SelectItem key={park.id} value={park.id.toString()}>
@@ -1173,7 +1173,7 @@ export default function ConcessionContracts() {
                                     </SelectItem>
                                   ))
                                 ) : (
-                                  <SelectItem value="">No hay parques disponibles</SelectItem>
+                                  <SelectItem value="loading">No hay parques disponibles</SelectItem>
                                 )}
                               </SelectContent>
                             </Select>
@@ -1200,7 +1200,7 @@ export default function ConcessionContracts() {
                               </FormControl>
                               <SelectContent>
                                 {isLoadingConcessionaires ? (
-                                  <SelectItem value="">Cargando concesionarios...</SelectItem>
+                                  <SelectItem value="loading">Cargando concesionarios...</SelectItem>
                                 ) : concessionaires && concessionaires.length > 0 ? (
                                   concessionaires.map((concessionaire: any) => (
                                     <SelectItem key={concessionaire.id} value={concessionaire.id.toString()}>
@@ -1208,7 +1208,7 @@ export default function ConcessionContracts() {
                                     </SelectItem>
                                   ))
                                 ) : (
-                                  <SelectItem value="">No hay concesionarios disponibles</SelectItem>
+                                  <SelectItem value="loading">No hay concesionarios disponibles</SelectItem>
                                 )}
                               </SelectContent>
                             </Select>
@@ -1236,7 +1236,7 @@ export default function ConcessionContracts() {
                             </FormControl>
                             <SelectContent>
                               {isLoadingConcessionTypes ? (
-                                <SelectItem value="">Cargando tipos de concesiones...</SelectItem>
+                                <SelectItem value="loading">Cargando tipos de concesiones...</SelectItem>
                               ) : concessionTypes && concessionTypes.length > 0 ? (
                                 concessionTypes.map((type: any) => (
                                   <SelectItem key={type.id} value={type.id.toString()}>
@@ -1244,7 +1244,7 @@ export default function ConcessionContracts() {
                                   </SelectItem>
                                 ))
                               ) : (
-                                <SelectItem value="">No hay tipos de concesiones disponibles</SelectItem>
+                                <SelectItem value="loading">No hay tipos de concesiones disponibles</SelectItem>
                               )}
                             </SelectContent>
                           </Select>
