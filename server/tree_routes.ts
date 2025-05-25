@@ -26,6 +26,76 @@ import { getTreeInventory } from './tree_inventory_raw';
  * @param isAuthenticated Middleware de autenticación
  */
 export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
+  // Rutas de mantenimiento por árbol
+  apiRouter.get("/trees/:id/maintenances", async (req: Request, res: Response) => {
+    try {
+      const treeId = Number(req.params.id);
+      
+      if (isNaN(treeId)) {
+        return res.status(400).json({ error: "ID de árbol inválido" });
+      }
+      
+      // Verificar que el árbol existe
+      const treeExists = await db.select({ id: trees.id }).from(trees).where(eq(trees.id, treeId));
+      
+      if (treeExists.length === 0) {
+        return res.status(404).json({ error: "Árbol no encontrado" });
+      }
+
+      // Obtener registros de mantenimiento para este árbol
+      const maintenanceRecords = await db.select().from(treeMaintenances)
+        .where(eq(treeMaintenances.treeId, treeId))
+        .orderBy(desc(treeMaintenances.maintenanceDate));
+      
+      res.json({ data: maintenanceRecords });
+    } catch (error) {
+      console.error("Error al obtener registros de mantenimiento:", error);
+      res.status(500).json({ error: "Error al obtener registros de mantenimiento" });
+    }
+  });
+  
+  // Crear nuevo registro de mantenimiento para un árbol
+  apiRouter.post("/trees/:id/maintenances", async (req: Request, res: Response) => {
+    try {
+      const treeId = Number(req.params.id);
+      
+      if (isNaN(treeId)) {
+        return res.status(400).json({ error: "ID de árbol inválido" });
+      }
+      
+      // Verificar que el árbol existe
+      const treeExists = await db.select({ id: trees.id }).from(trees).where(eq(trees.id, treeId));
+      
+      if (treeExists.length === 0) {
+        return res.status(404).json({ error: "Árbol no encontrado" });
+      }
+      
+      // Validar datos de entrada
+      const validatedData = insertTreeMaintenanceSchema.parse({
+        ...req.body,
+        treeId
+      });
+      
+      // Insertar registro de mantenimiento
+      const [newMaintenance] = await db.insert(treeMaintenances)
+        .values(validatedData)
+        .returning();
+      
+      res.status(201).json({ data: newMaintenance });
+    } catch (error) {
+      console.error("Error al crear registro de mantenimiento:", error);
+      
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ 
+          error: "Datos de mantenimiento inválidos", 
+          details: validationError.message 
+        });
+      }
+      
+      res.status(500).json({ error: "Error al crear registro de mantenimiento" });
+    }
+  });
   // Endpoint para cargar árboles de muestra en el inventario
   apiRouter.post("/trees/seed", isAuthenticated, async (_req: Request, res: Response) => {
     try {

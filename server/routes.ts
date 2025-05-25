@@ -17,6 +17,7 @@ import { registerAssetRoutes } from "./asset_routes";
 import { registerMaintenanceRoutes } from "./maintenance_routes";
 import { registerAssetAssignmentRoutes } from "./asset_assignment_routes";
 import { registerTreeRoutes } from "./tree_routes";
+import { registerTreeMaintenanceRoutes } from "./tree_maintenance_routes";
 // Comentamos la importación de tree_inventory_routes para evitar conflictos de rutas
 // import { registerTreeInventoryRoutes } from "./tree_inventory_routes";
 import { registerTreeStatsRoutes } from "./tree_stats_routes";
@@ -100,6 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de arbolado
   registerTreeRoutes(app, apiRouter, isAuthenticated);
+  registerTreeMaintenanceRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de inventario de árboles
   // Comentamos esta línea para evitar conflictos con las rutas en tree_routes.ts
