@@ -555,7 +555,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
       // También agregamos una entrada en el historial del activo
       await pool.query(
         `INSERT INTO asset_history 
-          (asset_id, date, action, description, changed_by)
+          (asset_id, date, change_type, description, changed_by)
          VALUES ($1, NOW(), 'maintenance_cancelled', $2, $3)`,
         [
           assetId,
