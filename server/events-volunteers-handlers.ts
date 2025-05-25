@@ -210,18 +210,79 @@ export async function removeVolunteerFromEvent(req: Request, res: Response) {
 
 /**
  * Obtiene los voluntarios disponibles para asignar a eventos
+ * Soporta filtrado por habilidades (skills) y disponibilidad (availability)
  */
 export async function getAvailableVolunteers(req: Request, res: Response) {
   try {
-    const volunteerList = await db.query.volunteers.findMany({
+    const { skills, availability, eventId } = req.query;
+    
+    // Consulta base para voluntarios activos
+    let volunteerList = await db.query.volunteers.findMany({
       where: eq(volunteers.status, "active"),
-      orderBy: (volunteers) => [volunteers.fullName]
+      orderBy: [volunteers.fullName]
     });
+
+    // Si se proporciona eventId, excluir voluntarios ya asignados a ese evento
+    if (eventId && !isNaN(parseInt(eventId as string))) {
+      const eventIdNum = parseInt(eventId as string);
+      
+      // Obtener IDs de voluntarios ya asignados
+      const assignedVolunteers = await db.query.eventStaff.findMany({
+        where: eq(eventStaff.eventId, eventIdNum),
+        columns: { volunteerId: true }
+      });
+      
+      const assignedIds = new Set(assignedVolunteers.map(v => v.volunteerId).filter(id => id !== null));
+      
+      // Filtrar voluntarios que ya están asignados
+      volunteerList = volunteerList.filter(v => !assignedIds.has(v.id));
+    }
+
+    // Filtrar por habilidades si se proporciona
+    if (skills) {
+      const skillsArray = (skills as string).toLowerCase().split(',');
+      volunteerList = volunteerList.filter(volunteer => {
+        if (!volunteer.skills) return false;
+        
+        // Convertir campo de habilidades a array si viene como string
+        const volunteerSkills = typeof volunteer.skills === 'string' 
+          ? volunteer.skills.toLowerCase().split(',') 
+          : (volunteer.skills as string[]).map(s => s.toLowerCase());
+        
+        // Verificar si el voluntario tiene al menos una de las habilidades buscadas
+        return skillsArray.some(skill => 
+          volunteerSkills.some(vSkill => vSkill.trim().includes(skill.trim()))
+        );
+      });
+    }
+
+    // Filtrar por disponibilidad si se proporciona
+    if (availability) {
+      const availDays = (availability as string).toLowerCase().split(',');
+      volunteerList = volunteerList.filter(volunteer => {
+        if (!volunteer.availability) return false;
+        
+        // Convertir campo de disponibilidad a array si viene como string
+        const volunteerAvail = typeof volunteer.availability === 'string' 
+          ? volunteer.availability.toLowerCase().split(',') 
+          : (volunteer.availability as string[]).map(a => a.toLowerCase());
+        
+        // Verificar si el voluntario está disponible en al menos uno de los días buscados
+        return availDays.some(day => 
+          volunteerAvail.some(vDay => vDay.trim().includes(day.trim()))
+        );
+      });
+    }
 
     // Simplificar la respuesta para el frontend
     const simplifiedList = volunteerList.map(volunteer => ({
       id: volunteer.id,
-      name: volunteer.fullName
+      name: volunteer.fullName,
+      email: volunteer.email,
+      phone: volunteer.phone,
+      skills: volunteer.skills,
+      availability: volunteer.availability,
+      experience: volunteer.experience
     }));
 
     res.json(simplifiedList);
