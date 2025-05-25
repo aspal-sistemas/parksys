@@ -1485,6 +1485,237 @@ const EventDetailPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Pestaña de Evaluaciones */}
+          <TabsContent value="evaluations" className="mt-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Evaluaciones del Evento</CardTitle>
+                  <CardDescription>
+                    Gestiona las evaluaciones y métricas de desempeño del evento.
+                  </CardDescription>
+                </div>
+                <Button onClick={() => {
+                  setIsEditingEvaluation(false);
+                  setCurrentEvaluationId(null);
+                  setEvaluationForm({
+                    evaluationType: "satisfaccion",
+                    score: 5,
+                    comments: "",
+                  });
+                  setIsEvaluationDialogOpen(true);
+                }}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Agregar Evaluación
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {isLoadingEvaluations ? (
+                  <div className="flex justify-center items-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  evaluations && evaluations.length > 0 ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 gap-4">
+                        {evaluations.map((evaluation) => (
+                          <Card key={evaluation.id} className="overflow-hidden">
+                            <div className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                  <Badge variant="outline" className="font-normal">
+                                    {evaluationTypeTranslations[evaluation.evaluationType] || evaluation.evaluationType}
+                                  </Badge>
+                                  <div className="flex items-center">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                      <Star
+                                        key={i}
+                                        className={`h-4 w-4 ${i < evaluation.score ? "text-yellow-500 fill-yellow-500" : "text-gray-300"}`}
+                                      />
+                                    ))}
+                                    <span className="ml-2 text-sm font-medium">{evaluation.score}/5</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEditEvaluation(evaluation)}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteEvaluation(evaluation.id)}
+                                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                              {evaluation.comments && (
+                                <div className="mt-2 text-sm text-gray-600">
+                                  {evaluation.comments}
+                                </div>
+                              )}
+                              <div className="mt-2 text-xs text-gray-400">
+                                {new Date(evaluation.createdAt).toLocaleDateString('es-MX', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                })}
+                                {evaluation.createdBy && ` por ${evaluation.createdBy}`}
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <ClipboardX className="mx-auto h-12 w-12 text-muted-foreground" />
+                      <h3 className="mt-2 text-lg font-medium">Sin evaluaciones</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        No hay evaluaciones registradas para este evento. Agrega una evaluación para comenzar.
+                      </p>
+                    </div>
+                  )
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Pestaña de Voluntarios */}
+          <TabsContent value="volunteers" className="mt-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Voluntarios Asignados</CardTitle>
+                  <CardDescription>
+                    Gestiona los voluntarios que participarán en el evento.
+                  </CardDescription>
+                </div>
+                <Button 
+                  onClick={() => {
+                    setIsEditingVolunteer(false);
+                    setCurrentVolunteerId(null);
+                    setVolunteerForm({
+                      volunteerId: 0,
+                      role: "asistente",
+                      notes: "",
+                    });
+                    setIsVolunteerDialogOpen(true);
+                  }}
+                  disabled={!availableVolunteers || availableVolunteers.length === 0}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Asignar Voluntario
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {isLoadingVolunteers ? (
+                  <div className="flex justify-center items-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  volunteers && volunteers.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nombre</TableHead>
+                          <TableHead>Rol</TableHead>
+                          <TableHead>Estado</TableHead>
+                          <TableHead>Asignado</TableHead>
+                          <TableHead className="text-right">Acciones</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {volunteers.map((volunteer) => (
+                          <TableRow key={volunteer.id}>
+                            <TableCell className="font-medium">{volunteer.name}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {volunteerRoleTranslations[volunteer.role] || volunteer.role}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={
+                                volunteer.status === "confirmado" ? "bg-green-100 text-green-800" :
+                                volunteer.status === "ausente" ? "bg-red-100 text-red-800" :
+                                volunteer.status === "completado" ? "bg-blue-100 text-blue-800" :
+                                "bg-yellow-100 text-yellow-800"
+                              }>
+                                {volunteerStatusTranslations[volunteer.status] || volunteer.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {new Date(volunteer.assignedAt).toLocaleDateString('es-MX', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => handleEditVolunteer(volunteer)}
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Editar asignación</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon"
+                                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                        onClick={() => handleDeleteVolunteer(volunteer.id)}
+                                      >
+                                        <Trash className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Eliminar asignación</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="text-center py-6">
+                      <UserX className="mx-auto h-12 w-12 text-muted-foreground" />
+                      <h3 className="mt-2 text-lg font-medium">Sin voluntarios asignados</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        No hay voluntarios asignados a este evento. Asigna voluntarios para comenzar.
+                      </p>
+                      {(!availableVolunteers || availableVolunteers.length === 0) && (
+                        <p className="mt-4 text-sm text-amber-600">
+                          No hay voluntarios disponibles en el sistema. Primero debes registrar voluntarios.
+                        </p>
+                      )}
+                    </div>
+                  )
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
 
