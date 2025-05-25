@@ -776,7 +776,7 @@ const UserDetail: React.FC<{
                 <TabsContent value="evaluaciones" className="space-y-4 mt-4">
                   <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
                     <div className="flex items-start">
-                      <Star className="h-5 w-5 text-yellow-500 mt-0.5 mr-3" />
+                      <Award className="h-5 w-5 text-yellow-500 mt-0.5 mr-3" />
                       <div>
                         <h4 className="text-sm font-medium text-yellow-800">Evaluaciones de Desempeño</h4>
                         <p className="text-sm text-yellow-700 mt-1">
