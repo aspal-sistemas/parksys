@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Helmet } from "react-helmet";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { TreeDeciduous, LineChart, CloudRain, Waves, Wind, Thermometer, Leaf } from "lucide-react";
+import { TreeDeciduous, LineChart, CloudRain, Waves, Wind, Thermometer, Leaf, AlertTriangle } from "lucide-react";
 
 import {
   Card,
@@ -104,6 +104,10 @@ const CALCULATION_METHODS = [
 // Formatear números con unidades
 const formatNumber = (value: number | null | undefined, unit: string = "", decimals: number = 2) => {
   if (value === null || value === undefined) return "N/A";
+  // Asegurarse de que value sea un número antes de usar toFixed
+  if (typeof value !== 'number') {
+    return `${value} ${unit}`;
+  }
   return `${value.toFixed(decimals)} ${unit}`;
 };
 
