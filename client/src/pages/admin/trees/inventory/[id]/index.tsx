@@ -9,6 +9,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Sprout, TreeDeciduous, ThermometerSun, Tag, AlertCircle, AlertOctagon, AlertTriangle, CircleAlert, CircleCheck, Info, ArrowLeft, Edit, ExternalLink, MapPin, Leaf, Calendar, Ruler, HelpCircle, Trash2, Plus, Scissors, Shovel, Wrench } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Card,
   CardContent,
@@ -402,11 +404,12 @@ function TreeDetailPage() {
           </div>
         ) : (
           <Tabs defaultValue="general" className="space-y-6">
-            <TabsList className="grid grid-cols-4">
+            <TabsList className="grid grid-cols-5">
               <TabsTrigger value="general">Información General</TabsTrigger>
               <TabsTrigger value="physical">Estado Físico</TabsTrigger>
               <TabsTrigger value="location">Ubicación</TabsTrigger>
               <TabsTrigger value="maintenance">Mantenimiento</TabsTrigger>
+              <TabsTrigger value="environmental">Servicios Ambientales</TabsTrigger>
             </TabsList>
 
             {/* Tab: Información General */}
