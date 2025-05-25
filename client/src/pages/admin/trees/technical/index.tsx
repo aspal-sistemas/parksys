@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { TreeDeciduous, AlertTriangle, Wrench, Clock, CalendarCheck2 } from "lucide-react";
+import { TreeDeciduous, AlertTriangle, Wrench, Clock, CalendarCheck2, Flower2 } from "lucide-react";
 
 import {
   Card,
@@ -50,49 +50,32 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
 
-// Tipo para los árboles, incluyendo sus evaluaciones de riesgo e intervenciones
+// Tipo para los árboles adaptado a la estructura actual
 type Tree = {
   id: number;
   species_id: number;
   park_id: number;
-  latitude: string;
-  longitude: string;
-  height: number;
-  trunk_diameter: number;
-  health_status: string;
-  condition: string;
-  location_description?: string;
-  notes?: string;
+  latitude: string | null;
+  longitude: string | null;
+  height: number | null;
+  trunk_diameter: number | null;
+  health_status: string | null;
+  condition: string | null;
+  location_description?: string | null;
+  notes?: string | null;
   species?: {
     id: number;
     common_name: string;
     scientific_name: string;
-    image_url?: string;
+    image_url?: string | null;
   };
   park?: {
     id: number;
     name: string;
   };
-  lastRiskAssessment?: {
-    id: number;
-    assessmentDate: string;
-    methodology: string;
-    riskLevel: string;
-    assessedBy: string;
-  };
-  lastIntervention?: {
-    id: number;
-    interventionType: string;
-    subType: string;
-    status: string;
-    priority: string;
-    completedDate: string | null;
-  };
-  pendingInterventionsCount: number;
-  highRiskCount: number;
 };
 
-// Tipo para las evaluaciones de riesgo
+// Tipo simplificado para evaluaciones de riesgo
 type RiskAssessment = {
   id: number;
   treeId: number;
@@ -100,30 +83,19 @@ type RiskAssessment = {
   methodology: string;
   assessedBy: string;
   riskLevel: string;
-  likelihoodOfFailure: string;
-  consequenceOfFailure: string;
-  targetRating: string;
-  recommendedActions: string;
-  timeframe: string;
   notes?: string;
-  attachments?: string;
 };
 
-// Tipo para las intervenciones
+// Tipo simplificado para intervenciones
 type Intervention = {
   id: number;
   treeId: number;
   interventionType: string;
-  subType: string;
   priority: string;
   status: string;
-  justification: string;
   plannedDate: string | null;
   completedDate: string | null;
-  performedBy: string | null;
   notes?: string;
-  beforeImageUrl?: string;
-  afterImageUrl?: string;
 };
 
 // Constantes para opciones de selección
@@ -146,28 +118,6 @@ const INTERVENTION_TYPES = [
   { value: "retiro", label: "Retiro" },
   { value: "tratamiento", label: "Tratamiento" },
   { value: "sustitucion", label: "Sustitución" },
-  { value: "reforestacion", label: "Reforestación" },
-];
-
-const INTERVENTION_SUBTYPES = [
-  // Poda
-  { value: "poda_sanitaria", label: "Poda Sanitaria", parentType: "poda" },
-  { value: "poda_estructural", label: "Poda Estructural", parentType: "poda" },
-  { value: "poda_despeje", label: "Poda de Despeje", parentType: "poda" },
-  { value: "poda_reduccion", label: "Poda de Reducción", parentType: "poda" },
-  { value: "poda_estetica", label: "Poda Estética", parentType: "poda" },
-  
-  // Retiro
-  { value: "retiro_riesgo", label: "Retiro por Riesgo", parentType: "retiro" },
-  { value: "retiro_muerte", label: "Retiro por Muerte", parentType: "retiro" },
-  { value: "retiro_interferencia", label: "Retiro por Interferencia", parentType: "retiro" },
-  { value: "retiro_enfermedad", label: "Retiro por Enfermedad", parentType: "retiro" },
-  
-  // Tratamiento
-  { value: "tratamiento_fitosanitario", label: "Tratamiento Fitosanitario", parentType: "tratamiento" },
-  { value: "endoterapia", label: "Endoterapia", parentType: "tratamiento" },
-  { value: "tratamiento_heridas", label: "Tratamiento de Heridas", parentType: "tratamiento" },
-  { value: "tratamiento_suelo", label: "Tratamiento de Suelo", parentType: "tratamiento" },
 ];
 
 const INTERVENTION_PRIORITIES = [
@@ -246,6 +196,12 @@ const formatDate = (dateString: string | null) => {
   });
 };
 
+// Formatear números
+const formatNumber = (value: number | null | undefined, unit: string = "") => {
+  if (value === null || value === undefined) return "N/A";
+  return `${value} ${unit}`;
+};
+
 export default function TreeTechnicalManagement() {
   const [location, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
@@ -256,8 +212,53 @@ export default function TreeTechnicalManagement() {
   const [showAddRiskDialog, setShowAddRiskDialog] = useState(false);
   const [showAddInterventionDialog, setShowAddInterventionDialog] = useState(false);
 
-  // Consulta para obtener todos los árboles con sus evaluaciones técnicas
-  const { data: trees, isLoading, error, refetch } = useQuery<{ data: Tree[] }>({
+  // Datos de prueba para la interfaz mientras se desarrolla el backend
+  const mockRiskAssessments: RiskAssessment[] = [
+    {
+      id: 1,
+      treeId: 1,
+      assessmentDate: "2023-05-15",
+      methodology: "traq",
+      assessedBy: "Juan Pérez",
+      riskLevel: "bajo",
+      notes: "Árbol en buenas condiciones, no presenta riesgos significativos."
+    },
+    {
+      id: 2,
+      treeId: 1,
+      assessmentDate: "2023-08-20",
+      methodology: "qtra",
+      assessedBy: "María López",
+      riskLevel: "moderado",
+      notes: "Se observa una rama con signos de deterioro que podría requerir poda preventiva."
+    }
+  ];
+
+  const mockInterventions: Intervention[] = [
+    {
+      id: 1,
+      treeId: 1,
+      interventionType: "poda",
+      priority: "media",
+      status: "completada",
+      plannedDate: "2023-09-10",
+      completedDate: "2023-09-12",
+      notes: "Poda de ramas con deterioro en el sector norte del árbol."
+    },
+    {
+      id: 2,
+      treeId: 1,
+      interventionType: "tratamiento",
+      priority: "alta",
+      status: "pendiente",
+      plannedDate: "2023-10-15",
+      completedDate: null,
+      notes: "Aplicación de tratamiento preventivo contra plagas."
+    }
+  ];
+
+  // Consulta para obtener todos los árboles
+  const { data: trees, isLoading, error } = useQuery<{ data: Tree[] }>({
     queryKey: ["/api/trees"],
     select: (response) => response,
   });
@@ -265,20 +266,6 @@ export default function TreeTechnicalManagement() {
   // Consulta para obtener parques para el filtro
   const { data: parks } = useQuery<{ data: any[] }>({
     queryKey: ["/api/parks"],
-    select: (response) => response,
-  });
-
-  // Consulta para obtener evaluaciones de riesgo del árbol seleccionado
-  const { data: riskAssessments, refetch: refetchRiskAssessments } = useQuery<{ data: RiskAssessment[] }>({
-    queryKey: ["/api/trees", selectedTree?.id, "risk-assessments"],
-    enabled: !!selectedTree,
-    select: (response) => response,
-  });
-
-  // Consulta para obtener intervenciones del árbol seleccionado
-  const { data: interventions, refetch: refetchInterventions } = useQuery<{ data: Intervention[] }>({
-    queryKey: ["/api/trees", selectedTree?.id, "interventions"],
-    enabled: !!selectedTree,
     select: (response) => response,
   });
 
@@ -290,39 +277,43 @@ export default function TreeTechnicalManagement() {
       tree.park?.name?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesPark = parkFilter ? tree.park_id === parseInt(parkFilter) : true;
-    const matchesRiskLevel = riskLevelFilter ? 
-      (tree.lastRiskAssessment?.riskLevel === riskLevelFilter) : true;
     
-    return matchesSearch && matchesPark && matchesRiskLevel;
+    return matchesSearch && matchesPark;
   });
 
-  // Ordenar árboles por prioridad (primero los de alto riesgo, luego los de intervenciones pendientes)
-  const sortedTrees = [...(filteredTrees || [])].sort((a, b) => {
-    // Primero por nivel de riesgo (crítico > alto > moderado > bajo)
-    const riskOrder: Record<string, number> = { 
-      critico: 0, alto: 1, moderado: 2, bajo: 3, undefined: 4 
-    };
-    
-    const aRiskLevel = a.lastRiskAssessment?.riskLevel || "undefined";
-    const bRiskLevel = b.lastRiskAssessment?.riskLevel || "undefined";
-    
-    if (riskOrder[aRiskLevel] !== riskOrder[bRiskLevel]) {
-      return riskOrder[aRiskLevel] - riskOrder[bRiskLevel];
-    }
-    
-    // Luego por número de intervenciones pendientes
-    return (b.pendingInterventionsCount || 0) - (a.pendingInterventionsCount || 0);
-  });
+  // Ordenar árboles (por ID como ejemplo)
+  const sortedTrees = [...(filteredTrees || [])].sort((a, b) => a.id - b.id);
 
   // Función para ver detalles de un árbol
   const handleViewTree = (tree: Tree) => {
     setSelectedTree(tree);
+    // En una implementación real, aquí cargaríamos los datos de evaluaciones e intervenciones
   };
 
   // Función para cerrar el panel de detalles
   const handleCloseDetails = () => {
     setSelectedTree(null);
     setActiveTab("risk-assessments");
+  };
+
+  // Función para registrar una nueva evaluación de riesgo
+  const handleAddRiskAssessment = (formData: any) => {
+    toast({
+      title: "Evaluación de riesgo registrada",
+      description: "La evaluación ha sido registrada correctamente.",
+    });
+    setShowAddRiskDialog(false);
+    // En una implementación real, aquí enviaríamos los datos al backend
+  };
+
+  // Función para registrar una nueva intervención
+  const handleAddIntervention = (formData: any) => {
+    toast({
+      title: "Intervención registrada",
+      description: "La intervención ha sido registrada correctamente.",
+    });
+    setShowAddInterventionDialog(false);
+    // En una implementación real, aquí enviaríamos los datos al backend
   };
 
   // Renderizar la lista de árboles
@@ -360,12 +351,10 @@ export default function TreeTechnicalManagement() {
         <TableCaption>Lista de árboles para gestión técnica</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>Código</TableHead>
+            <TableHead>ID</TableHead>
             <TableHead>Especie</TableHead>
             <TableHead>Parque</TableHead>
             <TableHead>Estado</TableHead>
-            <TableHead>Riesgo</TableHead>
-            <TableHead>Intervenciones Pendientes</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -392,24 +381,8 @@ export default function TreeTechnicalManagement() {
               <TableCell>{tree.park?.name}</TableCell>
               <TableCell>
                 <Badge variant={tree.health_status === "bueno" ? "outline" : "secondary"}>
-                  {tree.health_status}
+                  {tree.health_status || "No especificado"}
                 </Badge>
-              </TableCell>
-              <TableCell>
-                {tree.lastRiskAssessment ? (
-                  <Badge className={getRiskLevelColor(tree.lastRiskAssessment.riskLevel)}>
-                    {tree.lastRiskAssessment.riskLevel.toUpperCase()}
-                  </Badge>
-                ) : (
-                  <Badge variant="outline">Sin evaluar</Badge>
-                )}
-              </TableCell>
-              <TableCell>
-                {tree.pendingInterventionsCount > 0 ? (
-                  <Badge variant="destructive">{tree.pendingInterventionsCount}</Badge>
-                ) : (
-                  <Badge variant="outline">0</Badge>
-                )}
               </TableCell>
               <TableCell className="text-right">
                 <Button variant="ghost" size="sm" onClick={() => handleViewTree(tree)}>
@@ -457,45 +430,44 @@ export default function TreeTechnicalManagement() {
             </CardHeader>
             <CardContent>
               <Badge variant="outline" className="text-lg font-medium">
-                {selectedTree.health_status}
+                {selectedTree.health_status || "No especificado"}
               </Badge>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Nivel de Riesgo</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-500">Condición</CardTitle>
             </CardHeader>
             <CardContent>
-              {selectedTree.lastRiskAssessment ? (
-                <Badge className={`text-lg ${getRiskLevelColor(selectedTree.lastRiskAssessment.riskLevel)}`}>
-                  {selectedTree.lastRiskAssessment.riskLevel.toUpperCase()}
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-lg">Sin evaluar</Badge>
-              )}
+              <Badge className="text-lg" variant="outline">
+                {selectedTree.condition || "No evaluada"}
+              </Badge>
             </CardContent>
           </Card>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="risk-assessments" className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
+            <TabsTrigger value="risk-assessments">
+              <AlertTriangle className="h-4 w-4 mr-2" />
               Evaluaciones de Riesgo
             </TabsTrigger>
-            <TabsTrigger value="interventions" className="flex items-center gap-2">
-              <Wrench className="h-4 w-4" />
+            <TabsTrigger value="interventions">
+              <Wrench className="h-4 w-4 mr-2" />
               Intervenciones
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="risk-assessments" className="mt-4 space-y-4">
+          <TabsContent value="risk-assessments" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium">Historial de Evaluaciones de Riesgo</h3>
               <Dialog open={showAddRiskDialog} onOpenChange={setShowAddRiskDialog}>
                 <DialogTrigger asChild>
-                  <Button>Nueva Evaluación</Button>
+                  <Button>
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    Nueva Evaluación
+                  </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[600px]">
                   <DialogHeader>
@@ -508,13 +480,13 @@ export default function TreeTechnicalManagement() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="assessmentDate">Fecha de Evaluación</Label>
-                        <Input id="assessmentDate" type="date" required />
+                        <Input id="assessmentDate" type="date" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="methodology">Metodología</Label>
                         <Select>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona metodología" />
+                            <SelectValue placeholder="Seleccionar" />
                           </SelectTrigger>
                           <SelectContent>
                             {METHODOLOGIES.map(method => (
@@ -526,18 +498,16 @@ export default function TreeTechnicalManagement() {
                         </Select>
                       </div>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="assessedBy">Evaluado por</Label>
-                      <Input id="assessedBy" placeholder="Nombre del evaluador" required />
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="assessedBy">Evaluado por</Label>
+                        <Input id="assessedBy" placeholder="Nombre del evaluador" />
+                      </div>
                       <div className="space-y-2">
                         <Label htmlFor="riskLevel">Nivel de Riesgo</Label>
                         <Select>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona nivel" />
+                            <SelectValue placeholder="Seleccionar" />
                           </SelectTrigger>
                           <SelectContent>
                             {RISK_LEVELS.map(level => (
@@ -548,124 +518,73 @@ export default function TreeTechnicalManagement() {
                           </SelectContent>
                         </Select>
                       </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="likelihoodOfFailure">Probabilidad de Falla</Label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="improbable">Improbable</SelectItem>
-                            <SelectItem value="posible">Posible</SelectItem>
-                            <SelectItem value="probable">Probable</SelectItem>
-                            <SelectItem value="inminente">Inminente</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="consequenceOfFailure">Consecuencia de Falla</Label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="insignificante">Insignificante</SelectItem>
-                            <SelectItem value="menor">Menor</SelectItem>
-                            <SelectItem value="significante">Significante</SelectItem>
-                            <SelectItem value="severo">Severo</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
                     </div>
-                    
                     <div className="space-y-2">
-                      <Label htmlFor="recommendedActions">Acciones Recomendadas</Label>
-                      <Input id="recommendedActions" placeholder="Acciones recomendadas" />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="notes">Notas Adicionales</Label>
-                      <Input id="notes" placeholder="Notas y observaciones" />
+                      <Label htmlFor="notes">Observaciones</Label>
+                      <textarea 
+                        id="notes" 
+                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                        placeholder="Detalles de la evaluación"
+                      />
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowAddRiskDialog(false)}>
-                      Cancelar
-                    </Button>
-                    <Button onClick={() => {
-                      // Aquí iría la lógica para guardar la evaluación
-                      toast({
-                        title: "Evaluación registrada",
-                        description: "La evaluación de riesgo ha sido registrada exitosamente.",
-                      });
-                      setShowAddRiskDialog(false);
-                      // Recargar datos
-                      setTimeout(() => {
-                        refetchRiskAssessments();
-                        refetch();
-                      }, 500);
-                    }}>Guardar Evaluación</Button>
+                    <Button variant="outline" onClick={() => setShowAddRiskDialog(false)}>Cancelar</Button>
+                    <Button onClick={() => handleAddRiskAssessment({})}>Guardar</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
             </div>
-            
-            {riskAssessments?.data?.length ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Metodología</TableHead>
-                    <TableHead>Evaluador</TableHead>
-                    <TableHead>Nivel de Riesgo</TableHead>
-                    <TableHead>Acciones Recomendadas</TableHead>
-                    <TableHead className="text-right">Opciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {riskAssessments.data.map((assessment) => (
-                    <TableRow key={assessment.id}>
-                      <TableCell>{formatDate(assessment.assessmentDate)}</TableCell>
-                      <TableCell>{assessment.methodology}</TableCell>
-                      <TableCell>{assessment.assessedBy}</TableCell>
-                      <TableCell>
-                        <Badge className={getRiskLevelColor(assessment.riskLevel)}>
-                          {assessment.riskLevel.toUpperCase()}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {assessment.recommendedActions || "N/A"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="outline" size="sm">Ver Detalles</Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+
+            {mockRiskAssessments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-8 text-center border rounded-md">
+                <AlertTriangle className="h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium">Sin evaluaciones de riesgo</h3>
+                <p className="text-sm text-gray-500 mt-2">
+                  No hay evaluaciones de riesgo registradas para este árbol.
+                </p>
+              </div>
             ) : (
-              <Card className="bg-gray-50">
-                <CardContent className="pt-6 text-center">
-                  <AlertTriangle className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-gray-500">
-                    Este árbol no tiene evaluaciones de riesgo registradas.
-                  </p>
-                  <Button className="mt-4" onClick={() => setShowAddRiskDialog(true)}>
-                    Registrar Primera Evaluación
-                  </Button>
-                </CardContent>
-              </Card>
+              <div className="space-y-4">
+                {mockRiskAssessments.map((assessment) => (
+                  <Card key={assessment.id}>
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <Badge className={getRiskLevelColor(assessment.riskLevel)}>
+                            {RISK_LEVELS.find(level => level.value === assessment.riskLevel)?.label || assessment.riskLevel}
+                          </Badge>
+                          <CardTitle className="text-base">
+                            {METHODOLOGIES.find(method => method.value === assessment.methodology)?.label || assessment.methodology}
+                          </CardTitle>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <Clock className="h-4 w-4" />
+                          {formatDate(assessment.assessmentDate)}
+                        </div>
+                      </div>
+                      <CardDescription>
+                        Evaluado por: {assessment.assessedBy}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-gray-700">{assessment.notes}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
           </TabsContent>
           
-          <TabsContent value="interventions" className="mt-4 space-y-4">
+          <TabsContent value="interventions" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium">Historial de Intervenciones</h3>
               <Dialog open={showAddInterventionDialog} onOpenChange={setShowAddInterventionDialog}>
                 <DialogTrigger asChild>
-                  <Button>Nueva Intervención</Button>
+                  <Button>
+                    <Wrench className="h-4 w-4 mr-2" />
+                    Nueva Intervención
+                  </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[600px]">
                   <DialogHeader>
@@ -680,7 +599,7 @@ export default function TreeTechnicalManagement() {
                         <Label htmlFor="interventionType">Tipo de Intervención</Label>
                         <Select>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona tipo" />
+                            <SelectValue placeholder="Seleccionar" />
                           </SelectTrigger>
                           <SelectContent>
                             {INTERVENTION_TYPES.map(type => (
@@ -691,33 +610,11 @@ export default function TreeTechnicalManagement() {
                           </SelectContent>
                         </Select>
                       </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="subType">Subtipo</Label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona subtipo" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {INTERVENTION_SUBTYPES
-                              .filter(subtype => subtype.parentType === "poda") // Por defecto muestra los de poda
-                              .map(subtype => (
-                                <SelectItem key={subtype.value} value={subtype.value}>
-                                  {subtype.label}
-                                </SelectItem>
-                              ))
-                            }
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="priority">Prioridad</Label>
                         <Select>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona prioridad" />
+                            <SelectValue placeholder="Seleccionar" />
                           </SelectTrigger>
                           <SelectContent>
                             {INTERVENTION_PRIORITIES.map(priority => (
@@ -728,12 +625,13 @@ export default function TreeTechnicalManagement() {
                           </SelectContent>
                         </Select>
                       </div>
-                      
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="status">Estado</Label>
                         <Select>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona estado" />
+                            <SelectValue placeholder="Seleccionar" />
                           </SelectTrigger>
                           <SelectContent>
                             {INTERVENTION_STATUS.map(status => (
@@ -744,115 +642,71 @@ export default function TreeTechnicalManagement() {
                           </SelectContent>
                         </Select>
                       </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="justification">Justificación</Label>
-                      <Input id="justification" placeholder="Motivo de la intervención" required />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="plannedDate">Fecha Programada</Label>
+                        <Label htmlFor="plannedDate">Fecha Planificada</Label>
                         <Input id="plannedDate" type="date" />
                       </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="performedBy">Responsable</Label>
-                        <Input id="performedBy" placeholder="Persona o equipo responsable" />
-                      </div>
                     </div>
-                    
                     <div className="space-y-2">
-                      <Label htmlFor="notes">Notas Adicionales</Label>
-                      <Input id="notes" placeholder="Notas y observaciones" />
+                      <Label htmlFor="notes">Observaciones</Label>
+                      <textarea 
+                        id="notes" 
+                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                        placeholder="Detalles de la intervención"
+                      />
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowAddInterventionDialog(false)}>
-                      Cancelar
-                    </Button>
-                    <Button onClick={() => {
-                      // Aquí iría la lógica para guardar la intervención
-                      toast({
-                        title: "Intervención registrada",
-                        description: "La intervención ha sido registrada exitosamente.",
-                      });
-                      setShowAddInterventionDialog(false);
-                      // Recargar datos
-                      setTimeout(() => {
-                        refetchInterventions();
-                        refetch();
-                      }, 500);
-                    }}>Guardar Intervención</Button>
+                    <Button variant="outline" onClick={() => setShowAddInterventionDialog(false)}>Cancelar</Button>
+                    <Button onClick={() => handleAddIntervention({})}>Guardar</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
             </div>
-            
-            {interventions?.data?.length ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Prioridad</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Fecha Programada</TableHead>
-                    <TableHead>Fecha Completada</TableHead>
-                    <TableHead className="text-right">Opciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {interventions.data.map((intervention) => (
-                    <TableRow key={intervention.id}>
-                      <TableCell>
-                        <div>
-                          <div>{INTERVENTION_TYPES.find(t => t.value === intervention.interventionType)?.label}</div>
-                          <div className="text-xs text-gray-500">
-                            {INTERVENTION_SUBTYPES.find(st => st.value === intervention.subType)?.label}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getPriorityColor(intervention.priority)}>
-                          {intervention.priority.toUpperCase()}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(intervention.status)}>
-                          {intervention.status.toUpperCase()}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {formatDate(intervention.plannedDate)}
-                      </TableCell>
-                      <TableCell>
-                        {formatDate(intervention.completedDate)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm">Ver Detalles</Button>
-                          {intervention.status !== "completada" && intervention.status !== "cancelada" && (
-                            <Button variant="secondary" size="sm">Actualizar Estado</Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+
+            {mockInterventions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-8 text-center border rounded-md">
+                <Wrench className="h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium">Sin intervenciones</h3>
+                <p className="text-sm text-gray-500 mt-2">
+                  No hay intervenciones registradas para este árbol.
+                </p>
+              </div>
             ) : (
-              <Card className="bg-gray-50">
-                <CardContent className="pt-6 text-center">
-                  <Wrench className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-gray-500">
-                    Este árbol no tiene intervenciones registradas.
-                  </p>
-                  <Button className="mt-4" onClick={() => setShowAddInterventionDialog(true)}>
-                    Programar Primera Intervención
-                  </Button>
-                </CardContent>
-              </Card>
+              <div className="space-y-4">
+                {mockInterventions.map((intervention) => (
+                  <Card key={intervention.id}>
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <Badge className={getPriorityColor(intervention.priority)}>
+                            {INTERVENTION_PRIORITIES.find(p => p.value === intervention.priority)?.label || intervention.priority}
+                          </Badge>
+                          <CardTitle className="text-base">
+                            {INTERVENTION_TYPES.find(t => t.value === intervention.interventionType)?.label || intervention.interventionType}
+                          </CardTitle>
+                        </div>
+                        <Badge className={getStatusColor(intervention.status)}>
+                          {INTERVENTION_STATUS.find(s => s.value === intervention.status)?.label || intervention.status}
+                        </Badge>
+                      </div>
+                      <CardDescription className="flex gap-4">
+                        <span className="flex items-center gap-1">
+                          <CalendarCheck2 className="h-3 w-3" /> Planificada: {formatDate(intervention.plannedDate)}
+                        </span>
+                        {intervention.completedDate && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" /> Completada: {formatDate(intervention.completedDate)}
+                          </span>
+                        )}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-gray-700">{intervention.notes}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
           </TabsContent>
         </Tabs>
@@ -861,37 +715,35 @@ export default function TreeTechnicalManagement() {
   };
 
   return (
-    <div className="container py-6">
+    <div className="container mx-auto py-6 space-y-8">
       <Helmet>
-        <title>Gestión Técnica de Árboles - ParquesMX</title>
+        <title>Gestión Técnica de Arbolado | ParquesMX</title>
       </Helmet>
       
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Gestión Técnica de Árboles</h1>
-        <p className="text-gray-500 mt-1">
-          Evaluaciones de riesgo, planificación e implementación de intervenciones
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Gestión Técnica de Arbolado</h1>
+          <p className="text-gray-500 mt-1">
+            Administra evaluaciones de riesgo e intervenciones para árboles en parques
+          </p>
+        </div>
       </div>
 
       {!selectedTree ? (
         <>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="md:w-1/3">
-              <Label htmlFor="search" className="sr-only">Buscar</Label>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
               <Input
-                id="search"
-                placeholder="Buscar por código, especie o parque..."
+                placeholder="Buscar por ID, especie o parque..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full"
               />
             </div>
-            
-            <div className="md:w-1/3">
-              <Label htmlFor="park-filter" className="sr-only">Filtrar por Parque</Label>
+            <div className="w-full md:w-64">
               <Select value={parkFilter} onValueChange={setParkFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Filtrar por parque" />
+                  <SelectValue placeholder="Todos los parques" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Todos los parques</SelectItem>
@@ -903,37 +755,12 @@ export default function TreeTechnicalManagement() {
                 </SelectContent>
               </Select>
             </div>
-            
-            <div className="md:w-1/3">
-              <Label htmlFor="risk-filter" className="sr-only">Filtrar por Nivel de Riesgo</Label>
-              <Select value={riskLevelFilter} onValueChange={setRiskLevelFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filtrar por nivel de riesgo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Todos los niveles</SelectItem>
-                  {RISK_LEVELS.map((level) => (
-                    <SelectItem key={level.value} value={level.value}>
-                      {level.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
-          
-          <Card>
-            <CardContent className="p-0 overflow-x-auto">
-              {renderTreeList()}
-            </CardContent>
-          </Card>
+
+          {renderTreeList()}
         </>
       ) : (
-        <Card>
-          <CardContent className="p-6">
-            {renderTreeDetails()}
-          </CardContent>
-        </Card>
+        renderTreeDetails()
       )}
     </div>
   );

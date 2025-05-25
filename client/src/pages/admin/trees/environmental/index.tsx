@@ -50,46 +50,32 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
 
-// Tipo para los árboles, incluyendo sus servicios ambientales
+// Tipo para los árboles adaptado a la estructura actual
 type Tree = {
   id: number;
   species_id: number;
   park_id: number;
-  latitude: string;
-  longitude: string;
-  height: number;
-  trunk_diameter: number;
-  health_status: string;
-  condition: string;
-  location_description?: string;
-  notes?: string;
+  latitude: string | null;
+  longitude: string | null;
+  height: number | null;
+  trunk_diameter: number | null;
+  health_status: string | null;
+  condition: string | null;
+  location_description?: string | null;
+  notes?: string | null;
   species?: {
     id: number;
     common_name: string;
     scientific_name: string;
-    image_url?: string;
+    image_url?: string | null;
   };
   park?: {
     id: number;
     name: string;
   };
-  latestEnvironmentalService?: {
-    id: number;
-    calculationDate: string;
-    calculationMethod: string;
-    co2SequestrationAnnual: number;
-    co2SequestrationLifetime: number;
-    pollutantRemovalNO2: number;
-    pollutantRemovalSO2: number;
-    pollutantRemovalPM25: number;
-    stormwaterInterception: number;
-    shadeAreaSummer: number;
-    temperatureReduction: number;
-    totalEconomicBenefitAnnual: number;
-  };
 };
 
-// Tipo para los servicios ambientales
+// Tipo simplificado para servicios ambientales
 type EnvironmentalService = {
   id: number;
   treeId: number;
@@ -103,18 +89,23 @@ type EnvironmentalService = {
   stormwaterInterception: number;
   shadeAreaSummer: number;
   temperatureReduction: number;
-  energySavingsValue: number;
   totalEconomicBenefitAnnual: number;
-  totalEconomicBenefitLifetime: number;
   notes?: string;
 };
 
 // Constantes para opciones de selección
 const CALCULATION_METHODS = [
-  { value: "formula_basica", label: "Fórmula Básica" },
   { value: "itree", label: "i-Tree" },
-  { value: "otro", label: "Otro" },
+  { value: "citygreen", label: "CityGreen" },
+  { value: "manual", label: "Cálculo Manual" },
+  { value: "estimate", label: "Estimación Basada en Especie" },
 ];
+
+// Formatear números con unidades
+const formatNumber = (value: number | null | undefined, unit: string = "", decimals: number = 2) => {
+  if (value === null || value === undefined) return "N/A";
+  return `${value.toFixed(decimals)} ${unit}`;
+};
 
 // Formatear fecha para mostrar en la interfaz
 const formatDate = (dateString: string | null) => {
@@ -127,55 +118,51 @@ const formatDate = (dateString: string | null) => {
   });
 };
 
-// Formatear número para mostrar en la interfaz
-const formatNumber = (value: number | null | undefined, unit: string = "") => {
-  if (value === null || value === undefined) return "N/A";
-  return `${value.toLocaleString("es-MX", { maximumFractionDigits: 2 })} ${unit}`;
-};
-
-// Componente para mostrar un valor ambiental con icono
-const EnvironmentalValueCard = ({ 
-  icon, 
-  title, 
-  value, 
-  unit, 
-  description 
-}: { 
-  icon: React.ReactNode; 
-  title: string; 
-  value: number | null | undefined; 
-  unit: string;
-  description: string;
-}) => {
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-gray-500">{title}</CardTitle>
-          <div className="rounded-full bg-green-100 p-2">
-            {icon}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">
-          {formatNumber(value, unit)}
-        </div>
-        <p className="text-xs text-gray-500 mt-1">{description}</p>
-      </CardContent>
-    </Card>
-  );
-};
-
 export default function TreeEnvironmentalManagement() {
   const [location, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [parkFilter, setParkFilter] = useState("");
   const [selectedTree, setSelectedTree] = useState<Tree | null>(null);
-  const [showAddCalculationDialog, setShowAddCalculationDialog] = useState(false);
+  const [showAddServiceDialog, setShowAddServiceDialog] = useState(false);
 
-  // Consulta para obtener todos los árboles con sus servicios ambientales
-  const { data: trees, isLoading, error, refetch } = useQuery<{ data: Tree[] }>({
+  // Datos de prueba para la interfaz mientras se desarrolla el backend
+  const mockEnvironmentalServices: EnvironmentalService[] = [
+    {
+      id: 1,
+      treeId: 1,
+      calculationDate: "2023-04-10",
+      calculationMethod: "itree",
+      co2SequestrationAnnual: 25.7,
+      co2SequestrationLifetime: 1285,
+      pollutantRemovalNO2: 0.25,
+      pollutantRemovalSO2: 0.18,
+      pollutantRemovalPM25: 0.32,
+      stormwaterInterception: 2.8,
+      shadeAreaSummer: 42.5,
+      temperatureReduction: 1.2,
+      totalEconomicBenefitAnnual: 156.87,
+      notes: "Cálculo basado en condiciones climáticas locales y estado actual del árbol."
+    },
+    {
+      id: 2,
+      treeId: 1,
+      calculationDate: "2022-05-15",
+      calculationMethod: "citygreen",
+      co2SequestrationAnnual: 23.4,
+      co2SequestrationLifetime: 1170,
+      pollutantRemovalNO2: 0.22,
+      pollutantRemovalSO2: 0.15,
+      pollutantRemovalPM25: 0.28,
+      stormwaterInterception: 2.5,
+      shadeAreaSummer: 38.2,
+      temperatureReduction: 1.1,
+      totalEconomicBenefitAnnual: 142.50,
+      notes: "Evaluación anterior a la poda de mantenimiento."
+    }
+  ];
+
+  // Consulta para obtener todos los árboles
+  const { data: trees, isLoading, error } = useQuery<{ data: Tree[] }>({
     queryKey: ["/api/trees"],
     select: (response) => response,
   });
@@ -183,13 +170,6 @@ export default function TreeEnvironmentalManagement() {
   // Consulta para obtener parques para el filtro
   const { data: parks } = useQuery<{ data: any[] }>({
     queryKey: ["/api/parks"],
-    select: (response) => response,
-  });
-
-  // Consulta para obtener servicios ambientales del árbol seleccionado
-  const { data: environmentalServices, refetch: refetchEnvironmentalServices } = useQuery<{ data: EnvironmentalService[] }>({
-    queryKey: ["/api/trees", selectedTree?.id, "environmental-services"],
-    enabled: !!selectedTree,
     select: (response) => response,
   });
 
@@ -205,35 +185,33 @@ export default function TreeEnvironmentalManagement() {
     return matchesSearch && matchesPark;
   });
 
-  // Ordenar árboles por tamaño (altura y diámetro) y condición
+  // Ordenar árboles por tamaño (como ejemplo)
   const sortedTrees = [...(filteredTrees || [])].sort((a, b) => {
-    // Por altura
     if (a.height !== b.height) {
-      return (b.height || 0) - (a.height || 0);
+      return ((b.height || 0) - (a.height || 0));
     }
-    
-    // Por diámetro
-    if (a.trunk_diameter !== b.trunk_diameter) {
-      return (b.trunk_diameter || 0) - (a.trunk_diameter || 0);
-    }
-    
-    // Por condición (considerando mejor condición los árboles en mejor estado)
-    const conditionOrder: Record<string, number> = {
-      "bueno": 0, "regular": 1, "malo": 2, "critico": 3, undefined: 4
-    };
-    const aCondition = a.condition || "undefined";
-    const bCondition = b.condition || "undefined";
-    return conditionOrder[aCondition] - conditionOrder[bCondition];
+    return ((b.trunk_diameter || 0) - (a.trunk_diameter || 0));
   });
 
   // Función para ver detalles de un árbol
   const handleViewTree = (tree: Tree) => {
     setSelectedTree(tree);
+    // En una implementación real, aquí cargaríamos los datos de servicios ambientales
   };
 
   // Función para cerrar el panel de detalles
   const handleCloseDetails = () => {
     setSelectedTree(null);
+  };
+
+  // Función para registrar un nuevo cálculo de servicios ambientales
+  const handleAddEnvironmentalService = (formData: any) => {
+    toast({
+      title: "Cálculo ambiental registrado",
+      description: "El cálculo de servicios ambientales ha sido registrado correctamente.",
+    });
+    setShowAddServiceDialog(false);
+    // En una implementación real, aquí enviaríamos los datos al backend
   };
 
   // Renderizar la lista de árboles
@@ -245,6 +223,7 @@ export default function TreeEnvironmentalManagement() {
     if (error) {
       return (
         <Alert variant="destructive" className="my-4">
+          <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>
             No se pudieron cargar los árboles. Por favor, intenta de nuevo.
@@ -270,13 +249,12 @@ export default function TreeEnvironmentalManagement() {
         <TableCaption>Lista de árboles para gestión ambiental</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>Código</TableHead>
+            <TableHead>ID</TableHead>
             <TableHead>Especie</TableHead>
             <TableHead>Parque</TableHead>
-            <TableHead>Altura (m)</TableHead>
-            <TableHead>Diámetro (cm)</TableHead>
-            <TableHead>Última Actualización</TableHead>
-            <TableHead>CO₂ Anual (kg/año)</TableHead>
+            <TableHead>Altura</TableHead>
+            <TableHead>Diámetro</TableHead>
+            <TableHead>Último Cálculo</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -304,18 +282,9 @@ export default function TreeEnvironmentalManagement() {
               <TableCell>{formatNumber(tree.height, "m")}</TableCell>
               <TableCell>{formatNumber(tree.trunk_diameter, "cm")}</TableCell>
               <TableCell>
-                {tree.latestEnvironmentalService ? (
-                  formatDate(tree.latestEnvironmentalService.calculationDate)
-                ) : (
-                  <Badge variant="outline">Sin cálculos</Badge>
-                )}
-              </TableCell>
-              <TableCell>
-                {tree.latestEnvironmentalService ? (
-                  formatNumber(tree.latestEnvironmentalService.co2SequestrationAnnual, "kg/año")
-                ) : (
-                  "N/A"
-                )}
+                <Badge variant="outline">
+                  No calculado
+                </Badge>
               </TableCell>
               <TableCell className="text-right">
                 <Button variant="ghost" size="sm" onClick={() => handleViewTree(tree)}>
@@ -389,15 +358,15 @@ export default function TreeEnvironmentalManagement() {
         {/* Beneficios Ambientales Calculados */}
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold">Beneficios Ambientales</h3>
-            <Dialog open={showAddCalculationDialog} onOpenChange={setShowAddCalculationDialog}>
+            <h3 className="text-lg font-medium">Historial de Cálculos Ambientales</h3>
+            <Dialog open={showAddServiceDialog} onOpenChange={setShowAddServiceDialog}>
               <DialogTrigger asChild>
                 <Button>
-                  <LineChart className="h-4 w-4 mr-2" />
+                  <Leaf className="h-4 w-4 mr-2" />
                   Nuevo Cálculo
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
+              <DialogContent className="sm:max-w-[700px]">
                 <DialogHeader>
                   <DialogTitle>Nuevo Cálculo de Servicios Ambientales</DialogTitle>
                   <DialogDescription>
@@ -408,13 +377,13 @@ export default function TreeEnvironmentalManagement() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="calculationDate">Fecha de Cálculo</Label>
-                      <Input id="calculationDate" type="date" required />
+                      <Input id="calculationDate" type="date" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="calculationMethod">Método de Cálculo</Label>
+                      <Label htmlFor="calculationMethod">Metodología</Label>
                       <Select>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecciona método" />
+                          <SelectValue placeholder="Seleccionar" />
                         </SelectTrigger>
                         <SelectContent>
                           {CALCULATION_METHODS.map(method => (
@@ -427,203 +396,185 @@ export default function TreeEnvironmentalManagement() {
                     </div>
                   </div>
                   
-                  <h4 className="text-sm font-semibold pt-2">Captura de CO₂</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="co2SequestrationAnnual">Anual (kg/año)</Label>
-                      <Input id="co2SequestrationAnnual" type="number" step="0.01" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                      <h4 className="font-medium">Secuestro de Carbono</h4>
+                      <div className="space-y-2">
+                        <Label htmlFor="co2SequestrationAnnual">Secuestro CO2 Anual (kg/año)</Label>
+                        <Input id="co2SequestrationAnnual" type="number" step="0.01" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="co2SequestrationLifetime">Secuestro CO2 Vida Útil (kg)</Label>
+                        <Input id="co2SequestrationLifetime" type="number" step="0.01" />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="co2SequestrationLifetime">Total Estimado (kg)</Label>
-                      <Input id="co2SequestrationLifetime" type="number" step="0.01" />
-                    </div>
-                  </div>
-                  
-                  <h4 className="text-sm font-semibold pt-2">Filtración de Contaminantes</h4>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="pollutantRemovalNO2">NO₂ (g/año)</Label>
-                      <Input id="pollutantRemovalNO2" type="number" step="0.01" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="pollutantRemovalSO2">SO₂ (g/año)</Label>
-                      <Input id="pollutantRemovalSO2" type="number" step="0.01" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="pollutantRemovalPM25">PM2.5 (g/año)</Label>
-                      <Input id="pollutantRemovalPM25" type="number" step="0.01" />
-                    </div>
-                  </div>
-                  
-                  <h4 className="text-sm font-semibold pt-2">Agua e Impacto Climático</h4>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="stormwaterInterception">Intercepción Agua (L/año)</Label>
-                      <Input id="stormwaterInterception" type="number" step="0.01" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="shadeAreaSummer">Área de Sombra (m²)</Label>
-                      <Input id="shadeAreaSummer" type="number" step="0.01" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="temperatureReduction">Reducción Temp. (°C)</Label>
-                      <Input id="temperatureReduction" type="number" step="0.01" />
+                    
+                    <div className="space-y-4">
+                      <h4 className="font-medium">Remoción de Contaminantes</h4>
+                      <div className="space-y-2">
+                        <Label htmlFor="pollutantRemovalNO2">Remoción NO2 (kg/año)</Label>
+                        <Input id="pollutantRemovalNO2" type="number" step="0.01" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="pollutantRemovalSO2">Remoción SO2 (kg/año)</Label>
+                        <Input id="pollutantRemovalSO2" type="number" step="0.01" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="pollutantRemovalPM25">Remoción PM2.5 (kg/año)</Label>
+                        <Input id="pollutantRemovalPM25" type="number" step="0.01" />
+                      </div>
                     </div>
                   </div>
                   
-                  <h4 className="text-sm font-semibold pt-2">Beneficios Económicos</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="totalEconomicBenefitAnnual">Anual ($/año)</Label>
-                      <Input id="totalEconomicBenefitAnnual" type="number" step="0.01" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                      <h4 className="font-medium">Agua y Temperatura</h4>
+                      <div className="space-y-2">
+                        <Label htmlFor="stormwaterInterception">Intercepción Agua Pluvial (m³/año)</Label>
+                        <Input id="stormwaterInterception" type="number" step="0.01" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="shadeAreaSummer">Área de Sombra Verano (m²)</Label>
+                        <Input id="shadeAreaSummer" type="number" step="0.01" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="temperatureReduction">Reducción de Temperatura (°C)</Label>
+                        <Input id="temperatureReduction" type="number" step="0.01" />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="totalEconomicBenefitLifetime">Total Estimado ($)</Label>
-                      <Input id="totalEconomicBenefitLifetime" type="number" step="0.01" />
+                    
+                    <div className="space-y-4">
+                      <h4 className="font-medium">Valor Económico</h4>
+                      <div className="space-y-2">
+                        <Label htmlFor="totalEconomicBenefitAnnual">Beneficio Económico Anual ($/año)</Label>
+                        <Input id="totalEconomicBenefitAnnual" type="number" step="0.01" />
+                      </div>
                     </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="notes">Notas Adicionales</Label>
-                    <Input id="notes" placeholder="Notas y observaciones" />
+                    <Label htmlFor="notes">Observaciones</Label>
+                    <textarea 
+                      id="notes" 
+                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                      placeholder="Detalles del cálculo"
+                    />
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowAddCalculationDialog(false)}>
-                    Cancelar
-                  </Button>
-                  <Button onClick={() => {
-                    // Aquí iría la lógica para guardar el cálculo ambiental
-                    toast({
-                      title: "Cálculo registrado",
-                      description: "El cálculo de servicios ambientales ha sido registrado exitosamente.",
-                    });
-                    setShowAddCalculationDialog(false);
-                    // Recargar datos
-                    setTimeout(() => {
-                      refetchEnvironmentalServices();
-                      refetch();
-                    }, 500);
-                  }}>Guardar Cálculo</Button>
+                  <Button variant="outline" onClick={() => setShowAddServiceDialog(false)}>Cancelar</Button>
+                  <Button onClick={() => handleAddEnvironmentalService({})}>Guardar</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>
-          
-          {selectedTree.latestEnvironmentalService ? (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <EnvironmentalValueCard
-                  icon={<Leaf className="h-4 w-4 text-green-600" />}
-                  title="Captura de CO₂"
-                  value={selectedTree.latestEnvironmentalService.co2SequestrationAnnual}
-                  unit="kg/año"
-                  description="Cantidad de dióxido de carbono capturado anualmente"
-                />
-                
-                <EnvironmentalValueCard
-                  icon={<Wind className="h-4 w-4 text-blue-600" />}
-                  title="Filtración de Contaminantes"
-                  value={selectedTree.latestEnvironmentalService.pollutantRemovalNO2 + 
-                         selectedTree.latestEnvironmentalService.pollutantRemovalSO2 + 
-                         selectedTree.latestEnvironmentalService.pollutantRemovalPM25}
-                  unit="g/año"
-                  description="Total de contaminantes filtrados del aire"
-                />
-                
-                <EnvironmentalValueCard
-                  icon={<CloudRain className="h-4 w-4 text-blue-600" />}
-                  title="Intercepción de Agua"
-                  value={selectedTree.latestEnvironmentalService.stormwaterInterception}
-                  unit="L/año"
-                  description="Captación de agua de lluvia evitando escorrentía"
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <EnvironmentalValueCard
-                  icon={<Waves className="h-4 w-4 text-indigo-600" />}
-                  title="Área de Sombra"
-                  value={selectedTree.latestEnvironmentalService.shadeAreaSummer}
-                  unit="m²"
-                  description="Área cubierta por la sombra del árbol en verano"
-                />
-                
-                <EnvironmentalValueCard
-                  icon={<Thermometer className="h-4 w-4 text-orange-600" />}
-                  title="Reducción de Temperatura"
-                  value={selectedTree.latestEnvironmentalService.temperatureReduction}
-                  unit="°C"
-                  description="Disminución de temperatura en el área circundante"
-                />
-                
-                <EnvironmentalValueCard
-                  icon={<LineChart className="h-4 w-4 text-emerald-600" />}
-                  title="Beneficio Económico"
-                  value={selectedTree.latestEnvironmentalService.totalEconomicBenefitAnnual}
-                  unit="$/año"
-                  description="Valor económico estimado de los servicios ambientales"
-                />
-              </div>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Historial de Cálculos</CardTitle>
-                  <CardDescription>
-                    Último cálculo realizado el {formatDate(selectedTree.latestEnvironmentalService.calculationDate)} 
-                    utilizando el método {CALCULATION_METHODS.find(m => m.value === selectedTree.latestEnvironmentalService?.calculationMethod)?.label || selectedTree.latestEnvironmentalService.calculationMethod}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {environmentalServices?.data?.length ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Fecha</TableHead>
-                          <TableHead>Método</TableHead>
-                          <TableHead>CO₂ Anual</TableHead>
-                          <TableHead>Intercepción Agua</TableHead>
-                          <TableHead>Valor Anual</TableHead>
-                          <TableHead className="text-right">Acciones</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {environmentalServices.data.map((service) => (
-                          <TableRow key={service.id}>
-                            <TableCell>{formatDate(service.calculationDate)}</TableCell>
-                            <TableCell>
-                              {CALCULATION_METHODS.find(m => m.value === service.calculationMethod)?.label || service.calculationMethod}
-                            </TableCell>
-                            <TableCell>{formatNumber(service.co2SequestrationAnnual, "kg/año")}</TableCell>
-                            <TableCell>{formatNumber(service.stormwaterInterception, "L/año")}</TableCell>
-                            <TableCell>{formatNumber(service.totalEconomicBenefitAnnual, "$/año")}</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="outline" size="sm">Ver Detalles</Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-gray-500">No hay cálculos históricos disponibles.</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </>
+
+          {mockEnvironmentalServices.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center border rounded-md">
+              <Leaf className="h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium">Sin cálculos ambientales</h3>
+              <p className="text-sm text-gray-500 mt-2">
+                No hay cálculos de servicios ambientales registrados para este árbol.
+              </p>
+            </div>
           ) : (
-            <Card className="bg-gray-50">
-              <CardContent className="pt-6 text-center">
-                <LineChart className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                <p className="text-gray-500">
-                  Este árbol no tiene cálculos de servicios ambientales registrados.
-                </p>
-                <Button className="mt-4" onClick={() => setShowAddCalculationDialog(true)}>
-                  Registrar Primer Cálculo
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              {mockEnvironmentalServices.map((service) => (
+                <Card key={service.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-lg">
+                        {CALCULATION_METHODS.find(m => m.value === service.calculationMethod)?.label || service.calculationMethod}
+                      </CardTitle>
+                      <Badge variant="outline">
+                        {formatDate(service.calculationDate)}
+                      </Badge>
+                    </div>
+                    <CardDescription>{service.notes}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card className="shadow-none border">
+                        <CardHeader className="py-2 px-4">
+                          <CardTitle className="text-sm flex items-center">
+                            <CloudRain className="h-4 w-4 mr-2 text-blue-500" />
+                            Captura de CO2
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="py-2 px-4 space-y-1">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Anual:</span>
+                            <span className="text-sm font-medium">{formatNumber(service.co2SequestrationAnnual, "kg/año")}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Vida útil:</span>
+                            <span className="text-sm font-medium">{formatNumber(service.co2SequestrationLifetime, "kg")}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="shadow-none border">
+                        <CardHeader className="py-2 px-4">
+                          <CardTitle className="text-sm flex items-center">
+                            <Wind className="h-4 w-4 mr-2 text-green-500" />
+                            Filtración de Contaminantes
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="py-2 px-4 space-y-1">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">NO2:</span>
+                            <span className="text-sm font-medium">{formatNumber(service.pollutantRemovalNO2, "kg/año")}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">SO2:</span>
+                            <span className="text-sm font-medium">{formatNumber(service.pollutantRemovalSO2, "kg/año")}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">PM2.5:</span>
+                            <span className="text-sm font-medium">{formatNumber(service.pollutantRemovalPM25, "kg/año")}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="shadow-none border">
+                        <CardHeader className="py-2 px-4">
+                          <CardTitle className="text-sm flex items-center">
+                            <Waves className="h-4 w-4 mr-2 text-blue-500" />
+                            Agua y Temperatura
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="py-2 px-4 space-y-1">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Intercepción:</span>
+                            <span className="text-sm font-medium">{formatNumber(service.stormwaterInterception, "m³/año")}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Sombra:</span>
+                            <span className="text-sm font-medium">{formatNumber(service.shadeAreaSummer, "m²")}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Reducción temp.:</span>
+                            <span className="text-sm font-medium">{formatNumber(service.temperatureReduction, "°C")}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    
+                    <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <LineChart className="h-5 w-5 mr-2 text-green-600" />
+                          <span className="font-medium">Valor económico anual:</span>
+                        </div>
+                        <span className="text-lg font-bold text-green-600">
+                          {formatNumber(service.totalEconomicBenefitAnnual, "$")}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
         </div>
       </div>
@@ -631,37 +582,35 @@ export default function TreeEnvironmentalManagement() {
   };
 
   return (
-    <div className="container py-6">
+    <div className="container mx-auto py-6 space-y-8">
       <Helmet>
-        <title>Gestión Ambiental de Árboles - ParquesMX</title>
+        <title>Gestión Ambiental de Arbolado | ParquesMX</title>
       </Helmet>
       
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Gestión Ambiental de Árboles</h1>
-        <p className="text-gray-500 mt-1">
-          Cálculo y seguimiento de servicios ambientales proporcionados por árboles urbanos
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Gestión Ambiental de Arbolado</h1>
+          <p className="text-gray-500 mt-1">
+            Evalúa y gestiona los servicios ambientales proporcionados por árboles en parques
+          </p>
+        </div>
       </div>
 
       {!selectedTree ? (
         <>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="md:w-1/2">
-              <Label htmlFor="search" className="sr-only">Buscar</Label>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
               <Input
-                id="search"
-                placeholder="Buscar por código, especie o parque..."
+                placeholder="Buscar por ID, especie o parque..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full"
               />
             </div>
-            
-            <div className="md:w-1/2">
-              <Label htmlFor="park-filter" className="sr-only">Filtrar por Parque</Label>
+            <div className="w-full md:w-64">
               <Select value={parkFilter} onValueChange={setParkFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Filtrar por parque" />
+                  <SelectValue placeholder="Todos los parques" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Todos los parques</SelectItem>
@@ -674,19 +623,11 @@ export default function TreeEnvironmentalManagement() {
               </Select>
             </div>
           </div>
-          
-          <Card>
-            <CardContent className="p-0 overflow-x-auto">
-              {renderTreeList()}
-            </CardContent>
-          </Card>
+
+          {renderTreeList()}
         </>
       ) : (
-        <Card>
-          <CardContent className="p-6">
-            {renderTreeDetails()}
-          </CardContent>
-        </Card>
+        renderTreeDetails()
       )}
     </div>
   );
