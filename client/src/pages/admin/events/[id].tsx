@@ -109,16 +109,52 @@ interface RegisterParticipantFormData {
   notes: string;
 }
 
+// Tipo para los recursos
+interface Resource {
+  id: number;
+  eventId: number;
+  resourceType: string;
+  resourceId: number | null;
+  resourceName: string;
+  quantity: number;
+  notes: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Tipo para el formulario de recursos
+interface ResourceFormData {
+  resourceType: string;
+  resourceName: string;
+  quantity: number;
+  notes: string;
+  status?: string;
+}
+
 const EventDetailPage = () => {
   const { id } = useParams();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("details");
+  
+  // Estados para la gestión de participantes
   const [isRegisterDialogOpen, setIsRegisterDialogOpen] = useState(false);
   const [registerForm, setRegisterForm] = useState<RegisterParticipantFormData>({
     name: "",
     email: "",
     phone: "",
     notes: ""
+  });
+  
+  // Estados para la gestión de recursos
+  const [isResourceDialogOpen, setIsResourceDialogOpen] = useState(false);
+  const [isEditingResource, setIsEditingResource] = useState(false);
+  const [currentResourceId, setCurrentResourceId] = useState<number | null>(null);
+  const [resourceForm, setResourceForm] = useState<ResourceFormData>({
+    resourceType: "espacio",
+    resourceName: "",
+    quantity: 1,
+    notes: "",
   });
 
   // Obtenemos los datos del evento
@@ -129,6 +165,12 @@ const EventDetailPage = () => {
   // Obtenemos los participantes del evento
   const { data: participants, isLoading: isLoadingParticipants } = useQuery<Participant[]>({
     queryKey: [`/api/events/${id}/participants`],
+    enabled: !!id,
+  });
+  
+  // Obtenemos los recursos del evento
+  const { data: resources, isLoading: isLoadingResources } = useQuery<Resource[]>({
+    queryKey: [`/api/events/${id}/resources`],
     enabled: !!id,
   });
 
@@ -272,6 +314,22 @@ const EventDetailPage = () => {
     confirmed: "Confirmado",
     attended: "Asistió",
     cancelled: "Cancelado",
+  };
+  
+  // Traducir tipos de recursos a español
+  const resourceTypeTranslations: Record<string, string> = {
+    espacio: "Espacio",
+    equipamiento: "Equipamiento",
+    servicio: "Servicio",
+    personal: "Personal",
+    otro: "Otro",
+  };
+  
+  // Traducir estados de recursos a español
+  const resourceStatusTranslations: Record<string, string> = {
+    pending: "Pendiente",
+    confirmed: "Confirmado",
+    rejected: "Rechazado",
   };
 
   // Generar un mapa de colores para los diferentes estados de participantes
