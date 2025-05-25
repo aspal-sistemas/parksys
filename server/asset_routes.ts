@@ -127,11 +127,94 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
 
   apiRouter.get("/assets/:id", async (req: Request, res: Response) => {
     try {
-      const asset = await storage.getAsset(parseInt(req.params.id));
-      if (!asset) {
+      // Mejorar la validación del ID
+      const assetId = parseInt(req.params.id);
+      if (isNaN(assetId)) {
+        console.error(`ID de activo inválido: ${req.params.id}`);
+        return res.status(400).json({ message: "ID de activo inválido" });
+      }
+
+      console.log(`Intentando obtener activo con ID: ${assetId}`);
+      
+      // Importar la conexión a la BD desde el módulo db.ts
+      const { pool } = await import('./db');
+      
+      // Usar una consulta SQL directa para evitar problemas
+      const result = await pool.query("SELECT * FROM assets WHERE id = $1", [assetId]);
+      
+      if (result.rows && result.rows.length > 0) {
+        const asset = result.rows[0];
+        console.log(`Activo encontrado: ${asset.name}`);
+        
+        // Consultar información adicional (categoría y parque)
+        let categoryData = { name: 'Sin categoría', icon: 'box', color: '#666666' };
+        if (asset.category_id) {
+          const categoryResult = await pool.query(
+            "SELECT name, icon, color FROM asset_categories WHERE id = $1", 
+            [asset.category_id]
+          );
+          if (categoryResult.rows && categoryResult.rows.length > 0) {
+            categoryData = categoryResult.rows[0];
+          }
+        }
+        
+        let parkName = 'Sin asignar';
+        if (asset.park_id) {
+          const parkResult = await pool.query(
+            "SELECT name FROM parks WHERE id = $1", 
+            [asset.park_id]
+          );
+          if (parkResult.rows && parkResult.rows.length > 0) {
+            parkName = parkResult.rows[0].name;
+          }
+        }
+        
+        // Transformar a formato para el frontend
+        const transformedAsset = {
+          id: asset.id,
+          name: asset.name,
+          description: asset.description,
+          serialNumber: asset.serial_number,
+          categoryId: asset.category_id,
+          parkId: asset.park_id,
+          locationDescription: asset.location_description,
+          latitude: asset.latitude,
+          longitude: asset.longitude,
+          acquisitionDate: asset.acquisition_date,
+          acquisitionCost: asset.acquisition_cost,
+          currentValue: asset.current_value,
+          manufacturer: asset.manufacturer,
+          model: asset.model,
+          status: asset.status,
+          condition: asset.condition,
+          maintenanceFrequency: asset.maintenance_frequency,
+          lastMaintenanceDate: asset.last_maintenance_date,
+          nextMaintenanceDate: asset.next_maintenance_date,
+          expectedLifespan: asset.expected_lifespan,
+          notes: asset.notes,
+          qrCode: asset.qr_code,
+          responsiblePersonId: asset.responsible_person_id,
+          createdAt: asset.created_at,
+          updatedAt: asset.updated_at,
+          photos: asset.photos || [],
+          documents: asset.documents || [],
+          
+          // Datos de categoría
+          categoryName: categoryData.name,
+          categoryIcon: categoryData.icon,
+          categoryColor: categoryData.color,
+          categoryIconType: "system",
+          categoryCustomIconUrl: null,
+          
+          // Datos de parque
+          parkName: parkName
+        };
+        
+        return res.json(transformedAsset);
+      } else {
+        console.log(`No se encontró ningún activo con ID: ${assetId}`);
         return res.status(404).json({ message: "Activo no encontrado" });
       }
-      res.json(asset);
     } catch (error) {
       console.error(`Error al obtener activo ${req.params.id}:`, error);
       res.status(500).json({ message: "Error al obtener activo" });
