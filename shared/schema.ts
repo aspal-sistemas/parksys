@@ -385,6 +385,71 @@ export const insertVolunteerRecognitionSchema = createInsertSchema(volunteerReco
   updatedAt: true
 });
 
+// Perfiles de concesionarios
+export const concessionaireProfiles = pgTable("concessionaire_profiles", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  type: varchar("type", { length: 50 }).notNull(), // persona_fisica, persona_moral
+  rfc: varchar("rfc", { length: 20 }).notNull().unique(),
+  taxAddress: text("tax_address").notNull(),
+  legalRepresentative: varchar("legal_representative", { length: 200 }),
+  registrationDate: date("registration_date").notNull().defaultNow(),
+  status: varchar("status", { length: 20 }).notNull().default("activo"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+export type ConcessionaireProfile = typeof concessionaireProfiles.$inferSelect;
+export type InsertConcessionaireProfile = typeof concessionaireProfiles.$inferInsert;
+
+export const insertConcessionaireProfileSchema = createInsertSchema(concessionaireProfiles).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Documentos de concesionarios
+export const concessionaireDocuments = pgTable("concessionaire_documents", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  documentType: varchar("document_type", { length: 50 }).notNull(), // rfc, identificacion, acta_constitutiva, poder_notarial, etc.
+  documentName: varchar("document_name", { length: 200 }).notNull(),
+  documentUrl: varchar("document_url", { length: 255 }).notNull(),
+  uploadDate: timestamp("upload_date").notNull().defaultNow(),
+  expiryDate: date("expiry_date"),
+  isVerified: boolean("is_verified").default(false),
+  verificationDate: timestamp("verification_date"),
+  verifiedById: integer("verified_by_id"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type ConcessionaireDocument = typeof concessionaireDocuments.$inferSelect;
+export type InsertConcessionaireDocument = typeof concessionaireDocuments.$inferInsert;
+
+export const insertConcessionaireDocumentSchema = createInsertSchema(concessionaireDocuments).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Relaciones para las tablas de concesionarios
+export const concessionaireProfilesRelations = relations(concessionaireProfiles, ({ one, many }) => ({
+  user: one(users, {
+    fields: [concessionaireProfiles.userId],
+    references: [users.id]
+  })
+}));
+
+export const concessionaireDocumentsRelations = relations(concessionaireDocuments, ({ one }) => ({
+  user: one(users, {
+    fields: [concessionaireDocuments.userId],
+    references: [users.id]
+  })
+}));
+
 // Definición de tablas de instructores
 export const instructors = pgTable("instructors", {
   id: serial("id").primaryKey(),
