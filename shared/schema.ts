@@ -833,6 +833,53 @@ export const insertConcessionSchema = createInsertSchema(concessions).omit({
   updatedAt: true
 });
 
+// Tabla para contratos de concesiones
+export const concessionContracts = pgTable("concession_contracts", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").notNull(),
+  concessionaireId: integer("concessionaire_id").notNull(),
+  concessionTypeId: integer("concession_type_id").notNull(),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  fee: decimal("fee", { precision: 10, scale: 2 }).notNull(),
+  exclusivityClauses: text("exclusivity_clauses"),
+  restrictions: text("restrictions"),
+  contractFileUrl: text("contract_file_url"),
+  status: varchar("status", { length: 20 }).notNull().default("active"),
+  hasExtension: boolean("has_extension").default(false),
+  extensionDate: date("extension_date"),
+  notes: text("notes"),
+  createdById: integer("created_by_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+export type ConcessionContract = typeof concessionContracts.$inferSelect;
+export type InsertConcessionContract = typeof concessionContracts.$inferInsert;
+
+export const insertConcessionContractSchema = createInsertSchema(concessionContracts).omit({
+  id: true,
+  createdById: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Relaciones para los contratos de concesiones
+export const concessionContractsRelations = relations(concessionContracts, ({ one }) => ({
+  park: one(parks, {
+    fields: [concessionContracts.parkId],
+    references: [parks.id]
+  }),
+  concessionaire: one(users, {
+    fields: [concessionContracts.concessionaireId],
+    references: [users.id]
+  }),
+  concessionType: one(concessionTypes, {
+    fields: [concessionContracts.concessionTypeId],
+    references: [concessionTypes.id]
+  })
+}));
+
 // Relaciones para las concesiones
 export const concessionsRelations = relations(concessions, ({ one }) => ({
   park: one(parks, {
