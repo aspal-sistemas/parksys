@@ -381,6 +381,12 @@ function Router() {
           </Suspense>
         </Route>
         
+        <Route path="/admin/concessions/concessionaires">
+          <Suspense fallback={<div className="p-8 text-center">Cargando registro de concesionarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/concessions/concessionaires/index')))}
+          </Suspense>
+        </Route>
+        
         <Route component={NotFound} />
       </Switch>
     </div>
