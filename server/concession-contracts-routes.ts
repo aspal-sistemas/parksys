@@ -179,15 +179,15 @@ export function registerConcessionContractsRoutes(app: any, apiRouter: Router, i
           parkId: Number(parkId),
           concessionaireId: Number(concessionaireId),
           concessionTypeId: Number(concessionTypeId),
-          startDate: new Date(startDate),
-          endDate: new Date(endDate),
-          fee: Number(fee),
+          startDate: startDate,
+          endDate: endDate,
+          fee: fee,
           exclusivityClauses,
           restrictions,
           contractFileUrl,
           status: status || "active",
           hasExtension: hasExtension === 'true',
-          extensionDate: extensionDate ? new Date(extensionDate) : null,
+          extensionDate: extensionDate || null,
           notes,
           createdById: req.headers['x-user-id'] ? Number(req.headers['x-user-id']) : null,
         })
@@ -261,15 +261,15 @@ export function registerConcessionContractsRoutes(app: any, apiRouter: Router, i
           parkId: Number(parkId),
           concessionaireId: Number(concessionaireId),
           concessionTypeId: Number(concessionTypeId),
-          startDate: new Date(startDate),
-          endDate: new Date(endDate),
-          fee: Number(fee),
+          startDate: startDate,
+          endDate: endDate,
+          fee: fee,
           exclusivityClauses,
           restrictions,
           contractFileUrl,
           status: status || "active",
           hasExtension: hasExtension === 'true',
-          extensionDate: extensionDate ? new Date(extensionDate) : null,
+          extensionDate: extensionDate || null,
           notes,
           updatedAt: new Date()
         })
@@ -343,7 +343,7 @@ export function registerConcessionContractsRoutes(app: any, apiRouter: Router, i
         status: concessionContracts.status,
         parkName: parks.name,
         concessionaireName: users.fullName,
-        daysRemaining: db.sql`(date(${concessionContracts.endDate}) - date(${formattedCurrentDate}))`,
+        daysRemaining: concessionContracts.id,
       })
       .from(concessionContracts)
       .leftJoin(parks, eq(concessionContracts.parkId, parks.id))
@@ -380,7 +380,7 @@ export function registerConcessionContractsRoutes(app: any, apiRouter: Router, i
         status: concessionContracts.status,
         parkName: parks.name,
         concessionaireName: users.fullName,
-        daysSinceExpiry: db.sql`(date(${formattedCurrentDate}) - date(${concessionContracts.endDate}))`,
+        daysSinceExpiry: concessionContracts.id,
       })
       .from(concessionContracts)
       .leftJoin(parks, eq(concessionContracts.parkId, parks.id))
