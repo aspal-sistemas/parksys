@@ -103,18 +103,69 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         return res.status(404).json({ error: "Árbol no encontrado" });
       }
       
-      // Validar datos de entrada
-      const validatedData = insertTreeMaintenanceSchema.parse({
-        ...req.body,
-        tree_id: treeId
-      });
+      // Obtener y convertir datos de entrada
+      const { maintenance_type, maintenance_date, notes, description, performed_by, next_maintenance_date } = req.body;
       
-      // Insertar registro de mantenimiento
-      const [newMaintenance] = await db.insert(treeMaintenances)
-        .values(validatedData)
-        .returning();
+      // Validar que los campos obligatorios estén presentes
+      if (!maintenance_type || !maintenance_date) {
+        return res.status(400).json({ 
+          error: "Datos de mantenimiento inválidos", 
+          details: "Los campos maintenance_type y maintenance_date son obligatorios" 
+        });
+      }
       
-      res.status(201).json({ data: newMaintenance });
+      // Convertir performed_by a número si existe
+      let performedById = null;
+      if (performed_by) {
+        performedById = Number(performed_by);
+        if (isNaN(performedById)) {
+          return res.status(400).json({ 
+            error: "Datos de mantenimiento inválidos", 
+            details: "El campo performed_by debe ser un número" 
+          });
+        }
+      }
+      
+      // Insertar usando SQL directo para evitar problemas de esquema
+      const result = await db.execute(sql`
+        INSERT INTO tree_maintenances (
+          tree_id, 
+          maintenance_type, 
+          maintenance_date, 
+          description,
+          performed_by, 
+          notes, 
+          next_maintenance_date,
+          created_at
+        ) 
+        VALUES (
+          ${treeId}, 
+          ${maintenance_type}, 
+          ${maintenance_date}, 
+          ${description || null},
+          ${performedById}, 
+          ${notes || null}, 
+          ${next_maintenance_date || null},
+          NOW()
+        )
+        RETURNING *
+      `);
+      
+      // Formatear el resultado
+      const maintenance = result.rows[0];
+      const formattedMaintenance = {
+        id: maintenance.id,
+        treeId: maintenance.tree_id,
+        maintenanceType: maintenance.maintenance_type,
+        maintenanceDate: maintenance.maintenance_date,
+        description: maintenance.description,
+        performedBy: maintenance.performed_by,
+        notes: maintenance.notes,
+        nextMaintenanceDate: maintenance.next_maintenance_date,
+        createdAt: maintenance.created_at
+      };
+      
+      res.status(201).json({ data: formattedMaintenance });
     } catch (error) {
       console.error("Error al crear registro de mantenimiento:", error);
       

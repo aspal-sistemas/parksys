@@ -30,16 +30,9 @@ export async function addSampleTreeMaintenances() {
       "Otro"
     ];
     
-    // Personal que puede realizar mantenimientos
+    // IDs de usuarios que pueden realizar mantenimientos
     const personnel = [
-      "Juan Pérez", 
-      "María González", 
-      "Carlos Rodríguez", 
-      "Ana Martínez",
-      "Roberto Sánchez",
-      "Lucía Fernández",
-      "Miguel Ángel Torres",
-      "Equipo de Jardinería Municipal"
+      1, 2, 3, 4, 5
     ];
     
     // Notas de mantenimiento posibles
