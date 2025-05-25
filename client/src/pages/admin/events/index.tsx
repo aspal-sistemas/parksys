@@ -29,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import EmptyState from "@/components/EmptyState";
 import PageHeader from "@/components/PageHeader";
+import AdminLayout from "@/components/AdminLayout";
 import { 
   Calendar, 
   ChevronRight, 
@@ -163,27 +164,28 @@ const EventsPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <PageHeader
-        title="Eventos"
-        description="Gestiona los eventos de los parques"
-        actions={
-          <>
-            <Button variant="outline" asChild>
-              <Link href="/admin/events/calendar">
-                <CalendarDays className="mr-2 h-4 w-4" />
-                Calendario
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href="/admin/events/new">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Nuevo Evento
-              </Link>
-            </Button>
-          </>
-        }
-      />
+    <AdminLayout>
+      <div className="container mx-auto py-6">
+        <PageHeader
+          title="Eventos"
+          description="Gestiona los eventos de los parques"
+          actions={
+            <>
+              <Button variant="outline" asChild>
+                <Link href="/admin/events/calendar">
+                  <CalendarDays className="mr-2 h-4 w-4" />
+                  Calendario
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href="/admin/events/new">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Nuevo Evento
+                </Link>
+              </Button>
+            </>
+          }
+        />
 
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-grow">
