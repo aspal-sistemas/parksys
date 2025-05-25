@@ -334,9 +334,15 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
     try {
       const { id } = req.params;
       
+      // Validar que el ID sea un número válido
+      const treeId = parseInt(id);
+      if (isNaN(treeId)) {
+        return res.status(400).json({ error: "ID de árbol no válido" });
+      }
+      
       // Obtener el árbol usando SQL directo
       const treeResult = await db.execute(sql`
-        SELECT * FROM trees WHERE id = ${Number(id)}
+        SELECT * FROM trees WHERE id = ${treeId}
       `);
       
       if (!treeResult.rows || treeResult.rows.length === 0) {
