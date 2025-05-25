@@ -121,18 +121,7 @@ function Router() {
         </Route>
         <Route path="/admin/users" component={AdminUsers} />
 
-        {/* Rutas para Gestión de Concesionarios (en módulo de Usuarios) */}
-        <Route path="/admin/users/concessionaires">
-          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de concesionarios...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/users/concessionaires/index')))}
-          </Suspense>
-        </Route>
-        
-        <Route path="/admin/users/concessionaires/:id/documents">
-          <Suspense fallback={<div className="p-8 text-center">Cargando documentos del concesionario...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/users/concessionaires/documents')))}
-          </Suspense>
-        </Route>
+        {/* Rutas para concesionarios movidas al módulo de Concesiones */}
         <Route path="/admin/amenities" component={AdminAmenities} />
         <Route path="/admin/settings" component={AdminSettings} />
         <Route path="/admin/login" component={AdminLogin} />

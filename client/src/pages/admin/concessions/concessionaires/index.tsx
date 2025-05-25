@@ -41,6 +41,7 @@ export default function ConcessionairesPage() {
   const [selectedConcessionaire, setSelectedConcessionaire] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("listado");
   const [searchTerm, setSearchTerm] = useState("");
+  const [showNewConcessionaireDialog, setShowNewConcessionaireDialog] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -220,11 +221,9 @@ export default function ConcessionairesPage() {
               Administra los concesionarios autorizados para operar en los parques
             </p>
           </div>
-          <Button className="gap-2" asChild>
-            <a href="/admin/users/concessionaires">
-              <Plus size={16} />
-              Nuevo Concesionario
-            </a>
+          <Button className="gap-2" onClick={() => setShowNewConcessionaireDialog(true)}>
+            <Plus size={16} />
+            Nuevo Concesionario
           </Button>
         </div>
 
@@ -373,6 +372,199 @@ export default function ConcessionairesPage() {
 
         </Tabs>
       </div>
+
+      {/* Diálogo para crear nuevo concesionario */}
+      <Dialog open={showNewConcessionaireDialog} onOpenChange={setShowNewConcessionaireDialog}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>Registro de Nuevo Concesionario</DialogTitle>
+            <DialogDescription>
+              Ingresa los datos para registrar un nuevo concesionario.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Tabs defaultValue="datos" className="w-full">
+            <TabsList className="grid grid-cols-3 w-full">
+              <TabsTrigger value="datos">
+                <Users className="h-4 w-4 mr-2" />
+                Datos Generales
+              </TabsTrigger>
+              <TabsTrigger value="documentos">
+                <FileText className="h-4 w-4 mr-2" />
+                Documentación
+              </TabsTrigger>
+              <TabsTrigger value="evaluaciones">
+                <Star className="h-4 w-4 mr-2" />
+                Evaluaciones
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="datos">
+              <Form {...createForm}>
+                <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
+                  <FormField
+                    control={createForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre o Razón Social</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={createForm.control}
+                      name="rfc"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>RFC</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tipo</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona el tipo" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="persona_fisica">Persona Física</SelectItem>
+                              <SelectItem value="persona_moral">Persona Moral</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={createForm.control}
+                    name="tax_address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Domicilio Fiscal</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={createForm.control}
+                      name="legal_representative"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Representante Legal</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Teléfono</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={createForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Correo Electrónico</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="email" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={createForm.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Notas</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <DialogFooter>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setShowNewConcessionaireDialog(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button type="submit" disabled={createForm.formState.isSubmitting}>
+                      {createForm.formState.isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Guardando...
+                        </>
+                      ) : "Guardar Concesionario"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </TabsContent>
+            
+            <TabsContent value="documentos">
+              <div className="space-y-4 py-4">
+                <div className="text-center py-6">
+                  <FileUp className="h-10 w-10 text-blue-500 mx-auto mb-2" />
+                  <p className="text-lg font-medium">Documentos Requeridos</p>
+                  <p className="text-muted-foreground mb-4">
+                    Guarda primero los datos generales del concesionario para poder subir documentos.
+                  </p>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="evaluaciones">
+              <div className="space-y-4 py-4">
+                <div className="text-center py-6">
+                  <Star className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
+                  <p className="text-lg font-medium">Evaluaciones de Desempeño</p>
+                  <p className="text-muted-foreground mb-4">
+                    Guarda primero los datos generales del concesionario para registrar evaluaciones.
+                  </p>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
 
       {/* Diálogo para editar concesionario */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
