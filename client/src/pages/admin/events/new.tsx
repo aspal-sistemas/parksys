@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import AdminLayout from "@/components/AdminLayout";
+import PageHeader from "@/components/PageHeader";
 import {
   Select,
   SelectContent,
@@ -34,7 +36,6 @@ import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Clock, Users, MapPin } from "lucide-react";
-import PageHeader from "@/components/PageHeader";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 // Esquema para validar el formulario
@@ -692,6 +693,7 @@ const NewEventPage: React.FC = () => {
         </form>
       </Form>
     </div>
+    </AdminLayout>
   );
 };
 
