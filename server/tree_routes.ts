@@ -149,6 +149,115 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   // Usar la implementación de inventario adaptada a la estructura real de la tabla
   apiRouter.get("/trees", getTreeInventory);
   
+  // Endpoint para obtener los mantenimientos de un árbol específico
+  apiRouter.get("/trees/:id/maintenances", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      // Verificar que el árbol existe
+      const treeResult = await db.execute(sql`
+        SELECT * FROM trees WHERE id = ${Number(id)}
+      `);
+      
+      if (!treeResult.rows || treeResult.rows.length === 0) {
+        return res.status(404).json({ error: "Árbol no encontrado" });
+      }
+      
+      // Obtener los mantenimientos
+      const maintenancesResult = await db.execute(sql`
+        SELECT * FROM tree_maintenances 
+        WHERE tree_id = ${Number(id)}
+        ORDER BY maintenance_date DESC
+      `);
+      
+      // Formatear los resultados
+      const maintenances = maintenancesResult.rows.map(m => ({
+        id: m.id,
+        treeId: m.tree_id,
+        maintenanceType: m.maintenance_type,
+        maintenanceDate: m.maintenance_date,
+        performedBy: m.performed_by,
+        notes: m.notes,
+        createdAt: m.created_at,
+        updatedAt: m.updated_at
+      }));
+      
+      res.json({ data: maintenances });
+    } catch (error) {
+      console.error("Error fetching tree maintenances:", error);
+      res.status(500).json({ error: "Error al obtener mantenimientos del árbol" });
+    }
+  });
+  
+  // Endpoint para crear un nuevo mantenimiento
+  apiRouter.post("/trees/:id/maintenances", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { maintenanceType, maintenanceDate, performedBy, notes } = req.body;
+      
+      if (!maintenanceType || !maintenanceDate) {
+        return res.status(400).json({ error: "Tipo de mantenimiento y fecha son obligatorios" });
+      }
+      
+      // Verificar que el árbol existe
+      const treeResult = await db.execute(sql`
+        SELECT * FROM trees WHERE id = ${Number(id)}
+      `);
+      
+      if (!treeResult.rows || treeResult.rows.length === 0) {
+        return res.status(404).json({ error: "Árbol no encontrado" });
+      }
+      
+      // Insertar el nuevo mantenimiento
+      const result = await db.execute(sql`
+        INSERT INTO tree_maintenances (
+          tree_id, 
+          maintenance_type, 
+          maintenance_date, 
+          performed_by, 
+          notes, 
+          created_at, 
+          updated_at
+        ) 
+        VALUES (
+          ${Number(id)}, 
+          ${maintenanceType}, 
+          ${maintenanceDate}, 
+          ${performedBy || null}, 
+          ${notes || null}, 
+          NOW(), 
+          NOW()
+        )
+        RETURNING *
+      `);
+      
+      // Actualizar la fecha del último mantenimiento en el árbol
+      await db.execute(sql`
+        UPDATE trees 
+        SET last_maintenance_date = ${maintenanceDate}
+        WHERE id = ${Number(id)}
+      `);
+      
+      // Formatear el resultado
+      const maintenance = result.rows[0];
+      const formattedMaintenance = {
+        id: maintenance.id,
+        treeId: maintenance.tree_id,
+        maintenanceType: maintenance.maintenance_type,
+        maintenanceDate: maintenance.maintenance_date,
+        performedBy: maintenance.performed_by,
+        notes: maintenance.notes,
+        createdAt: maintenance.created_at,
+        updatedAt: maintenance.updated_at
+      };
+      
+      res.status(201).json({ data: formattedMaintenance });
+    } catch (error) {
+      console.error("Error creating tree maintenance:", error);
+      res.status(500).json({ error: "Error al crear mantenimiento del árbol" });
+    }
+  });
+  
   // Ruta para obtener detalles de un árbol específico
   apiRouter.get("/trees/:id", async (req: Request, res: Response) => {
     try {

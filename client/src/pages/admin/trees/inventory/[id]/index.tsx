@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRoute, useLocation } from 'wouter';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -8,7 +8,7 @@ import AdminLayout from '@/components/AdminLayout';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Sprout, TreeDeciduous, ThermometerSun, Tag } from 'lucide-react';
+import { Sprout, TreeDeciduous, ThermometerSun, Tag, AlertCircle, AlertOctagon, AlertTriangle, CircleAlert, CircleCheck, Info, ArrowLeft, Edit, ExternalLink, MapPin, Leaf, Calendar, Ruler, HelpCircle, Trash2, Plus, Scissors, Shovel, Wrench } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -68,6 +68,13 @@ function TreeDetailPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const treeId = params?.id;
+  const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false);
+  const [newMaintenance, setNewMaintenance] = useState({
+    maintenanceType: '',
+    maintenanceDate: '',
+    performedBy: '',
+    notes: ''
+  });
 
   // Consultar información del árbol
   const {
@@ -80,6 +87,23 @@ function TreeDetailPage() {
       const response = await fetch(`/api/trees/${treeId}`);
       if (!response.ok) {
         throw new Error('Error al cargar la información del árbol');
+      }
+      return response.json();
+    },
+    enabled: !!treeId,
+  });
+  
+  // Consultar mantenimientos del árbol
+  const {
+    data: maintenances,
+    isLoading: isLoadingMaintenances,
+    refetch: refetchMaintenances
+  } = useQuery({
+    queryKey: [`/api/trees/${treeId}/maintenances`],
+    queryFn: async () => {
+      const response = await fetch(`/api/trees/${treeId}/maintenances`);
+      if (!response.ok) {
+        throw new Error('Error al cargar los mantenimientos del árbol');
       }
       return response.json();
     },
@@ -306,10 +330,11 @@ function TreeDetailPage() {
           </div>
         ) : (
           <Tabs defaultValue="general" className="space-y-6">
-            <TabsList className="grid grid-cols-3">
+            <TabsList className="grid grid-cols-4">
               <TabsTrigger value="general">Información General</TabsTrigger>
               <TabsTrigger value="physical">Estado Físico</TabsTrigger>
               <TabsTrigger value="location">Ubicación</TabsTrigger>
+              <TabsTrigger value="maintenance">Mantenimiento</TabsTrigger>
             </TabsList>
 
             {/* Tab: Información General */}
