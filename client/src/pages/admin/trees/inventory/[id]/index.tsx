@@ -148,6 +148,78 @@ function TreeDetailPage() {
       return 'Fecha inválida';
     }
   };
+  
+  // Agregar un nuevo mantenimiento
+  const createMaintenanceMutation = useMutation({
+    mutationFn: async (data: typeof newMaintenance) => {
+      return apiRequest(`/api/trees/${treeId}/maintenances`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      // Cerrar el modal y limpiar el formulario
+      setIsMaintenanceModalOpen(false);
+      setNewMaintenance({
+        maintenanceType: '',
+        maintenanceDate: '',
+        performedBy: '',
+        notes: ''
+      });
+      
+      // Mostrar mensaje de éxito
+      toast({
+        title: 'Mantenimiento registrado',
+        description: 'El mantenimiento ha sido registrado correctamente.',
+        variant: 'success',
+      });
+      
+      // Actualizar los datos
+      refetchMaintenances();
+      queryClient.invalidateQueries({ queryKey: [`/api/trees/${treeId}`] });
+    },
+    onError: (error) => {
+      console.error('Error al registrar mantenimiento:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo registrar el mantenimiento. Por favor, intenta nuevamente.',
+        variant: 'destructive',
+      });
+    },
+  });
+  
+  // Manejar el envío del formulario
+  const handleSubmitMaintenance = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMaintenance.maintenanceType || !newMaintenance.maintenanceDate) {
+      toast({
+        title: 'Campos requeridos',
+        description: 'Por favor completa el tipo de mantenimiento y la fecha.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    createMaintenanceMutation.mutate(newMaintenance);
+  };
+  
+  // Obtener el icono para el tipo de mantenimiento
+  const getMaintenanceIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'poda':
+        return <Scissors className="h-4 w-4" />;
+      case 'plantación':
+        return <Shovel className="h-4 w-4" />;
+      case 'riego':
+        return <Sprout className="h-4 w-4" />;
+      case 'tratamiento fitosanitario':
+        return <Leaf className="h-4 w-4" />;
+      case 'reparación':
+        return <Wrench className="h-4 w-4" />;
+      default:
+        return <CircleCheck className="h-4 w-4" />;
+    }
+  };
 
   // Obtener badge de estado de salud
   const getHealthStatusBadge = (status: string | null | undefined) => {
@@ -613,6 +685,203 @@ function TreeDetailPage() {
             </TabsContent>
 
             {/* Tab: Ubicación */}
+            <TabsContent value="maintenance">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-semibold text-gray-900">Registro de Mantenimiento</h2>
+                  <Dialog open={isMaintenanceModalOpen} onOpenChange={setIsMaintenanceModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-green-600 hover:bg-green-700">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Registrar Mantenimiento
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[500px]">
+                      <DialogHeader>
+                        <DialogTitle>Registrar Nuevo Mantenimiento</DialogTitle>
+                        <DialogDescription>
+                          Ingresa los detalles del mantenimiento realizado al árbol.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={handleSubmitMaintenance} className="space-y-4">
+                        <div className="space-y-2">
+                          <label htmlFor="maintenanceType" className="text-sm font-medium">
+                            Tipo de Mantenimiento *
+                          </label>
+                          <select 
+                            id="maintenanceType"
+                            className="w-full p-2 border rounded-md"
+                            value={newMaintenance.maintenanceType}
+                            onChange={(e) => setNewMaintenance({...newMaintenance, maintenanceType: e.target.value})}
+                            required
+                          >
+                            <option value="">Seleccionar tipo</option>
+                            <option value="Poda">Poda</option>
+                            <option value="Plantación">Plantación</option>
+                            <option value="Riego">Riego</option>
+                            <option value="Tratamiento Fitosanitario">Tratamiento Fitosanitario</option>
+                            <option value="Reparación">Reparación</option>
+                            <option value="Inspección">Inspección</option>
+                            <option value="Otro">Otro</option>
+                          </select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label htmlFor="maintenanceDate" className="text-sm font-medium">
+                            Fecha de Mantenimiento *
+                          </label>
+                          <input 
+                            type="date"
+                            id="maintenanceDate"
+                            className="w-full p-2 border rounded-md"
+                            value={newMaintenance.maintenanceDate}
+                            onChange={(e) => setNewMaintenance({...newMaintenance, maintenanceDate: e.target.value})}
+                            required
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label htmlFor="performedBy" className="text-sm font-medium">
+                            Realizado por
+                          </label>
+                          <input 
+                            type="text"
+                            id="performedBy"
+                            className="w-full p-2 border rounded-md"
+                            value={newMaintenance.performedBy}
+                            onChange={(e) => setNewMaintenance({...newMaintenance, performedBy: e.target.value})}
+                            placeholder="Nombre de la persona o equipo"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label htmlFor="notes" className="text-sm font-medium">
+                            Notas y observaciones
+                          </label>
+                          <textarea 
+                            id="notes"
+                            className="w-full p-2 border rounded-md h-24"
+                            value={newMaintenance.notes}
+                            onChange={(e) => setNewMaintenance({...newMaintenance, notes: e.target.value})}
+                            placeholder="Detalles adicionales sobre el mantenimiento realizado"
+                          />
+                        </div>
+                        
+                        <DialogFooter>
+                          <Button type="button" variant="outline" onClick={() => setIsMaintenanceModalOpen(false)}>
+                            Cancelar
+                          </Button>
+                          <Button 
+                            type="submit" 
+                            disabled={createMaintenanceMutation.isPending}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            {createMaintenanceMutation.isPending ? 'Guardando...' : 'Guardar Mantenimiento'}
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Historial de Mantenimientos</CardTitle>
+                    <CardDescription>
+                      Registro de todas las actividades de mantenimiento realizadas en este árbol
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {isLoadingMaintenances ? (
+                      <div className="space-y-3">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                      </div>
+                    ) : maintenances?.data?.length > 0 ? (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Tipo</TableHead>
+                            <TableHead>Fecha</TableHead>
+                            <TableHead>Realizado por</TableHead>
+                            <TableHead>Notas</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {maintenances.data.map((maintenance: any) => (
+                            <TableRow key={maintenance.id}>
+                              <TableCell className="font-medium flex items-center">
+                                <div className="mr-2 text-green-600">
+                                  {getMaintenanceIcon(maintenance.maintenanceType)}
+                                </div>
+                                {maintenance.maintenanceType}
+                              </TableCell>
+                              <TableCell>{formatDate(maintenance.maintenanceDate)}</TableCell>
+                              <TableCell>{maintenance.performedBy || '-'}</TableCell>
+                              <TableCell className="max-w-xs truncate">
+                                {maintenance.notes || 'Sin observaciones'}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="mx-auto h-12 w-12 text-gray-400 mb-4">
+                          <Shovel className="h-12 w-12" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-1">No hay mantenimientos registrados</h3>
+                        <p className="text-gray-500 mb-4">
+                          No se han registrado actividades de mantenimiento para este árbol todavía.
+                        </p>
+                        <Button
+                          onClick={() => setIsMaintenanceModalOpen(true)}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Registrar el primer mantenimiento
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Información de Mantenimiento</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h3 className="text-sm text-gray-500 mb-1">Último mantenimiento</h3>
+                        <p className="font-medium text-gray-900">
+                          {tree.lastMaintenanceDate ? formatDate(tree.lastMaintenanceDate) : 'No registrado'}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h3 className="text-sm text-gray-500 mb-1">Mantenimientos registrados</h3>
+                        <p className="font-medium text-gray-900">
+                          {maintenances?.data?.length || 0} en total
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h3 className="text-sm text-gray-500 mb-1">Próximo mantenimiento sugerido</h3>
+                        <p className="font-medium text-gray-900">
+                          {tree.lastMaintenanceDate ? 
+                            formatDate(new Date(new Date(tree.lastMaintenanceDate).setMonth(
+                              new Date(tree.lastMaintenanceDate).getMonth() + 3
+                            ))) : 
+                            'No aplica'
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
             <TabsContent value="location">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="md:col-span-1">
