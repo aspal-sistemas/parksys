@@ -153,14 +153,14 @@ export async function getParkByIdDirectly(parkId: number) {
       // Continuamos con el resto de consultas aunque esta falle
     }
     
-    // Obtener imágenes del parque
+    // Obtener imágenes del parque - adaptado a la estructura real
     try {
       const imagesResult = await pool.query(`
         SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", 
-               position, description, caption
+               description, caption
         FROM park_images
         WHERE park_id = $1
-        ORDER BY is_primary DESC, position ASC
+        ORDER BY is_primary DESC
       `, [parkId]);
       
       console.log("Imágenes encontradas:", imagesResult.rowCount);
@@ -173,27 +173,16 @@ export async function getParkByIdDirectly(parkId: number) {
       }
     } catch (err) {
       console.error("Error al obtener imágenes:", err);
+      // Si hay error, dejamos el array vacío que ya se inicializó
     }
     
-    // Obtener documentos del parque
-    try {
-      const documentsResult = await pool.query(`
-        SELECT id, park_id as "parkId", name, file_url as "fileUrl", 
-               file_type as "fileType", description, uploaded_at as "uploadedAt"
-        FROM park_documents
-        WHERE park_id = $1
-      `, [parkId]);
-      
-      console.log("Documentos encontrados:", documentsResult.rowCount);
-      extendedPark.documents = documentsResult.rows || [];
-    } catch (err) {
-      console.error("Error al obtener documentos:", err);
-    }
+    // Documentos - la tabla no existe, así que dejamos el array vacío
+    console.log("Omitiendo consulta de documentos porque la tabla no existe");
     
-    // Obtener actividades del parque
+    // Obtener actividades del parque - adaptado a la estructura real
     try {
       const activitiesResult = await pool.query(`
-        SELECT id, park_id as "parkId", title, description, activity_type as "activityType", 
+        SELECT id, park_id as "parkId", title, description, type as "activityType", 
                start_date as "startDate", end_date as "endDate", capacity, 
                instructor_id as "instructorId", status, image_url as "imageUrl"
         FROM activities
@@ -205,20 +194,45 @@ export async function getParkByIdDirectly(parkId: number) {
       extendedPark.activities = activitiesResult.rows || [];
     } catch (err) {
       console.error("Error al obtener actividades:", err);
+      // Si hay error, dejamos el array vacío que ya se inicializó
     }
     
-    // Contar árboles del parque para estadísticas básicas
+    // Contar árboles del parque - adaptado a la estructura real
     try {
-      const treeStatsResult = await pool.query(`
-        SELECT 
-          COUNT(*) as total,
-          COUNT(CASE WHEN health_condition = 'Bueno' THEN 1 END) as good,
-          COUNT(CASE WHEN health_condition = 'Regular' THEN 1 END) as regular,
-          COUNT(CASE WHEN health_condition = 'Malo' THEN 1 END) as bad,
-          COUNT(CASE WHEN health_condition IS NULL OR health_condition = '' THEN 1 END) as unknown
-        FROM trees
-        WHERE park_id = $1
-      `, [parkId]);
+      // Consultamos primero los campos disponibles en la tabla trees
+      const treeColumns = await pool.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'trees'
+      `);
+      
+      // Verificamos si existe la columna health_condition
+      const hasHealthCondition = treeColumns.rows.some(col => col.column_name === 'health_condition');
+      
+      // Construimos la consulta según los campos disponibles
+      let treeQuery;
+      if (hasHealthCondition) {
+        treeQuery = `
+          SELECT 
+            COUNT(*) as total,
+            COUNT(CASE WHEN health_condition = 'Bueno' THEN 1 END) as good,
+            COUNT(CASE WHEN health_condition = 'Regular' THEN 1 END) as regular,
+            COUNT(CASE WHEN health_condition = 'Malo' THEN 1 END) as bad,
+            COUNT(CASE WHEN health_condition IS NULL OR health_condition = '' THEN 1 END) as unknown
+          FROM trees
+          WHERE park_id = $1
+        `;
+      } else {
+        // Si no existe la columna, simplemente contamos el total
+        treeQuery = `
+          SELECT 
+            COUNT(*) as total
+          FROM trees
+          WHERE park_id = $1
+        `;
+      }
+      
+      const treeStatsResult = await pool.query(treeQuery, [parkId]);
       
       console.log("Estadísticas de árboles obtenidas:", treeStatsResult.rows[0]?.total || 0);
       
