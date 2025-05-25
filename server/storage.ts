@@ -442,6 +442,13 @@ export class DatabaseStorage implements IStorage {
   
   async getAsset(id: number): Promise<any> {
     try {
+      // Verificamos que id sea un número válido
+      const assetId = parseInt(String(id), 10);
+      if (isNaN(assetId)) {
+        console.error("ID de activo inválido:", id);
+        return undefined;
+      }
+      
       const result = await db.execute(`
         SELECT a.id, a.name, a.description, a.serial_number as "serialNumber", 
                a.category_id as "categoryId", a.park_id as "parkId", 
@@ -460,7 +467,7 @@ export class DatabaseStorage implements IStorage {
         LEFT JOIN asset_categories c ON a.category_id = c.id
         LEFT JOIN parks p ON a.park_id = p.id
         WHERE a.id = $1
-      `, [id]);
+      `, [assetId]);
       
       if (result.rows && result.rows.length > 0) {
         // Añadir propiedades adicionales para compatibilidad con frontend
