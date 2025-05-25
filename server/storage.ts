@@ -31,6 +31,8 @@ export interface IStorage {
   createAssetCategory(category: any): Promise<any>;
   updateAssetCategory(id: number, category: any): Promise<any>;
   deleteAssetCategory(id: number): Promise<boolean>;
+  getAssets(filters?: any): Promise<any[]>;
+  getAsset(id: number): Promise<any>;
 }
 
 // Implementación simplificada
@@ -350,6 +352,132 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error(`Error al eliminar categoría de activo ${id}:`, error);
       return false;
+    }
+  }
+  
+  async getAssets(filters?: any): Promise<any[]> {
+    try {
+      // Construir consulta base para obtener activos
+      let queryStr = `
+        SELECT a.id, a.name, a.description, a.serial_number as "serialNumber", 
+               a.category_id as "categoryId", a.park_id as "parkId", 
+               a.location_description as "locationDescription", a.latitude, a.longitude,
+               a.acquisition_date as "acquisitionDate", a.acquisition_cost as "acquisitionCost",
+               a.current_value as "currentValue", a.manufacturer, a.model, a.status, a.condition,
+               a.maintenance_frequency as "maintenanceFrequency", 
+               a.last_maintenance_date as "lastMaintenanceDate",
+               a.next_maintenance_date as "nextMaintenanceDate",
+               a.expected_lifespan as "expectedLifespan", a.notes, 
+               a.qr_code as "qrCode", a.responsible_person_id as "responsiblePersonId",
+               a.created_at as "createdAt", a.updated_at as "updatedAt",
+               c.name as "categoryName", c.icon as "categoryIcon", c.color as "categoryColor",
+               p.name as "parkName"
+        FROM assets a
+        LEFT JOIN asset_categories c ON a.category_id = c.id
+        LEFT JOIN parks p ON a.park_id = p.id
+        WHERE 1=1
+      `;
+      
+      const params: any[] = [];
+      let paramIndex = 1;
+      
+      // Aplicar filtros si se proporcionan
+      if (filters) {
+        if (filters.categoryId !== undefined) {
+          queryStr += ` AND a.category_id = $${paramIndex++}`;
+          params.push(filters.categoryId);
+        }
+        
+        if (filters.parkId !== undefined) {
+          queryStr += ` AND a.park_id = $${paramIndex++}`;
+          params.push(filters.parkId);
+        }
+        
+        if (filters.status) {
+          queryStr += ` AND a.status = $${paramIndex++}`;
+          params.push(filters.status);
+        }
+        
+        if (filters.condition) {
+          queryStr += ` AND a.condition = $${paramIndex++}`;
+          params.push(filters.condition);
+        }
+        
+        if (filters.search) {
+          queryStr += ` AND (
+            a.name ILIKE $${paramIndex} OR
+            COALESCE(a.description, '') ILIKE $${paramIndex} OR
+            COALESCE(a.serial_number, '') ILIKE $${paramIndex} OR
+            COALESCE(a.model, '') ILIKE $${paramIndex} OR
+            COALESCE(a.manufacturer, '') ILIKE $${paramIndex}
+          )`;
+          params.push(`%${filters.search}%`);
+          paramIndex++;
+        }
+        
+        if (filters.maintenanceDue === 'true') {
+          queryStr += ` AND a.next_maintenance_date <= CURRENT_DATE`;
+        }
+      }
+      
+      // Ordenar resultados
+      queryStr += ` ORDER BY a.name`;
+      
+      const result = await db.execute(queryStr, params);
+      
+      // Añadir propiedades adicionales para compatibilidad con frontend
+      return (result.rows || []).map(asset => ({
+        ...asset,
+        photos: asset.photos || [],
+        documents: asset.documents || [],
+        // Añadir iconType para compatibilidad
+        categoryIconType: "system",
+        categoryCustomIconUrl: null
+      }));
+    } catch (error) {
+      console.error("Error al obtener activos:", error);
+      return [];
+    }
+  }
+  
+  async getAsset(id: number): Promise<any> {
+    try {
+      const result = await db.execute(`
+        SELECT a.id, a.name, a.description, a.serial_number as "serialNumber", 
+               a.category_id as "categoryId", a.park_id as "parkId", 
+               a.location_description as "locationDescription", a.latitude, a.longitude,
+               a.acquisition_date as "acquisitionDate", a.acquisition_cost as "acquisitionCost",
+               a.current_value as "currentValue", a.manufacturer, a.model, a.status, a.condition,
+               a.maintenance_frequency as "maintenanceFrequency", 
+               a.last_maintenance_date as "lastMaintenanceDate",
+               a.next_maintenance_date as "nextMaintenanceDate",
+               a.expected_lifespan as "expectedLifespan", a.notes, 
+               a.qr_code as "qrCode", a.responsible_person_id as "responsiblePersonId",
+               a.created_at as "createdAt", a.updated_at as "updatedAt",
+               c.name as "categoryName", c.icon as "categoryIcon", c.color as "categoryColor",
+               p.name as "parkName"
+        FROM assets a
+        LEFT JOIN asset_categories c ON a.category_id = c.id
+        LEFT JOIN parks p ON a.park_id = p.id
+        WHERE a.id = $1
+      `, [id]);
+      
+      if (result.rows && result.rows.length > 0) {
+        // Añadir propiedades adicionales para compatibilidad con frontend
+        return {
+          ...result.rows[0],
+          photos: result.rows[0].photos || [],
+          documents: result.rows[0].documents || [],
+          // Añadir iconType para compatibilidad
+          categoryIconType: "system",
+          categoryCustomIconUrl: null
+        };
+      }
+      
+      return undefined;
+    } catch (error) {
+      console.error(`Error al obtener activo ${id}:`, error);
+      return undefined;
     }
   }
 }
