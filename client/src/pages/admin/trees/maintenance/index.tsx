@@ -357,7 +357,7 @@ export default function TreeMaintenancePage() {
                             {format(new Date(maintenance.maintenanceDate), 'dd MMM yyyy', { locale: es })}
                           </div>
                         </TableCell>
-                        <TableCell>{maintenance.performedBy}</TableCell>
+                        <TableCell>{maintenance.performedByName || 'Usuario ' + maintenance.performedBy}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
