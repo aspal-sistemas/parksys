@@ -25,11 +25,16 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
   // Obtener todos los mantenimientos de árboles (con información detallada de cada árbol)
   apiRouter.get("/trees/maintenances", async (req: Request, res: Response) => {
     try {
-      // Consulta para obtener todos los mantenimientos con información de árboles y usuarios
-      const result = await db.execute(sql`
+      // Ejecutar la consulta SQL para obtener los mantenimientos con joins a tablas relacionadas
+      const query = sql`
         SELECT 
-          tm.*,
-          t.id AS tree_id,
+          tm.id,
+          tm.tree_id,
+          tm.maintenance_type,
+          tm.maintenance_date,
+          tm.performed_by,
+          tm.notes,
+          tm.created_at,
           t.species_id,
           p.id AS park_id,
           p.name AS park_name,
@@ -39,7 +44,7 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
           u.full_name AS performed_by_name
         FROM 
           tree_maintenances tm
-        JOIN 
+        LEFT JOIN 
           trees t ON tm.tree_id = t.id
         LEFT JOIN 
           parks p ON t.park_id = p.id
@@ -49,34 +54,44 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
           users u ON tm.performed_by = u.id
         ORDER BY 
           tm.maintenance_date DESC
-      `);
+      `;
       
-      if (!result.rows) {
+      const result = await db.execute(query);
+      
+      if (!result.rows || result.rows.length === 0) {
         return res.status(200).json({ data: [] });
       }
 
-      // Formatear los resultados
-      const maintenances = result.rows.map(m => ({
-        id: m.id,
-        treeId: m.tree_id,
-        treeCode: `ARB-${(m.tree_id ? parseInt(m.tree_id) : 0).toString().padStart(5, '0')}`,
-        maintenanceType: m.maintenance_type,
-        maintenanceDate: m.maintenance_date,
-        performedBy: m.performed_by,
-        performedByName: m.performed_by_name || m.performed_by_username || 'Usuario',
-        notes: m.notes,
-        createdAt: m.created_at,
-        parkId: m.park_id,
-        parkName: m.park_name || 'Desconocido',
-        speciesId: m.species_id,
-        speciesName: m.species_name || 'Desconocida',
-        scientificName: m.scientific_name || ''
-      }));
+      // Procesar los resultados
+      const formattedMaintenances = [];
       
-      res.json({ data: maintenances });
+      for (const m of result.rows) {
+        // Asegurar que tree_id sea tratado como número o usar 0 si es nulo
+        const treeIdNum = m.tree_id ? parseInt(String(m.tree_id)) : 0;
+        
+        formattedMaintenances.push({
+          id: m.id,
+          treeId: treeIdNum,
+          treeCode: `ARB-${treeIdNum.toString().padStart(5, '0')}`,
+          maintenanceType: m.maintenance_type || 'Desconocido',
+          maintenanceDate: m.maintenance_date,
+          performedBy: m.performed_by,
+          performedByName: m.performed_by_name || m.performed_by_username || `Usuario ${m.performed_by}`,
+          notes: m.notes || '',
+          createdAt: m.created_at,
+          parkId: m.park_id,
+          parkName: m.park_name || 'Desconocido',
+          speciesId: m.species_id,
+          speciesName: m.species_name || 'Desconocida',
+          scientificName: m.scientific_name || ''
+        });
+      }
+      
+      // Devolver los resultados formateados
+      return res.status(200).json({ data: formattedMaintenances });
     } catch (error) {
       console.error("Error al obtener mantenimientos de árboles:", error);
-      res.status(500).json({ error: "Error al obtener mantenimientos de árboles" });
+      return res.status(500).json({ error: "Error al obtener mantenimientos de árboles" });
     }
   });
 
