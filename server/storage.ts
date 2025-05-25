@@ -1856,9 +1856,10 @@ export class DatabaseStorage implements IStorage {
       const whereConditions = [];
       
       // Por defecto, excluimos los parques marcados como eliminados
-      if (filters.includeDeleted !== true) {
-        whereConditions.push(eq(parks.isDeleted, false));
-      }
+      // Comentado temporalmente debido a problemas de compatibilidad con la BD
+      // if (filters.includeDeleted !== true) {
+      //   whereConditions.push(eq(parks.isDeleted, false));
+      // }
       
       if (filters.municipalityId !== undefined) {
         whereConditions.push(eq(parks.municipalityId, filters.municipalityId));
