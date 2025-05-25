@@ -201,29 +201,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all parks with option to filter
   apiRouter.get("/parks", async (req: Request, res: Response) => {
     try {
-      const municipalityId = req.query.municipalityId ? Number(req.query.municipalityId) : undefined;
-      const parkType = req.query.parkType ? String(req.query.parkType) : undefined;
-      const postalCode = req.query.postalCode ? String(req.query.postalCode) : undefined;
-      const search = req.query.search ? String(req.query.search) : undefined;
+      // Importamos nuestras consultas directas
+      const { getParksDirectly } = await import('./direct-queries');
       
-      // Parse amenities from query (comma-separated list of IDs)
-      let amenities: number[] | undefined;
-      if (req.query.amenities) {
-        amenities = String(req.query.amenities).split(',').map(id => Number(id));
-      }
+      // Preparamos los filtros desde la petición
+      const filters = {
+        municipalityId: req.query.municipalityId ? Number(req.query.municipalityId) : undefined,
+        parkType: req.query.parkType ? String(req.query.parkType) : undefined,
+        postalCode: req.query.postalCode ? String(req.query.postalCode) : undefined,
+        search: req.query.search ? String(req.query.search) : undefined
+      };
       
-      const parks = await storage.getExtendedParks({
-        municipalityId,
-        parkType,
-        postalCode,
-        amenities,
-        search,
-        includeDeleted: false // Asegurarnos de excluir parques eliminados
-      });
+      // Obtenemos los parques usando nuestra consulta directa
+      const parks = await getParksDirectly(filters);
       
+      // Respondemos con los parques
       res.json(parks);
     } catch (error) {
-      console.error(error);
+      console.error("Error al obtener parques:", error);
       res.status(500).json({ message: "Error fetching parks" });
     }
   });
