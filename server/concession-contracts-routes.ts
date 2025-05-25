@@ -176,20 +176,20 @@ export function registerConcessionContractsRoutes(app: any, apiRouter: Router, i
       // Insertar el nuevo contrato
       const [newContract] = await db.insert(concessionContracts)
         .values({
-          parkId: parseInt(parkId),
-          concessionaireId: parseInt(concessionaireId),
-          concessionTypeId: parseInt(concessionTypeId),
-          startDate,
-          endDate,
-          fee: parseFloat(fee),
+          parkId: Number(parkId),
+          concessionaireId: Number(concessionaireId),
+          concessionTypeId: Number(concessionTypeId),
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          fee: Number(fee),
           exclusivityClauses,
           restrictions,
           contractFileUrl,
           status: status || "active",
           hasExtension: hasExtension === 'true',
-          extensionDate: extensionDate || null,
+          extensionDate: extensionDate ? new Date(extensionDate) : null,
           notes,
-          createdById: parseInt(req.headers['x-user-id'] as string) || null,
+          createdById: req.headers['x-user-id'] ? Number(req.headers['x-user-id']) : null,
         })
         .returning();
 
@@ -258,22 +258,22 @@ export function registerConcessionContractsRoutes(app: any, apiRouter: Router, i
       // Actualizar el contrato
       const [updatedContract] = await db.update(concessionContracts)
         .set({
-          parkId: parseInt(parkId),
-          concessionaireId: parseInt(concessionaireId),
-          concessionTypeId: parseInt(concessionTypeId),
-          startDate,
-          endDate,
-          fee: parseFloat(fee),
+          parkId: Number(parkId),
+          concessionaireId: Number(concessionaireId),
+          concessionTypeId: Number(concessionTypeId),
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          fee: Number(fee),
           exclusivityClauses,
           restrictions,
           contractFileUrl,
           status: status || "active",
           hasExtension: hasExtension === 'true',
-          extensionDate: extensionDate || null,
+          extensionDate: extensionDate ? new Date(extensionDate) : null,
           notes,
           updatedAt: new Date()
         })
-        .where(eq(concessionContracts.id, parseInt(id)))
+        .where(eq(concessionContracts.id, Number(id)))
         .returning();
 
       res.json(updatedContract);
