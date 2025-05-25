@@ -8,8 +8,10 @@ import AdminLayout from '@/components/AdminLayout';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Sprout, TreeDeciduous, ThermometerSun, Tag, AlertCircle, AlertOctagon, AlertTriangle, CircleAlert, CircleCheck, Info, ArrowLeft, Edit, ExternalLink, MapPin, Leaf, Calendar, Ruler, HelpCircle, Trash2, Plus, Scissors, Shovel, Wrench } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Sprout, TreeDeciduous, ThermometerSun, Tag, AlertCircle, AlertOctagon, 
+  AlertTriangle, CircleAlert, CircleCheck, Info, ArrowLeft, Edit, ExternalLink, 
+  MapPin, Leaf, Calendar, Ruler, HelpCircle, Trash2, Plus, Scissors, 
+  Shovel, Wrench, RotateCcw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Card,
@@ -27,7 +29,6 @@ import {
 } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -37,21 +38,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  ArrowLeft,
-  Edit,
-  ExternalLink,
-  MapPin,
-  Leaf,
-  Calendar,
-  Ruler,
-  CircleCheck,
-  CircleAlert,
-  Info,
-  AlertTriangle,
-  Trash2,
-  RotateCcw,
-} from 'lucide-react';
 import {
   Dialog,
   DialogClose,
@@ -77,6 +63,9 @@ function TreeDetailPage() {
     performedBy: '',
     notes: ''
   });
+  
+  // Verificar que se obtiene el ID correctamente
+  console.log("ID del árbol:", treeId);
 
   // Consultar información del árbol
   const {
