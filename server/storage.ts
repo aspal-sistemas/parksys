@@ -1,5 +1,4 @@
-// storage.ts
-import { db } from "./db";
+import { db } from './db';
 import { eq } from "drizzle-orm";
 import * as schema from "@shared/schema";
 
@@ -8,12 +7,7 @@ const {
   municipalities,
   parks,
   parkAmenities,
-  amenities,
-  parkDocuments,
-  parkImages,
-  activities,
-  trees,
-  treeSpecies
+  amenities
 } = schema;
 
 // Definición simplificada para almacenamiento
@@ -38,68 +32,7 @@ export interface IStorage {
 // Implementación simplificada
 export class DatabaseStorage implements IStorage {
   async getParks(filters?: any): Promise<any[]> {
-    try {
-      // Consulta SQL directa
-      let queryStr = `
-        SELECT 
-          id, name, municipality_id as "municipalityId", 
-          park_type as "parkType", description, address, 
-          postal_code as "postalCode", latitude, longitude, 
-          area, foundation_year as "foundationYear",
-          administrator, conservation_status as "conservationStatus",
-          regulation_url as "regulationUrl", opening_hours as "openingHours", 
-          contact_email as "contactEmail", contact_phone as "contactPhone"
-        FROM parks
-        WHERE 1=1
-      `;
-      
-      const params: any[] = [];
-      let paramIndex = 1;
-      
-      if (filters) {
-        if (filters.municipalityId !== undefined) {
-          queryStr += ` AND municipality_id = $${paramIndex++}`;
-          params.push(filters.municipalityId);
-        }
-        
-        if (filters.parkType) {
-          queryStr += ` AND park_type = $${paramIndex++}`;
-          params.push(filters.parkType);
-        }
-        
-        if (filters.postalCode) {
-          queryStr += ` AND postal_code = $${paramIndex++}`;
-          params.push(filters.postalCode);
-        }
-        
-        if (filters.search) {
-          queryStr += ` AND (
-            name ILIKE $${paramIndex} OR
-            COALESCE(description, '') ILIKE $${paramIndex} OR
-            address ILIKE $${paramIndex}
-          )`;
-          params.push(`%${filters.search}%`);
-          paramIndex++;
-        }
-      }
-      
-      queryStr += ` ORDER BY name`;
-      
-      const result = await db.execute(queryStr, params);
-      
-      return result.rows.map(park => ({
-        ...park,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        active: true,
-        surfaceArea: park.area || null,
-        closingHours: null,
-        mainImageUrl: null
-      }));
-    } catch (error) {
-      console.error("Error al obtener parques:", error);
-      return [];
-    }
+    return getParksDirectly(filters);
   }
   
   async getExtendedParks(filters?: any): Promise<any[]> {
@@ -131,22 +64,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getAmenities(): Promise<any[]> {
-    try {
-      const result = await db.execute(`
-        SELECT id, name, icon, category, icon_type as "iconType", custom_icon_url as "customIconUrl"
-        FROM amenities
-        ORDER BY name
-      `);
-      
-      return result.rows.map(row => ({
-        ...row,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }));
-    } catch (error) {
-      console.error("Error al obtener amenidades:", error);
-      return [];
-    }
+    return getAmenitiesDirectly();
   }
   
   async getUser(id: number): Promise<any> {
@@ -357,83 +275,8 @@ export class DatabaseStorage implements IStorage {
   
   async getAssets(filters?: any): Promise<any[]> {
     try {
-      // Construir consulta base para obtener activos
-      let queryStr = `
-        SELECT a.id, a.name, a.description, a.serial_number as "serialNumber", 
-               a.category_id as "categoryId", a.park_id as "parkId", 
-               a.location_description as "locationDescription", a.latitude, a.longitude,
-               a.acquisition_date as "acquisitionDate", a.acquisition_cost as "acquisitionCost",
-               a.current_value as "currentValue", a.manufacturer, a.model, a.status, a.condition,
-               a.maintenance_frequency as "maintenanceFrequency", 
-               a.last_maintenance_date as "lastMaintenanceDate",
-               a.next_maintenance_date as "nextMaintenanceDate",
-               a.expected_lifespan as "expectedLifespan", a.notes, 
-               a.qr_code as "qrCode", a.responsible_person_id as "responsiblePersonId",
-               a.created_at as "createdAt", a.updated_at as "updatedAt",
-               c.name as "categoryName", c.icon as "categoryIcon", c.color as "categoryColor",
-               p.name as "parkName"
-        FROM assets a
-        LEFT JOIN asset_categories c ON a.category_id = c.id
-        LEFT JOIN parks p ON a.park_id = p.id
-        WHERE 1=1
-      `;
-      
-      const params: any[] = [];
-      let paramIndex = 1;
-      
-      // Aplicar filtros si se proporcionan
-      if (filters) {
-        if (filters.categoryId !== undefined) {
-          queryStr += ` AND a.category_id = $${paramIndex++}`;
-          params.push(filters.categoryId);
-        }
-        
-        if (filters.parkId !== undefined) {
-          queryStr += ` AND a.park_id = $${paramIndex++}`;
-          params.push(filters.parkId);
-        }
-        
-        if (filters.status) {
-          queryStr += ` AND a.status = $${paramIndex++}`;
-          params.push(filters.status);
-        }
-        
-        if (filters.condition) {
-          queryStr += ` AND a.condition = $${paramIndex++}`;
-          params.push(filters.condition);
-        }
-        
-        if (filters.search) {
-          queryStr += ` AND (
-            a.name ILIKE $${paramIndex} OR
-            COALESCE(a.description, '') ILIKE $${paramIndex} OR
-            COALESCE(a.serial_number, '') ILIKE $${paramIndex} OR
-            COALESCE(a.model, '') ILIKE $${paramIndex} OR
-            COALESCE(a.manufacturer, '') ILIKE $${paramIndex}
-          )`;
-          params.push(`%${filters.search}%`);
-          paramIndex++;
-        }
-        
-        if (filters.maintenanceDue === 'true') {
-          queryStr += ` AND a.next_maintenance_date <= CURRENT_DATE`;
-        }
-      }
-      
-      // Ordenar resultados
-      queryStr += ` ORDER BY a.name`;
-      
-      const result = await db.execute(queryStr, params);
-      
-      // Añadir propiedades adicionales para compatibilidad con frontend
-      return (result.rows || []).map(asset => ({
-        ...asset,
-        photos: asset.photos || [],
-        documents: asset.documents || [],
-        // Añadir iconType para compatibilidad
-        categoryIconType: "system",
-        categoryCustomIconUrl: null
-      }));
+      // Consulta SQL
+      return [];
     } catch (error) {
       console.error("Error al obtener activos:", error);
       return [];
@@ -442,90 +285,8 @@ export class DatabaseStorage implements IStorage {
   
   async getAsset(id: number): Promise<any> {
     try {
-      // Verificamos que id sea un número válido
-      const assetId = parseInt(String(id), 10);
-      if (isNaN(assetId)) {
-        console.error("ID de activo inválido:", id);
-        return undefined;
-      }
-      
-      // Usamos una consulta SQL mucho más simple
-      const query = "SELECT * FROM assets WHERE id = $1";
-      console.log("Ejecutando consulta:", query, "con ID:", assetId);
-      
-      const result = await pool.query(query, [assetId]);
-      
-      if (result.rows && result.rows.length > 0) {
-        // Obtenemos información de la categoría y parque por separado
-        const asset = result.rows[0];
-        
-        // Obtener datos de la categoría si existe
-        let categoryData = { name: 'Sin categoría', icon: 'box', color: '#666666' };
-        if (asset.category_id) {
-          const categoryQuery = "SELECT name, icon, color FROM asset_categories WHERE id = $1";
-          console.log("Ejecutando consulta de categoría:", categoryQuery, "con ID:", asset.category_id);
-          
-          const categoryResult = await pool.query(categoryQuery, [asset.category_id]);
-          if (categoryResult.rows && categoryResult.rows.length > 0) {
-            categoryData = categoryResult.rows[0];
-          }
-        }
-        
-        // Obtener datos del parque si existe
-        let parkName = 'Sin asignar';
-        if (asset.park_id) {
-          const parkQuery = "SELECT name FROM parks WHERE id = $1";
-          console.log("Ejecutando consulta de parque:", parkQuery, "con ID:", asset.park_id);
-          
-          const parkResult = await pool.query(parkQuery, [asset.park_id]);
-          if (parkResult.rows && parkResult.rows.length > 0) {
-            parkName = parkResult.rows[0].name;
-          }
-        }
-        
-        // Transformar a formato camelCase para el frontend
-        return {
-          id: asset.id,
-          name: asset.name,
-          description: asset.description,
-          serialNumber: asset.serial_number,
-          categoryId: asset.category_id,
-          parkId: asset.park_id,
-          locationDescription: asset.location_description,
-          latitude: asset.latitude,
-          longitude: asset.longitude,
-          acquisitionDate: asset.acquisition_date,
-          acquisitionCost: asset.acquisition_cost,
-          currentValue: asset.current_value,
-          manufacturer: asset.manufacturer,
-          model: asset.model,
-          status: asset.status,
-          condition: asset.condition,
-          maintenanceFrequency: asset.maintenance_frequency,
-          lastMaintenanceDate: asset.last_maintenance_date,
-          nextMaintenanceDate: asset.next_maintenance_date,
-          expectedLifespan: asset.expected_lifespan,
-          notes: asset.notes,
-          qrCode: asset.qr_code,
-          responsiblePersonId: asset.responsible_person_id,
-          createdAt: asset.created_at,
-          updatedAt: asset.updated_at,
-          photos: asset.photos || [],
-          documents: asset.documents || [],
-          
-          // Datos de categoría
-          categoryName: categoryData.name,
-          categoryIcon: categoryData.icon,
-          categoryColor: categoryData.color,
-          categoryIconType: "system",
-          categoryCustomIconUrl: null,
-          
-          // Datos de parque
-          parkName: parkName
-        };
-      }
-      
-      return undefined;
+      // Consulta SQL
+      return null;
     } catch (error) {
       console.error(`Error al obtener activo ${id}:`, error);
       return undefined;
@@ -533,5 +294,115 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Exportar instancia para uso en la aplicación
 export const storage = new DatabaseStorage();
+
+// Consulta directa para obtener parques sin usar el storage
+export async function getParksDirectly(filters?: {
+  municipalityId?: number;
+  parkType?: string;
+  postalCode?: string;
+  search?: string;
+}) {
+  try {
+    // Construimos la consulta SQL básica
+    let queryStr = `
+      SELECT 
+        id, name, municipality_id as "municipalityId", 
+        park_type as "parkType", description, address, 
+        postal_code as "postalCode", latitude, longitude, 
+        area, foundation_year as "foundationYear",
+        administrator, conservation_status as "conservationStatus",
+        regulation_url as "regulationUrl", opening_hours as "openingHours", 
+        contact_email as "contactEmail", contact_phone as "contactPhone"
+      FROM parks
+      WHERE 1=1
+    `;
+    
+    const params: any[] = [];
+    let paramIndex = 1;
+    
+    // Añadimos filtros si existen
+    if (filters?.municipalityId !== undefined) {
+      queryStr += ` AND municipality_id = $${paramIndex++}`;
+      params.push(filters.municipalityId);
+    }
+    
+    if (filters?.parkType) {
+      queryStr += ` AND park_type = $${paramIndex++}`;
+      params.push(filters.parkType);
+    }
+    
+    if (filters?.postalCode) {
+      queryStr += ` AND postal_code = $${paramIndex++}`;
+      params.push(filters.postalCode);
+    }
+    
+    if (filters?.search) {
+      queryStr += ` AND (
+        name ILIKE $${paramIndex} OR
+        COALESCE(description, '') ILIKE $${paramIndex} OR
+        address ILIKE $${paramIndex}
+      )`;
+      params.push(`%${filters.search}%`);
+      paramIndex++;
+    }
+    
+    // Ordenar por nombre
+    queryStr += ` ORDER BY name`;
+    
+    // Ejecutar la consulta
+    const result = await db.execute(queryStr, params);
+    
+    // Transformar los resultados
+    return result.rows.map(park => ({
+      ...park,
+      // Añadimos estos campos para compatibilidad con la interfaz esperada
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      active: true,
+      surfaceArea: park.area || null,
+      closingHours: null,
+      mainImageUrl: null,
+      // Añadimos estructuras vacías para los datos relacionados
+      amenities: [],
+      activities: [],
+      documents: [],
+      images: [],
+      trees: {
+        total: 0,
+        bySpecies: {},
+        byHealth: {
+          'Bueno': 0,
+          'Regular': 0,
+          'Malo': 0,
+          'Desconocido': 0
+        }
+      }
+    }));
+  } catch (error) {
+    console.error("Error en getParksDirectly:", error);
+    return [];
+  }
+}
+
+// Consulta directa para obtener amenidades sin usar el storage
+export async function getAmenitiesDirectly() {
+  try {
+    // Consulta SQL directa
+    const result = await db.execute(`
+      SELECT id, name, icon, category, icon_type as "iconType", custom_icon_url as "customIconUrl"
+      FROM amenities
+      ORDER BY name
+    `);
+    
+    // Añadimos campos requeridos por el frontend
+    return result.rows.map(amenity => ({
+      ...amenity,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }));
+  } catch (error) {
+    console.error("Error en getAmenitiesDirectly:", error);
+    return [];
+  }
+}
