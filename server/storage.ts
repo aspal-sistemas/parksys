@@ -23,6 +23,8 @@ export interface IStorage {
   getAmenities(): Promise<any[]>;
   getUser(id: number): Promise<any>;
   getUserByUsername(username: string): Promise<any>;
+  getUsers(): Promise<any[]>;
+  getUserByEmail(email: string): Promise<any>;
 }
 
 // Implementación simplificada
@@ -155,6 +157,35 @@ export class DatabaseStorage implements IStorage {
       return user;
     } catch (error) {
       console.error("Error al obtener usuario por nombre:", error);
+      return undefined;
+    }
+  }
+  
+  async getUsers(): Promise<any[]> {
+    try {
+      const result = await db.execute(`
+        SELECT id, username, email, role, full_name as "fullName", 
+               municipality_id as "municipalityId", phone, gender, 
+               birth_date as "birthDate", bio, profile_image_url as "profileImageUrl", 
+               created_at as "createdAt", updated_at as "updatedAt"
+        FROM users
+        ORDER BY full_name
+      `);
+      return result.rows || [];
+    } catch (error) {
+      console.error("Error al obtener todos los usuarios:", error);
+      return [];
+    }
+  }
+  
+  async getUserByEmail(email: string): Promise<any> {
+    try {
+      const result = await db.execute(`
+        SELECT * FROM users WHERE email = $1
+      `, [email]);
+      return result.rows && result.rows.length > 0 ? result.rows[0] : undefined;
+    } catch (error) {
+      console.error("Error al obtener usuario por email:", error);
       return undefined;
     }
   }
