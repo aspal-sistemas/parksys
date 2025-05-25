@@ -53,6 +53,7 @@ import {
   Phone,
   ClipboardX,
   UserX,
+  Star,
   ArrowLeft,
   ChevronRight,
   UserPlus,
