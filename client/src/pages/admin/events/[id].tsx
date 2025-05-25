@@ -140,6 +140,45 @@ interface ResourceFormData {
   status?: string;
 }
 
+// Tipo para las evaluaciones
+interface Evaluation {
+  id: number;
+  eventId: number;
+  evaluationType: string;
+  score: number;
+  comments: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Tipo para el formulario de evaluaciones
+interface EvaluationFormData {
+  evaluationType: string;
+  score: number;
+  comments: string;
+}
+
+// Tipo para los voluntarios asignados al evento
+interface EventVolunteer {
+  id: number;
+  eventId: number;
+  volunteerId: number;
+  name: string;
+  role: string;
+  status: string;
+  contactInfo: string | null;
+  notes: string | null;
+  assignedAt: string;
+}
+
+// Tipo para el formulario de voluntarios
+interface VolunteerFormData {
+  volunteerId: number;
+  role: string;
+  notes: string;
+}
+
 const EventDetailPage = () => {
   const { id } = useParams();
   const [, navigate] = useLocation();
@@ -165,6 +204,26 @@ const EventDetailPage = () => {
     notes: "",
   });
 
+  // Estados para la gestión de evaluaciones
+  const [isEvaluationDialogOpen, setIsEvaluationDialogOpen] = useState(false);
+  const [isEditingEvaluation, setIsEditingEvaluation] = useState(false);
+  const [currentEvaluationId, setCurrentEvaluationId] = useState<number | null>(null);
+  const [evaluationForm, setEvaluationForm] = useState<EvaluationFormData>({
+    evaluationType: "satisfaccion",
+    score: 5,
+    comments: "",
+  });
+
+  // Estados para la gestión de voluntarios
+  const [isVolunteerDialogOpen, setIsVolunteerDialogOpen] = useState(false);
+  const [isEditingVolunteer, setIsEditingVolunteer] = useState(false);
+  const [currentVolunteerId, setCurrentVolunteerId] = useState<number | null>(null);
+  const [volunteerForm, setVolunteerForm] = useState<VolunteerFormData>({
+    volunteerId: 0,
+    role: "asistente",
+    notes: "",
+  });
+
   // Obtenemos los datos del evento
   const { data: event, isLoading, error } = useQuery<Event>({
     queryKey: [`/api/events/${id}`],
@@ -179,6 +238,24 @@ const EventDetailPage = () => {
   // Obtenemos los recursos del evento
   const { data: resources, isLoading: isLoadingResources } = useQuery<Resource[]>({
     queryKey: [`/api/events/${id}/resources`],
+    enabled: !!id,
+  });
+  
+  // Obtenemos las evaluaciones del evento
+  const { data: evaluations, isLoading: isLoadingEvaluations } = useQuery<Evaluation[]>({
+    queryKey: [`/api/events/${id}/evaluations`],
+    enabled: !!id,
+  });
+  
+  // Obtenemos los voluntarios asignados al evento
+  const { data: volunteers, isLoading: isLoadingVolunteers } = useQuery<EventVolunteer[]>({
+    queryKey: [`/api/events/${id}/volunteers`],
+    enabled: !!id,
+  });
+  
+  // Obtenemos la lista de todos los voluntarios disponibles para asignar
+  const { data: availableVolunteers } = useQuery<{ id: number; name: string }[]>({
+    queryKey: ['/api/volunteers/available'],
     enabled: !!id,
   });
 
@@ -376,6 +453,240 @@ const EventDetailPage = () => {
       });
     },
   });
+  
+  // Mutación para crear una evaluación
+  const createEvaluation = useMutation({
+    mutationFn: async (data: EvaluationFormData) => {
+      const response = await fetch(`/api/events/${id}/evaluations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": localStorage.getItem("token") || "",
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al crear evaluación");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidamos la consulta para actualizar la lista de evaluaciones
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/evaluations`] });
+      setIsEvaluationDialogOpen(false);
+      setEvaluationForm({
+        evaluationType: "satisfaccion",
+        score: 5,
+        comments: "",
+      });
+      toast({
+        title: "Evaluación creada",
+        description: "La evaluación ha sido creada exitosamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error al crear evaluación",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Mutación para actualizar una evaluación
+  const updateEvaluation = useMutation({
+    mutationFn: async ({ evaluationId, data }: { evaluationId: number, data: EvaluationFormData }) => {
+      const response = await fetch(`/api/events/${id}/evaluations/${evaluationId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": localStorage.getItem("token") || "",
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al actualizar evaluación");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidamos la consulta para actualizar la lista de evaluaciones
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/evaluations`] });
+      setIsEvaluationDialogOpen(false);
+      setIsEditingEvaluation(false);
+      setCurrentEvaluationId(null);
+      setEvaluationForm({
+        evaluationType: "satisfaccion",
+        score: 5,
+        comments: "",
+      });
+      toast({
+        title: "Evaluación actualizada",
+        description: "La evaluación ha sido actualizada exitosamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error al actualizar evaluación",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Mutación para eliminar una evaluación
+  const deleteEvaluation = useMutation({
+    mutationFn: async (evaluationId: number) => {
+      const response = await fetch(`/api/events/${id}/evaluations/${evaluationId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": localStorage.getItem("token") || "",
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al eliminar evaluación");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidamos la consulta para actualizar la lista de evaluaciones
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/evaluations`] });
+      toast({
+        title: "Evaluación eliminada",
+        description: "La evaluación ha sido eliminada exitosamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error al eliminar evaluación",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Mutación para asignar un voluntario al evento
+  const assignVolunteer = useMutation({
+    mutationFn: async (data: VolunteerFormData) => {
+      const response = await fetch(`/api/events/${id}/volunteers`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": localStorage.getItem("token") || "",
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al asignar voluntario");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidamos la consulta para actualizar la lista de voluntarios
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/volunteers`] });
+      setIsVolunteerDialogOpen(false);
+      setVolunteerForm({
+        volunteerId: 0,
+        role: "asistente",
+        notes: "",
+      });
+      toast({
+        title: "Voluntario asignado",
+        description: "El voluntario ha sido asignado exitosamente al evento.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error al asignar voluntario",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Mutación para actualizar la asignación de un voluntario
+  const updateVolunteerAssignment = useMutation({
+    mutationFn: async ({ assignmentId, data }: { assignmentId: number, data: Partial<VolunteerFormData> }) => {
+      const response = await fetch(`/api/events/${id}/volunteers/${assignmentId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": localStorage.getItem("token") || "",
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al actualizar asignación del voluntario");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidamos la consulta para actualizar la lista de voluntarios
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/volunteers`] });
+      setIsVolunteerDialogOpen(false);
+      setIsEditingVolunteer(false);
+      setCurrentVolunteerId(null);
+      setVolunteerForm({
+        volunteerId: 0,
+        role: "asistente",
+        notes: "",
+      });
+      toast({
+        title: "Asignación actualizada",
+        description: "La asignación del voluntario ha sido actualizada exitosamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error al actualizar asignación",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Mutación para eliminar la asignación de un voluntario
+  const removeVolunteerAssignment = useMutation({
+    mutationFn: async (assignmentId: number) => {
+      const response = await fetch(`/api/events/${id}/volunteers/${assignmentId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": localStorage.getItem("token") || "",
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al eliminar asignación del voluntario");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidamos la consulta para actualizar la lista de voluntarios
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/volunteers`] });
+      toast({
+        title: "Asignación eliminada",
+        description: "La asignación del voluntario ha sido eliminada exitosamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error al eliminar asignación",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   // Función para manejar el envío del formulario de registro de participantes
   const handleRegisterSubmit = (e: React.FormEvent) => {
@@ -419,6 +730,72 @@ const EventDetailPage = () => {
   const handleDeleteResource = (resourceId: number) => {
     if (confirm("¿Estás seguro de que deseas eliminar este recurso?")) {
       deleteResource.mutate(resourceId);
+    }
+  };
+  
+  // Función para manejar el envío del formulario de evaluaciones
+  const handleEvaluationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (isEditingEvaluation && currentEvaluationId) {
+      updateEvaluation.mutate({
+        evaluationId: currentEvaluationId,
+        data: evaluationForm
+      });
+    } else {
+      createEvaluation.mutate(evaluationForm);
+    }
+  };
+  
+  // Función para editar una evaluación
+  const handleEditEvaluation = (evaluation: Evaluation) => {
+    setIsEditingEvaluation(true);
+    setCurrentEvaluationId(evaluation.id);
+    setEvaluationForm({
+      evaluationType: evaluation.evaluationType,
+      score: evaluation.score,
+      comments: evaluation.comments || "",
+    });
+    setIsEvaluationDialogOpen(true);
+  };
+  
+  // Función para eliminar una evaluación
+  const handleDeleteEvaluation = (evaluationId: number) => {
+    if (confirm("¿Estás seguro de que deseas eliminar esta evaluación?")) {
+      deleteEvaluation.mutate(evaluationId);
+    }
+  };
+  
+  // Función para manejar el envío del formulario de voluntarios
+  const handleVolunteerSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (isEditingVolunteer && currentVolunteerId) {
+      updateVolunteerAssignment.mutate({
+        assignmentId: currentVolunteerId,
+        data: volunteerForm
+      });
+    } else {
+      assignVolunteer.mutate(volunteerForm);
+    }
+  };
+  
+  // Función para editar la asignación de un voluntario
+  const handleEditVolunteer = (volunteer: EventVolunteer) => {
+    setIsEditingVolunteer(true);
+    setCurrentVolunteerId(volunteer.id);
+    setVolunteerForm({
+      volunteerId: volunteer.volunteerId,
+      role: volunteer.role,
+      notes: volunteer.notes || "",
+    });
+    setIsVolunteerDialogOpen(true);
+  };
+  
+  // Función para eliminar la asignación de un voluntario
+  const handleDeleteVolunteer = (assignmentId: number) => {
+    if (confirm("¿Estás seguro de que deseas eliminar esta asignación de voluntario?")) {
+      removeVolunteerAssignment.mutate(assignmentId);
     }
   };
 
@@ -531,6 +908,36 @@ const EventDetailPage = () => {
     pending: "Pendiente",
     confirmed: "Confirmado",
     rejected: "Rechazado",
+  };
+  
+  // Traducir tipos de evaluaciones a español
+  const evaluationTypeTranslations: Record<string, string> = {
+    satisfaccion: "Satisfacción del público",
+    organizacion: "Organización",
+    impacto: "Impacto",
+    logistica: "Logística",
+    participacion: "Participación",
+    otro: "Otro",
+  };
+  
+  // Traducir roles de voluntarios a español
+  const volunteerRoleTranslations: Record<string, string> = {
+    coordinador: "Coordinador",
+    asistente: "Asistente",
+    logistica: "Logística",
+    guia: "Guía/Orientador",
+    fotografo: "Fotógrafo",
+    seguridad: "Seguridad",
+    primeros_auxilios: "Primeros Auxilios",
+    otro: "Otro",
+  };
+  
+  // Traducir estados de voluntarios a español
+  const volunteerStatusTranslations: Record<string, string> = {
+    asignado: "Asignado",
+    confirmado: "Confirmado",
+    ausente: "Ausente",
+    completado: "Completado",
   };
 
   // Generar un mapa de colores para los diferentes estados de participantes
