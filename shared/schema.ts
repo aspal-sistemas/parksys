@@ -621,12 +621,13 @@ export const trees = pgTable("trees", {
 export const treeMaintenances = pgTable("tree_maintenances", {
   id: serial("id").primaryKey(),
   tree_id: integer("tree_id").references(() => trees.id),
-  maintenance_type: text("maintenance_type").notNull(),
+  maintenance_type: varchar("maintenance_type").notNull(),
   maintenance_date: date("maintenance_date").notNull(),
-  performed_by: text("performed_by"),
+  description: text("description"),
+  performed_by: integer("performed_by"),
   notes: text("notes"),
-  created_at: timestamp("created_at").notNull().defaultNow(),
-  updated_at: timestamp("updated_at").notNull().defaultNow()
+  next_maintenance_date: date("next_maintenance_date"),
+  created_at: timestamp("created_at").notNull().defaultNow()
 });
 
 // Esquemas de inserción
@@ -661,8 +662,7 @@ export const insertTreeSchema = createInsertSchema(trees).omit({
 
 export const insertTreeMaintenanceSchema = createInsertSchema(treeMaintenances).omit({ 
   id: true,
-  created_at: true,
-  updated_at: true
+  created_at: true
 });
 
 // Tipos
