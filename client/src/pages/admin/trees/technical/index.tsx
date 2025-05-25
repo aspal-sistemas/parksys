@@ -716,7 +716,10 @@ export default function TreeTechnicalManagement() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-8">
+    <AdminLayout
+      title="Gestión Técnica de Arbolado"
+      subtitle="Administra evaluaciones de riesgo e intervenciones para árboles en parques"
+    >
       <Helmet>
         <title>Gestión Técnica de Arbolado | ParquesMX</title>
       </Helmet>
