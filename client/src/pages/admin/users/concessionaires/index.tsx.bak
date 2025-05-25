@@ -6,17 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Plus, Edit, FileText, AlertTriangle, Search } from "lucide-react";
+import { Plus, Edit, FileText, History, Star, Users, AlertTriangle, CheckCircle, XCircle, Search, FileUp } from "lucide-react";
 
 // Esquema de validación para el formulario de concesionario
 const concessionaireSchema = z.object({
@@ -47,6 +49,7 @@ export default function ConcessionairesPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedConcessionaire, setSelectedConcessionaire] = useState<any>(null);
+  // Eliminamos el estado de pestañas activas
   const [searchTerm, setSearchTerm] = useState("");
   
   const { toast } = useToast();
@@ -205,7 +208,7 @@ export default function ConcessionairesPage() {
   };
 
   // Filtrar concesionarios por término de búsqueda
-  const filteredConcessionaires = searchTerm && Array.isArray(concessionaires)
+  const filteredConcessionaires = searchTerm && concessionaires.length > 0
     ? concessionaires.filter((c: any) => 
         c.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
         c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -405,84 +408,194 @@ export default function ConcessionairesPage() {
           </Dialog>
         </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-center">
-              <CardTitle>Concesionarios Registrados</CardTitle>
-              <div className="relative w-64">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nombre o RFC"
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-            <CardDescription>
-              Listado de personas físicas y morales autorizadas para operar concesiones
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoadingConcessionaires ? (
-              <p className="text-center py-4">Cargando concesionarios...</p>
-            ) : !Array.isArray(filteredConcessionaires) || filteredConcessionaires.length === 0 ? (
-              <div className="text-center py-8">
-                <AlertTriangle className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
-                <p className="text-lg font-medium">No hay concesionarios registrados</p>
-                <p className="text-muted-foreground">
-                  {searchTerm ? "No se encontraron resultados para tu búsqueda" : "Registra el primer concesionario haciendo clic en 'Nuevo Concesionario'"}
-                </p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Correo</TableHead>
-                    <TableHead>RFC</TableHead>
-                    <TableHead>Representante Legal</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredConcessionaires.map((concessionaire: any) => (
-                    <TableRow key={concessionaire.id}>
-                      <TableCell className="font-medium">{concessionaire.fullName}</TableCell>
-                      <TableCell>{concessionaire.email}</TableCell>
-                      <TableCell>{concessionaire.concessionaireProfile?.rfc}</TableCell>
-                      <TableCell>{concessionaire.concessionaireProfile?.legalRepresentative || "-"}</TableCell>
-                      <TableCell>{renderStatus(concessionaire.concessionaireProfile?.status || "activo")}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex space-x-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleEdit(concessionaire)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Editar
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            asChild
-                          >
-                            <a href={`/admin/users/concessionaires/${concessionaire.id}/documents`}>
-                              <FileText className="h-4 w-4 mr-1" />
-                              Documentos
-                            </a>
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+        <div className="w-full">
+          
+          <TabsContent value="listado">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <CardTitle>Concesionarios Registrados</CardTitle>
+                  <div className="relative w-64">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar por nombre, email o RFC"
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <CardDescription>
+                  Listado de personas físicas y morales autorizadas para operar concesiones
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingConcessionaires ? (
+                  <p className="text-center py-4">Cargando concesionarios...</p>
+                ) : filteredConcessionaires.length === 0 ? (
+                  <div className="text-center py-8">
+                    <AlertTriangle className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
+                    <p className="text-lg font-medium">No hay concesionarios registrados</p>
+                    <p className="text-muted-foreground">
+                      {searchTerm ? "No se encontraron resultados para tu búsqueda" : "Registra el primer concesionario haciendo clic en 'Nuevo Concesionario'"}
+                    </p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nombre Completo</TableHead>
+                        <TableHead>Correo Electrónico</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>RFC</TableHead>
+                        <TableHead>Representante Legal</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredConcessionaires.map((concessionaire: any) => (
+                        <TableRow key={concessionaire.id}>
+                          <TableCell className="font-medium">{concessionaire.fullName}</TableCell>
+                          <TableCell>{concessionaire.email}</TableCell>
+                          <TableCell>
+                            {concessionaire.concessionaireProfile?.type === "persona_fisica" ? "Persona Física" : "Persona Moral"}
+                          </TableCell>
+                          <TableCell>{concessionaire.concessionaireProfile?.rfc}</TableCell>
+                          <TableCell>{concessionaire.concessionaireProfile?.legalRepresentative || "-"}</TableCell>
+                          <TableCell>{renderStatus(concessionaire.concessionaireProfile?.status || "activo")}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex space-x-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleEdit(concessionaire)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Editar
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              asChild
+                            >
+                              <a href={`/admin/users/concessionaires/${concessionaire.id}/documents`}>
+                                <FileText className="h-4 w-4 mr-1" />
+                                Documentos
+                              </a>
+                            </Button>
+                          </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="documentos">
+            <Card>
+              <CardHeader>
+                <CardTitle>Documentación de Concesionarios</CardTitle>
+                <CardDescription>
+                  Gestiona los documentos legales y administrativos de los concesionarios
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingConcessionaires ? (
+                  <p className="text-center py-4">Cargando concesionarios...</p>
+                ) : filteredConcessionaires.length === 0 ? (
+                  <div className="text-center py-8">
+                    <AlertTriangle className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
+                    <p className="text-lg font-medium">No hay concesionarios registrados</p>
+                    <p className="text-muted-foreground">
+                      {searchTerm ? "No se encontraron resultados para tu búsqueda" : "Registra el primer concesionario haciendo clic en 'Nuevo Concesionario'"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="relative w-64 mb-4">
+                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Buscar por nombre o RFC"
+                        className="pl-8"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredConcessionaires.map((concessionaire: any) => (
+                        <Card key={concessionaire.id} className="overflow-hidden">
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center space-x-4">
+                              <Avatar className="h-10 w-10">
+                                <AvatarFallback>{concessionaire.fullName?.substring(0, 2).toUpperCase() || "CN"}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <CardTitle className="text-base">{concessionaire.fullName}</CardTitle>
+                                <CardDescription>{concessionaire.concessionaireProfile?.rfc || "Sin RFC"}</CardDescription>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <Badge className={
+                                  concessionaire.concessionaireProfile?.status === "activo" ? "bg-green-500" : 
+                                  concessionaire.concessionaireProfile?.status === "inactivo" ? "bg-gray-500" : 
+                                  "bg-red-500"
+                                }>
+                                  {concessionaire.concessionaireProfile?.status === "activo" ? "Activo" :
+                                  concessionaire.concessionaireProfile?.status === "inactivo" ? "Inactivo" :
+                                  "Suspendido"}
+                                </Badge>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                              >
+                                <a href={`/admin/users/concessionaires/${concessionaire.id}/documents`}>
+                                  <FileText className="h-4 w-4 mr-1" />
+                                  Ver Documentos
+                                </a>
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="evaluaciones">
+            <Card>
+              <CardHeader>
+                <CardTitle>Evaluaciones de Concesionarios</CardTitle>
+                <CardDescription>
+                  Registra y consulta las evaluaciones de desempeño de los concesionarios
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Star className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
+                  <p className="text-lg font-medium">Módulo de Evaluaciones</p>
+                  <p className="text-muted-foreground mb-4">
+                    Aquí podrás registrar evaluaciones de calidad de servicio, cumplimiento normativo e impacto ambiental.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Selecciona un concesionario en la pestaña de Listado para gestionar sus evaluaciones.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Diálogo para editar concesionario */}
