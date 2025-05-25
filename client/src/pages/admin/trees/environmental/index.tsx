@@ -613,7 +613,7 @@ export default function TreeEnvironmentalManagement() {
                   <SelectValue placeholder="Todos los parques" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos los parques</SelectItem>
+                  <SelectItem value="all">Todos los parques</SelectItem>
                   {parks?.data?.map((park) => (
                     <SelectItem key={park.id} value={park.id.toString()}>
                       {park.name}
