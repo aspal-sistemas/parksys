@@ -368,18 +368,10 @@ export default function ConcessionairesPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 w-[400px]">
+          <TabsList className="grid grid-cols-1 w-[400px]">
             <TabsTrigger value="listado">
               <Users className="h-4 w-4 mr-2" />
               Listado
-            </TabsTrigger>
-            <TabsTrigger value="documentos">
-              <FileText className="h-4 w-4 mr-2" />
-              Documentación
-            </TabsTrigger>
-            <TabsTrigger value="evaluaciones">
-              <Star className="h-4 w-4 mr-2" />
-              Evaluaciones
             </TabsTrigger>
           </TabsList>
           
@@ -463,51 +455,7 @@ export default function ConcessionairesPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="documentos">
-            <Card>
-              <CardHeader>
-                <CardTitle>Documentación de Concesionarios</CardTitle>
-                <CardDescription>
-                  Gestiona los documentos legales y administrativos de los concesionarios
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <FileUp className="h-10 w-10 text-blue-500 mx-auto mb-2" />
-                  <p className="text-lg font-medium">Módulo de Documentación</p>
-                  <p className="text-muted-foreground mb-4">
-                    Aquí podrás cargar y verificar documentos como RFC, identificaciones, actas constitutivas y más.
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Selecciona un concesionario en la pestaña de Listado para gestionar sus documentos.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
-          <TabsContent value="evaluaciones">
-            <Card>
-              <CardHeader>
-                <CardTitle>Evaluaciones de Concesionarios</CardTitle>
-                <CardDescription>
-                  Registra y consulta las evaluaciones de desempeño de los concesionarios
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Star className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
-                  <p className="text-lg font-medium">Módulo de Evaluaciones</p>
-                  <p className="text-muted-foreground mb-4">
-                    Aquí podrás registrar evaluaciones de calidad de servicio, cumplimiento normativo e impacto ambiental.
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Selecciona un concesionario en la pestaña de Listado para gestionar sus evaluaciones.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </div>
 
