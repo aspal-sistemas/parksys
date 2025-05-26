@@ -505,6 +505,13 @@ const AdminSidebar: React.FC = () => {
               Catálogo
             </NavItem>
             <NavItem 
+              href="/admin/finance/budget" 
+              icon={<Target className="h-5 w-5" />}
+              active={location.startsWith('/admin/finance/budget')}
+            >
+              Presupuesto
+            </NavItem>
+            <NavItem 
               href="/admin/finance/incomes" 
               icon={<TrendingUp className="h-5 w-5" />}
               active={location.startsWith('/admin/finance/incomes')}
@@ -531,13 +538,6 @@ const AdminSidebar: React.FC = () => {
               active={location.startsWith('/admin/finance/calculator')}
             >
               Calculadora
-            </NavItem>
-            <NavItem 
-              href="/admin/finance/budget" 
-              icon={<Target className="h-5 w-5" />}
-              active={location.startsWith('/admin/finance/budget')}
-            >
-              Presupuesto
             </NavItem>
             <NavItem 
               href="/admin/finance/reports" 

@@ -772,6 +772,145 @@ export default function CatalogPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modal para editar concepto */}
+      <Dialog open={isEditConceptOpen} onOpenChange={setIsEditConceptOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Editar Concepto Financiero</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedConcept && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Código</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border rounded-md"
+                      defaultValue={selectedConcept.code}
+                      readOnly
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Nombre del Concepto</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border rounded-md"
+                      defaultValue={selectedConcept.name}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Tipo</label>
+                    <select className="w-full px-3 py-2 border rounded-md" defaultValue={selectedConcept.type}>
+                      <option value="ingreso">Ingreso</option>
+                      <option value="egreso">Egreso</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Categoría</label>
+                    <select className="w-full px-3 py-2 border rounded-md" defaultValue={selectedConcept.subcategory}>
+                      {selectedConcept.type === "ingreso" 
+                        ? incomeSubcategories.map(sub => (
+                            <option key={sub} value={sub}>{sub}</option>
+                          ))
+                        : expenseSubcategories.map(sub => (
+                            <option key={sub} value={sub}>{sub}</option>
+                          ))
+                      }
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Monto/Tasa</label>
+                    <input
+                      type="number"
+                      className="w-full px-3 py-2 border rounded-md"
+                      defaultValue={selectedConcept.rate || selectedConcept.cost}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Unidad</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border rounded-md"
+                      defaultValue={selectedConcept.unit}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Frecuencia</label>
+                    <select className="w-full px-3 py-2 border rounded-md" defaultValue={selectedConcept.frequency}>
+                      <option value="Diario">Diario</option>
+                      <option value="Mensual">Mensual</option>
+                      <option value="Por uso">Por uso</option>
+                      <option value="Anual">Anual</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Descripción</label>
+                  <textarea
+                    className="w-full px-3 py-2 border rounded-md"
+                    rows={3}
+                    defaultValue={selectedConcept.description}
+                  />
+                </div>
+              </>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsEditConceptOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={() => {
+                console.log("Guardando cambios del concepto:", selectedConcept);
+                setIsEditConceptOpen(false);
+              }}>
+                Guardar Cambios
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para eliminar concepto */}
+      <Dialog open={isDeleteConceptOpen} onOpenChange={setIsDeleteConceptOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Eliminar Concepto Financiero</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedConcept && (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  ¿Estás seguro de que deseas eliminar el siguiente concepto?
+                </p>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="font-medium">{selectedConcept.name}</p>
+                  <p className="text-sm text-muted-foreground">{selectedConcept.code}</p>
+                  <p className="text-sm text-muted-foreground">{selectedConcept.description}</p>
+                </div>
+                <p className="text-sm text-red-600">
+                  Esta acción no se puede deshacer.
+                </p>
+              </>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsDeleteConceptOpen(false)}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={() => {
+                console.log("Eliminando concepto:", selectedConcept);
+                setIsDeleteConceptOpen(false);
+              }}>
+                Eliminar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
