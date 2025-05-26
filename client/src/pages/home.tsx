@@ -25,7 +25,7 @@ const Home: React.FC = () => {
       <section className="bg-gradient-to-br from-primary-100 to-primary-50 py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-screen-xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 font-heading mb-4">
-            Descubre los espacios verdes de tu ciudad
+            Descubre los bosques y parques urbanos de Jalisco
           </h1>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
             Encuentra parques, jardines y áreas recreativas cerca de ti. Toda la información que necesitas en un solo lugar.
