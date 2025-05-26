@@ -179,6 +179,17 @@ export default function CatalogPage() {
     });
   };
 
+  const handleCreateCategory = () => {
+    // Aquí irá la lógica para crear una nueva categoría
+    console.log("Nueva categoría:", newCategory);
+    setIsNewCategoryOpen(false);
+    setNewCategory({
+      name: "",
+      description: "",
+      type: ""
+    });
+  };
+
   const getAvailableSubcategories = () => {
     if (newConcept.type === "ingreso") {
       return incomeSubcategories;
@@ -215,6 +226,9 @@ export default function CatalogPage() {
               <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle>Crear Nuevo Concepto Financiero</DialogTitle>
+                  <DialogDescription>
+                    Completa los campos para agregar un nuevo concepto financiero al catálogo.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -501,10 +515,24 @@ export default function CatalogPage() {
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex gap-1">
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => {
+                                  console.log("Editando concepto:", item);
+                                  // Aquí irá la lógica para editar
+                                }}
+                              >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => {
+                                  console.log("Eliminando concepto:", item);
+                                  // Aquí irá la lógica para eliminar
+                                }}
+                              >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
@@ -536,10 +564,59 @@ export default function CatalogPage() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle>Categorías de Ingresos</CardTitle>
-                    <Button size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Nueva Categoría
-                    </Button>
+                    <Dialog open={isNewCategoryOpen && newCategory.type === "ingreso"} onOpenChange={(open) => {
+                      setIsNewCategoryOpen(open);
+                      if (open) setNewCategory({...newCategory, type: "ingreso"});
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" onClick={() => setNewCategory({...newCategory, type: "ingreso"})}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Nueva Categoría
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[400px]">
+                        <DialogHeader>
+                          <DialogTitle>Nueva Categoría de Ingresos</DialogTitle>
+                          <DialogDescription>
+                            Crear una nueva categoría para organizar los conceptos de ingresos.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="categoryName" className="text-right">
+                              Nombre
+                            </Label>
+                            <Input
+                              id="categoryName"
+                              value={newCategory.name}
+                              onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+                              className="col-span-3"
+                              placeholder="Nombre de la categoría"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="categoryDescription" className="text-right">
+                              Descripción
+                            </Label>
+                            <Textarea
+                              id="categoryDescription"
+                              value={newCategory.description}
+                              onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+                              className="col-span-3"
+                              placeholder="Descripción de la categoría"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setIsNewCategoryOpen(false)}>
+                            Cancelar
+                          </Button>
+                          <Button onClick={handleCreateCategory}>
+                            Crear Categoría
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
@@ -576,10 +653,59 @@ export default function CatalogPage() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle>Categorías de Egresos</CardTitle>
-                    <Button size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Nueva Categoría
-                    </Button>
+                    <Dialog open={isNewCategoryOpen && newCategory.type === "egreso"} onOpenChange={(open) => {
+                      setIsNewCategoryOpen(open);
+                      if (open) setNewCategory({...newCategory, type: "egreso"});
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" onClick={() => setNewCategory({...newCategory, type: "egreso"})}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Nueva Categoría
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[400px]">
+                        <DialogHeader>
+                          <DialogTitle>Nueva Categoría de Egresos</DialogTitle>
+                          <DialogDescription>
+                            Crear una nueva categoría para organizar los conceptos de egresos.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="categoryNameEgreso" className="text-right">
+                              Nombre
+                            </Label>
+                            <Input
+                              id="categoryNameEgreso"
+                              value={newCategory.name}
+                              onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+                              className="col-span-3"
+                              placeholder="Nombre de la categoría"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="categoryDescriptionEgreso" className="text-right">
+                              Descripción
+                            </Label>
+                            <Textarea
+                              id="categoryDescriptionEgreso"
+                              value={newCategory.description}
+                              onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+                              className="col-span-3"
+                              placeholder="Descripción de la categoría"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setIsNewCategoryOpen(false)}>
+                            Cancelar
+                          </Button>
+                          <Button onClick={handleCreateCategory}>
+                            Crear Categoría
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
