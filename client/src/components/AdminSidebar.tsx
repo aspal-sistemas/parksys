@@ -496,39 +496,11 @@ const AdminSidebar: React.FC = () => {
             value="finances"
           >
             <NavItem 
-              href="/admin/finances/income" 
-              icon={<TrendingUp className="h-5 w-5" />}
-              active={location.startsWith('/admin/finances/income')}
+              href="/admin/finance" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location.startsWith('/admin/finance')}
             >
-              Ingresos
-            </NavItem>
-            <NavItem 
-              href="/admin/finances/expenses" 
-              icon={<TrendingDown className="h-5 w-5" />}
-              active={location.startsWith('/admin/finances/expenses')}
-            >
-              Egresos
-            </NavItem>
-            <NavItem 
-              href="/admin/finances/flow" 
-              icon={<ArrowRightLeft className="h-5 w-5" />}
-              active={location.startsWith('/admin/finances/flow')}
-            >
-              Flujo
-            </NavItem>
-            <NavItem 
-              href="/admin/finances/calculator" 
-              icon={<Calculator className="h-5 w-5" />}
-              active={location.startsWith('/admin/finances/calculator')}
-            >
-              Calculadora
-            </NavItem>
-            <NavItem 
-              href="/admin/finances/reports" 
-              icon={<FileText className="h-5 w-5" />}
-              active={location.startsWith('/admin/finances/reports')}
-            >
-              Reportes
+              Flujo de Efectivo
             </NavItem>
           </ModuleNav>
           
