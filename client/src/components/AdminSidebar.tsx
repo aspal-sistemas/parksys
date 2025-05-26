@@ -640,44 +640,44 @@ const AdminSidebar: React.FC = () => {
           </ModuleNav>
           
           <ModuleNav 
-            title="RH" 
+            title="Recursos Humanos" 
             icon={<Users className="h-5 w-5" />}
-            value="rh"
+            value="hr"
           >
             <NavItem 
-              href="/admin/rh/employees" 
-              icon={<Users className="h-5 w-5" />}
-              active={location === '/admin/rh/employees'}
+              href="/admin/hr/employees" 
+              icon={<User className="h-5 w-5" />}
+              active={location.startsWith('/admin/hr/employees')}
             >
-              Empleados
+              Personal
             </NavItem>
             <NavItem 
-              href="/admin/rh/positions" 
-              icon={<Award className="h-5 w-5" />}
-              active={location === '/admin/rh/positions'}
+              href="/admin/hr/training" 
+              icon={<GraduationCap className="h-5 w-5" />}
+              active={location.startsWith('/admin/hr/training')}
             >
-              Puestos
+              Capacitación
             </NavItem>
             <NavItem 
-              href="/admin/rh/departments" 
-              icon={<Building className="h-5 w-5" />}
-              active={location === '/admin/rh/departments'}
-            >
-              Departamentos
-            </NavItem>
-            <NavItem 
-              href="/admin/rh/attendance" 
-              icon={<ClipboardCheck className="h-5 w-5" />}
-              active={location === '/admin/rh/attendance'}
-            >
-              Asistencia
-            </NavItem>
-            <NavItem 
-              href="/admin/rh/payroll" 
-              icon={<Calculator className="h-5 w-5" />}
-              active={location === '/admin/rh/payroll'}
+              href="/admin/hr/payroll" 
+              icon={<CreditCard className="h-5 w-5" />}
+              active={location.startsWith('/admin/hr/payroll')}
             >
               Nómina
+            </NavItem>
+            <NavItem 
+              href="/admin/hr/wellness" 
+              icon={<Award className="h-5 w-5" />}
+              active={location.startsWith('/admin/hr/wellness')}
+            >
+              Bienestar
+            </NavItem>
+            <NavItem 
+              href="/admin/hr/analytics" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location.startsWith('/admin/hr/analytics')}
+            >
+              Analytics
             </NavItem>
           </ModuleNav>
           
