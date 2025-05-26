@@ -22,6 +22,8 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<any>;
   getUsers(): Promise<any[]>;
   getUserByEmail(email: string): Promise<any>;
+  createUser(userData: any): Promise<any>;
+  updateUser(id: number, userData: any): Promise<any>;
   getAssetCategories(): Promise<any[]>;
   getAssetCategory(id: number): Promise<any>;
   getCategoryAssets(categoryId: number): Promise<any[]>;
@@ -142,6 +144,22 @@ export class DatabaseStorage implements IStorage {
       return newUser;
     } catch (error) {
       console.error("Error al crear usuario:", error);
+      throw error;
+    }
+  }
+
+  async updateUser(id: number, userData: any): Promise<any> {
+    try {
+      const [updatedUser] = await db.update(users)
+        .set({
+          ...userData,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, id))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error(`Error al actualizar usuario ${id}:`, error);
       throw error;
     }
   }
