@@ -142,6 +142,21 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  async getParkImages(parkId: number): Promise<any[]> {
+    try {
+      const result = await db.execute(`
+        SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption
+        FROM park_images
+        WHERE park_id = $1
+        ORDER BY is_primary DESC, id ASC
+      `, [parkId]);
+      return result.rows || [];
+    } catch (error) {
+      console.error("Error al obtener imágenes del parque:", error);
+      return [];
+    }
+  }
   
   async getAssetCategories(): Promise<any[]> {
     try {
