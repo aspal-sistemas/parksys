@@ -421,6 +421,13 @@ function Router() {
           </Suspense>
         </Route>
         
+        {/* Ruta para la calculadora de recuperación de costos */}
+        <Route path="/admin/finance/calculator">
+          <Suspense fallback={<div className="p-8 text-center">Cargando calculadora de costos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/CostRecoveryCalculator')))}
+          </Suspense>
+        </Route>
+        
         <Route component={NotFound} />
       </Switch>
     </div>
