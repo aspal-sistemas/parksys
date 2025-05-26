@@ -414,17 +414,41 @@ function Router() {
           </Suspense>
         </Route>
 
-        {/* Ruta para el módulo financiero */}
-        <Route path="/admin/finance">
-          <Suspense fallback={<div className="p-8 text-center">Cargando módulo financiero...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/finance/index')))}
+        {/* Rutas para el módulo financiero reestructurado */}
+        <Route path="/admin/finance/dashboard">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard financiero...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/dashboard')))}
           </Suspense>
         </Route>
         
-        {/* Ruta para la calculadora de recuperación de costos */}
+        <Route path="/admin/finance/incomes">
+          <Suspense fallback={<div className="p-8 text-center">Cargando cédula de ingresos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/incomes')))}
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin/finance/expenses">
+          <Suspense fallback={<div className="p-8 text-center">Cargando cédula de egresos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/expenses')))}
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin/finance/cashflow">
+          <Suspense fallback={<div className="p-8 text-center">Cargando flujo de efectivo...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/cashflow')))}
+          </Suspense>
+        </Route>
+        
         <Route path="/admin/finance/calculator">
           <Suspense fallback={<div className="p-8 text-center">Cargando calculadora de costos...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/finance/CostRecoveryCalculator')))}
+          </Suspense>
+        </Route>
+        
+        {/* Ruta de redirección para compatibilidad */}
+        <Route path="/admin/finance">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard financiero...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/dashboard')))}
           </Suspense>
         </Route>
         
