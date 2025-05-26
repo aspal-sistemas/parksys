@@ -131,6 +131,9 @@ export default function CatalogPage() {
   const [selectedType, setSelectedType] = useState("todos");
   const [isNewConceptOpen, setIsNewConceptOpen] = useState(false);
   const [isNewCategoryOpen, setIsNewCategoryOpen] = useState(false);
+  const [isEditConceptOpen, setIsEditConceptOpen] = useState(false);
+  const [isDeleteConceptOpen, setIsDeleteConceptOpen] = useState(false);
+  const [selectedConcept, setSelectedConcept] = useState(null);
   
   // Estados del formulario de nuevo concepto
   const [newConcept, setNewConcept] = useState({
@@ -519,8 +522,8 @@ export default function CatalogPage() {
                                 variant="ghost" 
                                 size="sm"
                                 onClick={() => {
-                                  console.log("Editando concepto:", item);
-                                  // Aquí irá la lógica para editar
+                                  setSelectedConcept(item);
+                                  setIsEditConceptOpen(true);
                                 }}
                               >
                                 <Edit className="h-4 w-4" />
@@ -529,8 +532,8 @@ export default function CatalogPage() {
                                 variant="ghost" 
                                 size="sm"
                                 onClick={() => {
-                                  console.log("Eliminando concepto:", item);
-                                  // Aquí irá la lógica para eliminar
+                                  setSelectedConcept(item);
+                                  setIsDeleteConceptOpen(true);
                                 }}
                               >
                                 <Trash2 className="h-4 w-4" />
