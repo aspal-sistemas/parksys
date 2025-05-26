@@ -28,6 +28,23 @@ import AdminLayout from "@/components/AdminLayout";
 const BudgetPage = () => {
   const [selectedYear, setSelectedYear] = useState(2025);
   const [activeTab, setActiveTab] = useState("overview");
+  const [isNewBudgetOpen, setIsNewBudgetOpen] = useState(false);
+  const [budgetForm, setBudgetForm] = useState({
+    year: 2026,
+    totalIncomeTarget: '',
+    totalExpenseTarget: '',
+    categories: {
+      activities: '',
+      concessions_food: '',
+      concessions_recreation: '',
+      sponsorships: '',
+      parking: '',
+      personnel: '',
+      maintenance: '',
+      security: '',
+      operational: ''
+    }
+  });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
@@ -123,10 +140,186 @@ const BudgetPage = () => {
               </SelectContent>
             </Select>
             
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nuevo Presupuesto
-            </Button>
+            <Dialog open={isNewBudgetOpen} onOpenChange={setIsNewBudgetOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Nuevo Presupuesto
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Crear Nuevo Presupuesto</DialogTitle>
+                  <DialogDescription>
+                    Configure las metas financieras para el año seleccionado
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="grid grid-cols-2 gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="year">Año</Label>
+                    <Select 
+                      value={budgetForm.year.toString()} 
+                      onValueChange={(value) => setBudgetForm({...budgetForm, year: Number(value)})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2025">2025</SelectItem>
+                        <SelectItem value="2026">2026</SelectItem>
+                        <SelectItem value="2027">2027</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="totalIncome">Meta Total Ingresos</Label>
+                    <Input
+                      id="totalIncome"
+                      type="number"
+                      placeholder="3,000,000"
+                      value={budgetForm.totalIncomeTarget}
+                      onChange={(e) => setBudgetForm({...budgetForm, totalIncomeTarget: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2 col-span-2">
+                    <Label htmlFor="totalExpense">Meta Total Egresos</Label>
+                    <Input
+                      id="totalExpense"
+                      type="number"
+                      placeholder="2,400,000"
+                      value={budgetForm.totalExpenseTarget}
+                      onChange={(e) => setBudgetForm({...budgetForm, totalExpenseTarget: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="col-span-2">
+                    <h4 className="font-medium mb-3">Distribución por Categorías de Ingresos</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-sm">Actividades</Label>
+                        <Input
+                          type="number"
+                          placeholder="1,350,000"
+                          value={budgetForm.categories.activities}
+                          onChange={(e) => setBudgetForm({
+                            ...budgetForm, 
+                            categories: {...budgetForm.categories, activities: e.target.value}
+                          })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Concesiones Alimentos</Label>
+                        <Input
+                          type="number"
+                          placeholder="900,000"
+                          value={budgetForm.categories.concessions_food}
+                          onChange={(e) => setBudgetForm({
+                            ...budgetForm, 
+                            categories: {...budgetForm.categories, concessions_food: e.target.value}
+                          })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Concesiones Recreativas</Label>
+                        <Input
+                          type="number"
+                          placeholder="450,000"
+                          value={budgetForm.categories.concessions_recreation}
+                          onChange={(e) => setBudgetForm({
+                            ...budgetForm, 
+                            categories: {...budgetForm.categories, concessions_recreation: e.target.value}
+                          })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Patrocinios</Label>
+                        <Input
+                          type="number"
+                          placeholder="225,000"
+                          value={budgetForm.categories.sponsorships}
+                          onChange={(e) => setBudgetForm({
+                            ...budgetForm, 
+                            categories: {...budgetForm.categories, sponsorships: e.target.value}
+                          })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="col-span-2">
+                    <h4 className="font-medium mb-3">Distribución por Categorías de Egresos</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-sm">Personal y Nómina</Label>
+                        <Input
+                          type="number"
+                          placeholder="1,200,000"
+                          value={budgetForm.categories.personnel}
+                          onChange={(e) => setBudgetForm({
+                            ...budgetForm, 
+                            categories: {...budgetForm.categories, personnel: e.target.value}
+                          })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Mantenimiento</Label>
+                        <Input
+                          type="number"
+                          placeholder="600,000"
+                          value={budgetForm.categories.maintenance}
+                          onChange={(e) => setBudgetForm({
+                            ...budgetForm, 
+                            categories: {...budgetForm.categories, maintenance: e.target.value}
+                          })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Seguridad</Label>
+                        <Input
+                          type="number"
+                          placeholder="360,000"
+                          value={budgetForm.categories.security}
+                          onChange={(e) => setBudgetForm({
+                            ...budgetForm, 
+                            categories: {...budgetForm.categories, security: e.target.value}
+                          })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Gastos Operativos</Label>
+                        <Input
+                          type="number"
+                          placeholder="240,000"
+                          value={budgetForm.categories.operational}
+                          onChange={(e) => setBudgetForm({
+                            ...budgetForm, 
+                            categories: {...budgetForm.categories, operational: e.target.value}
+                          })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setIsNewBudgetOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      // Aquí se guardaría el presupuesto
+                      console.log('Guardando presupuesto:', budgetForm);
+                      setIsNewBudgetOpen(false);
+                    }}
+                  >
+                    Crear Presupuesto
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
