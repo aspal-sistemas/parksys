@@ -14,6 +14,8 @@ const {
 export interface IStorage {
   getParks(filters?: any): Promise<any[]>;
   getExtendedParks(filters?: any): Promise<any[]>;
+  getPark(id: number): Promise<any>;
+  updatePark(id: number, data: any): Promise<any>;
   getAmenities(): Promise<any[]>;
   getUser(id: number): Promise<any>;
   getUserByUsername(username: string): Promise<any>;
@@ -321,6 +323,32 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
+  async getPark(id: number): Promise<any> {
+    try {
+      const result = await db.select().from(parks).where(eq(parks.id, id));
+      return result[0] || null;
+    } catch (error) {
+      console.error("Error al obtener parque:", error);
+      return null;
+    }
+  }
+
+  async updatePark(id: number, data: any): Promise<any> {
+    try {
+      const result = await db.update(parks)
+        .set({
+          ...data,
+          updatedAt: new Date()
+        })
+        .where(eq(parks.id, id))
+        .returning();
+      return result[0] || null;
+    } catch (error) {
+      console.error("Error al actualizar parque:", error);
+      throw error;
+    }
+  }
+
   async getAssets(filters?: any): Promise<any[]> {
     try {
       // Consulta SQL
