@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Search, 
   Plus, 
@@ -125,6 +129,19 @@ export default function CatalogPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [selectedType, setSelectedType] = useState("todos");
+  const [isNewConceptOpen, setIsNewConceptOpen] = useState(false);
+  const [isNewCategoryOpen, setIsNewCategoryOpen] = useState(false);
+  
+  // Estados del formulario de nuevo concepto
+  const [newConcept, setNewConcept] = useState({
+    name: "",
+    type: "",
+    subcategory: "",
+    amount: "",
+    unit: "",
+    frequency: "",
+    description: ""
+  });
 
   const filteredItems = financialConcepts.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -139,6 +156,30 @@ export default function CatalogPage() {
   const totalIncomes = incomeCategories.length;
   const totalExpenses = expenseCategories.length;
   const activeItems = financialConcepts.filter(item => item.status === "Activo").length;
+
+  const handleCreateConcept = () => {
+    // Aquí irá la lógica para crear un nuevo concepto
+    console.log("Nuevo concepto:", newConcept);
+    setIsNewConceptOpen(false);
+    setNewConcept({
+      name: "",
+      type: "",
+      subcategory: "",
+      amount: "",
+      unit: "",
+      frequency: "",
+      description: ""
+    });
+  };
+
+  const getAvailableSubcategories = () => {
+    if (newConcept.type === "ingreso") {
+      return incomeSubcategories;
+    } else if (newConcept.type === "egreso") {
+      return expenseSubcategories;
+    }
+    return [];
+  };
 
   return (
     <AdminLayout>
@@ -157,10 +198,134 @@ export default function CatalogPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nuevo Concepto
-            </Button>
+            <Dialog open={isNewConceptOpen} onOpenChange={setIsNewConceptOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nuevo Concepto
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Crear Nuevo Concepto Financiero</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Nombre
+                    </Label>
+                    <Input
+                      id="name"
+                      value={newConcept.name}
+                      onChange={(e) => setNewConcept({...newConcept, name: e.target.value})}
+                      className="col-span-3"
+                      placeholder="Nombre del concepto"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="type" className="text-right">
+                      Tipo
+                    </Label>
+                    <Select value={newConcept.type} onValueChange={(value) => setNewConcept({...newConcept, type: value, subcategory: ""})}>
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Selecciona el tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ingreso">Ingreso</SelectItem>
+                        <SelectItem value="egreso">Egreso</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {newConcept.type && (
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="subcategory" className="text-right">
+                        Categoría
+                      </Label>
+                      <Select value={newConcept.subcategory} onValueChange={(value) => setNewConcept({...newConcept, subcategory: value})}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Selecciona la categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getAvailableSubcategories().map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="amount" className="text-right">
+                      {newConcept.type === "ingreso" ? "Tarifa" : "Costo"}
+                    </Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      value={newConcept.amount}
+                      onChange={(e) => setNewConcept({...newConcept, amount: e.target.value})}
+                      className="col-span-3"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="unit" className="text-right">
+                      Unidad
+                    </Label>
+                    <Input
+                      id="unit"
+                      value={newConcept.unit}
+                      onChange={(e) => setNewConcept({...newConcept, unit: e.target.value})}
+                      className="col-span-3"
+                      placeholder="Por persona, Por hora, etc."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="frequency" className="text-right">
+                      Frecuencia
+                    </Label>
+                    <Select value={newConcept.frequency} onValueChange={(value) => setNewConcept({...newConcept, frequency: value})}>
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Selecciona la frecuencia" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Por uso">Por uso</SelectItem>
+                        <SelectItem value="Diario">Diario</SelectItem>
+                        <SelectItem value="Semanal">Semanal</SelectItem>
+                        <SelectItem value="Mensual">Mensual</SelectItem>
+                        <SelectItem value="Anual">Anual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="description" className="text-right">
+                      Descripción
+                    </Label>
+                    <Textarea
+                      id="description"
+                      value={newConcept.description}
+                      onChange={(e) => setNewConcept({...newConcept, description: e.target.value})}
+                      className="col-span-3"
+                      placeholder="Descripción del concepto financiero"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setIsNewConceptOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleCreateConcept}>
+                    Crear Concepto
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
