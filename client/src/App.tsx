@@ -476,6 +476,24 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/hr/training')))}
           </Suspense>
         </Route>
+        
+        <Route path="/admin/hr/payroll">
+          <Suspense fallback={<div className="p-8 text-center">Cargando módulo de nómina...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/hr/payroll')))}
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin/hr/wellness">
+          <Suspense fallback={<div className="p-8 text-center">Cargando módulo de bienestar...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/hr/wellness')))}
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin/hr/analytics">
+          <Suspense fallback={<div className="p-8 text-center">Cargando analytics de RH...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/hr/analytics')))}
+          </Suspense>
+        </Route>
 
         {/* Ruta de redirección para compatibilidad */}
         <Route path="/admin/finance">
