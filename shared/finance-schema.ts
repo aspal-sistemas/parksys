@@ -17,10 +17,16 @@ import { z } from "zod";
 // Tabla de categorías de ingresos
 export const incomeCategories = pgTable("income_categories", {
   id: serial("id").primaryKey(),
+  code: varchar("code", { length: 20 }).notNull().unique(), // Código contable
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
+  level: integer("level").default(1), // Nivel jerárquico (1, 2, 3)
+  parentId: integer("parent_id"), // Para crear jerarquías
+  accountingCode: varchar("accounting_code", { length: 50 }), // Código del plan contable
   isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Tabla de subcategorías de ingresos
@@ -36,10 +42,16 @@ export const incomeSubcategories = pgTable("income_subcategories", {
 // Tabla de categorías de egresos
 export const expenseCategories = pgTable("expense_categories", {
   id: serial("id").primaryKey(),
+  code: varchar("code", { length: 20 }).notNull().unique(), // Código contable
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
+  level: integer("level").default(1), // Nivel jerárquico (1, 2, 3)
+  parentId: integer("parent_id"), // Para crear jerarquías
+  accountingCode: varchar("accounting_code", { length: 50 }), // Código del plan contable
   isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Tabla de subcategorías de egresos
