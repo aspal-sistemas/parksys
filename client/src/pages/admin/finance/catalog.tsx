@@ -14,66 +14,85 @@ import {
   Edit, 
   Trash2,
   Filter,
-  Download,
-  Upload
+  Minus
 } from "lucide-react";
 import { Helmet } from "react-helmet";
 
-// Datos de ejemplo para el catálogo financiero
-const mockIncomeCategories = [
+// Categorías estructuradas para gestión
+const incomeCategories = [
+  {
+    name: "Servicios Recreativos",
+    description: "Ingresos por servicios recreativos y deportivos",
+    subcategories: ["Canchas deportivas", "Juegos infantiles", "Gimnasio al aire libre"]
+  },
+  {
+    name: "Eventos y Actividades", 
+    description: "Ingresos por organización de eventos",
+    subcategories: ["Conciertos", "Festivales", "Talleres"]
+  },
+  {
+    name: "Concesiones",
+    description: "Ingresos por concesiones comerciales", 
+    subcategories: ["Cafeterías", "Tiendas", "Alquiler de bicicletas"]
+  },
+  {
+    name: "Permisos y Licencias",
+    description: "Ingresos por permisos de uso del parque",
+    subcategories: ["Fotografía comercial", "Grabaciones", "Eventos privados"]
+  }
+];
+
+const expenseCategories = [
+  {
+    name: "Personal y Nómina",
+    description: "Gastos relacionados con el personal del parque",
+    subcategories: ["Salarios", "Prestaciones", "Capacitación"]
+  },
+  {
+    name: "Mantenimiento",
+    description: "Gastos de mantenimiento de instalaciones",
+    subcategories: ["Jardinería", "Limpieza", "Reparaciones"]
+  },
+  {
+    name: "Servicios Públicos", 
+    description: "Gastos de servicios básicos",
+    subcategories: ["Electricidad", "Agua", "Internet"]
+  },
+  {
+    name: "Materiales y Suministros",
+    description: "Compra de materiales y suministros",
+    subcategories: ["Material de oficina", "Herramientas", "Materiales de construcción"]
+  }
+];
+
+// Conceptos financieros de ejemplo
+const financialConcepts = [
   {
     id: 1,
     code: "ING-001",
     name: "Cuotas de Acceso",
     type: "ingreso",
-    subcategory: "Tarifas",
-    rate: 25.00,
+    subcategory: "Servicios Recreativos",
+    rate: 50.00,
     unit: "Por persona",
-    frequency: "Diaria",
+    frequency: "Diario",
     status: "Activo",
-    description: "Cuota de acceso general al parque"
+    description: "Cuotas de acceso para visitantes del parque"
   },
   {
     id: 2,
     code: "ING-002", 
-    name: "Renta de Espacios para Eventos",
+    name: "Alquiler de Canchas",
     type: "ingreso",
-    subcategory: "Alquileres",
-    rate: 1500.00,
-    unit: "Por día",
-    frequency: "Variable",
+    subcategory: "Servicios Recreativos",
+    rate: 200.00,
+    unit: "Por hora",
+    frequency: "Por uso",
     status: "Activo",
-    description: "Renta de áreas para eventos privados y corporativos"
+    description: "Alquiler de canchas deportivas por hora"
   },
   {
     id: 3,
-    code: "ING-003",
-    name: "Estacionamiento",
-    type: "ingreso", 
-    subcategory: "Servicios",
-    rate: 15.00,
-    unit: "Por hora",
-    frequency: "Continua",
-    status: "Activo",
-    description: "Servicio de estacionamiento público"
-  },
-  {
-    id: 4,
-    code: "ING-004",
-    name: "Concesiones de Alimentos",
-    type: "ingreso",
-    subcategory: "Concesiones",
-    rate: 8.5,
-    unit: "% de ventas",
-    frequency: "Mensual",
-    status: "Activo",
-    description: "Porcentaje sobre ventas de concesionarios de alimentos"
-  }
-];
-
-const mockExpenseCategories = [
-  {
-    id: 5,
     code: "EGR-001",
     name: "Mantenimiento de Jardines",
     type: "egreso",
@@ -85,72 +104,29 @@ const mockExpenseCategories = [
     description: "Servicios de jardinería y mantenimiento de áreas verdes"
   },
   {
-    id: 6,
+    id: 4,
     code: "EGR-002",
     name: "Consumo de Electricidad",
     type: "egreso",
     subcategory: "Servicios Públicos",
     cost: 12000.00,
     unit: "Por mes",
-    frequency: "Mensual", 
-    status: "Activo",
+    frequency: "Mensual",
+    status: "Activo", 
     description: "Consumo eléctrico de iluminación y servicios"
-  },
-  {
-    id: 7,
-    code: "EGR-003",
-    name: "Salarios Personal de Seguridad",
-    type: "egreso",
-    subcategory: "Nómina",
-    cost: 45000.00,
-    unit: "Por mes",
-    frequency: "Mensual",
-    status: "Activo",
-    description: "Salarios y prestaciones del personal de seguridad"
-  },
-  {
-    id: 8,
-    code: "EGR-004",
-    name: "Materiales de Limpieza",
-    type: "egreso",
-    subcategory: "Suministros",
-    cost: 3200.00,
-    unit: "Por mes",
-    frequency: "Mensual",
-    status: "Activo",
-    description: "Productos y materiales para limpieza y sanitización"
   }
 ];
 
-const allCatalogItems = [...mockIncomeCategories, ...mockExpenseCategories];
-
-const incomeCategories = [
-  "Todos",
-  "Tarifas",
-  "Alquileres", 
-  "Servicios",
-  "Concesiones",
-  "Donaciones",
-  "Subsidios"
-];
-
-const expenseCategories = [
-  "Todos",
-  "Mantenimiento",
-  "Servicios Públicos",
-  "Nómina",
-  "Suministros",
-  "Seguros",
-  "Capacitación"
-];
+// Listas para filtros
+const incomeSubcategories = incomeCategories.flatMap(cat => cat.subcategories);
+const expenseSubcategories = expenseCategories.flatMap(cat => cat.subcategories);
 
 export default function CatalogPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [selectedType, setSelectedType] = useState("todos");
-  const [activeTab, setActiveTab] = useState("items");
 
-  const filteredItems = allCatalogItems.filter(item => {
+  const filteredItems = financialConcepts.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -159,41 +135,31 @@ export default function CatalogPage() {
     return matchesSearch && matchesCategory && matchesType;
   });
 
-  const totalItems = allCatalogItems.length;
-  const totalIncomes = mockIncomeCategories.length;
-  const totalExpenses = mockExpenseCategories.length;
-  const activeItems = allCatalogItems.filter(item => item.status === "Activo").length;
+  const totalItems = financialConcepts.length;
+  const totalIncomes = incomeCategories.length;
+  const totalExpenses = expenseCategories.length;
+  const activeItems = financialConcepts.filter(item => item.status === "Activo").length;
 
   return (
     <AdminLayout>
       <Helmet>
-        <title>Catálogo de Productos y Servicios | ParquesMX</title>
-        <meta 
-          name="description" 
-          content="Gestión del catálogo de productos y servicios para parques municipales" 
-        />
+        <title>Catálogo Financiero - ParquesMX</title>
+        <meta name="description" content="Gestión del catálogo financiero con categorías de ingresos y egresos" />
       </Helmet>
 
-      <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
+      <div className="space-y-6">
+        {/* Encabezado */}
+        <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Catálogo de Productos y Servicios</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Catálogo Financiero</h1>
             <p className="text-muted-foreground">
-              Gestión integral del inventario y catálogo de productos
+              Gestiona categorías y conceptos de ingresos y egresos
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
-            </Button>
-            <Button variant="outline" size="sm">
-              <Upload className="h-4 w-4 mr-2" />
-              Importar
-            </Button>
-            <Button size="sm">
+            <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Nuevo Producto
+              Nuevo Concepto
             </Button>
           </div>
         </div>
@@ -205,7 +171,7 @@ export default function CatalogPage() {
               <div className="flex items-center space-x-2">
                 <Package className="h-8 w-8 text-blue-600" />
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Items</p>
+                  <p className="text-sm font-medium text-muted-foreground">Total Conceptos</p>
                   <p className="text-2xl font-bold">{totalItems}</p>
                 </div>
               </div>
@@ -241,7 +207,7 @@ export default function CatalogPage() {
               <div className="flex items-center space-x-2">
                 <Package className="h-8 w-8 text-purple-600" />
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Items Activos</p>
+                  <p className="text-sm font-medium text-muted-foreground">Conceptos Activos</p>
                   <p className="text-2xl font-bold">{activeItems}</p>
                 </div>
               </div>
@@ -251,10 +217,8 @@ export default function CatalogPage() {
 
         <Tabs defaultValue="items" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="items">Productos</TabsTrigger>
-            <TabsTrigger value="categories">Categorías</TabsTrigger>
-            <TabsTrigger value="suppliers">Proveedores</TabsTrigger>
-            <TabsTrigger value="reports">Reportes</TabsTrigger>
+            <TabsTrigger value="items">Conceptos Financieros</TabsTrigger>
+            <TabsTrigger value="categories">Gestión de Categorías</TabsTrigger>
           </TabsList>
 
           <TabsContent value="items" className="space-y-4">
@@ -290,11 +254,11 @@ export default function CatalogPage() {
                     >
                       <option value="Todos">Todas las categorías</option>
                       {selectedType === "ingreso" || selectedType === "todos" ? 
-                        incomeCategories.slice(1).map(category => (
+                        incomeSubcategories.map(category => (
                           <option key={category} value={category}>{category}</option>
                         )) : null}
                       {selectedType === "egreso" || selectedType === "todos" ? 
-                        expenseCategories.slice(1).map(category => (
+                        expenseSubcategories.map(category => (
                           <option key={category} value={category}>{category}</option>
                         )) : null}
                     </select>
@@ -348,10 +312,7 @@ export default function CatalogPage() {
                           <td className="py-3 px-4">
                             <div>
                               <p className="font-medium">
-                                {item.type === "ingreso" 
-                                  ? `$${item.rate || '0.00'}`
-                                  : `$${(item as any).cost || '0.00'}`
-                                }
+                                ${item.type === "ingreso" ? item.rate : (item as any).cost}
                               </p>
                               <p className="text-xs text-muted-foreground">{item.unit}</p>
                             </div>
@@ -393,42 +354,92 @@ export default function CatalogPage() {
           </TabsContent>
 
           <TabsContent value="categories" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestión de Categorías</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Próximamente: Gestión de categorías y subcategorías
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+            <Tabs defaultValue="ingresos" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="ingresos">Categorías de Ingresos</TabsTrigger>
+                <TabsTrigger value="egresos">Categorías de Egresos</TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="suppliers" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestión de Proveedores</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Próximamente: Directorio y gestión de proveedores
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              <TabsContent value="ingresos" className="space-y-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle>Categorías de Ingresos</CardTitle>
+                    <Button size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nueva Categoría
+                    </Button>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {incomeCategories.map((category, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                              <DollarSign className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{category.name}</p>
+                              <p className="text-sm text-muted-foreground">{category.description}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="secondary">
+                              {category.subcategories.length} subcategorías
+                            </Badge>
+                            <Button variant="ghost" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-          <TabsContent value="reports" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Reportes del Catálogo</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Próximamente: Reportes de inventario y análisis
-                </p>
-              </CardContent>
-            </Card>
+              <TabsContent value="egresos" className="space-y-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle>Categorías de Egresos</CardTitle>
+                    <Button size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nueva Categoría
+                    </Button>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {expenseCategories.map((category, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                              <Minus className="h-5 w-5 text-red-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{category.name}</p>
+                              <p className="text-sm text-muted-foreground">{category.description}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="secondary">
+                              {category.subcategories.length} subcategorías
+                            </Badge>
+                            <Button variant="ghost" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
       </div>
