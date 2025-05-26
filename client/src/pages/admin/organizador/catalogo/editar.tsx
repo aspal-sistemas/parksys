@@ -53,7 +53,7 @@ const activitySchema = z.object({
   title: z.string().min(3, "El título debe tener al menos 3 caracteres"),
   description: z.string().min(10, "La descripción debe tener al menos 10 caracteres"),
   category: z.string().min(1, "Debes seleccionar una categoría"),
-  parkId: z.string().min(1, "Debes seleccionar un parque"),
+  parkId: z.coerce.number().int().positive("Debes seleccionar un parque"),
   startDate: z.string().min(1, "La fecha de inicio es obligatoria"),
   endDate: z.string().optional(),
   
@@ -82,7 +82,7 @@ const activitySchema = z.object({
   specialNeeds: z.array(z.string()).optional(),
   
   // Campo para seleccionar al instructor por su ID e información adicional
-  instructorId: z.string().optional(),
+  instructorId: z.coerce.number().int().positive().optional(),
   instructorName: z.string().optional(),
   instructorContact: z.string().optional(),
 });
