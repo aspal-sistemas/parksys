@@ -546,6 +546,13 @@ const AdminSidebar: React.FC = () => {
             >
               Reportes
             </NavItem>
+            <NavItem 
+              href="/admin/finance/catalog" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location.startsWith('/admin/finance/catalog')}
+            >
+              Catálogo
+            </NavItem>
           </ModuleNav>
           
           {/* Menú principal de Eventos (movido desde Marketing) */}

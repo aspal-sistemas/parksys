@@ -463,6 +463,12 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/finance/reports')))}
           </Suspense>
         </Route>
+        
+        <Route path="/admin/finance/catalog">
+          <Suspense fallback={<div className="p-8 text-center">Cargando catálogo...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/catalog')))}
+          </Suspense>
+        </Route>
 
         {/* Rutas del módulo de Recursos Humanos */}
         <Route path="/admin/hr/employees">
