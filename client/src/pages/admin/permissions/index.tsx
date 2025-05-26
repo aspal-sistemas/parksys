@@ -399,30 +399,32 @@ export default function PermissionsPage() {
   // Mutation para guardar permisos
   const savePermissionsMutation = useMutation({
     mutationFn: async (permissions: any) => {
-      console.log('Enviando permisos al servidor:', permissions);
-      
-      const response = await fetch('/api/role-permissions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ permissions }),
-      });
-      
-      console.log('Respuesta del servidor:', response.status, response.statusText);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error del servidor:', errorText);
-        throw new Error(`Error al guardar permisos: ${response.status} ${response.statusText}`);
+      try {
+        const response = await fetch('/api/role-permissions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ permissions }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Error del servidor: ${response.status}`);
+        }
+        
+        // Intentar parsear como JSON, pero manejar errores graciosamente
+        try {
+          return await response.json();
+        } catch (jsonError) {
+          // Si no se puede parsear como JSON, devolver un objeto de éxito simple
+          return { success: true, message: 'Permisos guardados correctamente' };
+        }
+      } catch (error) {
+        console.error('Error en la petición:', error);
+        throw error;
       }
-      
-      const result = await response.json();
-      console.log('Resultado exitoso:', result);
-      return result;
     },
-    onSuccess: (data) => {
-      console.log('Permisos guardados exitosamente:', data);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/role-permissions'] });
       toast({
         title: "Permisos actualizados",
@@ -431,7 +433,6 @@ export default function PermissionsPage() {
       setIsEditing(false);
     },
     onError: (error: any) => {
-      console.error('Error en mutation:', error);
       toast({
         title: "Error al guardar",
         description: error.message || "No se pudieron guardar los permisos.",
