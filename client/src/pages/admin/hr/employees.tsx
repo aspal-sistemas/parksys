@@ -53,6 +53,8 @@ const EmployeesManagement = () => {
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isNewEmployeeOpen, setIsNewEmployeeOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [isViewEmployeeOpen, setIsViewEmployeeOpen] = useState(false);
 
   // Datos de empleados de muestra
   const employees: Employee[] = [
@@ -191,6 +193,11 @@ const EmployeesManagement = () => {
       style: 'currency',
       currency: 'MXN'
     }).format(amount);
+  };
+
+  const handleViewEmployee = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsViewEmployeeOpen(true);
   };
 
   // Estadísticas generales
@@ -475,7 +482,7 @@ const EmployeesManagement = () => {
                         </Badge>
                         
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" onClick={() => handleViewEmployee(employee)}>
                             <Eye className="h-4 w-4" />
                           </Button>
                           <Button size="sm" variant="outline">
@@ -531,7 +538,7 @@ const EmployeesManagement = () => {
                           <Mail className="h-4 w-4 mr-1" />
                           Contactar
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => handleViewEmployee(employee)}>
                           <Eye className="h-4 w-4" />
                         </Button>
                       </div>
@@ -587,6 +594,193 @@ const EmployeesManagement = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Modal de visualización de empleado */}
+        <Dialog open={isViewEmployeeOpen} onOpenChange={setIsViewEmployeeOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3">
+                {selectedEmployee && (
+                  <>
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                      {selectedEmployee.fullName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold">{selectedEmployee.fullName}</div>
+                      <div className="text-sm text-gray-600 font-normal">{selectedEmployee.position}</div>
+                    </div>
+                    <Badge variant="outline" className={getStatusColor(selectedEmployee.status)}>
+                      {getStatusText(selectedEmployee.status)}
+                    </Badge>
+                  </>
+                )}
+              </DialogTitle>
+            </DialogHeader>
+
+            {selectedEmployee && (
+              <div className="space-y-6">
+                {/* Información básica */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Información Personal</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Mail className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <div className="text-sm text-gray-600">Correo Electrónico</div>
+                          <div className="font-medium">{selectedEmployee.email}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Phone className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <div className="text-sm text-gray-600">Teléfono</div>
+                          <div className="font-medium">{selectedEmployee.phone}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <MapPin className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <div className="text-sm text-gray-600">Dirección</div>
+                          <div className="font-medium">{selectedEmployee.address}</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Información Laboral</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Building className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <div className="text-sm text-gray-600">Departamento</div>
+                          <div className="font-medium">{selectedEmployee.department}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Award className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <div className="text-sm text-gray-600">Puesto</div>
+                          <div className="font-medium">{selectedEmployee.position}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Calendar className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <div className="text-sm text-gray-600">Fecha de Contratación</div>
+                          <div className="font-medium">{new Date(selectedEmployee.hireDate).toLocaleDateString('es-MX')}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <DollarSign className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <div className="text-sm text-gray-600">Salario Mensual</div>
+                          <div className="font-medium text-green-600">{formatCurrency(selectedEmployee.salary)}</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Contacto de emergencia */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Contacto de Emergencia</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-gray-600">Nombre</div>
+                        <div className="font-medium">{selectedEmployee.emergencyContact}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-600">Teléfono</div>
+                        <div className="font-medium">{selectedEmployee.emergencyPhone}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Educación y competencias */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Educación</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-3">
+                        <GraduationCap className="h-5 w-5 text-gray-400" />
+                        <div className="font-medium">{selectedEmployee.education}</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Horario de Trabajo</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-3">
+                        <Clock className="h-5 w-5 text-gray-400" />
+                        <div className="font-medium">{selectedEmployee.workSchedule}</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Certificaciones y habilidades */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Certificaciones</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedEmployee.certifications.map((cert, index) => (
+                          <Badge key={index} variant="secondary" className="bg-blue-100 text-blue-800">
+                            {cert}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Habilidades</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedEmployee.skills.map((skill, index) => (
+                          <Badge key={index} variant="secondary" className="bg-green-100 text-green-800">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Acciones */}
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <Button variant="outline">
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar Información
+                  </Button>
+                  <Button>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Enviar Mensaje
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
