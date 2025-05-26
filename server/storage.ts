@@ -16,6 +16,7 @@ export interface IStorage {
   getExtendedParks(filters?: any): Promise<any[]>;
   getPark(id: number): Promise<any>;
   updatePark(id: number, data: any): Promise<any>;
+  getMunicipalities(): Promise<any[]>;
   getAmenities(): Promise<any[]>;
   getUser(id: number): Promise<any>;
   getUserByUsername(username: string): Promise<any>;
@@ -346,6 +347,16 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error al actualizar parque:", error);
       throw error;
+    }
+  }
+
+  async getMunicipalities(): Promise<any[]> {
+    try {
+      const result = await db.select().from(municipalities);
+      return result || [];
+    } catch (error) {
+      console.error("Error al obtener municipios:", error);
+      return [];
     }
   }
 
