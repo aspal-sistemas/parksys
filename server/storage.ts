@@ -157,6 +157,22 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
   }
+
+  async getParkAmenities(parkId: number): Promise<any[]> {
+    try {
+      const result = await db.execute(`
+        SELECT a.id, a.name, a.icon, a.category, a.icon_type as "iconType", a.custom_icon_url as "customIconUrl"
+        FROM amenities a
+        JOIN park_amenities pa ON a.id = pa.amenity_id
+        WHERE pa.park_id = $1
+        ORDER BY a.name
+      `, [parkId]);
+      return result.rows || [];
+    } catch (error) {
+      console.error("Error al obtener amenidades del parque:", error);
+      return [];
+    }
+  }
   
   async getAssetCategories(): Promise<any[]> {
     try {
