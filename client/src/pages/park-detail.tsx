@@ -19,11 +19,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { IncidentReportForm } from '@/components/IncidentReportForm';
 import AmenityIcon from '@/components/AmenityIcon';
 import ParkQuickActions from '@/components/ParkQuickActions';
+import { ParkImageManager } from '@/components/ParkImageManager';
+import { useAuth } from '@/hooks/useAuth';
 
 const ParkDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
   
   // Fetch park details
   const { data: park, isLoading, error } = useQuery<ExtendedPark>({
@@ -301,27 +304,39 @@ const ParkDetail: React.FC = () => {
               </TabsContent>
               
               <TabsContent value="images" className="mt-4">
-                {/* Galería de imágenes */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {mainImage && (
-                    <div className="col-span-full mb-4">
-                      <img 
-                        src={mainImage} 
-                        alt={`Imagen principal de ${park.name}`}
-                        className="w-full h-auto rounded-lg"
-                      />
+                {isAuthenticated ? (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-xl font-semibold">Gestión de Imágenes</h2>
+                      <p className="text-sm text-gray-500">Administra las imágenes del parque</p>
                     </div>
-                  )}
-                  {additionalImages && additionalImages.map((img, index) => (
-                    <div key={index} className="aspect-square overflow-hidden rounded-lg">
-                      <img
-                        src={img}
-                        alt={`Vista de ${park.name} ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                    <ParkImageManager parkId={Number(id)} />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <h2 className="text-xl font-semibold">Galería de Imágenes</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {mainImage && (
+                        <div className="col-span-full mb-4">
+                          <img 
+                            src={mainImage} 
+                            alt={`Imagen principal de ${park.name}`}
+                            className="w-full h-auto rounded-lg"
+                          />
+                        </div>
+                      )}
+                      {additionalImages && additionalImages.map((img, index) => (
+                        <div key={index} className="aspect-square overflow-hidden rounded-lg">
+                          <img
+                            src={img}
+                            alt={`Vista de ${park.name} ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </div>
