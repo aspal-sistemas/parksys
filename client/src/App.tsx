@@ -464,6 +464,19 @@ function Router() {
           </Suspense>
         </Route>
 
+        {/* Rutas del módulo de Recursos Humanos */}
+        <Route path="/admin/hr/employees">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de personal...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/hr/employees')))}
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin/hr/training">
+          <Suspense fallback={<div className="p-8 text-center">Cargando módulo de capacitación...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/hr/training')))}
+          </Suspense>
+        </Route>
+
         {/* Ruta de redirección para compatibilidad */}
         <Route path="/admin/finance">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard financiero...</div>}>
