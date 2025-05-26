@@ -127,13 +127,15 @@ const expenseSubcategories = expenseCategories.flatMap(cat => cat.subcategories)
 
 export default function CatalogPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Todos");
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("Todos");
   const [selectedType, setSelectedType] = useState("todos");
   const [isNewConceptOpen, setIsNewConceptOpen] = useState(false);
   const [isNewCategoryOpen, setIsNewCategoryOpen] = useState(false);
   const [isEditConceptOpen, setIsEditConceptOpen] = useState(false);
   const [isDeleteConceptOpen, setIsDeleteConceptOpen] = useState(false);
-  const [selectedConcept, setSelectedConcept] = useState(null);
+  const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
+  const [selectedConcept, setSelectedConcept] = useState<any>(null);
+  const [selectedCategoryToEdit, setSelectedCategoryToEdit] = useState<any>(null);
   
   // Estados del formulario de nuevo concepto
   const [newConcept, setNewConcept] = useState({
@@ -157,7 +159,7 @@ export default function CatalogPage() {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "Todos" || item.subcategory === selectedCategory;
+    const matchesCategory = selectedCategoryFilter === "Todos" || item.subcategory === selectedCategoryFilter;
     const matchesType = selectedType === "todos" || item.type === selectedType;
     return matchesSearch && matchesCategory && matchesType;
   });
@@ -437,8 +439,8 @@ export default function CatalogPage() {
                       <option value="egreso">Egresos</option>
                     </select>
                     <select
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      value={selectedCategoryFilter}
+                      onChange={(e) => setSelectedCategoryFilter(e.target.value)}
                       className="px-3 py-2 border border-gray-300 rounded-md text-sm"
                     >
                       <option value="Todos">Todas las categorías</option>
@@ -642,8 +644,8 @@ export default function CatalogPage() {
                               variant="ghost" 
                               size="sm"
                               onClick={() => {
-                                console.log("Editando categoría de ingresos:", category);
-                                // Aquí irá la lógica para editar categoría
+                                setSelectedCategoryToEdit(category);
+                                setIsEditCategoryOpen(true);
                               }}
                             >
                               <Edit className="h-4 w-4" />
@@ -745,8 +747,8 @@ export default function CatalogPage() {
                               variant="ghost" 
                               size="sm"
                               onClick={() => {
-                                console.log("Editando categoría de egresos:", category);
-                                // Aquí irá la lógica para editar categoría
+                                setSelectedCategoryToEdit(category);
+                                setIsEditCategoryOpen(true);
                               }}
                             >
                               <Edit className="h-4 w-4" />
@@ -906,6 +908,67 @@ export default function CatalogPage() {
                 setIsDeleteConceptOpen(false);
               }}>
                 Eliminar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para editar categoría */}
+      <Dialog open={isEditCategoryOpen} onOpenChange={setIsEditCategoryOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Categoría Financiera</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedCategoryToEdit && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Nombre de la Categoría</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded-md"
+                    defaultValue={selectedCategoryToEdit.name}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Descripción</label>
+                  <textarea
+                    className="w-full px-3 py-2 border rounded-md"
+                    rows={3}
+                    defaultValue={selectedCategoryToEdit.description}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tipo</label>
+                  <select 
+                    className="w-full px-3 py-2 border rounded-md" 
+                    defaultValue={selectedCategoryToEdit.type || (selectedCategoryToEdit.subcategories && incomeSubcategories.includes(selectedCategoryToEdit.subcategories[0]) ? "ingreso" : "egreso")}
+                  >
+                    <option value="ingreso">Ingreso</option>
+                    <option value="egreso">Egreso</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Subcategorías</label>
+                  <div className="text-sm text-muted-foreground">
+                    {selectedCategoryToEdit.subcategories && selectedCategoryToEdit.subcategories.length > 0 
+                      ? selectedCategoryToEdit.subcategories.join(", ")
+                      : "Sin subcategorías"
+                    }
+                  </div>
+                </div>
+              </>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsEditCategoryOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={() => {
+                console.log("Guardando cambios de categoría:", selectedCategoryToEdit);
+                setIsEditCategoryOpen(false);
+              }}>
+                Guardar Cambios
               </Button>
             </div>
           </div>
