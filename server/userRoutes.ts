@@ -300,14 +300,24 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
         try {
           // Preparamos todos los campos adicionales
           const userDataToSave = {
-            ...userData,
+            username: userData.username,
+            email: userData.email,
             password: hashedPassword,
+            role: userData.role,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
             fullName: `${userData.firstName} ${userData.lastName}`,
+            municipalityId: userData.municipalityId,
             phone: userData.phone || null,
             gender: userData.gender || null,
-            birthDate: userData.birthDate ? new Date(userData.birthDate) : null,
+            birthDate: userData.birthDate || null,
             bio: userData.bio || null,
-            profileImageUrl: userData.profileImageUrl || null
+            profileImageUrl: userData.profileImageUrl || null,
+            address: userData.address || null,
+            emergencyContactName: userData.emergencyContactName || null,
+            emergencyContactPhone: userData.emergencyContactPhone || null,
+            preferredParkId: userData.preferredParkId || null,
+            legalConsent: userData.legalConsent || false
           };
 
           const newUser = await storage.createUser(userDataToSave);
