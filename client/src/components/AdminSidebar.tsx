@@ -538,6 +538,13 @@ const AdminSidebar: React.FC = () => {
             >
               Presupuesto
             </NavItem>
+            <NavItem 
+              href="/admin/finance/reports" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/finance/reports')}
+            >
+              Reportes
+            </NavItem>
           </ModuleNav>
           
           {/* Menú principal de Eventos (movido desde Marketing) */}
