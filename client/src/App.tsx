@@ -413,6 +413,13 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/concessions/evaluations/index')))}
           </Suspense>
         </Route>
+
+        {/* Ruta para el módulo financiero */}
+        <Route path="/admin/finance">
+          <Suspense fallback={<div className="p-8 text-center">Cargando módulo financiero...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/index')))}
+          </Suspense>
+        </Route>
         
         <Route component={NotFound} />
       </Switch>
