@@ -164,7 +164,7 @@ const EditarActividadPage = () => {
     queryKey: ['/api/instructors'],
   });
   
-  // Inicializar el formulario
+  // Inicializar el formulario con valores por defecto completos
   const form = useForm({
     resolver: zodResolver(activitySchema),
     defaultValues: {
@@ -184,27 +184,30 @@ const EditarActividadPage = () => {
       materials: "",
       requirements: "",
       isRecurring: false,
-      recurringDays: [] as string[],
-      targetMarket: [] as string[],
-      specialNeeds: [] as string[],
-      instructorId: undefined,
+      recurringDays: [],
+      targetMarket: [],
+      specialNeeds: [],
+      instructorId: 0,
       instructorName: "",
       instructorContact: "",
       duration: 60,
-    }
+    },
+    mode: "onChange"
   });
   
   // Llenar el formulario con los datos de la actividad cuando se carguen
   useEffect(() => {
-    if (actividad) {
+    if (actividad && typeof actividad === 'object') {
+      const data = actividad as any;
+      
       // Extraer fecha y hora del startDate
-      let startDate = actividad.startDate;
+      let startDate = data.startDate;
       let startTime = "09:00";
       let endTime = "10:00";
       
-      if (actividad.startDate) {
+      if (data.startDate) {
         try {
-          const startDateObj = new Date(actividad.startDate);
+          const startDateObj = new Date(data.startDate);
           startDate = format(startDateObj, 'yyyy-MM-dd');
           startTime = format(startDateObj, 'HH:mm');
         } catch (error) {
@@ -213,11 +216,11 @@ const EditarActividadPage = () => {
       }
       
       // Calcular hora de fin si hay duración
-      if (actividad.duration && startTime) {
+      if (data.duration && startTime) {
         try {
           const [hours, minutes] = startTime.split(':').map(Number);
           const startMinutes = hours * 60 + minutes;
-          const endMinutes = startMinutes + (actividad.duration || 60);
+          const endMinutes = startMinutes + (data.duration || 60);
           
           const endHours = Math.floor(endMinutes / 60) % 24;
           const endMins = endMinutes % 60;
@@ -231,31 +234,31 @@ const EditarActividadPage = () => {
       setHoraInicio(startTime);
       setHoraFin(endTime);
       
-      // Llenar el formulario
+      // Llenar el formulario asegurando que todos los campos tengan valores válidos
       form.reset({
-        title: actividad.title || "",
-        description: actividad.description || "",
-        parkId: actividad.parkId || 0,
+        title: data.title || "",
+        description: data.description || "",
+        parkId: Number(data.parkId) || 0,
         startDate: startDate || "",
-        endDate: actividad.endDate ? format(new Date(actividad.endDate), 'yyyy-MM-dd') : "",
-        startTime: startTime,
-        endTime: endTime,
-        category: actividad.category || "",
-        location: actividad.location || "",
-        capacity: actividad.capacity || 20,
-        price: actividad.price || 0,
-        isPriceRandom: actividad.isPriceRandom || false,
-        isFree: actividad.isFree || (actividad.price === 0),
-        materials: actividad.materials || "",
-        requirements: actividad.requirements || "",
-        isRecurring: actividad.isRecurring || false,
-        recurringDays: actividad.recurringDays || [],
-        targetMarket: actividad.targetMarket || [],
-        specialNeeds: actividad.specialNeeds || [],
-        instructorId: actividad.instructorId,
-        instructorName: actividad.instructorName || "",
-        instructorContact: actividad.instructorContact || "",
-        duration: actividad.duration || calcularDuracionEnMinutos(startTime, endTime),
+        endDate: data.endDate ? format(new Date(data.endDate), 'yyyy-MM-dd') : "",
+        startTime: startTime || "09:00",
+        endTime: endTime || "10:00",
+        category: data.category || "",
+        location: data.location || "",
+        capacity: Number(data.capacity) || 20,
+        price: Number(data.price) || 0,
+        isPriceRandom: Boolean(data.isPriceRandom),
+        isFree: Boolean(data.isFree) || (Number(data.price) === 0),
+        materials: data.materials || "",
+        requirements: data.requirements || "",
+        isRecurring: Boolean(data.isRecurring),
+        recurringDays: Array.isArray(data.recurringDays) ? data.recurringDays : [],
+        targetMarket: Array.isArray(data.targetMarket) ? data.targetMarket : [],
+        specialNeeds: Array.isArray(data.specialNeeds) ? data.specialNeeds : [],
+        instructorId: Number(data.instructorId) || 0,
+        instructorName: data.instructorName || "",
+        instructorContact: data.instructorContact || "",
+        duration: Number(data.duration) || calcularDuracionEnMinutos(startTime, endTime),
       });
     }
   }, [actividad, form]);
