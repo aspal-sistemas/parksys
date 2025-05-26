@@ -23,7 +23,8 @@ import {
   Trash2,
   Eye,
   Building,
-  GraduationCap
+  GraduationCap,
+  DollarSign
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
