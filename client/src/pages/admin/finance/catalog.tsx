@@ -738,10 +738,24 @@ export default function CatalogPage() {
                             <Badge variant="secondary">
                               {category.subcategories.length} subcategorías
                             </Badge>
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                console.log("Editando categoría de egresos:", category);
+                                // Aquí irá la lógica para editar categoría
+                              }}
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                console.log("Agregando subcategoría a egresos:", category);
+                                // Aquí irá la lógica para agregar subcategoría
+                              }}
+                            >
                               <Plus className="h-4 w-4" />
                             </Button>
                           </div>
