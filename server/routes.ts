@@ -580,7 +580,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const amenities = await storage.getParkAmenities(parkId);
       res.json(amenities);
     } catch (error) {
-      console.error(error);
+      console.error("Error en endpoint de amenidades:", error);
       res.status(500).json({ message: "Error fetching park amenities" });
     }
   });
