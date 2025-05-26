@@ -495,6 +495,13 @@ function Router() {
           </Suspense>
         </Route>
 
+        {/* Rutas del módulo de Marketing */}
+        <Route path="/admin/marketing/sponsors">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de patrocinios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/marketing/sponsors')))}
+          </Suspense>
+        </Route>
+
         {/* Ruta de redirección para compatibilidad */}
         <Route path="/admin/finance">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard financiero...</div>}>

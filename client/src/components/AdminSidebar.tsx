@@ -680,6 +680,20 @@ const AdminSidebar: React.FC = () => {
               Analytics
             </NavItem>
           </ModuleNav>
+
+          <ModuleNav 
+            title="Marketing" 
+            icon={<Trophy className="h-5 w-5" />}
+            value="marketing"
+          >
+            <NavItem 
+              href="/admin/marketing/sponsors" 
+              icon={<Trophy className="h-5 w-5" />}
+              active={location.startsWith('/admin/marketing/sponsors')}
+            >
+              Patrocinios
+            </NavItem>
+          </ModuleNav>
           
           <ModuleNav 
             title="Voluntarios" 
