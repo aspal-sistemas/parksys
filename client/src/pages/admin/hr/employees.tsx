@@ -553,43 +553,206 @@ const EmployeesManagement = () => {
           <TabsContent value="organigram">
             <Card>
               <CardHeader>
-                <CardTitle>Organigrama Departamental</CardTitle>
+                <CardTitle>Organigrama Institucional</CardTitle>
                 <CardDescription>
-                  Estructura organizacional por departamentos
+                  Estructura jerárquica de la organización
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {departments.map(department => {
-                    const deptEmployees = employees.filter(e => e.department === department);
-                    if (deptEmployees.length === 0) return null;
-                    
-                    return (
-                      <div key={department} className="p-4 border rounded-lg">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-medium">{department}</h3>
-                          <Badge variant="outline">{deptEmployees.length} empleados</Badge>
+                <div className="w-full overflow-x-auto">
+                  {/* Organigrama gráfico */}
+                  <div className="min-w-[800px] p-6">
+                    {/* Director General */}
+                    <div className="flex flex-col items-center mb-8">
+                      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-lg shadow-lg min-w-[200px] text-center">
+                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-purple-600 font-bold mx-auto mb-2">
+                          DG
                         </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {deptEmployees.map(employee => (
-                            <div key={employee.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                {employee.fullName.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="font-medium text-sm">{employee.fullName}</h4>
-                                <p className="text-xs text-gray-600">{employee.position}</p>
-                              </div>
-                              <Badge variant="outline" className={getStatusColor(employee.status)}>
-                                {getStatusText(employee.status)}
-                              </Badge>
+                        <h3 className="font-bold">Director General</h3>
+                        <p className="text-sm opacity-90">Administración General</p>
+                      </div>
+                      
+                      {/* Línea vertical */}
+                      <div className="w-0.5 h-8 bg-gray-300"></div>
+                    </div>
+
+                    {/* Subdirectores */}
+                    <div className="flex justify-center mb-8">
+                      <div className="grid grid-cols-2 gap-12">
+                        {/* Subdirector Operaciones */}
+                        <div className="flex flex-col items-center">
+                          <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-3 rounded-lg shadow-md min-w-[180px] text-center">
+                            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-green-600 font-bold mx-auto mb-2">
+                              SO
+                            </div>
+                            <h4 className="font-semibold">Subdirector Operaciones</h4>
+                            <p className="text-xs opacity-90">Coordinación Operativa</p>
+                          </div>
+                          
+                          {/* Línea vertical */}
+                          <div className="w-0.5 h-6 bg-gray-300"></div>
+                        </div>
+
+                        {/* Subdirector Administrativo */}
+                        <div className="flex flex-col items-center">
+                          <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 rounded-lg shadow-md min-w-[180px] text-center">
+                            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-orange-600 font-bold mx-auto mb-2">
+                              SA
+                            </div>
+                            <h4 className="font-semibold">Subdirector Administrativo</h4>
+                            <p className="text-xs opacity-90">Gestión Administrativa</p>
+                          </div>
+                          
+                          {/* Línea vertical */}
+                          <div className="w-0.5 h-6 bg-gray-300"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Líneas horizontales conectoras */}
+                    <div className="flex justify-center mb-6">
+                      <div className="relative w-[300px]">
+                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-0.5 h-6 bg-gray-300"></div>
+                        <div className="h-0.5 bg-gray-300 w-full"></div>
+                        <div className="absolute top-0 left-0 w-0.5 h-6 bg-gray-300"></div>
+                        <div className="absolute top-0 right-0 w-0.5 h-6 bg-gray-300"></div>
+                      </div>
+                    </div>
+
+                    {/* Jefes de Departamento */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                      {/* Eventos y Actividades */}
+                      <div className="flex flex-col items-center">
+                        <div className="bg-blue-500 text-white p-3 rounded-lg shadow min-w-[160px] text-center mb-4">
+                          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-blue-600 font-bold mx-auto mb-2 text-sm">
+                            MG
+                          </div>
+                          <h5 className="font-medium text-sm">María Elena González</h5>
+                          <p className="text-xs opacity-90">Coord. Eventos</p>
+                          <Badge variant="secondary" className="mt-1 text-xs">25 empleados</Badge>
+                        </div>
+
+                        {/* Empleados del departamento */}
+                        <div className="space-y-2 w-full">
+                          {employees.filter(e => e.department === "Eventos y Actividades").slice(1).map(employee => (
+                            <div key={employee.id} className="bg-blue-50 p-2 rounded text-center">
+                              <div className="text-xs font-medium text-blue-800">{employee.fullName}</div>
+                              <div className="text-xs text-blue-600">{employee.position}</div>
                             </div>
                           ))}
                         </div>
                       </div>
-                    );
-                  })}
+
+                      {/* Mantenimiento */}
+                      <div className="flex flex-col items-center">
+                        <div className="bg-green-500 text-white p-3 rounded-lg shadow min-w-[160px] text-center mb-4">
+                          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-green-600 font-bold mx-auto mb-2 text-sm">
+                            CM
+                          </div>
+                          <h5 className="font-medium text-sm">Carlos Alberto Martínez</h5>
+                          <p className="text-xs opacity-90">Jefe Mantenimiento</p>
+                          <Badge variant="secondary" className="mt-1 text-xs">32 empleados</Badge>
+                        </div>
+
+                        {/* Empleados del departamento */}
+                        <div className="space-y-2 w-full">
+                          {employees.filter(e => e.department === "Mantenimiento").slice(1).map(employee => (
+                            <div key={employee.id} className="bg-green-50 p-2 rounded text-center">
+                              <div className="text-xs font-medium text-green-800">{employee.fullName}</div>
+                              <div className="text-xs text-green-600">{employee.position}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Administración */}
+                      <div className="flex flex-col items-center">
+                        <div className="bg-purple-500 text-white p-3 rounded-lg shadow min-w-[160px] text-center mb-4">
+                          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-purple-600 font-bold mx-auto mb-2 text-sm">
+                            AR
+                          </div>
+                          <h5 className="font-medium text-sm">Ana Patricia Rodríguez</h5>
+                          <p className="text-xs opacity-90">Esp. Finanzas</p>
+                          <Badge variant="secondary" className="mt-1 text-xs">18 empleados</Badge>
+                        </div>
+
+                        {/* Empleados del departamento */}
+                        <div className="space-y-2 w-full">
+                          {employees.filter(e => e.department === "Administración").slice(1).map(employee => (
+                            <div key={employee.id} className="bg-purple-50 p-2 rounded text-center">
+                              <div className="text-xs font-medium text-purple-800">{employee.fullName}</div>
+                              <div className="text-xs text-purple-600">{employee.position}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Seguridad */}
+                      <div className="flex flex-col items-center">
+                        <div className="bg-red-500 text-white p-3 rounded-lg shadow min-w-[160px] text-center mb-4">
+                          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-red-600 font-bold mx-auto mb-2 text-sm">
+                            RJ
+                          </div>
+                          <h5 className="font-medium text-sm">Roberto Jiménez Silva</h5>
+                          <p className="text-xs opacity-90">Coord. Seguridad</p>
+                          <Badge variant="secondary" className="mt-1 text-xs">22 empleados</Badge>
+                        </div>
+
+                        {/* Empleados del departamento */}
+                        <div className="space-y-2 w-full">
+                          {employees.filter(e => e.department === "Seguridad").slice(1).map(employee => (
+                            <div key={employee.id} className="bg-red-50 p-2 rounded text-center">
+                              <div className="text-xs font-medium text-red-800">{employee.fullName}</div>
+                              <div className="text-xs text-red-600">{employee.position}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Leyenda */}
+                    <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                      <h4 className="font-semibold mb-3">Leyenda del Organigrama</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded"></div>
+                          <span>Dirección General</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-gradient-to-r from-green-500 to-teal-500 rounded"></div>
+                          <span>Subdirección Operativa</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-gradient-to-r from-orange-500 to-red-500 rounded"></div>
+                          <span>Subdirección Administrativa</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                          <span>Jefaturas de Departamento</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Estadísticas organizacionales */}
+                    <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-blue-100 p-3 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-blue-600">{employees.length}</div>
+                        <div className="text-sm text-blue-800">Total Empleados</div>
+                      </div>
+                      <div className="bg-green-100 p-3 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-green-600">{departments.length}</div>
+                        <div className="text-sm text-green-800">Departamentos</div>
+                      </div>
+                      <div className="bg-purple-100 p-3 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-purple-600">5</div>
+                        <div className="text-sm text-purple-800">Niveles Jerárquicos</div>
+                      </div>
+                      <div className="bg-orange-100 p-3 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-orange-600">1:7</div>
+                        <div className="text-sm text-orange-800">Ratio Supervisión</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
