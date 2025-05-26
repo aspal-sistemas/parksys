@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -141,6 +141,13 @@ export default function CatalogPage() {
     unit: "",
     frequency: "",
     description: ""
+  });
+
+  // Estados del formulario de nueva categoría
+  const [newCategory, setNewCategory] = useState({
+    name: "",
+    description: "",
+    type: "" // "ingreso" o "egreso"
   });
 
   const filteredItems = financialConcepts.filter(item => {
