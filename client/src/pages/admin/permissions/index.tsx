@@ -399,6 +399,8 @@ export default function PermissionsPage() {
   // Mutation para guardar permisos
   const savePermissionsMutation = useMutation({
     mutationFn: async (permissions: any) => {
+      console.log('Enviando permisos al servidor:', permissions);
+      
       const response = await fetch('/api/role-permissions', {
         method: 'POST',
         headers: {
@@ -407,13 +409,20 @@ export default function PermissionsPage() {
         body: JSON.stringify({ permissions }),
       });
       
+      console.log('Respuesta del servidor:', response.status, response.statusText);
+      
       if (!response.ok) {
-        throw new Error('Error al guardar permisos');
+        const errorText = await response.text();
+        console.error('Error del servidor:', errorText);
+        throw new Error(`Error al guardar permisos: ${response.status} ${response.statusText}`);
       }
       
-      return response.json();
+      const result = await response.json();
+      console.log('Resultado exitoso:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Permisos guardados exitosamente:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/role-permissions'] });
       toast({
         title: "Permisos actualizados",
@@ -422,6 +431,7 @@ export default function PermissionsPage() {
       setIsEditing(false);
     },
     onError: (error: any) => {
+      console.error('Error en mutation:', error);
       toast({
         title: "Error al guardar",
         description: error.message || "No se pudieron guardar los permisos.",
