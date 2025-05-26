@@ -498,9 +498,16 @@ const AdminSidebar: React.FC = () => {
             <NavItem 
               href="/admin/finance" 
               icon={<BarChart className="h-5 w-5" />}
-              active={location.startsWith('/admin/finance')}
+              active={location === '/admin/finance'}
             >
               Flujo de Efectivo
+            </NavItem>
+            <NavItem 
+              href="/admin/finance/calculator" 
+              icon={<Calculator className="h-5 w-5" />}
+              active={location.startsWith('/admin/finance/calculator')}
+            >
+              Calculadora de Costos
             </NavItem>
           </ModuleNav>
           
