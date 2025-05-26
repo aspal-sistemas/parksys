@@ -19,101 +19,150 @@ import {
 } from "lucide-react";
 import { Helmet } from "react-helmet";
 
-// Datos de ejemplo para el catálogo
-const mockCatalogItems = [
+// Datos de ejemplo para el catálogo financiero
+const mockIncomeCategories = [
   {
     id: 1,
-    code: "CAT-001",
-    name: "Fertilizante Orgánico Premium",
-    category: "Jardinería",
-    subcategory: "Fertilizantes",
-    price: 450.00,
-    unit: "Saco 20kg",
-    stock: 25,
-    supplier: "GreenLife Corp",
+    code: "ING-001",
+    name: "Cuotas de Acceso",
+    type: "ingreso",
+    subcategory: "Tarifas",
+    rate: 25.00,
+    unit: "Por persona",
+    frequency: "Diaria",
     status: "Activo",
-    description: "Fertilizante orgánico de alta calidad para áreas verdes"
+    description: "Cuota de acceso general al parque"
   },
   {
     id: 2,
-    code: "CAT-002",
-    name: "Semillas de Césped Resistente",
-    category: "Jardinería",
-    subcategory: "Semillas",
-    price: 380.00,
-    unit: "Bolsa 5kg",
-    stock: 15,
-    supplier: "Semillas del Valle",
+    code: "ING-002", 
+    name: "Renta de Espacios para Eventos",
+    type: "ingreso",
+    subcategory: "Alquileres",
+    rate: 1500.00,
+    unit: "Por día",
+    frequency: "Variable",
     status: "Activo",
-    description: "Semillas especiales para clima árido"
+    description: "Renta de áreas para eventos privados y corporativos"
   },
   {
     id: 3,
-    code: "CAT-003",
-    name: "Banco de Concreto Modelo Parque",
-    category: "Mobiliario",
-    subcategory: "Asientos",
-    price: 2850.00,
-    unit: "Pieza",
-    stock: 8,
-    supplier: "Mobiliario Urbano SA",
+    code: "ING-003",
+    name: "Estacionamiento",
+    type: "ingreso", 
+    subcategory: "Servicios",
+    rate: 15.00,
+    unit: "Por hora",
+    frequency: "Continua",
     status: "Activo",
-    description: "Banco de concreto con respaldo, resistente a intemperie"
+    description: "Servicio de estacionamiento público"
   },
   {
     id: 4,
-    code: "CAT-004",
-    name: "Luminaria LED Solar",
-    category: "Iluminación",
-    subcategory: "Solar",
-    price: 1200.00,
-    unit: "Pieza",
-    stock: 12,
-    supplier: "EcoLuz México",
+    code: "ING-004",
+    name: "Concesiones de Alimentos",
+    type: "ingreso",
+    subcategory: "Concesiones",
+    rate: 8.5,
+    unit: "% de ventas",
+    frequency: "Mensual",
     status: "Activo",
-    description: "Luminaria solar con batería de litio y sensor automático"
-  },
-  {
-    id: 5,
-    code: "CAT-005",
-    name: "Juego Infantil Columpio Doble",
-    category: "Recreación",
-    subcategory: "Juegos",
-    price: 4500.00,
-    unit: "Set",
-    stock: 3,
-    supplier: "Recreos Infantiles",
-    status: "Agotado",
-    description: "Columpio doble con estructura de acero galvanizado"
+    description: "Porcentaje sobre ventas de concesionarios de alimentos"
   }
 ];
 
-const categories = [
+const mockExpenseCategories = [
+  {
+    id: 5,
+    code: "EGR-001",
+    name: "Mantenimiento de Jardines",
+    type: "egreso",
+    subcategory: "Mantenimiento",
+    cost: 8500.00,
+    unit: "Por mes",
+    frequency: "Mensual",
+    status: "Activo",
+    description: "Servicios de jardinería y mantenimiento de áreas verdes"
+  },
+  {
+    id: 6,
+    code: "EGR-002",
+    name: "Consumo de Electricidad",
+    type: "egreso",
+    subcategory: "Servicios Públicos",
+    cost: 12000.00,
+    unit: "Por mes",
+    frequency: "Mensual", 
+    status: "Activo",
+    description: "Consumo eléctrico de iluminación y servicios"
+  },
+  {
+    id: 7,
+    code: "EGR-003",
+    name: "Salarios Personal de Seguridad",
+    type: "egreso",
+    subcategory: "Nómina",
+    cost: 45000.00,
+    unit: "Por mes",
+    frequency: "Mensual",
+    status: "Activo",
+    description: "Salarios y prestaciones del personal de seguridad"
+  },
+  {
+    id: 8,
+    code: "EGR-004",
+    name: "Materiales de Limpieza",
+    type: "egreso",
+    subcategory: "Suministros",
+    cost: 3200.00,
+    unit: "Por mes",
+    frequency: "Mensual",
+    status: "Activo",
+    description: "Productos y materiales para limpieza y sanitización"
+  }
+];
+
+const allCatalogItems = [...mockIncomeCategories, ...mockExpenseCategories];
+
+const incomeCategories = [
   "Todos",
-  "Jardinería", 
-  "Mobiliario", 
-  "Iluminación", 
-  "Recreación", 
-  "Limpieza", 
-  "Seguridad"
+  "Tarifas",
+  "Alquileres", 
+  "Servicios",
+  "Concesiones",
+  "Donaciones",
+  "Subsidios"
+];
+
+const expenseCategories = [
+  "Todos",
+  "Mantenimiento",
+  "Servicios Públicos",
+  "Nómina",
+  "Suministros",
+  "Seguros",
+  "Capacitación"
 ];
 
 export default function CatalogPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
+  const [selectedType, setSelectedType] = useState("todos");
   const [activeTab, setActiveTab] = useState("items");
 
-  const filteredItems = mockCatalogItems.filter(item => {
+  const filteredItems = allCatalogItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "Todos" || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesCategory = selectedCategory === "Todos" || item.subcategory === selectedCategory;
+    const matchesType = selectedType === "todos" || item.type === selectedType;
+    return matchesSearch && matchesCategory && matchesType;
   });
 
-  const totalItems = mockCatalogItems.length;
-  const totalValue = mockCatalogItems.reduce((sum, item) => sum + (item.price * item.stock), 0);
-  const lowStockItems = mockCatalogItems.filter(item => item.stock <= 5).length;
+  const totalItems = allCatalogItems.length;
+  const totalIncomes = mockIncomeCategories.length;
+  const totalExpenses = mockExpenseCategories.length;
+  const activeItems = allCatalogItems.filter(item => item.status === "Activo").length;
 
   return (
     <AdminLayout>
@@ -168,8 +217,8 @@ export default function CatalogPage() {
               <div className="flex items-center space-x-2">
                 <DollarSign className="h-8 w-8 text-green-600" />
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Valor Total</p>
-                  <p className="text-2xl font-bold">${totalValue.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Categorías Ingresos</p>
+                  <p className="text-2xl font-bold">{totalIncomes}</p>
                 </div>
               </div>
             </CardContent>
@@ -178,10 +227,10 @@ export default function CatalogPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
-                <Tag className="h-8 w-8 text-purple-600" />
+                <Tag className="h-8 w-8 text-red-600" />
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Categorías</p>
-                  <p className="text-2xl font-bold">{categories.length - 1}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Categorías Egresos</p>
+                  <p className="text-2xl font-bold">{totalExpenses}</p>
                 </div>
               </div>
             </CardContent>
@@ -190,10 +239,10 @@ export default function CatalogPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
-                <Package className="h-8 w-8 text-red-600" />
+                <Package className="h-8 w-8 text-purple-600" />
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Stock Bajo</p>
-                  <p className="text-2xl font-bold">{lowStockItems}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Items Activos</p>
+                  <p className="text-2xl font-bold">{activeItems}</p>
                 </div>
               </div>
             </CardContent>
@@ -217,7 +266,7 @@ export default function CatalogPage() {
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
-                        placeholder="Buscar productos..."
+                        placeholder="Buscar conceptos financieros..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10"
@@ -226,13 +275,28 @@ export default function CatalogPage() {
                   </div>
                   <div className="flex gap-2">
                     <select
+                      value={selectedType}
+                      onChange={(e) => setSelectedType(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    >
+                      <option value="todos">Todos los tipos</option>
+                      <option value="ingreso">Ingresos</option>
+                      <option value="egreso">Egresos</option>
+                    </select>
+                    <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
                       className="px-3 py-2 border border-gray-300 rounded-md text-sm"
                     >
-                      {categories.map(category => (
-                        <option key={category} value={category}>{category}</option>
-                      ))}
+                      <option value="Todos">Todas las categorías</option>
+                      {selectedType === "ingreso" || selectedType === "todos" ? 
+                        incomeCategories.slice(1).map(category => (
+                          <option key={category} value={category}>{category}</option>
+                        )) : null}
+                      {selectedType === "egreso" || selectedType === "todos" ? 
+                        expenseCategories.slice(1).map(category => (
+                          <option key={category} value={category}>{category}</option>
+                        )) : null}
                     </select>
                     <Button variant="outline" size="sm">
                       <Filter className="h-4 w-4 mr-2" />
@@ -243,10 +307,10 @@ export default function CatalogPage() {
               </CardContent>
             </Card>
 
-            {/* Lista de productos */}
+            {/* Lista de conceptos financieros */}
             <Card>
               <CardHeader>
-                <CardTitle>Productos en Catálogo</CardTitle>
+                <CardTitle>Catálogo Financiero</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -254,10 +318,11 @@ export default function CatalogPage() {
                     <thead>
                       <tr className="border-b">
                         <th className="text-left py-3 px-4">Código</th>
-                        <th className="text-left py-3 px-4">Producto</th>
+                        <th className="text-left py-3 px-4">Concepto</th>
+                        <th className="text-left py-3 px-4">Tipo</th>
                         <th className="text-left py-3 px-4">Categoría</th>
-                        <th className="text-left py-3 px-4">Precio</th>
-                        <th className="text-left py-3 px-4">Stock</th>
+                        <th className="text-left py-3 px-4">Monto/Tasa</th>
+                        <th className="text-left py-3 px-4">Frecuencia</th>
                         <th className="text-left py-3 px-4">Estado</th>
                         <th className="text-left py-3 px-4">Acciones</th>
                       </tr>
@@ -273,20 +338,26 @@ export default function CatalogPage() {
                             </div>
                           </td>
                           <td className="py-3 px-4">
-                            <Badge variant="secondary">{item.category}</Badge>
+                            <Badge variant={item.type === "ingreso" ? "default" : "destructive"}>
+                              {item.type === "ingreso" ? "Ingreso" : "Egreso"}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge variant="secondary">{item.subcategory}</Badge>
                           </td>
                           <td className="py-3 px-4">
                             <div>
-                              <p className="font-medium">${item.price.toFixed(2)}</p>
-                              <p className="text-xs text-muted-foreground">por {item.unit}</p>
+                              <p className="font-medium">
+                                {item.type === "ingreso" 
+                                  ? `$${item.rate || '0.00'}`
+                                  : `$${(item as any).cost || '0.00'}`
+                                }
+                              </p>
+                              <p className="text-xs text-muted-foreground">{item.unit}</p>
                             </div>
                           </td>
                           <td className="py-3 px-4">
-                            <Badge 
-                              variant={item.stock <= 5 ? "destructive" : "default"}
-                            >
-                              {item.stock} {item.unit}
-                            </Badge>
+                            <span className="text-sm">{item.frequency}</span>
                           </td>
                           <td className="py-3 px-4">
                             <Badge 
@@ -314,7 +385,7 @@ export default function CatalogPage() {
                 {filteredItems.length === 0 && (
                   <div className="text-center py-8">
                     <Package className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-muted-foreground">No se encontraron productos</p>
+                    <p className="mt-2 text-muted-foreground">No se encontraron conceptos financieros</p>
                   </div>
                 )}
               </CardContent>
