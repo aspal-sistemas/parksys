@@ -115,6 +115,39 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     }
   }
+
+  async createUser(userData: any): Promise<any> {
+    try {
+      const result = await db.execute(`
+        INSERT INTO users (username, email, password, role, full_name, first_name, last_name, municipality_id, phone, gender, birth_date, bio, profile_image_url, address, emergency_contact_name, emergency_contact_phone, preferred_park_id, legal_consent, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, NOW(), NOW())
+        RETURNING *
+      `, [
+        userData.username,
+        userData.email,
+        userData.password,
+        userData.role,
+        userData.fullName,
+        userData.firstName,
+        userData.lastName,
+        userData.municipalityId,
+        userData.phone || null,
+        userData.gender || null,
+        userData.birthDate || null,
+        userData.bio || null,
+        userData.profileImageUrl || null,
+        userData.address || null,
+        userData.emergencyContactName || null,
+        userData.emergencyContactPhone || null,
+        userData.preferredParkId || null,
+        userData.legalConsent || false
+      ]);
+      return result.rows && result.rows.length > 0 ? result.rows[0] : null;
+    } catch (error) {
+      console.error("Error al crear usuario:", error);
+      throw error;
+    }
+  }
   
   async getAssetCategories(): Promise<any[]> {
     try {
