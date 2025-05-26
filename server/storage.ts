@@ -352,7 +352,9 @@ export class DatabaseStorage implements IStorage {
 
   async getMunicipalities(): Promise<any[]> {
     try {
+      console.log("Obteniendo municipios...");
       const result = await db.select().from(municipalities);
+      console.log("Municipios encontrados:", result);
       return result || [];
     } catch (error) {
       console.error("Error al obtener municipios:", error);
