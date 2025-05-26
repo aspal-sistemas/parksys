@@ -440,8 +440,8 @@ function Router() {
         </Route>
         
         <Route path="/admin/finance/calculator">
-          <Suspense fallback={<div className="p-8 text-center">Cargando calculadora de costos...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/finance/CostRecoveryCalculator')))}
+          <Suspense fallback={<div className="p-8 text-center">Cargando calculadora avanzada...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/AdvancedCalculator')))}
           </Suspense>
         </Route>
         
@@ -450,12 +450,7 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/finance/budget')))}
           </Suspense>
         </Route>
-        
-        <Route path="/admin/finance/advanced-calculator">
-          <Suspense fallback={<div className="p-8 text-center">Cargando calculadora avanzada...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/finance/AdvancedCalculator')))}
-          </Suspense>
-        </Route>
+
         
         {/* Ruta de redirección para compatibilidad */}
         <Route path="/admin/finance">

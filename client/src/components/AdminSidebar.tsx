@@ -532,13 +532,6 @@ const AdminSidebar: React.FC = () => {
               Calculadora
             </NavItem>
             <NavItem 
-              href="/admin/finance/advanced-calculator" 
-              icon={<BarChart className="h-5 w-5" />}
-              active={location.startsWith('/admin/finance/advanced-calculator')}
-            >
-              Calc. Avanzada
-            </NavItem>
-            <NavItem 
               href="/admin/finance/budget" 
               icon={<Target className="h-5 w-5" />}
               active={location.startsWith('/admin/finance/budget')}
