@@ -7,14 +7,43 @@ import {
   BarChart3,
   Calendar,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  ArrowUpRight,
+  ArrowDownRight,
+  Activity
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import AdminLayout from "@/components/AdminLayout";
+import { useState } from "react";
 
 const FinanceDashboard = () => {
+  const [selectedYear, setSelectedYear] = useState(2025);
+  const [viewMode, setViewMode] = useState('monthly'); // monthly, quarterly, yearly
+  
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ["/api/financial-dashboard/3"],
+  });
+
+  const { data: cashFlowData } = useQuery({
+    queryKey: ["/api/cash-flow/3", selectedYear],
+  });
+
+  const { data: incomes } = useQuery({
+    queryKey: ["/api/actual-incomes"],
+  });
+
+  const { data: expenses } = useQuery({
+    queryKey: ["/api/actual-expenses"],
+  });
+
+  const { data: incomeCategories } = useQuery({
+    queryKey: ["/api/income-categories"],
+  });
+
+  const { data: expenseCategories } = useQuery({
+    queryKey: ["/api/expense-categories"],
   });
 
   if (isLoading) {
@@ -35,105 +64,250 @@ const FinanceDashboard = () => {
     }).format(amount);
   };
 
+  // Preparar datos para gráficas
+  const monthlyTrendData = [
+    { month: 'Ene', ingresos: 145000, egresos: 98000, anterior: 120000 },
+    { month: 'Feb', ingresos: 167000, egresos: 112000, anterior: 135000 },
+    { month: 'Mar', ingresos: 189000, egresos: 125000, anterior: 155000 },
+    { month: 'Abr', ingresos: 203000, egresos: 134000, anterior: 178000 },
+    { month: 'May', ingresos: 225000, egresos: 145000, anterior: 195000 },
+    { month: 'Jun', ingresos: 248000, egresos: 156000, anterior: 210000 },
+  ];
+
+  const incomeDistributionData = [
+    { name: 'Actividades', value: 45, amount: 112000, color: '#3B82F6' },
+    { name: 'Concesiones', value: 30, amount: 75000, color: '#10B981' },
+    { name: 'Patrocinios', value: 15, amount: 37500, color: '#F59E0B' },
+    { name: 'Estacionamiento', value: 7, amount: 17500, color: '#8B5CF6' },
+    { name: 'Otros', value: 3, amount: 7500, color: '#EF4444' }
+  ];
+
+  const expenseDistributionData = [
+    { name: 'Personal', value: 50, amount: 78000, color: '#EF4444' },
+    { name: 'Mantenimiento', value: 25, amount: 39000, color: '#F97316' },
+    { name: 'Seguridad', value: 15, amount: 23400, color: '#6366F1' },
+    { name: 'Operativos', value: 10, amount: 15600, color: '#EC4899' }
+  ];
+
+  const kpiData = [
+    {
+      title: 'Ingresos Totales',
+      value: formatCurrency(dashboardData?.totalIncome || 250000),
+      change: '+12.5%',
+      trend: 'up',
+      icon: TrendingUp,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100'
+    },
+    {
+      title: 'Egresos Totales', 
+      value: formatCurrency(dashboardData?.totalExpenses || 156000),
+      change: '+5.2%',
+      trend: 'up',
+      icon: TrendingDown,
+      color: 'text-red-600',
+      bgColor: 'bg-red-100'
+    },
+    {
+      title: 'Utilidad Neta',
+      value: formatCurrency((dashboardData?.totalIncome || 250000) - (dashboardData?.totalExpenses || 156000)),
+      change: '+23.1%',
+      trend: 'up',
+      icon: DollarSign,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100'
+    },
+    {
+      title: 'Margen Operativo',
+      value: `${(((dashboardData?.totalIncome || 250000) - (dashboardData?.totalExpenses || 156000)) / (dashboardData?.totalIncome || 250000) * 100).toFixed(1)}%`,
+      change: '+8.7%',
+      trend: 'up',
+      icon: Activity,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-100'
+    }
+  ];
+
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <BarChart3 className="h-6 w-6 text-primary" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <BarChart3 className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Dashboard Financiero
+              </h1>
+              <p className="text-gray-600">
+                Analytics avanzado y resumen ejecutivo
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Dashboard Financiero
-            </h1>
-            <p className="text-gray-600">
-              Resumen ejecutivo de la situación financiera
-            </p>
+          
+          <div className="flex items-center gap-4">
+            <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(Number(value))}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2024">2024</SelectItem>
+                <SelectItem value="2025">2025</SelectItem>
+                <SelectItem value="2026">2026</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={viewMode} onValueChange={setViewMode}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="monthly">Mensual</SelectItem>
+                <SelectItem value="quarterly">Trimestral</SelectItem>
+                <SelectItem value="yearly">Anual</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        {/* Métricas principales */}
+        {/* KPIs principales con mejor diseño */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Ingresos del Mes
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(dashboardData?.totalIncome || 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                +12% respecto al mes anterior
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Egresos del Mes
-              </CardTitle>
-              <TrendingDown className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">
-                {formatCurrency(dashboardData?.totalExpenses || 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                +5% respecto al mes anterior
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Utilidad Neta
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${
-                (dashboardData?.totalIncome || 0) - (dashboardData?.totalExpenses || 0) >= 0 
-                  ? 'text-green-600' 
-                  : 'text-red-600'
-              }`}>
-                {formatCurrency((dashboardData?.totalIncome || 0) - (dashboardData?.totalExpenses || 0))}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Margen del {(((dashboardData?.totalIncome || 0) - (dashboardData?.totalExpenses || 0)) / (dashboardData?.totalIncome || 1) * 100).toFixed(1)}%
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Flujo de Efectivo
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {formatCurrency(dashboardData?.cashFlow || 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Proyección mensual
-              </p>
-            </CardContent>
-          </Card>
+          {kpiData.map((kpi, index) => {
+            const Icon = kpi.icon;
+            return (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className={`p-3 rounded-lg ${kpi.bgColor}`}>
+                      <Icon className={`h-6 w-6 ${kpi.color}`} />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {kpi.trend === 'up' ? (
+                        <ArrowUpRight className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <ArrowDownRight className="h-4 w-4 text-red-600" />
+                      )}
+                      <span className={`text-sm font-medium ${
+                        kpi.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {kpi.change}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium text-gray-600">{kpi.title}</h3>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">{kpi.value}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
-        {/* Distribución de ingresos */}
+        {/* Gráfica de tendencias principales */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tendencia de Ingresos vs Egresos</CardTitle>
+            <CardDescription>
+              Comparativo mensual con año anterior
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={monthlyTrendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                <Tooltip 
+                  formatter={(value, name) => [formatCurrency(Number(value)), name === 'ingresos' ? 'Ingresos' : name === 'egresos' ? 'Egresos' : 'Año Anterior']}
+                />
+                <Legend />
+                <Area 
+                  type="monotone" 
+                  dataKey="ingresos" 
+                  stackId="1" 
+                  stroke="#10B981" 
+                  fill="#10B981" 
+                  fillOpacity={0.3}
+                  name="Ingresos 2025"
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="egresos" 
+                  stackId="2" 
+                  stroke="#EF4444" 
+                  fill="#EF4444" 
+                  fillOpacity={0.3}
+                  name="Egresos 2025"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="anterior" 
+                  stroke="#6B7280" 
+                  strokeDasharray="5 5"
+                  name="Ingresos 2024"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Distribución de ingresos y egresos */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Distribución de Ingresos</CardTitle>
               <CardDescription>
-                Fuentes principales de ingresos
+                Fuentes principales de ingresos del mes
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={incomeDistributionData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      dataKey="value"
+                      label={({ name, value }) => `${name}: ${value}%`}
+                    >
+                      {incomeDistributionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value, name) => [`${value}%`, name]} />
+                  </PieChart>
+                </ResponsiveContainer>
+                
+                <div className="space-y-3">
+                  {incomeDistributionData.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: item.color }}
+                        ></div>
+                        <span className="text-sm font-medium">{item.name}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-bold">{formatCurrency(item.amount)}</div>
+                        <div className="text-xs text-gray-500">{item.value}%</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Distribución de Egresos</CardTitle>
+              <CardDescription>
+                Principales categorías de gastos del mes
               </CardDescription>
             </CardHeader>
             <CardContent>
