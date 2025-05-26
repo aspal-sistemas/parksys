@@ -33,6 +33,7 @@ import {
   DollarSign,
   TrendingUp,
   TrendingDown,
+  Target,
   ArrowRightLeft,
   Calculator,
   Megaphone,
@@ -529,6 +530,13 @@ const AdminSidebar: React.FC = () => {
               active={location.startsWith('/admin/finance/calculator')}
             >
               Calculadora
+            </NavItem>
+            <NavItem 
+              href="/admin/finance/budget" 
+              icon={<Target className="h-5 w-5" />}
+              active={location.startsWith('/admin/finance/budget')}
+            >
+              Presupuesto
             </NavItem>
           </ModuleNav>
           

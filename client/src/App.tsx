@@ -445,6 +445,12 @@ function Router() {
           </Suspense>
         </Route>
         
+        <Route path="/admin/finance/budget">
+          <Suspense fallback={<div className="p-8 text-center">Cargando módulo de presupuesto...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/budget')))}
+          </Suspense>
+        </Route>
+        
         {/* Ruta de redirección para compatibilidad */}
         <Route path="/admin/finance">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard financiero...</div>}>
