@@ -1,5 +1,5 @@
 import { db } from './db';
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import * as schema from "@shared/schema";
 
 const {
@@ -160,14 +160,20 @@ export class DatabaseStorage implements IStorage {
 
   async getParkAmenities(parkId: number): Promise<any[]> {
     try {
-      const result = await db.execute(`
-        SELECT a.id, a.name, a.icon, a.category, a.icon_type as "iconType", a.custom_icon_url as "customIconUrl"
-        FROM amenities a
-        JOIN park_amenities pa ON a.id = pa.amenity_id
-        WHERE pa.park_id = $1
-        ORDER BY a.name
-      `, [parkId]);
-      return result.rows || [];
+      const result = await db.select({
+        id: amenities.id,
+        name: amenities.name,
+        icon: amenities.icon,
+        category: amenities.category,
+        iconType: amenities.iconType,
+        customIconUrl: amenities.customIconUrl
+      })
+      .from(amenities)
+      .innerJoin(parkAmenities, eq(amenities.id, parkAmenities.amenityId))
+      .where(eq(parkAmenities.parkId, parkId))
+      .orderBy(amenities.name);
+      
+      return result || [];
     } catch (error) {
       console.error("Error al obtener amenidades del parque:", error);
       return [];
