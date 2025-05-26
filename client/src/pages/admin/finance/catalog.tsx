@@ -732,7 +732,7 @@ export default function CatalogPage() {
                         <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                           <div className="flex items-center space-x-3">
                             <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                              <Minus className="h-5 w-5 text-red-600" />
+                              <DollarSign className="h-5 w-5 text-red-600" />
                             </div>
                             <div>
                               <p className="font-medium">{category.name}</p>
