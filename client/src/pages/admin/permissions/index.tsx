@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -376,6 +377,8 @@ const modules: Module[] = [
 ];
 
 export default function PermissionsPage() {
+  const queryClient = useQueryClient();
+  
   // Estados para la pantalla
   const [currentRoleTab, setCurrentRoleTab] = useState<string>('admin');
   const [currentModuleTab, setCurrentModuleTab] = useState<string>('users');
@@ -386,6 +389,53 @@ export default function PermissionsPage() {
   
   // Estado para guardar los permisos originales antes de editar
   const [originalPermissions, setOriginalPermissions] = useState<Record<string, Record<string, Record<string, Record<string, boolean>>>>>({});
+
+  // Query para cargar permisos del servidor
+  const { data: serverPermissions, isLoading } = useQuery({
+    queryKey: ['/api/role-permissions'],
+    select: (data) => data || {}
+  });
+
+  // Mutation para guardar permisos
+  const savePermissionsMutation = useMutation({
+    mutationFn: async (permissions: any) => {
+      const response = await fetch('/api/role-permissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ permissions }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al guardar permisos');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/role-permissions'] });
+      toast({
+        title: "Permisos actualizados",
+        description: "Los permisos han sido guardados correctamente en el servidor.",
+      });
+      setIsEditing(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al guardar",
+        description: error.message || "No se pudieron guardar los permisos.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Cargar permisos del servidor cuando se obtengan
+  useEffect(() => {
+    if (serverPermissions) {
+      setRolePermissions(serverPermissions);
+    }
+  }, [serverPermissions]);
 
   // Función para cambiar el estado de un permiso
   const togglePermission = (role: string, moduleId: string, permissionId: string, action: string) => {
@@ -447,11 +497,7 @@ export default function PermissionsPage() {
 
   // Función para guardar los cambios
   const handleSave = () => {
-    toast({
-      title: "Permisos actualizados",
-      description: "Los permisos han sido actualizados correctamente.",
-    });
-    setIsEditing(false);
+    savePermissionsMutation.mutate(rolePermissions);
   };
 
   // Función para cancelar los cambios
@@ -473,9 +519,13 @@ export default function PermissionsPage() {
           <div className="flex space-x-2">
             {isEditing ? (
               <>
-                <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
+                <Button 
+                  onClick={handleSave} 
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={savePermissionsMutation.isPending}
+                >
                   <Save className="mr-2 h-4 w-4" />
-                  Guardar
+                  {savePermissionsMutation.isPending ? 'Guardando...' : 'Guardar'}
                 </Button>
                 <Button variant="outline" onClick={handleCancel}>
                   Cancelar

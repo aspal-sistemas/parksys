@@ -1999,6 +1999,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // Rutas para gestión de permisos de roles
+  apiRouter.get("/role-permissions", async (_req: Request, res: Response) => {
+    try {
+      // Por ahora devolvemos una estructura predeterminada
+      // En un sistema real, esto vendría de la base de datos
+      const permissions = {
+        admin: {},
+        director: {},
+        manager: {},
+        supervisor: {},
+        user: {},
+        guardaparques: {},
+        voluntario: {},
+        instructor: {},
+        concesionario: {}
+      };
+      res.json(permissions);
+    } catch (error) {
+      console.error("Error al obtener permisos:", error);
+      res.status(500).json({ message: "Error al obtener permisos" });
+    }
+  });
+
+  apiRouter.post("/role-permissions", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar que el usuario sea administrador
+      if (req.user?.role !== "admin") {
+        return res.status(403).json({ message: "Solo administradores pueden modificar permisos" });
+      }
+
+      const { permissions } = req.body;
+      
+      // En un sistema real, aquí guardaríamos en la base de datos
+      // Por ahora, solo simulamos la respuesta exitosa
+      console.log("Permisos actualizados:", permissions);
+      
+      res.json({ 
+        message: "Permisos actualizados correctamente",
+        permissions 
+      });
+    } catch (error) {
+      console.error("Error al guardar permisos:", error);
+      res.status(500).json({ message: "Error al guardar permisos" });
+    }
+  });
   
   return httpServer;
 }
