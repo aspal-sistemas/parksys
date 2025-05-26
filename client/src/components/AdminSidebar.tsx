@@ -606,7 +606,7 @@ const AdminSidebar: React.FC = () => {
               icon={<Building className="h-5 w-5" />}
               active={location.startsWith('/admin/concessions/concessionaires')}
             >
-              Gestión de Concesionarios
+              Gestión
             </NavItem>
             <NavItem 
               href="/admin/concessions/control" 
