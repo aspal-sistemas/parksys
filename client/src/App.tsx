@@ -451,6 +451,12 @@ function Router() {
           </Suspense>
         </Route>
         
+        <Route path="/admin/finance/advanced-calculator">
+          <Suspense fallback={<div className="p-8 text-center">Cargando calculadora avanzada...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/AdvancedCalculator')))}
+          </Suspense>
+        </Route>
+        
         {/* Ruta de redirección para compatibilidad */}
         <Route path="/admin/finance">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard financiero...</div>}>
