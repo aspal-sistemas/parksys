@@ -606,28 +606,7 @@ const AdminSidebar: React.FC = () => {
               icon={<Building className="h-5 w-5" />}
               active={location.startsWith('/admin/concessions/concessionaires')}
             >
-              Concesionarios
-            </NavItem>
-            <NavItem 
-              href="/admin/concessions/locations" 
-              icon={<MapPin className="h-5 w-5" />}
-              active={location.startsWith('/admin/concessions/locations')}
-            >
-              Ubicaciones
-            </NavItem>
-            <NavItem 
-              href="/admin/concessions/payments" 
-              icon={<CreditCard className="h-5 w-5" />}
-              active={location.startsWith('/admin/concessions/payments')}
-            >
-              Gestión Financiera
-            </NavItem>
-            <NavItem 
-              href="/admin/concessions/evaluations" 
-              icon={<ClipboardCheck className="h-5 w-5" />}
-              active={location.startsWith('/admin/concessions/evaluations')}
-            >
-              Evaluaciones
+              Gestión de Concesionarios
             </NavItem>
             <NavItem 
               href="/admin/concessions/control" 
@@ -638,7 +617,7 @@ const AdminSidebar: React.FC = () => {
             </NavItem>
             <NavItem 
               href="/admin/concessions/reports" 
-              icon={<FileText className="h-5 w-5" />}
+              icon={<BarChart className="h-5 w-5" />}
               active={location.startsWith('/admin/concessions/reports')}
             >
               Reportes
