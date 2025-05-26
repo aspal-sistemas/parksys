@@ -31,7 +31,8 @@ import {
   Download,
   Upload,
   ArrowUpCircle,
-  ArrowDownCircle
+  ArrowDownCircle,
+  Calculator
 } from "lucide-react";
 
 // Esquemas de validación
@@ -926,7 +927,7 @@ export default function FinancePage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Dashboard
@@ -942,6 +943,10 @@ export default function FinancePage() {
             <TabsTrigger value="cashflow" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               Flujo de Efectivo
+            </TabsTrigger>
+            <TabsTrigger value="calculator" className="flex items-center gap-2">
+              <Calculator className="h-4 w-4" />
+              Calculadora
             </TabsTrigger>
           </TabsList>
 
