@@ -49,7 +49,6 @@ import {
   BadgeCheck,
   LayoutGrid,
   Flower2,
-  FileEdit,
   Scissors,
   TreePine,
   HardHat,
