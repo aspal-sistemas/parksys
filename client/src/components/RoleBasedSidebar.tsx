@@ -28,10 +28,8 @@ import {
   CreditCard,
   ClipboardCheck,
   Upload,
-  Archive,
   Boxes,
   Box,
-  Wrench,
   CalendarDays,
   CircleDollarSign,
   MapPin,
@@ -60,6 +58,7 @@ import {
   AlertCircle,
   AlertTriangle,
   Database,
+  Lock,
   Leaf,
   HeartHandshake,
   Star,
@@ -73,6 +72,9 @@ import {
   Wallet,
   ChevronsUpDown,
   ChevronDown,
+  Wrench,
+  Archive,
+  FileEdit,
   Briefcase,
   UserCog,
   Zap,
@@ -159,23 +161,78 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
     </NavItem>
 
     <ModuleNav 
-      title="Usuarios" 
-      icon={<Users className="h-5 w-5" />}
-      value="users"
+      title="Configuración" 
+      icon={<Settings className="h-5 w-5" />}
+      value="configuration"
     >
-      <NavItem 
-        href="/admin/users" 
-        icon={<User className="h-5 w-5" />}
-        active={location === '/admin/users'}
+      <ModuleNav 
+        title="Usuarios" 
+        icon={<Users className="h-5 w-5" />}
+        value="users"
       >
-        Lista
+        <NavItem 
+          href="/admin/users" 
+          icon={<UserCheck className="h-5 w-5" />}
+          active={location === '/admin/users'}
+        >
+          Gestión de Usuarios
+        </NavItem>
+        <NavItem 
+          href="/admin/permissions" 
+          icon={<Shield className="h-5 w-5" />}
+          active={location === '/admin/permissions'}
+        >
+          Permisos y Roles
+        </NavItem>
+        <NavItem 
+          href="/admin/user-activity" 
+          icon={<Activity className="h-5 w-5" />}
+          active={location === '/admin/user-activity'}
+        >
+          Actividad de Usuarios
+        </NavItem>
+      </ModuleNav>
+      <NavItem 
+        href="/admin/system-settings" 
+        icon={<Wrench className="h-5 w-5" />}
+        active={location === '/admin/system-settings'}
+      >
+        Configuración del Sistema
       </NavItem>
       <NavItem 
-        href="/admin/permissions" 
-        icon={<Shield className="h-5 w-5" />}
-        active={location === '/admin/permissions'}
+        href="/admin/integrations" 
+        icon={<Database className="h-5 w-5" />}
+        active={location === '/admin/integrations'}
       >
-        Permisos
+        Integraciones
+      </NavItem>
+      <NavItem 
+        href="/admin/security" 
+        icon={<Lock className="h-5 w-5" />}
+        active={location === '/admin/security'}
+      >
+        Seguridad
+      </NavItem>
+      <NavItem 
+        href="/admin/backup" 
+        icon={<Archive className="h-5 w-5" />}
+        active={location === '/admin/backup'}
+      >
+        Respaldos
+      </NavItem>
+      <NavItem 
+        href="/admin/notifications" 
+        icon={<Bell className="h-5 w-5" />}
+        active={location === '/admin/notifications'}
+      >
+        Notificaciones
+      </NavItem>
+      <NavItem 
+        href="/admin/audit-logs" 
+        icon={<FileEdit className="h-5 w-5" />}
+        active={location === '/admin/audit-logs'}
+      >
+        Logs de Auditoría
       </NavItem>
     </ModuleNav>
 
