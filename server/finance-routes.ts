@@ -1028,5 +1028,171 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     }
   });
 
+  // ============ MATRIZ DE FLUJO DE EFECTIVO ============
+  
+  // Obtener datos de la matriz de flujo de efectivo basados en categorías del catálogo
+  apiRouter.get("/cash-flow/:year", async (req: Request, res: Response) => {
+    try {
+      const year = parseInt(req.params.year);
+      const currentDate = new Date();
+      
+      // Obtener categorías de ingresos y egresos
+      const incomeCategories = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+      const expenseCategories = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+      
+      // Obtener ingresos reales por mes para el año especificado
+      const actualIncomesData = await db.select({
+        categoryId: actualIncomes.categoryId,
+        month: actualIncomes.month,
+        amount: sum(actualIncomes.amount).as('total_amount')
+      })
+      .from(actualIncomes)
+      .where(
+        and(
+          eq(sql`EXTRACT(YEAR FROM ${actualIncomes.date})`, year),
+          eq(actualIncomes.isActive, true)
+        )
+      )
+      .groupBy(actualIncomes.categoryId, actualIncomes.month);
+      
+      // Obtener egresos reales por mes para el año especificado
+      const actualExpensesData = await db.select({
+        categoryId: actualExpenses.categoryId,
+        month: actualExpenses.month,
+        amount: sum(actualExpenses.amount).as('total_amount')
+      })
+      .from(actualExpenses)
+      .where(
+        and(
+          eq(sql`EXTRACT(YEAR FROM ${actualExpenses.date})`, year),
+          eq(actualExpenses.isActive, true)
+        )
+      )
+      .groupBy(actualExpenses.categoryId, actualExpenses.month);
+      
+      // Construir la matriz de flujo de efectivo
+      const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+      const categories = [];
+      
+      // Procesar categorías de ingresos
+      for (const category of incomeCategories) {
+        const monthlyValues = [];
+        let totalAmount = 0;
+        
+        for (let month = 1; month <= 12; month++) {
+          const monthData = actualIncomesData.find(
+            item => item.categoryId === category.id && item.month === month
+          );
+          const amount = monthData ? parseFloat(monthData.total_amount || '0') : 0;
+          monthlyValues.push(amount);
+          totalAmount += amount;
+        }
+        
+        categories.push({
+          name: category.name,
+          type: 'income',
+          monthlyValues,
+          total: totalAmount
+        });
+      }
+      
+      // Procesar categorías de egresos
+      for (const category of expenseCategories) {
+        const monthlyValues = [];
+        let totalAmount = 0;
+        
+        for (let month = 1; month <= 12; month++) {
+          const monthData = actualExpensesData.find(
+            item => item.categoryId === category.id && item.month === month
+          );
+          const amount = monthData ? parseFloat(monthData.total_amount || '0') : 0;
+          monthlyValues.push(amount);
+          totalAmount += amount;
+        }
+        
+        categories.push({
+          name: category.name,
+          type: 'expense',
+          monthlyValues,
+          total: totalAmount
+        });
+      }
+      
+      // Calcular resúmenes
+      const summaries = {
+        monthly: { income: [], expenses: [], net: [] },
+        quarterly: { income: [], expenses: [], net: [] },
+        semiannual: { income: [], expenses: [], net: [] },
+        annual: { income: 0, expenses: 0, net: 0 }
+      };
+      
+      // Calcular totales mensuales
+      for (let month = 0; month < 12; month++) {
+        let monthlyIncome = 0;
+        let monthlyExpenses = 0;
+        
+        categories.forEach(category => {
+          if (category.type === 'income') {
+            monthlyIncome += category.monthlyValues[month];
+          } else {
+            monthlyExpenses += category.monthlyValues[month];
+          }
+        });
+        
+        summaries.monthly.income.push(monthlyIncome);
+        summaries.monthly.expenses.push(monthlyExpenses);
+        summaries.monthly.net.push(monthlyIncome - monthlyExpenses);
+      }
+      
+      // Calcular totales trimestrales
+      for (let quarter = 0; quarter < 4; quarter++) {
+        let quarterIncome = 0;
+        let quarterExpenses = 0;
+        
+        for (let month = quarter * 3; month < (quarter + 1) * 3; month++) {
+          quarterIncome += summaries.monthly.income[month];
+          quarterExpenses += summaries.monthly.expenses[month];
+        }
+        
+        summaries.quarterly.income.push(quarterIncome);
+        summaries.quarterly.expenses.push(quarterExpenses);
+        summaries.quarterly.net.push(quarterIncome - quarterExpenses);
+      }
+      
+      // Calcular totales semestrales
+      for (let semester = 0; semester < 2; semester++) {
+        let semesterIncome = 0;
+        let semesterExpenses = 0;
+        
+        for (let month = semester * 6; month < (semester + 1) * 6; month++) {
+          semesterIncome += summaries.monthly.income[month];
+          semesterExpenses += summaries.monthly.expenses[month];
+        }
+        
+        summaries.semiannual.income.push(semesterIncome);
+        summaries.semiannual.expenses.push(semesterExpenses);
+        summaries.semiannual.net.push(semesterIncome - semesterExpenses);
+      }
+      
+      // Calcular totales anuales
+      summaries.annual.income = summaries.monthly.income.reduce((sum, val) => sum + val, 0);
+      summaries.annual.expenses = summaries.monthly.expenses.reduce((sum, val) => sum + val, 0);
+      summaries.annual.net = summaries.annual.income - summaries.annual.expenses;
+      
+      const cashFlowData = {
+        year,
+        months,
+        categories,
+        summaries
+      };
+      
+      res.json(cashFlowData);
+      
+    } catch (error) {
+      console.error("Error al obtener datos de flujo de efectivo:", error);
+      res.status(500).json({ message: "Error al obtener datos de flujo de efectivo" });
+    }
+  });
+
   console.log("Rutas del módulo financiero registradas correctamente");
 }

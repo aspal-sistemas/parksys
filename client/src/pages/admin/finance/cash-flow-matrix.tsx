@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, TrendingUp, TrendingDown, Calculator, Download, Edit3 } from "lucide-react";
+import { CalendarDays, TrendingUp, TrendingDown, Calculator, Download, Edit3, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -102,71 +102,69 @@ export default function CashFlowMatrix() {
     }));
   };
 
-  // Datos simulados para la matriz
-  const cashFlowData: CashFlowMatrixData = {
+  // Obtener datos reales del catálogo financiero
+  const { data: cashFlowData, isLoading, error } = useQuery({
+    queryKey: ['/api/cash-flow', selectedYear],
+    queryFn: () => fetch(`/api/cash-flow/${selectedYear}`).then(res => res.json()),
+    staleTime: 5 * 60 * 1000, // Cache por 5 minutos
+  });
+
+  // Datos por defecto mientras se cargan los reales
+  const defaultCashFlowData: CashFlowMatrixData = {
     year: selectedYear,
     months: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
-    categories: [
-      {
-        name: "Concesiones",
-        type: "income",
-        monthlyValues: [12000, 11500, 13000, 12500, 13500, 14000, 15000, 14500, 13000, 12000, 11000, 12000],
-        total: 154000
-      },
-      {
-        name: "Eventos",
-        type: "income", 
-        monthlyValues: [8000, 7500, 9000, 8500, 9500, 10000, 11000, 10500, 9000, 8000, 7000, 8000],
-        total: 106000
-      },
-      {
-        name: "Servicios",
-        type: "income",
-        monthlyValues: [1500, 1400, 1600, 1550, 1650, 1700, 1800, 1750, 1600, 1500, 1400, 1500],
-        total: 18950
-      },
-      {
-        name: "Mantenimiento",
-        type: "expense",
-        monthlyValues: [5000, 4800, 5200, 5100, 5300, 5500, 5800, 5600, 5200, 5000, 4800, 5000],
-        total: 62300
-      },
-      {
-        name: "Personal",
-        type: "expense",
-        monthlyValues: [15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000],
-        total: 180000
-      },
-      {
-        name: "Servicios Públicos",
-        type: "expense",
-        monthlyValues: [2500, 2300, 2600, 2400, 2700, 2800, 3000, 2900, 2600, 2500, 2300, 2500],
-        total: 31100
-      }
-    ],
+    categories: [],
     summaries: {
-      monthly: {
-        income: [21500, 20400, 23600, 22550, 24650, 25700, 27800, 26750, 23600, 21500, 19400, 21500],
-        expenses: [22500, 22100, 22800, 22500, 23000, 23300, 23800, 23500, 22800, 22500, 22100, 22500],
-        net: [-1000, -1700, 800, 50, 1650, 2400, 4000, 3250, 800, -1000, -2700, -1000]
-      },
-      quarterly: {
-        income: [65500, 72900, 78100, 62400],
-        expenses: [67400, 68800, 70100, 67100],
-        net: [-1900, 4100, 8000, -4700]
-      },
-      semiannual: {
-        income: [138400, 140500],
-        expenses: [136200, 137200],
-        net: [2200, 3300]
-      },
-      annual: {
-        income: 278900,
-        expenses: 273400,
-        net: 5500
-      }
+      monthly: { income: [], expenses: [], net: [] },
+      quarterly: { income: [], expenses: [], net: [] },
+      semiannual: { income: [], expenses: [], net: [] },
+      annual: { income: 0, expenses: 0, net: 0 }
     }
   };
+
+  const finalCashFlowData = cashFlowData || defaultCashFlowData;
+
+  // Mostrar estado de carga
+  if (isLoading) {
+    return (
+      <AdminLayout 
+        title="Matriz de Flujo de Efectivo" 
+        subtitle="Análisis financiero integrado con el catálogo"
+      >
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando datos del catálogo financiero...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  // Mostrar error si hay problemas
+  if (error) {
+    return (
+      <AdminLayout 
+        title="Matriz de Flujo de Efectivo" 
+        subtitle="Análisis financiero integrado con el catálogo"
+      >
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <p className="text-red-600 mb-2">Error al cargar los datos financieros</p>
+            <p className="text-gray-600 text-sm">Por favor, verifica que el catálogo financiero tenga datos configurados</p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="outline" 
+              className="mt-4"
+            >
+              Intentar de nuevo
+            </Button>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
@@ -194,7 +192,7 @@ export default function CashFlowMatrix() {
             <thead>
               <tr className="border-b">
                 <th className="text-left p-3 font-medium">Categoría</th>
-                {cashFlowData.months.map((month) => (
+                {finalCashFlowData.months.map((month) => (
                   <th key={month} className="text-center p-3 font-medium min-w-[80px]">
                     {month}
                   </th>
@@ -211,7 +209,7 @@ export default function CashFlowMatrix() {
                 ))}
                 <td className="text-center p-3"></td>
               </tr>
-              {cashFlowData.categories.filter(cat => cat.type === 'income').map((category) => (
+              {finalCashFlowData.categories.filter(cat => cat.type === 'income').map((category) => (
                 <tr key={category.name} className="border-b hover:bg-gray-50">
                   <td className="p-3">{category.name}</td>
                   {category.monthlyValues.map((value, index) => (
@@ -228,13 +226,13 @@ export default function CashFlowMatrix() {
               {/* Subtotal Ingresos */}
               <tr className="bg-green-100 font-semibold">
                 <td className="p-3">Subtotal Ingresos</td>
-                {cashFlowData.summaries.monthly.income.map((value, index) => (
+                {finalCashFlowData.summaries.monthly.income.map((value, index) => (
                   <td key={index} className="text-center p-3 text-green-800">
                     {formatCurrency(value)}
                   </td>
                 ))}
                 <td className="text-center p-3 text-green-800">
-                  {formatCurrency(cashFlowData.summaries.annual.income)}
+                  {formatCurrency(finalCashFlowData.summaries.annual.income)}
                 </td>
               </tr>
 
@@ -246,7 +244,7 @@ export default function CashFlowMatrix() {
                 ))}
                 <td className="text-center p-3"></td>
               </tr>
-              {cashFlowData.categories.filter(cat => cat.type === 'expense').map((category) => (
+              {finalCashFlowData.categories.filter(cat => cat.type === 'expense').map((category) => (
                 <tr key={category.name} className="border-b hover:bg-gray-50">
                   <td className="p-3">{category.name}</td>
                   {category.monthlyValues.map((value, index) => (
@@ -263,26 +261,26 @@ export default function CashFlowMatrix() {
               {/* Subtotal Egresos */}
               <tr className="bg-red-100 font-semibold">
                 <td className="p-3">Subtotal Egresos</td>
-                {cashFlowData.summaries.monthly.expenses.map((value, index) => (
+                {finalCashFlowData.summaries.monthly.expenses.map((value, index) => (
                   <td key={index} className="text-center p-3 text-red-800">
                     {formatCurrency(value)}
                   </td>
                 ))}
                 <td className="text-center p-3 text-red-800">
-                  {formatCurrency(cashFlowData.summaries.annual.expenses)}
+                  {formatCurrency(finalCashFlowData.summaries.annual.expenses)}
                 </td>
               </tr>
 
               {/* Flujo Neto */}
               <tr className="bg-blue-100 font-bold border-t-2">
                 <td className="p-3">FLUJO NETO</td>
-                {cashFlowData.summaries.monthly.net.map((value, index) => (
+                {finalCashFlowData.summaries.monthly.net.map((value, index) => (
                   <td key={index} className={`text-center p-3 ${value >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
                     {formatCurrency(value)}
                   </td>
                 ))}
-                <td className={`text-center p-3 ${cashFlowData.summaries.annual.net >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
-                  {formatCurrency(cashFlowData.summaries.annual.net)}
+                <td className={`text-center p-3 ${finalCashFlowData.summaries.annual.net >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
+                  {formatCurrency(finalCashFlowData.summaries.annual.net)}
                 </td>
               </tr>
             </tbody>
@@ -314,35 +312,35 @@ export default function CashFlowMatrix() {
             <tbody>
               <tr className="bg-green-100 font-semibold">
                 <td className="p-3">Ingresos Totales</td>
-                {cashFlowData.summaries.quarterly.income.map((value, index) => (
+                {finalCashFlowData.summaries.quarterly.income.map((value, index) => (
                   <td key={index} className="text-center p-3 text-green-800">
                     {formatCurrency(value)}
                   </td>
                 ))}
                 <td className="text-center p-3 text-green-800">
-                  {formatCurrency(cashFlowData.summaries.annual.income)}
+                  {formatCurrency(finalCashFlowData.summaries.annual.income)}
                 </td>
               </tr>
               <tr className="bg-red-100 font-semibold">
                 <td className="p-3">Egresos Totales</td>
-                {cashFlowData.summaries.quarterly.expenses.map((value, index) => (
+                {finalCashFlowData.summaries.quarterly.expenses.map((value, index) => (
                   <td key={index} className="text-center p-3 text-red-800">
                     {formatCurrency(value)}
                   </td>
                 ))}
                 <td className="text-center p-3 text-red-800">
-                  {formatCurrency(cashFlowData.summaries.annual.expenses)}
+                  {formatCurrency(finalCashFlowData.summaries.annual.expenses)}
                 </td>
               </tr>
               <tr className="bg-blue-100 font-bold border-t-2">
                 <td className="p-3">Flujo Neto</td>
-                {cashFlowData.summaries.quarterly.net.map((value, index) => (
+                {finalCashFlowData.summaries.quarterly.net.map((value, index) => (
                   <td key={index} className={`text-center p-3 ${value >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
                     {formatCurrency(value)}
                   </td>
                 ))}
-                <td className={`text-center p-3 ${cashFlowData.summaries.annual.net >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
-                  {formatCurrency(cashFlowData.summaries.annual.net)}
+                <td className={`text-center p-3 ${finalCashFlowData.summaries.annual.net >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
+                  {formatCurrency(finalCashFlowData.summaries.annual.net)}
                 </td>
               </tr>
             </tbody>
@@ -372,35 +370,35 @@ export default function CashFlowMatrix() {
             <tbody>
               <tr className="bg-green-100 font-semibold">
                 <td className="p-3">Ingresos Totales</td>
-                {cashFlowData.summaries.semiannual.income.map((value, index) => (
+                {finalCashFlowData.summaries.semiannual.income.map((value, index) => (
                   <td key={index} className="text-center p-3 text-green-800">
                     {formatCurrency(value)}
                   </td>
                 ))}
                 <td className="text-center p-3 text-green-800">
-                  {formatCurrency(cashFlowData.summaries.annual.income)}
+                  {formatCurrency(finalCashFlowData.summaries.annual.income)}
                 </td>
               </tr>
               <tr className="bg-red-100 font-semibold">
                 <td className="p-3">Egresos Totales</td>
-                {cashFlowData.summaries.semiannual.expenses.map((value, index) => (
+                {finalCashFlowData.summaries.semiannual.expenses.map((value, index) => (
                   <td key={index} className="text-center p-3 text-red-800">
                     {formatCurrency(value)}
                   </td>
                 ))}
                 <td className="text-center p-3 text-red-800">
-                  {formatCurrency(cashFlowData.summaries.annual.expenses)}
+                  {formatCurrency(finalCashFlowData.summaries.annual.expenses)}
                 </td>
               </tr>
               <tr className="bg-blue-100 font-bold border-t-2">
                 <td className="p-3">Flujo Neto</td>
-                {cashFlowData.summaries.semiannual.net.map((value, index) => (
+                {finalCashFlowData.summaries.semiannual.net.map((value, index) => (
                   <td key={index} className={`text-center p-3 ${value >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
                     {formatCurrency(value)}
                   </td>
                 ))}
-                <td className={`text-center p-3 ${cashFlowData.summaries.annual.net >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
-                  {formatCurrency(cashFlowData.summaries.annual.net)}
+                <td className={`text-center p-3 ${finalCashFlowData.summaries.annual.net >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
+                  {formatCurrency(finalCashFlowData.summaries.annual.net)}
                 </td>
               </tr>
             </tbody>
@@ -612,7 +610,7 @@ export default function CashFlowMatrix() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-700">
-              {formatCurrency(cashFlowData.summaries.annual.income)}
+              {formatCurrency(finalCashFlowData.summaries.annual.income)}
             </div>
           </CardContent>
         </Card>
@@ -623,7 +621,7 @@ export default function CashFlowMatrix() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-700">
-              {formatCurrency(cashFlowData.summaries.annual.expenses)}
+              {formatCurrency(finalCashFlowData.summaries.annual.expenses)}
             </div>
           </CardContent>
         </Card>
@@ -633,8 +631,8 @@ export default function CashFlowMatrix() {
             <Calculator className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${cashFlowData.summaries.annual.net >= 0 ? "text-green-700" : "text-red-700"}`}>
-              {formatCurrency(cashFlowData.summaries.annual.net)}
+            <div className={`text-2xl font-bold ${finalCashFlowData.summaries.annual.net >= 0 ? "text-green-700" : "text-red-700"}`}>
+              {formatCurrency(finalCashFlowData.summaries.annual.net)}
             </div>
           </CardContent>
         </Card>
