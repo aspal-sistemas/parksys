@@ -786,13 +786,13 @@ const AdminSidebar: React.FC = () => {
           {user ? (
             <>
               <UserProfileImage 
-                userId={user.id} 
+                userId={(user as any).id} 
                 size="md" 
                 className="h-10 w-10" 
               />
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900">{user.fullName || user.username}</p>
-                <p className="text-xs text-gray-500">{user.email}</p>
+                <p className="text-sm font-medium text-gray-900">{(user as any).fullName || (user as any).username}</p>
+                <p className="text-xs text-gray-500">{(user as any).email}</p>
               </div>
             </>
           ) : (

@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 
 // Categorías de actividades
 const CATEGORIAS_ACTIVIDADES = [
+  { value: "todas", label: "Todas las Actividades" },
   { value: "artecultura", label: "Arte y Cultura" },
   { value: "recreacionbienestar", label: "Recreación y Bienestar" },
   { value: "temporada", label: "Eventos de Temporada" },
@@ -44,7 +45,7 @@ interface Actividad {
 
 const VerActividadesPage = () => {
   const [location, setLocation] = useLocation();
-  const [categoriaActiva, setCategoriaActiva] = useState<string>("artecultura");
+  const [categoriaActiva, setCategoriaActiva] = useState<string>("todas");
   const [busqueda, setBusqueda] = useState<string>("");
   const [parqueFiltro, setParqueFiltro] = useState<string>("todos");
 
@@ -68,8 +69,9 @@ const VerActividadesPage = () => {
 
   // Filtrar actividades por categoría
   const actividadesPorCategoria = actividades.filter(act => 
-    // Si la categoría no coincide exactamente, intentamos hacer una coincidencia parcial
-    (act.category === categoriaActiva || 
+    // Si es "todas", mostrar todas las actividades, si no, filtrar por categoría
+    (categoriaActiva === "todas" || 
+     act.category === categoriaActiva || 
      (act.category && act.category.includes(categoriaActiva)) ||
      (categoriaActiva === "artecultura" && act.category && act.category.toLowerCase().includes("arte"))) &&
     // Filtro de búsqueda por texto
@@ -140,7 +142,7 @@ const VerActividadesPage = () => {
 
       {/* Pestañas por categoría */}
       <Tabs 
-        defaultValue="artecultura" 
+        defaultValue="todas" 
         value={categoriaActiva}
         onValueChange={(value) => setCategoriaActiva(value)}
         className="w-full"
