@@ -187,11 +187,11 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         Parques
       </NavItem>
       <NavItem 
-        href="/admin/amenities" 
+        href="/admin/assets" 
         icon={<Box className="h-5 w-5" />}
-        active={location === '/admin/amenities'}
+        active={location === '/admin/assets'}
       >
-        Amenidades
+        Activos
       </NavItem>
       <NavItem 
         href="/admin/incidents" 
@@ -363,11 +363,11 @@ const ManagerSidebar: React.FC<{ location: string; defaultAccordion: string[] }>
         Parques
       </NavItem>
       <NavItem 
-        href="/admin/amenities" 
+        href="/admin/assets" 
         icon={<Box className="h-5 w-5" />}
-        active={location === '/admin/amenities'}
+        active={location === '/admin/assets'}
       >
-        Amenidades
+        Activos
       </NavItem>
       <NavItem 
         href="/admin/incidents" 
@@ -505,7 +505,7 @@ const RoleBasedSidebar: React.FC = () => {
     if (location.startsWith('/admin/activities')) return ['activities'];
     if (location.startsWith('/admin/instructors')) return ['activities'];
     if (location.startsWith('/admin/parks') || 
-        location.startsWith('/admin/amenities') || 
+        location.startsWith('/admin/assets') || 
         location.startsWith('/admin/incidents')) return ['operations'];
     if (location.startsWith('/admin/volunteers')) return ['volunteers'];
     if (location.startsWith('/admin/finance')) return ['finance'];

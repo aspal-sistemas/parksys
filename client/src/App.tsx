@@ -89,6 +89,11 @@ function Router() {
           </Suspense>
         </Route>
         <Route path="/admin/activities" component={AdminActivities} />
+        <Route path="/admin/activities/calendar">
+          <Suspense fallback={<div className="p-8 text-center">Cargando calendario...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/activities/calendar')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/analytics" component={AdminAnalytics} />
         <Route path="/admin/documents" component={AdminDocuments} />
         <Route path="/admin/comments" component={AdminComments} />
