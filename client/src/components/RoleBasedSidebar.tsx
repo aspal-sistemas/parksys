@@ -228,6 +228,34 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       >
         Egresos
       </NavItem>
+      <NavItem 
+        href="/admin/finance/cashflow" 
+        icon={<CircleDollarSign className="h-5 w-5" />}
+        active={location === '/admin/finance/cashflow'}
+      >
+        Flujo
+      </NavItem>
+      <NavItem 
+        href="/admin/finance/calculator" 
+        icon={<Calculator className="h-5 w-5" />}
+        active={location === '/admin/finance/calculator'}
+      >
+        Calculadora
+      </NavItem>
+      <NavItem 
+        href="/admin/finance/reports" 
+        icon={<FileText className="h-5 w-5" />}
+        active={location === '/admin/finance/reports'}
+      >
+        Reportes
+      </NavItem>
+      <NavItem 
+        href="/admin/finance/dashboard" 
+        icon={<BarChart className="h-5 w-5" />}
+        active={location === '/admin/finance/dashboard'}
+      >
+        Dashboard
+      </NavItem>
     </ModuleNav>
 
     <ModuleNav 
