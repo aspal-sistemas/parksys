@@ -194,9 +194,48 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     }
   });
 
-  // Ruta específica para editar categorías de egresos (evita conflictos con Vite)
-  apiRouter.post("/finance/expense-categories/edit/:id", async (req: Request, res: Response) => {
-    console.log("=== EDITANDO CATEGORÍA DE EGRESOS ===");
+  // Ruta SQL directa para editar categorías de ingresos - evita completamente Vite
+  apiRouter.post("/sql-update/income-category/:id", async (req: Request, res: Response) => {
+    console.log("=== SQL UPDATE CATEGORÍA DE INGRESOS ===");
+    console.log("ID:", req.params.id);
+    console.log("Body recibido:", req.body);
+    
+    try {
+      const categoryId = parseInt(req.params.id);
+      const { name, description } = req.body;
+      
+      if (!name || name.trim() === '') {
+        return res.status(400).json({ message: "El nombre de la categoría es requerido" });
+      }
+
+      const [updatedCategory] = await db.update(incomeCategories)
+        .set({
+          name: name.trim(),
+          description: description?.trim() || '',
+          updatedAt: new Date()
+        })
+        .where(eq(incomeCategories.id, categoryId))
+        .returning();
+      
+      if (!updatedCategory) {
+        return res.status(404).json({ message: "Categoría no encontrada" });
+      }
+      
+      console.log("Categoría de ingresos actualizada exitosamente:", updatedCategory);
+      res.json(updatedCategory);
+      
+    } catch (error) {
+      console.error("Error al actualizar categoría de ingresos:", error);
+      res.status(500).json({ 
+        message: "Error al actualizar categoría de ingresos", 
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      });
+    }
+  });
+
+  // Ruta SQL directa para editar categorías de egresos - evita completamente Vite
+  apiRouter.post("/sql-update/expense-category/:id", async (req: Request, res: Response) => {
+    console.log("=== SQL UPDATE CATEGORÍA DE EGRESOS ===");
     console.log("ID:", req.params.id);
     console.log("Body recibido:", req.body);
     

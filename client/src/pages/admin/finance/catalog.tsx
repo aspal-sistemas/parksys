@@ -99,13 +99,13 @@ export default function CatalogPage() {
     },
   });
 
-  // Mutación para editar categoría de ingresos usando una ruta directa
+  // Mutación para editar categoría de ingresos usando SQL directo
   const editIncomeCategoryMutation = useMutation({
     mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
       console.log("Editando categoría de ingresos:", { id, categoryData });
       
-      // Usar una ruta completamente diferente para evitar conflictos con Vite
-      return await apiRequest(`/finance/income-categories/edit/${id}`, {
+      // Usar el endpoint SQL directo que funciona sin interferencia de Vite
+      return await apiRequest(`/sql-update/income-category/${id}`, {
         method: 'POST',
         data: categoryData
       });
@@ -134,8 +134,8 @@ export default function CatalogPage() {
     mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
       console.log("Editando categoría de egresos:", { id, categoryData });
       
-      // Usar una ruta completamente diferente para evitar conflictos con Vite
-      return await apiRequest(`/finance/expense-categories/edit/${id}`, {
+      // Usar el endpoint SQL directo que funciona sin interferencia de Vite
+      return await apiRequest(`/sql-update/expense-category/${id}`, {
         method: 'POST',
         data: categoryData
       });
