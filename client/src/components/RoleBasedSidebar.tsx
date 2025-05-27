@@ -582,10 +582,11 @@ const DirectorSidebar: React.FC<{ location: string; defaultAccordion: string[] }
       Personal
     </NavItem>
 
+    {/* Opción de perfil personal para todos los usuarios */}
     <NavItem 
       href="/admin/settings/profile" 
       icon={<User className="h-5 w-5" />}
-      active={location === '/admin/settings/profile'}
+      active={location.startsWith('/admin/settings/profile')}
     >
       Mi perfil
     </NavItem>
