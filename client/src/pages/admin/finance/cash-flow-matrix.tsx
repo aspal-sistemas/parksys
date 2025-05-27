@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, TrendingUp, TrendingDown, Calculator, Download } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
 
 interface CashFlowMatrixData {
   year: number;
@@ -452,13 +453,11 @@ export default function CashFlowMatrix() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Matriz de Flujo de Efectivo</h1>
-          <p className="text-muted-foreground">Vista analítica por períodos con categorías detalladas</p>
-        </div>
-        <div className="flex items-center gap-4">
+    <AdminLayout 
+      title="Matriz de Flujo de Efectivo" 
+      subtitle="Vista analítica por períodos con categorías detalladas"
+    >
+        <div className="flex items-center justify-end gap-4 mb-6">
           <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
             <SelectTrigger className="w-32">
               <SelectValue />
@@ -476,10 +475,9 @@ export default function CashFlowMatrix() {
             Exportar
           </Button>
         </div>
-      </div>
 
-      {/* Resumen Anual */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Resumen Anual */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ingresos Anuales</CardTitle>
@@ -535,6 +533,6 @@ export default function CashFlowMatrix() {
           {renderSemiannualView()}
         </TabsContent>
       </Tabs>
-    </div>
+    </AdminLayout>
   );
 }
