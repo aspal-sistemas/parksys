@@ -13,7 +13,7 @@ import {
   actualExpenses,
   cashFlowProjections
 } from "../shared/finance-schema";
-import { eq, and, gte, lte, sum, desc, asc } from "drizzle-orm";
+import { eq, and, gte, lte, sum, desc, asc, sql } from "drizzle-orm";
 
 /**
  * Registra las rutas para el módulo financiero
@@ -931,6 +931,166 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     } catch (error) {
       console.error("Error al crear registro de ingreso:", error);
       res.status(500).json({ message: "Error al crear registro de ingreso" });
+    }
+  });
+
+  // ============ MATRIZ DE FLUJO DE EFECTIVO ============
+  
+  // Obtener datos de matriz de flujo de efectivo por año
+  apiRouter.get("/cash-flow-matrix/:year", async (req: Request, res: Response) => {
+    try {
+      const year = parseInt(req.params.year);
+      const startDate = new Date(year, 0, 1);
+      const endDate = new Date(year, 11, 31, 23, 59, 59);
+
+      // Obtener categorías de ingresos con datos mensuales
+      const incomeCategs = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+      
+      // Obtener categorías de egresos con datos mensuales
+      const expenseCategs = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+
+      // Inicializar estructura de datos
+      const monthlyTotals = {
+        income: Array(12).fill(0),
+        expenses: Array(12).fill(0),
+        netFlow: Array(12).fill(0)
+      };
+
+      const incomeCategoriesData = await Promise.all(incomeCategs.map(async (category) => {
+        const monthlyData = Array(12).fill(0);
+        
+        // Obtener ingresos reales para esta categoría
+        const incomes = await db.select({
+          amount: actualIncomes.amount,
+          date: actualIncomes.incomeDate
+        })
+        .from(actualIncomes)
+        .where(
+          and(
+            eq(actualIncomes.categoryId, category.id),
+            gte(actualIncomes.incomeDate, startDate),
+            lte(actualIncomes.incomeDate, endDate)
+          )
+        );
+
+        // Agrupar por mes
+        incomes.forEach(income => {
+          const month = new Date(income.date).getMonth();
+          const amount = parseFloat(income.amount.toString());
+          monthlyData[month] += amount;
+          monthlyTotals.income[month] += amount;
+        });
+
+        const total = monthlyData.reduce((sum, amount) => sum + amount, 0);
+
+        return {
+          id: category.id,
+          name: category.name,
+          monthlyData,
+          total
+        };
+      }));
+
+      const expenseCategoriesData = await Promise.all(expenseCategs.map(async (category) => {
+        const monthlyData = Array(12).fill(0);
+        
+        // Obtener egresos reales para esta categoría
+        const expenses = await db.select({
+          amount: actualExpenses.amount,
+          date: actualExpenses.expenseDate
+        })
+        .from(actualExpenses)
+        .where(
+          and(
+            eq(actualExpenses.categoryId, category.id),
+            gte(actualExpenses.expenseDate, startDate),
+            lte(actualExpenses.expenseDate, endDate)
+          )
+        );
+
+        // Agrupar por mes
+        expenses.forEach(expense => {
+          const month = new Date(expense.date).getMonth();
+          const amount = parseFloat(expense.amount.toString());
+          monthlyData[month] += amount;
+          monthlyTotals.expenses[month] += amount;
+        });
+
+        const total = monthlyData.reduce((sum, amount) => sum + amount, 0);
+
+        return {
+          id: category.id,
+          name: category.name,
+          monthlyData,
+          total
+        };
+      }));
+
+      // Calcular flujo neto mensual
+      for (let i = 0; i < 12; i++) {
+        monthlyTotals.netFlow[i] = monthlyTotals.income[i] - monthlyTotals.expenses[i];
+      }
+
+      // Calcular resúmenes
+      const quarterly = {
+        q1: {
+          income: monthlyTotals.income.slice(0, 3).reduce((sum, val) => sum + val, 0),
+          expenses: monthlyTotals.expenses.slice(0, 3).reduce((sum, val) => sum + val, 0),
+          net: monthlyTotals.netFlow.slice(0, 3).reduce((sum, val) => sum + val, 0)
+        },
+        q2: {
+          income: monthlyTotals.income.slice(3, 6).reduce((sum, val) => sum + val, 0),
+          expenses: monthlyTotals.expenses.slice(3, 6).reduce((sum, val) => sum + val, 0),
+          net: monthlyTotals.netFlow.slice(3, 6).reduce((sum, val) => sum + val, 0)
+        },
+        q3: {
+          income: monthlyTotals.income.slice(6, 9).reduce((sum, val) => sum + val, 0),
+          expenses: monthlyTotals.expenses.slice(6, 9).reduce((sum, val) => sum + val, 0),
+          net: monthlyTotals.netFlow.slice(6, 9).reduce((sum, val) => sum + val, 0)
+        },
+        q4: {
+          income: monthlyTotals.income.slice(9, 12).reduce((sum, val) => sum + val, 0),
+          expenses: monthlyTotals.expenses.slice(9, 12).reduce((sum, val) => sum + val, 0),
+          net: monthlyTotals.netFlow.slice(9, 12).reduce((sum, val) => sum + val, 0)
+        }
+      };
+
+      const semiannual = {
+        h1: {
+          income: monthlyTotals.income.slice(0, 6).reduce((sum, val) => sum + val, 0),
+          expenses: monthlyTotals.expenses.slice(0, 6).reduce((sum, val) => sum + val, 0),
+          net: monthlyTotals.netFlow.slice(0, 6).reduce((sum, val) => sum + val, 0)
+        },
+        h2: {
+          income: monthlyTotals.income.slice(6, 12).reduce((sum, val) => sum + val, 0),
+          expenses: monthlyTotals.expenses.slice(6, 12).reduce((sum, val) => sum + val, 0),
+          net: monthlyTotals.netFlow.slice(6, 12).reduce((sum, val) => sum + val, 0)
+        }
+      };
+
+      const annual = {
+        income: monthlyTotals.income.reduce((sum, val) => sum + val, 0),
+        expenses: monthlyTotals.expenses.reduce((sum, val) => sum + val, 0),
+        net: monthlyTotals.netFlow.reduce((sum, val) => sum + val, 0)
+      };
+
+      const response = {
+        year,
+        months: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+        incomeCategories: incomeCategoriesData,
+        expenseCategories: expenseCategoriesData,
+        monthlyTotals,
+        summaries: {
+          quarterly,
+          semiannual,
+          annual
+        }
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Error al obtener matriz de flujo de efectivo:", error);
+      res.status(500).json({ message: "Error al obtener matriz de flujo de efectivo" });
     }
   });
 
