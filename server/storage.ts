@@ -24,6 +24,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<any>;
   createUser(userData: any): Promise<any>;
   updateUser(id: number, userData: any): Promise<any>;
+  deleteUser(id: number): Promise<boolean>;
   getAssetCategories(): Promise<any[]>;
   getAssetCategory(id: number): Promise<any>;
   getCategoryAssets(categoryId: number): Promise<any[]>;
