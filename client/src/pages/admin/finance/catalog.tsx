@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,27 +23,27 @@ import {
 } from "lucide-react";
 import { Helmet } from "react-helmet";
 
-// Categorías estructuradas para gestión
+// Categorías de ingresos desde la base de datos
 const incomeCategories = [
   {
-    name: "Servicios Recreativos",
-    description: "Ingresos por servicios recreativos y deportivos",
-    subcategories: ["Canchas deportivas", "Juegos infantiles", "Gimnasio al aire libre"]
-  },
-  {
-    name: "Eventos y Actividades", 
-    description: "Ingresos por organización de eventos",
-    subcategories: ["Conciertos", "Festivales", "Talleres"]
-  },
-  {
     name: "Concesiones",
-    description: "Ingresos por concesiones comerciales", 
+    description: "Ingresos por concesiones de servicios en parques",
     subcategories: ["Cafeterías", "Tiendas", "Alquiler de bicicletas"]
   },
   {
-    name: "Permisos y Licencias",
-    description: "Ingresos por permisos de uso del parque",
-    subcategories: ["Fotografía comercial", "Grabaciones", "Eventos privados"]
+    name: "Eventos", 
+    description: "Ingresos por eventos y actividades especiales",
+    subcategories: ["Conciertos", "Festivales", "Talleres"]
+  },
+  {
+    name: "Alquiler de Espacios",
+    description: "Ingresos por alquiler de instalaciones deportivas y salones", 
+    subcategories: ["Canchas deportivas", "Salones", "Áreas recreativas"]
+  },
+  {
+    name: "Servicios Educativos",
+    description: "Ingresos por talleres, cursos y actividades educativas",
+    subcategories: ["Talleres", "Cursos", "Actividades educativas"]
   }
 ];
 
