@@ -463,6 +463,20 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         Estado Sanitario
       </NavItem>
       <NavItem 
+        href="/admin/trees/environmental" 
+        icon={<Flower2 className="h-5 w-5" />}
+        active={location.startsWith('/admin/trees/environmental')}
+      >
+        Gestión Ambiental
+      </NavItem>
+      <NavItem 
+        href="/admin/trees/technical" 
+        icon={<HardHat className="h-5 w-5" />}
+        active={location.startsWith('/admin/trees/technical')}
+      >
+        Gestión Técnica
+      </NavItem>
+      <NavItem 
         href="/admin/trees/reports" 
         icon={<FileText className="h-5 w-5" />}
         active={location.startsWith('/admin/trees/reports')}
