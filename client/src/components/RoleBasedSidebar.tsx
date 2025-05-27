@@ -566,14 +566,12 @@ const RoleBasedSidebar: React.FC = () => {
       
       <div className="p-3">
         <div className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
-          <UserProfileImage 
-            user={user as any} 
-            size="sm"
-            className="h-8 w-8 rounded-full"
-          />
+          <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-medium">
+            {((user as any)?.fullName || (user as any)?.firstName || 'U')[0].toUpperCase()}
+          </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">
-              {(user as any)?.firstName} {(user as any)?.lastName}
+              {(user as any)?.fullName || `${(user as any)?.firstName} ${(user as any)?.lastName}`}
             </p>
             <p className="text-xs text-gray-500 capitalize">
               {(user as any)?.role}
