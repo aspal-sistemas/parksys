@@ -272,6 +272,48 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       </NavItem>
     </ModuleNav>
 
+    <ModuleNav 
+      title="Concesiones" 
+      icon={<Store className="h-5 w-5" />}
+      value="concessions"
+    >
+      <NavItem 
+        href="/admin/concessions/catalog" 
+        icon={<ListChecks className="h-5 w-5" />}
+        active={location.startsWith('/admin/concessions/catalog')}
+      >
+        Catálogo
+      </NavItem>
+      <NavItem 
+        href="/admin/concessions/contracts" 
+        icon={<FileText className="h-5 w-5" />}
+        active={location.startsWith('/admin/concessions/contracts')}
+      >
+        Contratos
+      </NavItem>
+      <NavItem 
+        href="/admin/concessions/concessionaires" 
+        icon={<Building className="h-5 w-5" />}
+        active={location.startsWith('/admin/concessions/concessionaires')}
+      >
+        Concesionarios
+      </NavItem>
+      <NavItem 
+        href="/admin/concessions/control" 
+        icon={<Shield className="h-5 w-5" />}
+        active={location.startsWith('/admin/concessions/control')}
+      >
+        Control
+      </NavItem>
+      <NavItem 
+        href="/admin/concessions/reports" 
+        icon={<BarChart className="h-5 w-5" />}
+        active={location.startsWith('/admin/concessions/reports')}
+      >
+        Reportes
+      </NavItem>
+    </ModuleNav>
+
     <NavItem 
       href="/admin/settings" 
       icon={<Settings className="h-5 w-5" />}
