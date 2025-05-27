@@ -147,12 +147,12 @@ const VerActividadesPage = () => {
         onValueChange={(value) => setCategoriaActiva(value)}
         className="w-full"
       >
-        <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-6">
+        <TabsList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-1 mb-6 h-auto p-2">
           {CATEGORIAS_ACTIVIDADES.map((categoria) => (
             <TabsTrigger 
               key={categoria.value} 
               value={categoria.value}
-              className="text-xs md:text-sm lg:text-base"
+              className="text-xs sm:text-sm whitespace-normal h-auto py-2 px-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               {categoria.label}
             </TabsTrigger>
