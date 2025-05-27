@@ -131,19 +131,21 @@ export default function CatalogPage() {
     },
   });
 
-  // Mutación para editar categoría de egresos usando una ruta directa
+  // Mutación para editar categoría de egresos
   const editExpenseCategoryMutation = useMutation({
     mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
       console.log("Editando categoría de egresos:", { id, categoryData });
       
-      // Usar el endpoint SQL directo que funciona sin interferencia de Vite
-      return await apiRequest(`/sql-update/expense-category/${id}`, {
-        method: 'POST',
+      return await apiRequest(`/api/expense-categories/${id}`, {
+        method: 'PUT',
         data: categoryData
       });
     },
     onSuccess: () => {
+      // Invalidar y refrescar las queries para asegurar la actualización
       queryClient.invalidateQueries({ queryKey: ['/api/expense-categories'] });
+      queryClient.refetchQueries({ queryKey: ['/api/expense-categories'] });
+      
       toast({
         title: "Categoría actualizada",
         description: "La categoría de egresos se ha actualizado exitosamente.",
