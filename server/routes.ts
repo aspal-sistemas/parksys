@@ -119,8 +119,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerFinanceRoutes(app, apiRouter, isAuthenticated);
   registerFinanceUpdateRoutes(app, apiRouter);
 
-  // Rutas específicas para editar categorías financieras
-  apiRouter.post("/finance/income-categories/:id/edit", async (req: Request, res: Response) => {
+  // Rutas de edición específicas con nombres únicos
+  apiRouter.put("/income-categories/:id", async (req: Request, res: Response) => {
     try {
       const categoryId = parseInt(req.params.id);
       const { name, description } = req.body;
@@ -148,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  apiRouter.post("/finance/expense-categories/:id/edit", async (req: Request, res: Response) => {
+  apiRouter.put("/expense-categories/:id", async (req: Request, res: Response) => {
     try {
       const categoryId = parseInt(req.params.id);
       const { name, description } = req.body;

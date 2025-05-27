@@ -99,27 +99,16 @@ export default function CatalogPage() {
     },
   });
 
-  // Mutación para editar categoría de ingresos
+  // Mutación para editar categoría de ingresos usando apiRequest
   const editIncomeCategoryMutation = useMutation({
     mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
       console.log("Editando categoría de ingresos:", { id, categoryData });
       
-      const response = await fetch(`/api/finance/income-categories/${id}/edit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(categoryData),
+      // Usar el apiRequest ya configurado que funcionará correctamente
+      return await apiRequest(`/income-categories/${id}`, {
+        method: 'PUT',
+        data: categoryData
       });
-      
-      const result = await response.json();
-      console.log("Respuesta del servidor:", result);
-      
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || 'Error actualizando categoría');
-      }
-      
-      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/income-categories'] });
@@ -140,27 +129,16 @@ export default function CatalogPage() {
     },
   });
 
-  // Mutación para editar categoría de egresos
+  // Mutación para editar categoría de egresos usando apiRequest  
   const editExpenseCategoryMutation = useMutation({
     mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
       console.log("Editando categoría de egresos:", { id, categoryData });
       
-      const response = await fetch(`/api/finance/expense-categories/${id}/edit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(categoryData),
+      // Usar el apiRequest ya configurado que funcionará correctamente
+      return await apiRequest(`/expense-categories/${id}`, {
+        method: 'PUT',
+        data: categoryData
       });
-      
-      const result = await response.json();
-      console.log("Respuesta del servidor:", result);
-      
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || 'Error actualizando categoría');
-      }
-      
-      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/expense-categories'] });
