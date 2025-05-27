@@ -185,6 +185,13 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       value="operations"
     >
       <NavItem 
+        href="/admin/operations/dashboard" 
+        icon={<BarChart className="h-5 w-5" />}
+        active={location === '/admin/operations/dashboard'}
+      >
+        Dashboard
+      </NavItem>
+      <NavItem 
         href="/admin/parks" 
         icon={<Map className="h-5 w-5" />}
         active={location === '/admin/parks'}
@@ -192,46 +199,18 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         Parques
       </NavItem>
       <NavItem 
-        href="/admin/activities" 
-        icon={<Calendar className="h-5 w-5" />}
-        active={location === '/admin/activities'}
+        href="/admin/amenities" 
+        icon={<Package className="h-5 w-5" />}
+        active={location === '/admin/amenities'}
       >
-        Actividades
-      </NavItem>
-      <NavItem 
-        href="/admin/volunteers" 
-        icon={<Users className="h-5 w-5" />}
-        active={location === '/admin/volunteers'}
-      >
-        Voluntarios
-      </NavItem>
-      <NavItem 
-        href="/admin/instructors" 
-        icon={<GraduationCap className="h-5 w-5" />}
-        active={location === '/admin/instructors'}
-      >
-        Instructores
-      </NavItem>
-      <NavItem 
-        href="/admin/events" 
-        icon={<CalendarDays className="h-5 w-5" />}
-        active={location === '/admin/events'}
-      >
-        Eventos
-      </NavItem>
-      <NavItem 
-        href="/admin/maintenance" 
-        icon={<Wrench className="h-5 w-5" />}
-        active={location === '/admin/maintenance'}
-      >
-        Mantenimiento
+        Amenidades
       </NavItem>
       <NavItem 
         href="/admin/incidents" 
         icon={<AlertTriangle className="h-5 w-5" />}
-        active={location === '/admin/incidents'}
+        active={location.startsWith('/admin/incidents')}
       >
-        Incidentes
+        Incidencias
       </NavItem>
     </ModuleNav>
 
