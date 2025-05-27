@@ -118,7 +118,11 @@ const UserProfileImage: React.FC<UserProfileImageProps> = ({
 
   return (
     <Avatar className={`${sizeClass} ${className}`}>
-      <AvatarImage src={imageUrl} alt={name || `Usuario ${userId}`} />
+      <AvatarImage 
+        src={imageUrl} 
+        alt={name || `Usuario ${userId}`}
+        className="object-cover w-full h-full"
+      />
       <AvatarFallback>
         <UserAvatar userId={userId} role={role} name={name} className={className} size={size} />
       </AvatarFallback>
