@@ -74,7 +74,8 @@ import {
   ChevronDown,
   Briefcase,
   UserCog,
-  Zap
+  Zap,
+  Book
 } from 'lucide-react';
 
 interface NavItemProps {
