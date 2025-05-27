@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Shield, 
   Save, 
@@ -25,10 +25,12 @@ import {
   TrendingDown,
   Tag,
   Map,
-  User
+  User,
+  Check
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { cn } from '@/lib/utils';
 
 // Definición de todos los módulos y submenús del sistema
 const SYSTEM_MODULES = {
@@ -80,15 +82,22 @@ const SYSTEM_MODULES = {
 };
 
 const ROLES = [
-  { id: 'admin', name: 'Administrador', color: 'bg-red-100 text-red-800' },
-  { id: 'director', name: 'Director', color: 'bg-purple-100 text-purple-800' },
-  { id: 'manager', name: 'Manager', color: 'bg-blue-100 text-blue-800' },
-  { id: 'instructor', name: 'Instructor', color: 'bg-green-100 text-green-800' },
-  { id: 'supervisor', name: 'Supervisor', color: 'bg-yellow-100 text-yellow-800' }
+  { id: 'admin', name: 'Administrador', color: 'bg-red-100 text-red-800', icon: Shield },
+  { id: 'director', name: 'Director', color: 'bg-purple-100 text-purple-800', icon: User },
+  { id: 'manager', name: 'Manager', color: 'bg-blue-100 text-blue-800', icon: Users },
+  { id: 'instructor', name: 'Instructor', color: 'bg-green-100 text-green-800', icon: GraduationCap },
+  { id: 'supervisor', name: 'Supervisor', color: 'bg-yellow-100 text-yellow-800', icon: Activity },
+  { id: 'user', name: 'Usuario', color: 'bg-gray-100 text-gray-800', icon: User },
+  { id: 'ciudadano', name: 'Ciudadano', color: 'bg-indigo-100 text-indigo-800', icon: User },
+  { id: 'voluntario', name: 'Voluntario', color: 'bg-teal-100 text-teal-800', icon: User },
+  { id: 'guardaparques', name: 'Guardaparques', color: 'bg-emerald-100 text-emerald-800', icon: Shield },
+  { id: 'guardia', name: 'Guardia', color: 'bg-orange-100 text-orange-800', icon: Shield },
+  { id: 'concesionario', name: 'Concesionario', color: 'bg-pink-100 text-pink-800', icon: User }
 ];
 
 const AdminPermissions = () => {
   const [permissions, setPermissions] = useState<Record<string, Record<string, boolean>>>({});
+  const [selectedRole, setSelectedRole] = useState<string>('admin');
   const [hasChanges, setHasChanges] = useState(false);
   const queryClient = useQueryClient();
 
@@ -110,8 +119,7 @@ const AdminPermissions = () => {
     mutationFn: async (newPermissions: Record<string, Record<string, boolean>>) => {
       return apiRequest('/api/role-permissions', {
         method: 'PUT',
-        body: JSON.stringify(newPermissions),
-        headers: { 'Content-Type': 'application/json' }
+        data: newPermissions
       });
     },
     onSuccess: () => {
@@ -127,22 +135,22 @@ const AdminPermissions = () => {
     }
   });
 
-  const togglePermission = (role: string, module: string, submodule?: string) => {
+  const togglePermission = (module: string, submodule?: string) => {
     const permissionKey = submodule ? `${module}.${submodule}` : module;
     
     setPermissions(prev => ({
       ...prev,
-      [role]: {
-        ...prev[role],
-        [permissionKey]: !prev[role]?.[permissionKey]
+      [selectedRole]: {
+        ...prev[selectedRole],
+        [permissionKey]: !prev[selectedRole]?.[permissionKey]
       }
     }));
     setHasChanges(true);
   };
 
-  const hasPermission = (role: string, module: string, submodule?: string) => {
+  const hasPermission = (module: string, submodule?: string) => {
     const permissionKey = submodule ? `${module}.${submodule}` : module;
-    return permissions[role]?.[permissionKey] || false;
+    return permissions[selectedRole]?.[permissionKey] || false;
   };
 
   const resetPermissions = () => {
@@ -156,122 +164,122 @@ const AdminPermissions = () => {
     savePermissionsMutation.mutate(permissions);
   };
 
-  const getModulePermissionCount = (role: string, moduleKey: string) => {
-    const module = SYSTEM_MODULES[moduleKey as keyof typeof SYSTEM_MODULES];
-    if (!module) return { granted: 0, total: 0 };
-
-    let granted = 0;
-    let total = 0;
-
-    if (Object.keys(module.children || {}).length === 0) {
-      // Module without children
-      total = 1;
-      granted = hasPermission(role, moduleKey) ? 1 : 0;
-    } else {
-      // Module with children
-      Object.keys(module.children || {}).forEach(subKey => {
-        total++;
-        if (hasPermission(role, moduleKey, subKey)) {
-          granted++;
-        }
-      });
-    }
-
-    return { granted, total };
+  const getSelectedRoleInfo = () => {
+    return ROLES.find(role => role.id === selectedRole);
   };
 
-  const renderPermissionMatrix = () => (
-    <div className="space-y-6">
-      {Object.entries(SYSTEM_MODULES).map(([moduleKey, module]) => {
-        const IconComponent = module.icon;
-        
-        return (
-          <Card key={moduleKey}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconComponent className="w-5 h-5" />
-                {module.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {Object.keys(module.children || {}).length === 0 ? (
-                  // Module without children
-                  <div className="grid grid-cols-5 gap-4 items-center">
-                    <div className="font-medium text-gray-700">Acceso completo</div>
-                    {ROLES.map(role => (
-                      <div key={role.id} className="flex justify-center">
-                        <Checkbox
-                          checked={hasPermission(role.id, moduleKey)}
-                          onCheckedChange={() => togglePermission(role.id, moduleKey)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  // Module with children
-                  Object.entries(module.children || {}).map(([subKey, subModule]) => {
-                    const SubIconComponent = subModule.icon;
-                    return (
-                      <div key={subKey} className="grid grid-cols-5 gap-4 items-center">
-                        <div className="flex items-center gap-2 font-medium text-gray-700">
-                          <SubIconComponent className="w-4 h-4" />
-                          {subModule.name}
-                        </div>
-                        {ROLES.map(role => (
-                          <div key={role.id} className="flex justify-center">
-                            <Checkbox
-                              checked={hasPermission(role.id, moduleKey, subKey)}
-                              onCheckedChange={() => togglePermission(role.id, moduleKey, subKey)}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })
+  const renderRoleSelector = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-xl">Seleccionar Rol</CardTitle>
+        <CardDescription>
+          Elige el rol del cual deseas configurar los permisos de acceso
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {ROLES.map(role => {
+            const IconComponent = role.icon;
+            return (
+              <Button
+                key={role.id}
+                variant={selectedRole === role.id ? "default" : "outline"}
+                className={cn(
+                  "h-auto p-4 flex flex-col items-center gap-2 transition-all",
+                  selectedRole === role.id && "ring-2 ring-blue-500"
                 )}
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
+                onClick={() => setSelectedRole(role.id)}
+              >
+                <IconComponent className="w-6 h-6" />
+                <span className="text-xs font-medium text-center">{role.name}</span>
+                {selectedRole === role.id && (
+                  <Check className="w-4 h-4 text-green-600" />
+                )}
+              </Button>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 
-  const renderRolesSummary = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {ROLES.map(role => (
-        <Card key={role.id}>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <Badge className={role.color}>{role.name}</Badge>
-              <User className="w-5 h-5" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
+  const renderPermissionsPanel = () => {
+    const roleInfo = getSelectedRoleInfo();
+    if (!roleInfo) return null;
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <Badge className={roleInfo.color} variant="secondary">
+              <roleInfo.icon className="w-4 h-4 mr-2" />
+              {roleInfo.name}
+            </Badge>
+            <span className="text-lg">Configuración de Permisos</span>
+          </CardTitle>
+          <CardDescription>
+            Configura qué secciones del dashboard puede acceder este rol
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[600px] pr-4">
+            <div className="space-y-6">
               {Object.entries(SYSTEM_MODULES).map(([moduleKey, module]) => {
-                const { granted, total } = getModulePermissionCount(role.id, moduleKey);
                 const IconComponent = module.icon;
                 
                 return (
-                  <div key={moduleKey} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <IconComponent className="w-4 h-4" />
-                      <span className="text-sm">{module.name}</span>
+                  <div key={moduleKey} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <IconComponent className="w-6 h-6 text-blue-600" />
+                        <div>
+                          <h3 className="font-semibold text-lg">{module.name}</h3>
+                          <p className="text-sm text-gray-600">
+                            {module.path ? `Ruta: ${module.path}` : 'Módulo principal'}
+                          </p>
+                        </div>
+                      </div>
+                      {Object.keys(module.children || {}).length === 0 && (
+                        <Checkbox
+                          checked={hasPermission(moduleKey)}
+                          onCheckedChange={() => togglePermission(moduleKey)}
+                          className="h-5 w-5"
+                        />
+                      )}
                     </div>
-                    <Badge variant={granted === total ? 'default' : granted > 0 ? 'secondary' : 'outline'}>
-                      {granted}/{total}
-                    </Badge>
+                    
+                    {Object.keys(module.children || {}).length > 0 && (
+                      <div className="ml-6 space-y-3">
+                        {Object.entries(module.children || {}).map(([subKey, subModule]: [string, any]) => {
+                          const SubIconComponent = subModule.icon;
+                          return (
+                            <div key={subKey} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                              <div className="flex items-center gap-3">
+                                <SubIconComponent className="w-5 h-5 text-gray-600" />
+                                <div>
+                                  <span className="font-medium">{subModule.name}</span>
+                                  <p className="text-sm text-gray-500">{subModule.path}</p>
+                                </div>
+                              </div>
+                              <Checkbox
+                                checked={hasPermission(moduleKey, subKey)}
+                                onCheckedChange={() => togglePermission(moduleKey, subKey)}
+                                className="h-5 w-5"
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
+          </ScrollArea>
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -293,7 +301,7 @@ const AdminPermissions = () => {
               Gestión de Permisos
             </h1>
             <p className="text-gray-600 mt-2">
-              Configura qué secciones del panel puede acceder cada rol del sistema
+              Selecciona un rol y configura qué secciones del dashboard puede acceder
             </p>
           </div>
           
@@ -319,50 +327,11 @@ const AdminPermissions = () => {
           )}
         </div>
 
-        <Tabs defaultValue="matrix" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="matrix">Matriz de Permisos</TabsTrigger>
-            <TabsTrigger value="summary">Resumen por Rol</TabsTrigger>
-          </TabsList>
+        {/* Barra horizontal de selección de roles */}
+        {renderRoleSelector()}
 
-          <TabsContent value="matrix" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Matriz de Permisos por Módulo</CardTitle>
-                <CardDescription>
-                  Marca las casillas para otorgar acceso a cada sección del sistema por rol
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Headers */}
-                <div className="grid grid-cols-5 gap-4 items-center mb-4 pb-2 border-b">
-                  <div className="font-semibold text-gray-900">Módulo / Sección</div>
-                  {ROLES.map(role => (
-                    <div key={role.id} className="text-center">
-                      <Badge className={role.color}>{role.name}</Badge>
-                    </div>
-                  ))}
-                </div>
-                
-                {renderPermissionMatrix()}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="summary" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Resumen de Permisos por Rol</CardTitle>
-                <CardDescription>
-                  Visualiza cuántos módulos tiene acceso cada rol
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {renderRolesSummary()}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        {/* Panel de configuración de permisos */}
+        {renderPermissionsPanel()}
 
         {hasChanges && (
           <Card className="border-yellow-200 bg-yellow-50">
@@ -371,7 +340,7 @@ const AdminPermissions = () => {
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-yellow-600" />
                   <span className="text-yellow-800 font-medium">
-                    Hay cambios sin guardar en los permisos
+                    Hay cambios sin guardar en los permisos del rol {getSelectedRoleInfo()?.name}
                   </span>
                 </div>
                 <div className="flex gap-2">
