@@ -113,20 +113,30 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   });
 
   // Crear nueva categoría de egresos
-  apiRouter.post("/expense-categories", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.post("/expense-categories", async (req: Request, res: Response) => {
+    console.log("=== INICIANDO CREACIÓN DE CATEGORÍA DE EGRESOS ===");
+    console.log("Body recibido:", req.body);
+    
     try {
       const { name, description } = req.body;
       
-      if (!name) {
+      if (!name || name.trim() === '') {
+        console.log("Error: nombre vacío o no proporcionado");
         return res.status(400).json({ message: "El nombre de la categoría es requerido" });
       }
 
-      // Generar código único para la categoría
+      console.log("Nombre válido:", name);
+
+      // Obtener el siguiente número para el código
       const existingCategories = await db.select().from(expenseCategories);
+      console.log("Total de categorías de egresos existentes:", existingCategories.length);
+      
       const nextNumber = existingCategories.length + 1;
       const code = `EGR${nextNumber.toString().padStart(3, '0')}`;
+      console.log("Código generado:", code);
 
-      const newCategory = await db.insert(expenseCategories).values({
+      // Insertar usando Drizzle ORM
+      const [newCategory] = await db.insert(expenseCategories).values({
         code,
         name: name.trim(),
         description: description?.trim() || '',
@@ -136,11 +146,16 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
         createdAt: new Date(),
         updatedAt: new Date()
       }).returning();
-
-      res.status(201).json(newCategory[0]);
+      
+      console.log("Categoría de egresos creada exitosamente:", newCategory);
+      res.status(201).json(newCategory);
+      
     } catch (error) {
       console.error("Error al crear categoría de egresos:", error);
-      res.status(500).json({ message: "Error al crear categoría de egresos" });
+      res.status(500).json({ 
+        message: "Error al crear categoría de egresos", 
+        error: error.message 
+      });
     }
   });
 
