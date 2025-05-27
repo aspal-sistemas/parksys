@@ -191,15 +191,43 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         Parques
       </NavItem>
       <NavItem 
-        href="/admin/assets" 
-        icon={<Box className="h-5 w-5" />}
-        active={location === '/admin/assets'}
+        href="/admin/activities" 
+        icon={<Calendar className="h-5 w-5" />}
+        active={location === '/admin/activities'}
       >
-        Activos
+        Actividades
+      </NavItem>
+      <NavItem 
+        href="/admin/volunteers" 
+        icon={<Users className="h-5 w-5" />}
+        active={location === '/admin/volunteers'}
+      >
+        Voluntarios
+      </NavItem>
+      <NavItem 
+        href="/admin/instructors" 
+        icon={<GraduationCap className="h-5 w-5" />}
+        active={location === '/admin/instructors'}
+      >
+        Instructores
+      </NavItem>
+      <NavItem 
+        href="/admin/events" 
+        icon={<CalendarDays className="h-5 w-5" />}
+        active={location === '/admin/events'}
+      >
+        Eventos
+      </NavItem>
+      <NavItem 
+        href="/admin/maintenance" 
+        icon={<Wrench className="h-5 w-5" />}
+        active={location === '/admin/maintenance'}
+      >
+        Mantenimiento
       </NavItem>
       <NavItem 
         href="/admin/incidents" 
-        icon={<AlertCircle className="h-5 w-5" />}
+        icon={<AlertTriangle className="h-5 w-5" />}
         active={location === '/admin/incidents'}
       >
         Incidentes
