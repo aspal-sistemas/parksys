@@ -71,6 +71,17 @@ export default function CatalogPage() {
     parkId: ""
   });
 
+  // Estados para tipos de proveedores
+  const [isNewProviderTypeOpen, setIsNewProviderTypeOpen] = useState(false);
+  const [isEditProviderTypeOpen, setIsEditProviderTypeOpen] = useState(false);
+  const [selectedProviderTypeToEdit, setSelectedProviderTypeToEdit] = useState(null);
+  const [newProviderType, setNewProviderType] = useState({
+    name: "",
+    description: "",
+    code: "",
+    isActive: true
+  });
+
   // Obtener categorías de ingresos
   const { data: incomeCategories, isLoading: incomeCategoriesLoading } = useQuery({
     queryKey: ['/api/income-categories'],
@@ -95,6 +106,12 @@ export default function CatalogPage() {
   const { data: parks } = useQuery({
     queryKey: ['/api/parks'],
   });
+
+  // Obtener tipos de proveedores
+  const providerTypesQuery = useQuery({
+    queryKey: ['/api/provider-types'],
+  });
+  const { data: providerTypes } = providerTypesQuery;
 
   // Mutación para crear categoría de ingresos
   const createIncomeCategoryMutation = useMutation({
@@ -281,6 +298,37 @@ export default function CatalogPage() {
       toast({
         title: "Error",
         description: "No se pudo crear el registro de ingreso. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutación para crear tipo de proveedor
+  const createProviderTypeMutation = useMutation({
+    mutationFn: async (providerTypeData: any) => {
+      return await apiRequest('/api/provider-types', {
+        method: 'POST',
+        data: providerTypeData
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/provider-types'] });
+      toast({
+        title: "Tipo de proveedor creado",
+        description: "El tipo de proveedor se ha creado exitosamente.",
+      });
+      setIsNewProviderTypeOpen(false);
+      setNewProviderType({
+        name: "",
+        description: "",
+        code: "",
+        isActive: true
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo crear el tipo de proveedor. Inténtalo de nuevo.",
         variant: "destructive",
       });
     },
@@ -828,6 +876,134 @@ export default function CatalogPage() {
                         <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-500">No hay proveedores registrados</p>
                         <p className="text-sm text-gray-400 mt-1">Crea un nuevo proveedor para comenzar</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Pestaña de Tipos de Proveedores */}
+          <TabsContent value="tipos-proveedores" className="space-y-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                  <Building2 className="h-6 w-6" />
+                  Tipos de Proveedores
+                </CardTitle>
+                <Dialog open={isNewProviderTypeOpen} onOpenChange={setIsNewProviderTypeOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nuevo Tipo
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>Crear Nuevo Tipo de Proveedor</DialogTitle>
+                      <DialogDescription>
+                        Define un nuevo tipo de proveedor para categorizar mejor los servicios.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div>
+                        <Label htmlFor="providerTypeName">Nombre del Tipo *</Label>
+                        <Input
+                          id="providerTypeName"
+                          value={newProviderType.name}
+                          onChange={(e) => setNewProviderType({...newProviderType, name: e.target.value})}
+                          placeholder="Ej: Servicios de Jardinería, Equipos Deportivos, etc."
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="providerTypeDescription">Descripción</Label>
+                        <Textarea
+                          id="providerTypeDescription"
+                          value={newProviderType.description}
+                          onChange={(e) => setNewProviderType({...newProviderType, description: e.target.value})}
+                          placeholder="Describe qué tipo de servicios o productos incluye esta categoría"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="providerTypeCode">Código</Label>
+                          <Input
+                            id="providerTypeCode"
+                            value={newProviderType.code}
+                            onChange={(e) => setNewProviderType({...newProviderType, code: e.target.value})}
+                            placeholder="TP001"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="providerTypeStatus">Estado</Label>
+                          <Select 
+                            value={newProviderType.isActive ? "active" : "inactive"} 
+                            onValueChange={(value) => setNewProviderType({...newProviderType, isActive: value === "active"})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar estado" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active">Activo</SelectItem>
+                              <SelectItem value="inactive">Inactivo</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setIsNewProviderTypeOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={() => createProviderTypeMutation.mutate(newProviderType)}>
+                        Crear Tipo
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                {providerTypesQuery.isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {providerTypes && providerTypes.length > 0 ? (
+                      providerTypes.map((type: any) => (
+                        <div key={type.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-3 h-3 rounded-full ${type.isActive ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                              <div>
+                                <h3 className="font-semibold">{type.name}</h3>
+                                {type.code && <span className="text-sm text-gray-500">Código: {type.code}</span>}
+                              </div>
+                            </div>
+                            {type.description && (
+                              <p className="text-sm text-gray-600 mt-2">{type.description}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                setSelectedProviderTypeToEdit(type);
+                                setIsEditProviderTypeOpen(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">No hay tipos de proveedores disponibles</p>
+                        <p className="text-sm text-gray-400 mt-1">Crea un nuevo tipo para comenzar</p>
                       </div>
                     )}
                   </div>
