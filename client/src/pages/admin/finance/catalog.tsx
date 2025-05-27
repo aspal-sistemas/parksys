@@ -102,23 +102,24 @@ export default function CatalogPage() {
   // Mutación para editar categoría de ingresos
   const editIncomeCategoryMutation = useMutation({
     mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
-      // Usar SQL directo para la actualización
-      const response = await fetch('/api/execute-sql', {
+      console.log("Editando categoría de ingresos:", { id, categoryData });
+      
+      const response = await fetch(`/api/finance/income-categories/${id}/edit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          query: `UPDATE income_categories SET name = $1, description = $2, updated_at = NOW() WHERE id = $3 RETURNING *`,
-          params: [categoryData.name, categoryData.description, id]
-        }),
+        body: JSON.stringify(categoryData),
       });
       
-      if (!response.ok) {
-        throw new Error('Error actualizando categoría');
+      const result = await response.json();
+      console.log("Respuesta del servidor:", result);
+      
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Error actualizando categoría');
       }
       
-      return response.json();
+      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/income-categories'] });
@@ -142,23 +143,24 @@ export default function CatalogPage() {
   // Mutación para editar categoría de egresos
   const editExpenseCategoryMutation = useMutation({
     mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
-      // Usar SQL directo para la actualización
-      const response = await fetch('/api/execute-sql', {
+      console.log("Editando categoría de egresos:", { id, categoryData });
+      
+      const response = await fetch(`/api/finance/expense-categories/${id}/edit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          query: `UPDATE expense_categories SET name = $1, description = $2, updated_at = NOW() WHERE id = $3 RETURNING *`,
-          params: [categoryData.name, categoryData.description, id]
-        }),
+        body: JSON.stringify(categoryData),
       });
       
-      if (!response.ok) {
-        throw new Error('Error actualizando categoría');
+      const result = await response.json();
+      console.log("Respuesta del servidor:", result);
+      
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Error actualizando categoría');
       }
       
-      return response.json();
+      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/expense-categories'] });

@@ -119,30 +119,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerFinanceRoutes(app, apiRouter, isAuthenticated);
   registerFinanceUpdateRoutes(app, apiRouter);
 
-  // Endpoint SQL directo para actualizaciones críticas
-  apiRouter.post("/execute-sql", async (req: Request, res: Response) => {
+  // Rutas específicas para editar categorías financieras
+  apiRouter.post("/finance/income-categories/:id/edit", async (req: Request, res: Response) => {
     try {
-      const { query, params } = req.body;
+      const categoryId = parseInt(req.params.id);
+      const { name, description } = req.body;
       
-      console.log("=== EJECUTANDO SQL DIRECTO ===");
-      console.log("Query:", query);
-      console.log("Params:", params);
+      console.log("=== EDITANDO CATEGORÍA DE INGRESOS ===");
+      console.log("ID:", categoryId, "Datos:", { name, description });
       
-      const result = await db.execute(query, params || []);
+      const query = `UPDATE income_categories SET name = $1, description = $2, updated_at = NOW() WHERE id = $3 RETURNING *`;
+      const result = await db.execute(query, [name, description, categoryId]);
       
-      console.log("Resultado SQL:", result);
+      console.log("Resultado:", result.rows[0]);
       
       res.json({
         success: true,
-        data: result.rows,
-        rowCount: result.rowCount
+        data: result.rows[0]
       });
       
     } catch (error) {
-      console.error("Error ejecutando SQL:", error);
+      console.error("Error editando categoría de ingresos:", error);
       res.status(500).json({
         success: false,
-        message: "Error ejecutando consulta SQL",
+        message: "Error editando categoría",
+        error: error.message
+      });
+    }
+  });
+
+  apiRouter.post("/finance/expense-categories/:id/edit", async (req: Request, res: Response) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const { name, description } = req.body;
+      
+      console.log("=== EDITANDO CATEGORÍA DE EGRESOS ===");
+      console.log("ID:", categoryId, "Datos:", { name, description });
+      
+      const query = `UPDATE expense_categories SET name = $1, description = $2, updated_at = NOW() WHERE id = $3 RETURNING *`;
+      const result = await db.execute(query, [name, description, categoryId]);
+      
+      console.log("Resultado:", result.rows[0]);
+      
+      res.json({
+        success: true,
+        data: result.rows[0]
+      });
+      
+    } catch (error) {
+      console.error("Error editando categoría de egresos:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error editando categoría",
         error: error.message
       });
     }
