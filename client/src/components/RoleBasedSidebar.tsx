@@ -206,6 +206,48 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
     </ModuleNav>
 
     <ModuleNav 
+      title="Activos" 
+      icon={<Package className="h-5 w-5" />}
+      value="assets"
+    >
+      <NavItem 
+        href="/admin/assets" 
+        icon={<Package className="h-5 w-5" />}
+        active={location === '/admin/assets'}
+      >
+        Gestión
+      </NavItem>
+      <NavItem 
+        href="/admin/assets/inventory" 
+        icon={<Archive className="h-5 w-5" />}
+        active={location.startsWith('/admin/assets/inventory')}
+      >
+        Inventario
+      </NavItem>
+      <NavItem 
+        href="/admin/assets/map" 
+        icon={<Map className="h-5 w-5" />}
+        active={location === '/admin/assets/map'}
+      >
+        Mapa
+      </NavItem>
+      <NavItem 
+        href="/admin/assets/maintenance" 
+        icon={<Wrench className="h-5 w-5" />}
+        active={location.startsWith('/admin/assets/maintenance')}
+      >
+        Mantenimiento
+      </NavItem>
+      <NavItem 
+        href="/admin/assets/assignments" 
+        icon={<UserCheck className="h-5 w-5" />}
+        active={location.startsWith('/admin/assets/assignments')}
+      >
+        Asignaciones
+      </NavItem>
+    </ModuleNav>
+
+    <ModuleNav 
       title="Finanzas" 
       icon={<DollarSign className="h-5 w-5" />}
       value="finance"
