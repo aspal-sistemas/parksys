@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import UserProfileImage from '@/components/UserProfileImage';
+import UserActivityCalendar from '@/components/UserActivityCalendar';
 import { 
   User, 
   Mail, 
@@ -435,16 +436,13 @@ export default function ProfilePage() {
           <TabsContent value="activity" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Actividad Reciente</CardTitle>
+                <CardTitle>Mi Calendario de Actividades</CardTitle>
                 <CardDescription>
-                  Resumen de tu actividad en la plataforma
+                  Gestiona las actividades que te interesan y agrégalas a tu calendario personal
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>El historial de actividad estará disponible próximamente</p>
-                </div>
+                <UserActivityCalendar userId={(user as any)?.id} />
               </CardContent>
             </Card>
           </TabsContent>
