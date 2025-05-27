@@ -99,25 +99,24 @@ export default function CatalogPage() {
     },
   });
 
-  // Mutación para editar categoría de ingresos usando SQL directo
+  // Mutación para editar categoría de ingresos
   const editIncomeCategoryMutation = useMutation({
     mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
       console.log("Editando categoría de ingresos:", { id, categoryData });
       
-      // Usar el endpoint SQL directo que funciona sin interferencia de Vite
-      return await apiRequest(`/sql-update/income-category/${id}`, {
-        method: 'POST',
+      return await apiRequest(`/api/income-categories/${id}`, {
+        method: 'PUT',
         data: categoryData
       });
     },
     onSuccess: () => {
-      // Invalidar múltiples queries para asegurar la actualización
+      // Invalidar y refrescar las queries para asegurar la actualización
       queryClient.invalidateQueries({ queryKey: ['/api/income-categories'] });
       queryClient.refetchQueries({ queryKey: ['/api/income-categories'] });
       
       toast({
         title: "Categoría actualizada",
-        description: "La categoría de ingresos se ha actualizada exitosamente.",
+        description: "La categoría de ingresos se ha actualizado exitosamente.",
       });
       setIsEditCategoryOpen(false);
       setSelectedCategoryToEdit(null);
