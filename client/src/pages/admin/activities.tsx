@@ -412,19 +412,9 @@ const AdminActivities = () => {
             </Select>
             
             {filterPark && (
-              <NewActivityForm
-                parkId={parseInt(filterPark)}
-                parkName={getParkName(parseInt(filterPark))}
-                onSuccess={() => {
-                  setShowAddDialog(false);
-                  refetchActivities();
-                  toast({
-                    title: "Actividad creada",
-                    description: "La actividad ha sido creada exitosamente.",
-                  });
-                }}
-                onCancel={() => setShowAddDialog(false)}
-              />
+              <div className="p-4 text-center">
+                <p className="text-gray-600">Formulario de actividad temporalmente no disponible</p>
+              </div>
             )}
             
             {!filterPark && (
