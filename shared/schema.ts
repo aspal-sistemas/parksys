@@ -1161,14 +1161,6 @@ export const providersRelations = relations(providers, ({ one, many }) => ({
 
 // Relaciones para registros de ingresos
 export const incomeRecordsRelations = relations(incomeRecords, ({ one }) => ({
-  category: one(incomeCategories, {
-    fields: [incomeRecords.categoryId],
-    references: [incomeCategories.id]
-  }),
-  subcategory: one(incomeSubcategories, {
-    fields: [incomeRecords.subcategoryId],
-    references: [incomeSubcategories.id]
-  }),
   park: one(parks, {
     fields: [incomeRecords.parkId],
     references: [parks.id]

@@ -10,13 +10,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Plus, 
   DollarSign, 
   Edit, 
   Tag,
-  AlertCircle
+  AlertCircle,
+  Building2,
+  Receipt,
+  Calendar,
+  Star,
+  Phone,
+  Mail,
+  MapPin
 } from "lucide-react";
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
@@ -25,6 +33,8 @@ export default function CatalogPage() {
   const [isNewCategoryOpen, setIsNewCategoryOpen] = useState(false);
   const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
   const [selectedCategoryToEdit, setSelectedCategoryToEdit] = useState<any>(null);
+  const [isNewProviderOpen, setIsNewProviderOpen] = useState(false);
+  const [isNewIncomeRecordOpen, setIsNewIncomeRecordOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -35,6 +45,32 @@ export default function CatalogPage() {
     type: "ingreso"
   });
 
+  // Estados del formulario de nuevo proveedor
+  const [newProvider, setNewProvider] = useState({
+    name: "",
+    businessName: "",
+    contactPerson: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    providerType: "",
+    notes: ""
+  });
+
+  // Estados del formulario de nuevo registro de ingreso
+  const [newIncomeRecord, setNewIncomeRecord] = useState({
+    categoryId: "",
+    description: "",
+    source: "",
+    amount: "",
+    incomeDate: "",
+    paymentMethod: "",
+    notes: "",
+    parkId: ""
+  });
+
   // Obtener categorías de ingresos
   const { data: incomeCategories, isLoading: incomeCategoriesLoading } = useQuery({
     queryKey: ['/api/income-categories'],
@@ -43,6 +79,21 @@ export default function CatalogPage() {
   // Obtener categorías de egresos
   const { data: expenseCategories, isLoading: expenseCategoriesLoading } = useQuery({
     queryKey: ['/api/expense-categories'],
+  });
+
+  // Obtener proveedores
+  const { data: providers, isLoading: providersLoading } = useQuery({
+    queryKey: ['/api/providers'],
+  });
+
+  // Obtener registros de ingresos
+  const { data: incomeRecords, isLoading: incomeRecordsLoading } = useQuery({
+    queryKey: ['/api/income-records'],
+  });
+
+  // Obtener parques
+  const { data: parks } = useQuery({
+    queryKey: ['/api/parks'],
   });
 
   // Mutación para crear categoría de ingresos
@@ -163,6 +214,78 @@ export default function CatalogPage() {
     },
   });
 
+  // Mutación para crear proveedor
+  const createProviderMutation = useMutation({
+    mutationFn: async (providerData: any) => {
+      return await apiRequest('/api/providers', {
+        method: 'POST',
+        data: providerData
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/providers'] });
+      toast({
+        title: "Proveedor creado",
+        description: "El proveedor se ha creado exitosamente.",
+      });
+      setIsNewProviderOpen(false);
+      setNewProvider({
+        name: "",
+        businessName: "",
+        contactPerson: "",
+        email: "",
+        phone: "",
+        address: "",
+        city: "",
+        state: "",
+        providerType: "",
+        notes: ""
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo crear el proveedor. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutación para crear registro de ingreso
+  const createIncomeRecordMutation = useMutation({
+    mutationFn: async (incomeData: any) => {
+      return await apiRequest('/api/income-records', {
+        method: 'POST',
+        data: incomeData
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/income-records'] });
+      toast({
+        title: "Registro de ingreso creado",
+        description: "El registro de ingreso se ha creado exitosamente.",
+      });
+      setIsNewIncomeRecordOpen(false);
+      setNewIncomeRecord({
+        categoryId: "",
+        description: "",
+        source: "",
+        amount: "",
+        incomeDate: "",
+        paymentMethod: "",
+        notes: "",
+        parkId: ""
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo crear el registro de ingreso. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleCreateCategory = () => {
     if (!newCategory.name.trim()) {
       toast({
@@ -271,9 +394,11 @@ export default function CatalogPage() {
         </div>
 
         <Tabs defaultValue="ingresos" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="ingresos">Categorías de Ingresos</TabsTrigger>
             <TabsTrigger value="egresos">Categorías de Egresos</TabsTrigger>
+            <TabsTrigger value="proveedores">Proveedores</TabsTrigger>
+            <TabsTrigger value="registros-ingresos">Registros de Ingresos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="ingresos" className="space-y-4">
