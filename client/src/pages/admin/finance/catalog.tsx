@@ -102,10 +102,23 @@ export default function CatalogPage() {
   // Mutación para editar categoría de ingresos
   const editIncomeCategoryMutation = useMutation({
     mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
-      return apiRequest(`/api/income-categories/${id}`, {
-        method: 'PUT',
-        data: categoryData,
+      // Usar SQL directo para la actualización
+      const response = await fetch('/api/execute-sql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: `UPDATE income_categories SET name = $1, description = $2, updated_at = NOW() WHERE id = $3 RETURNING *`,
+          params: [categoryData.name, categoryData.description, id]
+        }),
       });
+      
+      if (!response.ok) {
+        throw new Error('Error actualizando categoría');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/income-categories'] });
@@ -129,8 +142,8 @@ export default function CatalogPage() {
   // Mutación para editar categoría de egresos
   const editExpenseCategoryMutation = useMutation({
     mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
-      return apiRequest(`/api/expense-categories/${id}`, {
-        method: 'PUT',
+      return apiRequest(`/api/expense-categories/${id}/update`, {
+        method: 'POST',
         data: categoryData,
       });
     },
