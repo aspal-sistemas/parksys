@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { isAuthenticated, hasMunicipalityAccess, hasParkAccess } from "./middleware/auth";
+import { isAuthenticated, hasMunicipalityAccess, hasParkAccess, requirePermission, requireAdmin } from "./middleware/auth";
 import { handleProfileImageUpload } from "./api/profileImageUpload";
 import { saveProfileImage, getProfileImage } from "./profileImageCache";
 import { db, pool } from "./db";
@@ -2087,7 +2087,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  apiRouter.post("/role-permissions", async (req: Request, res: Response) => {
+  apiRouter.post("/role-permissions", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
     try {
       const { permissions } = req.body;
       

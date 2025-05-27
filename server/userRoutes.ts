@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { storage } from './storage';
+import { isAuthenticated, requirePermission, requireAdmin } from './middleware/auth';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { fromZodError } from 'zod-validation-error';
