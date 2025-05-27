@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, TrendingUp, TrendingDown, Calculator, Download } from "lucide-react";
+import { CalendarDays, TrendingUp, TrendingDown, Calculator, Download, Edit3 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import AdminLayout from "@/components/AdminLayout";
 
 interface CashFlowMatrixData {
@@ -27,7 +28,79 @@ interface CashFlowMatrixData {
 
 export default function CashFlowMatrix() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [viewMode, setViewMode] = useState<'monthly' | 'quarterly' | 'semiannual'>('monthly');
+  const [viewMode, setViewMode] = useState<'monthly' | 'quarterly' | 'semiannual' | 'annual'>('monthly');
+  const [inflationFactors, setInflationFactors] = useState<Record<number, number>>({});
+
+  // Inicializar factores de inflación con 4% por defecto para años futuros
+  useEffect(() => {
+    const currentYear = new Date().getFullYear();
+    const defaultFactors: Record<number, number> = {};
+    
+    // Solo inicializar factores para años futuros
+    for (let i = 1; i <= 5; i++) {
+      const futureYear = currentYear + i;
+      defaultFactors[futureYear] = 4.0; // 4% por defecto
+    }
+    
+    setInflationFactors(defaultFactors);
+  }, []);
+
+  // Función para generar datos anuales históricos y proyectados
+  const generateAnnualData = () => {
+    const currentYear = new Date().getFullYear();
+    const baseIncome = 278900;
+    const baseExpenses = 273400;
+    
+    const years: number[] = [];
+    const incomes: number[] = [];
+    const expenses: number[] = [];
+    const nets: number[] = [];
+    
+    // Datos históricos (5 años anteriores)
+    for (let i = 5; i >= 1; i--) {
+      const year = currentYear - i;
+      // Simular variaciones históricas (-2% a +8% anualmente)
+      const variation = 0.96 + (Math.random() * 0.12); // Entre 96% y 108%
+      years.push(year);
+      incomes.push(Math.round(baseIncome * Math.pow(variation, i * 0.8)));
+      expenses.push(Math.round(baseExpenses * Math.pow(variation, i * 0.7)));
+    }
+    
+    // Año actual
+    years.push(currentYear);
+    incomes.push(baseIncome);
+    expenses.push(baseExpenses);
+    
+    // Datos proyectados (5 años futuros)
+    let projectedIncome = baseIncome;
+    let projectedExpenses = baseExpenses;
+    
+    for (let i = 1; i <= 5; i++) {
+      const year = currentYear + i;
+      const inflationRate = (inflationFactors[year] || 4.0) / 100;
+      
+      projectedIncome *= (1 + inflationRate);
+      projectedExpenses *= (1 + inflationRate);
+      
+      years.push(year);
+      incomes.push(Math.round(projectedIncome));
+      expenses.push(Math.round(projectedExpenses));
+    }
+    
+    // Calcular flujos netos
+    incomes.forEach((income, index) => {
+      nets.push(income - expenses[index]);
+    });
+    
+    return { years, incomes, expenses, nets };
+  };
+
+  const updateInflationFactor = (year: number, factor: number) => {
+    setInflationFactors(prev => ({
+      ...prev,
+      [year]: factor
+    }));
+  };
 
   // Datos simulados para la matriz
   const cashFlowData: CashFlowMatrixData = {
@@ -337,6 +410,175 @@ export default function CashFlowMatrix() {
     </Card>
   );
 
+  const renderAnnualView = () => {
+    const currentYear = new Date().getFullYear();
+    const annualData = generateAnnualData();
+    
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Análisis Anual Extendido</CardTitle>
+          <CardDescription>
+            Comparación histórica (5 años) y proyección futura (5 años) con factores de inflación ajustables
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {/* Controles de inflación para años futuros */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-blue-900 mb-3 flex items-center">
+                <Edit3 className="h-4 w-4 mr-2" />
+                Factores de Inflación Proyectados (%)
+              </h4>
+              <div className="grid grid-cols-5 gap-3">
+                {Array.from({ length: 5 }, (_, i) => {
+                  const year = currentYear + i + 1;
+                  return (
+                    <div key={year} className="text-center">
+                      <label className="text-sm font-medium text-gray-700 block mb-1">
+                        {year}
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="20"
+                        value={inflationFactors[year] || 4.0}
+                        onChange={(e) => updateInflationFactor(year, parseFloat(e.target.value) || 4.0)}
+                        className="w-full text-center"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Tabla de datos anuales */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-gray-300">
+                    <th className="text-left p-3 font-medium">Categoría</th>
+                    {annualData.years.map((year, index) => (
+                      <th key={year} className={`text-center p-2 font-medium min-w-[100px] ${
+                        year < currentYear ? 'bg-gray-50 text-gray-700' : 
+                        year === currentYear ? 'bg-blue-50 text-blue-800' : 
+                        'bg-green-50 text-green-800'
+                      }`}>
+                        <div>{year}</div>
+                        {year < currentYear && <div className="text-xs text-gray-500">Histórico</div>}
+                        {year === currentYear && <div className="text-xs text-blue-600">Actual</div>}
+                        {year > currentYear && (
+                          <div className="text-xs text-green-600">
+                            +{(inflationFactors[year] || 4.0).toFixed(1)}%
+                          </div>
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Fila de Ingresos */}
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-3 font-semibold text-green-800">Ingresos Totales</td>
+                    {annualData.incomes.map((income, index) => {
+                      const year = annualData.years[index];
+                      return (
+                        <td key={index} className={`text-center p-2 text-green-700 ${
+                          year < currentYear ? 'bg-gray-50' : 
+                          year === currentYear ? 'bg-blue-50 font-semibold' : 
+                          'bg-green-50 font-semibold'
+                        }`}>
+                          {formatCurrency(income)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Fila de Egresos */}
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-3 font-semibold text-red-800">Egresos Totales</td>
+                    {annualData.expenses.map((expense, index) => {
+                      const year = annualData.years[index];
+                      return (
+                        <td key={index} className={`text-center p-2 text-red-700 ${
+                          year < currentYear ? 'bg-gray-50' : 
+                          year === currentYear ? 'bg-blue-50 font-semibold' : 
+                          'bg-green-50 font-semibold'
+                        }`}>
+                          {formatCurrency(expense)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Fila de Flujo Neto */}
+                  <tr className="border-t-2 border-blue-200 bg-blue-100 font-bold">
+                    <td className="p-3 text-blue-900">Flujo Neto</td>
+                    {annualData.nets.map((net, index) => {
+                      const year = annualData.years[index];
+                      return (
+                        <td key={index} className={`text-center p-2 ${
+                          net >= 0 ? 'text-blue-800' : 'text-red-800'
+                        } ${
+                          year === currentYear ? 'bg-blue-200 font-black' : 'font-bold'
+                        }`}>
+                          {formatCurrency(net)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Indicadores de crecimiento */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="bg-gradient-to-r from-green-50 to-green-100">
+                <CardContent className="p-4">
+                  <div className="text-sm text-green-800">Crecimiento Promedio Histórico</div>
+                  <div className="text-2xl font-bold text-green-900">
+                    {(() => {
+                      const firstIncome = annualData.incomes[0];
+                      const currentIncome = annualData.incomes[5]; // Año actual
+                      const growth = ((currentIncome / firstIncome) ** (1/5) - 1) * 100;
+                      return `${growth.toFixed(1)}%`;
+                    })()}
+                  </div>
+                  <div className="text-xs text-green-700">Ingresos anuales</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-r from-blue-50 to-blue-100">
+                <CardContent className="p-4">
+                  <div className="text-sm text-blue-800">Proyección 5 Años</div>
+                  <div className="text-2xl font-bold text-blue-900">
+                    {formatCurrency(annualData.incomes[annualData.incomes.length - 1])}
+                  </div>
+                  <div className="text-xs text-blue-700">Ingresos proyectados {currentYear + 5}</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-r from-purple-50 to-purple-100">
+                <CardContent className="p-4">
+                  <div className="text-sm text-purple-800">Inflación Promedio</div>
+                  <div className="text-2xl font-bold text-purple-900">
+                    {(() => {
+                      const futureFactors = Object.values(inflationFactors);
+                      const avg = futureFactors.reduce((a, b) => a + b, 0) / futureFactors.length;
+                      return `${avg.toFixed(1)}%`;
+                    })()}
+                  </div>
+                  <div className="text-xs text-purple-700">Proyecciones futuras</div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <AdminLayout 
       title="Matriz de Flujo de Efectivo" 
@@ -400,10 +642,11 @@ export default function CashFlowMatrix() {
 
       {/* Tabs para diferentes vistas */}
       <Tabs value={viewMode} onValueChange={(value: any) => setViewMode(value)}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="monthly">Vista Mensual</TabsTrigger>
           <TabsTrigger value="quarterly">Vista Trimestral</TabsTrigger>
           <TabsTrigger value="semiannual">Vista Semestral</TabsTrigger>
+          <TabsTrigger value="annual">Análisis Anual</TabsTrigger>
         </TabsList>
         
         <TabsContent value="monthly" className="space-y-6">
@@ -416,6 +659,10 @@ export default function CashFlowMatrix() {
         
         <TabsContent value="semiannual" className="space-y-6">
           {renderSemiannualView()}
+        </TabsContent>
+        
+        <TabsContent value="annual" className="space-y-6">
+          {renderAnnualView()}
         </TabsContent>
       </Tabs>
     </AdminLayout>
