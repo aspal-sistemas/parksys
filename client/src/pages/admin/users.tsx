@@ -1196,7 +1196,7 @@ const AdminUsers = () => {
   // Estados para ordenamiento y filtrado
   const [sortField, setSortField] = useState<keyof User>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [roleFilter, setRoleFilter] = useState<string>('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
 
   // Fetch users
@@ -1475,7 +1475,7 @@ const AdminUsers = () => {
 
   const clearFilters = () => {
     setSearchQuery('');
-    setRoleFilter('');
+    setRoleFilter('all');
     setSortField('id');
     setSortDirection('asc');
   };
@@ -1490,7 +1490,7 @@ const AdminUsers = () => {
         (user.fullName && user.fullName.toLowerCase().includes(searchLower)) ||
         user.role.toLowerCase().includes(searchLower);
       
-      const matchesRole = !roleFilter || user.role === roleFilter;
+      const matchesRole = roleFilter === 'all' || !roleFilter || user.role === roleFilter;
       
       return matchesSearch && matchesRole;
     })
@@ -1595,7 +1595,7 @@ const AdminUsers = () => {
                     <SelectValue placeholder="Todos los roles" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos los roles</SelectItem>
+                    <SelectItem value="all">Todos los roles</SelectItem>
                     <SelectItem value="admin">Administrador</SelectItem>
                     <SelectItem value="director">Director</SelectItem>
                     <SelectItem value="manager">Gestor</SelectItem>
