@@ -551,7 +551,7 @@ const RoleBasedSidebar: React.FC = () => {
             ParquesMX
           </h1>
           <span className="text-xs text-gray-500 capitalize">
-            Panel {user?.role || 'Usuario'}
+            Panel {(user as any)?.role || 'Usuario'}
           </span>
         </div>
       </div>
@@ -567,16 +567,16 @@ const RoleBasedSidebar: React.FC = () => {
       <div className="p-3">
         <div className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
           <UserProfileImage 
-            user={user} 
+            user={user as any} 
             size="sm"
             className="h-8 w-8 rounded-full"
           />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">
-              {user?.firstName} {user?.lastName}
+              {(user as any)?.firstName} {(user as any)?.lastName}
             </p>
             <p className="text-xs text-gray-500 capitalize">
-              {user?.role}
+              {(user as any)?.role}
             </p>
           </div>
           <Button
