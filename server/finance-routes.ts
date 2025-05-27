@@ -38,18 +38,22 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   // Crear nueva categoría de ingresos
   apiRouter.post("/income-categories", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      console.log("Creando nueva categoría de ingresos:", req.body);
       const { name, description } = req.body;
       
       if (!name) {
+        console.log("Error: nombre requerido");
         return res.status(400).json({ message: "El nombre de la categoría es requerido" });
       }
 
       // Generar código único para la categoría
       const existingCategories = await db.select().from(incomeCategories);
+      console.log("Categorías existentes:", existingCategories.length);
       const nextNumber = existingCategories.length + 1;
       const code = `ING${nextNumber.toString().padStart(3, '0')}`;
+      console.log("Nuevo código generado:", code);
 
-      const newCategory = await db.insert(incomeCategories).values({
+      const categoryData = {
         code,
         name: name.trim(),
         description: description?.trim() || '',
@@ -58,12 +62,17 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
         sortOrder: nextNumber,
         createdAt: new Date(),
         updatedAt: new Date()
-      }).returning();
-
+      };
+      
+      console.log("Datos a insertar:", categoryData);
+      
+      const newCategory = await db.insert(incomeCategories).values(categoryData).returning();
+      
+      console.log("Categoría creada exitosamente:", newCategory[0]);
       res.status(201).json(newCategory[0]);
     } catch (error) {
-      console.error("Error al crear categoría de ingresos:", error);
-      res.status(500).json({ message: "Error al crear categoría de ingresos" });
+      console.error("Error completo al crear categoría de ingresos:", error);
+      res.status(500).json({ message: "Error al crear categoría de ingresos", error: error.message });
     }
   });
 
