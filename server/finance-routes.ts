@@ -58,22 +58,20 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
       const code = `ING${nextNumber.toString().padStart(3, '0')}`;
       console.log("Código generado:", code);
 
-      // Insertar directamente con SQL
-      const result = await db.execute(`
-        INSERT INTO income_categories (code, name, description, level, is_active, sort_order, created_at, updated_at) 
-        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) 
-        RETURNING *
-      `, [code, name.trim(), description?.trim() || '', 1, true, nextNumber]);
+      // Insertar usando Drizzle ORM
+      const [newCategory] = await db.insert(incomeCategories).values({
+        code,
+        name: name.trim(),
+        description: description?.trim() || '',
+        level: 1,
+        isActive: true,
+        sortOrder: nextNumber,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }).returning();
       
-      console.log("Resultado de la inserción:", result);
-      
-      if (result.rows && result.rows.length > 0) {
-        console.log("Categoría creada exitosamente");
-        res.status(201).json(result.rows[0]);
-      } else {
-        console.log("No se pudo crear la categoría");
-        res.status(500).json({ message: "Error al crear la categoría" });
-      }
+      console.log("Categoría creada exitosamente:", newCategory);
+      res.status(201).json(newCategory);
       
     } catch (error) {
       console.error("Error al crear categoría:", error);
