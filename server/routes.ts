@@ -118,6 +118,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas del módulo financiero
   registerFinanceRoutes(app, apiRouter, isAuthenticated);
   registerFinanceUpdateRoutes(app, apiRouter);
+
+  // Endpoint SQL directo para actualizaciones críticas
+  apiRouter.post("/execute-sql", async (req: Request, res: Response) => {
+    try {
+      const { query, params } = req.body;
+      
+      console.log("=== EJECUTANDO SQL DIRECTO ===");
+      console.log("Query:", query);
+      console.log("Params:", params);
+      
+      const result = await db.execute(query, params || []);
+      
+      console.log("Resultado SQL:", result);
+      
+      res.json({
+        success: true,
+        data: result.rows,
+        rowCount: result.rowCount
+      });
+      
+    } catch (error) {
+      console.error("Error ejecutando SQL:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error ejecutando consulta SQL",
+        error: error.message
+      });
+    }
+  });
   
   // Registramos las rutas del módulo de inventario de árboles
   // Comentamos esta línea para evitar conflictos con las rutas en tree_routes.ts
