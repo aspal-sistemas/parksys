@@ -441,15 +441,48 @@ export default function PermissionsPage() {
     }
   });
 
+  // Función para inicializar permisos de administrador con todos los permisos habilitados
+  const initializeAdminPermissions = () => {
+    const adminPermissions: Record<string, Record<string, Record<string, boolean>>> = {};
+    
+    modules.forEach(module => {
+      adminPermissions[module.id] = {};
+      module.permissions.forEach(permission => {
+        adminPermissions[module.id][permission.id] = {
+          view: true,
+          create: true,
+          edit: true,
+          delete: true
+        };
+      });
+    });
+    
+    return adminPermissions;
+  };
+
   // Cargar permisos del servidor cuando se obtengan
   useEffect(() => {
     if (serverPermissions) {
-      setRolePermissions(serverPermissions);
+      const permissionsWithAdmin = {
+        ...serverPermissions,
+        admin: initializeAdminPermissions() // Siempre asegurar que admin tenga todos los permisos
+      };
+      setRolePermissions(permissionsWithAdmin);
     }
   }, [serverPermissions]);
 
   // Función para cambiar el estado de un permiso
   const togglePermission = (role: string, moduleId: string, permissionId: string, action: string) => {
+    // No permitir cambios en el rol de administrador
+    if (role === 'admin') {
+      toast({
+        title: "Permiso bloqueado",
+        description: "Los permisos del administrador no pueden ser modificados.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setRolePermissions(prev => ({
       ...prev,
       [role]: {
@@ -590,13 +623,26 @@ export default function PermissionsPage() {
                           {role.displayName[0]}
                         </div>
                         <div>
-                          <h3 className="text-lg font-bold">{role.displayName}</h3>
+                          <h3 className="text-lg font-bold flex items-center">
+                            {role.displayName}
+                            {role.id === 'admin' && (
+                              <Lock className="h-4 w-4 ml-2 text-gray-500" />
+                            )}
+                          </h3>
                           <p className="text-sm text-muted-foreground mt-1">{role.description}</p>
+                          {role.id === 'admin' && (
+                            <div className="flex items-center mt-2 p-2 bg-blue-50 rounded-md">
+                              <Info className="h-4 w-4 text-blue-500 mr-2" />
+                              <span className="text-xs text-blue-700">
+                                Este rol tiene todos los permisos habilitados y no pueden ser modificados.
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       
-                      {/* Botón para asignar todos los permisos si el rol es administrador */}
-                      {role.id === 'admin' && isEditing && (
+                      {/* Botón para asignar todos los permisos solo a otros roles */}
+                      {role.id !== 'admin' && isEditing && (
                         <Button 
                           onClick={() => grantAllPermissionsToRole(role.id)}
                           className="bg-green-600 hover:bg-green-700 ml-auto"
@@ -667,36 +713,56 @@ export default function PermissionsPage() {
                                         </span>
                                       </TableCell>
                                       <TableCell className="text-center">
-                                        <Switch 
-                                          checked={rolePermissions[role.id]?.[module.id]?.[permission.id]?.view || false}
-                                          onCheckedChange={() => togglePermission(role.id, module.id, permission.id, 'view')}
-                                          disabled={!isEditing}
-                                          className={`${!isEditing ? 'opacity-60' : ''}`}
-                                        />
+                                        <div className="flex items-center justify-center">
+                                          <Switch 
+                                            checked={rolePermissions[role.id]?.[module.id]?.[permission.id]?.view || false}
+                                            onCheckedChange={() => togglePermission(role.id, module.id, permission.id, 'view')}
+                                            disabled={!isEditing || role.id === 'admin'}
+                                            className={`${!isEditing ? 'opacity-60' : ''} ${role.id === 'admin' ? 'cursor-not-allowed' : ''}`}
+                                          />
+                                          {role.id === 'admin' && (
+                                            <Lock className="h-3 w-3 ml-1 text-gray-400" />
+                                          )}
+                                        </div>
                                       </TableCell>
                                       <TableCell className="text-center">
-                                        <Switch 
-                                          checked={rolePermissions[role.id]?.[module.id]?.[permission.id]?.create || false}
-                                          onCheckedChange={() => togglePermission(role.id, module.id, permission.id, 'create')}
-                                          disabled={!isEditing}
-                                          className={`${!isEditing ? 'opacity-60' : ''}`}
-                                        />
+                                        <div className="flex items-center justify-center">
+                                          <Switch 
+                                            checked={rolePermissions[role.id]?.[module.id]?.[permission.id]?.create || false}
+                                            onCheckedChange={() => togglePermission(role.id, module.id, permission.id, 'create')}
+                                            disabled={!isEditing || role.id === 'admin'}
+                                            className={`${!isEditing ? 'opacity-60' : ''} ${role.id === 'admin' ? 'cursor-not-allowed' : ''}`}
+                                          />
+                                          {role.id === 'admin' && (
+                                            <Lock className="h-3 w-3 ml-1 text-gray-400" />
+                                          )}
+                                        </div>
                                       </TableCell>
                                       <TableCell className="text-center">
-                                        <Switch 
-                                          checked={rolePermissions[role.id]?.[module.id]?.[permission.id]?.edit || false}
-                                          onCheckedChange={() => togglePermission(role.id, module.id, permission.id, 'edit')}
-                                          disabled={!isEditing}
-                                          className={`${!isEditing ? 'opacity-60' : ''}`}
-                                        />
+                                        <div className="flex items-center justify-center">
+                                          <Switch 
+                                            checked={rolePermissions[role.id]?.[module.id]?.[permission.id]?.edit || false}
+                                            onCheckedChange={() => togglePermission(role.id, module.id, permission.id, 'edit')}
+                                            disabled={!isEditing || role.id === 'admin'}
+                                            className={`${!isEditing ? 'opacity-60' : ''} ${role.id === 'admin' ? 'cursor-not-allowed' : ''}`}
+                                          />
+                                          {role.id === 'admin' && (
+                                            <Lock className="h-3 w-3 ml-1 text-gray-400" />
+                                          )}
+                                        </div>
                                       </TableCell>
                                       <TableCell className="text-center">
-                                        <Switch 
-                                          checked={rolePermissions[role.id]?.[module.id]?.[permission.id]?.delete || false}
-                                          onCheckedChange={() => togglePermission(role.id, module.id, permission.id, 'delete')}
-                                          disabled={!isEditing}
-                                          className={`${!isEditing ? 'opacity-60' : ''}`}
-                                        />
+                                        <div className="flex items-center justify-center">
+                                          <Switch 
+                                            checked={rolePermissions[role.id]?.[module.id]?.[permission.id]?.delete || false}
+                                            onCheckedChange={() => togglePermission(role.id, module.id, permission.id, 'delete')}
+                                            disabled={!isEditing || role.id === 'admin'}
+                                            className={`${!isEditing ? 'opacity-60' : ''} ${role.id === 'admin' ? 'cursor-not-allowed' : ''}`}
+                                          />
+                                          {role.id === 'admin' && (
+                                            <Lock className="h-3 w-3 ml-1 text-gray-400" />
+                                          )}
+                                        </div>
                                       </TableCell>
                                     </TableRow>
                                   ))}
