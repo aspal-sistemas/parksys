@@ -205,13 +205,26 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       >
         Amenidades
       </NavItem>
-      <NavItem 
-        href="/admin/incidents" 
+      <ModuleNav 
+        title="Incidencias" 
         icon={<AlertTriangle className="h-5 w-5" />}
-        active={location.startsWith('/admin/incidents')}
+        value="incidents"
       >
-        Incidencias
-      </NavItem>
+        <NavItem 
+          href="/admin/incidents" 
+          icon={<ClipboardList className="h-5 w-5" />}
+          active={location === '/admin/incidents'}
+        >
+          Listado
+        </NavItem>
+        <NavItem 
+          href="/admin/incidents/categories" 
+          icon={<Tag className="h-5 w-5" />}
+          active={location === '/admin/incidents/categories'}
+        >
+          Categorías
+        </NavItem>
+      </ModuleNav>
     </ModuleNav>
 
     <ModuleNav 
