@@ -58,6 +58,7 @@ import {
   Camera,
   Heart,
   AlertCircle,
+  AlertTriangle,
   Database,
   Leaf,
   HeartHandshake,
