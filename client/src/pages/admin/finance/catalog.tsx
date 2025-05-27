@@ -99,13 +99,13 @@ export default function CatalogPage() {
     },
   });
 
-  // Mutación para editar categoría de ingresos usando la ruta existente
+  // Mutación para editar categoría de ingresos usando una ruta directa
   const editIncomeCategoryMutation = useMutation({
     mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
       console.log("Editando categoría de ingresos:", { id, categoryData });
       
-      // Usar la ruta específica para actualizar que ya existe
-      return await apiRequest(`/income-categories/${id}/update`, {
+      // Usar una ruta completamente diferente para evitar conflictos con Vite
+      return await apiRequest(`/finance/income-categories/edit/${id}`, {
         method: 'POST',
         data: categoryData
       });
@@ -129,13 +129,13 @@ export default function CatalogPage() {
     },
   });
 
-  // Mutación para editar categoría de egresos usando la ruta existente
+  // Mutación para editar categoría de egresos usando una ruta directa
   const editExpenseCategoryMutation = useMutation({
     mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
       console.log("Editando categoría de egresos:", { id, categoryData });
       
-      // Usar la ruta específica para actualizar que ya existe
-      return await apiRequest(`/expense-categories/${id}/update`, {
+      // Usar una ruta completamente diferente para evitar conflictos con Vite
+      return await apiRequest(`/finance/expense-categories/edit/${id}`, {
         method: 'POST',
         data: categoryData
       });
