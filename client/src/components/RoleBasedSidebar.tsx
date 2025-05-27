@@ -442,6 +442,13 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         Inventario
       </NavItem>
       <NavItem 
+        href="/admin/trees/catalog" 
+        icon={<Book className="h-5 w-5" />}
+        active={location.startsWith('/admin/trees/catalog')}
+      >
+        Catálogo
+      </NavItem>
+      <NavItem 
         href="/admin/trees/species" 
         icon={<Leaf className="h-5 w-5" />}
         active={location.startsWith('/admin/trees/species')}
