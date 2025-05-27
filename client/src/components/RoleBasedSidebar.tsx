@@ -581,6 +581,14 @@ const DirectorSidebar: React.FC<{ location: string; defaultAccordion: string[] }
     >
       Personal
     </NavItem>
+
+    <NavItem 
+      href="/admin/settings/profile" 
+      icon={<User className="h-5 w-5" />}
+      active={location === '/admin/settings/profile'}
+    >
+      Mi perfil
+    </NavItem>
   </Accordion>
 );
 
@@ -654,6 +662,14 @@ const ManagerSidebar: React.FC<{ location: string; defaultAccordion: string[] }>
       active={location === '/admin/users'}
     >
       Personal
+    </NavItem>
+
+    <NavItem 
+      href="/admin/settings/profile" 
+      icon={<User className="h-5 w-5" />}
+      active={location === '/admin/settings/profile'}
+    >
+      Mi perfil
     </NavItem>
   </Accordion>
 );
@@ -739,6 +755,14 @@ const SupervisorSidebar: React.FC<{ location: string; defaultAccordion: string[]
       active={location === '/admin/activities'}
     >
       Actividades
+    </NavItem>
+
+    <NavItem 
+      href="/admin/settings/profile" 
+      icon={<User className="h-5 w-5" />}
+      active={location === '/admin/settings/profile'}
+    >
+      Mi perfil
     </NavItem>
   </Accordion>
 );
