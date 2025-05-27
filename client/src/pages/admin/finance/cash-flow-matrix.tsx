@@ -11,132 +11,89 @@ import AdminLayout from "@/components/AdminLayout";
 interface CashFlowMatrixData {
   year: number;
   months: string[];
-  incomeCategories: {
-    id: number;
+  categories: {
     name: string;
-    monthlyData: number[];
+    type: 'income' | 'expense';
+    monthlyValues: number[];
     total: number;
   }[];
-  expenseCategories: {
-    id: number;
-    name: string;
-    monthlyData: number[];
-    total: number;
-  }[];
-  monthlyTotals: {
-    income: number[];
-    expenses: number[];
-    netFlow: number[];
-  };
   summaries: {
-    quarterly: {
-      q1: { income: number; expenses: number; net: number };
-      q2: { income: number; expenses: number; net: number };
-      q3: { income: number; expenses: number; net: number };
-      q4: { income: number; expenses: number; net: number };
-    };
-    semiannual: {
-      h1: { income: number; expenses: number; net: number };
-      h2: { income: number; expenses: number; net: number };
-    };
-    annual: {
-      income: number;
-      expenses: number;
-      net: number;
-    };
+    monthly: { income: number[]; expenses: number[]; net: number[] };
+    quarterly: { income: number[]; expenses: number[]; net: number[] };
+    semiannual: { income: number[]; expenses: number[]; net: number[] };
+    annual: { income: number; expenses: number; net: number };
   };
 }
 
-const monthNames = [
-  "Ene", "Feb", "Mar", "Abr", "May", "Jun",
-  "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
-];
-
 export default function CashFlowMatrix() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [viewMode, setViewMode] = useState<"monthly" | "quarterly" | "semiannual">("monthly");
+  const [viewMode, setViewMode] = useState<'monthly' | 'quarterly' | 'semiannual'>('monthly');
 
-  // Datos de ejemplo para la matriz de flujo de efectivo
+  // Datos simulados para la matriz
   const cashFlowData: CashFlowMatrixData = {
     year: selectedYear,
     months: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
-    incomeCategories: [
+    categories: [
       {
-        id: 1,
         name: "Concesiones",
-        monthlyData: [135000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        total: 135000
+        type: "income",
+        monthlyValues: [12000, 11500, 13000, 12500, 13500, 14000, 15000, 14500, 13000, 12000, 11000, 12000],
+        total: 154000
       },
       {
-        id: 2,
         name: "Eventos",
-        monthlyData: [0, 100000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        total: 100000
+        type: "income", 
+        monthlyValues: [8000, 7500, 9000, 8500, 9500, 10000, 11000, 10500, 9000, 8000, 7000, 8000],
+        total: 106000
       },
       {
-        id: 3,
         name: "Servicios",
-        monthlyData: [0, 0, 18000, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        total: 18000
+        type: "income",
+        monthlyValues: [1500, 1400, 1600, 1550, 1650, 1700, 1800, 1750, 1600, 1500, 1400, 1500],
+        total: 18950
       },
       {
-        id: 4,
-        name: "Alquileres",
-        monthlyData: [0, 0, 0, 40000, 0, 0, 0, 0, 0, 0, 0, 0],
-        total: 40000
-      },
-      {
-        id: 5,
-        name: "Donaciones",
-        monthlyData: [0, 0, 0, 0, 100000, 0, 0, 0, 0, 0, 0, 0],
-        total: 100000
-      }
-    ],
-    expenseCategories: [
-      {
-        id: 1,
-        name: "Nómina",
-        monthlyData: [50000, 50000, 50000, 50000, 50000, 0, 0, 0, 0, 0, 0, 0],
-        total: 250000
-      },
-      {
-        id: 2,
         name: "Mantenimiento",
-        monthlyData: [25000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        total: 25000
+        type: "expense",
+        monthlyValues: [5000, 4800, 5200, 5100, 5300, 5500, 5800, 5600, 5200, 5000, 4800, 5000],
+        total: 62300
       },
       {
-        id: 3,
-        name: "Servicios",
-        monthlyData: [15000, 15000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        total: 30000
+        name: "Personal",
+        type: "expense",
+        monthlyValues: [15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000],
+        total: 180000
+      },
+      {
+        name: "Servicios Públicos",
+        type: "expense",
+        monthlyValues: [2500, 2300, 2600, 2400, 2700, 2800, 3000, 2900, 2600, 2500, 2300, 2500],
+        total: 31100
       }
     ],
-    monthlyTotals: {
-      income: [135000, 100000, 18000, 40000, 100000, 0, 0, 0, 0, 0, 0, 0],
-      expenses: [90000, 65000, 50000, 50000, 50000, 0, 0, 0, 0, 0, 0, 0],
-      netFlow: [45000, 35000, -32000, -10000, 50000, 0, 0, 0, 0, 0, 0, 0]
-    },
     summaries: {
+      monthly: {
+        income: [21500, 20400, 23600, 22550, 24650, 25700, 27800, 26750, 23600, 21500, 19400, 21500],
+        expenses: [22500, 22100, 22800, 22500, 23000, 23300, 23800, 23500, 22800, 22500, 22100, 22500],
+        net: [-1000, -1700, 800, 50, 1650, 2400, 4000, 3250, 800, -1000, -2700, -1000]
+      },
       quarterly: {
-        q1: { income: 253000, expenses: 205000, net: 48000 },
-        q2: { income: 140000, expenses: 100000, net: 40000 },
-        q3: { income: 0, expenses: 0, net: 0 },
-        q4: { income: 0, expenses: 0, net: 0 }
+        income: [65500, 72900, 78100, 62400],
+        expenses: [67400, 68800, 70100, 67100],
+        net: [-1900, 4100, 8000, -4700]
       },
       semiannual: {
-        h1: { income: 393000, expenses: 305000, net: 88000 },
-        h2: { income: 0, expenses: 0, net: 0 }
+        income: [138400, 140500],
+        expenses: [136200, 137200],
+        net: [2200, 3300]
       },
       annual: {
-        income: 393000,
-        expenses: 305000,
-        net: 88000
+        income: 278900,
+        expenses: 273400,
+        net: 5500
       }
     }
   };
-
-  const isLoading = false;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
@@ -152,257 +109,171 @@ export default function CashFlowMatrix() {
     return Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Matriz de Flujo de Efectivo</h1>
-            <p className="text-muted-foreground">Vista analítica por períodos</p>
-          </div>
-        </div>
-        <div className="grid gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="animate-pulse space-y-4">
-                <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-                <div className="space-y-2">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="h-6 bg-gray-200 rounded"></div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  if (!cashFlowData) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Matriz de Flujo de Efectivo</h1>
-            <p className="text-muted-foreground">Vista analítica por períodos</p>
-          </div>
-        </div>
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-center text-muted-foreground">No hay datos disponibles para el año seleccionado</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const renderMonthlyView = () => (
-    <div className="space-y-6">
-      {/* Tabla de Ingresos */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-green-600" />
-            Ingresos por Categoría
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3 font-semibold min-w-[200px]">Categoría</th>
-                  {monthNames.map((month, index) => (
-                    <th key={month} className="text-center p-3 font-semibold min-w-[100px]">
-                      {month}
-                    </th>
-                  ))}
-                  <th className="text-center p-3 font-semibold min-w-[120px] bg-green-50">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cashFlowData.incomeCategories.map((category) => (
-                  <tr key={category.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3 font-medium">{category.name}</td>
-                    {category.monthlyData.map((amount, index) => (
-                      <td key={index} className="p-3 text-center">
-                        {amount > 0 ? (
-                          <span className="text-green-600 font-medium">
-                            {formatCurrency(amount)}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                    ))}
-                    <td className="p-3 text-center bg-green-50">
-                      <span className="text-green-700 font-bold">
-                        {formatCurrency(category.total)}
-                      </span>
-                    </td>
-                  </tr>
+    <Card>
+      <CardHeader>
+        <CardTitle>Vista Mensual {selectedYear}</CardTitle>
+        <CardDescription>Flujo de efectivo detallado por mes</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-3 font-medium">Categoría</th>
+                {cashFlowData.months.map((month) => (
+                  <th key={month} className="text-center p-3 font-medium min-w-[80px]">
+                    {month}
+                  </th>
                 ))}
-                <tr className="border-t-2 bg-green-100">
-                  <td className="p-3 font-bold">Total Ingresos</td>
-                  {cashFlowData.monthlyTotals.income.map((total, index) => (
-                    <td key={index} className="p-3 text-center font-bold text-green-700">
-                      {formatCurrency(total)}
-                    </td>
-                  ))}
-                  <td className="p-3 text-center font-bold text-green-700 bg-green-200">
-                    {formatCurrency(cashFlowData.summaries.annual.income)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tabla de Egresos */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingDown className="h-5 w-5 text-red-600" />
-            Egresos por Categoría
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3 font-semibold min-w-[200px]">Categoría</th>
-                  {monthNames.map((month, index) => (
-                    <th key={month} className="text-center p-3 font-semibold min-w-[100px]">
-                      {month}
-                    </th>
-                  ))}
-                  <th className="text-center p-3 font-semibold min-w-[120px] bg-red-50">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cashFlowData.expenseCategories.map((category) => (
-                  <tr key={category.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3 font-medium">{category.name}</td>
-                    {category.monthlyData.map((amount, index) => (
-                      <td key={index} className="p-3 text-center">
-                        {amount > 0 ? (
-                          <span className="text-red-600 font-medium">
-                            {formatCurrency(amount)}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                    ))}
-                    <td className="p-3 text-center bg-red-50">
-                      <span className="text-red-700 font-bold">
-                        {formatCurrency(category.total)}
-                      </span>
-                    </td>
-                  </tr>
+                <th className="text-center p-3 font-medium">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* Ingresos */}
+              <tr className="bg-green-50">
+                <td className="p-3 font-semibold text-green-800">INGRESOS</td>
+                {Array(12).fill(0).map((_, i) => (
+                  <td key={i} className="text-center p-3"></td>
                 ))}
-                <tr className="border-t-2 bg-red-100">
-                  <td className="p-3 font-bold">Total Egresos</td>
-                  {cashFlowData.monthlyTotals.expenses.map((total, index) => (
-                    <td key={index} className="p-3 text-center font-bold text-red-700">
-                      {formatCurrency(total)}
+                <td className="text-center p-3"></td>
+              </tr>
+              {cashFlowData.categories.filter(cat => cat.type === 'income').map((category) => (
+                <tr key={category.name} className="border-b hover:bg-gray-50">
+                  <td className="p-3">{category.name}</td>
+                  {category.monthlyValues.map((value, index) => (
+                    <td key={index} className="text-center p-3 text-green-700">
+                      {formatCurrency(value)}
                     </td>
                   ))}
-                  <td className="p-3 text-center font-bold text-red-700 bg-red-200">
-                    {formatCurrency(cashFlowData.summaries.annual.expenses)}
+                  <td className="text-center p-3 font-semibold text-green-700">
+                    {formatCurrency(category.total)}
                   </td>
                 </tr>
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+              
+              {/* Subtotal Ingresos */}
+              <tr className="bg-green-100 font-semibold">
+                <td className="p-3">Subtotal Ingresos</td>
+                {cashFlowData.summaries.monthly.income.map((value, index) => (
+                  <td key={index} className="text-center p-3 text-green-800">
+                    {formatCurrency(value)}
+                  </td>
+                ))}
+                <td className="text-center p-3 text-green-800">
+                  {formatCurrency(cashFlowData.summaries.annual.income)}
+                </td>
+              </tr>
 
-      {/* Flujo Neto */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calculator className="h-5 w-5 text-blue-600" />
-            Flujo Neto de Efectivo
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3 font-semibold min-w-[200px]">Concepto</th>
-                  {monthNames.map((month, index) => (
-                    <th key={month} className="text-center p-3 font-semibold min-w-[100px]">
-                      {month}
-                    </th>
-                  ))}
-                  <th className="text-center p-3 font-semibold min-w-[120px] bg-blue-50">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b bg-blue-50">
-                  <td className="p-3 font-bold">Flujo Neto</td>
-                  {cashFlowData.monthlyTotals.netFlow.map((net, index) => (
-                    <td key={index} className="p-3 text-center font-bold">
-                      <span className={net >= 0 ? "text-green-700" : "text-red-700"}>
-                        {formatCurrency(net)}
-                      </span>
+              {/* Egresos */}
+              <tr className="bg-red-50">
+                <td className="p-3 font-semibold text-red-800">EGRESOS</td>
+                {Array(12).fill(0).map((_, i) => (
+                  <td key={i} className="text-center p-3"></td>
+                ))}
+                <td className="text-center p-3"></td>
+              </tr>
+              {cashFlowData.categories.filter(cat => cat.type === 'expense').map((category) => (
+                <tr key={category.name} className="border-b hover:bg-gray-50">
+                  <td className="p-3">{category.name}</td>
+                  {category.monthlyValues.map((value, index) => (
+                    <td key={index} className="text-center p-3 text-red-700">
+                      {formatCurrency(value)}
                     </td>
                   ))}
-                  <td className="p-3 text-center font-bold bg-blue-100">
-                    <span className={cashFlowData.summaries.annual.net >= 0 ? "text-green-700" : "text-red-700"}>
-                      {formatCurrency(cashFlowData.summaries.annual.net)}
-                    </span>
+                  <td className="text-center p-3 font-semibold text-red-700">
+                    {formatCurrency(category.total)}
                   </td>
                 </tr>
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+              ))}
+              
+              {/* Subtotal Egresos */}
+              <tr className="bg-red-100 font-semibold">
+                <td className="p-3">Subtotal Egresos</td>
+                {cashFlowData.summaries.monthly.expenses.map((value, index) => (
+                  <td key={index} className="text-center p-3 text-red-800">
+                    {formatCurrency(value)}
+                  </td>
+                ))}
+                <td className="text-center p-3 text-red-800">
+                  {formatCurrency(cashFlowData.summaries.annual.expenses)}
+                </td>
+              </tr>
+
+              {/* Flujo Neto */}
+              <tr className="bg-blue-100 font-bold border-t-2">
+                <td className="p-3">FLUJO NETO</td>
+                {cashFlowData.summaries.monthly.net.map((value, index) => (
+                  <td key={index} className={`text-center p-3 ${value >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
+                    {formatCurrency(value)}
+                  </td>
+                ))}
+                <td className={`text-center p-3 ${cashFlowData.summaries.annual.net >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
+                  {formatCurrency(cashFlowData.summaries.annual.net)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
   );
 
   const renderQuarterlyView = () => (
     <Card>
       <CardHeader>
-        <CardTitle>Resumen Trimestral {selectedYear}</CardTitle>
+        <CardTitle>Vista Trimestral {selectedYear}</CardTitle>
+        <CardDescription>Flujo de efectivo agregado por trimestre</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Object.entries(cashFlowData.summaries.quarterly).map(([quarter, data]) => (
-            <Card key={quarter}>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">
-                  {quarter.toUpperCase()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-green-600">Ingresos:</span>
-                  <span className="font-medium text-green-700">
-                    {formatCurrency(data.income)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-red-600">Egresos:</span>
-                  <span className="font-medium text-red-700">
-                    {formatCurrency(data.expenses)}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t pt-2">
-                  <span className="text-sm font-semibold">Neto:</span>
-                  <span className={`font-bold ${data.net >= 0 ? "text-green-700" : "text-red-700"}`}>
-                    {formatCurrency(data.net)}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-3 font-medium">Categoría</th>
+                <th className="text-center p-3 font-medium">Q1</th>
+                <th className="text-center p-3 font-medium">Q2</th>
+                <th className="text-center p-3 font-medium">Q3</th>
+                <th className="text-center p-3 font-medium">Q4</th>
+                <th className="text-center p-3 font-medium">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="bg-green-100 font-semibold">
+                <td className="p-3">Ingresos Totales</td>
+                {cashFlowData.summaries.quarterly.income.map((value, index) => (
+                  <td key={index} className="text-center p-3 text-green-800">
+                    {formatCurrency(value)}
+                  </td>
+                ))}
+                <td className="text-center p-3 text-green-800">
+                  {formatCurrency(cashFlowData.summaries.annual.income)}
+                </td>
+              </tr>
+              <tr className="bg-red-100 font-semibold">
+                <td className="p-3">Egresos Totales</td>
+                {cashFlowData.summaries.quarterly.expenses.map((value, index) => (
+                  <td key={index} className="text-center p-3 text-red-800">
+                    {formatCurrency(value)}
+                  </td>
+                ))}
+                <td className="text-center p-3 text-red-800">
+                  {formatCurrency(cashFlowData.summaries.annual.expenses)}
+                </td>
+              </tr>
+              <tr className="bg-blue-100 font-bold border-t-2">
+                <td className="p-3">Flujo Neto</td>
+                {cashFlowData.summaries.quarterly.net.map((value, index) => (
+                  <td key={index} className={`text-center p-3 ${value >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
+                    {formatCurrency(value)}
+                  </td>
+                ))}
+                <td className={`text-center p-3 ${cashFlowData.summaries.annual.net >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
+                  {formatCurrency(cashFlowData.summaries.annual.net)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>
@@ -411,42 +282,56 @@ export default function CashFlowMatrix() {
   const renderSemiannualView = () => (
     <Card>
       <CardHeader>
-        <CardTitle>Resumen Semestral {selectedYear}</CardTitle>
+        <CardTitle>Vista Semestral {selectedYear}</CardTitle>
+        <CardDescription>Flujo de efectivo agregado por semestre</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {Object.entries(cashFlowData.summaries.semiannual).map(([semester, data]) => (
-            <Card key={semester}>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-xl">
-                  {semester === 'h1' ? 'Primer Semestre' : 'Segundo Semestre'}
-                </CardTitle>
-                <CardDescription>
-                  {semester === 'h1' ? 'Enero - Junio' : 'Julio - Diciembre'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-green-600">Ingresos:</span>
-                  <span className="font-medium text-green-700 text-lg">
-                    {formatCurrency(data.income)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-red-600">Egresos:</span>
-                  <span className="font-medium text-red-700 text-lg">
-                    {formatCurrency(data.expenses)}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t pt-3">
-                  <span className="font-semibold text-lg">Flujo Neto:</span>
-                  <span className={`font-bold text-xl ${data.net >= 0 ? "text-green-700" : "text-red-700"}`}>
-                    {formatCurrency(data.net)}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-3 font-medium">Categoría</th>
+                <th className="text-center p-3 font-medium">S1 (Ene-Jun)</th>
+                <th className="text-center p-3 font-medium">S2 (Jul-Dic)</th>
+                <th className="text-center p-3 font-medium">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="bg-green-100 font-semibold">
+                <td className="p-3">Ingresos Totales</td>
+                {cashFlowData.summaries.semiannual.income.map((value, index) => (
+                  <td key={index} className="text-center p-3 text-green-800">
+                    {formatCurrency(value)}
+                  </td>
+                ))}
+                <td className="text-center p-3 text-green-800">
+                  {formatCurrency(cashFlowData.summaries.annual.income)}
+                </td>
+              </tr>
+              <tr className="bg-red-100 font-semibold">
+                <td className="p-3">Egresos Totales</td>
+                {cashFlowData.summaries.semiannual.expenses.map((value, index) => (
+                  <td key={index} className="text-center p-3 text-red-800">
+                    {formatCurrency(value)}
+                  </td>
+                ))}
+                <td className="text-center p-3 text-red-800">
+                  {formatCurrency(cashFlowData.summaries.annual.expenses)}
+                </td>
+              </tr>
+              <tr className="bg-blue-100 font-bold border-t-2">
+                <td className="p-3">Flujo Neto</td>
+                {cashFlowData.summaries.semiannual.net.map((value, index) => (
+                  <td key={index} className={`text-center p-3 ${value >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
+                    {formatCurrency(value)}
+                  </td>
+                ))}
+                <td className={`text-center p-3 ${cashFlowData.summaries.annual.net >= 0 ? 'text-blue-800' : 'text-red-800'}`}>
+                  {formatCurrency(cashFlowData.summaries.annual.net)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>
@@ -457,27 +342,27 @@ export default function CashFlowMatrix() {
       title="Matriz de Flujo de Efectivo" 
       subtitle="Vista analítica por períodos con categorías detalladas"
     >
-        <div className="flex items-center justify-end gap-4 mb-6">
-          <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {getAvailableYears().map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
-        </div>
+      <div className="flex items-center justify-end gap-4 mb-6">
+        <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+          <SelectTrigger className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {getAvailableYears().map((year) => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button variant="outline" size="sm">
+          <Download className="h-4 w-4 mr-2" />
+          Exportar
+        </Button>
+      </div>
 
-        {/* Resumen Anual */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      {/* Resumen Anual */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ingresos Anuales</CardTitle>
