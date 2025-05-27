@@ -696,4 +696,105 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
       res.status(500).json({ message: 'Error al eliminar usuario' });
     }
   });
+
+  // Obtener parques favoritos del usuario
+  apiRouter.get('/users/:id/favorite-parks', async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Por ahora devolvemos un array vacío, más tarde se puede conectar con la base de datos
+      const favoriteParks = [];
+      
+      res.json(favoriteParks);
+    } catch (error) {
+      console.error('Error fetching user favorite parks:', error);
+      res.status(500).json({ message: 'Error fetching user favorite parks' });
+    }
+  });
+
+  // Agregar parque a favoritos del usuario
+  apiRouter.post('/users/:id/favorite-parks', async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { parkId } = req.body;
+      
+      // Simular éxito por ahora
+      const result = {
+        id: Date.now(),
+        userId,
+        parkId,
+        addedAt: new Date().toISOString()
+      };
+      
+      res.status(201).json(result);
+    } catch (error) {
+      console.error('Error adding park to favorites:', error);
+      res.status(500).json({ message: 'Error adding park to favorites' });
+    }
+  });
+
+  // Remover parque de favoritos del usuario
+  apiRouter.delete('/users/:id/favorite-parks/:parkId', async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const parkId = parseInt(req.params.parkId);
+      
+      // Simular éxito por ahora
+      res.status(200).json({ message: 'Park removed from favorites successfully' });
+    } catch (error) {
+      console.error('Error removing park from favorites:', error);
+      res.status(500).json({ message: 'Error removing park from favorites' });
+    }
+  });
+
+  // Obtener parques pendientes por visitar del usuario
+  apiRouter.get('/users/:id/pending-parks', async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Por ahora devolvemos un array vacío
+      const pendingParks = [];
+      
+      res.json(pendingParks);
+    } catch (error) {
+      console.error('Error fetching user pending parks:', error);
+      res.status(500).json({ message: 'Error fetching user pending parks' });
+    }
+  });
+
+  // Marcar parque como visitado
+  apiRouter.post('/users/:id/visited-parks', async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { parkId } = req.body;
+      
+      // Simular éxito por ahora
+      const result = {
+        id: Date.now(),
+        userId,
+        parkId,
+        visitedAt: new Date().toISOString()
+      };
+      
+      res.status(201).json(result);
+    } catch (error) {
+      console.error('Error marking park as visited:', error);
+      res.status(500).json({ message: 'Error marking park as visited' });
+    }
+  });
+
+  // Obtener actividades próximas en parques favoritos
+  apiRouter.get('/users/:id/favorite-parks-activities', async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Por ahora devolvemos un array vacío
+      const upcomingActivities = [];
+      
+      res.json(upcomingActivities);
+    } catch (error) {
+      console.error('Error fetching favorite parks activities:', error);
+      res.status(500).json({ message: 'Error fetching favorite parks activities' });
+    }
+  });
 }

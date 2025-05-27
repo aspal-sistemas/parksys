@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import UserProfileImage from '@/components/UserProfileImage';
 import UserActivityCalendar from '@/components/UserActivityCalendar';
+import UserParksSection from '@/components/UserParksSection';
 import { 
   User, 
   Mail, 
@@ -434,17 +435,30 @@ export default function ProfilePage() {
 
           {/* Actividad */}
           <TabsContent value="activity" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Mi Calendario de Actividades</CardTitle>
-                <CardDescription>
-                  Gestiona las actividades que te interesan y agrégalas a tu calendario personal
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <UserActivityCalendar userId={(user as any)?.id} />
-              </CardContent>
-            </Card>
+            <Tabs defaultValue="calendar" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="calendar">Mi Calendario de Actividades</TabsTrigger>
+                <TabsTrigger value="parks">Mis Parques</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="calendar" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Mi Calendario de Actividades</CardTitle>
+                    <CardDescription>
+                      Gestiona las actividades que te interesan y agrégalas a tu calendario personal
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <UserActivityCalendar userId={(user as any)?.id} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="parks" className="mt-6">
+                <UserParksSection userId={(user as any)?.id} />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
       </div>

@@ -165,6 +165,16 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async deleteUser(id: number): Promise<boolean> {
+    try {
+      await db.delete(users).where(eq(users.id, id));
+      return true;
+    } catch (error) {
+      console.error(`Error al eliminar usuario ${id}:`, error);
+      throw error;
+    }
+  }
+
   async getParkImages(parkId: number): Promise<any[]> {
     try {
       const result = await db.execute(`
