@@ -175,6 +175,37 @@ export default function CatalogPage() {
     }
   };
 
+  const handleEditCategory = () => {
+    if (!selectedCategoryToEdit?.name?.trim()) {
+      toast({
+        title: "Error",
+        description: "El nombre de la categoría es requerido.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const categoryData = {
+      name: selectedCategoryToEdit.name.trim(),
+      description: selectedCategoryToEdit.description?.trim() || '',
+    };
+
+    // Determinar si es categoría de ingreso o egreso basado en el código
+    const isIncomeCategory = selectedCategoryToEdit.code?.startsWith('ING');
+    
+    if (isIncomeCategory) {
+      editIncomeCategoryMutation.mutate({ 
+        id: selectedCategoryToEdit.id, 
+        categoryData 
+      });
+    } else {
+      editExpenseCategoryMutation.mutate({ 
+        id: selectedCategoryToEdit.id, 
+        categoryData 
+      });
+    }
+  };
+
   return (
     <AdminLayout>
       <Helmet>
@@ -457,6 +488,75 @@ export default function CatalogPage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Diálogo para editar categoría */}
+        <Dialog open={isEditCategoryOpen} onOpenChange={setIsEditCategoryOpen}>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle>
+                Editar Categoría {selectedCategoryToEdit?.code?.startsWith('ING') ? 'de Ingresos' : 'de Egresos'}
+              </DialogTitle>
+              <DialogDescription>
+                Modifica los datos de la categoría seleccionada.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="editCategoryName" className="text-right">
+                  Nombre
+                </Label>
+                <Input
+                  id="editCategoryName"
+                  value={selectedCategoryToEdit?.name || ''}
+                  onChange={(e) => setSelectedCategoryToEdit({
+                    ...selectedCategoryToEdit,
+                    name: e.target.value
+                  })}
+                  className="col-span-3"
+                  placeholder="Nombre de la categoría"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="editCategoryDescription" className="text-right">
+                  Descripción
+                </Label>
+                <Textarea
+                  id="editCategoryDescription"
+                  value={selectedCategoryToEdit?.description || ''}
+                  onChange={(e) => setSelectedCategoryToEdit({
+                    ...selectedCategoryToEdit,
+                    description: e.target.value
+                  })}
+                  className="col-span-3"
+                  placeholder="Descripción de la categoría"
+                />
+              </div>
+              {selectedCategoryToEdit?.code && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right text-sm text-muted-foreground">
+                    Código
+                  </Label>
+                  <div className="col-span-3">
+                    <Badge variant="outline" className="font-mono">
+                      {selectedCategoryToEdit.code}
+                    </Badge>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => {
+                setIsEditCategoryOpen(false);
+                setSelectedCategoryToEdit(null);
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEditCategory}>
+                Guardar Cambios
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
