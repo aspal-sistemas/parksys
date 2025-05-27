@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Plus, 
   DollarSign, 
@@ -23,6 +25,8 @@ export default function CatalogPage() {
   const [isNewCategoryOpen, setIsNewCategoryOpen] = useState(false);
   const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
   const [selectedCategoryToEdit, setSelectedCategoryToEdit] = useState<any>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Estados del formulario de nueva categoría
   const [newCategory, setNewCategory] = useState({
@@ -41,11 +45,80 @@ export default function CatalogPage() {
     queryKey: ['/api/expense-categories'],
   });
 
+  // Mutación para crear categoría de ingresos
+  const createIncomeCategoryMutation = useMutation({
+    mutationFn: async (categoryData: { name: string; description: string }) => {
+      return apiRequest('/api/income-categories', {
+        method: 'POST',
+        data: categoryData,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/income-categories'] });
+      toast({
+        title: "Categoría creada",
+        description: "La categoría de ingresos se ha creado exitosamente.",
+      });
+      setIsNewCategoryOpen(false);
+      setNewCategory({ name: "", description: "", type: "ingreso" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo crear la categoría. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+      console.error("Error creando categoría:", error);
+    },
+  });
+
+  // Mutación para crear categoría de egresos
+  const createExpenseCategoryMutation = useMutation({
+    mutationFn: async (categoryData: { name: string; description: string }) => {
+      return apiRequest('/api/expense-categories', {
+        method: 'POST',
+        data: categoryData,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/expense-categories'] });
+      toast({
+        title: "Categoría creada",
+        description: "La categoría de egresos se ha creado exitosamente.",
+      });
+      setIsNewCategoryOpen(false);
+      setNewCategory({ name: "", description: "", type: "ingreso" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo crear la categoría. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+      console.error("Error creando categoría:", error);
+    },
+  });
+
   const handleCreateCategory = () => {
-    console.log("Creando categoría:", newCategory);
-    // Aquí iría la lógica para crear la categoría
-    setIsNewCategoryOpen(false);
-    setNewCategory({ name: "", description: "", type: "ingreso" });
+    if (!newCategory.name.trim()) {
+      toast({
+        title: "Error",
+        description: "El nombre de la categoría es requerido.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const categoryData = {
+      name: newCategory.name.trim(),
+      description: newCategory.description.trim(),
+    };
+
+    if (newCategory.type === "ingreso") {
+      createIncomeCategoryMutation.mutate(categoryData);
+    } else {
+      createExpenseCategoryMutation.mutate(categoryData);
+    }
   };
 
   return (

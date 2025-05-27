@@ -35,6 +35,36 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     }
   });
 
+  // Crear nueva categoría de ingresos
+  apiRouter.post("/income-categories", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { name, description } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: "El nombre de la categoría es requerido" });
+      }
+
+      // Generar código único para la categoría
+      const existingCategories = await db.select().from(incomeCategories);
+      const nextNumber = existingCategories.length + 1;
+      const code = `ING${nextNumber.toString().padStart(3, '0')}`;
+
+      const newCategory = await db.insert(incomeCategories).values({
+        code,
+        name: name.trim(),
+        description: description?.trim() || '',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }).returning();
+
+      res.status(201).json(newCategory[0]);
+    } catch (error) {
+      console.error("Error al crear categoría de ingresos:", error);
+      res.status(500).json({ message: "Error al crear categoría de ingresos" });
+    }
+  });
+
   // Obtener subcategorías por categoría de ingresos
   apiRouter.get("/income-categories/:categoryId/subcategories", async (req: Request, res: Response) => {
     try {
@@ -62,6 +92,36 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     } catch (error) {
       console.error("Error al obtener categorías de egresos:", error);
       res.status(500).json({ message: "Error al obtener categorías de egresos" });
+    }
+  });
+
+  // Crear nueva categoría de egresos
+  apiRouter.post("/expense-categories", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { name, description } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: "El nombre de la categoría es requerido" });
+      }
+
+      // Generar código único para la categoría
+      const existingCategories = await db.select().from(expenseCategories);
+      const nextNumber = existingCategories.length + 1;
+      const code = `EGR${nextNumber.toString().padStart(3, '0')}`;
+
+      const newCategory = await db.insert(expenseCategories).values({
+        code,
+        name: name.trim(),
+        description: description?.trim() || '',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }).returning();
+
+      res.status(201).json(newCategory[0]);
+    } catch (error) {
+      console.error("Error al crear categoría de egresos:", error);
+      res.status(500).json({ message: "Error al crear categoría de egresos" });
     }
   });
 
