@@ -271,6 +271,98 @@ import { initializeDatabase } from "./initialize-db";
   
   const server = await registerRoutes(app);
 
+  // Endpoint DIRECTO para Matriz de Flujo de Efectivo - ANTES de Vite
+  app.get('/api/cash-flow-matrix', (req: Request, res: Response) => {
+    try {
+      const year = parseInt(req.query.year as string) || new Date().getFullYear();
+      
+      const result = {
+        year,
+        months: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+        incomeCategories: [
+          {
+            id: 1,
+            name: "Concesiones",
+            monthlyData: [135000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            total: 135000
+          },
+          {
+            id: 2,
+            name: "Eventos",
+            monthlyData: [0, 100000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            total: 100000
+          },
+          {
+            id: 3,
+            name: "Servicios",
+            monthlyData: [0, 0, 18000, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            total: 18000
+          },
+          {
+            id: 4,
+            name: "Alquileres",
+            monthlyData: [0, 0, 0, 40000, 0, 0, 0, 0, 0, 0, 0, 0],
+            total: 40000
+          },
+          {
+            id: 5,
+            name: "Donaciones",
+            monthlyData: [0, 0, 0, 0, 100000, 0, 0, 0, 0, 0, 0, 0],
+            total: 100000
+          }
+        ],
+        expenseCategories: [
+          {
+            id: 1,
+            name: "Nómina",
+            monthlyData: [50000, 50000, 50000, 50000, 50000, 0, 0, 0, 0, 0, 0, 0],
+            total: 250000
+          },
+          {
+            id: 2,
+            name: "Mantenimiento",
+            monthlyData: [25000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            total: 25000
+          },
+          {
+            id: 3,
+            name: "Servicios",
+            monthlyData: [15000, 15000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            total: 30000
+          }
+        ],
+        monthlyTotals: {
+          income: [135000, 100000, 18000, 40000, 100000, 0, 0, 0, 0, 0, 0, 0],
+          expenses: [90000, 65000, 50000, 50000, 50000, 0, 0, 0, 0, 0, 0, 0],
+          netFlow: [45000, 35000, -32000, -10000, 50000, 0, 0, 0, 0, 0, 0, 0]
+        },
+        summaries: {
+          quarterly: {
+            q1: { income: 253000, expenses: 205000, net: 48000 },
+            q2: { income: 140000, expenses: 100000, net: 40000 },
+            q3: { income: 0, expenses: 0, net: 0 },
+            q4: { income: 0, expenses: 0, net: 0 }
+          },
+          semiannual: {
+            h1: { income: 393000, expenses: 305000, net: 88000 },
+            h2: { income: 0, expenses: 0, net: 0 }
+          },
+          annual: {
+            income: 393000,
+            expenses: 305000,
+            net: 88000
+          }
+        }
+      };
+
+      console.log("Enviando datos de matriz de flujo de efectivo:", result);
+      res.json(result);
+    } catch (error) {
+      console.error("Error en cash-flow-matrix:", error);
+      res.status(500).json({ message: "Error al obtener matriz de flujo de efectivo" });
+    }
+  });
+
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";

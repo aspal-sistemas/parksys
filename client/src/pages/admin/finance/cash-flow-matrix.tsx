@@ -56,8 +56,8 @@ export default function CashFlowMatrix() {
   const [viewMode, setViewMode] = useState<"monthly" | "quarterly" | "semiannual">("monthly");
 
   const { data: cashFlowData, isLoading } = useQuery<CashFlowMatrixData>({
-    queryKey: ["/direct/cash-flow-matrix", selectedYear],
-    queryFn: () => fetch(`/direct/cash-flow-matrix?year=${selectedYear}`).then(res => res.json()),
+    queryKey: ["/api/cash-flow-matrix", selectedYear],
+    queryFn: () => fetch(`/api/cash-flow-matrix?year=${selectedYear}`).then(res => res.json()),
     enabled: true
   });
 
