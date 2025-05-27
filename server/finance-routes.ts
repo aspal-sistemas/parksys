@@ -36,7 +36,7 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   });
 
   // Crear nueva categoría de ingresos
-  apiRouter.post("/income-categories", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.post("/income-categories", async (req: Request, res: Response) => {
     try {
       console.log("Creando nueva categoría de ingresos:", req.body);
       const { name, description } = req.body;
