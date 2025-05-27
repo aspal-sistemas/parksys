@@ -45,12 +45,13 @@ const IncomesPage = () => {
     queryKey: ["/api/actual-incomes"],
   });
 
-  const { data: incomeCategories } = useQuery({
+  const { data: incomeCategories, isLoading: categoriesLoading } = useQuery({
     queryKey: ["/api/income-categories"],
   });
 
   // Debug: mostrar las categorías en consola
   console.log("Categorías de ingresos cargadas:", incomeCategories);
+  console.log("Está cargando categorías:", categoriesLoading);
 
   const { data: parks } = useQuery({
     queryKey: ["/api/parks"],
@@ -151,6 +152,31 @@ const IncomesPage = () => {
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="parkId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Parque</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(Number(value))}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona un parque" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {Array.isArray(parks) && parks.map((park: any) => (
+                              <SelectItem key={park.id} value={park.id.toString()}>
+                                {park.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -165,11 +191,23 @@ const IncomesPage = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {Array.isArray(incomeCategories) && incomeCategories.map((category: any) => (
-                                <SelectItem key={category.id} value={category.id.toString()}>
-                                  {category.name}
+                              {categoriesLoading ? (
+                                <SelectItem value="loading" disabled>
+                                  Cargando categorías...
                                 </SelectItem>
-                              ))}
+                              ) : (
+                                Array.isArray(incomeCategories) && incomeCategories.length > 0 ? (
+                                  incomeCategories.map((category: any) => (
+                                    <SelectItem key={category.id} value={category.id.toString()}>
+                                      {category.name}
+                                    </SelectItem>
+                                  ))
+                                ) : (
+                                  <SelectItem value="no-categories" disabled>
+                                    No hay categorías disponibles
+                                  </SelectItem>
+                                )
+                              )}
                             </SelectContent>
                           </Select>
                           <FormMessage />

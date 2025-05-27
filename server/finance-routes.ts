@@ -27,6 +27,7 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   apiRouter.get("/income-categories", async (_req: Request, res: Response) => {
     try {
       const categories = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+      console.log("Categorías encontradas:", categories);
       res.json(categories);
     } catch (error) {
       console.error("Error al obtener categorías de ingresos:", error);
