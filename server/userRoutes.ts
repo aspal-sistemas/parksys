@@ -329,6 +329,13 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
             role: newUser.role
           });
           
+          // Guardar la imagen de perfil en el caché si existe
+          if (userData.profileImageUrl && newUser.id) {
+            const { saveProfileImage } = await import('./profileImageCache');
+            saveProfileImage(newUser.id, userData.profileImageUrl);
+            console.log(`Imagen de perfil guardada en caché para usuario ${newUser.id}: ${userData.profileImageUrl}`);
+          }
+          
           // Si el usuario tiene rol de voluntario, sincronizar con la tabla de voluntarios
           if (newUser.role === 'voluntario') {
             await syncUserWithVolunteerTable(newUser);

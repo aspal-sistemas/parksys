@@ -2063,23 +2063,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Variable para almacenar permisos en memoria
+  let rolePermissionsCache: any = {
+    admin: {},
+    director: {},
+    manager: {},
+    supervisor: {},
+    user: {},
+    guardaparques: {},
+    voluntario: {},
+    instructor: {},
+    concesionario: {}
+  };
+
   // Rutas para gestión de permisos de roles
   apiRouter.get("/role-permissions", async (_req: Request, res: Response) => {
     try {
-      // Por ahora devolvemos una estructura predeterminada
-      // En un sistema real, esto vendría de la base de datos
-      const permissions = {
-        admin: {},
-        director: {},
-        manager: {},
-        supervisor: {},
-        user: {},
-        guardaparques: {},
-        voluntario: {},
-        instructor: {},
-        concesionario: {}
-      };
-      res.json(permissions);
+      // Devolvemos los permisos almacenados en caché
+      res.json(rolePermissionsCache);
     } catch (error) {
       console.error("Error al obtener permisos:", error);
       res.status(500).json({ message: "Error al obtener permisos" });
@@ -2090,13 +2091,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { permissions } = req.body;
       
-      // En un sistema real, aquí guardaríamos en la base de datos
-      // Por ahora, solo simulamos la respuesta exitosa
+      // Actualizar el caché de permisos
+      rolePermissionsCache = { ...permissions };
       console.log("Permisos actualizados:", permissions);
       
       res.json({ 
         message: "Permisos actualizados correctamente",
-        permissions 
+        permissions: rolePermissionsCache
       });
     } catch (error) {
       console.error("Error al guardar permisos:", error);
