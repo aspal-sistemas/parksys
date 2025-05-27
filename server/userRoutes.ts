@@ -439,6 +439,13 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
       // Actualizar el usuario
       const updatedUser = await storage.updateUser(userId, userData);
       
+      // Guardar la imagen de perfil en el caché si existe
+      if (updateData.profileImageUrl && updatedUser.id) {
+        const { saveProfileImage } = await import('./profileImageCache');
+        saveProfileImage(updatedUser.id, updateData.profileImageUrl);
+        console.log(`Imagen de perfil guardada en caché para usuario ${updatedUser.id}: ${updateData.profileImageUrl}`);
+      }
+      
       // Si el usuario tiene rol de instructor, sincronizar con la tabla de instructores
       if (updatedUser.role === 'instructor') {
         try {
