@@ -32,7 +32,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Activity, Park } from '@shared/schema';
-import NewActivityForm from '@/components/NewActivityForm';
+// import NewActivityForm from '@/components/NewActivityForm';
 
 const AdminActivities = () => {
   const { toast } = useToast();
