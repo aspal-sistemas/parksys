@@ -53,7 +53,9 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
         code,
         name: name.trim(),
         description: description?.trim() || '',
+        level: 1,
         isActive: true,
+        sortOrder: nextNumber,
         createdAt: new Date(),
         updatedAt: new Date()
       }).returning();
@@ -113,7 +115,9 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
         code,
         name: name.trim(),
         description: description?.trim() || '',
+        level: 1,
         isActive: true,
+        sortOrder: nextNumber,
         createdAt: new Date(),
         updatedAt: new Date()
       }).returning();
