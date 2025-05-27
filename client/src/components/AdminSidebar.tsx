@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
+import { useAuth } from '@/hooks/useAuth';
+import UserProfileImage from '@/components/UserProfileImage';
 import { 
   Home, 
   Map, 
@@ -134,6 +136,7 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
 
 const AdminSidebar: React.FC = () => {
   const [location] = useLocation();
+  const { user, logout } = useAuth();
   
   // Determinar qué sección debe estar abierta basado en la URL actual
   const getInitialOpenSections = () => {
@@ -780,27 +783,50 @@ const AdminSidebar: React.FC = () => {
       
       <div className="p-4 border-t">
         <div className="flex items-center mb-4">
-          <div className="bg-gray-200 rounded-full h-10 w-10 flex items-center justify-center text-gray-600">
-            <span className="font-medium">AD</span>
-          </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium text-gray-900">Admin</p>
-            <p className="text-xs text-gray-500">admin@parquesmx.com</p>
-          </div>
+          {user ? (
+            <>
+              <UserProfileImage 
+                userId={user.id} 
+                size="md" 
+                className="h-10 w-10" 
+              />
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-900">{user.fullName || user.username}</p>
+                <p className="text-xs text-gray-500">{user.email}</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-gray-200 rounded-full h-10 w-10 flex items-center justify-center text-gray-600">
+                <span className="font-medium">?</span>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-900">Cargando...</p>
+                <p className="text-xs text-gray-500">...</p>
+              </div>
+            </>
+          )}
         </div>
         
         <div className="flex space-x-2">
-          <Button variant="outline" size="sm" className="flex-1">
-            <Settings className="h-4 w-4 mr-1" />
-            Cuenta
-          </Button>
-          
-          <Link href="/admin/login">
-            <Button variant="ghost" size="sm" className="flex-1 text-red-500 hover:bg-red-50 hover:text-red-600">
-              <LogOut className="h-4 w-4 mr-1" />
-              Salir
+          <Link href="/admin/settings/profile">
+            <Button variant="outline" size="sm" className="flex-1">
+              <Settings className="h-4 w-4 mr-1" />
+              Cuenta
             </Button>
           </Link>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex-1 text-red-500 hover:bg-red-50 hover:text-red-600"
+            onClick={() => {
+              logout();
+            }}
+          >
+            <LogOut className="h-4 w-4 mr-1" />
+            Salir
+          </Button>
         </div>
       </div>
     </div>

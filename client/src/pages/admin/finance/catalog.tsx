@@ -111,10 +111,13 @@ export default function CatalogPage() {
       });
     },
     onSuccess: () => {
+      // Invalidar múltiples queries para asegurar la actualización
       queryClient.invalidateQueries({ queryKey: ['/api/income-categories'] });
+      queryClient.refetchQueries({ queryKey: ['/api/income-categories'] });
+      
       toast({
         title: "Categoría actualizada",
-        description: "La categoría de ingresos se ha actualizado exitosamente.",
+        description: "La categoría de ingresos se ha actualizada exitosamente.",
       });
       setIsEditCategoryOpen(false);
       setSelectedCategoryToEdit(null);
