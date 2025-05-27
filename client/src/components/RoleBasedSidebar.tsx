@@ -568,7 +568,7 @@ const RoleBasedSidebar: React.FC = () => {
         <div className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
           {(user as any)?.profileImageUrl ? (
             <img 
-              src={`/api/users/${(user as any)?.id}/profile-image`}
+              src={(user as any).profileImageUrl}
               alt="Foto de perfil"
               className="h-8 w-8 rounded-full object-cover border border-gray-200"
               onError={(e) => {
