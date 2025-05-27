@@ -384,6 +384,48 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       </NavItem>
     </ModuleNav>
 
+    <ModuleNav 
+      title="Arbolado" 
+      icon={<TreePine className="h-5 w-5" />}
+      value="trees"
+    >
+      <NavItem 
+        href="/admin/trees/inventory" 
+        icon={<Database className="h-5 w-5" />}
+        active={location.startsWith('/admin/trees/inventory')}
+      >
+        Inventario
+      </NavItem>
+      <NavItem 
+        href="/admin/trees/species" 
+        icon={<Leaf className="h-5 w-5" />}
+        active={location.startsWith('/admin/trees/species')}
+      >
+        Especies
+      </NavItem>
+      <NavItem 
+        href="/admin/trees/maintenance" 
+        icon={<Wrench className="h-5 w-5" />}
+        active={location.startsWith('/admin/trees/maintenance')}
+      >
+        Mantenimiento
+      </NavItem>
+      <NavItem 
+        href="/admin/trees/health" 
+        icon={<HeartHandshake className="h-5 w-5" />}
+        active={location.startsWith('/admin/trees/health')}
+      >
+        Estado Sanitario
+      </NavItem>
+      <NavItem 
+        href="/admin/trees/reports" 
+        icon={<FileText className="h-5 w-5" />}
+        active={location.startsWith('/admin/trees/reports')}
+      >
+        Reportes
+      </NavItem>
+    </ModuleNav>
+
     <NavItem 
       href="/admin/settings" 
       icon={<Settings className="h-5 w-5" />}
