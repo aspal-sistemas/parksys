@@ -251,6 +251,27 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       </NavItem>
     </ModuleNav>
 
+    <ModuleNav 
+      title="Marketing" 
+      icon={<Megaphone className="h-5 w-5" />}
+      value="marketing"
+    >
+      <NavItem 
+        href="/admin/marketing/sponsors" 
+        icon={<Handshake className="h-5 w-5" />}
+        active={location.startsWith('/admin/marketing/sponsors')}
+      >
+        Patrocinios
+      </NavItem>
+      <NavItem 
+        href="/admin/marketing/reports" 
+        icon={<FileText className="h-5 w-5" />}
+        active={location.startsWith('/admin/marketing/reports')}
+      >
+        Reportes
+      </NavItem>
+    </ModuleNav>
+
     <NavItem 
       href="/admin/settings" 
       icon={<Settings className="h-5 w-5" />}
