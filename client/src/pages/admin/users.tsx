@@ -18,7 +18,12 @@ import {
   AlertCircle,
   Info,
   Star,
-  User
+  User,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Filter,
+  RotateCcw
 } from 'lucide-react';
 import UserAvatar from '@/components/UserAvatar';
 import UserProfileImage from '@/components/UserProfileImage';
@@ -1187,6 +1192,12 @@ const AdminUsers = () => {
   const [isNewUser, setIsNewUser] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  
+  // Estados para ordenamiento y filtrado
+  const [sortField, setSortField] = useState<keyof User>('id');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [roleFilter, setRoleFilter] = useState<string>('');
+  const [showFilters, setShowFilters] = useState(false);
 
   // Fetch users
   const {
@@ -1443,16 +1454,59 @@ const AdminUsers = () => {
     }
   };
 
-  // Filter users based on search query
-  const filteredUsers = users.filter((user: User) => {
-    const searchLower = searchQuery.toLowerCase();
-    return (
-      user.username.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower) ||
-      (user.fullName && user.fullName.toLowerCase().includes(searchLower)) ||
-      user.role.toLowerCase().includes(searchLower)
-    );
-  });
+  // Funciones de ordenamiento y filtrado
+  const handleSort = (field: keyof User) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: keyof User) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
+    }
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="h-4 w-4 text-blue-600" />
+      : <ArrowDown className="h-4 w-4 text-blue-600" />;
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setRoleFilter('');
+    setSortField('id');
+    setSortDirection('asc');
+  };
+
+  // Filter and sort users
+  const filteredAndSortedUsers = users
+    .filter((user: User) => {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = 
+        user.username.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower) ||
+        (user.fullName && user.fullName.toLowerCase().includes(searchLower)) ||
+        user.role.toLowerCase().includes(searchLower);
+      
+      const matchesRole = !roleFilter || user.role === roleFilter;
+      
+      return matchesSearch && matchesRole;
+    })
+    .sort((a: User, b: User) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      
+      if (aValue === null || aValue === undefined) return 1;
+      if (bValue === null || bValue === undefined) return -1;
+      
+      let comparison = 0;
+      if (aValue < bValue) comparison = -1;
+      if (aValue > bValue) comparison = 1;
+      
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
 
   // Format date
   const formatDate = (date: Date | string | null) => {
@@ -1500,21 +1554,78 @@ const AdminUsers = () => {
       title="Gestión de Usuarios"
     >
       {/* Search and actions bar */}
-      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="relative w-full sm:w-96">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            type="search"
-            placeholder="Buscar usuarios..."
-            className="pl-9"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      <div className="mb-6 space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="relative w-full sm:w-96">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="search"
+              placeholder="Buscar usuarios..."
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filtros
+            </Button>
+            <Button onClick={handleCreateUser}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Nuevo Usuario
+            </Button>
+          </div>
         </div>
-        <Button onClick={handleCreateUser}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Nuevo Usuario
-        </Button>
+
+        {/* Filtros expandibles */}
+        {showFilters && (
+          <div className="bg-gray-50 p-4 rounded-lg border space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Filtrar por rol
+                </label>
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los roles" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todos los roles</SelectItem>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="director">Director</SelectItem>
+                    <SelectItem value="manager">Gestor</SelectItem>
+                    <SelectItem value="supervisor">Supervisor</SelectItem>
+                    <SelectItem value="ciudadano">Ciudadano</SelectItem>
+                    <SelectItem value="voluntario">Voluntario</SelectItem>
+                    <SelectItem value="instructor">Instructor</SelectItem>
+                    <SelectItem value="guardaparques">Guardaparques</SelectItem>
+                    <SelectItem value="guardia">Guardia</SelectItem>
+                    <SelectItem value="concesionario">Concesionario</SelectItem>
+                    <SelectItem value="user">Usuario</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={clearFilters}
+                  className="flex items-center gap-2"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Limpiar filtros
+                </Button>
+              </div>
+            </div>
+            <div className="text-sm text-gray-600">
+              Mostrando {filteredAndSortedUsers.length} de {users.length} usuarios
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Users table */}
@@ -1528,7 +1639,7 @@ const AdminUsers = () => {
             <X className="h-8 w-8 mr-2" />
             <span>Error al cargar los usuarios. Inténtalo de nuevo.</span>
           </div>
-        ) : filteredUsers.length === 0 ? (
+        ) : filteredAndSortedUsers.length === 0 ? (
           <div className="flex flex-col justify-center items-center p-8 text-gray-500">
             <UserRound className="h-12 w-12 mb-2" />
             <h3 className="text-lg font-medium">No se encontraron usuarios</h3>
@@ -1542,17 +1653,65 @@ const AdminUsers = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Usuario</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead>Fecha de Creación</TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('id')}
+                  >
+                    ID {getSortIcon('id')}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('username')}
+                  >
+                    Usuario {getSortIcon('username')}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('email')}
+                  >
+                    Email {getSortIcon('email')}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('fullName')}
+                  >
+                    Nombre {getSortIcon('fullName')}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('role')}
+                  >
+                    Rol {getSortIcon('role')}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('createdAt')}
+                  >
+                    Fecha de Creación {getSortIcon('createdAt')}
+                  </Button>
+                </TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.map((user: User) => (
+              {filteredAndSortedUsers.map((user: User) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.id}</TableCell>
                   <TableCell>
