@@ -99,6 +99,60 @@ export default function CatalogPage() {
     },
   });
 
+  // Mutación para editar categoría de ingresos
+  const editIncomeCategoryMutation = useMutation({
+    mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
+      return apiRequest(`/api/income-categories/${id}`, {
+        method: 'PUT',
+        data: categoryData,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/income-categories'] });
+      toast({
+        title: "Categoría actualizada",
+        description: "La categoría de ingresos se ha actualizado exitosamente.",
+      });
+      setIsEditCategoryOpen(false);
+      setSelectedCategoryToEdit(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar la categoría. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+      console.error("Error actualizando categoría:", error);
+    },
+  });
+
+  // Mutación para editar categoría de egresos
+  const editExpenseCategoryMutation = useMutation({
+    mutationFn: async ({ id, categoryData }: { id: number; categoryData: { name: string; description: string } }) => {
+      return apiRequest(`/api/expense-categories/${id}`, {
+        method: 'PUT',
+        data: categoryData,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/expense-categories'] });
+      toast({
+        title: "Categoría actualizada",
+        description: "La categoría de egresos se ha actualizado exitosamente.",
+      });
+      setIsEditCategoryOpen(false);
+      setSelectedCategoryToEdit(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar la categoría. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+      console.error("Error actualizando categoría:", error);
+    },
+  });
+
   const handleCreateCategory = () => {
     if (!newCategory.name.trim()) {
       toast({
