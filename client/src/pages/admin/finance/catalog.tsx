@@ -394,11 +394,12 @@ export default function CatalogPage() {
         </div>
 
         <Tabs defaultValue="ingresos" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="ingresos">Categorías de Ingresos</TabsTrigger>
             <TabsTrigger value="egresos">Categorías de Egresos</TabsTrigger>
             <TabsTrigger value="proveedores">Proveedores</TabsTrigger>
-            <TabsTrigger value="registros-ingresos">Registros de Ingresos</TabsTrigger>
+            <TabsTrigger value="tipos-proveedores">Tipos de Proveedores</TabsTrigger>
+            <TabsTrigger value="tipos-ingresos">Tipos de Ingresos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="ingresos" className="space-y-4">
@@ -835,26 +836,26 @@ export default function CatalogPage() {
             </Card>
           </TabsContent>
 
-          {/* Pestaña de Registros de Ingresos */}
-          <TabsContent value="registros-ingresos" className="space-y-4">
+          {/* Pestaña de Tipos de Ingresos */}
+          <TabsContent value="tipos-ingresos" className="space-y-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-2xl font-bold flex items-center gap-2">
                   <Receipt className="h-6 w-6" />
-                  Registros de Ingresos
+                  Tipos de Ingresos
                 </CardTitle>
                 <Dialog open={isNewIncomeRecordOpen} onOpenChange={setIsNewIncomeRecordOpen}>
                   <DialogTrigger asChild>
                     <Button>
                       <Plus className="h-4 w-4 mr-2" />
-                      Nuevo Registro
+                      Nuevo Tipo
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
-                      <DialogTitle>Crear Registro de Ingreso</DialogTitle>
+                      <DialogTitle>Crear Nuevo Tipo de Ingreso</DialogTitle>
                       <DialogDescription>
-                        Registra un nuevo ingreso en el sistema.
+                        Define un nuevo tipo de ingreso para categorizar los ingresos del sistema.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
