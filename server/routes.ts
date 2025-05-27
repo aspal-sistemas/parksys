@@ -30,6 +30,7 @@ import { registerUsersConcessionairesRoutes } from "./users-concessionaires-rout
 import { registerConcessionLocationsRoutes } from "./concession-locations-routes";
 import { registerConcessionPaymentsRoutes } from "./concession-payments-routes";
 import { registerConcessionEvaluationRoutes } from "./concession-evaluations-routes";
+import { registerFinanceRoutes } from "./finance-routes";
 import { 
   uploadParkFile, 
   handleMulterErrors, 
@@ -112,6 +113,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de eventos
   registerEventRoutes(app, apiRouter, isAuthenticated);
+  
+  // Registramos las rutas del módulo financiero
+  registerFinanceRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de inventario de árboles
   // Comentamos esta línea para evitar conflictos con las rutas en tree_routes.ts
