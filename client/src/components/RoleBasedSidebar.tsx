@@ -342,6 +342,48 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       </NavItem>
     </ModuleNav>
 
+    <ModuleNav 
+      title="Recursos Humanos" 
+      icon={<Users className="h-5 w-5" />}
+      value="hr"
+    >
+      <NavItem 
+        href="/admin/hr/employees" 
+        icon={<User className="h-5 w-5" />}
+        active={location.startsWith('/admin/hr/employees')}
+      >
+        Personal
+      </NavItem>
+      <NavItem 
+        href="/admin/hr/training" 
+        icon={<GraduationCap className="h-5 w-5" />}
+        active={location.startsWith('/admin/hr/training')}
+      >
+        Capacitación
+      </NavItem>
+      <NavItem 
+        href="/admin/hr/payroll" 
+        icon={<CreditCard className="h-5 w-5" />}
+        active={location.startsWith('/admin/hr/payroll')}
+      >
+        Nómina
+      </NavItem>
+      <NavItem 
+        href="/admin/hr/wellness" 
+        icon={<Award className="h-5 w-5" />}
+        active={location.startsWith('/admin/hr/wellness')}
+      >
+        Bienestar
+      </NavItem>
+      <NavItem 
+        href="/admin/hr/analytics" 
+        icon={<BarChart className="h-5 w-5" />}
+        active={location.startsWith('/admin/hr/analytics')}
+      >
+        Analytics
+      </NavItem>
+    </ModuleNav>
+
     <NavItem 
       href="/admin/settings" 
       icon={<Settings className="h-5 w-5" />}
