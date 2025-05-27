@@ -49,6 +49,9 @@ const IncomesPage = () => {
     queryKey: ["/api/income-categories"],
   });
 
+  // Debug: mostrar las categorías en consola
+  console.log("Categorías de ingresos cargadas:", incomeCategories);
+
   const { data: parks } = useQuery({
     queryKey: ["/api/parks"],
   });
