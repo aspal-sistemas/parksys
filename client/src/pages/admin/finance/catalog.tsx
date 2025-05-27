@@ -622,6 +622,425 @@ export default function CatalogPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Pestaña de Proveedores */}
+          <TabsContent value="proveedores" className="space-y-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                  <Building2 className="h-6 w-6" />
+                  Catálogo de Proveedores
+                </CardTitle>
+                <Dialog open={isNewProviderOpen} onOpenChange={setIsNewProviderOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nuevo Proveedor
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                      <DialogTitle>Crear Nuevo Proveedor</DialogTitle>
+                      <DialogDescription>
+                        Ingresa los datos del nuevo proveedor.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="providerName">Nombre *</Label>
+                          <Input
+                            id="providerName"
+                            value={newProvider.name}
+                            onChange={(e) => setNewProvider({...newProvider, name: e.target.value})}
+                            placeholder="Nombre del proveedor"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="businessName">Razón Social</Label>
+                          <Input
+                            id="businessName"
+                            value={newProvider.businessName}
+                            onChange={(e) => setNewProvider({...newProvider, businessName: e.target.value})}
+                            placeholder="Razón social"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="contactPerson">Persona de Contacto</Label>
+                          <Input
+                            id="contactPerson"
+                            value={newProvider.contactPerson}
+                            onChange={(e) => setNewProvider({...newProvider, contactPerson: e.target.value})}
+                            placeholder="Nombre del contacto"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="providerType">Tipo de Proveedor</Label>
+                          <Select 
+                            value={newProvider.providerType} 
+                            onValueChange={(value) => setNewProvider({...newProvider, providerType: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar tipo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="servicios">Servicios</SelectItem>
+                              <SelectItem value="productos">Productos</SelectItem>
+                              <SelectItem value="construccion">Construcción</SelectItem>
+                              <SelectItem value="mantenimiento">Mantenimiento</SelectItem>
+                              <SelectItem value="consultoria">Consultoría</SelectItem>
+                              <SelectItem value="otros">Otros</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={newProvider.email}
+                            onChange={(e) => setNewProvider({...newProvider, email: e.target.value})}
+                            placeholder="email@ejemplo.com"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="phone">Teléfono</Label>
+                          <Input
+                            id="phone"
+                            value={newProvider.phone}
+                            onChange={(e) => setNewProvider({...newProvider, phone: e.target.value})}
+                            placeholder="Número de teléfono"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="address">Dirección</Label>
+                        <Textarea
+                          id="address"
+                          value={newProvider.address}
+                          onChange={(e) => setNewProvider({...newProvider, address: e.target.value})}
+                          placeholder="Dirección completa"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="city">Ciudad</Label>
+                          <Input
+                            id="city"
+                            value={newProvider.city}
+                            onChange={(e) => setNewProvider({...newProvider, city: e.target.value})}
+                            placeholder="Ciudad"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="state">Estado</Label>
+                          <Input
+                            id="state"
+                            value={newProvider.state}
+                            onChange={(e) => setNewProvider({...newProvider, state: e.target.value})}
+                            placeholder="Estado"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="notes">Notas</Label>
+                        <Textarea
+                          id="notes"
+                          value={newProvider.notes}
+                          onChange={(e) => setNewProvider({...newProvider, notes: e.target.value})}
+                          placeholder="Notas adicionales"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setIsNewProviderOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={() => createProviderMutation.mutate(newProvider)}>
+                        Crear Proveedor
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                {providersLoading ? (
+                  <div className="text-center py-8">
+                    <p>Cargando proveedores...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {providers && providers.length > 0 ? (
+                      providers.map((provider: any) => (
+                        <div key={provider.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <Building2 className="h-5 w-5 text-blue-600" />
+                              <div>
+                                <h3 className="font-semibold">{provider.name}</h3>
+                                <p className="text-sm text-gray-600">{provider.code}</p>
+                                <div className="flex items-center gap-4 mt-1">
+                                  {provider.providerType && (
+                                    <Badge variant="secondary">{provider.providerType}</Badge>
+                                  )}
+                                  {provider.email && (
+                                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                                      <Mail className="h-3 w-3" />
+                                      {provider.email}
+                                    </div>
+                                  )}
+                                  {provider.phone && (
+                                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                                      <Phone className="h-3 w-3" />
+                                      {provider.phone}
+                                    </div>
+                                  )}
+                                </div>
+                                {provider.city && provider.state && (
+                                  <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+                                    <MapPin className="h-3 w-3" />
+                                    {provider.city}, {provider.state}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {provider.rating && (
+                              <div className="flex items-center gap-1">
+                                <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                                <span className="text-sm">{provider.rating}</span>
+                              </div>
+                            )}
+                            <Button variant="ghost" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">No hay proveedores registrados</p>
+                        <p className="text-sm text-gray-400 mt-1">Crea un nuevo proveedor para comenzar</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Pestaña de Registros de Ingresos */}
+          <TabsContent value="registros-ingresos" className="space-y-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                  <Receipt className="h-6 w-6" />
+                  Registros de Ingresos
+                </CardTitle>
+                <Dialog open={isNewIncomeRecordOpen} onOpenChange={setIsNewIncomeRecordOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nuevo Registro
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>Crear Registro de Ingreso</DialogTitle>
+                      <DialogDescription>
+                        Registra un nuevo ingreso en el sistema.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div>
+                        <Label htmlFor="categorySelect">Categoría *</Label>
+                        <Select 
+                          value={newIncomeRecord.categoryId} 
+                          onValueChange={(value) => setNewIncomeRecord({...newIncomeRecord, categoryId: value})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar categoría" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {incomeCategories?.map((category: any) => (
+                              <SelectItem key={category.id} value={category.id.toString()}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="description">Descripción *</Label>
+                        <Textarea
+                          id="description"
+                          value={newIncomeRecord.description}
+                          onChange={(e) => setNewIncomeRecord({...newIncomeRecord, description: e.target.value})}
+                          placeholder="Descripción del ingreso"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="amount">Monto *</Label>
+                          <Input
+                            id="amount"
+                            type="number"
+                            step="0.01"
+                            value={newIncomeRecord.amount}
+                            onChange={(e) => setNewIncomeRecord({...newIncomeRecord, amount: e.target.value})}
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="incomeDate">Fecha *</Label>
+                          <Input
+                            id="incomeDate"
+                            type="date"
+                            value={newIncomeRecord.incomeDate}
+                            onChange={(e) => setNewIncomeRecord({...newIncomeRecord, incomeDate: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="source">Fuente</Label>
+                          <Input
+                            id="source"
+                            value={newIncomeRecord.source}
+                            onChange={(e) => setNewIncomeRecord({...newIncomeRecord, source: e.target.value})}
+                            placeholder="Fuente del ingreso"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="paymentMethod">Método de Pago</Label>
+                          <Select 
+                            value={newIncomeRecord.paymentMethod} 
+                            onValueChange={(value) => setNewIncomeRecord({...newIncomeRecord, paymentMethod: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar método" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="efectivo">Efectivo</SelectItem>
+                              <SelectItem value="transferencia">Transferencia</SelectItem>
+                              <SelectItem value="cheque">Cheque</SelectItem>
+                              <SelectItem value="tarjeta">Tarjeta</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      {parks && (
+                        <div>
+                          <Label htmlFor="parkSelect">Parque (Opcional)</Label>
+                          <Select 
+                            value={newIncomeRecord.parkId} 
+                            onValueChange={(value) => setNewIncomeRecord({...newIncomeRecord, parkId: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar parque" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {parks.map((park: any) => (
+                                <SelectItem key={park.id} value={park.id.toString()}>
+                                  {park.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                      <div>
+                        <Label htmlFor="recordNotes">Notas</Label>
+                        <Textarea
+                          id="recordNotes"
+                          value={newIncomeRecord.notes}
+                          onChange={(e) => setNewIncomeRecord({...newIncomeRecord, notes: e.target.value})}
+                          placeholder="Notas adicionales"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setIsNewIncomeRecordOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={() => createIncomeRecordMutation.mutate(newIncomeRecord)}>
+                        Crear Registro
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                {incomeRecordsLoading ? (
+                  <div className="text-center py-8">
+                    <p>Cargando registros de ingresos...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {incomeRecords && incomeRecords.length > 0 ? (
+                      incomeRecords.map((record: any) => (
+                        <div key={record.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <Receipt className="h-5 w-5 text-green-600" />
+                              <div>
+                                <h3 className="font-semibold">{record.description}</h3>
+                                <p className="text-sm text-gray-600">{record.code}</p>
+                                <div className="flex items-center gap-4 mt-1">
+                                  <Badge variant="outline" className="text-green-600">
+                                    ${parseFloat(record.amount || 0).toLocaleString()} {record.currency || 'MXN'}
+                                  </Badge>
+                                  {record.categoryName && (
+                                    <Badge variant="secondary">{record.categoryName}</Badge>
+                                  )}
+                                  {record.incomeDate && (
+                                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                                      <Calendar className="h-3 w-3" />
+                                      {new Date(record.incomeDate).toLocaleDateString()}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-4 mt-1">
+                                  {record.source && (
+                                    <span className="text-sm text-gray-500">Fuente: {record.source}</span>
+                                  )}
+                                  {record.parkName && (
+                                    <span className="text-sm text-gray-500">Parque: {record.parkName}</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant={record.status === 'registrado' ? 'default' : 'secondary'}
+                            >
+                              {record.status}
+                            </Badge>
+                            <Button variant="ghost" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <Receipt className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">No hay registros de ingresos</p>
+                        <p className="text-sm text-gray-400 mt-1">Crea un nuevo registro para comenzar</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {/* Diálogo para editar categoría */}
