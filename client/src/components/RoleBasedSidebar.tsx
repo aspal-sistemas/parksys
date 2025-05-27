@@ -566,7 +566,23 @@ const RoleBasedSidebar: React.FC = () => {
       
       <div className="p-3">
         <div className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
-          <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-medium">
+          {(user as any)?.profileImageUrl ? (
+            <img 
+              src={`/api/users/${(user as any)?.id}/profile-image`}
+              alt="Foto de perfil"
+              className="h-8 w-8 rounded-full object-cover border border-gray-200"
+              onError={(e) => {
+                // Si la imagen falla, mostrar el avatar con inicial
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = target.nextElementSibling as HTMLDivElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
+            />
+          ) : null}
+          <div 
+            className={`h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-medium ${(user as any)?.profileImageUrl ? 'hidden' : ''}`}
+          >
             {((user as any)?.fullName || (user as any)?.firstName || 'U')[0].toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
