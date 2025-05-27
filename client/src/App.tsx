@@ -131,6 +131,11 @@ function Router() {
         {/* Rutas para concesionarios movidas al módulo de Concesiones */}
         <Route path="/admin/amenities" component={AdminAmenities} />
         <Route path="/admin/settings" component={AdminSettings} />
+        <Route path="/admin/permissions">
+          <Suspense fallback={<div className="p-8 text-center">Cargando permisos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/permissions')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/settings/profile">
           <Suspense fallback={<div className="p-8 text-center">Cargando perfil...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/settings/profile')))}

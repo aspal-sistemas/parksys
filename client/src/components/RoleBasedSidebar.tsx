@@ -258,6 +258,13 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
     >
       Configuración
     </NavItem>
+    <NavItem 
+      href="/admin/permissions" 
+      icon={<Shield className="h-5 w-5" />}
+      active={location === '/admin/permissions'}
+    >
+      Permisos
+    </NavItem>
   </Accordion>
 );
 

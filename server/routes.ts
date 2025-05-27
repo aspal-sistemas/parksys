@@ -2104,6 +2104,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error al guardar permisos" });
     }
   });
+
+  apiRouter.put("/role-permissions", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const newPermissions = req.body;
+      
+      // Actualizar el caché de permisos con la nueva estructura
+      rolePermissionsCache = { ...newPermissions };
+      console.log("Permisos actualizados via PUT:", newPermissions);
+      
+      res.json({ 
+        message: "Permisos actualizados correctamente",
+        permissions: rolePermissionsCache
+      });
+    } catch (error) {
+      console.error("Error al actualizar permisos:", error);
+      res.status(500).json({ message: "Error al actualizar permisos" });
+    }
+  });
   
   return httpServer;
 }
