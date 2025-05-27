@@ -26,7 +26,9 @@ import {
   Tag,
   Map,
   User,
-  Check
+  Check,
+  Eye,
+  Edit
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -135,22 +137,26 @@ const AdminPermissions = () => {
     }
   });
 
-  const togglePermission = (module: string, submodule?: string) => {
+  const togglePermission = (module: string, level: 'view' | 'edit', submodule?: string) => {
     const permissionKey = submodule ? `${module}.${submodule}` : module;
     
     setPermissions(prev => ({
       ...prev,
       [selectedRole]: {
         ...prev[selectedRole],
-        [permissionKey]: !prev[selectedRole]?.[permissionKey]
+        [`${permissionKey}.${level}`]: !prev[selectedRole]?.[`${permissionKey}.${level}`]
       }
     }));
     setHasChanges(true);
   };
 
-  const hasPermission = (module: string, submodule?: string) => {
+  const hasPermission = (module: string, level: 'view' | 'edit', submodule?: string) => {
     const permissionKey = submodule ? `${module}.${submodule}` : module;
-    return permissions[selectedRole]?.[permissionKey] || false;
+    return permissions[selectedRole]?.[`${permissionKey}.${level}`] || false;
+  };
+
+  const hasAnyPermission = (module: string, submodule?: string) => {
+    return hasPermission(module, 'view', submodule) || hasPermission(module, 'edit', submodule);
   };
 
   const resetPermissions = () => {
@@ -240,11 +246,30 @@ const AdminPermissions = () => {
                         </div>
                       </div>
                       {Object.keys(module.children || {}).length === 0 && (
-                        <Checkbox
-                          checked={hasPermission(moduleKey)}
-                          onCheckedChange={() => togglePermission(moduleKey)}
-                          className="h-5 w-5"
-                        />
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              checked={hasPermission(moduleKey, 'view')}
+                              onCheckedChange={() => togglePermission(moduleKey, 'view')}
+                              className="h-4 w-4"
+                            />
+                            <div className="flex items-center gap-1 text-sm text-gray-600">
+                              <Eye className="w-3 h-3" />
+                              <span>Ver</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              checked={hasPermission(moduleKey, 'edit')}
+                              onCheckedChange={() => togglePermission(moduleKey, 'edit')}
+                              className="h-4 w-4"
+                            />
+                            <div className="flex items-center gap-1 text-sm text-gray-600">
+                              <Edit className="w-3 h-3" />
+                              <span>Editar</span>
+                            </div>
+                          </div>
+                        </div>
                       )}
                     </div>
                     
@@ -261,11 +286,30 @@ const AdminPermissions = () => {
                                   <p className="text-sm text-gray-500">{subModule.path}</p>
                                 </div>
                               </div>
-                              <Checkbox
-                                checked={hasPermission(moduleKey, subKey)}
-                                onCheckedChange={() => togglePermission(moduleKey, subKey)}
-                                className="h-5 w-5"
-                              />
+                              <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                  <Checkbox
+                                    checked={hasPermission(moduleKey, 'view', subKey)}
+                                    onCheckedChange={() => togglePermission(moduleKey, 'view', subKey)}
+                                    className="h-4 w-4"
+                                  />
+                                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                                    <Eye className="w-3 h-3" />
+                                    <span>Ver</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Checkbox
+                                    checked={hasPermission(moduleKey, 'edit', subKey)}
+                                    onCheckedChange={() => togglePermission(moduleKey, 'edit', subKey)}
+                                    className="h-4 w-4"
+                                  />
+                                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                                    <Edit className="w-3 h-3" />
+                                    <span>Editar</span>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           );
                         })}
