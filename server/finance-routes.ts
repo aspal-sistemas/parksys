@@ -37,42 +37,50 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
 
   // Crear nueva categoría de ingresos
   apiRouter.post("/income-categories", async (req: Request, res: Response) => {
+    console.log("=== INICIANDO CREACIÓN DE CATEGORÍA ===");
+    console.log("Body recibido:", req.body);
+    
     try {
-      console.log("Creando nueva categoría de ingresos:", req.body);
       const { name, description } = req.body;
       
-      if (!name) {
-        console.log("Error: nombre requerido");
+      if (!name || name.trim() === '') {
+        console.log("Error: nombre vacío o no proporcionado");
         return res.status(400).json({ message: "El nombre de la categoría es requerido" });
       }
 
-      // Generar código único para la categoría
+      console.log("Nombre válido:", name);
+
+      // Obtener el siguiente número para el código
       const existingCategories = await db.select().from(incomeCategories);
-      console.log("Categorías existentes:", existingCategories.length);
+      console.log("Total de categorías existentes:", existingCategories.length);
+      
       const nextNumber = existingCategories.length + 1;
       const code = `ING${nextNumber.toString().padStart(3, '0')}`;
-      console.log("Nuevo código generado:", code);
+      console.log("Código generado:", code);
 
-      const categoryData = {
-        code,
-        name: name.trim(),
-        description: description?.trim() || '',
-        level: 1,
-        isActive: true,
-        sortOrder: nextNumber,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      // Insertar directamente con SQL
+      const result = await db.execute(`
+        INSERT INTO income_categories (code, name, description, level, is_active, sort_order, created_at, updated_at) 
+        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) 
+        RETURNING *
+      `, [code, name.trim(), description?.trim() || '', 1, true, nextNumber]);
       
-      console.log("Datos a insertar:", categoryData);
+      console.log("Resultado de la inserción:", result);
       
-      const newCategory = await db.insert(incomeCategories).values(categoryData).returning();
+      if (result.rows && result.rows.length > 0) {
+        console.log("Categoría creada exitosamente");
+        res.status(201).json(result.rows[0]);
+      } else {
+        console.log("No se pudo crear la categoría");
+        res.status(500).json({ message: "Error al crear la categoría" });
+      }
       
-      console.log("Categoría creada exitosamente:", newCategory[0]);
-      res.status(201).json(newCategory[0]);
     } catch (error) {
-      console.error("Error completo al crear categoría de ingresos:", error);
-      res.status(500).json({ message: "Error al crear categoría de ingresos", error: error.message });
+      console.error("Error al crear categoría:", error);
+      res.status(500).json({ 
+        message: "Error al crear categoría de ingresos", 
+        error: error.message 
+      });
     }
   });
 
