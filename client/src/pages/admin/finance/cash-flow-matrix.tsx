@@ -57,6 +57,7 @@ export default function CashFlowMatrix() {
 
   const { data: cashFlowData, isLoading } = useQuery<CashFlowMatrixData>({
     queryKey: ["/api/cash-flow-matrix", selectedYear],
+    queryFn: () => fetch(`/api/cash-flow-matrix?year=${selectedYear}`).then(res => res.json()),
     enabled: true
   });
 
