@@ -779,5 +779,160 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     }
   });
 
+  // ============ CATÁLOGO DE PROVEEDORES ============
+  
+  // Obtener todos los proveedores
+  apiRouter.get("/providers", async (_req: Request, res: Response) => {
+    try {
+      const providersList = await db.select().from(providers).where(eq(providers.status, 'activo'));
+      res.json(providersList);
+    } catch (error) {
+      console.error("Error al obtener proveedores:", error);
+      res.status(500).json({ message: "Error al obtener proveedores" });
+    }
+  });
+
+  // Crear nuevo proveedor
+  apiRouter.post("/providers", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const providerData = req.body;
+      
+      if (!providerData.name || providerData.name.trim() === '') {
+        return res.status(400).json({ message: "El nombre del proveedor es requerido" });
+      }
+
+      // Generar código único
+      const existingProviders = await db.select().from(providers);
+      const nextNumber = existingProviders.length + 1;
+      const code = `PROV${nextNumber.toString().padStart(3, '0')}`;
+
+      const [newProvider] = await db.insert(providers).values({
+        code,
+        name: providerData.name.trim(),
+        businessName: providerData.businessName?.trim(),
+        taxId: providerData.taxId?.trim(),
+        contactPerson: providerData.contactPerson?.trim(),
+        email: providerData.email?.trim(),
+        phone: providerData.phone?.trim(),
+        address: providerData.address?.trim(),
+        city: providerData.city?.trim(),
+        state: providerData.state?.trim(),
+        postalCode: providerData.postalCode?.trim(),
+        country: providerData.country || 'México',
+        providerType: providerData.providerType?.trim(),
+        paymentTerms: providerData.paymentTerms?.trim(),
+        bankAccount: providerData.bankAccount?.trim(),
+        bank: providerData.bank?.trim(),
+        website: providerData.website?.trim(),
+        notes: providerData.notes?.trim(),
+        rating: providerData.rating || 5,
+        createdById: req.user?.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }).returning();
+      
+      res.status(201).json(newProvider);
+    } catch (error) {
+      console.error("Error al crear proveedor:", error);
+      res.status(500).json({ message: "Error al crear proveedor" });
+    }
+  });
+
+  // Actualizar proveedor
+  apiRouter.put("/providers/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const providerId = parseInt(req.params.id);
+      const providerData = req.body;
+      
+      if (!providerData.name || providerData.name.trim() === '') {
+        return res.status(400).json({ message: "El nombre del proveedor es requerido" });
+      }
+
+      const [updatedProvider] = await db.update(providers)
+        .set({
+          ...providerData,
+          updatedAt: new Date()
+        })
+        .where(eq(providers.id, providerId))
+        .returning();
+      
+      if (!updatedProvider) {
+        return res.status(404).json({ message: "Proveedor no encontrado" });
+      }
+      
+      res.json(updatedProvider);
+    } catch (error) {
+      console.error("Error al actualizar proveedor:", error);
+      res.status(500).json({ message: "Error al actualizar proveedor" });
+    }
+  });
+
+  // ============ CATÁLOGO DE REGISTROS DE INGRESOS ============
+  
+  // Obtener todos los registros de ingresos
+  apiRouter.get("/income-records", async (_req: Request, res: Response) => {
+    try {
+      const incomesList = await db.select({
+        id: incomeRecords.id,
+        code: incomeRecords.code,
+        description: incomeRecords.description,
+        source: incomeRecords.source,
+        amount: incomeRecords.amount,
+        currency: incomeRecords.currency,
+        incomeDate: incomeRecords.incomeDate,
+        status: incomeRecords.status,
+        categoryName: incomeCategories.name,
+        parkName: parks.name,
+        createdAt: incomeRecords.createdAt
+      })
+      .from(incomeRecords)
+      .leftJoin(incomeCategories, eq(incomeRecords.categoryId, incomeCategories.id))
+      .leftJoin(parks, eq(incomeRecords.parkId, parks.id))
+      .orderBy(incomeRecords.createdAt);
+      
+      res.json(incomesList);
+    } catch (error) {
+      console.error("Error al obtener registros de ingresos:", error);
+      res.status(500).json({ message: "Error al obtener registros de ingresos" });
+    }
+  });
+
+  // Crear nuevo registro de ingreso
+  apiRouter.post("/income-records", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const incomeData = req.body;
+      
+      if (!incomeData.description || incomeData.description.trim() === '') {
+        return res.status(400).json({ message: "La descripción del ingreso es requerida" });
+      }
+
+      // Generar código único
+      const existingIncomes = await db.select().from(incomeRecords);
+      const nextNumber = existingIncomes.length + 1;
+      const code = `ING${nextNumber.toString().padStart(4, '0')}`;
+
+      const [newIncome] = await db.insert(incomeRecords).values({
+        code,
+        categoryId: parseInt(incomeData.categoryId),
+        description: incomeData.description.trim(),
+        source: incomeData.source?.trim(),
+        amount: incomeData.amount.toString(),
+        currency: incomeData.currency || 'MXN',
+        incomeDate: incomeData.incomeDate,
+        paymentMethod: incomeData.paymentMethod?.trim(),
+        notes: incomeData.notes?.trim(),
+        parkId: incomeData.parkId ? parseInt(incomeData.parkId) : null,
+        createdById: req.user?.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }).returning();
+      
+      res.status(201).json(newIncome);
+    } catch (error) {
+      console.error("Error al crear registro de ingreso:", error);
+      res.status(500).json({ message: "Error al crear registro de ingreso" });
+    }
+  });
+
   console.log("Rutas del módulo financiero registradas correctamente");
 }

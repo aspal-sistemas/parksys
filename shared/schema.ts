@@ -1056,6 +1056,89 @@ export const concessionSanctionsRelations = relations(concessionSanctions, ({ on
   })
 }));
 
+// ============ CATÁLOGO DE PROVEEDORES ============
+export const providers = pgTable("providers", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 20 }).notNull().unique(),
+  name: varchar("name", { length: 200 }).notNull(),
+  businessName: varchar("business_name", { length: 200 }),
+  taxId: varchar("tax_id", { length: 20 }),
+  contactPerson: varchar("contact_person", { length: 100 }),
+  email: varchar("email", { length: 100 }),
+  phone: varchar("phone", { length: 20 }),
+  address: text("address"),
+  city: varchar("city", { length: 100 }),
+  state: varchar("state", { length: 100 }),
+  postalCode: varchar("postal_code", { length: 10 }),
+  country: varchar("country", { length: 50 }).default('México'),
+  providerType: varchar("provider_type", { length: 50 }), // servicios, productos, construcción, etc.
+  paymentTerms: varchar("payment_terms", { length: 100 }), // 30 días, contado, etc.
+  bankAccount: varchar("bank_account", { length: 50 }),
+  bank: varchar("bank", { length: 100 }),
+  website: varchar("website", { length: 200 }),
+  notes: text("notes"),
+  status: varchar("status", { length: 20 }).notNull().default('activo'),
+  rating: integer("rating").default(5), // 1-5 estrellas
+  createdById: integer("created_by_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+export type Provider = typeof providers.$inferSelect;
+export type InsertProvider = typeof providers.$inferInsert;
+
+export const insertProviderSchema = createInsertSchema(providers).omit({
+  id: true,
+  code: true,
+  createdById: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// ============ CATÁLOGO DE INGRESOS ============
+export const incomeRecords = pgTable("income_records", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 20 }).notNull().unique(),
+  categoryId: integer("category_id").notNull(),
+  subcategoryId: integer("subcategory_id"),
+  description: text("description").notNull(),
+  source: varchar("source", { length: 200 }), // fuente del ingreso: empresa, gobierno, etc.
+  referenceNumber: varchar("reference_number", { length: 50 }), // número de referencia o folio
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default('MXN'),
+  incomeDate: date("income_date").notNull(),
+  paymentMethod: varchar("payment_method", { length: 50 }), // efectivo, transferencia, cheque, etc.
+  bankAccount: varchar("bank_account", { length: 50 }),
+  receiptNumber: varchar("receipt_number", { length: 50 }),
+  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).default('0.00'),
+  taxAmount: decimal("tax_amount", { precision: 12, scale: 2 }).default('0.00'),
+  netAmount: decimal("net_amount", { precision: 12, scale: 2 }),
+  parkId: integer("park_id"),
+  projectId: integer("project_id"),
+  notes: text("notes"),
+  attachments: json("attachments").$type<string[]>(),
+  status: varchar("status", { length: 20 }).notNull().default('registrado'),
+  verifiedBy: integer("verified_by"),
+  verifiedAt: timestamp("verified_at"),
+  createdById: integer("created_by_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+export type IncomeRecord = typeof incomeRecords.$inferSelect;
+export type InsertIncomeRecord = typeof incomeRecords.$inferInsert;
+
+export const insertIncomeRecordSchema = createInsertSchema(incomeRecords).omit({
+  id: true,
+  code: true,
+  netAmount: true,
+  verifiedBy: true,
+  verifiedAt: true,
+  createdById: true,
+  createdAt: true,
+  updatedAt: true
+});
+
 // Relaciones para las concesiones
 export const concessionsRelations = relations(concessions, ({ one }) => ({
   park: one(parks, {
@@ -1065,5 +1148,37 @@ export const concessionsRelations = relations(concessions, ({ one }) => ({
   concessionType: one(concessionTypes, {
     fields: [concessions.concessionTypeId],
     references: [concessionTypes.id]
+  })
+}));
+
+// Relaciones para proveedores
+export const providersRelations = relations(providers, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [providers.createdById],
+    references: [users.id]
+  })
+}));
+
+// Relaciones para registros de ingresos
+export const incomeRecordsRelations = relations(incomeRecords, ({ one }) => ({
+  category: one(incomeCategories, {
+    fields: [incomeRecords.categoryId],
+    references: [incomeCategories.id]
+  }),
+  subcategory: one(incomeSubcategories, {
+    fields: [incomeRecords.subcategoryId],
+    references: [incomeSubcategories.id]
+  }),
+  park: one(parks, {
+    fields: [incomeRecords.parkId],
+    references: [parks.id]
+  }),
+  createdBy: one(users, {
+    fields: [incomeRecords.createdById],
+    references: [users.id]
+  }),
+  verifier: one(users, {
+    fields: [incomeRecords.verifiedBy],
+    references: [users.id]
   })
 }));
