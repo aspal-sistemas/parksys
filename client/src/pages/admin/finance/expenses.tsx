@@ -57,7 +57,7 @@ const ExpensesPage = () => {
     resolver: zodResolver(expenseSchema),
     defaultValues: {
       parkId: 3,
-      amount: 0,
+      amount: undefined,
       description: "",
       date: new Date().toISOString().split('T')[0],
       vendor: "",
