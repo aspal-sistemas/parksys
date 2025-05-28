@@ -168,15 +168,27 @@ const IncomesPage = () => {
 
   const deleteIncomeMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`/api/actual-incomes/${id}`, {
-        method: "DELETE",
-      });
-      
-      if (!response.ok) {
-        throw new Error("Error al eliminar el ingreso");
+      try {
+        const response = await fetch(`/api/actual-incomes/${id}`, {
+          method: "DELETE",
+        });
+        
+        if (!response.ok) {
+          throw new Error("Error al eliminar el ingreso");
+        }
+        
+        // Verificar si hay contenido en la respuesta
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          return await response.json();
+        } else {
+          // Si no hay JSON, devolver objeto simple
+          return { success: true };
+        }
+      } catch (error) {
+        console.error("Error en deleteIncomeMutation:", error);
+        throw error;
       }
-      
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/actual-incomes"] });
@@ -188,6 +200,7 @@ const IncomesPage = () => {
       });
     },
     onError: (error) => {
+      console.error("Error al eliminar ingreso:", error);
       toast({
         title: "Error",
         description: "No se pudo eliminar el ingreso. Intenta nuevamente.",
