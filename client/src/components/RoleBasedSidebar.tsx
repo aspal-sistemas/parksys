@@ -160,56 +160,6 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
     </NavItem>
 
     <ModuleNav 
-      title="Configuración" 
-      icon={<Settings className="h-5 w-5" />}
-      value="configuration"
-    >
-      <NavItem 
-        href="/admin/user-activity" 
-        icon={<Activity className="h-5 w-5" />}
-        active={location === '/admin/user-activity'}
-      >
-        Actividad de Usuarios
-      </NavItem>
-
-      <NavItem 
-        href="/admin/integrations" 
-        icon={<Database className="h-5 w-5" />}
-        active={location === '/admin/integrations'}
-      >
-        Integraciones
-      </NavItem>
-      <NavItem 
-        href="/admin/security" 
-        icon={<Lock className="h-5 w-5" />}
-        active={location === '/admin/security'}
-      >
-        Seguridad
-      </NavItem>
-      <NavItem 
-        href="/admin/backup" 
-        icon={<Archive className="h-5 w-5" />}
-        active={location === '/admin/backup'}
-      >
-        Respaldos
-      </NavItem>
-      <NavItem 
-        href="/admin/notifications" 
-        icon={<Bell className="h-5 w-5" />}
-        active={location === '/admin/notifications'}
-      >
-        Notificaciones
-      </NavItem>
-      <NavItem 
-        href="/admin/audit-logs" 
-        icon={<FileEdit className="h-5 w-5" />}
-        active={location === '/admin/audit-logs'}
-      >
-        Logs de Auditoría
-      </NavItem>
-    </ModuleNav>
-
-    <ModuleNav 
       title="Sistema" 
       icon={<Settings className="h-5 w-5" />}
       value="system"
