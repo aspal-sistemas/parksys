@@ -809,8 +809,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete an amenity (admin only)
   apiRouter.delete("/amenities/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      console.log(`Intento de eliminación de amenidad ID: ${req.params.id}`);
+      
       // Verificar que el usuario sea administrador
       if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
+        console.log(`Usuario sin permisos de admin: ${req.user?.role}`);
         return res.status(403).json({ message: "Solo administradores pueden gestionar amenidades" });
       }
       
@@ -818,6 +821,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Verificar si la amenidad está siendo utilizada por algún parque
       const inUse = await storage.isAmenityInUse(id);
+      console.log(`Amenidad ${id} en uso: ${inUse}`);
+      
       if (inUse) {
         return res.status(400).json({ 
           message: "No se puede eliminar esta amenidad porque está siendo utilizada por uno o más parques" 
