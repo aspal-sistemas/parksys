@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, FileUp, Trash2, Eye, Edit, X, MapPin, Users, Calendar, Package } from "lucide-react";
+import { Search, Plus, FileUp, Trash2, Eye, Edit, X, MapPin, Users, Calendar, Package, AlertTriangle, TreePine, Activity, Camera, FileText, UserCheck, Wrench } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -24,6 +24,21 @@ interface Park {
   updatedAt: string;
 }
 
+interface ParkDependencies {
+  trees: number;
+  treeMaintenances: number;
+  activities: number;
+  incidents: number;
+  amenities: number;
+  images: number;
+  assets: number;
+  volunteers: number;
+  instructors: number;
+  evaluations: number;
+  documents: number;
+  total: number;
+}
+
 const AdminParks = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -32,6 +47,8 @@ const AdminParks = () => {
   const [filterParkType, setFilterParkType] = useState<string>('all');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [parkToDelete, setParkToDelete] = useState<Park | null>(null);
+  const [parkDependencies, setParkDependencies] = useState<ParkDependencies | null>(null);
+  const [loadingDependencies, setLoadingDependencies] = useState(false);
 
   // Fetch all parks with automatic refresh
   const { 
@@ -52,6 +69,22 @@ const AdminParks = () => {
     queryKey: ['/api/municipalities'],
   });
 
+  // Function to fetch park dependencies
+  const fetchParkDependencies = async (parkId: number) => {
+    setLoadingDependencies(true);
+    try {
+      const response = await fetch(`/api/parks/${parkId}/dependencies`);
+      if (!response.ok) throw new Error('Error al obtener dependencias');
+      const dependencies = await response.json();
+      setParkDependencies(dependencies);
+    } catch (error) {
+      console.error('Error fetching dependencies:', error);
+      setParkDependencies(null);
+    } finally {
+      setLoadingDependencies(false);
+    }
+  };
+
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (parkId: number) => {
@@ -63,8 +96,11 @@ const AdminParks = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/parks'] });
       toast({
         title: "Parque eliminado",
-        description: "El parque ha sido eliminado exitosamente.",
+        description: "El parque y todas sus dependencias han sido eliminados exitosamente.",
       });
+      setShowDeleteDialog(false);
+      setParkToDelete(null);
+      setParkDependencies(null);
     },
     onError: (error) => {
       toast({
@@ -302,10 +338,7 @@ const AdminParks = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setParkToDelete(park);
-                      setShowDeleteDialog(true);
-                    }}
+                    onClick={() => handleDeleteClick(park)}
                     className="text-red-600 hover:text-red-700"
                   >
                     <Trash2 className="h-4 w-4" />
