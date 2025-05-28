@@ -869,26 +869,22 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
 
   // ============ CATÁLOGO DE REGISTROS DE INGRESOS ============
   
-  // Obtener todos los registros de ingresos
+  // Obtener todos los registros de ingresos (usando actualIncomes)
   apiRouter.get("/income-records", async (_req: Request, res: Response) => {
     try {
       const incomesList = await db.select({
-        id: incomeRecords.id,
-        code: incomeRecords.code,
-        description: incomeRecords.description,
-        source: incomeRecords.source,
-        amount: incomeRecords.amount,
-        currency: incomeRecords.currency,
-        incomeDate: incomeRecords.incomeDate,
-        status: incomeRecords.status,
+        id: actualIncomes.id,
+        date: actualIncomes.date,
+        amount: actualIncomes.amount,
+        description: actualIncomes.description,
         categoryName: incomeCategories.name,
         parkName: parks.name,
-        createdAt: incomeRecords.createdAt
+        createdAt: actualIncomes.createdAt
       })
-      .from(incomeRecords)
-      .leftJoin(incomeCategories, eq(incomeRecords.categoryId, incomeCategories.id))
-      .leftJoin(parks, eq(incomeRecords.parkId, parks.id))
-      .orderBy(incomeRecords.createdAt);
+      .from(actualIncomes)
+      .leftJoin(incomeCategories, eq(actualIncomes.categoryId, incomeCategories.id))
+      .leftJoin(parks, eq(actualIncomes.parkId, parks.id))
+      .orderBy(actualIncomes.createdAt);
       
       res.json(incomesList);
     } catch (error) {
@@ -897,7 +893,7 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     }
   });
 
-  // Crear nuevo registro de ingreso
+  // Crear nuevo registro de ingreso (usando actualIncomes)
   apiRouter.post("/income-records", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const incomeData = req.body;
@@ -906,21 +902,18 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
         return res.status(400).json({ message: "La descripción del ingreso es requerida" });
       }
 
-      // Generar código único
-      const existingIncomes = await db.select().from(incomeRecords);
-      const nextNumber = existingIncomes.length + 1;
-      const code = `ING${nextNumber.toString().padStart(4, '0')}`;
+      // Extraer mes y año de la fecha
+      const date = new Date(incomeData.date || incomeData.incomeDate);
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
 
-      const [newIncome] = await db.insert(incomeRecords).values({
-        code,
+      const [newIncome] = await db.insert(actualIncomes).values({
         categoryId: parseInt(incomeData.categoryId),
         description: incomeData.description.trim(),
-        source: incomeData.source?.trim(),
         amount: incomeData.amount.toString(),
-        currency: incomeData.currency || 'MXN',
-        incomeDate: incomeData.incomeDate,
-        paymentMethod: incomeData.paymentMethod?.trim(),
-        notes: incomeData.notes?.trim(),
+        date: incomeData.date || incomeData.incomeDate,
+        month,
+        year,
         parkId: incomeData.parkId ? parseInt(incomeData.parkId) : null,
         createdById: req.user?.id,
         createdAt: new Date(),
@@ -1034,66 +1027,152 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   apiRouter.get("/cash-flow/:year", async (req: Request, res: Response) => {
     try {
       const year = parseInt(req.params.year);
-      const currentDate = new Date();
       
-      // Obtener categorías de ingresos y egresos
-      const incomeCategories = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
-      const expenseCategories = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+      // Obtener categorías de ingresos activas
+      const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+      const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
       
-      // Obtener ingresos reales por mes para el año especificado
-      const actualIncomesData = await db.select({
-        categoryId: actualIncomes.categoryId,
-        month: actualIncomes.month,
-        amount: sum(actualIncomes.amount).as('total_amount')
-      })
-      .from(actualIncomes)
-      .where(
-        and(
-          eq(sql`EXTRACT(YEAR FROM ${actualIncomes.date})`, year),
-          eq(actualIncomes.isActive, true)
-        )
-      )
-      .groupBy(actualIncomes.categoryId, actualIncomes.month);
-      
-      // Obtener egresos reales por mes para el año especificado
-      const actualExpensesData = await db.select({
-        categoryId: actualExpenses.categoryId,
-        month: actualExpenses.month,
-        amount: sum(actualExpenses.amount).as('total_amount')
-      })
-      .from(actualExpenses)
-      .where(
-        and(
-          eq(sql`EXTRACT(YEAR FROM ${actualExpenses.date})`, year),
-          eq(actualExpenses.isActive, true)
-        )
-      )
-      .groupBy(actualExpenses.categoryId, actualExpenses.month);
-      
-      // Construir la matriz de flujo de efectivo
-      const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+      // Crear estructura de datos para la matriz
       const categories = [];
+      const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
       
       // Procesar categorías de ingresos
-      for (const category of incomeCategories) {
-        const monthlyValues = [];
-        let totalAmount = 0;
+      for (const category of incomeCategsList) {
+        const monthlyValues = new Array(12).fill(0);
         
-        for (let month = 1; month <= 12; month++) {
-          const monthData = actualIncomesData.find(
-            item => item.categoryId === category.id && item.month === month
-          );
-          const amount = monthData ? parseFloat(monthData.total_amount || '0') : 0;
-          monthlyValues.push(amount);
-          totalAmount += amount;
+        // Obtener datos reales de ingresos para esta categoría
+        const incomeData = await db.select({
+          month: actualIncomes.month,
+          total: sum(actualIncomes.amount).as('total')
+        })
+        .from(actualIncomes)
+        .where(
+          and(
+            eq(actualIncomes.categoryId, category.id),
+            eq(actualIncomes.year, year),
+            eq(actualIncomes.isActive, true)
+          )
+        )
+        .groupBy(actualIncomes.month);
+        
+        // Llenar los valores mensuales
+        for (const data of incomeData) {
+          monthlyValues[data.month - 1] = parseFloat(data.total) || 0;
         }
         
         categories.push({
           name: category.name,
           type: 'income',
           monthlyValues,
-          total: totalAmount
+          total: monthlyValues.reduce((sum, val) => sum + val, 0)
         });
+      }
+      
+      // Procesar categorías de egresos
+      for (const category of expenseCategsList) {
+        const monthlyValues = new Array(12).fill(0);
+        
+        // Obtener datos reales de egresos para esta categoría
+        const expenseData = await db.select({
+          month: actualExpenses.month,
+          total: sum(actualExpenses.amount).as('total')
+        })
+        .from(actualExpenses)
+        .where(
+          and(
+            eq(actualExpenses.categoryId, category.id),
+            eq(actualExpenses.year, year),
+            eq(actualExpenses.isActive, true)
+          )
+        )
+        .groupBy(actualExpenses.month);
+        
+        // Llenar los valores mensuales
+        for (const data of expenseData) {
+          monthlyValues[data.month - 1] = parseFloat(data.total) || 0;
+        }
+        
+        categories.push({
+          name: category.name,
+          type: 'expense',
+          monthlyValues,
+          total: monthlyValues.reduce((sum, val) => sum + val, 0)
+        });
+      }
+      
+      // Calcular resúmenes
+      const incomeCategories = categories.filter(cat => cat.type === 'income');
+      const expenseCategories = categories.filter(cat => cat.type === 'expense');
+      
+      const monthlyIncomes = months.map((_, index) => 
+        incomeCategories.reduce((sum, cat) => sum + cat.monthlyValues[index], 0)
+      );
+      
+      const monthlyExpenses = months.map((_, index) => 
+        expenseCategories.reduce((sum, cat) => sum + cat.monthlyValues[index], 0)
+      );
+      
+      const monthlyNet = monthlyIncomes.map((income, index) => income - monthlyExpenses[index]);
+      
+      // Calcular resúmenes trimestrales
+      const quarterly = {
+        income: [
+          monthlyIncomes.slice(0, 3).reduce((sum, val) => sum + val, 0),
+          monthlyIncomes.slice(3, 6).reduce((sum, val) => sum + val, 0),
+          monthlyIncomes.slice(6, 9).reduce((sum, val) => sum + val, 0),
+          monthlyIncomes.slice(9, 12).reduce((sum, val) => sum + val, 0)
+        ],
+        expenses: [
+          monthlyExpenses.slice(0, 3).reduce((sum, val) => sum + val, 0),
+          monthlyExpenses.slice(3, 6).reduce((sum, val) => sum + val, 0),
+          monthlyExpenses.slice(6, 9).reduce((sum, val) => sum + val, 0),
+          monthlyExpenses.slice(9, 12).reduce((sum, val) => sum + val, 0)
+        ],
+        net: []
+      };
+      quarterly.net = quarterly.income.map((inc, i) => inc - quarterly.expenses[i]);
+      
+      // Calcular resúmenes semestrales
+      const semiannual = {
+        income: [
+          quarterly.income.slice(0, 2).reduce((sum, val) => sum + val, 0),
+          quarterly.income.slice(2, 4).reduce((sum, val) => sum + val, 0)
+        ],
+        expenses: [
+          quarterly.expenses.slice(0, 2).reduce((sum, val) => sum + val, 0),
+          quarterly.expenses.slice(2, 4).reduce((sum, val) => sum + val, 0)
+        ],
+        net: []
+      };
+      semiannual.net = semiannual.income.map((inc, i) => inc - semiannual.expenses[i]);
+      
+      // Resultado final en el formato esperado por el frontend
+      const result = {
+        year,
+        months,
+        categories,
+        summaries: {
+          monthly: {
+            income: monthlyIncomes,
+            expenses: monthlyExpenses,
+            net: monthlyNet
+          },
+          quarterly,
+          semiannual,
+          annual: {
+            income: monthlyIncomes.reduce((sum, val) => sum + val, 0),
+            expenses: monthlyExpenses.reduce((sum, val) => sum + val, 0),
+            net: monthlyNet.reduce((sum, val) => sum + val, 0)
+          }
+        }
+      };
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error al obtener matriz de flujo de efectivo:", error);
+      res.status(500).json({ message: "Error al obtener matriz de flujo de efectivo" });
+    }
+  });
       }
       
       // Procesar categorías de egresos
