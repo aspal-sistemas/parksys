@@ -217,9 +217,29 @@ export async function getParkByIdDirectly(parkId: number) {
       return null;
     }
     
+    // Obtener información del municipio si existe municipalityId
+    let municipality = null;
+    if (park.municipalityId) {
+      try {
+        const municipalityResult = await pool.query(`
+          SELECT id, name, state 
+          FROM municipalities 
+          WHERE id = $1
+        `, [park.municipalityId]);
+        
+        if (municipalityResult.rowCount > 0) {
+          municipality = municipalityResult.rows[0];
+          console.log("Municipio encontrado:", municipality.name);
+        }
+      } catch (err) {
+        console.error("Error al obtener municipio:", err);
+      }
+    }
+
     // Inicializamos las propiedades que iremos rellenando
     const extendedPark = {
       ...park,
+      municipality: municipality, // Agregamos el municipio completo
       createdAt: new Date(),
       updatedAt: new Date(),
       active: true,
