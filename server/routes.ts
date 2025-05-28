@@ -581,17 +581,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Agregamos la fecha de actualización
         fieldsToUpdate.updated_at = new Date();
         
-        // Construimos el SQL para la actualización
+        // Construimos el SQL para la actualización usando SQL directo
         if (Object.keys(fieldsToUpdate).length > 0) {
-          // Actualizamos el parque directamente
-          const result = await db.update(schema.parks)
-            .set(fieldsToUpdate)
-            .where(eq(schema.parks.id, parkId))
-            .returning();
+          // Construir query SQL dinámicamente
+          const setClause = Object.keys(fieldsToUpdate)
+            .map((field, index) => `${field} = $${index + 2}`)
+            .join(', ');
           
-          if (result.length > 0) {
-            console.log("Parque actualizado con éxito (SQL directo):", result[0]);
-            res.json(result[0]);
+          const values = Object.values(fieldsToUpdate);
+          
+          const sqlQuery = `
+            UPDATE parks 
+            SET ${setClause}
+            WHERE id = $1
+            RETURNING *
+          `;
+          
+          console.log("SQL Query:", sqlQuery);
+          console.log("Values:", [parkId, ...values]);
+          
+          const result = await pool.query(sqlQuery, [parkId, ...values]);
+          
+          if (result.rows.length > 0) {
+            console.log("Parque actualizado con éxito (SQL directo):", result.rows[0]);
+            res.json(result.rows[0]);
           } else {
             throw new Error("No se pudo actualizar el parque");
           }

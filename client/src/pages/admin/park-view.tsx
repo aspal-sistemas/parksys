@@ -565,27 +565,27 @@ export default function AdminParkView() {
         <TabsContent value="trees" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Inventario de Árboles ({park.trees?.length || 0})</CardTitle>
-              <CardDescription>Árboles registrados en este parque</CardDescription>
+              <CardTitle>Inventario de Árboles ({park.trees?.stats?.total || 0})</CardTitle>
+              <CardDescription>Estado y estadísticas de árboles en este parque</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {park.trees?.map((tree) => (
-                  <div key={tree.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">{tree.species}</h4>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
-                        <span>🌱 Plantado: {new Date(tree.plantedDate).toLocaleDateString()}</span>
-                        {tree.lastMaintenance && (
-                          <span>🔧 Último mantenimiento: {new Date(tree.lastMaintenance).toLocaleDateString()}</span>
-                        )}
-                      </div>
-                    </div>
-                    <Badge variant={getConditionBadge(tree.condition)}>
-                      {tree.condition}
-                    </Badge>
-                  </div>
-                ))}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">{park.trees?.stats?.good || 0}</div>
+                  <div className="text-sm text-gray-600">Bueno</div>
+                </div>
+                <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                  <div className="text-2xl font-bold text-yellow-600">{park.trees?.stats?.regular || 0}</div>
+                  <div className="text-sm text-gray-600">Regular</div>
+                </div>
+                <div className="text-center p-4 bg-red-50 rounded-lg">
+                  <div className="text-2xl font-bold text-red-600">{park.trees?.stats?.bad || 0}</div>
+                  <div className="text-sm text-gray-600">Malo</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-600">{park.trees?.stats?.total || 0}</div>
+                  <div className="text-sm text-gray-600">Total</div>
+                </div>
               </div>
             </CardContent>
           </Card>
