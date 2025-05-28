@@ -223,7 +223,7 @@ export default function ParkEdit() {
         municipalityId: municipalityId,
       };
       
-      return await apiRequest(`/api/parks/${id}`, {
+      return await apiRequest(`/api/dev/parks/${id}`, {
         method: "PUT",
         data: dataToSend,
       });
