@@ -1,6 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
 import multer from "multer";
+import * as XLSX from "xlsx";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { isAuthenticated, hasMunicipalityAccess, hasParkAccess, requirePermission, requireAdmin } from "./middleware/auth";
@@ -887,7 +888,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Process Excel or CSV file
       if (file.mimetype.includes('spreadsheet') || file.originalname.endsWith('.xlsx')) {
-        const XLSX = require('xlsx');
         const workbook = XLSX.read(file.buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
