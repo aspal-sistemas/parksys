@@ -97,24 +97,24 @@ export default function AmenitiesDashboard() {
   }).sort((a: any, b: any) => b.parksCount - a.parksCount);
 
   const dashboardData: DashboardData = {
-    totalAmenities: amenities?.length || 0,
-    totalParks: parks?.length || 0,
-    averageAmenitiesPerPark: parks?.length ? 
-      totalAmenityAssignments / parks.length : 0,
+    totalAmenities: amenitiesData.length,
+    totalParks: parksData.length,
+    averageAmenitiesPerPark: parksData.length ? 
+      totalAmenityAssignments / parksData.length : 0,
     mostPopularAmenities: amenityUsageCount.slice(0, 5),
     amenityDistribution: amenityUsageCount.slice(0, 6).map((amenity: any, index: number) => ({
       name: amenity.name.length > 12 ? amenity.name.substring(0, 12) + '...' : amenity.name,
       value: amenity.parksCount,
       color: COLORS[index % COLORS.length]
     })),
-    utilizationByPark: parks?.slice(0, 8).map((park: any) => ({
+    utilizationByPark: parksData.slice(0, 8).map((park: any) => ({
       parkName: park.name.length > 15 ? park.name.substring(0, 15) + '...' : park.name,
       amenitiesCount: park.amenities?.length || 0
-    })).sort((a: any, b: any) => b.amenitiesCount - a.amenitiesCount) || [],
+    })).sort((a: any, b: any) => b.amenitiesCount - a.amenitiesCount),
     statusDistribution: [
       { 
         status: 'Activas', 
-        count: amenities?.length || 0, 
+        count: amenitiesData.length, 
         color: '#00C49F' 
       },
       { 
@@ -124,8 +124,8 @@ export default function AmenitiesDashboard() {
       },
       { 
         status: 'Sin Asignar', 
-        count: (amenities?.length || 0) - new Set(
-          parks?.flatMap((park: any) => park.amenities?.map((a: any) => a.id) || [])
+        count: amenitiesData.length - new Set(
+          parksData.flatMap((park: any) => park.amenities?.map((a: any) => a.id) || [])
         ).size, 
         color: '#FFBB28' 
       }
