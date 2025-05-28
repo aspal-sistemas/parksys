@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield } from "lucide-react";
+import { RoleBasedSidebar } from "@/components/RoleBasedSidebar";
 
 interface ParkDetails {
   id: number;
@@ -182,7 +183,10 @@ export default function AdminParkView() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="flex h-screen bg-gray-50">
+      <RoleBasedSidebar />
+      <div className="flex-1 overflow-auto">
+        <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -709,6 +713,8 @@ export default function AdminParkView() {
           </Card>
         </TabsContent>
       </Tabs>
+        </div>
+      </div>
     </div>
   );
 }
