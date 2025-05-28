@@ -151,8 +151,10 @@ const AdminSidebar: React.FC = () => {
     if (location.startsWith('/admin/events')) return ['events']; // Nueva sección principal de eventos
     if (location.startsWith('/admin/marketing')) return ['marketing'];
     if (location.startsWith('/admin/concessions')) return ['concessions'];
-    if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions')) return ['users'];
-    if (location.startsWith('/admin/settings')) return ['settings'];
+    // Las secciones administrativas ya no necesitan agruparse
+    if (location.startsWith('/admin/users')) return [];
+    if (location.startsWith('/admin/permissions')) return [];
+    if (location.startsWith('/admin/settings')) return [];
     return []; // Ninguna sección abierta por defecto
   };
   
@@ -185,26 +187,29 @@ const AdminSidebar: React.FC = () => {
             Dashboard
           </NavItem>
 
-          <ModuleNav 
-            title="Usuarios" 
+          <NavItem 
+            href="/admin/users" 
             icon={<Users className="h-5 w-5" />}
-            value="users"
+            active={location === '/admin/users'}
           >
-            <NavItem 
-              href="/admin/users" 
-              icon={<User className="h-5 w-5" />}
-              active={location === '/admin/users'}
-            >
-              Lista
-            </NavItem>
-            <NavItem 
-              href="/admin/permissions" 
-              icon={<Shield className="h-5 w-5" />}
-              active={location === '/admin/permissions'}
-            >
-              Permisos
-            </NavItem>
-          </ModuleNav>
+            Usuarios
+          </NavItem>
+
+          <NavItem 
+            href="/admin/permissions" 
+            icon={<Shield className="h-5 w-5" />}
+            active={location === '/admin/permissions'}
+          >
+            Permisos
+          </NavItem>
+
+          <NavItem 
+            href="/admin/settings" 
+            icon={<Settings className="h-5 w-5" />}
+            active={location === '/admin/settings'}
+          >
+            Configuración
+          </NavItem>
           
           <ModuleNav 
             title="Actividades" 

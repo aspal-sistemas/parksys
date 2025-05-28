@@ -1,750 +1,225 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from "react";
+import AdminLayout from "@/components/AdminLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
-  Settings as SettingsIcon, 
-  Loader,
-  Save,
-  RefreshCw
-} from 'lucide-react';
-import AdminLayout from '@/components/AdminLayout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from '@/components/ui/form';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
+  Settings, 
+  Shield, 
+  Database,
+  Lock,
+  HardDrive,
+  CheckCircle,
+  AlertTriangle,
+  Clock
+} from "lucide-react";
 
-// Esquema de validación para configuración general
-const generalSettingsSchema = z.object({
-  siteName: z.string().min(2, { message: 'El nombre del sitio es requerido' }),
-  siteDescription: z.string().optional(),
-  contactEmail: z.string().email({ message: 'Debe ser un email válido' }),
-  logoUrl: z.string().optional(),
-  primaryColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, {
-    message: 'Debe ser un código hexadecimal válido',
-  }),
-  enableRegistration: z.boolean().default(true),
-  defaultMunicipalityId: z.string().optional(),
-});
-
-// Esquema de validación para configuración de notificaciones
-const notificationSettingsSchema = z.object({
-  enableEmailNotifications: z.boolean().default(true),
-  adminNotifyOnNewComment: z.boolean().default(true),
-  adminNotifyOnNewIncident: z.boolean().default(true),
-  userNotifyOnCommentReply: z.boolean().default(true),
-  userNotifyOnIncidentStatusChange: z.boolean().default(true),
-  emailFooter: z.string().optional(),
-});
-
-// Esquema de validación para configuración de API
-const apiSettingsSchema = z.object({
-  enablePublicApi: z.boolean().default(true),
-  rateLimit: z.number().min(10).max(1000),
-  rateLimitWindow: z.number().min(60).max(3600),
-  requireApiKey: z.boolean().default(false),
-});
-
-type GeneralSettingsValues = z.infer<typeof generalSettingsSchema>;
-type NotificationSettingsValues = z.infer<typeof notificationSettingsSchema>;
-type ApiSettingsValues = z.infer<typeof apiSettingsSchema>;
-
-const AdminSettings = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('general');
-
-  // Formulario para configuración general
-  const generalForm = useForm<GeneralSettingsValues>({
-    resolver: zodResolver(generalSettingsSchema),
-    defaultValues: {
-      siteName: 'ParquesMX',
-      siteDescription: 'Plataforma de gestión de parques y espacios públicos',
-      contactEmail: 'contacto@parquesmx.com',
-      logoUrl: '/logo.svg',
-      primaryColor: '#16a34a',
-      enableRegistration: true,
-      defaultMunicipalityId: '',
-    },
-  });
-
-  // Formulario para configuración de notificaciones
-  const notificationForm = useForm<NotificationSettingsValues>({
-    resolver: zodResolver(notificationSettingsSchema),
-    defaultValues: {
-      enableEmailNotifications: true,
-      adminNotifyOnNewComment: true,
-      adminNotifyOnNewIncident: true,
-      userNotifyOnCommentReply: true,
-      userNotifyOnIncidentStatusChange: true,
-      emailFooter: 'ParquesMX - Plataforma de gestión de parques y espacios públicos',
-    },
-  });
-
-  // Formulario para configuración de API
-  const apiForm = useForm<ApiSettingsValues>({
-    resolver: zodResolver(apiSettingsSchema),
-    defaultValues: {
-      enablePublicApi: true,
-      rateLimit: 100,
-      rateLimitWindow: 60,
-      requireApiKey: false,
-    },
-  });
-
-  // Cargar configuraciones
-  const { 
-    data: municipalities = [], 
-    isLoading: isLoadingMunicipalities 
-  } = useQuery({
-    queryKey: ['/api/municipalities'],
-  });
-
-  // Mutación para guardar configuración general
-  const saveGeneralSettings = useMutation({
-    mutationFn: async (data: GeneralSettingsValues) => {
-      console.log('Guardando configuración general:', data);
-      // En producción, haríamos una llamada a la API
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simular delay
-      return data;
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Configuración guardada',
-        description: 'La configuración general ha sido actualizada correctamente.',
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: 'No se pudo guardar la configuración. Inténtelo de nuevo.',
-        variant: 'destructive',
-      });
-      console.error('Error guardando configuración:', error);
-    },
-  });
-
-  // Mutación para guardar configuración de notificaciones
-  const saveNotificationSettings = useMutation({
-    mutationFn: async (data: NotificationSettingsValues) => {
-      console.log('Guardando configuración de notificaciones:', data);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simular delay
-      return data;
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Configuración guardada',
-        description: 'La configuración de notificaciones ha sido actualizada correctamente.',
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: 'No se pudo guardar la configuración. Inténtelo de nuevo.',
-        variant: 'destructive',
-      });
-      console.error('Error guardando configuración:', error);
-    },
-  });
-
-  // Mutación para guardar configuración de API
-  const saveApiSettings = useMutation({
-    mutationFn: async (data: ApiSettingsValues) => {
-      console.log('Guardando configuración de API:', data);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simular delay
-      return data;
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Configuración guardada',
-        description: 'La configuración de API ha sido actualizada correctamente.',
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: 'No se pudo guardar la configuración. Inténtelo de nuevo.',
-        variant: 'destructive',
-      });
-      console.error('Error guardando configuración:', error);
-    },
-  });
-
-  // Manejadores de envío de formularios
-  const onGeneralSubmit = (data: GeneralSettingsValues) => {
-    saveGeneralSettings.mutate(data);
-  };
-
-  const onNotificationSubmit = (data: NotificationSettingsValues) => {
-    saveNotificationSettings.mutate(data);
-  };
-
-  const onApiSubmit = (data: ApiSettingsValues) => {
-    saveApiSettings.mutate(data);
-  };
+const SettingsPage = () => {
+  const [activeTab, setActiveTab] = useState("security");
 
   return (
-    <AdminLayout title="Configuración del sistema">
-      <Tabs
-        defaultValue={activeTab}
-        onValueChange={setActiveTab}
-        className="space-y-6"
-      >
-        <TabsList className="grid w-full grid-cols-3 max-w-xl">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="notifications">Notificaciones</TabsTrigger>
-          <TabsTrigger value="api">API</TabsTrigger>
-        </TabsList>
+    <AdminLayout>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Configuración del Sistema</h1>
+          <p className="text-muted-foreground">
+            Administra la configuración de seguridad, respaldos y parámetros del sistema
+          </p>
+        </div>
 
-        {/* Configuración General */}
-        <TabsContent value="general" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuración General</CardTitle>
-              <CardDescription>
-                Configura los ajustes básicos del sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...generalForm}>
-                <form
-                  id="general-settings-form"
-                  onSubmit={generalForm.handleSubmit(onGeneralSubmit)}
-                  className="space-y-6"
-                >
-                  <FormField
-                    control={generalForm.control}
-                    name="siteName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre del sitio</FormLabel>
-                        <FormControl>
-                          <Input placeholder="ParquesMX" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Este nombre se mostrará en el sitio web y en los correos
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="security" className="flex items-center gap-2">
+              <Lock className="w-4 h-4" />
+              Seguridad
+            </TabsTrigger>
+            <TabsTrigger value="backups" className="flex items-center gap-2">
+              <HardDrive className="w-4 h-4" />
+              Respaldos
+            </TabsTrigger>
+          </TabsList>
 
-                  <FormField
-                    control={generalForm.control}
-                    name="siteDescription"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descripción del sitio</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Breve descripción del sitio..."
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={generalForm.control}
-                      name="contactEmail"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email de contacto</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="contacto@parquesmx.com"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={generalForm.control}
-                      name="primaryColor"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Color primario</FormLabel>
-                          <FormControl>
-                            <div className="flex items-center space-x-2">
-                              <Input
-                                type="color"
-                                {...field}
-                                className="w-12 h-10 p-1"
-                              />
-                              <Input
-                                type="text"
-                                {...field}
-                                className="flex-1"
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+          <TabsContent value="security" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lock className="w-5 h-5" />
+                  Configuración de Seguridad
+                </CardTitle>
+                <CardDescription>
+                  Administra políticas de seguridad, autenticación y accesos del sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Políticas de contraseña */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Shield className="w-5 h-5" />
+                    Políticas de Contraseña
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card className="p-4">
+                      <h4 className="font-medium mb-2">Requisitos Actuales</h4>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• Mínimo 8 caracteres</li>
+                        <li>• Al menos una mayúscula</li>
+                        <li>• Al menos una minúscula</li>
+                        <li>• Al menos un número</li>
+                        <li>• Expiración: 90 días</li>
+                      </ul>
+                      <Badge className="mt-3 bg-green-100 text-green-800">Nivel Alto</Badge>
+                    </Card>
+                    <Card className="p-4">
+                      <h4 className="font-medium mb-2">Gestión de Sesiones</h4>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• Tiempo límite: 60 minutos</li>
+                        <li>• Máx. sesiones simultáneas: 3</li>
+                        <li>• Reautenticación: Deshabilitada</li>
+                        <li>• 2FA: Disponible (opcional)</li>
+                      </ul>
+                      <Badge variant="secondary" className="mt-3">Configurado</Badge>
+                    </Card>
                   </div>
+                </div>
 
-                  <FormField
-                    control={generalForm.control}
-                    name="logoUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>URL del logo</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="/logo.svg"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          URL relativa o absoluta al logo del sitio
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={generalForm.control}
-                    name="defaultMunicipalityId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Municipio por defecto</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar municipio por defecto" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="none">Ninguno</SelectItem>
-                            {municipalities.map((municipality: any) => (
-                              <SelectItem
-                                key={municipality.id}
-                                value={municipality.id.toString()}
-                              >
-                                {municipality.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          Municipio que se seleccionará por defecto para nuevos usuarios
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={generalForm.control}
-                    name="enableRegistration"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">
-                            Habilitar registro de usuarios
-                          </FormLabel>
-                          <FormDescription>
-                            Permitir que los usuarios puedan registrarse en la plataforma
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </form>
-              </Form>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button variant="outline" onClick={() => generalForm.reset()}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Restaurar
-              </Button>
-              <Button
-                type="submit"
-                form="general-settings-form"
-                disabled={saveGeneralSettings.isPending}
-              >
-                {saveGeneralSettings.isPending && (
-                  <Loader className="h-4 w-4 mr-2 animate-spin" />
-                )}
-                {!saveGeneralSettings.isPending && (
-                  <Save className="h-4 w-4 mr-2" />
-                )}
-                Guardar cambios
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-
-        {/* Configuración de Notificaciones */}
-        <TabsContent value="notifications" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuración de Notificaciones</CardTitle>
-              <CardDescription>
-                Personaliza cómo y cuándo se envían notificaciones
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...notificationForm}>
-                <form
-                  id="notification-settings-form"
-                  onSubmit={notificationForm.handleSubmit(onNotificationSubmit)}
-                  className="space-y-6"
-                >
-                  <FormField
-                    control={notificationForm.control}
-                    name="enableEmailNotifications"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">
-                            Habilitar notificaciones por correo
-                          </FormLabel>
-                          <FormDescription>
-                            Activar el envío de notificaciones por correo electrónico
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="pl-4 space-y-6">
-                    <FormField
-                      control={notificationForm.control}
-                      name="adminNotifyOnNewComment"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">
-                              Notificar nuevos comentarios
-                            </FormLabel>
-                            <FormDescription>
-                              Notificar a administradores cuando se publique un nuevo comentario
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              disabled={!notificationForm.watch('enableEmailNotifications')}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={notificationForm.control}
-                      name="adminNotifyOnNewIncident"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">
-                              Notificar nuevas incidencias
-                            </FormLabel>
-                            <FormDescription>
-                              Notificar a administradores cuando se reporte una nueva incidencia
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              disabled={!notificationForm.watch('enableEmailNotifications')}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={notificationForm.control}
-                      name="userNotifyOnCommentReply"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">
-                              Notificar respuestas a comentarios
-                            </FormLabel>
-                            <FormDescription>
-                              Notificar a usuarios cuando alguien responde a su comentario
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              disabled={!notificationForm.watch('enableEmailNotifications')}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={notificationForm.control}
-                      name="userNotifyOnIncidentStatusChange"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">
-                              Notificar cambios en incidencias
-                            </FormLabel>
-                            <FormDescription>
-                              Notificar a usuarios cuando cambia el estado de una incidencia que reportaron
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              disabled={!notificationForm.watch('enableEmailNotifications')}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={notificationForm.control}
-                      name="emailFooter"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pie de correo electrónico</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Texto a incluir en el pie de todos los correos..."
-                              {...field}
-                              disabled={!notificationForm.watch('enableEmailNotifications')}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Texto que aparecerá al final de todos los correos electrónicos
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                {/* Protección contra ataques */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5" />
+                    Protección contra Ataques
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Card className="p-4 text-center">
+                      <div className="text-2xl font-bold text-blue-600">5</div>
+                      <div className="text-sm text-muted-foreground">Máx. intentos de login</div>
+                    </Card>
+                    <Card className="p-4 text-center">
+                      <div className="text-2xl font-bold text-orange-600">15</div>
+                      <div className="text-sm text-muted-foreground">Minutos de bloqueo</div>
+                    </Card>
+                    <Card className="p-4 text-center">
+                      <div className="text-2xl font-bold text-green-600">24h</div>
+                      <div className="text-sm text-muted-foreground">Logs de seguridad</div>
+                    </Card>
                   </div>
-                </form>
-              </Form>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button variant="outline" onClick={() => notificationForm.reset()}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Restaurar
-              </Button>
-              <Button
-                type="submit"
-                form="notification-settings-form"
-                disabled={saveNotificationSettings.isPending}
-              >
-                {saveNotificationSettings.isPending && (
-                  <Loader className="h-4 w-4 mr-2 animate-spin" />
-                )}
-                {!saveNotificationSettings.isPending && (
-                  <Save className="h-4 w-4 mr-2" />
-                )}
-                Guardar cambios
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
+                </div>
 
-        {/* Configuración de API */}
-        <TabsContent value="api" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuración de API</CardTitle>
-              <CardDescription>
-                Configura los ajustes de la API pública
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...apiForm}>
-                <form
-                  id="api-settings-form"
-                  onSubmit={apiForm.handleSubmit(onApiSubmit)}
-                  className="space-y-6"
-                >
-                  <FormField
-                    control={apiForm.control}
-                    name="enablePublicApi"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">
-                            Habilitar API pública
-                          </FormLabel>
-                          <FormDescription>
-                            Permitir acceso a la API pública de datos
-                          </FormDescription>
+                <div className="flex justify-end">
+                  <Button className="flex items-center gap-2">
+                    <Settings className="w-4 h-4" />
+                    Configurar Seguridad Avanzada
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="backups" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HardDrive className="w-5 h-5" />
+                  Gestión de Respaldos
+                </CardTitle>
+                <CardDescription>
+                  Configura respaldos automáticos y gestiona copias de seguridad de la información
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Estado actual */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="p-4 text-center">
+                    <Database className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                    <div className="font-medium">Último Respaldo</div>
+                    <div className="text-sm text-muted-foreground">Hace 1 día</div>
+                    <Badge className="mt-2 bg-green-100 text-green-800">Completado</Badge>
+                  </Card>
+                  <Card className="p-4 text-center">
+                    <HardDrive className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                    <div className="font-medium">Espacio Usado</div>
+                    <div className="text-sm text-muted-foreground">45.2 GB de 100 GB</div>
+                    <Badge variant="secondary" className="mt-2">54% usado</Badge>
+                  </Card>
+                  <Card className="p-4 text-center">
+                    <Clock className="w-8 h-8 mx-auto mb-2 text-purple-600" />
+                    <div className="font-medium">Programación</div>
+                    <div className="text-sm text-muted-foreground">Diario a las 02:00</div>
+                    <Badge className="mt-2 bg-blue-100 text-blue-800">Activo</Badge>
+                  </Card>
+                </div>
+
+                {/* Configuración de respaldos */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Configuración Actual</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card className="p-4">
+                      <h4 className="font-medium mb-3">Respaldos Automáticos</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span>Estado:</span>
+                          <Badge className="bg-green-100 text-green-800">Habilitado</Badge>
                         </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="pl-4 space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={apiForm.control}
-                        name="rateLimit"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Límite de peticiones</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                {...field}
-                                disabled={!apiForm.watch('enablePublicApi')}
-                                onChange={(e) => field.onChange(Number(e.target.value))}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Número máximo de peticiones permitidas por ventana de tiempo
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={apiForm.control}
-                        name="rateLimitWindow"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Ventana de tiempo (segundos)</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                {...field}
-                                disabled={!apiForm.watch('enablePublicApi')}
-                                onChange={(e) => field.onChange(Number(e.target.value))}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Periodo de tiempo en segundos para el límite de peticiones
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={apiForm.control}
-                      name="requireApiKey"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">
-                              Requerir clave API
-                            </FormLabel>
-                            <FormDescription>
-                              Requerir una clave API para acceder a la API pública
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              disabled={!apiForm.watch('enablePublicApi')}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        <div className="flex justify-between">
+                          <span>Frecuencia:</span>
+                          <span className="text-muted-foreground">Diaria</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Hora:</span>
+                          <span className="text-muted-foreground">02:00</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Retención:</span>
+                          <span className="text-muted-foreground">30 días</span>
+                        </div>
+                      </div>
+                    </Card>
+                    <Card className="p-4">
+                      <h4 className="font-medium mb-3">Contenido Incluido</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <span>Base de datos</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <span>Archivos subidos</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <span>Configuraciones</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <span>Logs del sistema</span>
+                        </div>
+                      </div>
+                    </Card>
                   </div>
-                </form>
-              </Form>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button variant="outline" onClick={() => apiForm.reset()}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Restaurar
-              </Button>
-              <Button
-                type="submit"
-                form="api-settings-form"
-                disabled={saveApiSettings.isPending}
-              >
-                {saveApiSettings.isPending && (
-                  <Loader className="h-4 w-4 mr-2 animate-spin" />
-                )}
-                {!saveApiSettings.isPending && (
-                  <Save className="h-4 w-4 mr-2" />
-                )}
-                Guardar cambios
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                </div>
+
+                {/* Acciones */}
+                <div className="flex flex-wrap gap-3">
+                  <Button className="flex items-center gap-2">
+                    <Database className="w-4 h-4" />
+                    Crear Respaldo Manual
+                  </Button>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Settings className="w-4 h-4" />
+                    Configurar Respaldos
+                  </Button>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <HardDrive className="w-4 h-4" />
+                    Ver Historial
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </AdminLayout>
   );
 };
 
-export default AdminSettings;
+export default SettingsPage;
