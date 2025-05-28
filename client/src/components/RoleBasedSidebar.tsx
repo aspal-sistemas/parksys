@@ -363,7 +363,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       </NavItem>
       <NavItem 
         href="/admin/events/new" 
-        icon={<Edit className="h-5 w-5" />}
+        icon={<Plus className="h-5 w-5" />}
         active={location.startsWith('/admin/events/new')}
       >
         Nuevo Evento
