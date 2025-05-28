@@ -12,32 +12,29 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
-// ENDPOINTS PRIORITARIOS para el catálogo financiero - ANTES de cualquier middleware
-app.get("/matrix-income-data", async (req: Request, res: Response) => {
+// ENDPOINT COMBINADO para la matriz de flujo de efectivo
+app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
   try {
-    console.log("=== MATRIZ: OBTENIENDO CATEGORÍAS DE INGRESOS ===");
+    console.log("=== OBTENIENDO DATOS PARA MATRIZ DE FLUJO DE EFECTIVO ===");
+    
     const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
-    console.log(`Matriz - Categorías de ingresos encontradas: ${incomeCategsList.length}`);
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 'no-cache');
-    return res.json(incomeCategsList);
-  } catch (error) {
-    console.error("Error al obtener categorías de ingresos para matriz:", error);
-    res.status(500).json({ message: "Error al obtener categorías de ingresos" });
-  }
-});
-
-app.get("/matrix-expense-data", async (req: Request, res: Response) => {
-  try {
-    console.log("=== MATRIZ: OBTENIENDO CATEGORÍAS DE EGRESOS ===");
     const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
-    console.log(`Matriz - Categorías de egresos encontradas: ${expenseCategsList.length}`);
+    
+    console.log(`Matriz - Ingresos: ${incomeCategsList.length}, Egresos: ${expenseCategsList.length}`);
+    
+    const result = {
+      incomeCategories: incomeCategsList,
+      expenseCategories: expenseCategsList,
+      timestamp: new Date().toISOString()
+    };
+    
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache');
-    return res.json(expenseCategsList);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.json(result);
   } catch (error) {
-    console.error("Error al obtener categorías de egresos para matriz:", error);
-    res.status(500).json({ message: "Error al obtener categorías de egresos" });
+    console.error("Error al obtener datos para matriz:", error);
+    res.status(500).json({ message: "Error al obtener datos para matriz" });
   }
 });
 
