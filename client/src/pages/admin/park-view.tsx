@@ -117,7 +117,13 @@ export default function AdminParkView() {
   });
 
   // Combine basic park data with extended data for complete information
-  const combinedPark = park && parkBasic ? { ...park, ...parkBasic } : park;
+  // Combine data properly ensuring municipality info is preserved
+  const combinedPark = park && parkBasic ? { 
+    ...park, 
+    ...parkBasic,
+    // Ensure municipality from parkBasic is preserved
+    municipality: parkBasic.municipality || park.municipality
+  } : park;
 
   if (isLoading || parkLoading) {
     return (
@@ -152,7 +158,7 @@ export default function AdminParkView() {
     );
   }
 
-  // Use combined data or fallback to available data
+  // Use combined data with priority: combinedPark > parkBasic > park
   const displayPark = combinedPark || parkBasic || park;
 
   const getStatusBadge = (status: string) => {
