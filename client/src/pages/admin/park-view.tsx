@@ -345,41 +345,55 @@ export default function AdminParkView() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <Building className="h-4 w-4 text-gray-500" />
-                    <span className="font-medium text-gray-700">Dirección:</span>
+                    <span className="font-medium text-gray-700">Municipio:</span>
                   </div>
-                  <p className="text-gray-600">{park.address || park.location}</p>
-                  {park.postalCode && (
-                    <p className="text-gray-500 text-sm">CP: {park.postalCode}</p>
-                  )}
+                  <p className="text-gray-600">{displayPark.municipality?.name || 'No especificado'}</p>
                 </div>
 
-                {park.contactEmail && (
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <MapPin className="h-4 w-4 text-gray-500" />
+                    <span className="font-medium text-gray-700">Dirección:</span>
+                  </div>
+                  <p className="text-gray-600">{displayPark.address || displayPark.location || 'No especificado'}</p>
+                </div>
+
+                {displayPark.postalCode && (
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <Mail className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium text-gray-700">Email:</span>
+                      <span className="font-medium text-gray-700">Código Postal:</span>
                     </div>
-                    <p className="text-gray-600">{park.contactEmail}</p>
+                    <p className="text-gray-600">{displayPark.postalCode}</p>
                   </div>
                 )}
 
-                {park.contactPhone && (
+                {displayPark.contactPhone && (
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <Phone className="h-4 w-4 text-gray-500" />
                       <span className="font-medium text-gray-700">Teléfono:</span>
                     </div>
-                    <p className="text-gray-600">{park.contactPhone}</p>
+                    <p className="text-gray-600">{displayPark.contactPhone}</p>
                   </div>
                 )}
 
-                {(park.latitude && park.longitude) && (
+                {displayPark.contactEmail && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Mail className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium text-gray-700">Correo Electrónico:</span>
+                    </div>
+                    <p className="text-gray-600">{displayPark.contactEmail}</p>
+                  </div>
+                )}
+
+                {(displayPark.latitude && displayPark.longitude) && (
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <MapPin className="h-4 w-4 text-gray-500" />
                       <span className="font-medium text-gray-700">Coordenadas:</span>
                     </div>
-                    <p className="text-gray-600">{park.latitude}, {park.longitude}</p>
+                    <p className="text-gray-600">{displayPark.latitude}, {displayPark.longitude}</p>
                   </div>
                 )}
               </CardContent>
