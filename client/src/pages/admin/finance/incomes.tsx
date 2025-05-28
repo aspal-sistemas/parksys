@@ -158,7 +158,10 @@ const IncomesPage = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Parque</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(Number(value))}>
+                        <Select 
+                          value={field.value?.toString()} 
+                          onValueChange={(value) => field.onChange(Number(value))}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecciona un parque" />
