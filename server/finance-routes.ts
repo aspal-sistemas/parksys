@@ -933,56 +933,38 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   apiRouter.get("/cash-flow/:year", async (req: Request, res: Response) => {
     try {
       const year = parseInt(req.params.year);
+      console.log(`=== OBTENIENDO CASH FLOW MATRIX PARA YEAR: ${year} ===`);
       
       // Obtener solo las categorías de ingresos y egresos del catálogo
       const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
       const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
       
+      console.log(`Categorías de ingreso encontradas: ${incomeCategsList.length}`);
+      console.log(`Categorías de egreso encontradas: ${expenseCategsList.length}`);
+      
       // Crear estructura de datos para la matriz usando solo las categorías del catálogo
       const categories = [];
       const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
       
-      // Procesar categorías de ingresos del catálogo (sin datos reales, solo estructura)
+      // Procesar categorías de ingresos del catálogo
       for (const category of incomeCategsList) {
-        const monthlyValues = new Array(12).fill(0); // Valores vacíos por defecto
-        
         categories.push({
           name: category.name,
           type: 'income',
-          monthlyValues,
+          monthlyValues: new Array(12).fill(0),
           total: 0
         });
       }
       
-      // Procesar categorías de egresos del catálogo (sin datos reales, solo estructura)
+      // Procesar categorías de egresos del catálogo
       for (const category of expenseCategsList) {
-        const monthlyValues = new Array(12).fill(0); // Valores vacíos por defecto
-        
         categories.push({
           name: category.name,
           type: 'expense',
-          monthlyValues,
+          monthlyValues: new Array(12).fill(0),
           total: 0
         });
       }
-      
-      // Calcular resúmenes con valores vacíos
-      const monthlyIncomes = new Array(12).fill(0);
-      const monthlyExpenses = new Array(12).fill(0);
-      const monthlyNet = new Array(12).fill(0);
-      
-      // Estructura de resúmenes con valores vacíos
-      const quarterly = {
-        income: [0, 0, 0, 0],
-        expenses: [0, 0, 0, 0],
-        net: [0, 0, 0, 0]
-      };
-      
-      const semiannual = {
-        income: [0, 0],
-        expenses: [0, 0],
-        net: [0, 0]
-      };
       
       // Resultado final usando solo la estructura del catálogo
       const result = {
@@ -991,12 +973,20 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
         categories,
         summaries: {
           monthly: {
-            income: monthlyIncomes,
-            expenses: monthlyExpenses,
-            net: monthlyNet
+            income: new Array(12).fill(0),
+            expenses: new Array(12).fill(0),
+            net: new Array(12).fill(0)
           },
-          quarterly,
-          semiannual,
+          quarterly: {
+            income: [0, 0, 0, 0],
+            expenses: [0, 0, 0, 0],
+            net: [0, 0, 0, 0]
+          },
+          semiannual: {
+            income: [0, 0],
+            expenses: [0, 0],
+            net: [0, 0]
+          },
           annual: {
             income: 0,
             expenses: 0,
@@ -1005,7 +995,9 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
         }
       };
       
-      console.log("Matriz de flujo de efectivo generada con categorías del catálogo:", result);
+      console.log("=== CASH FLOW MATRIX EXITOSO ===");
+      console.log(`Total categorías retornadas: ${result.categories.length}`);
+      res.setHeader('Content-Type', 'application/json');
       res.json(result);
     } catch (error) {
       console.error("Error al obtener matriz de flujo de efectivo:", error);
