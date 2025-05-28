@@ -359,6 +359,199 @@ const AdminAmenitiesPage: React.FC = () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
+                <DialogTitle>Importar Amenidades</DialogTitle>
+                <DialogDescription>
+                  Sube un archivo Excel (.xlsx) o CSV con las columnas: Nombre, Categoría, Icono
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="import-file">Archivo</Label>
+                  <Input
+                    id="import-file"
+                    type="file"
+                    accept=".xlsx,.csv"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setImportFile(file);
+                      }
+                    }}
+                  />
+                  {importFile && (
+                    <p className="text-sm text-muted-foreground">
+                      Archivo seleccionado: {importFile.name}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={handleImport}
+                  disabled={!importFile || importMutation.isPending}
+                >
+                  {importMutation.isPending ? "Importando..." : "Importar"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Nueva Amenidad
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Crear Nueva Amenidad</DialogTitle>
+                <DialogDescription>
+                  Agrega una nueva amenidad para asignar a los parques
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleCreateAmenity} className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Nombre de la amenidad</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleFormChange}
+                    placeholder="ej. Juegos infantiles"
+                    required
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="category">Categoría</Label>
+                  <Select 
+                    value={formData.category} 
+                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recreacion">Recreación</SelectItem>
+                      <SelectItem value="deportes">Deportes</SelectItem>
+                      <SelectItem value="servicios">Servicios</SelectItem>
+                      <SelectItem value="naturaleza">Naturaleza</SelectItem>
+                      <SelectItem value="cultura">Cultura</SelectItem>
+                      <SelectItem value="accesibilidad">Accesibilidad</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Tipo de icono</Label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="iconType"
+                        value="system"
+                        checked={formData.iconType === 'system'}
+                        onChange={(e) => setFormData({ ...formData, iconType: e.target.value as 'system' | 'custom' })}
+                      />
+                      <span>Icono del sistema</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="iconType"
+                        value="custom"
+                        checked={formData.iconType === 'custom'}
+                        onChange={(e) => setFormData({ ...formData, iconType: e.target.value as 'system' | 'custom' })}
+                      />
+                      <span>Icono personalizado</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  {formData.iconType === 'system' ? (
+                    <div className="grid gap-2">
+                      <Label htmlFor="icon">Icono</Label>
+                      <Select 
+                        value={formData.icon} 
+                        onValueChange={(value) => setFormData({ ...formData, icon: value })}
+                        required
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un icono" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {AVAILABLE_ICONS.map((icon) => (
+                            <SelectItem key={icon.name} value={icon.name}>
+                              <div className="flex items-center">
+                                <div className="mr-2">
+                                  <AmenityIcon name={icon.name} size={16} />
+                                </div>
+                                {icon.label}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div className="grid gap-2">
+                      <Label htmlFor="customIcon">Cargar icono personalizado (JPG o PNG)</Label>
+                      <div className="flex items-start gap-4 mt-2">
+                        <Input
+                          id="customIcon"
+                          type="file"
+                          accept=".jpg,.jpeg,.png"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setUploadedFile(file);
+                            }
+                          }}
+                          className="flex-1"
+                        />
+                        {uploadedFile && (
+                          <div className="flex flex-col items-center">
+                            <div className="w-16 h-16 rounded-md bg-gray-50 flex items-center justify-center overflow-hidden border">
+                              <span className="text-xs text-gray-500">Archivo seleccionado</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">Vista previa</p>
+                          </div>
+                        )}
+                      </div>
+                      {isUploading && <p className="text-sm text-blue-500 mt-1">Subiendo icono...</p>}
+                    </div>
+                  )}
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" type="button" onClick={() => setIsAddDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={createAmenity.isPending}>
+                    {createAmenity.isPending ? "Creando..." : "Crear Amenidad"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+        <div className="flex gap-2">
+          <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <FileUp className="mr-2 h-4 w-4" />
+                Importar Amenidades
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
                 <DialogTitle>Importar amenidades desde base de datos</DialogTitle>
                 <DialogDescription>
                   Sube un archivo Excel (.xlsx) o CSV con las amenidades para importar masivamente.

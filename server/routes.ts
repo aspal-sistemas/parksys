@@ -60,6 +60,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public API routes - all prefixed with /public-api
   const publicRouter = express.Router();
   
+  // Configure multer for file uploads
+  const upload = multer({ storage: multer.memoryStorage() });
+  
   // Template download routes (must be defined before conflicting routes)
   app.get('/api/template/parks-import', generateImportTemplate);
   
