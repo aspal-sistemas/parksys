@@ -192,13 +192,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       icon={<MapPin className="h-5 w-5" />}
       value="operations"
     >
-      <NavItem 
-        href="/admin/operations/dashboard" 
-        icon={<BarChart className="h-5 w-5" />}
-        active={location === '/admin/operations/dashboard'}
-      >
-        Dashboard
-      </NavItem>
+
       <NavItem 
         href="/admin/parks" 
         icon={<Map className="h-5 w-5" />}
