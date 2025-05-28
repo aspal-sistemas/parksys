@@ -16,6 +16,7 @@ export interface IStorage {
   getExtendedParks(filters?: any): Promise<any[]>;
   getPark(id: number): Promise<any>;
   updatePark(id: number, data: any): Promise<any>;
+  deletePark(id: number): Promise<boolean>;
   getMunicipalities(): Promise<any[]>;
   getAmenities(): Promise<any[]>;
   getUser(id: number): Promise<any>;
@@ -33,6 +34,7 @@ export interface IStorage {
   deleteAssetCategory(id: number): Promise<boolean>;
   getAssets(filters?: any): Promise<any[]>;
   getAsset(id: number): Promise<any>;
+  removeAmenityFromPark(parkId: number, amenityId: number): Promise<boolean>;
 }
 
 // Implementación simplificada
@@ -71,6 +73,27 @@ export class DatabaseStorage implements IStorage {
   
   async getAmenities(): Promise<any[]> {
     return getAmenitiesDirectly();
+  }
+
+  async deletePark(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(parks).where(eq(parks.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error al eliminar parque:", error);
+      return false;
+    }
+  }
+
+  async removeAmenityFromPark(parkId: number, amenityId: number): Promise<boolean> {
+    try {
+      const result = await db.delete(parkAmenities)
+        .where(sql`park_id = ${parkId} AND amenity_id = ${amenityId}`);
+      return true;
+    } catch (error) {
+      console.error("Error al remover amenidad del parque:", error);
+      return false;
+    }
   }
   
   async getUser(id: number): Promise<any> {
