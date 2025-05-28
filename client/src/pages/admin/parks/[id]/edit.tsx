@@ -180,16 +180,40 @@ export default function ParkEdit() {
       // Convertir el schedule a openingHours string y preparar datos
       const { schedule, municipalityName, ...parkData } = values;
       
-      // Buscar el municipio por nombre
+      // Buscar el municipio por nombre o crear uno nuevo si no existe
       let municipalityId = park?.municipalityId || 1;
       
-      if (municipalityName && municipalityName.trim() !== '' && municipalities) {
-        const existingMunicipality = municipalities.find((m: any) => 
+      if (municipalityName && municipalityName.trim() !== '') {
+        // Primero buscar si existe
+        const existingMunicipality = municipalities?.find((m: any) => 
           m.name.toLowerCase().trim() === municipalityName.toLowerCase().trim()
         );
         
         if (existingMunicipality) {
           municipalityId = existingMunicipality.id;
+        } else {
+          // Si no existe, crear uno nuevo
+          try {
+            const newMunicipality = await apiRequest('/api/municipalities', {
+              method: 'POST',
+              data: {
+                name: municipalityName.trim(),
+                state: 'México',
+                active: true
+              }
+            });
+            municipalityId = newMunicipality.id;
+            
+            // Invalidar la cache de municipios para refrescar la lista
+            queryClient.invalidateQueries({ queryKey: ["/api/municipalities"] });
+          } catch (error) {
+            console.error('Error al crear municipio:', error);
+            toast({
+              title: "Advertencia",
+              description: "No se pudo crear el municipio nuevo. Se usará el existente.",
+              variant: "destructive",
+            });
+          }
         }
       }
       
