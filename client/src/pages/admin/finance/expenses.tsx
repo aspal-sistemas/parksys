@@ -39,6 +39,8 @@ type ExpenseFormValues = z.infer<typeof expenseSchema>;
 
 const ExpensesPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: expenses, isLoading: expensesLoading } = useQuery({

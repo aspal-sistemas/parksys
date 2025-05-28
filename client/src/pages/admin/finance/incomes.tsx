@@ -39,6 +39,8 @@ type IncomeFormValues = z.infer<typeof incomeSchema>;
 
 const IncomesPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingIncome, setEditingIncome] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: incomes, isLoading: incomesLoading } = useQuery({
@@ -103,8 +105,80 @@ const IncomesPage = () => {
     },
   });
 
+  // Formulario de edición separado
+  const editForm = useForm<IncomeFormValues>({
+    resolver: zodResolver(incomeSchema),
+    defaultValues: {
+      parkId: 3,
+      categoryId: 0,
+      amount: 0,
+      concept: "",
+      description: "",
+      date: new Date().toISOString().split('T')[0],
+      source: "",
+      notes: "",
+    },
+  });
+
+  // Mutación para actualizar ingresos
+  const updateIncomeMutation = useMutation({
+    mutationFn: async (data: IncomeFormValues & { id: number }) => {
+      const response = await fetch(`/api/actual-incomes/${data.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al actualizar el ingreso");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/actual-incomes"] });
+      setIsEditDialogOpen(false);
+      setEditingIncome(null);
+      editForm.reset();
+      toast({
+        title: "Ingreso actualizado",
+        description: "El ingreso se ha actualizado correctamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el ingreso. Intenta nuevamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: IncomeFormValues) => {
     createIncomeMutation.mutate(data);
+  };
+
+  const onEditSubmit = (data: IncomeFormValues) => {
+    if (editingIncome) {
+      updateIncomeMutation.mutate({ ...data, id: editingIncome.id });
+    }
+  };
+
+  const handleEditIncome = (income: any) => {
+    setEditingIncome(income);
+    editForm.reset({
+      parkId: income.parkId,
+      categoryId: income.categoryId,
+      amount: income.amount,
+      concept: income.concept || "",
+      description: income.description || "",
+      date: income.date ? income.date.split('T')[0] : new Date().toISOString().split('T')[0],
+      source: income.source || "",
+      notes: income.notes || "",
+    });
+    setIsEditDialogOpen(true);
   };
 
   const formatCurrency = (amount: number) => {
@@ -361,13 +435,23 @@ const IncomesPage = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-green-600">
-                          {formatCurrency(income.amount)}
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-green-600">
+                            {formatCurrency(income.amount)}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {income.categoryName || 'Sin categoría'}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {income.categoryName || 'Sin categoría'}
-                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditIncome(income)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   ))
@@ -384,6 +468,152 @@ const IncomesPage = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Diálogo de edición */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Ingreso</DialogTitle>
+              <DialogDescription>
+                Modifica los datos del ingreso seleccionado
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...editForm}>
+              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Categoría</FormLabel>
+                        <Select 
+                          onValueChange={(value) => field.onChange(Number(value))}
+                          value={field.value?.toString()}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona una categoría" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {Array.isArray(incomeCategories) && incomeCategories.map((category: any) => (
+                              <SelectItem key={category.id} value={category.id.toString()}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="amount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Monto</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={editForm.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descripción</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Descripción del ingreso" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fecha</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="source"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fuente</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Fuente del ingreso" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={editForm.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notas adicionales</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Notas opcionales" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsEditDialogOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={updateIncomeMutation.isPending}
+                  >
+                    {updateIncomeMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Actualizando...
+                      </>
+                    ) : (
+                      "Actualizar Ingreso"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );

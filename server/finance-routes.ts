@@ -616,6 +616,30 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     }
   });
 
+  // Actualizar ingreso real
+  apiRouter.put("/actual-incomes/:id", async (req: Request, res: Response) => {
+    try {
+      const incomeId = parseInt(req.params.id);
+      const incomeData = req.body;
+      
+      // Extraer mes y año de la fecha
+      const date = new Date(incomeData.date);
+      incomeData.month = date.getMonth() + 1;
+      incomeData.year = date.getFullYear();
+      
+      const [updatedIncome] = await db
+        .update(actualIncomes)
+        .set(incomeData)
+        .where(eq(actualIncomes.id, incomeId))
+        .returning();
+      
+      res.json(updatedIncome);
+    } catch (error) {
+      console.error("Error al actualizar ingreso:", error);
+      res.status(500).json({ message: "Error al actualizar ingreso" });
+    }
+  });
+
   // ============ EGRESOS REALES ============
   
   // Obtener egresos reales
