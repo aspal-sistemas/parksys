@@ -538,6 +538,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.put("/dev/parks/:id", async (req: Request, res: Response) => {
     try {
       console.log("DESARROLLO - Actualizando parque directamente en base de datos");
+      console.log("Datos recibidos del cliente:", req.body);
       
       const parkId = Number(req.params.id);
       
