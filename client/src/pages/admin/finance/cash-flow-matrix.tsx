@@ -114,7 +114,7 @@ export default function CashFlowMatrix() {
     { name: "Servicios Educativos", code: "ING008" },
     { name: "Estacionamiento", code: "ING009" },
     { name: "Otros Ingresos", code: "ING010" },
-    { name: "Patrocinios Test", code: "ING011" }
+    { name: "Patrocinios", code: "ING011" }
   ];
 
   const expenseCategories = [
