@@ -93,7 +93,7 @@ type Amenity = {
   name: string;
   icon: string | null;
   category?: string;
-  parkCount?: number;
+  parksCount?: number;
   createdAt: Date;
 };
 
@@ -135,7 +135,7 @@ const AdminAmenitiesPage = () => {
     queryKey: ["/api/amenities/dashboard"],
   });
 
-  const amenities = amenitiesData?.amenities || [];
+  const amenities = amenitiesData?.mostPopularAmenities || [];
 
   // Create amenity mutation
   const createAmenity = useMutation({
@@ -143,7 +143,7 @@ const AdminAmenitiesPage = () => {
       return apiRequest("/api/amenities", { method: "POST", data });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/amenities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/amenities/dashboard"] });
       toast({ title: "Amenidad creada exitosamente" });
       setIsCreateDialogOpen(false);
       setFormData({
@@ -165,7 +165,7 @@ const AdminAmenitiesPage = () => {
       return apiRequest(`/api/amenities/${data.id}`, { method: "PUT", data });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/amenities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/amenities/dashboard"] });
       toast({ title: "Amenidad actualizada exitosamente" });
       setIsEditDialogOpen(false);
     },
@@ -180,7 +180,7 @@ const AdminAmenitiesPage = () => {
       return apiRequest(`/api/amenities/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/amenities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/amenities/dashboard"] });
       toast({ title: "Amenidad eliminada exitosamente" });
       setIsDeleteDialogOpen(false);
     },
@@ -207,7 +207,7 @@ const AdminAmenitiesPage = () => {
       return response.json();
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/amenities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/amenities/dashboard"] });
       toast({ 
         title: "Importación exitosa", 
         description: `Se importaron ${data.count} amenidades correctamente` 
@@ -443,7 +443,7 @@ const AdminAmenitiesPage = () => {
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                    {amenity.parkCount || 0} parques
+                    {amenity.parksCount || 0} parques
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
