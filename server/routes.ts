@@ -553,7 +553,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const {
           name, description, address, postalCode, latitude, longitude,
           area, parkType, openingHours, contactPhone, contactEmail,
-          administrator, conservationStatus, regulationUrl, foundationYear, videoUrl
+          administrator, conservationStatus, regulationUrl, foundationYear, videoUrl,
+          municipalityId
         } = req.body;
         
         // Creamos un objeto con solo las propiedades que no son null o undefined
@@ -574,6 +575,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (regulationUrl !== undefined) fieldsToUpdate.regulation_url = regulationUrl;
         if (foundationYear !== undefined) fieldsToUpdate.foundation_year = foundationYear;
         if (videoUrl !== undefined) fieldsToUpdate.video_url = videoUrl;
+        if (municipalityId !== undefined) fieldsToUpdate.municipality_id = municipalityId;
         
         // Agregamos la fecha de actualización
         fieldsToUpdate.updated_at = new Date();
