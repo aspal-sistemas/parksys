@@ -196,10 +196,7 @@ const ExpensesPage = () => {
       const expenseMonth = (expenseDate.getMonth() + 1).toString().padStart(2, '0');
       const expenseDay = expenseDate.toISOString().split('T')[0];
       
-      // Debug para el filtro del año
-      if (filters.year) {
-        console.log('Filtro año:', filters.year, 'Año del gasto:', expenseYear, 'Coincide:', expenseYear === filters.year);
-      }
+
       
       // Filtro por concepto
       if (filters.concept && !expense.concept?.toLowerCase().includes(filters.concept.toLowerCase())) {
@@ -440,13 +437,18 @@ const ExpensesPage = () => {
                   />
                 </div>
                 <div>
-                  <Input
-                    type="number"
-                    placeholder="Año (ej: 2024)"
+                  <select
                     value={filters.year}
                     onChange={(e) => setFilters(prev => ({ ...prev, year: e.target.value }))}
-                    className="h-9"
-                  />
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                  >
+                    <option value="">Todos los años</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                  </select>
                 </div>
                 <div>
                   <select
