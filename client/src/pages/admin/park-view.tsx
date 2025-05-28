@@ -142,29 +142,13 @@ function formatOpeningHours(openingHours: string | null): JSX.Element {
 export default function AdminParkView() {
   const { id } = useParams();
   
-  // Get detailed park information from the same endpoint as the edit page
-  const { data: parkBasic, isLoading: parkLoading } = useQuery({
+  // Get complete park data from the main API endpoint that has all fields
+  const { data: park, isLoading, error } = useQuery<ParkDetails>({
     queryKey: [`/api/parks/${id}`],
     enabled: !!id,
   });
-  
-  // Get extended park data for the tabs (amenities, activities, etc.)
-  const { data: park, isLoading, error } = useQuery<ParkDetails>({
-    queryKey: ['/api/parks', id, 'view'],
-    queryFn: () => fetch(`/api/parks/${id}/view`).then(res => res.json()),
-    enabled: !!id,
-  });
 
-  // Combine basic park data with extended data for complete information
-  // Combine data properly ensuring municipality info is preserved
-  const combinedPark = park && parkBasic ? { 
-    ...park, 
-    ...parkBasic,
-    // Ensure municipality from parkBasic is preserved
-    municipality: parkBasic.municipality || park.municipality
-  } : park;
-
-  if (isLoading || parkLoading) {
+  if (isLoading) {
     return (
       <div className="p-6">
         <div className="animate-pulse">
@@ -180,7 +164,7 @@ export default function AdminParkView() {
     );
   }
 
-  if (error || (!park && !parkBasic)) {
+  if (error || !park) {
     return (
       <div className="p-6">
         <div className="text-center py-12">
@@ -197,8 +181,8 @@ export default function AdminParkView() {
     );
   }
 
-  // Use combined data with priority: combinedPark > parkBasic > park
-  const displayPark = combinedPark || parkBasic || park;
+  // Use the park data directly from the main API
+  const displayPark = park;
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
