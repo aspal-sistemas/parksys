@@ -183,6 +183,39 @@ const AdminAmenitiesPage: React.FC = () => {
     }
   });
 
+  // Importación masiva de amenidades
+  const importAmenities = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch('/api/amenities/import', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al importar amenidades');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/amenities'] });
+      toast({ 
+        title: "Amenidades importadas", 
+        description: `Se importaron ${data.count} amenidades correctamente` 
+      });
+      setIsImportDialogOpen(false);
+      setImportFile(null);
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Error", 
+        description: error.message || "No se pudo importar las amenidades", 
+        variant: "destructive" 
+      });
+    },
+  });
+
   // Función para manejar la carga de iconos personalizados
   const handleIconUpload = async () => {
     if (!uploadedFile) return null;
@@ -297,6 +330,13 @@ const AdminAmenitiesPage: React.FC = () => {
   const handleDeleteConfirm = () => {
     if (currentAmenity) {
       deleteAmenity.mutate(currentAmenity.id);
+    }
+  };
+
+  const handleImportSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (importFile) {
+      importAmenities.mutate(importFile);
     }
   };
 
