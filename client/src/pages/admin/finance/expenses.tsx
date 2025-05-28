@@ -196,6 +196,11 @@ const ExpensesPage = () => {
       const expenseMonth = (expenseDate.getMonth() + 1).toString().padStart(2, '0');
       const expenseDay = expenseDate.toISOString().split('T')[0];
       
+      // Debug para el filtro del año
+      if (filters.year) {
+        console.log('Filtro año:', filters.year, 'Año del gasto:', expenseYear, 'Coincide:', expenseYear === filters.year);
+      }
+      
       // Filtro por concepto
       if (filters.concept && !expense.concept?.toLowerCase().includes(filters.concept.toLowerCase())) {
         return false;
