@@ -92,77 +92,49 @@ export default function AmenitiesDashboard() {
     );
   }
 
-  // Calcular estadísticas usando datos reales
-  const parksData = (parks as any[]) || [];
-  const amenitiesData = (amenities as any[]) || [];
-  const parksWithAmenities = parksData.filter((park: any) => park.amenities && park.amenities.length > 0);
-  const totalAmenityAssignments = parksData.reduce((sum: number, park: any) => sum + (park.amenities?.length || 0), 0);
-  
-  const amenityUsageCount = amenitiesData.map((amenity: any) => {
-    const usageCount = parksData.filter((park: any) => 
-      park.amenities?.some((a: any) => a.id === amenity.id)
-    ).length || 0;
-    return {
-      ...amenity,
-      parksCount: usageCount,
-      utilizationRate: parksData.length > 0 ? Math.round((usageCount / parksData.length) * 100) : 0
-    };
-  }).sort((a: any, b: any) => b.parksCount - a.parksCount);
+  // Usar los datos directamente del backend
+  const data = dashboardData as DashboardData;
 
-  const dashboardData: DashboardData = {
-    totalAmenities: amenitiesData.length,
-    totalParks: parksData.length,
-    averageAmenitiesPerPark: parksData.length ? 
-      totalAmenityAssignments / parksData.length : 0,
-    mostPopularAmenities: amenityUsageCount.slice(0, 5),
-    amenityDistribution: amenityUsageCount.slice(0, 6).map((amenity: any, index: number) => ({
-      name: amenity.name.length > 12 ? amenity.name.substring(0, 12) + '...' : amenity.name,
-      value: amenity.parksCount,
-      color: COLORS[index % COLORS.length]
-    })),
-    utilizationByPark: parksData.slice(0, 8).map((park: any) => ({
-      parkName: park.name.length > 15 ? park.name.substring(0, 15) + '...' : park.name,
-      amenitiesCount: park.amenities?.length || 0
-    })).sort((a: any, b: any) => b.amenitiesCount - a.amenitiesCount),
-    statusDistribution: [
-      { 
-        status: 'Activas', 
-        count: amenitiesData.length, 
-        color: '#00C49F' 
-      },
-      { 
-        status: 'En Uso', 
-        count: parksWithAmenities.length, 
-        color: '#0088FE' 
-      },
-      { 
-        status: 'Sin Asignar', 
-        count: amenitiesData.length - new Set(
-          parksData.flatMap((park: any) => park.amenities?.map((a: any) => a.id) || [])
-        ).size, 
-        color: '#FFBB28' 
-      }
-    ]
+  // Función para generar insights automáticos
+  const generateInsights = () => {
+    if (!data) return [];
+    
+    const insights = [];
+    
+    if (data.averageAmenitiesPerPark < 2) {
+      insights.push("Los parques tienen pocas amenidades en promedio. Considere expandir la oferta.");
+    }
+    
+    if (data.mostPopularAmenities.length > 0) {
+      const topAmenity = data.mostPopularAmenities[0];
+      insights.push(`"${topAmenity.name}" es la amenidad más popular con ${topAmenity.parksCount} parques.`);
+    }
+    
+    if (data.totalAmenities > data.totalParks * 2) {
+      insights.push("Hay una buena variedad de amenidades disponibles en el sistema.");
+    }
+    
+    return insights;
   };
+
+  const insights = generateInsights();
 
   return (
     <AdminLayout title="Dashboard de Amenidades">
       <div className="space-y-6">
-        {/* Header */}
+        {/* Header con botón de actualizar */}
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Dashboard de Amenidades</h1>
-            <p className="mt-2 text-gray-600">
-              Estadísticas y análisis del uso de amenidades en los parques
-            </p>
+            <p className="text-gray-600">Análisis y estadísticas de amenidades en parques</p>
           </div>
-          <Button onClick={handleRefresh} variant="outline" size="sm">
+          <Button onClick={handleRefresh} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualizar
           </Button>
         </div>
 
-        {/* KPI Cards */}
+        {/* KPIs principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -170,22 +142,22 @@ export default function AmenitiesDashboard() {
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{dashboardData.totalAmenities}</div>
+              <div className="text-2xl font-bold">{data?.totalAmenities || 0}</div>
               <p className="text-xs text-muted-foreground">
-                Disponibles en el sistema
+                Amenidades registradas
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Parques con Amenidades</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Parques</CardTitle>
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{parksWithAmenities.length}</div>
+              <div className="text-2xl font-bold">{data?.totalParks || 0}</div>
               <p className="text-xs text-muted-foreground">
-                De {dashboardData.totalParks} parques totales
+                Parques en el sistema
               </p>
             </CardContent>
           </Card>
@@ -196,9 +168,7 @@ export default function AmenitiesDashboard() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {dashboardData.averageAmenitiesPerPark.toFixed(1)}
-              </div>
+              <div className="text-2xl font-bold">{data?.averageAmenitiesPerPark.toFixed(1) || '0'}</div>
               <p className="text-xs text-muted-foreground">
                 Amenidades por parque
               </p>
@@ -207,65 +177,36 @@ export default function AmenitiesDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cobertura General</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CardTitle className="text-sm font-medium">Estado</CardTitle>
+              <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {dashboardData.totalParks > 0 ? 
-                  Math.round((parksWithAmenities.length / dashboardData.totalParks) * 100) : 0}%
-              </div>
+              <div className="text-2xl font-bold text-green-600">Activo</div>
               <p className="text-xs text-muted-foreground">
-                Parques con amenidades
+                Sistema operativo
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Charts Row 1 */}
+        {/* Gráficos principales */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Amenidades por parque */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Amenidades por Parque</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Número de amenidades por parque
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dashboardData.utilizationByPark}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="parkName" angle={-45} textAnchor="end" height={80} />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="amenitiesCount" fill="#0088FE" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
           {/* Distribución de amenidades */}
           <Card>
             <CardHeader>
               <CardTitle>Distribución de Amenidades</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Uso por tipo de amenidad
-              </p>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
                   <Pie
-                    data={dashboardData.amenityDistribution}
+                    data={data?.amenityDistribution || []}
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
-                    fill="#8884d8"
                     dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
                   >
-                    {dashboardData.amenityDistribution.map((entry, index) => (
+                    {(data?.amenityDistribution || []).map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -274,39 +215,48 @@ export default function AmenitiesDashboard() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-        </div>
 
-        {/* Amenidades populares y estado */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Lista de amenidades populares */}
-          <Card className="lg:col-span-2">
+          {/* Top 5 amenidades más populares */}
+          <Card>
             <CardHeader>
-              <CardTitle>Top 5 Amenidades Más Utilizadas</CardTitle>
+              <CardTitle>Top 5 Amenidades Más Populares</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {dashboardData.mostPopularAmenities.map((amenity, index) => (
-                  <div key={amenity.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="space-y-3">
+                {(data?.mostPopularAmenities || []).map((amenity: any, index: number) => (
+                  <div key={amenity.id} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="bg-blue-100 p-2 rounded-full">
-                        <Activity className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{amenity.name}</p>
-                        <p className="text-sm text-gray-500">
-                          En {amenity.parksCount} parques ({amenity.utilizationRate}%)
-                        </p>
-                      </div>
+                      <Badge variant="secondary">{index + 1}</Badge>
+                      <span className="font-medium">{amenity.name}</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="default">
-                        Activa
-                      </Badge>
-                      <span className="text-2xl font-bold text-blue-600">#{index + 1}</span>
+                    <div className="text-right">
+                      <div className="font-bold">{amenity.parksCount}</div>
+                      <div className="text-xs text-gray-500">{amenity.utilizationRate}% uso</div>
                     </div>
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Utilización por parque y estado */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Utilización por parque */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Amenidades por Parque</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={data?.utilizationByPark || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="parkName" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="amenitiesCount" fill="#0088FE" />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
 
@@ -316,63 +266,46 @@ export default function AmenitiesDashboard() {
               <CardTitle>Estado de Amenidades</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {dashboardData.statusDistribution.map((status) => (
+              <div className="space-y-3">
+                {(data?.statusDistribution || []).map((status: any) => (
                   <div key={status.status} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
                       <div 
-                        className="w-3 h-3 rounded-full"
+                        className="w-3 h-3 rounded-full" 
                         style={{ backgroundColor: status.color }}
-                      />
-                      <span className="text-sm font-medium">{status.status}</span>
+                      ></div>
+                      <span className="font-medium">{status.status}</span>
                     </div>
-                    <span className="text-xl font-bold">{status.count}</span>
+                    <Badge variant="outline">{status.count}</Badge>
                   </div>
                 ))}
-              </div>
-              
-              <div className="mt-6 pt-4 border-t">
-                <div className="flex items-center space-x-2 text-green-600">
-                  <CheckCircle className="h-4 w-4" />
-                  <span className="text-sm font-medium">
-                    Sistema Operativo
-                  </span>
-                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Insights y recomendaciones */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Insights y Recomendaciones</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-start space-x-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-blue-600 mt-0.5" />
-                <div>
-                  <p className="font-medium text-blue-800">Oportunidad de Expansión</p>
-                  <p className="text-sm text-blue-700">
-                    {dashboardData.totalParks - parksWithAmenities.length} parques aún no tienen amenidades asignadas
-                  </p>
-                </div>
+        {/* Insights automáticos */}
+        {insights.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <TrendingUp className="h-5 w-5" />
+                <span>Insights Automáticos</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {insights.map((insight, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <CheckCircle className="h-5 w-5 text-blue-500 mt-0.5" />
+                    <p className="text-gray-700">{insight}</p>
+                  </div>
+                ))}
               </div>
-              
-              <div className="flex items-start space-x-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                <div>
-                  <p className="font-medium text-green-800">Cobertura Satisfactoria</p>
-                  <p className="text-sm text-green-700">
-                    {Math.round((parksWithAmenities.length / (dashboardData.totalParks || 1)) * 100)}% de los parques tienen amenidades disponibles
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </AdminLayout>
   );
-}
+};

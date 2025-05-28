@@ -134,6 +134,11 @@ function Router() {
 
         {/* Rutas para concesionarios movidas al módulo de Concesiones */}
         <Route path="/admin/amenities" component={AdminAmenities} />
+        <Route path="/admin/amenities-dashboard">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de amenidades...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/amenities-dashboard')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/settings" component={AdminSettings} />
         <Route path="/admin/permissions">
           <Suspense fallback={<div className="p-8 text-center">Cargando permisos...</div>}>
