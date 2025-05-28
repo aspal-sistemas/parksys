@@ -20,6 +20,7 @@ import { ArrowLeft, Save, Building, MapPin, Phone, Mail, Globe, Clock, Info } fr
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { MapSelector } from "@/components/ui/map-selector";
 
 // Schema de validación para el formulario
 const parkEditSchema = z.object({
@@ -602,34 +603,67 @@ export default function ParkEdit() {
                         />
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="latitude"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Latitud</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Ej: 19.432608" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                      {/* Selector de Coordenadas con Mapa Interactivo */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <MapPin className="h-5 w-5 text-blue-600" />
+                          <h3 className="text-lg font-semibold">Coordenadas del Parque</h3>
+                        </div>
+                        
+                        <MapSelector
+                          latitude={form.watch("latitude")}
+                          longitude={form.watch("longitude")}
+                          onLocationChange={(lat, lng) => {
+                            form.setValue("latitude", lat);
+                            form.setValue("longitude", lng);
+                          }}
+                          className="w-full"
                         />
+                        
+                        {/* Campos de texto para coordenadas (solo lectura/edición manual) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                          <FormField
+                            control={form.control}
+                            name="latitude"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Latitud</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="Ej: 19.432608" 
+                                    {...field}
+                                    onChange={(e) => {
+                                      field.onChange(e);
+                                      // Si el usuario cambia manualmente, no actualizar el mapa automáticamente
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                        <FormField
-                          control={form.control}
-                          name="longitude"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Longitud</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Ej: -99.133209" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                          <FormField
+                            control={form.control}
+                            name="longitude"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Longitud</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="Ej: -99.133209" 
+                                    {...field}
+                                    onChange={(e) => {
+                                      field.onChange(e);
+                                      // Si el usuario cambia manualmente, no actualizar el mapa automáticamente
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
