@@ -5,7 +5,6 @@ import {
   incomeCategories,
   incomeSubcategories,
   expenseCategories,
-  expenseSubcategories,
   budgets,
   budgetIncomeLines,
   budgetExpenseLines,
@@ -409,13 +408,8 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   apiRouter.get("/expense-categories/:categoryId/subcategories", async (req: Request, res: Response) => {
     try {
       const categoryId = parseInt(req.params.categoryId);
-      const subcategories = await db.select()
-        .from(expenseSubcategories)
-        .where(and(
-          eq(expenseSubcategories.categoryId, categoryId),
-          eq(expenseSubcategories.isActive, true)
-        ));
-      res.json(subcategories);
+      // Por ahora devolvemos un array vacío ya que no tenemos subcategorías
+      res.json([]);
     } catch (error) {
       console.error("Error al obtener subcategorías de egresos:", error);
       res.status(500).json({ message: "Error al obtener subcategorías" });
@@ -515,11 +509,10 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
         november: budgetExpenseLines.november,
         december: budgetExpenseLines.december,
         categoryName: expenseCategories.name,
-        subcategoryName: expenseSubcategories.name,
+
       })
       .from(budgetExpenseLines)
       .leftJoin(expenseCategories, eq(budgetExpenseLines.categoryId, expenseCategories.id))
-      .leftJoin(expenseSubcategories, eq(budgetExpenseLines.subcategoryId, expenseSubcategories.id))
       .where(eq(budgetExpenseLines.budgetId, budgetId));
 
       res.json({
@@ -666,7 +659,7 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   });
 
   // Registrar egreso real
-  apiRouter.post("/actual-expenses", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.post("/actual-expenses", async (req: Request, res: Response) => {
     try {
       const expenseData = req.body;
       // Extraer mes y año de la fecha
