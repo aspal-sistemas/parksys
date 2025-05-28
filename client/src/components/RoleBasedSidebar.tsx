@@ -191,13 +191,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
           Actividad de Usuarios
         </NavItem>
       </ModuleNav>
-      <NavItem 
-        href="/admin/system-settings" 
-        icon={<Wrench className="h-5 w-5" />}
-        active={location === '/admin/system-settings'}
-      >
-        Configuración del Sistema
-      </NavItem>
+
       <NavItem 
         href="/admin/integrations" 
         icon={<Database className="h-5 w-5" />}
