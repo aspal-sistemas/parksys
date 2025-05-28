@@ -640,6 +640,27 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     }
   });
 
+  // Eliminar ingreso real
+  apiRouter.delete("/actual-incomes/:id", async (req: Request, res: Response) => {
+    try {
+      const incomeId = parseInt(req.params.id);
+      
+      const [deletedIncome] = await db
+        .delete(actualIncomes)
+        .where(eq(actualIncomes.id, incomeId))
+        .returning();
+        
+      if (!deletedIncome) {
+        return res.status(404).json({ message: "Ingreso no encontrado" });
+      }
+      
+      res.json({ message: "Ingreso eliminado correctamente", income: deletedIncome });
+    } catch (error) {
+      console.error("Error al eliminar ingreso:", error);
+      res.status(500).json({ message: "Error al eliminar ingreso" });
+    }
+  });
+
   // ============ EGRESOS REALES ============
   
   // Obtener egresos reales
@@ -724,6 +745,27 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     } catch (error) {
       console.error("Error al actualizar egreso:", error);
       res.status(500).json({ message: "Error al actualizar egreso" });
+    }
+  });
+
+  // Eliminar egreso real
+  apiRouter.delete("/actual-expenses/:id", async (req: Request, res: Response) => {
+    try {
+      const expenseId = parseInt(req.params.id);
+      
+      const [deletedExpense] = await db
+        .delete(actualExpenses)
+        .where(eq(actualExpenses.id, expenseId))
+        .returning();
+        
+      if (!deletedExpense) {
+        return res.status(404).json({ message: "Egreso no encontrado" });
+      }
+      
+      res.json({ message: "Egreso eliminado correctamente", expense: deletedExpense });
+    } catch (error) {
+      console.error("Error al eliminar egreso:", error);
+      res.status(500).json({ message: "Error al eliminar egreso" });
     }
   });
 

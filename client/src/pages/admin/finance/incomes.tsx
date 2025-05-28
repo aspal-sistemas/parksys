@@ -18,6 +18,7 @@ import {
   DollarSign,
   Calendar,
   CheckCircle,
+  Trash2,
   Loader2
 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
@@ -41,6 +42,8 @@ const IncomesPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIncome, setEditingIncome] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [incomeToDelete, setIncomeToDelete] = useState<any>(null);
   const [filters, setFilters] = useState({
     concept: "",
     year: "",
@@ -158,6 +161,36 @@ const IncomesPage = () => {
       toast({
         title: "Error",
         description: "No se pudo actualizar el ingreso. Intenta nuevamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteIncomeMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/actual-incomes/${id}`, {
+        method: "DELETE",
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al eliminar el ingreso");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/actual-incomes"] });
+      setIsDeleteDialogOpen(false);
+      setIncomeToDelete(null);
+      toast({
+        title: "Ingreso eliminado",
+        description: "El ingreso se ha eliminado correctamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el ingreso. Intenta nuevamente.",
         variant: "destructive",
       });
     },
@@ -573,14 +606,27 @@ const IncomesPage = () => {
                             {income.categoryName || 'Sin categoría'}
                           </div>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditIncome(income)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditIncome(income)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setIncomeToDelete(income);
+                              setIsDeleteDialogOpen(true);
+                            }}
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))
