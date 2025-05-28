@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
+import { MapViewer } from "@/components/ui/map-viewer";
 
 interface ParkDetails {
   id: number;
@@ -426,6 +427,23 @@ export default function AdminParkView() {
                       <span className="font-medium text-gray-700">Coordenadas:</span>
                     </div>
                     <p className="text-gray-600">{displayPark.latitude}, {displayPark.longitude}</p>
+                  </div>
+                )}
+
+                {/* Mapa de Ubicación */}
+                {(displayPark.latitude && displayPark.longitude) && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <MapPin className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium text-gray-700">Ubicación en el Mapa:</span>
+                    </div>
+                    <MapViewer
+                      latitude={displayPark.latitude}
+                      longitude={displayPark.longitude}
+                      parkName={displayPark.name}
+                      height="300px"
+                      className="w-full"
+                    />
                   </div>
                 )}
               </CardContent>
