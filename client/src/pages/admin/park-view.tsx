@@ -88,7 +88,8 @@ export default function AdminParkView() {
   const { id } = useParams();
   
   const { data: park, isLoading, error } = useQuery<ParkDetails>({
-    queryKey: ['/api/parks', id, 'details'],
+    queryKey: ['/api/parks', id, 'view'],
+    queryFn: () => fetch(`/api/parks/${id}/view`).then(res => res.json()),
     enabled: !!id,
   });
 
