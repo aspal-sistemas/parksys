@@ -103,15 +103,23 @@ export default function CashFlowMatrix() {
   };
 
   // Obtener categorías del catálogo financiero directamente
-  const { data: incomeCategories } = useQuery({
+  const { data: incomeCategories, isLoading: loadingIncome } = useQuery({
     queryKey: ['/api/finance/income-categories'],
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: expenseCategories } = useQuery({
+  const { data: expenseCategories, isLoading: loadingExpense } = useQuery({
     queryKey: ['/api/finance/expense-categories'],
     staleTime: 5 * 60 * 1000,
   });
+
+  // Debug: Mostrar los datos recibidos
+  React.useEffect(() => {
+    console.log('Datos de ingresos:', incomeCategories);
+    console.log('Datos de egresos:', expenseCategories);
+    console.log('¿Está cargando ingresos?', loadingIncome);
+    console.log('¿Está cargando egresos?', loadingExpense);
+  }, [incomeCategories, expenseCategories, loadingIncome, loadingExpense]);
 
   // Generar datos de la matriz usando las categorías del catálogo
   const cashFlowData = React.useMemo(() => {
