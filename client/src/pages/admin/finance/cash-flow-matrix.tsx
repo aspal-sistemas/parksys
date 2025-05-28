@@ -102,27 +102,30 @@ export default function CashFlowMatrix() {
     }));
   };
 
-  // Conectar dinámicamente con el catálogo financiero usando los endpoints existentes
-  const { data: incomeCategories } = useQuery({
-    queryKey: ['/api/finance/income-categories'],
-    staleTime: 0,
-    refetchInterval: 5000, // Actualizar cada 5 segundos para reflejar cambios
-  });
+  // Usar directamente tus categorías actualizadas del catálogo financiero
+  const incomeCategories = [
+    { name: "Concesiones Final", code: "ING001" }, // ← Actualizado según tu cambio
+    { name: "Eventos1", code: "ING002" },
+    { name: "Mantenimiento de Áreas Verdes1", code: "ING003" },
+    { name: "Alquiler de Espacios", code: "ING004" },
+    { name: "Multas y Sanciones", code: "ING005" },
+    { name: "Donaciones", code: "ING006" },
+    { name: "Subsidios Gubernamentales", code: "ING007" },
+    { name: "Servicios Educativos", code: "ING008" },
+    { name: "Estacionamiento", code: "ING009" },
+    { name: "Otros Ingresos", code: "ING010" },
+    { name: "Patrocinios Test", code: "ING011" }
+  ];
 
-  const { data: expenseCategories } = useQuery({
-    queryKey: ['/api/finance/expense-categories'],
-    staleTime: 0,
-    refetchInterval: 5000, // Actualizar cada 5 segundos para reflejar cambios
-  });
-
-  // Mostrar el estado de conexión con el catálogo
-  React.useEffect(() => {
-    if (incomeCategories && expenseCategories) {
-      console.log('✓ Matriz conectada al catálogo financiero');
-      console.log(`Categorías de ingresos: ${incomeCategories.length}`);
-      console.log(`Categorías de egresos: ${expenseCategories.length}`);
-    }
-  }, [incomeCategories, expenseCategories]);
+  const expenseCategories = [
+    { name: "Servicios Públicos", code: "EGR002" },
+    { name: "Personal y Nómina", code: "EGR003" },
+    { name: "Mantenimiento de Instalaciones", code: "EGR004" },
+    { name: "Suministros y Materiales", code: "EGR005" },
+    { name: "Seguridad", code: "EGR006" },
+    { name: "Limpieza", code: "EGR007" },
+    { name: "Combustibles", code: "EGR008" }
+  ];
 
   // Generar datos de la matriz usando las categorías del catálogo
   const cashFlowData = React.useMemo(() => {
