@@ -33,7 +33,13 @@ export default function CashFlowMatrix() {
   const [inflationFactors, setInflationFactors] = useState<Record<number, number>>({});
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedPark, setSelectedPark] = useState<string>("all"); // "all" para consolidado
   const { toast } = useToast();
+
+  // Cargar lista de parques para el filtro
+  const { data: parks } = useQuery({
+    queryKey: ["/api/parks"],
+  });
 
   // Inicializar factores de inflación con 4% por defecto para años futuros
   useEffect(() => {
