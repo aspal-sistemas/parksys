@@ -630,7 +630,7 @@ const ExpensesPage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Categoría de Egreso</FormLabel>
-                      <Select onValueChange={(value) => field.onChange(Number(value))} value={field.value.toString()}>
+                      <Select onValueChange={(value) => field.onChange(Number(value))} value={field.value?.toString() || ""}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Seleccionar categoría" />
