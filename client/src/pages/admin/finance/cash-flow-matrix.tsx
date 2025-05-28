@@ -743,6 +743,20 @@ export default function CashFlowMatrix() {
             ))}
           </SelectContent>
         </Select>
+
+        <Select value={selectedPark} onValueChange={setSelectedPark}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Seleccionar parque" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">📊 Consolidado (Todos los Parques)</SelectItem>
+            {parks && Array.isArray(parks) && parks.map((park: any) => (
+              <SelectItem key={park.id} value={park.id.toString()}>
+                🏞️ {park.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         
         <Button 
           onClick={updateCategoriesFromCatalog}
