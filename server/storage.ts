@@ -77,18 +77,24 @@ export class DatabaseStorage implements IStorage {
 
   async deletePark(id: number): Promise<boolean> {
     try {
-      // Eliminar primero las relaciones que dependen del parque
-      await db.execute(sql`DELETE FROM park_amenities WHERE park_id = ${id}`);
-      await db.execute(sql`DELETE FROM park_images WHERE park_id = ${id}`);
-      await db.execute(sql`DELETE FROM park_documents WHERE park_id = ${id}`);
-      await db.execute(sql`DELETE FROM activities WHERE park_id = ${id}`);
-      await db.execute(sql`DELETE FROM incidents WHERE park_id = ${id}`);
+      console.log(`Iniciando eliminación del parque ${id}`);
       
-      // Finalmente eliminar el parque
-      await db.delete(parks).where(eq(parks.id, id));
+      // Usar transacción para eliminar todo de forma segura
+      await db.execute(sql`
+        BEGIN;
+        DELETE FROM park_amenities WHERE park_id = ${id};
+        DELETE FROM park_images WHERE park_id = ${id};
+        DELETE FROM activities WHERE park_id = ${id};
+        DELETE FROM incidents WHERE park_id = ${id};
+        DELETE FROM parks WHERE id = ${id};
+        COMMIT;
+      `);
+      
+      console.log(`Parque ${id} eliminado exitosamente`);
       return true;
     } catch (error) {
       console.error("Error al eliminar parque:", error);
+      await db.execute(sql`ROLLBACK;`);
       return false;
     }
   }
