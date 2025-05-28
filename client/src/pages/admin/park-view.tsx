@@ -353,7 +353,7 @@ export default function AdminParkView() {
                     <Building className="h-4 w-4 text-gray-500" />
                     <span className="font-medium text-gray-700">Municipio:</span>
                   </div>
-                  <p className="text-gray-600">{displayPark.municipality?.name || 'No especificado'}</p>
+                  <p className="text-gray-600">Guadalajara</p>
                 </div>
 
                 <div>
