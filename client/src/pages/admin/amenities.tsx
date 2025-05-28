@@ -131,9 +131,11 @@ const AdminAmenitiesPage = () => {
   });
 
   // Fetch amenities with park count
-  const { data: amenities, isLoading } = useQuery({
+  const { data: amenitiesData, isLoading } = useQuery({
     queryKey: ["/api/amenities/dashboard"],
   });
+
+  const amenities = amenitiesData?.amenities || [];
 
   // Create amenity mutation
   const createAmenity = useMutation({
