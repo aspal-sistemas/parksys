@@ -929,130 +929,62 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
 
   // ============ MATRIZ DE FLUJO DE EFECTIVO ============
   
-  // Obtener datos de la matriz de flujo de efectivo basados en categorías del catálogo
+  // Obtener datos de la matriz de flujo de efectivo basados solo en categorías del catálogo
   apiRouter.get("/cash-flow/:year", async (req: Request, res: Response) => {
     try {
       const year = parseInt(req.params.year);
       
-      // Obtener categorías de ingresos activas
+      // Obtener solo las categorías de ingresos y egresos del catálogo
       const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
       const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
       
-      // Crear estructura de datos para la matriz
+      // Crear estructura de datos para la matriz usando solo las categorías del catálogo
       const categories = [];
       const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
       
-      // Procesar categorías de ingresos
+      // Procesar categorías de ingresos del catálogo (sin datos reales, solo estructura)
       for (const category of incomeCategsList) {
-        const monthlyValues = new Array(12).fill(0);
-        
-        // Obtener datos reales de ingresos para esta categoría
-        const incomeData = await db.select({
-          month: actualIncomes.month,
-          total: sum(actualIncomes.amount).as('total')
-        })
-        .from(actualIncomes)
-        .where(
-          and(
-            eq(actualIncomes.categoryId, category.id),
-            eq(actualIncomes.year, year),
-            eq(actualIncomes.isActive, true)
-          )
-        )
-        .groupBy(actualIncomes.month);
-        
-        // Llenar los valores mensuales
-        for (const data of incomeData) {
-          monthlyValues[data.month - 1] = parseFloat(data.total) || 0;
-        }
+        const monthlyValues = new Array(12).fill(0); // Valores vacíos por defecto
         
         categories.push({
           name: category.name,
           type: 'income',
           monthlyValues,
-          total: monthlyValues.reduce((sum, val) => sum + val, 0)
+          total: 0
         });
       }
       
-      // Procesar categorías de egresos
+      // Procesar categorías de egresos del catálogo (sin datos reales, solo estructura)
       for (const category of expenseCategsList) {
-        const monthlyValues = new Array(12).fill(0);
-        
-        // Obtener datos reales de egresos para esta categoría
-        const expenseData = await db.select({
-          month: actualExpenses.month,
-          total: sum(actualExpenses.amount).as('total')
-        })
-        .from(actualExpenses)
-        .where(
-          and(
-            eq(actualExpenses.categoryId, category.id),
-            eq(actualExpenses.year, year),
-            eq(actualExpenses.isActive, true)
-          )
-        )
-        .groupBy(actualExpenses.month);
-        
-        // Llenar los valores mensuales
-        for (const data of expenseData) {
-          monthlyValues[data.month - 1] = parseFloat(data.total) || 0;
-        }
+        const monthlyValues = new Array(12).fill(0); // Valores vacíos por defecto
         
         categories.push({
           name: category.name,
           type: 'expense',
           monthlyValues,
-          total: monthlyValues.reduce((sum, val) => sum + val, 0)
+          total: 0
         });
       }
       
-      // Calcular resúmenes
-      const incomeCategories = categories.filter(cat => cat.type === 'income');
-      const expenseCategories = categories.filter(cat => cat.type === 'expense');
+      // Calcular resúmenes con valores vacíos
+      const monthlyIncomes = new Array(12).fill(0);
+      const monthlyExpenses = new Array(12).fill(0);
+      const monthlyNet = new Array(12).fill(0);
       
-      const monthlyIncomes = months.map((_, index) => 
-        incomeCategories.reduce((sum, cat) => sum + cat.monthlyValues[index], 0)
-      );
-      
-      const monthlyExpenses = months.map((_, index) => 
-        expenseCategories.reduce((sum, cat) => sum + cat.monthlyValues[index], 0)
-      );
-      
-      const monthlyNet = monthlyIncomes.map((income, index) => income - monthlyExpenses[index]);
-      
-      // Calcular resúmenes trimestrales
+      // Estructura de resúmenes con valores vacíos
       const quarterly = {
-        income: [
-          monthlyIncomes.slice(0, 3).reduce((sum, val) => sum + val, 0),
-          monthlyIncomes.slice(3, 6).reduce((sum, val) => sum + val, 0),
-          monthlyIncomes.slice(6, 9).reduce((sum, val) => sum + val, 0),
-          monthlyIncomes.slice(9, 12).reduce((sum, val) => sum + val, 0)
-        ],
-        expenses: [
-          monthlyExpenses.slice(0, 3).reduce((sum, val) => sum + val, 0),
-          monthlyExpenses.slice(3, 6).reduce((sum, val) => sum + val, 0),
-          monthlyExpenses.slice(6, 9).reduce((sum, val) => sum + val, 0),
-          monthlyExpenses.slice(9, 12).reduce((sum, val) => sum + val, 0)
-        ],
-        net: []
+        income: [0, 0, 0, 0],
+        expenses: [0, 0, 0, 0],
+        net: [0, 0, 0, 0]
       };
-      quarterly.net = quarterly.income.map((inc, i) => inc - quarterly.expenses[i]);
       
-      // Calcular resúmenes semestrales
       const semiannual = {
-        income: [
-          quarterly.income.slice(0, 2).reduce((sum, val) => sum + val, 0),
-          quarterly.income.slice(2, 4).reduce((sum, val) => sum + val, 0)
-        ],
-        expenses: [
-          quarterly.expenses.slice(0, 2).reduce((sum, val) => sum + val, 0),
-          quarterly.expenses.slice(2, 4).reduce((sum, val) => sum + val, 0)
-        ],
-        net: []
+        income: [0, 0],
+        expenses: [0, 0],
+        net: [0, 0]
       };
-      semiannual.net = semiannual.income.map((inc, i) => inc - semiannual.expenses[i]);
       
-      // Resultado final en el formato esperado por el frontend
+      // Resultado final usando solo la estructura del catálogo
       const result = {
         year,
         months,
@@ -1066,13 +998,14 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
           quarterly,
           semiannual,
           annual: {
-            income: monthlyIncomes.reduce((sum, val) => sum + val, 0),
-            expenses: monthlyExpenses.reduce((sum, val) => sum + val, 0),
-            net: monthlyNet.reduce((sum, val) => sum + val, 0)
+            income: 0,
+            expenses: 0,
+            net: 0
           }
         }
       };
       
+      console.log("Matriz de flujo de efectivo generada con categorías del catálogo:", result);
       res.json(result);
     } catch (error) {
       console.error("Error al obtener matriz de flujo de efectivo:", error);
