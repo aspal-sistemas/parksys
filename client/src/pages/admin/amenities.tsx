@@ -34,10 +34,10 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, FileUp } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import AmenityIcon from '@/components/AmenityIcon';
-import { AMENITY_CATEGORIES, Amenity } from '@shared/schema';
+import { Amenity } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 
 // Categorías para amenidades en español
@@ -102,6 +102,10 @@ const AdminAmenitiesPage: React.FC = () => {
   // Estado para manejar la carga de archivos
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  
+  // Estado para manejar la importación de amenidades
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
 
   const { data: amenities = [], isLoading } = useQuery<Amenity[]>({
     queryKey: ['/api/amenities'],
@@ -305,13 +309,56 @@ const AdminAmenitiesPage: React.FC = () => {
             Gestiona las amenidades disponibles para los parques
           </p>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="ml-auto">
-              <Plus className="mr-2 h-4 w-4" />
-              Nueva Amenidad
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <FileUp className="mr-2 h-4 w-4" />
+                Importar Amenidades
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Importar amenidades desde base de datos</DialogTitle>
+                <DialogDescription>
+                  Sube un archivo Excel (.xlsx) o CSV con las amenidades para importar masivamente.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleImportSubmit}>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="importFile">Archivo de amenidades</Label>
+                    <Input
+                      id="importFile"
+                      type="file"
+                      accept=".xlsx,.xls,.csv"
+                      onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                      required
+                    />
+                    <p className="text-sm text-gray-500">
+                      El archivo debe contener las columnas: Nombre, Categoría, Icono
+                    </p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" type="button" onClick={() => setIsImportDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={importAmenities.isPending}>
+                    {importAmenities.isPending ? "Importando..." : "Importar Amenidades"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Nueva Amenidad
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Crear nueva amenidad</DialogTitle>
