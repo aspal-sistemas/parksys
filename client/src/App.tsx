@@ -58,6 +58,11 @@ function Router() {
         <Route path="/admin/parks-import" component={AdminParksImport} />
         <Route path="/admin/parks/new" component={AdminParkEdit} />
         <Route path="/admin/parks/:id" component={AdminParkEdit} />
+        <Route path="/admin/parks/:id/view">
+          <Suspense fallback={<div className="p-8 text-center">Cargando vista del parque...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/park-view')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/organizador">
           <Suspense fallback={<div className="p-8 text-center">Cargando Organizador...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/organizador')))}

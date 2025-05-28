@@ -360,6 +360,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get detailed park information with all related data
+  apiRouter.get("/parks/:id/details", async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.id);
+      
+      // Get basic park information
+      const park = await storage.getPark(parkId);
+      if (!park) {
+        return res.status(404).json({ error: "Parque no encontrado" });
+      }
+
+      // Get municipality  
+      const municipalities = await storage.getMunicipalities();
+      const municipality = municipalities.find(m => m.id === park.municipalityId);
+
+      // Get extended park data to include amenities and images
+      const extendedParks = await storage.getExtendedParks();
+      const extendedPark = extendedParks.find(p => p.id === parkId);
+
+      // Get park amenities (from extended park data)
+      const amenities = extendedPark?.amenities || [];
+
+      // Get park images (from extended park data)  
+      const images = extendedPark?.images || [];
+
+      // Use simplified queries for other data that don't require complex joins
+      const activities = await storage.getAllActivities();
+      const parkActivities = activities.filter(activity => activity.parkId === parkId).slice(0, 20);
+
+      const trees = await storage.getTrees();
+      const parkTrees = trees.filter(tree => tree.parkId === parkId).slice(0, 50);
+
+      const volunteers = await storage.getAllVolunteers();
+      const parkVolunteers = volunteers.filter(volunteer => volunteer.preferredParkId === parkId);
+
+      // For now, we'll use empty arrays for data we don't have direct access to
+      const incidents: any[] = [];
+      const documents: any[] = [];
+
+      // Calculate statistics
+      const stats = {
+        totalActivities: activities.length,
+        activeVolunteers: volunteers.filter(v => v.isActive).length,
+        totalTrees: trees.length,
+        averageEvaluation: 4.2, // Can be calculated when we have evaluations
+        pendingIncidents: incidents.filter(i => i.status === 'pendiente').length
+      };
+
+      // Build response
+      const response = {
+        id: park.id,
+        name: park.name,
+        location: park.location,
+        openingHours: park.openingHours || "Sin horarios definidos",
+        description: park.description || "Sin descripción disponible",
+        municipalityId: park.municipalityId,
+        municipality: municipality ? { name: municipality.name } : { name: "Municipio no encontrado" },
+        amenities: parkAmenities.map(pa => ({
+          id: pa.amenity.id,
+          name: pa.amenity.name,
+          icon: pa.amenity.icon,
+          description: pa.amenity.description
+        })),
+        activities: activities.map(activity => ({
+          id: activity.id,
+          title: activity.title,
+          description: activity.description || "",
+          startDate: activity.startDate.toISOString(),
+          instructorName: activity.instructorName || "",
+          participantCount: activity.participantCount || 0
+        })),
+        trees: trees.map(tree => ({
+          id: tree.id,
+          species: tree.species,
+          condition: tree.condition || "bueno",
+          plantedDate: tree.plantedDate.toISOString(),
+          lastMaintenance: tree.lastMaintenanceDate?.toISOString()
+        })),
+        assets: [], // Can be implemented when we have assets table
+        incidents: incidents.map(incident => ({
+          id: incident.id,
+          title: incident.title,
+          status: incident.status || "pendiente",
+          priority: incident.priority || "media",
+          createdAt: incident.createdAt.toISOString()
+        })),
+        documents: documents.map(doc => ({
+          id: doc.id,
+          title: doc.title,
+          type: doc.type || "documento",
+          uploadedAt: doc.createdAt.toISOString()
+        })),
+        images: images.map(img => ({
+          id: img.id,
+          imageUrl: img.imageUrl,
+          caption: img.caption,
+          isPrimary: img.isPrimary
+        })),
+        evaluations: [], // Can be implemented when we have evaluations
+        volunteers: volunteers.map(volunteer => ({
+          id: volunteer.id,
+          fullName: volunteer.fullName || "Sin nombre",
+          skills: volunteer.skills || "Sin habilidades definidas",
+          isActive: volunteer.isActive
+        })),
+        stats
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Error fetching park details:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
+
   // Create a new park (admin/municipality only)
   apiRouter.post("/parks", isAuthenticated, hasMunicipalityAccess(), async (req: Request, res: Response) => {
     try {
