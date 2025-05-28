@@ -1,49 +1,39 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
-import { Plus, Pencil, Trash, Filter, Map, ArrowUpDown, X, Search, Loader, AlertTriangle, AlertOctagon, FileUp } from 'lucide-react';
-import AdminLayout from '@/components/AdminLayout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose
-} from '@/components/ui/dialog';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { Park, Municipality } from '@shared/schema';
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { Search, Plus, FileUp, Trash2, Eye, Edit, X, MapPin, Users, Calendar, Package } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
+import { apiRequest } from "@/lib/queryClient";
+
+interface Park {
+  id: number;
+  name: string;
+  description?: string;
+  address: string;
+  area: number;
+  parkType: string;
+  municipalityId: number;
+  municipality?: { name: string };
+  createdAt: string;
+  updatedAt: string;
+}
 
 const AdminParks = () => {
   const { toast } = useToast();
-  const [location, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterMunicipality, setFilterMunicipality] = useState<string>('');
-  const [filterParkType, setFilterParkType] = useState<string>('');
+  const [filterMunicipality, setFilterMunicipality] = useState<string>('all');
+  const [filterParkType, setFilterParkType] = useState<string>('all');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [parkToDelete, setParkToDelete] = useState<Park | null>(null);
-  const [sortField, setSortField] = useState<string>('name');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  
-  // Fetch all parks
+
+  // Fetch all parks with automatic refresh
   const { 
     data: parks = [], 
     isLoading: isLoadingParks,
@@ -51,53 +41,61 @@ const AdminParks = () => {
     refetch: refetchParks
   } = useQuery({
     queryKey: ['/api/parks'],
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Fetch municipalities for filter
   const { 
-    data: municipalities = [], 
-    isLoading: isLoadingMunicipalities 
+    data: municipalities = [] 
   } = useQuery({
     queryKey: ['/api/municipalities'],
   });
 
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (parkId: number) => {
+      await apiRequest(`/api/parks/${parkId}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/parks'] });
+      toast({
+        title: "Parque eliminado",
+        description: "El parque ha sido eliminado exitosamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el parque.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Filter and sort parks
   const filteredParks = React.useMemo(() => {
-    return (parks as any[] || []).filter((park: any) => {
+    return (parks as Park[]).filter(park => {
       // Apply search filter
       if (searchQuery && !park.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
       
       // Apply municipality filter
-      if (filterMunicipality && park.municipalityId?.toString() !== filterMunicipality) {
+      if (filterMunicipality !== 'all' && park.municipalityId?.toString() !== filterMunicipality) {
         return false;
       }
       
       // Apply park type filter
-      if (filterParkType && park.parkType !== filterParkType) {
+      if (filterParkType !== 'all' && park.parkType !== filterParkType) {
         return false;
       }
       
       return true;
-    }).sort((a, b) => {
-      // Apply sorting
-      if (sortField === 'name') {
-        return sortDirection === 'asc' 
-          ? a.name.localeCompare(b.name) 
-          : b.name.localeCompare(a.name);
-      }
-      
-      if (sortField === 'parkType') {
-        return sortDirection === 'asc' 
-          ? a.parkType.localeCompare(b.parkType) 
-          : b.parkType.localeCompare(a.parkType);
-      }
-      
-      // Default sort by name
-      return a.name.localeCompare(b.name);
-    });
-  }, [parks, searchQuery, filterMunicipality, filterParkType, sortField, sortDirection]);
+    }).sort((a, b) => a.name.localeCompare(b.name));
+  }, [parks, searchQuery, filterMunicipality, filterParkType]);
 
   // Get municipality name by ID
   const getMunicipalityName = (municipalityId: number) => {
@@ -124,61 +122,57 @@ const AdminParks = () => {
     if (!parkToDelete) return;
     
     try {
-      // Hacer la petición de eliminación al servidor
-      await fetch(`/api/parks/${parkToDelete.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      // Actualizar la cache invalidando la query
-      await refetchParks();
-      
-      // Mostramos un mensaje de éxito
-      toast({
-        title: "Parque eliminado",
-        description: `El parque ${parkToDelete.name || 'sin nombre'} ha sido eliminado exitosamente.`,
-        variant: "default",
-      });
-      
-      // Cerramos el diálogo y limpiamos el estado
+      await deleteMutation.mutateAsync(parkToDelete.id);
       setShowDeleteDialog(false);
       setParkToDelete(null);
     } catch (error) {
       console.error('Error deleting park:', error);
-      
-      // Mostramos un mensaje de error
-      toast({
-        title: "Error",
-        description: "No se pudo eliminar el parque. Intente nuevamente.",
-        variant: "destructive",
-      });
     }
   };
 
-  // Handle opening delete dialog
-  const handleDeleteClick = (park: Park) => {
-    setParkToDelete(park);
-    setShowDeleteDialog(true);
-  };
-
-  // Handle sort toggle
-  const handleSortToggle = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  // Handle clearing filters
+  // Clear all filters
   const handleClearFilters = () => {
     setSearchQuery('');
-    setFilterMunicipality('');
-    setFilterParkType('');
+    setFilterMunicipality('all');
+    setFilterParkType('all');
   };
+
+  // Handle manual refresh
+  const handleRefresh = async () => {
+    await refetchParks();
+    toast({
+      title: "Lista actualizada",
+      description: "La lista de parques se ha actualizado correctamente.",
+    });
+  };
+
+  if (isLoadingParks) {
+    return (
+      <AdminLayout title="Administración de Parques">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Cargando parques...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (isErrorParks) {
+    return (
+      <AdminLayout title="Administración de Parques">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-red-600">Error al cargar los parques</p>
+            <Button onClick={handleRefresh} className="mt-4">
+              Intentar de nuevo
+            </Button>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Administración de Parques">
@@ -187,6 +181,9 @@ const AdminParks = () => {
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-800">Parques</h2>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={handleRefresh}>
+              Actualizar
+            </Button>
             <Button variant="outline" onClick={() => window.location.href = "/admin/parks-import"}>
               <FileUp className="h-4 w-4 mr-2" />
               Importar Parques
@@ -216,7 +213,7 @@ const AdminParks = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos los municipios</SelectItem>
-              {municipalities.map(municipality => (
+              {(municipalities as any[])?.map((municipality: any) => (
                 <SelectItem key={municipality.id} value={municipality.id.toString()}>
                   {municipality.name}
                 </SelectItem>
@@ -240,205 +237,128 @@ const AdminParks = () => {
             </SelectContent>
           </Select>
           
-          {(searchQuery || filterMunicipality || filterParkType) && (
+          {(searchQuery || filterMunicipality !== 'all' || filterParkType !== 'all') && (
             <Button variant="ghost" onClick={handleClearFilters} aria-label="Limpiar filtros">
               <X className="h-4 w-4" />
             </Button>
           )}
         </div>
         
-        {/* Parks table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          {isLoadingParks ? (
-            <div className="py-32 flex justify-center">
-              <div className="flex flex-col items-center">
-                <Loader className="h-8 w-8 text-primary animate-spin mb-2" />
-                <p className="text-gray-500">Cargando parques...</p>
-              </div>
-            </div>
-          ) : isErrorParks ? (
-            <div className="py-32 flex justify-center">
-              <div className="text-center">
-                <p className="text-red-500 mb-2">Error al cargar los parques</p>
-                <Button variant="outline" onClick={() => refetchParks()}>
-                  Reintentar
-                </Button>
-              </div>
-            </div>
-          ) : filteredParks.length === 0 ? (
-            <div className="py-32 flex justify-center">
-              <div className="text-center">
-                <p className="text-gray-500 mb-2">No se encontraron parques</p>
-                {(searchQuery || filterMunicipality || filterParkType) ? (
-                  <Button variant="outline" onClick={handleClearFilters}>
-                    Limpiar filtros
-                  </Button>
-                ) : (
-                  <div className="flex flex-col items-center gap-2">
-                    <p className="text-sm text-yellow-600 mb-2">
-                      Se han eliminado todos los parques de la vista actual
+        {/* Parks grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredParks.map((park: Park) => (
+            <Card key={park.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">{park.name}</CardTitle>
+                    <CardDescription className="mt-1">
+                      {getMunicipalityName(park.municipalityId)}
+                    </CardDescription>
+                  </div>
+                  <Badge variant="secondary">
+                    {getParkTypeLabel(park.parkType)}
+                  </Badge>
+                </div>
+              </CardHeader>
+              
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    <span className="truncate">{park.address}</span>
+                  </div>
+                  
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Package className="h-4 w-4 mr-2" />
+                    <span>{park.area.toLocaleString()} m²</span>
+                  </div>
+                  
+                  {park.description && (
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {park.description}
                     </p>
-                    <Button 
-                      variant="outline" 
-                      onClick={async () => {
-                        try {
-                          // Realizamos la petición directamente
-                          const response = await fetch('/api/parks');
-                          if (!response.ok) {
-                            throw new Error('Error al obtener parques');
-                          }
-                          const data = await response.json();
-                          
-                          // Filtramos los parques eliminados
-                          const filteredData = data.filter(park => !deletedParkIds.includes(park.id));
-                          
-                          // Actualizamos el estado local
-                          setLocalParks(filteredData);
-                          
-                          toast({
-                            title: "Lista actualizada",
-                            description: `Se han cargado ${filteredData.length} parques desde el servidor`,
-                          });
-                        } catch (error) {
-                          console.error('Error refreshing parks:', error);
-                          toast({
-                            title: "Error",
-                            description: "No se pudieron obtener los parques. Intente nuevamente.",
-                            variant: "destructive",
-                          });
-                        }
-                      }}
-                      className="flex items-center gap-2"
+                  )}
+                </div>
+                
+                <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.location.href = `/admin/parks/${park.id}`}
                     >
-                      <Loader className="h-4 w-4" />
-                      Refrescar lista desde el servidor
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.location.href = `/admin/parks/${park.id}/edit`}
+                    >
+                      <Edit className="h-4 w-4" />
                     </Button>
                   </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">ID</TableHead>
-                  <TableHead>
-                    <button 
-                      className="flex items-center"
-                      onClick={() => handleSortToggle('name')}
-                    >
-                      Nombre
-                      {sortField === 'name' && (
-                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'rotate-0' : 'rotate-180'}`} />
-                      )}
-                    </button>
-                  </TableHead>
-                  <TableHead>
-                    <button 
-                      className="flex items-center"
-                      onClick={() => handleSortToggle('parkType')}
-                    >
-                      Tipo
-                      {sortField === 'parkType' && (
-                        <ArrowUpDown className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'rotate-0' : 'rotate-180'}`} />
-                      )}
-                    </button>
-                  </TableHead>
-                  <TableHead>Municipio</TableHead>
-                  <TableHead className="w-[100px] text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredParks.map(park => (
-                  <TableRow key={park.id}>
-                    <TableCell className="font-medium">{park.id}</TableCell>
-                    <TableCell>{park.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-gray-100">
-                        {getParkTypeLabel(park.parkType)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{getMunicipalityName(park.municipalityId)}</TableCell>
-                    <TableCell className="text-right space-x-1">
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className="h-8 w-8"
-                        onClick={() => setLocation(`/admin/parks/${park.id}`)}
-                      >
-                        <Map className="h-4 w-4 text-blue-500" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className="h-8 w-8"
-                        onClick={() => setLocation(`/admin/parks/${park.id}`)}
-                      >
-                        <Pencil className="h-4 w-4 text-yellow-500" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className="h-8 w-8"
-                        onClick={() => handleDeleteClick(park)}
-                      >
-                        <Trash className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setParkToDelete(park);
+                      setShowDeleteDialog(true);
+                    }}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      </div>
-      
-      {/* Delete confirmation dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-red-600 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Atención: Eliminar Parque
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <div className="bg-red-50 p-4 rounded-lg border border-red-200 mb-4">
-              <h3 className="font-bold text-red-700 flex items-center gap-2">
-                <AlertOctagon className="h-5 w-5" />
-                ¡Advertencia!
-              </h3>
-              <p className="text-red-700 mt-1">
-                Esta acción eliminará <span className="font-bold">permanentemente</span> el parque y no podrá recuperarse.
-              </p>
-            </div>
-            
-            <p className="mb-2">
-              ¿Está seguro que desea eliminar el parque <span className="font-semibold">{parkToDelete?.name || 'sin nombre'}</span>?
+
+        {filteredParks.length === 0 && (
+          <div className="text-center py-12">
+            <MapPin className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No hay parques</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {searchQuery || filterMunicipality !== 'all' || filterParkType !== 'all'
+                ? "No se encontraron parques que coincidan con los filtros."
+                : "Comienza agregando un nuevo parque."}
             </p>
-            
-            <p className="text-sm text-gray-600 mt-2">
-              Se eliminarán:
-            </p>
-            <ul className="text-sm text-gray-600 list-disc pl-5 mt-1">
-              <li>Todos los datos e información del parque</li>
-              <li>Todas las imágenes asociadas</li>
-              <li>Todos los documentos adjuntos</li>
-              <li>Todos los comentarios y valoraciones</li>
-            </ul>
+            {(!searchQuery && filterMunicipality === 'all' && filterParkType === 'all') && (
+              <div className="mt-6">
+                <Button onClick={() => window.location.href = "/admin/parks/new"}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar Parque
+                </Button>
+              </div>
+            )}
           </div>
-          
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancelar</Button>
-            </DialogClose>
-            <Button variant="destructive" onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
-              Eliminar Permanentemente
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        )}
+      </div>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Esto eliminará permanentemente el parque
+              "{parkToDelete?.name}" de la base de datos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm}
+              disabled={deleteMutation.isPending}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 };
