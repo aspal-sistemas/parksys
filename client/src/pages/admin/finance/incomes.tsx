@@ -212,7 +212,6 @@ const IncomesPage = () => {
       parkId: income.parkId,
       categoryId: income.categoryId,
       amount: income.amount,
-      concept: income.concept || "",
       description: income.description || "",
       date: income.date ? income.date.split('T')[0] : new Date().toISOString().split('T')[0],
       source: income.source || "",
