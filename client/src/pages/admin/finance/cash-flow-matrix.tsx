@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, TrendingUp, TrendingDown, Calculator, Download, Edit3, AlertCircle } from "lucide-react";
+import { CalendarDays, TrendingUp, TrendingDown, Calculator, Download, Edit3, AlertCircle, RefreshCw } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -30,6 +31,9 @@ export default function CashFlowMatrix() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [viewMode, setViewMode] = useState<'monthly' | 'quarterly' | 'semiannual' | 'annual'>('monthly');
   const [inflationFactors, setInflationFactors] = useState<Record<number, number>>({});
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { toast } = useToast();
 
   // Inicializar factores de inflación con 4% por defecto para años futuros
   useEffect(() => {
@@ -102,9 +106,9 @@ export default function CashFlowMatrix() {
     }));
   };
 
-  // Usar directamente tus categorías actualizadas del catálogo financiero
-  const incomeCategories = [
-    { name: "Concesiones Final", code: "ING001" }, // ← Actualizado según tu cambio
+  // Categorías del catálogo financiero (se actualizan con el botón de actualizar)
+  const [incomeCategories, setIncomeCategories] = useState([
+    { name: "Concesiones Final", code: "ING001" },
     { name: "Eventos1", code: "ING002" },
     { name: "Mantenimiento de Áreas Verdes1", code: "ING003" },
     { name: "Alquiler de Espacios", code: "ING004" },
@@ -115,9 +119,9 @@ export default function CashFlowMatrix() {
     { name: "Estacionamiento", code: "ING009" },
     { name: "Otros Ingresos", code: "ING010" },
     { name: "Patrocinios", code: "ING011" }
-  ];
+  ]);
 
-  const expenseCategories = [
+  const [expenseCategories, setExpenseCategories] = useState([
     { name: "Servicios Públicos", code: "EGR002" },
     { name: "Personal y Nómina", code: "EGR003" },
     { name: "Mantenimiento de Instalaciones", code: "EGR004" },
@@ -125,7 +129,48 @@ export default function CashFlowMatrix() {
     { name: "Seguridad", code: "EGR006" },
     { name: "Limpieza", code: "EGR007" },
     { name: "Combustibles", code: "EGR008" }
-  ];
+  ]);
+
+  // Función para actualizar categorías desde el catálogo
+  const updateCategoriesFromCatalog = async () => {
+    setIsRefreshing(true);
+    try {
+      // Simular carga de las categorías más recientes del catálogo
+      const response = await fetch('/api/finance/income-categories');
+      const incomeData = await response.json();
+      
+      const expenseResponse = await fetch('/api/finance/expense-categories');
+      const expenseData = await expenseResponse.json();
+
+      if (Array.isArray(incomeData)) {
+        setIncomeCategories(incomeData.map((cat: any) => ({
+          name: cat.name,
+          code: cat.code
+        })));
+      }
+
+      if (Array.isArray(expenseData)) {
+        setExpenseCategories(expenseData.map((cat: any) => ({
+          name: cat.name,
+          code: cat.code
+        })));
+      }
+
+      setLastUpdated(new Date());
+      toast({
+        title: "✅ Categorías actualizadas",
+        description: "La matriz se ha sincronizado con tu catálogo financiero",
+      });
+    } catch (error) {
+      toast({
+        title: "⚠️ Error al actualizar",
+        description: "No se pudieron cargar las categorías del catálogo",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Generar datos de la matriz usando las categorías del catálogo
   const cashFlowData = React.useMemo(() => {
@@ -673,6 +718,22 @@ export default function CashFlowMatrix() {
             ))}
           </SelectContent>
         </Select>
+        
+        <Button 
+          onClick={updateCategoriesFromCatalog}
+          disabled={isRefreshing}
+          variant="outline" 
+          size="sm"
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Actualizando...' : 'Actualizar Categorías'}
+        </Button>
+        
+        <div className="text-xs text-gray-500">
+          Última actualización: {lastUpdated.toLocaleTimeString('es-MX')}
+        </div>
+        
         <Button variant="outline" size="sm">
           <Download className="h-4 w-4 mr-2" />
           Exportar
