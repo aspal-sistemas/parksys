@@ -1173,45 +1173,8 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
       res.status(500).json({ message: "Error al obtener matriz de flujo de efectivo" });
     }
   });
-      }
-      
-      // Procesar categorías de egresos
-      for (const category of expenseCategories) {
-        const monthlyValues = [];
-        let totalAmount = 0;
-        
-        for (let month = 1; month <= 12; month++) {
-          const monthData = actualExpensesData.find(
-            item => item.categoryId === category.id && item.month === month
-          );
-          const amount = monthData ? parseFloat(monthData.total_amount || '0') : 0;
-          monthlyValues.push(amount);
-          totalAmount += amount;
-        }
-        
-        categories.push({
-          name: category.name,
-          type: 'expense',
-          monthlyValues,
-          total: totalAmount
-        });
-      }
-      
-      // Calcular resúmenes
-      const summaries = {
-        monthly: { income: [], expenses: [], net: [] },
-        quarterly: { income: [], expenses: [], net: [] },
-        semiannual: { income: [], expenses: [], net: [] },
-        annual: { income: 0, expenses: 0, net: 0 }
-      };
-      
-      // Calcular totales mensuales
-      for (let month = 0; month < 12; month++) {
-        let monthlyIncome = 0;
-        let monthlyExpenses = 0;
-        
-        categories.forEach(category => {
-          if (category.type === 'income') {
+
+}
             monthlyIncome += category.monthlyValues[month];
           } else {
             monthlyExpenses += category.monthlyValues[month];
