@@ -40,7 +40,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import AdminLayout from "@/components/AdminLayout";
+import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { apiRequest } from "@/lib/queryClient";
 
 // Simple amenity icon component
