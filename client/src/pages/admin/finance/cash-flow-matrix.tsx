@@ -266,11 +266,10 @@ export default function CashFlowMatrix() {
       annual: {
         income: 0,
         expenses: 0,
-          net: 0
-        }
+        net: 0
       }
-    };
-  }, [incomeCategories, expenseCategories, selectedYear]);
+    }
+  };
 
   const isLoading = !cashFlowData;
   const error = null;
