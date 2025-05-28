@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield } from "lucide-react";
 
 interface ParkDetails {
   id: number;
@@ -15,6 +15,22 @@ interface ParkDetails {
   description: string;
   municipalityId: number;
   municipality: { name: string };
+  
+  // Additional basic park information
+  parkType?: string;
+  address?: string;
+  postalCode?: string;
+  latitude?: number;
+  longitude?: number;
+  area?: number;
+  foundationYear?: number;
+  administrator?: string;
+  conservationStatus?: string;
+  regulationUrl?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  videoUrl?: string;
+
   amenities: Array<{
     id: number;
     name: string;
@@ -235,34 +251,10 @@ export default function AdminParkView() {
         </Card>
       </div>
 
-      {/* Basic Info */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Información Básica</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-4 w-4 text-gray-500" />
-                <span className="font-medium">Horarios de Operación</span>
-              </div>
-              <p className="text-gray-700">{park.openingHours}</p>
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <FileText className="h-4 w-4 text-gray-500" />
-                <span className="font-medium">Descripción</span>
-              </div>
-              <p className="text-gray-700">{park.description}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Detailed Tabs */}
-      <Tabs defaultValue="amenities" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8">
+      <Tabs defaultValue="basic-info" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-9">
+          <TabsTrigger value="basic-info">Información</TabsTrigger>
           <TabsTrigger value="amenities">Amenidades</TabsTrigger>
           <TabsTrigger value="activities">Actividades</TabsTrigger>
           <TabsTrigger value="trees">Árboles</TabsTrigger>
@@ -272,6 +264,204 @@ export default function AdminParkView() {
           <TabsTrigger value="documents">Documentos</TabsTrigger>
           <TabsTrigger value="images">Imágenes</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="basic-info" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Información General */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-blue-600" />
+                  Información General
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium text-gray-700">Tipo de Parque:</span>
+                  </div>
+                  <p className="text-gray-600">{park.parkType || 'No especificado'}</p>
+                </div>
+                
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    <span className="font-medium text-gray-700">Horarios:</span>
+                  </div>
+                  <p className="text-gray-600">{park.openingHours}</p>
+                </div>
+                
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <FileText className="h-4 w-4 text-gray-500" />
+                    <span className="font-medium text-gray-700">Descripción:</span>
+                  </div>
+                  <p className="text-gray-600">{park.description}</p>
+                </div>
+
+                {park.area && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-gray-700">Área:</span>
+                    </div>
+                    <p className="text-gray-600">{park.area} m²</p>
+                  </div>
+                )}
+
+                {park.foundationYear && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium text-gray-700">Año de Fundación:</span>
+                    </div>
+                    <p className="text-gray-600">{park.foundationYear}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Información de Contacto y Ubicación */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-green-600" />
+                  Ubicación y Contacto
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Building className="h-4 w-4 text-gray-500" />
+                    <span className="font-medium text-gray-700">Dirección:</span>
+                  </div>
+                  <p className="text-gray-600">{park.address || park.location}</p>
+                  {park.postalCode && (
+                    <p className="text-gray-500 text-sm">CP: {park.postalCode}</p>
+                  )}
+                </div>
+
+                {park.contactEmail && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Mail className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium text-gray-700">Email:</span>
+                    </div>
+                    <p className="text-gray-600">{park.contactEmail}</p>
+                  </div>
+                )}
+
+                {park.contactPhone && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Phone className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium text-gray-700">Teléfono:</span>
+                    </div>
+                    <p className="text-gray-600">{park.contactPhone}</p>
+                  </div>
+                )}
+
+                {(park.latitude && park.longitude) && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <MapPin className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium text-gray-700">Coordenadas:</span>
+                    </div>
+                    <p className="text-gray-600">{park.latitude}, {park.longitude}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Administración y Estado */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-purple-600" />
+                  Administración
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {park.administrator && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Users className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium text-gray-700">Administrador:</span>
+                    </div>
+                    <p className="text-gray-600">{park.administrator}</p>
+                  </div>
+                )}
+
+                {park.conservationStatus && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-gray-700">Estado de Conservación:</span>
+                    </div>
+                    <Badge variant={park.conservationStatus === 'bueno' ? 'default' : 'secondary'}>
+                      {park.conservationStatus}
+                    </Badge>
+                  </div>
+                )}
+
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Building className="h-4 w-4 text-gray-500" />
+                    <span className="font-medium text-gray-700">Municipio:</span>
+                  </div>
+                  <p className="text-gray-600">{park.municipality?.name || 'No especificado'}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Enlaces y Recursos */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-indigo-600" />
+                  Enlaces y Recursos
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {park.regulationUrl && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <FileText className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium text-gray-700">Reglamento:</span>
+                    </div>
+                    <a 
+                      href={park.regulationUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Ver reglamento
+                    </a>
+                  </div>
+                )}
+
+                {park.videoUrl && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Globe className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium text-gray-700">Video:</span>
+                    </div>
+                    <a 
+                      href={park.videoUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Ver video del parque
+                    </a>
+                  </div>
+                )}
+
+                {!park.regulationUrl && !park.videoUrl && (
+                  <p className="text-gray-500 italic">No hay enlaces disponibles</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         <TabsContent value="amenities" className="space-y-4">
           <Card>
