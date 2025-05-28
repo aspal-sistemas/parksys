@@ -12,6 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ArrowLeft, Save, Building, MapPin, Phone, Mail, Globe, Clock, Info } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { useToast } from "@/hooks/use-toast";
@@ -165,43 +169,27 @@ export default function ParkEdit() {
     }
   }, [park, form]);
 
+  // Consultar municipios para autocompletado
+  const { data: municipalities } = useQuery({
+    queryKey: ["/api/municipalities"],
+  });
+
   // Mutación para actualizar el parque
   const updateParkMutation = useMutation({
     mutationFn: async (values: ParkEditFormValues) => {
       // Convertir el schedule a openingHours string y preparar datos
       const { schedule, municipalityName, ...parkData } = values;
       
-      // Buscar o crear municipio basado en el nombre
+      // Buscar el municipio por nombre
       let municipalityId = park?.municipalityId || 1;
       
-      if (municipalityName && municipalityName.trim() !== '') {
-        try {
-          // Primero intentar buscar el municipio por nombre
-          const municipalitiesResponse = await apiRequest('/api/municipalities', {
-            method: 'GET',
-          });
-          
-          const existingMunicipality = municipalitiesResponse.find((m: any) => 
-            m.name.toLowerCase() === municipalityName.toLowerCase()
-          );
-          
-          if (existingMunicipality) {
-            municipalityId = existingMunicipality.id;
-          } else {
-            // Si no existe, crear un nuevo municipio
-            const newMunicipality = await apiRequest('/api/municipalities', {
-              method: 'POST',
-              data: {
-                name: municipalityName,
-                state: 'México', // Valor por defecto
-                active: true
-              }
-            });
-            municipalityId = newMunicipality.id;
-          }
-        } catch (error) {
-          console.error('Error al manejar municipio:', error);
-          // Si hay error, mantener el municipio existente
+      if (municipalityName && municipalityName.trim() !== '' && municipalities) {
+        const existingMunicipality = municipalities.find((m: any) => 
+          m.name.toLowerCase().trim() === municipalityName.toLowerCase().trim()
+        );
+        
+        if (existingMunicipality) {
+          municipalityId = existingMunicipality.id;
         }
       }
       
@@ -347,9 +335,81 @@ export default function ParkEdit() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Municipio</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Ingrese el nombre del municipio" {...field} />
-                              </FormControl>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      role="combobox"
+                                      className={cn(
+                                        "w-full justify-between",
+                                        !field.value && "text-muted-foreground"
+                                      )}
+                                    >
+                                      {field.value || "Seleccione un municipio"}
+                                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0">
+                                  <Command>
+                                    <CommandInput 
+                                      placeholder="Buscar municipio..." 
+                                      onValueChange={(searchValue) => {
+                                        // Permitir escritura libre para municipios no existentes
+                                        if (searchValue && !municipalities?.find((m: any) => 
+                                          m.name.toLowerCase() === searchValue.toLowerCase()
+                                        )) {
+                                          field.onChange(searchValue);
+                                        }
+                                      }}
+                                    />
+                                    <CommandEmpty>
+                                      <div className="p-2">
+                                        <p className="text-sm text-muted-foreground mb-2">
+                                          No se encontró el municipio.
+                                        </p>
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          onClick={() => {
+                                            const input = document.querySelector('[placeholder="Buscar municipio..."]') as HTMLInputElement;
+                                            if (input?.value) {
+                                              field.onChange(input.value);
+                                            }
+                                          }}
+                                        >
+                                          Usar "{document.querySelector('[placeholder="Buscar municipio..."]')?.value || ''}"
+                                        </Button>
+                                      </div>
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                      {municipalities?.map((municipality: any) => (
+                                        <CommandItem
+                                          key={municipality.id}
+                                          value={municipality.name}
+                                          onSelect={(currentValue) => {
+                                            field.onChange(currentValue);
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              municipality.name === field.value
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                          />
+                                          {municipality.name}
+                                          <span className="ml-auto text-xs text-muted-foreground">
+                                            {municipality.state}
+                                          </span>
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
                               <FormMessage />
                             </FormItem>
                           )}
