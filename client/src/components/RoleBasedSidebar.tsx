@@ -350,6 +350,34 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
     </ModuleNav>
 
     <ModuleNav 
+      title="Eventos" 
+      icon={<CalendarDays className="h-5 w-5" />}
+      value="events"
+    >
+      <NavItem 
+        href="/admin/events" 
+        icon={<ListFilter className="h-5 w-5" />}
+        active={location.startsWith('/admin/events') && !location.startsWith('/admin/events/new')}
+      >
+        Listado
+      </NavItem>
+      <NavItem 
+        href="/admin/events/new" 
+        icon={<FileEdit className="h-5 w-5" />}
+        active={location.startsWith('/admin/events/new')}
+      >
+        Nuevo Evento
+      </NavItem>
+      <NavItem 
+        href="/admin/events/calendar" 
+        icon={<Calendar className="h-5 w-5" />}
+        active={location.startsWith('/admin/events/calendar')}
+      >
+        Calendario
+      </NavItem>
+    </ModuleNav>
+
+    <ModuleNav 
       title="Actividades" 
       icon={<Calendar className="h-5 w-5" />}
       value="activities"
