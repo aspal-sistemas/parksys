@@ -17,7 +17,7 @@ import {
   Loader2,
   Edit
 } from "lucide-react";
-import AdminLayout from "@/components/AdminLayout";
+import AdminLayout from "@/components/layout/AdminLayout";
 import { queryClient } from "@/lib/queryClient";
 
 const expenseSchema = z.object({
