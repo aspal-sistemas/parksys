@@ -101,6 +101,34 @@ interface ParkDetails {
   };
 }
 
+// Función para formatear horarios de JSON a texto legible
+function formatOpeningHours(openingHours: string | null): string {
+  if (!openingHours) return 'No especificado';
+  
+  try {
+    const schedule = JSON.parse(openingHours);
+    const dayNames = {
+      monday: 'Lunes',
+      tuesday: 'Martes', 
+      wednesday: 'Miércoles',
+      thursday: 'Jueves',
+      friday: 'Viernes',
+      saturday: 'Sábado',
+      sunday: 'Domingo'
+    };
+    
+    const enabledDays = Object.entries(schedule)
+      .filter(([_, dayInfo]: [string, any]) => dayInfo.enabled)
+      .map(([day, dayInfo]: [string, any]) => 
+        `${dayNames[day as keyof typeof dayNames]}: ${dayInfo.openTime} - ${dayInfo.closeTime}`
+      );
+    
+    return enabledDays.length > 0 ? enabledDays.join(' • ') : 'Cerrado todos los días';
+  } catch {
+    return openingHours;
+  }
+}
+
 export default function AdminParkView() {
   const { id } = useParams();
   
@@ -311,7 +339,7 @@ export default function AdminParkView() {
                     <Clock className="h-4 w-4 text-gray-500" />
                     <span className="font-medium text-gray-700">Horarios:</span>
                   </div>
-                  <p className="text-gray-600">{displayPark.openingHours || 'No especificado'}</p>
+                  <p className="text-gray-600">{formatOpeningHours(displayPark.openingHours)}</p>
                 </div>
                 
                 <div>
