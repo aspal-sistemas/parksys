@@ -164,33 +164,13 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       icon={<Settings className="h-5 w-5" />}
       value="configuration"
     >
-      <ModuleNav 
-        title="Usuarios" 
-        icon={<Users className="h-5 w-5" />}
-        value="users"
+      <NavItem 
+        href="/admin/user-activity" 
+        icon={<Activity className="h-5 w-5" />}
+        active={location === '/admin/user-activity'}
       >
-        <NavItem 
-          href="/admin/permissions" 
-          icon={<Shield className="h-5 w-5" />}
-          active={location === '/admin/permissions'}
-        >
-          Permisos y Roles
-        </NavItem>
-        <NavItem 
-          href="/admin/users" 
-          icon={<UserCheck className="h-5 w-5" />}
-          active={location === '/admin/users'}
-        >
-          Gestión de Usuarios
-        </NavItem>
-        <NavItem 
-          href="/admin/user-activity" 
-          icon={<Activity className="h-5 w-5" />}
-          active={location === '/admin/user-activity'}
-        >
-          Actividad de Usuarios
-        </NavItem>
-      </ModuleNav>
+        Actividad de Usuarios
+      </NavItem>
 
       <NavItem 
         href="/admin/integrations" 
@@ -228,6 +208,22 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         Logs de Auditoría
       </NavItem>
     </ModuleNav>
+
+    <NavItem 
+      href="/admin/users" 
+      icon={<UserCheck className="h-5 w-5" />}
+      active={location === '/admin/users'}
+    >
+      Gestión de Usuarios
+    </NavItem>
+
+    <NavItem 
+      href="/admin/permissions" 
+      icon={<Shield className="h-5 w-5" />}
+      active={location === '/admin/permissions'}
+    >
+      Permisos
+    </NavItem>
 
     <ModuleNav 
       title="Operaciones" 
