@@ -7,7 +7,17 @@ const {
   municipalities,
   parks,
   parkAmenities,
-  amenities
+  amenities,
+  trees,
+  treeMaintenances,
+  activities,
+  incidents,
+  parkImages,
+  assets,
+  volunteers,
+  instructors,
+  evaluations,
+  documents
 } = schema;
 
 // Definición simplificada para almacenamiento
@@ -75,28 +85,122 @@ export class DatabaseStorage implements IStorage {
     return getAmenitiesDirectly();
   }
 
-  async deletePark(id: number): Promise<boolean> {
+  async getParkDependencies(parkId: number): Promise<{
+    trees: number;
+    treeMaintenances: number;
+    activities: number;
+    incidents: number;
+    amenities: number;
+    images: number;
+    assets: number;
+    volunteers: number;
+    instructors: number;
+    evaluations: number;
+    documents: number;
+    total: number;
+  }> {
     try {
-      console.log(`Iniciando eliminación del parque ${id}`);
+      // Usar consultas SQL directas para mayor compatibilidad
+      const results = await db.execute(sql`
+        SELECT 
+          (SELECT COUNT(*) FROM trees WHERE park_id = ${parkId}) as trees,
+          (SELECT COUNT(*) FROM tree_maintenances WHERE park_id = ${parkId}) as tree_maintenances,
+          (SELECT COUNT(*) FROM activities WHERE park_id = ${parkId}) as activities,
+          (SELECT COUNT(*) FROM incidents WHERE park_id = ${parkId}) as incidents,
+          (SELECT COUNT(*) FROM park_amenities WHERE park_id = ${parkId}) as amenities,
+          (SELECT COUNT(*) FROM park_images WHERE park_id = ${parkId}) as images,
+          (SELECT COUNT(*) FROM assets WHERE park_id = ${parkId}) as assets,
+          (SELECT COUNT(*) FROM volunteers WHERE preferred_park_id = ${parkId}) as volunteers,
+          (SELECT COUNT(*) FROM instructors WHERE preferred_park_id = ${parkId}) as instructors,
+          (SELECT COUNT(*) FROM evaluations WHERE park_id = ${parkId}) as evaluations,
+          (SELECT COUNT(*) FROM documents WHERE park_id = ${parkId}) as documents
+      `);
       
-      // Usar transacción para eliminar todo de forma segura
+      const row = results.rows[0] as any;
+      
+      const dependencies = {
+        trees: parseInt(row.trees) || 0,
+        treeMaintenances: parseInt(row.tree_maintenances) || 0,
+        activities: parseInt(row.activities) || 0,
+        incidents: parseInt(row.incidents) || 0,
+        amenities: parseInt(row.amenities) || 0,
+        images: parseInt(row.images) || 0,
+        assets: parseInt(row.assets) || 0,
+        volunteers: parseInt(row.volunteers) || 0,
+        instructors: parseInt(row.instructors) || 0,
+        evaluations: parseInt(row.evaluations) || 0,
+        documents: parseInt(row.documents) || 0,
+        total: 0
+      };
+      
+      dependencies.total = Object.values(dependencies).reduce((sum, count) => sum + count, 0) - dependencies.total;
+      return dependencies;
+    } catch (error) {
+      console.error("Error obteniendo dependencias del parque:", error);
+      // Retornar valores por defecto en caso de error
+      return {
+        trees: 0,
+        treeMaintenances: 0,
+        activities: 0,
+        incidents: 0,
+        amenities: 0,
+        images: 0,
+        assets: 0,
+        volunteers: 0,
+        instructors: 0,
+        evaluations: 0,
+        documents: 0,
+        total: 0
+      };
+    }
+  }
+
+  async deleteParkWithDependencies(id: number): Promise<boolean> {
+    try {
+      console.log(`Iniciando eliminación completa del parque ${id} con todas sus dependencias`);
+      
+      // Usar transacción SQL directa para mayor control
       await db.execute(sql`
         BEGIN;
+        
+        -- Eliminar en orden de dependencias (de más específico a más general)
+        DELETE FROM tree_maintenances WHERE park_id = ${id};
+        DELETE FROM trees WHERE park_id = ${id};
+        DELETE FROM evaluations WHERE park_id = ${id};
+        DELETE FROM documents WHERE park_id = ${id};
         DELETE FROM park_amenities WHERE park_id = ${id};
         DELETE FROM park_images WHERE park_id = ${id};
         DELETE FROM activities WHERE park_id = ${id};
         DELETE FROM incidents WHERE park_id = ${id};
+        DELETE FROM assets WHERE park_id = ${id};
+        
+        -- Actualizar referencias de voluntarios e instructores (no eliminar usuarios)
+        UPDATE volunteers SET preferred_park_id = NULL WHERE preferred_park_id = ${id};
+        UPDATE instructors SET preferred_park_id = NULL WHERE preferred_park_id = ${id};
+        
+        -- Finalmente eliminar el parque
         DELETE FROM parks WHERE id = ${id};
+        
         COMMIT;
       `);
       
-      console.log(`Parque ${id} eliminado exitosamente`);
+      console.log(`Parque ${id} y todas sus dependencias eliminados exitosamente`);
       return true;
     } catch (error) {
-      console.error("Error al eliminar parque:", error);
-      await db.execute(sql`ROLLBACK;`);
+      console.error("Error al eliminar parque con dependencias:", error);
+      // Intentar rollback en caso de error
+      try {
+        await db.execute(sql`ROLLBACK;`);
+      } catch (rollbackError) {
+        console.error("Error en rollback:", rollbackError);
+      }
       return false;
     }
+  }
+
+  async deletePark(id: number): Promise<boolean> {
+    // Usar la nueva función que maneja dependencias
+    return this.deleteParkWithDependencies(id);
   }
 
   async removeAmenityFromPark(parkId: number, amenityId: number): Promise<boolean> {

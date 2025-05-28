@@ -392,6 +392,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import parks from Excel/CSV
   apiRouter.post("/parks/import", isAuthenticated, hasMunicipalityAccess(), uploadParkFile, handleMulterErrors, processImportFile);
 
+  // Get park dependencies before deletion
+  apiRouter.get("/parks/:id/dependencies", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const dependencies = await storage.getParkDependencies(parkId);
+      res.json(dependencies);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching park dependencies" });
+    }
+  });
+
   // Ruta normal para actualizar un parque (con verificación de permisos)
   apiRouter.put("/parks/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
