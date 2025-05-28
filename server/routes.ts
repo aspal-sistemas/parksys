@@ -574,6 +574,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error fetching amenities" });
     }
   });
+
+  // Dashboard endpoint específico para amenidades
+  apiRouter.get("/amenities/dashboard", async (_req: Request, res: Response) => {
+    try {
+      const [amenities, parks] = await Promise.all([
+        storage.getAmenities(),
+        storage.getExtendedParks()
+      ]);
+
+      // Calcular estadísticas para el dashboard
+      const parksWithAmenities = parks.filter((park: any) => park.amenities && park.amenities.length > 0);
+      const totalAmenityAssignments = parks.reduce((sum: number, park: any) => sum + (park.amenities?.length || 0), 0);
+
+      const amenityStats = amenities.map((amenity: any) => {
+        const parksWithThisAmenity = parks.filter((park: any) => 
+          park.amenities?.some((a: any) => a.id === amenity.id)
+        );
+        return {
+          ...amenity,
+          parksCount: parksWithThisAmenity.length,
+          utilizationRate: parks.length > 0 ? Math.round((parksWithThisAmenity.length / parks.length) * 100) : 0
+        };
+      }).sort((a: any, b: any) => b.parksCount - a.parksCount);
+
+      const dashboardData = {
+        totalAmenities: amenities.length,
+        totalParks: parks.length,
+        averageAmenitiesPerPark: parks.length ? Math.round((totalAmenityAssignments / parks.length) * 100) / 100 : 0,
+        mostPopularAmenities: amenityStats.slice(0, 5),
+        amenityDistribution: amenityStats.slice(0, 6).map((amenity: any, index: number) => ({
+          name: amenity.name.length > 12 ? amenity.name.substring(0, 12) + '...' : amenity.name,
+          value: amenity.parksCount,
+          color: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'][index % 6]
+        })),
+        utilizationByPark: parks.slice(0, 8).map((park: any) => ({
+          parkName: park.name.length > 15 ? park.name.substring(0, 15) + '...' : park.name,
+          amenitiesCount: park.amenities?.length || 0
+        })).sort((a: any, b: any) => b.amenitiesCount - a.amenitiesCount),
+        statusDistribution: [
+          { status: 'Activas', count: amenities.length, color: '#00C49F' },
+          { status: 'Mantenimiento', count: 0, color: '#FFBB28' },
+          { status: 'Inactivas', count: 0, color: '#FF8042' }
+        ]
+      };
+
+      res.json(dashboardData);
+    } catch (error) {
+      console.error('Error fetching amenities dashboard data:', error);
+      res.status(500).json({ message: "Error fetching amenities dashboard data" });
+    }
+  });
   
   // Create a new amenity (admin only)
   apiRouter.post("/amenities", isAuthenticated, async (req: Request, res: Response) => {

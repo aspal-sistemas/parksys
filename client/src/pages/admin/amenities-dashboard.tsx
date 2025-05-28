@@ -54,25 +54,38 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'
 export default function AmenitiesDashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const { data: amenities, isLoading: isLoadingAmenities } = useQuery({
-    queryKey: ['/api/amenities', refreshKey],
-  });
-
-  const { data: parks, isLoading: isLoadingParks } = useQuery({
-    queryKey: ['/api/parks', refreshKey],
+  const { data: dashboardData, isLoading, error } = useQuery({
+    queryKey: ['/api/amenities/dashboard', refreshKey],
   });
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
   };
 
-  if (isLoadingAmenities || isLoadingParks) {
+  if (isLoading) {
     return (
       <AdminLayout title="Dashboard de Amenidades">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
             <p className="mt-2 text-gray-600">Cargando estadísticas...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout title="Dashboard de Amenidades">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <p className="text-red-600">Error al cargar los datos del dashboard</p>
+            <Button onClick={handleRefresh} className="mt-4">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reintentar
+            </Button>
           </div>
         </div>
       </AdminLayout>
