@@ -236,6 +236,8 @@ export default function ParkEdit() {
         originalMunicipalityId: park?.municipalityId 
       });
       
+      console.log('OBJETO COMPLETO dataToSend:', dataToSend);
+      
       return await apiRequest(`/api/dev/parks/${id}`, {
         method: "PUT",
         data: dataToSend,
