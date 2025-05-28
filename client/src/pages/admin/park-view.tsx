@@ -103,13 +103,23 @@ interface ParkDetails {
 export default function AdminParkView() {
   const { id } = useParams();
   
+  // Get detailed park information from the same endpoint as the edit page
+  const { data: parkBasic, isLoading: parkLoading } = useQuery({
+    queryKey: [`/api/parks/${id}`],
+    enabled: !!id,
+  });
+  
+  // Get extended park data for the tabs (amenities, activities, etc.)
   const { data: park, isLoading, error } = useQuery<ParkDetails>({
     queryKey: ['/api/parks', id, 'view'],
     queryFn: () => fetch(`/api/parks/${id}/view`).then(res => res.json()),
     enabled: !!id,
   });
 
-  if (isLoading) {
+  // Combine basic park data with extended data for complete information
+  const combinedPark = park && parkBasic ? { ...park, ...parkBasic } : park;
+
+  if (isLoading || parkLoading) {
     return (
       <div className="p-6">
         <div className="animate-pulse">
@@ -125,7 +135,7 @@ export default function AdminParkView() {
     );
   }
 
-  if (error || !park) {
+  if (error || (!park && !parkBasic)) {
     return (
       <div className="p-6">
         <div className="text-center py-12">
@@ -141,6 +151,9 @@ export default function AdminParkView() {
       </div>
     );
   }
+
+  // Use combined data or fallback to available data
+  const displayPark = combinedPark || parkBasic || park;
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -174,10 +187,10 @@ export default function AdminParkView() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{park.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{displayPark.name}</h1>
             <p className="text-gray-600 flex items-center gap-2 mt-1">
               <MapPin className="h-4 w-4" />
-              {park.location} • {park.municipality?.name || 'Municipio no encontrado'}
+              {displayPark.address || displayPark.location} • {displayPark.municipality?.name || 'Municipio no encontrado'}
             </p>
           </div>
         </div>
@@ -195,7 +208,7 @@ export default function AdminParkView() {
             <div className="flex items-center gap-3">
               <Calendar className="h-8 w-8 text-blue-600" />
               <div>
-                <p className="text-2xl font-bold">{park.stats?.totalActivities || 0}</p>
+                <p className="text-2xl font-bold">{displayPark.stats?.totalActivities || 0}</p>
                 <p className="text-sm text-gray-600">Actividades</p>
               </div>
             </div>
@@ -280,7 +293,7 @@ export default function AdminParkView() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium text-gray-700">Tipo de Parque:</span>
                   </div>
-                  <p className="text-gray-600">{park.parkType || 'No especificado'}</p>
+                  <p className="text-gray-600">{displayPark.parkType || 'No especificado'}</p>
                 </div>
                 
                 <div>
@@ -288,7 +301,7 @@ export default function AdminParkView() {
                     <Clock className="h-4 w-4 text-gray-500" />
                     <span className="font-medium text-gray-700">Horarios:</span>
                   </div>
-                  <p className="text-gray-600">{park.openingHours}</p>
+                  <p className="text-gray-600">{displayPark.openingHours || 'No especificado'}</p>
                 </div>
                 
                 <div>
@@ -296,25 +309,25 @@ export default function AdminParkView() {
                     <FileText className="h-4 w-4 text-gray-500" />
                     <span className="font-medium text-gray-700">Descripción:</span>
                   </div>
-                  <p className="text-gray-600">{park.description}</p>
+                  <p className="text-gray-600">{displayPark.description || 'No especificado'}</p>
                 </div>
 
-                {park.area && (
+                {displayPark.area && (
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium text-gray-700">Área:</span>
                     </div>
-                    <p className="text-gray-600">{park.area} m²</p>
+                    <p className="text-gray-600">{displayPark.area} m²</p>
                   </div>
                 )}
 
-                {park.foundationYear && (
+                {displayPark.foundationYear && (
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <Calendar className="h-4 w-4 text-gray-500" />
                       <span className="font-medium text-gray-700">Año de Fundación:</span>
                     </div>
-                    <p className="text-gray-600">{park.foundationYear}</p>
+                    <p className="text-gray-600">{displayPark.foundationYear}</p>
                   </div>
                 )}
               </CardContent>
