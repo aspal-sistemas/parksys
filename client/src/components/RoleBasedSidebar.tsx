@@ -18,6 +18,7 @@ import {
   Settings, 
   LogOut,
   Tag,
+  BarChart3,
   BarChart,
   Package,
   Shield,
@@ -206,6 +207,13 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       icon={<Package className="h-5 w-5" />}
       value="amenities"
     >
+      <NavItem 
+        href="/admin/amenities-dashboard" 
+        icon={<BarChart className="h-5 w-5" />}
+        active={location === '/admin/amenities-dashboard'}
+      >
+        Dashboard
+      </NavItem>
       <NavItem 
         href="/admin/amenities" 
         icon={<Package className="h-5 w-5" />}
