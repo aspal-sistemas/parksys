@@ -153,24 +153,26 @@ const AdminParks = () => {
     return typeMap[type] || type;
   };
 
-  // Handle delete confirmation
-  const handleDeleteConfirm = async () => {
-    if (!parkToDelete) return;
-    
-    try {
-      await deleteMutation.mutateAsync(parkToDelete.id);
-      setShowDeleteDialog(false);
-      setParkToDelete(null);
-    } catch (error) {
-      console.error('Error deleting park:', error);
-    }
-  };
+
 
   // Clear all filters
   const handleClearFilters = () => {
     setSearchQuery('');
     setFilterMunicipality('all');
     setFilterParkType('all');
+  };
+
+  // Handle opening delete dialog
+  const handleDeleteClick = async (park: Park) => {
+    setParkToDelete(park);
+    setShowDeleteDialog(true);
+    await fetchParkDependencies(park.id);
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!parkToDelete) return;
+    deleteMutation.mutate(parkToDelete.id);
   };
 
   // Handle manual refresh
@@ -370,24 +372,119 @@ const AdminParks = () => {
         )}
       </div>
 
-      {/* Delete confirmation dialog */}
+      {/* Delete confirmation dialog with dependencies warning */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente el parque
-              "{parkToDelete?.name}" de la base de datos.
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-6 w-6 text-red-600" />
+              <AlertDialogTitle className="text-xl">¡Advertencia! Eliminación Completa</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4">
+                <p className="text-gray-700">
+                  Esta acción eliminará permanentemente el parque <strong>"{parkToDelete?.name}"</strong> y 
+                  <strong className="text-red-600"> TODOS sus elementos relacionados</strong>.
+                </p>
+                
+                {loadingDependencies ? (
+                  <div className="flex items-center gap-2 p-4 bg-gray-50 rounded-lg">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                    <span>Analizando dependencias...</span>
+                  </div>
+                ) : parkDependencies ? (
+                  <div className="space-y-3">
+                    <p className="font-medium text-gray-800">Se eliminarán los siguientes elementos:</p>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      {parkDependencies.trees > 0 && (
+                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
+                          <TreePine className="h-4 w-4 text-green-600" />
+                          <span>{parkDependencies.trees} árboles</span>
+                        </div>
+                      )}
+                      {parkDependencies.treeMaintenances > 0 && (
+                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
+                          <Wrench className="h-4 w-4 text-blue-600" />
+                          <span>{parkDependencies.treeMaintenances} mantenimientos</span>
+                        </div>
+                      )}
+                      {parkDependencies.activities > 0 && (
+                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
+                          <Activity className="h-4 w-4 text-purple-600" />
+                          <span>{parkDependencies.activities} actividades</span>
+                        </div>
+                      )}
+                      {parkDependencies.incidents > 0 && (
+                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
+                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                          <span>{parkDependencies.incidents} incidencias</span>
+                        </div>
+                      )}
+                      {parkDependencies.amenities > 0 && (
+                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
+                          <Package className="h-4 w-4 text-orange-600" />
+                          <span>{parkDependencies.amenities} amenidades</span>
+                        </div>
+                      )}
+                      {parkDependencies.images > 0 && (
+                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
+                          <Camera className="h-4 w-4 text-pink-600" />
+                          <span>{parkDependencies.images} imágenes</span>
+                        </div>
+                      )}
+                      {parkDependencies.documents > 0 && (
+                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
+                          <FileText className="h-4 w-4 text-indigo-600" />
+                          <span>{parkDependencies.documents} documentos</span>
+                        </div>
+                      )}
+                      {(parkDependencies.volunteers > 0 || parkDependencies.instructors > 0) && (
+                        <div className="flex items-center gap-2 p-2 bg-yellow-50 rounded">
+                          <UserCheck className="h-4 w-4 text-amber-600" />
+                          <span>{parkDependencies.volunteers + parkDependencies.instructors} usuarios afectados</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {parkDependencies.total > 0 ? (
+                      <div className="p-3 bg-red-100 border border-red-200 rounded-lg">
+                        <p className="font-medium text-red-800">
+                          Total: {parkDependencies.total} elementos serán eliminados permanentemente
+                        </p>
+                        <p className="text-sm text-red-600 mt-1">
+                          Los voluntarios e instructores NO serán eliminados, solo se actualizará su parque preferido.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-green-100 border border-green-200 rounded-lg">
+                        <p className="text-green-800">
+                          ✓ Este parque no tiene dependencias. Es seguro eliminarlo.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-3 bg-yellow-100 border border-yellow-200 rounded-lg">
+                    <p className="text-yellow-800">
+                      No se pudieron cargar las dependencias. ¿Continuar con la eliminación?
+                    </p>
+                  </div>
+                )}
+                
+                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  <strong>Nota:</strong> Esta acción no se puede deshacer. Todos los datos serán eliminados permanentemente de la base de datos.
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteConfirm}
-              disabled={deleteMutation.isPending}
+              disabled={deleteMutation.isPending || loadingDependencies}
               className="bg-red-600 hover:bg-red-700"
             >
-              {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
+              {deleteMutation.isPending ? "Eliminando..." : "Confirmar Eliminación"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
