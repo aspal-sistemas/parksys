@@ -1,5 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
+import multer from "multer";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { isAuthenticated, hasMunicipalityAccess, hasParkAccess, requirePermission, requireAdmin } from "./middleware/auth";
@@ -868,6 +869,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error(error);
       res.status(500).json({ message: "Error adding amenity to park" });
+    }
+  });
+
+  // Import amenities from file (admin only)
+  apiRouter.post("/amenities/import", upload.single('file'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const file = req.file;
+      let amenitiesData: any[] = [];
+
+      // Process Excel or CSV file
+      if (file.mimetype.includes('spreadsheet') || file.originalname.endsWith('.xlsx')) {
+        const XLSX = require('xlsx');
+        const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        amenitiesData = XLSX.utils.sheet_to_json(worksheet);
+      } else if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+        const csvData = file.buffer.toString();
+        const lines = csvData.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i].trim()) {
+            const values = lines[i].split(',').map(v => v.trim());
+            const row: any = {};
+            headers.forEach((header, index) => {
+              row[header] = values[index] || '';
+            });
+            amenitiesData.push(row);
+          }
+        }
+      } else {
+        return res.status(400).json({ error: "Formato de archivo no soportado. Use Excel (.xlsx) o CSV." });
+      }
+
+      let importedCount = 0;
+      
+      for (const row of amenitiesData) {
+        try {
+          const amenityData = {
+            name: row.Nombre || row.nombre || row.Name || '',
+            category: row.Categoría || row.categoria || row.Category || 'servicios',
+            icon: row.Icono || row.icono || row.Icon || 'park',
+            iconType: 'system' as const,
+            customIconUrl: null
+          };
+
+          if (amenityData.name) {
+            await storage.createAmenity(amenityData);
+            importedCount++;
+          }
+        } catch (error) {
+          console.log(`Error importing amenity: ${row.Nombre || 'Unknown'}`, error);
+        }
+      }
+
+      res.json({ 
+        message: "Amenidades importadas exitosamente", 
+        count: importedCount 
+      });
+    } catch (error) {
+      console.error("Error importing amenities:", error);
+      res.status(500).json({ error: "Error al importar amenidades" });
     }
   });
 

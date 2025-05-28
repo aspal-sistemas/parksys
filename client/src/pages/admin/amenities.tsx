@@ -545,19 +545,20 @@ const AdminAmenitiesPage: React.FC = () => {
               <TableHead>Icono</TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Categoría</TableHead>
+              <TableHead>Parques</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-10">
+                <TableCell colSpan={5} className="text-center py-10">
                   Cargando...
                 </TableCell>
               </TableRow>
             ) : amenities.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-10">
+                <TableCell colSpan={5} className="text-center py-10">
                   No hay amenidades para mostrar
                 </TableCell>
               </TableRow>
@@ -577,6 +578,11 @@ const AdminAmenitiesPage: React.FC = () => {
                   <TableCell>{amenity.name}</TableCell>
                   <TableCell>
                     {CATEGORY_LABELS[amenity.category] || amenity.category}
+                  </TableCell>
+                  <TableCell>
+                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                      {amenity.parkCount || 0} parques
+                    </span>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-2">
