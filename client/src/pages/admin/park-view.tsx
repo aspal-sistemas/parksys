@@ -276,12 +276,12 @@ export default function AdminParkView() {
         <TabsContent value="amenities" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Amenidades del Parque ({park.amenities.length})</CardTitle>
+              <CardTitle>Amenidades del Parque ({park.amenities?.length || 0})</CardTitle>
               <CardDescription>Servicios e infraestructura disponible</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {park.amenities.map((amenity) => (
+                {park.amenities?.map((amenity) => (
                   <div key={amenity.id} className="flex items-center gap-3 p-3 border rounded-lg">
                     <div className="text-2xl">{amenity.icon}</div>
                     <div>
