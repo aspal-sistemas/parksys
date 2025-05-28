@@ -366,7 +366,7 @@ const IncomesPage = () => {
                           {formatCurrency(income.amount)}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {income.category?.name || 'Sin categoría'}
+                          {income.categoryName || 'Sin categoría'}
                         </div>
                       </div>
                     </div>

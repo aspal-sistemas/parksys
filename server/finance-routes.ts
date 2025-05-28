@@ -579,7 +579,10 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
         year: actualIncomes.year,
         description: actualIncomes.description,
         referenceNumber: actualIncomes.referenceNumber,
+
+        categoryId: actualIncomes.categoryId,
         categoryName: incomeCategories.name,
+        categoryCode: incomeCategories.code,
         subcategoryName: incomeSubcategories.name,
       })
       .from(actualIncomes)
