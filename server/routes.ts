@@ -1733,6 +1733,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get detailed park view for admin
+  apiRouter.get("/parks/:id/view", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const park = await db.select()
+        .from(parks)
+        .leftJoin(municipalities, eq(parks.municipalityId, municipalities.id))
+        .where(eq(parks.id, parkId))
+        .limit(1);
+      
+      if (!park.length) {
+        return res.status(404).json({ message: "Park not found" });
+      }
+      
+      const parkData = park[0];
+      
+      // Get all related data
+      const [amenities, activities, trees, volunteers, assets, incidents, documents, images, evaluations] = await Promise.all([
+        db.select().from(parkAmenities).leftJoin(amenitiesTable, eq(parkAmenities.amenityId, amenitiesTable.id)).where(eq(parkAmenities.parkId, parkId)),
+        db.select().from(activitiesTable).where(eq(activitiesTable.parkId, parkId)),
+        db.select().from(trees).where(eq(trees.parkId, parkId)),
+        db.select().from(volunteers).where(eq(volunteers.preferredParkId, parkId)),
+        db.select().from(assets).where(eq(assets.parkId, parkId)),
+        db.select().from(incidents).where(eq(incidents.parkId, parkId)),
+        db.select().from(documents).where(eq(documents.parkId, parkId)),
+        db.select().from(parkImages).where(eq(parkImages.parkId, parkId)),
+        db.select().from(parkEvaluations).where(eq(parkEvaluations.parkId, parkId))
+      ]);
+      
+      // Calculate stats
+      const stats = {
+        totalActivities: activities.length,
+        activeVolunteers: volunteers.filter(v => v.isActive).length,
+        totalTrees: trees.length,
+        averageEvaluation: evaluations.length > 0 ? evaluations.reduce((acc, eval) => acc + eval.score, 0) / evaluations.length : 0,
+        pendingIncidents: incidents.filter(inc => inc.status === 'pending' || inc.status === 'open').length
+      };
+      
+      const result = {
+        ...parkData.parks,
+        municipality: parkData.municipalities,
+        amenities: amenities.map(a => a.amenities),
+        activities: activities,
+        trees: trees,
+        volunteers: volunteers,
+        assets: assets,
+        incidents: incidents,
+        documents: documents,
+        images: images,
+        evaluations: evaluations,
+        stats: stats
+      };
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching park view:", error);
+      res.status(500).json({ message: "Error fetching park data" });
+    }
+  });
+
   // Get detailed information about a specific park
   publicRouter.get("/parks/:id", async (req: Request, res: Response) => {
     try {

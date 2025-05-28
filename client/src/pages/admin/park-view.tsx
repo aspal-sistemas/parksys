@@ -178,7 +178,7 @@ export default function AdminParkView() {
             <div className="flex items-center gap-3">
               <Calendar className="h-8 w-8 text-blue-600" />
               <div>
-                <p className="text-2xl font-bold">{park.stats.totalActivities}</p>
+                <p className="text-2xl font-bold">{park.stats?.totalActivities || 0}</p>
                 <p className="text-sm text-gray-600">Actividades</p>
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function AdminParkView() {
             <div className="flex items-center gap-3">
               <Users className="h-8 w-8 text-green-600" />
               <div>
-                <p className="text-2xl font-bold">{park.stats.activeVolunteers}</p>
+                <p className="text-2xl font-bold">{park.stats?.activeVolunteers || 0}</p>
                 <p className="text-sm text-gray-600">Voluntarios</p>
               </div>
             </div>
@@ -202,7 +202,7 @@ export default function AdminParkView() {
             <div className="flex items-center gap-3">
               <TreePine className="h-8 w-8 text-emerald-600" />
               <div>
-                <p className="text-2xl font-bold">{park.stats.totalTrees}</p>
+                <p className="text-2xl font-bold">{park.stats?.totalTrees || 0}</p>
                 <p className="text-sm text-gray-600">Árboles</p>
               </div>
             </div>
@@ -214,7 +214,7 @@ export default function AdminParkView() {
             <div className="flex items-center gap-3">
               <Star className="h-8 w-8 text-yellow-600" />
               <div>
-                <p className="text-2xl font-bold">{park.stats.averageEvaluation.toFixed(1)}</p>
+                <p className="text-2xl font-bold">{park.stats?.averageEvaluation?.toFixed(1) || '0.0'}</p>
                 <p className="text-sm text-gray-600">Evaluación</p>
               </div>
             </div>
@@ -226,7 +226,7 @@ export default function AdminParkView() {
             <div className="flex items-center gap-3">
               <AlertTriangle className="h-8 w-8 text-red-600" />
               <div>
-                <p className="text-2xl font-bold">{park.stats.pendingIncidents}</p>
+                <p className="text-2xl font-bold">{park.stats?.pendingIncidents || 0}</p>
                 <p className="text-sm text-gray-600">Incidencias</p>
               </div>
             </div>
