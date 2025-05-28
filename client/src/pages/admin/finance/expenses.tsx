@@ -14,7 +14,8 @@ import {
   Plus, 
   TrendingDown, 
   Loader2,
-  Edit
+  Edit,
+  Trash2
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { queryClient } from "@/lib/queryClient";
@@ -36,6 +37,8 @@ const ExpensesPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState<any>(null);
   const [filters, setFilters] = useState({
     concept: "",
     year: "",
@@ -148,6 +151,36 @@ const ExpensesPage = () => {
       toast({
         title: "Error",
         description: "No se pudo actualizar el egreso. Intenta nuevamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteExpenseMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/actual-expenses/${id}`, {
+        method: "DELETE",
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al eliminar el egreso");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/actual-expenses"] });
+      setIsDeleteDialogOpen(false);
+      setExpenseToDelete(null);
+      toast({
+        title: "Egreso eliminado",
+        description: "El egreso se ha eliminado correctamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el egreso. Intenta nuevamente.",
         variant: "destructive",
       });
     },
@@ -559,14 +592,27 @@ const ExpensesPage = () => {
                             {expense.categoryName || 'Sin categoría'}
                           </div>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditExpense(expense)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditExpense(expense)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setExpenseToDelete(expense);
+                              setIsDeleteDialogOpen(true);
+                            }}
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -708,6 +754,56 @@ const ExpensesPage = () => {
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
                     Guardar Cambios
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Diálogo de confirmación para eliminar */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Confirmar Eliminación</DialogTitle>
+              <DialogDescription>
+                ¿Estás seguro de que deseas eliminar este egreso? Esta acción no se puede deshacer.
+              </DialogDescription>
+            </DialogHeader>
+
+            {expenseToDelete && (
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium">{expenseToDelete.concept}</h4>
+                  <p className="text-sm text-gray-600">{expenseToDelete.description}</p>
+                  <p className="text-lg font-bold text-red-600 mt-2">
+                    -{formatCurrency(expenseToDelete.amount)}
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsDeleteDialogOpen(false);
+                      setExpenseToDelete(null);
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      if (expenseToDelete) {
+                        deleteExpenseMutation.mutate(expenseToDelete.id);
+                      }
+                    }}
+                    disabled={deleteExpenseMutation.isPending}
+                  >
+                    {deleteExpenseMutation.isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Eliminar Egreso
                   </Button>
                 </div>
               </div>
