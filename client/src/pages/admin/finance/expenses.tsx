@@ -27,7 +27,7 @@ import AdminLayout from "@/components/AdminLayout";
 const expenseSchema = z.object({
   parkId: z.number(),
   categoryId: z.number(),
-  subcategory: z.string().optional(),
+  concept: z.string().min(1, "El concepto es requerido"),
   amount: z.number().min(0.01, "El monto debe ser mayor a 0"),
   description: z.string().min(1, "La descripción es requerida"),
   date: z.string().min(1, "La fecha es requerida"),
@@ -57,6 +57,8 @@ const ExpensesPage = () => {
     resolver: zodResolver(expenseSchema),
     defaultValues: {
       parkId: 3,
+      categoryId: 0,
+      concept: "",
       amount: undefined,
       description: "",
       date: new Date().toISOString().split('T')[0],
@@ -194,6 +196,20 @@ const ExpensesPage = () => {
                       )}
                     />
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="concept"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Concepto</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Concepto del gasto" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={form.control}
