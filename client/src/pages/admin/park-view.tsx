@@ -324,12 +324,12 @@ export default function AdminParkView() {
         <TabsContent value="trees" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Inventario de Árboles ({park.trees.length})</CardTitle>
+              <CardTitle>Inventario de Árboles ({park.trees?.length || 0})</CardTitle>
               <CardDescription>Árboles registrados en este parque</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {park.trees.map((tree) => (
+                {park.trees?.map((tree) => (
                   <div key={tree.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h4 className="font-medium">{tree.species}</h4>
@@ -353,12 +353,12 @@ export default function AdminParkView() {
         <TabsContent value="assets" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Activos ({park.assets.length})</CardTitle>
+              <CardTitle>Activos ({park.assets?.length || 0})</CardTitle>
               <CardDescription>Equipamiento e infraestructura del parque</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {park.assets.map((asset) => (
+                {park.assets?.map((asset) => (
                   <div key={asset.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h4 className="font-medium">{asset.name}</h4>
@@ -382,12 +382,12 @@ export default function AdminParkView() {
         <TabsContent value="incidents" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Incidencias ({park.incidents.length})</CardTitle>
+              <CardTitle>Incidencias ({park.incidents?.length || 0})</CardTitle>
               <CardDescription>Reportes e incidencias del parque</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {park.incidents.map((incident) => (
+                {park.incidents?.map((incident) => (
                   <div key={incident.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h4 className="font-medium">{incident.title}</h4>
@@ -413,7 +413,7 @@ export default function AdminParkView() {
         <TabsContent value="volunteers" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Voluntarios ({park.volunteers.length})</CardTitle>
+              <CardTitle>Voluntarios ({park.volunteers?.length || 0})</CardTitle>
               <CardDescription>Voluntarios asignados a este parque</CardDescription>
             </CardHeader>
             <CardContent>
