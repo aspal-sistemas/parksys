@@ -205,6 +205,32 @@ app.post("/direct/finance/expense-categories/edit/:id", async (req: Request, res
   }
 });
 
+// Ruta directa para registrar ingresos (sin autenticación)
+app.post("/api/actual-incomes", async (req: Request, res: Response) => {
+  try {
+    console.log("=== REGISTRANDO INGRESO DIRECTO ===");
+    console.log("Body recibido:", req.body);
+    
+    const { actualIncomes } = await import("../shared/finance-schema");
+    const incomeData = req.body;
+    
+    // Extraer mes y año de la fecha
+    const date = new Date(incomeData.date);
+    incomeData.month = date.getMonth() + 1;
+    incomeData.year = date.getFullYear();
+    
+    console.log("Datos procesados:", incomeData);
+    
+    const [newIncome] = await db.insert(actualIncomes).values(incomeData).returning();
+    console.log("Ingreso registrado exitosamente:", newIncome);
+    
+    res.status(201).json(newIncome);
+  } catch (error) {
+    console.error("Error al registrar ingreso directo:", error);
+    res.status(500).json({ message: "Error al registrar ingreso" });
+  }
+});
+
 // Servir archivos estáticos de la carpeta de uploads
 app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 
