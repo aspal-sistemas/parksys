@@ -123,7 +123,7 @@ export default function CashFlowMatrix() {
 
   const [expenseCategories, setExpenseCategories] = useState([
     { name: "Servicios Públicos", code: "EGR002" },
-    { name: "Personal y Nómina", code: "EGR003" },
+    { name: "Nómina", code: "EGR003" },
     { name: "Mantenimiento de Instalaciones", code: "EGR004" },
     { name: "Suministros y Materiales", code: "EGR005" },
     { name: "Seguridad", code: "EGR006" },
