@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Save, Building, MapPin, Phone, Mail, Globe, Clock, Info } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
@@ -367,22 +368,83 @@ export default function ParkEdit() {
                         )}
                       />
 
-                      <FormField
-                        control={form.control}
-                        name="openingHours"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              <Clock className="inline mr-2 h-4 w-4" />
-                              Horarios de Apertura
-                            </FormLabel>
-                            <FormControl>
-                              <Input placeholder="Ej: Lunes a Domingo 6:00 AM - 10:00 PM" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="space-y-4">
+                        <FormLabel className="text-base font-medium flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          Horarios de Apertura
+                        </FormLabel>
+                        <div className="space-y-4">
+                          {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => {
+                            const dayNames = {
+                              monday: "Lunes",
+                              tuesday: "Martes", 
+                              wednesday: "Miércoles",
+                              thursday: "Jueves",
+                              friday: "Viernes",
+                              saturday: "Sábado",
+                              sunday: "Domingo"
+                            };
+                            
+                            return (
+                              <div key={day} className="flex items-center gap-4 p-3 border rounded-lg">
+                                <FormField
+                                  control={form.control}
+                                  name={`schedule.${day}.enabled`}
+                                  render={({ field }) => (
+                                    <FormItem className="flex items-center space-x-3 space-y-0">
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value}
+                                          onCheckedChange={field.onChange}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="font-normal w-20">
+                                        {dayNames[day as keyof typeof dayNames]}
+                                      </FormLabel>
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                <div className="flex items-center gap-2 flex-1">
+                                  <FormField
+                                    control={form.control}
+                                    name={`schedule.${day}.openTime`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormControl>
+                                          <Input
+                                            type="time"
+                                            {...field}
+                                            disabled={!form.watch(`schedule.${day}.enabled`)}
+                                            className="w-32"
+                                          />
+                                        </FormControl>
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <span className="text-sm text-gray-500">a</span>
+                                  <FormField
+                                    control={form.control}
+                                    name={`schedule.${day}.closeTime`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormControl>
+                                          <Input
+                                            type="time"
+                                            {...field}
+                                            disabled={!form.watch(`schedule.${day}.enabled`)}
+                                            className="w-32"
+                                          />
+                                        </FormControl>
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
