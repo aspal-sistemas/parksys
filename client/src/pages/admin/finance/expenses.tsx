@@ -168,10 +168,10 @@ const ExpensesPage = () => {
   const handleEditExpense = (expense: any) => {
     setEditingExpense(expense);
     editForm.reset({
-      parkId: expense.parkId,
-      categoryId: expense.categoryId,
+      parkId: expense.parkId || 3,
+      categoryId: expense.categoryId || 0,
       concept: expense.concept || "",
-      amount: expense.amount,
+      amount: expense.amount || 0,
       description: expense.description || "",
       date: expense.date ? expense.date.split('T')[0] : new Date().toISOString().split('T')[0],
       vendor: expense.vendor || "",
