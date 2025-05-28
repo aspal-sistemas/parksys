@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield } from "lucide-react";
-import { RoleBasedSidebar } from "@/components/RoleBasedSidebar";
+import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 
 interface ParkDetails {
   id: number;
