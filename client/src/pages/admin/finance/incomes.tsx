@@ -61,7 +61,7 @@ const IncomesPage = () => {
     resolver: zodResolver(incomeSchema),
     defaultValues: {
       parkId: 3,
-      amount: 0,
+      amount: undefined,
       description: "",
       date: new Date().toISOString().split('T')[0],
       source: "",
@@ -228,9 +228,10 @@ const IncomesPage = () => {
                             <Input
                               type="number"
                               step="0.01"
-                              placeholder="0.00"
+                              placeholder="Ingresa el monto"
                               {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                             />
                           </FormControl>
                           <FormMessage />
