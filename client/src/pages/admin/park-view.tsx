@@ -418,7 +418,7 @@ export default function AdminParkView() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {park.volunteers.map((volunteer) => (
+                {park.volunteers?.map((volunteer) => (
                   <div key={volunteer.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h4 className="font-medium">{volunteer.fullName}</h4>
@@ -437,12 +437,12 @@ export default function AdminParkView() {
         <TabsContent value="documents" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Documentos ({park.documents.length})</CardTitle>
+              <CardTitle>Documentos ({park.documents?.length || 0})</CardTitle>
               <CardDescription>Documentos oficiales y archivos del parque</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {park.documents.map((doc) => (
+                {park.documents?.map((doc) => (
                   <div key={doc.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-3">
                       <FileText className="h-8 w-8 text-blue-600" />
@@ -467,12 +467,12 @@ export default function AdminParkView() {
         <TabsContent value="images" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Galería de Imágenes ({park.images.length})</CardTitle>
+              <CardTitle>Galería de Imágenes ({park.images?.length || 0})</CardTitle>
               <CardDescription>Fotos del parque</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {park.images.map((image) => (
+                {park.images?.map((image) => (
                   <div key={image.id} className="relative">
                     <img 
                       src={image.imageUrl} 
