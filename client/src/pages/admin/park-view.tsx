@@ -405,43 +405,35 @@ export default function AdminParkView() {
               </CardContent>
             </Card>
 
-            {/* Administración y Estado */}
+            {/* Características */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5 text-purple-600" />
-                  Administración
+                  Características
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {park.administrator && (
+                {displayPark.administrator && (
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <Users className="h-4 w-4 text-gray-500" />
                       <span className="font-medium text-gray-700">Administrador:</span>
                     </div>
-                    <p className="text-gray-600">{park.administrator}</p>
+                    <p className="text-gray-600">{displayPark.administrator}</p>
                   </div>
                 )}
 
-                {park.conservationStatus && (
+                {displayPark.conservationStatus && (
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium text-gray-700">Estado de Conservación:</span>
                     </div>
-                    <Badge variant={park.conservationStatus === 'bueno' ? 'default' : 'secondary'}>
-                      {park.conservationStatus}
+                    <Badge variant={displayPark.conservationStatus === 'bueno' ? 'default' : 'secondary'}>
+                      {displayPark.conservationStatus}
                     </Badge>
                   </div>
                 )}
-
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Building className="h-4 w-4 text-gray-500" />
-                    <span className="font-medium text-gray-700">Municipio:</span>
-                  </div>
-                  <p className="text-gray-600">{park.municipality?.name || 'No especificado'}</p>
-                </div>
               </CardContent>
             </Card>
 
