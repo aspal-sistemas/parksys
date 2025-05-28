@@ -604,7 +604,7 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   });
 
   // Registrar ingreso real
-  apiRouter.post("/actual-incomes", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.post("/actual-incomes", async (req: Request, res: Response) => {
     try {
       const incomeData = req.body;
       // Extraer mes y año de la fecha
