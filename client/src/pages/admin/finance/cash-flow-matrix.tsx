@@ -105,10 +105,18 @@ export default function CashFlowMatrix() {
   // Obtener datos reales del catálogo financiero
   const { data: cashFlowData, isLoading, error } = useQuery({
     queryKey: ['/api/finance/cash-flow', selectedYear],
-    queryFn: () => fetch(`/api/finance/cash-flow/${selectedYear}`).then(res => {
-      if (!res.ok) throw new Error('Error al obtener datos');
-      return res.json();
-    }),
+    queryFn: async () => {
+      try {
+        const res = await fetch(`/api/finance/cash-flow/${selectedYear}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        const data = await res.json();
+        console.log('Datos recibidos del API:', data);
+        return data;
+      } catch (err) {
+        console.error('Error en la llamada al API:', err);
+        throw err;
+      }
+    },
     staleTime: 5 * 60 * 1000, // Cache por 5 minutos
   });
 
