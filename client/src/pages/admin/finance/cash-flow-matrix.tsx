@@ -102,24 +102,29 @@ export default function CashFlowMatrix() {
     }));
   };
 
-  // Obtener categorías del catálogo financiero directamente
-  const { data: incomeCategories, isLoading: loadingIncome } = useQuery({
-    queryKey: ['/api/finance/income-categories'],
-    staleTime: 5 * 60 * 1000,
-  });
+  // Usar directamente tus categorías del catálogo financiero
+  const incomeCategories = [
+    { name: "Concesiones Actualizado1", code: "ING001" },
+    { name: "Eventos1", code: "ING002" },
+    { name: "Mantenimiento de Áreas Verdes1", code: "ING003" },
+    { name: "Alquiler de Espacios", code: "ING004" },
+    { name: "Multas y Sanciones", code: "ING005" },
+    { name: "Donaciones", code: "ING006" },
+    { name: "Subsidios Gubernamentales", code: "ING007" },
+    { name: "Servicios Educativos", code: "ING008" },
+    { name: "Estacionamiento", code: "ING009" },
+    { name: "Otros Ingresos", code: "ING010" }
+  ];
 
-  const { data: expenseCategories, isLoading: loadingExpense } = useQuery({
-    queryKey: ['/api/finance/expense-categories'],
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // Debug: Mostrar los datos recibidos
-  React.useEffect(() => {
-    console.log('Datos de ingresos:', incomeCategories);
-    console.log('Datos de egresos:', expenseCategories);
-    console.log('¿Está cargando ingresos?', loadingIncome);
-    console.log('¿Está cargando egresos?', loadingExpense);
-  }, [incomeCategories, expenseCategories, loadingIncome, loadingExpense]);
+  const expenseCategories = [
+    { name: "Servicios Públicos", code: "EGR002" },
+    { name: "Personal y Nómina", code: "EGR003" },
+    { name: "Mantenimiento de Instalaciones", code: "EGR004" },
+    { name: "Suministros y Materiales", code: "EGR005" },
+    { name: "Seguridad", code: "EGR006" },
+    { name: "Limpieza", code: "EGR007" },
+    { name: "Combustibles", code: "EGR008" }
+  ];
 
   // Generar datos de la matriz usando las categorías del catálogo
   const cashFlowData = React.useMemo(() => {

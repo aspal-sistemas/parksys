@@ -12,56 +12,32 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
-// ENDPOINT PRIORITARIO: Cash Flow Matrix - ANTES de cualquier middleware
-app.get("/cash-flow-data/:year", async (req: Request, res: Response) => {
+// ENDPOINTS PRIORITARIOS para el catálogo financiero - ANTES de cualquier middleware
+app.get("/matrix-income-data", async (req: Request, res: Response) => {
   try {
-    const year = parseInt(req.params.year);
-    console.log(`=== CASH FLOW PRIORITARIO PARA AÑO: ${year} ===`);
-    
+    console.log("=== MATRIZ: OBTENIENDO CATEGORÍAS DE INGRESOS ===");
     const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
-    const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
-    
-    console.log(`Categorías encontradas - Ingresos: ${incomeCategsList.length}, Egresos: ${expenseCategsList.length}`);
-    
-    const categories = [];
-    const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-    
-    for (const category of incomeCategsList) {
-      categories.push({
-        name: category.name,
-        type: 'income',
-        monthlyValues: new Array(12).fill(0),
-        total: 0
-      });
-    }
-    
-    for (const category of expenseCategsList) {
-      categories.push({
-        name: category.name,
-        type: 'expense',
-        monthlyValues: new Array(12).fill(0),
-        total: 0
-      });
-    }
-    
-    const result = {
-      year,
-      months,
-      categories,
-      summaries: {
-        monthly: { income: new Array(12).fill(0), expenses: new Array(12).fill(0), net: new Array(12).fill(0) },
-        quarterly: { income: [0, 0, 0, 0], expenses: [0, 0, 0, 0], net: [0, 0, 0, 0] },
-        semiannual: { income: [0, 0], expenses: [0, 0], net: [0, 0] },
-        annual: { income: 0, expenses: 0, net: 0 }
-      }
-    };
-    
-    console.log("=== CASH FLOW EXITOSO - TOTAL CATEGORÍAS:", result.categories.length, "===");
+    console.log(`Matriz - Categorías de ingresos encontradas: ${incomeCategsList.length}`);
     res.setHeader('Content-Type', 'application/json');
-    return res.json(result);
+    res.setHeader('Cache-Control', 'no-cache');
+    return res.json(incomeCategsList);
   } catch (error) {
-    console.error("Error en cash flow prioritario:", error);
-    res.status(500).json({ message: "Error al obtener datos del catálogo" });
+    console.error("Error al obtener categorías de ingresos para matriz:", error);
+    res.status(500).json({ message: "Error al obtener categorías de ingresos" });
+  }
+});
+
+app.get("/matrix-expense-data", async (req: Request, res: Response) => {
+  try {
+    console.log("=== MATRIZ: OBTENIENDO CATEGORÍAS DE EGRESOS ===");
+    const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+    console.log(`Matriz - Categorías de egresos encontradas: ${expenseCategsList.length}`);
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'no-cache');
+    return res.json(expenseCategsList);
+  } catch (error) {
+    console.error("Error al obtener categorías de egresos para matriz:", error);
+    res.status(500).json({ message: "Error al obtener categorías de egresos" });
   }
 });
 
@@ -80,10 +56,7 @@ app.use('/api/volunteer-fields', volunteerFieldRouter);
 // Registrar la ruta especializada para habilidades de voluntarios
 app.use('/api', skillsRouter);
 
-// Rutas directas para evitar conflictos con Vite
-import { db } from "./db";
-import { incomeCategories, expenseCategories } from "../shared/finance-schema";
-import { eq } from "drizzle-orm";
+
 
 // Endpoint directo para Cash Flow Matrix - antes de cualquier middleware de Vite
 app.get("/cash-flow-data/:year", async (req: Request, res: Response) => {
