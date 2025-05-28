@@ -170,18 +170,18 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         value="users"
       >
         <NavItem 
-          href="/admin/users" 
-          icon={<UserCheck className="h-5 w-5" />}
-          active={location === '/admin/users'}
-        >
-          Gestión de Usuarios
-        </NavItem>
-        <NavItem 
           href="/admin/permissions" 
           icon={<Shield className="h-5 w-5" />}
           active={location === '/admin/permissions'}
         >
           Permisos y Roles
+        </NavItem>
+        <NavItem 
+          href="/admin/users" 
+          icon={<UserCheck className="h-5 w-5" />}
+          active={location === '/admin/users'}
+        >
+          Gestión de Usuarios
         </NavItem>
         <NavItem 
           href="/admin/user-activity" 
