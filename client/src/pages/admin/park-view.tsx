@@ -272,7 +272,7 @@ export default function AdminParkView() {
           <TabsTrigger value="images">Imágenes</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="amenidades" className="space-y-4">
+        <TabsContent value="amenities" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Amenidades del Parque ({park.amenities.length})</CardTitle>

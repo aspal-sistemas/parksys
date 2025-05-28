@@ -401,11 +401,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Calculate statistics
       const stats = {
-        totalActivities: activities.length,
-        activeVolunteers: volunteers.filter(v => v.isActive).length,
-        totalTrees: trees.length,
+        totalActivities: parkActivities.length,
+        activeVolunteers: parkVolunteers.filter(v => v.isActive).length,
+        totalTrees: parkTrees.length,
         averageEvaluation: 4.2, // Can be calculated when we have evaluations
-        pendingIncidents: incidents.filter(i => i.status === 'pendiente').length
+        pendingIncidents: incidents.length
       };
 
       // Build response
@@ -417,13 +417,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: park.description || "Sin descripción disponible",
         municipalityId: park.municipalityId,
         municipality: municipality ? { name: municipality.name } : { name: "Municipio no encontrado" },
-        amenities: parkAmenities.map(pa => ({
-          id: pa.amenity.id,
-          name: pa.amenity.name,
-          icon: pa.amenity.icon,
-          description: pa.amenity.description
+        amenities: amenities.map((amenity: any) => ({
+          id: amenity.id,
+          name: amenity.name,
+          icon: amenity.icon,
+          description: amenity.description
         })),
-        activities: activities.map(activity => ({
+        activities: parkActivities.map((activity: any) => ({
           id: activity.id,
           title: activity.title,
           description: activity.description || "",
@@ -431,7 +431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           instructorName: activity.instructorName || "",
           participantCount: activity.participantCount || 0
         })),
-        trees: trees.map(tree => ({
+        trees: parkTrees.map((tree: any) => ({
           id: tree.id,
           species: tree.species,
           condition: tree.condition || "bueno",
@@ -439,27 +439,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastMaintenance: tree.lastMaintenanceDate?.toISOString()
         })),
         assets: [], // Can be implemented when we have assets table
-        incidents: incidents.map(incident => ({
-          id: incident.id,
-          title: incident.title,
-          status: incident.status || "pendiente",
-          priority: incident.priority || "media",
-          createdAt: incident.createdAt.toISOString()
-        })),
-        documents: documents.map(doc => ({
-          id: doc.id,
-          title: doc.title,
-          type: doc.type || "documento",
-          uploadedAt: doc.createdAt.toISOString()
-        })),
-        images: images.map(img => ({
+        incidents: incidents,
+        documents: documents,
+        images: images.map((img: any) => ({
           id: img.id,
           imageUrl: img.imageUrl,
           caption: img.caption,
           isPrimary: img.isPrimary
         })),
         evaluations: [], // Can be implemented when we have evaluations
-        volunteers: volunteers.map(volunteer => ({
+        volunteers: parkVolunteers.map((volunteer: any) => ({
           id: volunteer.id,
           fullName: volunteer.fullName || "Sin nombre",
           skills: volunteer.skills || "Sin habilidades definidas",

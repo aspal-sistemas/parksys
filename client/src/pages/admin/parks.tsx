@@ -324,7 +324,8 @@ const AdminParks = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.location.href = `/admin/parks/${park.id}`}
+                      onClick={() => window.location.href = `/admin/parks/${park.id}/view`}
+                      title="Ver detalles del parque"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
