@@ -196,19 +196,19 @@ const AdminSidebar: React.FC = () => {
           </NavItem>
 
           <NavItem 
-            href="/admin/users" 
-            icon={<Users className="h-5 w-5" />}
-            active={location === '/admin/users'}
-          >
-            Usuarios
-          </NavItem>
-
-          <NavItem 
             href="/admin/permissions" 
             icon={<Shield className="h-5 w-5" />}
             active={location === '/admin/permissions'}
           >
             Permisos
+          </NavItem>
+
+          <NavItem 
+            href="/admin/users" 
+            icon={<Users className="h-5 w-5" />}
+            active={location === '/admin/users'}
+          >
+            Usuarios
           </NavItem>
           
           <ModuleNav 
