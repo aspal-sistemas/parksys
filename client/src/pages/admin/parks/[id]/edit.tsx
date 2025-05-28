@@ -184,13 +184,20 @@ export default function ParkEdit() {
       let municipalityId = park?.municipalityId || 1;
       
       if (municipalityName && municipalityName.trim() !== '') {
-        // Primero buscar si existe
-        const existingMunicipality = municipalities?.find((m: any) => 
-          m.name.toLowerCase().trim() === municipalityName.toLowerCase().trim()
-        );
+        // Buscar si existe por nombre exacto o por coincidencia parcial
+        const searchName = municipalityName.toLowerCase().trim();
+        const existingMunicipality = municipalities?.find((m: any) => {
+          const municipalityFullName = `${m.name}, ${m.state}`.toLowerCase();
+          const municipalityNameOnly = m.name.toLowerCase();
+          
+          return municipalityNameOnly === searchName || 
+                 municipalityFullName === searchName ||
+                 municipalityFullName.includes(searchName);
+        });
         
         if (existingMunicipality) {
           municipalityId = existingMunicipality.id;
+          console.log(`Municipio encontrado: ${existingMunicipality.name} (ID: ${existingMunicipality.id})`);
         } else {
           // Si no existe, crear uno nuevo
           try {
@@ -222,6 +229,12 @@ export default function ParkEdit() {
         openingHours: JSON.stringify(schedule),
         municipalityId: municipalityId,
       };
+      
+      console.log('Datos a enviar:', { 
+        municipalityName, 
+        municipalityId, 
+        originalMunicipalityId: park?.municipalityId 
+      });
       
       return await apiRequest(`/api/dev/parks/${id}`, {
         method: "PUT",
