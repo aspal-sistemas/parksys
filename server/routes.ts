@@ -518,17 +518,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const parkId = Number(req.params.id);
       
-      // Impedir que se modifique el municipalityId del parque
-      if (req.body.municipalityId !== undefined) {
-        const park = await storage.getPark(parkId);
-        if (park && park.municipalityId !== req.body.municipalityId) {
-          return res.status(403).json({ 
-            message: "No se permite cambiar el municipio de un parque existente" 
-          });
-        }
-      }
-      
-      // Partial validation is fine for updates
+      // Permitir actualización completa del parque incluyendo municipio
       const parkData = req.body;
       
       const updatedPark = await storage.updatePark(parkId, parkData);
