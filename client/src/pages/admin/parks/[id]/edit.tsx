@@ -19,14 +19,50 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 // Schema de validación para el formulario
 const parkEditSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
-  municipalityId: z.coerce.number().min(1, "Seleccione un municipio"),
+  municipalityName: z.string().min(1, "El municipio es requerido"),
   parkType: z.string().min(1, "Seleccione un tipo de parque"),
   address: z.string().min(1, "La dirección es requerida"),
   postalCode: z.string().optional(),
   contactPhone: z.string().optional(),
   contactEmail: z.string().email("Email inválido").or(z.literal("")),
   description: z.string().optional(),
-  openingHours: z.string().optional(),
+  schedule: z.object({
+    monday: z.object({
+      enabled: z.boolean(),
+      openTime: z.string().optional(),
+      closeTime: z.string().optional(),
+    }),
+    tuesday: z.object({
+      enabled: z.boolean(),
+      openTime: z.string().optional(),
+      closeTime: z.string().optional(),
+    }),
+    wednesday: z.object({
+      enabled: z.boolean(),
+      openTime: z.string().optional(),
+      closeTime: z.string().optional(),
+    }),
+    thursday: z.object({
+      enabled: z.boolean(),
+      openTime: z.string().optional(),
+      closeTime: z.string().optional(),
+    }),
+    friday: z.object({
+      enabled: z.boolean(),
+      openTime: z.string().optional(),
+      closeTime: z.string().optional(),
+    }),
+    saturday: z.object({
+      enabled: z.boolean(),
+      openTime: z.string().optional(),
+      closeTime: z.string().optional(),
+    }),
+    sunday: z.object({
+      enabled: z.boolean(),
+      openTime: z.string().optional(),
+      closeTime: z.string().optional(),
+    }),
+  }),
   latitude: z.string().optional(),
   longitude: z.string().optional(),
   area: z.string().optional(),
@@ -50,24 +86,27 @@ export default function ParkEdit() {
     enabled: !!id,
   });
 
-  // Consultar municipios
-  const { data: municipalities } = useQuery({
-    queryKey: ["/api/municipalities"],
-  });
-
   // Configurar formulario
   const form = useForm<ParkEditFormValues>({
     resolver: zodResolver(parkEditSchema),
     defaultValues: {
       name: "",
-      municipalityId: 0,
+      municipalityName: "",
       parkType: "",
       address: "",
       postalCode: "",
       contactPhone: "",
       contactEmail: "",
       description: "",
-      openingHours: "",
+      schedule: {
+        monday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+        tuesday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+        wednesday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+        thursday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+        friday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+        saturday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+        sunday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+      },
       latitude: "",
       longitude: "",
       area: "",
@@ -82,16 +121,37 @@ export default function ParkEdit() {
   // Cargar datos del parque en el formulario
   React.useEffect(() => {
     if (park) {
+      // Parsear horarios existentes o usar valores por defecto
+      const parseSchedule = (openingHours: string | null) => {
+        const defaultSchedule = {
+          monday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+          tuesday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+          wednesday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+          thursday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+          friday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+          saturday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+          sunday: { enabled: true, openTime: "06:00", closeTime: "22:00" },
+        };
+
+        if (!openingHours) return defaultSchedule;
+
+        try {
+          return JSON.parse(openingHours);
+        } catch {
+          return defaultSchedule;
+        }
+      };
+
       form.reset({
         name: park.name || "",
-        municipalityId: park.municipalityId || 0,
+        municipalityName: park.municipality?.name || "",
         parkType: park.parkType || "",
         address: park.address || "",
         postalCode: park.postalCode || "",
         contactPhone: park.contactPhone || "",
         contactEmail: park.contactEmail || "",
         description: park.description || "",
-        openingHours: park.openingHours || "",
+        schedule: parseSchedule(park.openingHours),
         latitude: park.latitude?.toString() || "",
         longitude: park.longitude?.toString() || "",
         area: park.area?.toString() || "",
@@ -107,9 +167,20 @@ export default function ParkEdit() {
   // Mutación para actualizar el parque
   const updateParkMutation = useMutation({
     mutationFn: async (values: ParkEditFormValues) => {
+      // Convertir el schedule a openingHours string
+      const dataToSend = {
+        ...values,
+        openingHours: JSON.stringify(values.schedule),
+        // Por ahora usamos el municipalityId existente del parque
+        municipalityId: park?.municipalityId || 1,
+      };
+      
+      // Remover el campo schedule y municipalityName del objeto final
+      const { schedule, municipalityName, ...finalData } = dataToSend;
+      
       return await apiRequest(`/api/parks/${id}`, {
         method: "PUT",
-        data: values,
+        data: finalData,
       });
     },
     onSuccess: () => {
@@ -239,30 +310,13 @@ export default function ParkEdit() {
 
                         <FormField
                           control={form.control}
-                          name="municipalityId"
+                          name="municipalityName"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Municipio</FormLabel>
-                              <Select
-                                onValueChange={(value) => field.onChange(parseInt(value))}
-                                value={field.value ? field.value.toString() : ""}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Seleccione un municipio" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {municipalities?.map((municipality: any) => (
-                                    <SelectItem
-                                      key={municipality.id}
-                                      value={municipality.id.toString()}
-                                    >
-                                      {municipality.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <FormControl>
+                                <Input placeholder="Ingrese el nombre del municipio" {...field} />
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
