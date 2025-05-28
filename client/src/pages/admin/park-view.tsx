@@ -160,7 +160,7 @@ export default function AdminParkView() {
             <h1 className="text-2xl font-bold text-gray-900">{park.name}</h1>
             <p className="text-gray-600 flex items-center gap-2 mt-1">
               <MapPin className="h-4 w-4" />
-              {park.location} • {park.municipality.name}
+              {park.location} • {park.municipality?.name || 'Municipio no encontrado'}
             </p>
           </div>
         </div>
