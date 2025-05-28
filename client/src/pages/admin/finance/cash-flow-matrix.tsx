@@ -197,57 +197,75 @@ export default function CashFlowMatrix() {
     }
   };
 
-  // Generar datos de la matriz usando las categorías del catálogo
-  const cashFlowData = React.useMemo(() => {
-    if (!incomeCategories || !expenseCategories) return null;
-    if (!Array.isArray(incomeCategories) || !Array.isArray(expenseCategories)) return null;
-
-    const categories = [];
-    const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-
-    // Agregar categorías de ingresos
-    incomeCategories.forEach((category: any) => {
-      categories.push({
-        name: category.name,
-        type: 'income',
-        monthlyValues: new Array(12).fill(0),
-        total: 0
+  // Cargar datos reales de la matriz de flujo de efectivo
+  const { data: cashFlowData, refetch: refetchCashFlow } = useQuery({
+    queryKey: ["/api/cash-flow-matrix", selectedYear, selectedPark],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        year: selectedYear.toString(),
+        ...(selectedPark !== "all" && { parkId: selectedPark })
       });
-    });
+      
+      const response = await fetch(`/api/cash-flow-matrix?${params}`);
+      if (!response.ok) {
+        throw new Error('Error al cargar datos de matriz de flujo');
+      }
+      return response.json();
+    },
+  });
 
-    // Agregar categorías de egresos
-    expenseCategories.forEach((category: any) => {
-      categories.push({
-        name: category.name,
-        type: 'expense',
-        monthlyValues: new Array(12).fill(0),
-        total: 0
+  // Función para refrescar datos
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refetchCashFlow();
+      setLastUpdated(new Date());
+      toast({
+        title: "✅ Datos actualizados",
+        description: "La matriz se ha actualizado con los datos más recientes",
+        variant: "default",
       });
-    });
+    } catch (error) {
+      toast({
+        title: "⚠️ Error al actualizar",
+        description: "No se pudieron cargar los datos. Intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
-    return {
-      year: selectedYear,
-      months,
-      categories,
-      summaries: {
-        monthly: {
-          income: new Array(12).fill(0),
-          expenses: new Array(12).fill(0),
-          net: new Array(12).fill(0)
-        },
-        quarterly: {
-          income: [0, 0, 0, 0],
-          expenses: [0, 0, 0, 0],
-          net: [0, 0, 0, 0]
-        },
-        semiannual: {
-          income: [0, 0],
-          expenses: [0, 0],
-          net: [0, 0]
-        },
-        annual: {
-          income: 0,
-          expenses: 0,
+  // Generar datos procesados para la vista
+  const processedData = React.useMemo(() => {
+    if (!cashFlowData) return null;
+    return cashFlowData;
+  }, [cashFlowData]);
+
+  // Datos para mostrar (usar cashFlowData directamente)
+  const displayData = cashFlowData || {
+    year: selectedYear,
+    months: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+    categories: [],
+    summaries: {
+      monthly: {
+        income: new Array(12).fill(0),
+        expenses: new Array(12).fill(0),
+        net: new Array(12).fill(0)
+      },
+      quarterly: {
+        income: [0, 0, 0, 0],
+        expenses: [0, 0, 0, 0],
+        net: [0, 0, 0, 0]
+      },
+      semiannual: {
+        income: [0, 0],
+        expenses: [0, 0],
+        net: [0, 0]
+      },
+      annual: {
+        income: 0,
+        expenses: 0,
           net: 0
         }
       }

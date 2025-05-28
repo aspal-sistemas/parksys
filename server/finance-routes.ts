@@ -686,6 +686,137 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
 
   // ============ FLUJO DE EFECTIVO ============
   
+  // Obtener matriz de flujo de efectivo con datos reales
+  apiRouter.get("/cash-flow-matrix", async (req: Request, res: Response) => {
+    try {
+      const year = parseInt(req.query.year as string) || new Date().getFullYear();
+      const parkId = req.query.parkId ? parseInt(req.query.parkId as string) : null;
+      
+      console.log(`=== MATRIZ DE FLUJO DE EFECTIVO PARA AÑO: ${year}, PARQUE: ${parkId || 'TODOS'} ===`);
+      
+      // Obtener categorías activas
+      const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+      const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+      
+      // Obtener ingresos reales agrupados por categoría y mes
+      const incomeConditions = [eq(actualIncomes.year, year)];
+      if (parkId) incomeConditions.push(eq(actualIncomes.parkId, parkId));
+      
+      const actualIncomesData = await db.select({
+        categoryId: actualIncomes.categoryId,
+        month: actualIncomes.month,
+        total: sum(actualIncomes.amount)
+      })
+      .from(actualIncomes)
+      .where(and(...incomeConditions))
+      .groupBy(actualIncomes.categoryId, actualIncomes.month);
+      
+      // Obtener egresos reales agrupados por categoría y mes
+      const expenseConditions = [eq(actualExpenses.year, year)];
+      if (parkId) expenseConditions.push(eq(actualExpenses.parkId, parkId));
+      
+      const actualExpensesData = await db.select({
+        categoryId: actualExpenses.categoryId,
+        month: actualExpenses.month,
+        total: sum(actualExpenses.amount)
+      })
+      .from(actualExpenses)
+      .where(and(...expenseConditions))
+      .groupBy(actualExpenses.categoryId, actualExpenses.month);
+      
+      console.log(`Ingresos reales encontrados: ${actualIncomesData.length} registros`);
+      console.log(`Egresos reales encontrados: ${actualExpensesData.length} registros`);
+      
+      const categories = [];
+      const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+      
+      // Procesar categorías de ingresos
+      for (const category of incomeCategsList) {
+        const monthlyValues = new Array(12).fill(0);
+        let total = 0;
+        
+        // Llenar con datos reales
+        actualIncomesData.forEach(income => {
+          if (income.categoryId === category.id) {
+            const monthIndex = income.month - 1;
+            const amount = parseFloat(income.total || '0');
+            monthlyValues[monthIndex] = amount;
+            total += amount;
+          }
+        });
+        
+        categories.push({
+          name: category.name,
+          type: 'income',
+          monthlyValues,
+          total
+        });
+      }
+      
+      // Procesar categorías de egresos
+      for (const category of expenseCategsList) {
+        const monthlyValues = new Array(12).fill(0);
+        let total = 0;
+        
+        // Llenar con datos reales
+        actualExpensesData.forEach(expense => {
+          if (expense.categoryId === category.id) {
+            const monthIndex = expense.month - 1;
+            const amount = parseFloat(expense.total || '0');
+            monthlyValues[monthIndex] = amount;
+            total += amount;
+          }
+        });
+        
+        categories.push({
+          name: category.name,
+          type: 'expense',
+          monthlyValues,
+          total
+        });
+      }
+      
+      // Calcular resúmenes
+      const monthlyIncomes = new Array(12).fill(0);
+      const monthlyExpenses = new Array(12).fill(0);
+      
+      categories.forEach(category => {
+        for (let i = 0; i < 12; i++) {
+          if (category.type === 'income') {
+            monthlyIncomes[i] += category.monthlyValues[i];
+          } else {
+            monthlyExpenses[i] += category.monthlyValues[i];
+          }
+        }
+      });
+      
+      const result = {
+        year,
+        months,
+        categories,
+        summaries: {
+          monthly: {
+            income: monthlyIncomes,
+            expenses: monthlyExpenses,
+            net: monthlyIncomes.map((income, i) => income - monthlyExpenses[i])
+          },
+          annual: {
+            income: monthlyIncomes.reduce((sum, val) => sum + val, 0),
+            expenses: monthlyExpenses.reduce((sum, val) => sum + val, 0),
+            net: monthlyIncomes.reduce((sum, val) => sum + val, 0) - monthlyExpenses.reduce((sum, val) => sum + val, 0)
+          }
+        }
+      };
+      
+      console.log(`Resultado: ${categories.length} categorías, ingresos anuales: ${result.summaries.annual.income}`);
+      res.json(result);
+      
+    } catch (error) {
+      console.error("Error al obtener matriz de flujo de efectivo:", error);
+      res.status(500).json({ message: "Error al obtener matriz de flujo de efectivo" });
+    }
+  });
+  
   // Obtener proyección de flujo de efectivo
   apiRouter.get("/cash-flow/:parkId/:year", async (req: Request, res: Response) => {
     try {
