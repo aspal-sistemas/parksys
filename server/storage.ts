@@ -45,6 +45,8 @@ export interface IStorage {
   getAssets(filters?: any): Promise<any[]>;
   getAsset(id: number): Promise<any>;
   removeAmenityFromPark(parkId: number, amenityId: number): Promise<boolean>;
+  isAmenityInUse(amenityId: number): Promise<boolean>;
+  deleteAmenity(amenityId: number): Promise<boolean>;
 }
 
 // Implementación simplificada
@@ -210,6 +212,34 @@ export class DatabaseStorage implements IStorage {
       return true;
     } catch (error) {
       console.error("Error al remover amenidad del parque:", error);
+      return false;
+    }
+  }
+
+  async isAmenityInUse(amenityId: number): Promise<boolean> {
+    try {
+      const [result] = await db.execute(sql`
+        SELECT COUNT(*) as count 
+        FROM park_amenities 
+        WHERE amenity_id = ${amenityId}
+      `);
+      const count = Number(result.count || 0);
+      console.log(`Amenidad ${amenityId} está siendo usada en ${count} parques`);
+      return count > 0;
+    } catch (error) {
+      console.error("Error al verificar uso de amenidad:", error);
+      return true; // Por seguridad, asumimos que está en uso si hay error
+    }
+  }
+
+  async deleteAmenity(amenityId: number): Promise<boolean> {
+    try {
+      const result = await db.delete(amenities)
+        .where(eq(amenities.id, amenityId));
+      console.log(`Amenidad ${amenityId} eliminada exitosamente`);
+      return true;
+    } catch (error) {
+      console.error("Error al eliminar amenidad:", error);
       return false;
     }
   }
