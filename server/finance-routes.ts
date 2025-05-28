@@ -1175,32 +1175,6 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   });
 
 }
-        }
-        
-        summaries.semiannual.income.push(semesterIncome);
-        summaries.semiannual.expenses.push(semesterExpenses);
-        summaries.semiannual.net.push(semesterIncome - semesterExpenses);
-      }
-      
-      // Calcular totales anuales
-      summaries.annual.income = summaries.monthly.income.reduce((sum, val) => sum + val, 0);
-      summaries.annual.expenses = summaries.monthly.expenses.reduce((sum, val) => sum + val, 0);
-      summaries.annual.net = summaries.annual.income - summaries.annual.expenses;
-      
-      const cashFlowData = {
-        year,
-        months,
-        categories,
-        summaries
-      };
-      
-      res.json(cashFlowData);
-      
-    } catch (error) {
-      console.error("Error al obtener datos de flujo de efectivo:", error);
-      res.status(500).json({ message: "Error al obtener datos de flujo de efectivo" });
-    }
-  });
 
   console.log("Rutas del módulo financiero registradas correctamente");
 }
