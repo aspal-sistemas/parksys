@@ -177,6 +177,7 @@ export default function ParkEdit() {
   // Mutación para actualizar el parque
   const updateParkMutation = useMutation({
     mutationFn: async (values: ParkEditFormValues) => {
+      console.log('MUTATION EJECUTÁNDOSE - valores recibidos:', values);
       // Convertir el schedule a openingHours string y preparar datos
       const { schedule, municipalityName, ...parkData } = values;
       
