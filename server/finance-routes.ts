@@ -1175,40 +1175,6 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   });
 
 }
-            monthlyIncome += category.monthlyValues[month];
-          } else {
-            monthlyExpenses += category.monthlyValues[month];
-          }
-        });
-        
-        summaries.monthly.income.push(monthlyIncome);
-        summaries.monthly.expenses.push(monthlyExpenses);
-        summaries.monthly.net.push(monthlyIncome - monthlyExpenses);
-      }
-      
-      // Calcular totales trimestrales
-      for (let quarter = 0; quarter < 4; quarter++) {
-        let quarterIncome = 0;
-        let quarterExpenses = 0;
-        
-        for (let month = quarter * 3; month < (quarter + 1) * 3; month++) {
-          quarterIncome += summaries.monthly.income[month];
-          quarterExpenses += summaries.monthly.expenses[month];
-        }
-        
-        summaries.quarterly.income.push(quarterIncome);
-        summaries.quarterly.expenses.push(quarterExpenses);
-        summaries.quarterly.net.push(quarterIncome - quarterExpenses);
-      }
-      
-      // Calcular totales semestrales
-      for (let semester = 0; semester < 2; semester++) {
-        let semesterIncome = 0;
-        let semesterExpenses = 0;
-        
-        for (let month = semester * 6; month < (semester + 1) * 6; month++) {
-          semesterIncome += summaries.monthly.income[month];
-          semesterExpenses += summaries.monthly.expenses[month];
         }
         
         summaries.semiannual.income.push(semesterIncome);
