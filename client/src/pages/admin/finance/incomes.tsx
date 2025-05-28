@@ -176,7 +176,9 @@ const IncomesPage = () => {
         throw new Error("Error al eliminar el ingreso");
       }
       
-      return response.json();
+      // Manejar respuesta vacía para DELETE
+      const text = await response.text();
+      return text ? JSON.parse(text) : {};
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/actual-incomes"] });
