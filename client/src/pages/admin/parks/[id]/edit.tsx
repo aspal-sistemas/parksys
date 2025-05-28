@@ -359,81 +359,22 @@ export default function ParkEdit() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Municipio</FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button
-                                      variant="outline"
-                                      role="combobox"
-                                      className={cn(
-                                        "w-full justify-between",
-                                        !field.value && "text-muted-foreground"
-                                      )}
-                                    >
-                                      {field.value || "Seleccione un municipio"}
-                                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-full p-0">
-                                  <Command>
-                                    <CommandInput 
-                                      placeholder="Buscar municipio..." 
-                                      onValueChange={(searchValue) => {
-                                        // Permitir escritura libre para municipios no existentes
-                                        if (searchValue && !municipalities?.find((m: any) => 
-                                          m.name.toLowerCase() === searchValue.toLowerCase()
-                                        )) {
-                                          field.onChange(searchValue);
-                                        }
-                                      }}
-                                    />
-                                    <CommandEmpty>
-                                      <div className="p-2">
-                                        <p className="text-sm text-muted-foreground mb-2">
-                                          No se encontró el municipio.
-                                        </p>
-                                        <Button 
-                                          size="sm" 
-                                          variant="outline"
-                                          onClick={() => {
-                                            const input = document.querySelector('[placeholder="Buscar municipio..."]') as HTMLInputElement;
-                                            if (input?.value) {
-                                              field.onChange(input.value);
-                                            }
-                                          }}
-                                        >
-                                          Usar "{document.querySelector('[placeholder="Buscar municipio..."]')?.value || ''}"
-                                        </Button>
-                                      </div>
-                                    </CommandEmpty>
-                                    <CommandGroup>
-                                      {municipalities?.map((municipality: any) => (
-                                        <CommandItem
-                                          key={municipality.id}
-                                          value={municipality.name}
-                                          onSelect={(currentValue) => {
-                                            field.onChange(currentValue);
-                                          }}
-                                        >
-                                          <Check
-                                            className={cn(
-                                              "mr-2 h-4 w-4",
-                                              municipality.name === field.value
-                                                ? "opacity-100"
-                                                : "opacity-0"
-                                            )}
-                                          />
-                                          {municipality.name}
-                                          <span className="ml-auto text-xs text-muted-foreground">
-                                            {municipality.state}
-                                          </span>
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </Command>
-                                </PopoverContent>
-                              </Popover>
+                              <div className="flex gap-2">
+                                <FormControl className="flex-1">
+                                  <Input 
+                                    placeholder="Ingrese el nombre del municipio" 
+                                    list="municipalities-list"
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <datalist id="municipalities-list">
+                                  {municipalities?.map((municipality: any) => (
+                                    <option key={municipality.id} value={municipality.name}>
+                                      {municipality.name}, {municipality.state}
+                                    </option>
+                                  ))}
+                                </datalist>
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
