@@ -168,20 +168,52 @@ export default function ParkEdit() {
   // Mutación para actualizar el parque
   const updateParkMutation = useMutation({
     mutationFn: async (values: ParkEditFormValues) => {
-      // Convertir el schedule a openingHours string
-      const dataToSend = {
-        ...values,
-        openingHours: JSON.stringify(values.schedule),
-        // Por ahora usamos el municipalityId existente del parque
-        municipalityId: park?.municipalityId || 1,
-      };
+      // Convertir el schedule a openingHours string y preparar datos
+      const { schedule, municipalityName, ...parkData } = values;
       
-      // Remover el campo schedule y municipalityName del objeto final
-      const { schedule, municipalityName, ...finalData } = dataToSend;
+      // Buscar o crear municipio basado en el nombre
+      let municipalityId = park?.municipalityId || 1;
+      
+      if (municipalityName && municipalityName.trim() !== '') {
+        try {
+          // Primero intentar buscar el municipio por nombre
+          const municipalitiesResponse = await apiRequest('/api/municipalities', {
+            method: 'GET',
+          });
+          
+          const existingMunicipality = municipalitiesResponse.find((m: any) => 
+            m.name.toLowerCase() === municipalityName.toLowerCase()
+          );
+          
+          if (existingMunicipality) {
+            municipalityId = existingMunicipality.id;
+          } else {
+            // Si no existe, crear un nuevo municipio
+            const newMunicipality = await apiRequest('/api/municipalities', {
+              method: 'POST',
+              data: {
+                name: municipalityName,
+                state: 'México', // Valor por defecto
+                active: true
+              }
+            });
+            municipalityId = newMunicipality.id;
+          }
+        } catch (error) {
+          console.error('Error al manejar municipio:', error);
+          // Si hay error, mantener el municipio existente
+        }
+      }
+      
+      const dataToSend = {
+        ...parkData,
+        openingHours: JSON.stringify(schedule),
+        municipalityId: municipalityId,
+      };
       
       return await apiRequest(`/api/parks/${id}`, {
         method: "PUT",
-        data: finalData,
+        data: dataToSend,
       });
     },
     onSuccess: () => {
