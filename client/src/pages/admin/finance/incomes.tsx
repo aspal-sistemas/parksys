@@ -536,8 +536,8 @@ const IncomesPage = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {Array.isArray(incomes) && incomes.length > 0 ? (
-                  incomes.map((income: any) => (
+                {Array.isArray(filteredIncomes) && filteredIncomes.length > 0 ? (
+                  filteredIncomes.map((income: any) => (
                     <div
                       key={income.id}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"

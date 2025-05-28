@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,13 @@ const ExpensesPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    concept: "",
+    year: "",
+    month: "",
+    date: "",
+    category: ""
+  });
   const { toast } = useToast();
 
   const { data: expenses, isLoading: expensesLoading } = useQuery({
@@ -178,6 +185,45 @@ const ExpensesPage = () => {
     });
     setIsEditDialogOpen(true);
   };
+
+  // Función para filtrar gastos
+  const filteredExpenses = useMemo(() => {
+    if (!expenses) return [];
+    
+    return expenses.filter((expense: any) => {
+      const expenseDate = new Date(expense.date);
+      const expenseYear = expenseDate.getFullYear().toString();
+      const expenseMonth = (expenseDate.getMonth() + 1).toString().padStart(2, '0');
+      const expenseDay = expenseDate.toISOString().split('T')[0];
+      
+      // Filtro por concepto
+      if (filters.concept && !expense.concept?.toLowerCase().includes(filters.concept.toLowerCase())) {
+        return false;
+      }
+      
+      // Filtro por año
+      if (filters.year && expenseYear !== filters.year) {
+        return false;
+      }
+      
+      // Filtro por mes
+      if (filters.month && expenseMonth !== filters.month) {
+        return false;
+      }
+      
+      // Filtro por fecha específica
+      if (filters.date && expenseDay !== filters.date) {
+        return false;
+      }
+      
+      // Filtro por categoría
+      if (filters.category && expense.categoryId.toString() !== filters.category) {
+        return false;
+      }
+      
+      return true;
+    });
+  }, [expenses, filters]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
@@ -376,6 +422,84 @@ const ExpensesPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Filtros */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Filtros de búsqueda</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div>
+                  <Input
+                    placeholder="Buscar por concepto..."
+                    value={filters.concept}
+                    onChange={(e) => setFilters(prev => ({ ...prev, concept: e.target.value }))}
+                    className="h-9"
+                  />
+                </div>
+                <div>
+                  <Input
+                    type="number"
+                    placeholder="Año (ej: 2024)"
+                    value={filters.year}
+                    onChange={(e) => setFilters(prev => ({ ...prev, year: e.target.value }))}
+                    className="h-9"
+                  />
+                </div>
+                <div>
+                  <select
+                    value={filters.month}
+                    onChange={(e) => setFilters(prev => ({ ...prev, month: e.target.value }))}
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                  >
+                    <option value="">Todos los meses</option>
+                    <option value="01">Enero</option>
+                    <option value="02">Febrero</option>
+                    <option value="03">Marzo</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Mayo</option>
+                    <option value="06">Junio</option>
+                    <option value="07">Julio</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                  </select>
+                </div>
+                <div>
+                  <Input
+                    type="date"
+                    value={filters.date}
+                    onChange={(e) => setFilters(prev => ({ ...prev, date: e.target.value }))}
+                    className="h-9"
+                  />
+                </div>
+                <div>
+                  <select
+                    value={filters.category}
+                    onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                  >
+                    <option value="">Todas las categorías</option>
+                    {expenseCategories?.map((category: any) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {(filters.concept || filters.year || filters.month || filters.date || filters.category) && (
+                <div className="mt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFilters({ concept: "", year: "", month: "", date: "", category: "" })}
+                  >
+                    Limpiar filtros
+                  </Button>
+                </div>
+              )}
+            </div>
+            
             {expensesLoading ? (
               <div className="text-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto" />
@@ -383,8 +507,8 @@ const ExpensesPage = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {Array.isArray(expenses) && expenses.length > 0 ? (
-                  expenses.map((expense: any) => (
+                {Array.isArray(filteredExpenses) && filteredExpenses.length > 0 ? (
+                  filteredExpenses.map((expense: any) => (
                     <div
                       key={expense.id}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
