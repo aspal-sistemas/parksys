@@ -6,8 +6,65 @@ import { activityRouter } from "./activityRoutes";
 import { testRouter } from "./testRoutes";
 import volunteerFieldRouter from "./volunteerFieldRoutes";
 import { skillsRouter } from "./update-skills-route";
+import { db } from "./db";
+import { incomeCategories, expenseCategories } from "../shared/finance-schema";
+import { eq } from "drizzle-orm";
 
 const app = express();
+
+// ENDPOINT PRIORITARIO: Cash Flow Matrix - ANTES de cualquier middleware
+app.get("/cash-flow-data/:year", async (req: Request, res: Response) => {
+  try {
+    const year = parseInt(req.params.year);
+    console.log(`=== CASH FLOW PRIORITARIO PARA AÑO: ${year} ===`);
+    
+    const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+    const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+    
+    console.log(`Categorías encontradas - Ingresos: ${incomeCategsList.length}, Egresos: ${expenseCategsList.length}`);
+    
+    const categories = [];
+    const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+    
+    for (const category of incomeCategsList) {
+      categories.push({
+        name: category.name,
+        type: 'income',
+        monthlyValues: new Array(12).fill(0),
+        total: 0
+      });
+    }
+    
+    for (const category of expenseCategsList) {
+      categories.push({
+        name: category.name,
+        type: 'expense',
+        monthlyValues: new Array(12).fill(0),
+        total: 0
+      });
+    }
+    
+    const result = {
+      year,
+      months,
+      categories,
+      summaries: {
+        monthly: { income: new Array(12).fill(0), expenses: new Array(12).fill(0), net: new Array(12).fill(0) },
+        quarterly: { income: [0, 0, 0, 0], expenses: [0, 0, 0, 0], net: [0, 0, 0, 0] },
+        semiannual: { income: [0, 0], expenses: [0, 0], net: [0, 0] },
+        annual: { income: 0, expenses: 0, net: 0 }
+      }
+    };
+    
+    console.log("=== CASH FLOW EXITOSO - TOTAL CATEGORÍAS:", result.categories.length, "===");
+    res.setHeader('Content-Type', 'application/json');
+    return res.json(result);
+  } catch (error) {
+    console.error("Error en cash flow prioritario:", error);
+    res.status(500).json({ message: "Error al obtener datos del catálogo" });
+  }
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -27,6 +84,78 @@ app.use('/api', skillsRouter);
 import { db } from "./db";
 import { incomeCategories, expenseCategories } from "../shared/finance-schema";
 import { eq } from "drizzle-orm";
+
+// Endpoint directo para Cash Flow Matrix - antes de cualquier middleware de Vite
+app.get("/cash-flow-data/:year", async (req: Request, res: Response) => {
+  try {
+    const year = parseInt(req.params.year);
+    console.log(`=== CASH FLOW DIRECTO PARA AÑO: ${year} ===`);
+    
+    // Obtener categorías del catálogo financiero
+    const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+    const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+    
+    console.log(`Ingresos: ${incomeCategsList.length}, Egresos: ${expenseCategsList.length}`);
+    
+    const categories = [];
+    const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+    
+    // Procesar categorías de ingresos del catálogo
+    for (const category of incomeCategsList) {
+      categories.push({
+        name: category.name,
+        type: 'income',
+        monthlyValues: new Array(12).fill(0),
+        total: 0
+      });
+    }
+    
+    // Procesar categorías de egresos del catálogo
+    for (const category of expenseCategsList) {
+      categories.push({
+        name: category.name,
+        type: 'expense',
+        monthlyValues: new Array(12).fill(0),
+        total: 0
+      });
+    }
+    
+    const result = {
+      year,
+      months,
+      categories,
+      summaries: {
+        monthly: {
+          income: new Array(12).fill(0),
+          expenses: new Array(12).fill(0),
+          net: new Array(12).fill(0)
+        },
+        quarterly: {
+          income: [0, 0, 0, 0],
+          expenses: [0, 0, 0, 0],
+          net: [0, 0, 0, 0]
+        },
+        semiannual: {
+          income: [0, 0],
+          expenses: [0, 0],
+          net: [0, 0]
+        },
+        annual: {
+          income: 0,
+          expenses: 0,
+          net: 0
+        }
+      }
+    };
+    
+    console.log("=== CASH FLOW EXITOSO ===");
+    res.setHeader('Content-Type', 'application/json');
+    res.json(result);
+  } catch (error) {
+    console.error("Error en cash flow directo:", error);
+    res.status(500).json({ message: "Error al obtener datos del catálogo" });
+  }
+});
 
 // Ruta directa para editar categorías de ingresos
 app.post("/direct/finance/income-categories/edit/:id", async (req: Request, res: Response) => {

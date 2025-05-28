@@ -102,23 +102,75 @@ export default function CashFlowMatrix() {
     }));
   };
 
-  // Obtener datos reales del catálogo financiero
-  const { data: cashFlowData, isLoading, error } = useQuery({
-    queryKey: ['/api/finance/cash-flow', selectedYear],
-    queryFn: async () => {
-      try {
-        const res = await fetch(`/api/finance/cash-flow/${selectedYear}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        const data = await res.json();
-        console.log('Datos recibidos del catálogo financiero:', data);
-        return data;
-      } catch (err) {
-        console.error('Error en la llamada al API:', err);
-        throw err;
-      }
-    },
-    staleTime: 5 * 60 * 1000, // Cache por 5 minutos
+  // Obtener categorías del catálogo financiero directamente
+  const { data: incomeCategories } = useQuery({
+    queryKey: ['/api/finance/income-categories'],
+    staleTime: 5 * 60 * 1000,
   });
+
+  const { data: expenseCategories } = useQuery({
+    queryKey: ['/api/finance/expense-categories'],
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Generar datos de la matriz usando las categorías del catálogo
+  const cashFlowData = React.useMemo(() => {
+    if (!incomeCategories || !expenseCategories) return null;
+
+    const categories = [];
+    const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+    // Agregar categorías de ingresos
+    incomeCategories.forEach((category: any) => {
+      categories.push({
+        name: category.name,
+        type: 'income',
+        monthlyValues: new Array(12).fill(0),
+        total: 0
+      });
+    });
+
+    // Agregar categorías de egresos
+    expenseCategories.forEach((category: any) => {
+      categories.push({
+        name: category.name,
+        type: 'expense',
+        monthlyValues: new Array(12).fill(0),
+        total: 0
+      });
+    });
+
+    return {
+      year: selectedYear,
+      months,
+      categories,
+      summaries: {
+        monthly: {
+          income: new Array(12).fill(0),
+          expenses: new Array(12).fill(0),
+          net: new Array(12).fill(0)
+        },
+        quarterly: {
+          income: [0, 0, 0, 0],
+          expenses: [0, 0, 0, 0],
+          net: [0, 0, 0, 0]
+        },
+        semiannual: {
+          income: [0, 0],
+          expenses: [0, 0],
+          net: [0, 0]
+        },
+        annual: {
+          income: 0,
+          expenses: 0,
+          net: 0
+        }
+      }
+    };
+  }, [incomeCategories, expenseCategories, selectedYear]);
+
+  const isLoading = !incomeCategories || !expenseCategories;
+  const error = null;
 
   // Datos por defecto mientras se cargan los reales
   const defaultCashFlowData: CashFlowMatrixData = {
