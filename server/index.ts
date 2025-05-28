@@ -219,6 +219,9 @@ app.post("/api/actual-incomes", async (req: Request, res: Response) => {
     incomeData.month = date.getMonth() + 1;
     incomeData.year = date.getFullYear();
     
+    // Agregar el campo concept que es requerido
+    incomeData.concept = incomeData.description || "Ingreso registrado";
+    
     console.log("Datos procesados:", incomeData);
     
     const [newIncome] = await db.insert(actualIncomes).values(incomeData).returning();
