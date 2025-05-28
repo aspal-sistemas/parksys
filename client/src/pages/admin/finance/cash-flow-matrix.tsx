@@ -135,36 +135,55 @@ export default function CashFlowMatrix() {
   const updateCategoriesFromCatalog = async () => {
     setIsRefreshing(true);
     try {
-      // Simular carga de las categorías más recientes del catálogo
-      const response = await fetch('/api/finance/income-categories');
-      const incomeData = await response.json();
-      
-      const expenseResponse = await fetch('/api/finance/expense-categories');
-      const expenseData = await expenseResponse.json();
+      // Intentar cargar desde las APIs del catálogo
+      const [incomeResponse, expenseResponse] = await Promise.all([
+        fetch('/api/income-categories').catch(() => null),
+        fetch('/api/expense-categories').catch(() => null)
+      ]);
 
-      if (Array.isArray(incomeData)) {
-        setIncomeCategories(incomeData.map((cat: any) => ({
-          name: cat.name,
-          code: cat.code
-        })));
+      let updated = false;
+
+      if (incomeResponse && incomeResponse.ok) {
+        const incomeData = await incomeResponse.json();
+        if (Array.isArray(incomeData) && incomeData.length > 0) {
+          setIncomeCategories(incomeData.map((cat: any) => ({
+            name: cat.name,
+            code: cat.code
+          })));
+          updated = true;
+        }
       }
 
-      if (Array.isArray(expenseData)) {
-        setExpenseCategories(expenseData.map((cat: any) => ({
-          name: cat.name,
-          code: cat.code
-        })));
+      if (expenseResponse && expenseResponse.ok) {
+        const expenseData = await expenseResponse.json();
+        if (Array.isArray(expenseData) && expenseData.length > 0) {
+          setExpenseCategories(expenseData.map((cat: any) => ({
+            name: cat.name,
+            code: cat.code
+          })));
+          updated = true;
+        }
       }
 
       setLastUpdated(new Date());
-      toast({
-        title: "✅ Categorías actualizadas",
-        description: "La matriz se ha sincronizado con tu catálogo financiero",
-      });
+      
+      if (updated) {
+        toast({
+          title: "✅ Categorías actualizadas",
+          description: "La matriz se ha sincronizado con tu catálogo financiero",
+        });
+      } else {
+        toast({
+          title: "⚠️ Sin cambios",
+          description: "No se encontraron actualizaciones en el catálogo",
+          variant: "default",
+        });
+      }
     } catch (error) {
+      console.error('Error al actualizar categorías:', error);
       toast({
         title: "⚠️ Error al actualizar",
-        description: "No se pudieron cargar las categorías del catálogo",
+        description: "No se pudieron cargar las categorías. Intenta de nuevo.",
         variant: "destructive",
       });
     } finally {
