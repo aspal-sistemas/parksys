@@ -298,12 +298,12 @@ export default function AdminParkView() {
         <TabsContent value="activities" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Actividades ({park.activities.length})</CardTitle>
+              <CardTitle>Actividades ({park.activities?.length || 0})</CardTitle>
               <CardDescription>Actividades programadas en este parque</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {park.activities.map((activity) => (
+                {park.activities?.map((activity) => (
                   <div key={activity.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h4 className="font-medium">{activity.title}</h4>
