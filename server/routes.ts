@@ -526,17 +526,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parkId = Number(req.params.id);
       console.log(`Eliminación de desarrollo para parque ${parkId}`);
       
-      // Eliminar relaciones en orden
-      await db.execute(sql`DELETE FROM park_amenities WHERE park_id = ${parkId}`);
-      await db.execute(sql`DELETE FROM park_images WHERE park_id = ${parkId}`);
-      await db.execute(sql`DELETE FROM activities WHERE park_id = ${parkId}`);
-      await db.execute(sql`DELETE FROM incidents WHERE park_id = ${parkId}`);
-      await db.execute(sql`DELETE FROM parks WHERE id = ${parkId}`);
+      // Usar una transacción con CASCADE para eliminar todo
+      await db.execute(sql`
+        BEGIN;
+        SET session_replication_role = replica;
+        DELETE FROM trees WHERE park_id = ${parkId};
+        DELETE FROM tree_inventory WHERE park_id = ${parkId};
+        DELETE FROM tree_maintenances WHERE park_id = ${parkId};
+        DELETE FROM park_amenities WHERE park_id = ${parkId};
+        DELETE FROM park_images WHERE park_id = ${parkId};
+        DELETE FROM activities WHERE park_id = ${parkId};
+        DELETE FROM incidents WHERE park_id = ${parkId};
+        DELETE FROM comments WHERE park_id = ${parkId};
+        DELETE FROM parks WHERE id = ${parkId};
+        SET session_replication_role = DEFAULT;
+        COMMIT;
+      `);
       
       console.log(`Parque ${parkId} eliminado exitosamente (desarrollo)`);
       res.status(200).json({ message: "Park deleted successfully" });
     } catch (error) {
       console.error("Error al eliminar parque:", error);
+      await db.execute(sql`ROLLBACK;`);
       res.status(500).json({ message: "Error deleting park", error: error.message });
     }
   });
