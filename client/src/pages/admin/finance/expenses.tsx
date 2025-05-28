@@ -103,8 +103,80 @@ const ExpensesPage = () => {
     },
   });
 
+  // Formulario de edición separado
+  const editForm = useForm<ExpenseFormValues>({
+    resolver: zodResolver(expenseSchema),
+    defaultValues: {
+      parkId: 3,
+      categoryId: 0,
+      concept: "",
+      amount: undefined,
+      description: "",
+      date: new Date().toISOString().split('T')[0],
+      vendor: "",
+      notes: "",
+    },
+  });
+
+  // Mutación para actualizar gastos
+  const updateExpenseMutation = useMutation({
+    mutationFn: async (data: ExpenseFormValues & { id: number }) => {
+      const response = await fetch(`/api/actual-expenses/${data.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al actualizar el gasto");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/actual-expenses"] });
+      setIsEditDialogOpen(false);
+      setEditingExpense(null);
+      editForm.reset();
+      toast({
+        title: "Gasto actualizado",
+        description: "El gasto se ha actualizado correctamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el gasto. Intenta nuevamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: ExpenseFormValues) => {
     createExpenseMutation.mutate(data);
+  };
+
+  const onEditSubmit = (data: ExpenseFormValues) => {
+    if (editingExpense) {
+      updateExpenseMutation.mutate({ ...data, id: editingExpense.id });
+    }
+  };
+
+  const handleEditExpense = (expense: any) => {
+    setEditingExpense(expense);
+    editForm.reset({
+      parkId: expense.parkId,
+      categoryId: expense.categoryId,
+      concept: expense.concept || "",
+      amount: expense.amount,
+      description: expense.description || "",
+      date: expense.date ? expense.date.split('T')[0] : new Date().toISOString().split('T')[0],
+      vendor: expense.vendor || "",
+      notes: expense.notes || "",
+    });
+    setIsEditDialogOpen(true);
   };
 
   const formatCurrency = (amount: number) => {
@@ -334,13 +406,23 @@ const ExpensesPage = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-red-600">
-                          -{formatCurrency(expense.amount)}
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-red-600">
+                            -{formatCurrency(expense.amount)}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {expense.categoryName || 'Sin categoría'}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {expense.categoryName || 'Sin categoría'}
-                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditExpense(expense)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   ))
