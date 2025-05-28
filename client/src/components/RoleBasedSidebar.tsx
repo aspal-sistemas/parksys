@@ -188,45 +188,52 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
     </ModuleNav>
 
     <ModuleNav 
-      title="Operaciones" 
-      icon={<MapPin className="h-5 w-5" />}
-      value="operations"
+      title="Parques" 
+      icon={<Map className="h-5 w-5" />}
+      value="parks"
     >
-
       <NavItem 
         href="/admin/parks" 
         icon={<Map className="h-5 w-5" />}
         active={location === '/admin/parks'}
       >
-        Parques
+        Gestión
       </NavItem>
+    </ModuleNav>
+
+    <ModuleNav 
+      title="Amenidades" 
+      icon={<Package className="h-5 w-5" />}
+      value="amenities"
+    >
       <NavItem 
         href="/admin/amenities" 
         icon={<Package className="h-5 w-5" />}
         active={location === '/admin/amenities'}
       >
-        Amenidades
+        Gestión
       </NavItem>
-      <ModuleNav 
-        title="Incidencias" 
-        icon={<AlertTriangle className="h-5 w-5" />}
-        value="incidents"
+    </ModuleNav>
+
+    <ModuleNav 
+      title="Incidencias" 
+      icon={<AlertTriangle className="h-5 w-5" />}
+      value="incidents"
+    >
+      <NavItem 
+        href="/admin/incidents" 
+        icon={<ClipboardList className="h-5 w-5" />}
+        active={location === '/admin/incidents'}
       >
-        <NavItem 
-          href="/admin/incidents" 
-          icon={<ClipboardList className="h-5 w-5" />}
-          active={location === '/admin/incidents'}
-        >
-          Listado
-        </NavItem>
-        <NavItem 
-          href="/admin/incidents/categories" 
-          icon={<Tag className="h-5 w-5" />}
-          active={location === '/admin/incidents/categories'}
-        >
-          Categorías
-        </NavItem>
-      </ModuleNav>
+        Listado
+      </NavItem>
+      <NavItem 
+        href="/admin/incidents/categories" 
+        icon={<Tag className="h-5 w-5" />}
+        active={location === '/admin/incidents/categories'}
+      >
+        Categorías
+      </NavItem>
     </ModuleNav>
 
     <ModuleNav 
