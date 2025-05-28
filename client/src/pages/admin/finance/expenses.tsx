@@ -581,7 +581,7 @@ const ExpensesPage = () => {
           </CardContent>
         </Card>
 
-        {/* Diálogo de edición */}
+        {/* Diálogo de edición simplificado */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
@@ -591,166 +591,117 @@ const ExpensesPage = () => {
               </DialogDescription>
             </DialogHeader>
 
-            <Form {...editForm}>
-              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-                <FormField
-                  control={editForm.control}
-                  name="parkId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Parque</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(Number(value))} 
-                        defaultValue={field.value.toString()}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar parque" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {parks.map((park: any) => (
-                            <SelectItem key={park.id} value={park.id.toString()}>
-                              {park.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            {editingExpense && (
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Parque</label>
+                  <select 
+                    value={editingExpense.parkId || 3}
+                    onChange={(e) => setEditingExpense({...editingExpense, parkId: Number(e.target.value)})}
+                    className="w-full mt-1 p-2 border rounded-md"
+                  >
+                    {Array.isArray(parks) && parks.map((park: any) => (
+                      <option key={park.id} value={park.id}>
+                        {park.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                <FormField
-                  control={editForm.control}
-                  name="categoryId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Categoría de Egreso</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(Number(value))} 
-                        defaultValue={field.value.toString()}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar categoría" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {expenseCategories.map((category: any) => (
-                            <SelectItem key={category.id} value={category.id.toString()}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div>
+                  <label className="text-sm font-medium">Categoría</label>
+                  <select 
+                    value={editingExpense.categoryId || 2}
+                    onChange={(e) => setEditingExpense({...editingExpense, categoryId: Number(e.target.value)})}
+                    className="w-full mt-1 p-2 border rounded-md"
+                  >
+                    {Array.isArray(expenseCategories) && expenseCategories.map((category: any) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                <FormField
-                  control={editForm.control}
-                  name="concept"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Concepto</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Descripción breve del gasto" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Monto</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            value={field.value || ""}
-                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={editForm.control}
-                    name="date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fecha</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                <div>
+                  <label className="text-sm font-medium">Concepto</label>
+                  <Input
+                    value={editingExpense.concept || ""}
+                    onChange={(e) => setEditingExpense({...editingExpense, concept: e.target.value})}
+                    placeholder="Descripción breve del gasto"
                   />
                 </div>
 
-                <FormField
-                  control={editForm.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Descripción detallada</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Descripción completa del gasto" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Monto</label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={editingExpense.amount || 0}
+                      onChange={(e) => setEditingExpense({...editingExpense, amount: parseFloat(e.target.value) || 0})}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Fecha</label>
+                    <Input
+                      type="date"
+                      value={editingExpense.date ? editingExpense.date.split('T')[0] : new Date().toISOString().split('T')[0]}
+                      onChange={(e) => setEditingExpense({...editingExpense, date: e.target.value})}
+                    />
+                  </div>
+                </div>
 
-                <FormField
-                  control={editForm.control}
-                  name="vendor"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Proveedor (opcional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nombre del proveedor" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div>
+                  <label className="text-sm font-medium">Descripción</label>
+                  <Input
+                    value={editingExpense.description || ""}
+                    onChange={(e) => setEditingExpense({...editingExpense, description: e.target.value})}
+                    placeholder="Descripción completa del gasto"
+                  />
+                </div>
 
-                <FormField
-                  control={editForm.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Notas adicionales</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Notas opcionales" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div>
+                  <label className="text-sm font-medium">Proveedor (opcional)</label>
+                  <Input
+                    value={editingExpense.vendor || ""}
+                    onChange={(e) => setEditingExpense({...editingExpense, vendor: e.target.value})}
+                    placeholder="Nombre del proveedor"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Notas</label>
+                  <Input
+                    value={editingExpense.notes || ""}
+                    onChange={(e) => setEditingExpense({...editingExpense, notes: e.target.value})}
+                    placeholder="Notas adicionales"
+                  />
+                </div>
 
                 <div className="flex justify-end gap-2">
                   <Button
-                    type="button"
                     variant="outline"
                     onClick={() => setIsEditDialogOpen(false)}
                   >
                     Cancelar
                   </Button>
                   <Button
-                    type="submit"
+                    onClick={() => {
+                      if (editingExpense) {
+                        updateExpenseMutation.mutate({
+                          id: editingExpense.id,
+                          parkId: editingExpense.parkId,
+                          categoryId: editingExpense.categoryId,
+                          concept: editingExpense.concept,
+                          amount: editingExpense.amount,
+                          description: editingExpense.description,
+                          date: editingExpense.date,
+                          vendor: editingExpense.vendor,
+                          notes: editingExpense.notes,
+                        });
+                      }
+                    }}
                     disabled={updateExpenseMutation.isPending}
                   >
                     {updateExpenseMutation.isPending && (
@@ -759,8 +710,8 @@ const ExpensesPage = () => {
                     Guardar Cambios
                   </Button>
                 </div>
-              </form>
-            </Form>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
