@@ -116,6 +116,7 @@ export default function CashFlowMatrix() {
   // Generar datos de la matriz usando las categorías del catálogo
   const cashFlowData = React.useMemo(() => {
     if (!incomeCategories || !expenseCategories) return null;
+    if (!Array.isArray(incomeCategories) || !Array.isArray(expenseCategories)) return null;
 
     const categories = [];
     const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -169,7 +170,7 @@ export default function CashFlowMatrix() {
     };
   }, [incomeCategories, expenseCategories, selectedYear]);
 
-  const isLoading = !incomeCategories || !expenseCategories;
+  const isLoading = !cashFlowData;
   const error = null;
 
   // Datos por defecto mientras se cargan los reales
