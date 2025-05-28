@@ -789,6 +789,58 @@ const IncomesPage = () => {
             </Form>
           </DialogContent>
         </Dialog>
+
+        {/* Diálogo de confirmación para eliminar */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Confirmar Eliminación</DialogTitle>
+              <DialogDescription>
+                ¿Estás seguro de que deseas eliminar este ingreso? Esta acción no se puede deshacer.
+              </DialogDescription>
+            </DialogHeader>
+
+            {incomeToDelete && (
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium">{incomeToDelete.description}</h4>
+                  <p className="text-sm text-gray-600">
+                    {incomeToDelete.source && `Fuente: ${incomeToDelete.source}`}
+                  </p>
+                  <p className="text-lg font-bold text-green-600 mt-2">
+                    {formatCurrency(incomeToDelete.amount)}
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsDeleteDialogOpen(false);
+                      setIncomeToDelete(null);
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      if (incomeToDelete) {
+                        deleteIncomeMutation.mutate(incomeToDelete.id);
+                      }
+                    }}
+                    disabled={deleteIncomeMutation.isPending}
+                  >
+                    {deleteIncomeMutation.isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Eliminar Ingreso
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
