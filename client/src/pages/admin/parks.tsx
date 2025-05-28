@@ -43,16 +43,6 @@ const AdminParks = () => {
   const [sortField, setSortField] = useState<string>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   
-  // Estado local para los parques (para gestionar la eliminación visual)
-  const [localParks, setLocalParks] = useState<Park[]>([]);
-  
-  // Mantener un registro de los IDs de parques eliminados por el usuario
-  const [deletedParkIds, setDeletedParkIds] = useState<number[]>(() => {
-    // Intentar obtener los parques eliminados de localStorage
-    const saved = localStorage.getItem('deletedParkIds');
-    return saved ? JSON.parse(saved) : [];
-  });
-
   // Fetch all parks
   const { 
     data: parks = [], 
@@ -61,12 +51,6 @@ const AdminParks = () => {
     refetch: refetchParks
   } = useQuery({
     queryKey: ['/api/parks'],
-    onSuccess: (data) => {
-      // Filtrar parques eliminados antes de actualizar el estado local
-      const filteredData = data.filter(park => !deletedParkIds.includes(park.id));
-      // Actualizar estado local cuando llegan nuevos datos
-      setLocalParks(filteredData);
-    }
   });
 
   // Fetch municipalities for filter
@@ -79,14 +63,14 @@ const AdminParks = () => {
 
   // Filter and sort parks
   const filteredParks = React.useMemo(() => {
-    return [...localParks].filter(park => {
+    return (parks as any[] || []).filter((park: any) => {
       // Apply search filter
       if (searchQuery && !park.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
       
       // Apply municipality filter
-      if (filterMunicipality && park.municipalityId.toString() !== filterMunicipality) {
+      if (filterMunicipality && park.municipalityId?.toString() !== filterMunicipality) {
         return false;
       }
       
@@ -113,11 +97,11 @@ const AdminParks = () => {
       // Default sort by name
       return a.name.localeCompare(b.name);
     });
-  }, [localParks, searchQuery, filterMunicipality, filterParkType, sortField, sortDirection]);
+  }, [parks, searchQuery, filterMunicipality, filterParkType, sortField, sortDirection]);
 
   // Get municipality name by ID
   const getMunicipalityName = (municipalityId: number) => {
-    const municipality = municipalities.find(m => m.id === municipalityId);
+    const municipality = (municipalities as any[])?.find((m: any) => m.id === municipalityId);
     return municipality ? municipality.name : 'Desconocido';
   };
 
@@ -140,15 +124,16 @@ const AdminParks = () => {
     if (!parkToDelete) return;
     
     try {
-      // Actualizamos el estado local para eliminar el parque
-      setLocalParks(prevParks => prevParks.filter(park => park.id !== parkToDelete.id));
-      
-      // Actualizamos la lista de parques eliminados
-      const updatedDeletedIds = [...deletedParkIds, parkToDelete.id];
-      setDeletedParkIds(updatedDeletedIds);
-      
-      // Guardamos en localStorage para persistencia
-      localStorage.setItem('deletedParkIds', JSON.stringify(updatedDeletedIds));
+      // Hacer la petición de eliminación al servidor
+      await fetch(`/api/parks/${parkToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      // Actualizar la cache invalidando la query
+      await refetchParks();
       
       // Mostramos un mensaje de éxito
       toast({
