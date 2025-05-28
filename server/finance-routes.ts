@@ -699,6 +699,34 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     }
   });
 
+  // Actualizar egreso real
+  apiRouter.put("/actual-expenses/:id", async (req: Request, res: Response) => {
+    try {
+      const expenseId = parseInt(req.params.id);
+      const expenseData = req.body;
+      
+      // Extraer mes y año de la fecha
+      const date = new Date(expenseData.date);
+      expenseData.month = date.getMonth() + 1;
+      expenseData.year = date.getFullYear();
+      
+      const [updatedExpense] = await db
+        .update(actualExpenses)
+        .set(expenseData)
+        .where(eq(actualExpenses.id, expenseId))
+        .returning();
+        
+      if (!updatedExpense) {
+        return res.status(404).json({ message: "Egreso no encontrado" });
+      }
+      
+      res.json(updatedExpense);
+    } catch (error) {
+      console.error("Error al actualizar egreso:", error);
+      res.status(500).json({ message: "Error al actualizar egreso" });
+    }
+  });
+
   // ============ FLUJO DE EFECTIVO ============
   
   // Obtener matriz de flujo de efectivo con datos reales
