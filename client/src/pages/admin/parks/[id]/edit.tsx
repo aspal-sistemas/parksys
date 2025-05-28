@@ -263,6 +263,7 @@ export default function ParkEdit() {
   });
 
   const onSubmit = (values: ParkEditFormValues) => {
+    console.log('FORMULARIO ENVIADO - onSubmit ejecutado con valores:', values);
     updateParkMutation.mutate(values);
   };
 
