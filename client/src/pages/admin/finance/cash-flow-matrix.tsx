@@ -114,7 +114,7 @@ export default function CashFlowMatrix() {
     { name: "Alquiler de Espacios", code: "ING004" },
     { name: "Multas y Sanciones", code: "ING005" },
     { name: "Donaciones", code: "ING006" },
-    { name: "Subsidios Gubernamentales", code: "ING007" },
+    { name: "Subsidio", code: "ING007" },
     { name: "Servicios Educativos", code: "ING008" },
     { name: "Estacionamiento", code: "ING009" },
     { name: "Otros Ingresos", code: "ING010" },
