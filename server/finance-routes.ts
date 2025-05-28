@@ -644,11 +644,9 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
         isPaid: actualExpenses.isPaid,
         paymentDate: actualExpenses.paymentDate,
         categoryName: expenseCategories.name,
-        subcategoryName: expenseSubcategories.name,
       })
       .from(actualExpenses)
-      .leftJoin(expenseCategories, eq(actualExpenses.categoryId, expenseCategories.id))
-      .leftJoin(expenseSubcategories, eq(actualExpenses.subcategoryId, expenseSubcategories.id));
+      .leftJoin(expenseCategories, eq(actualExpenses.categoryId, expenseCategories.id));
       
       const conditions = [];
       if (parkId) conditions.push(eq(actualExpenses.parkId, parseInt(parkId as string)));
