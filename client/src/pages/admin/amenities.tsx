@@ -605,7 +605,7 @@ const AdminAmenitiesPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {amenities?.map((amenity: Amenity) => (
+            {filteredAndSortedAmenities?.map((amenity: Amenity) => (
               <TableRow key={amenity.id}>
                 <TableCell>
                   <AmenityIcon name={amenity.icon || 'park'} size={24} />
