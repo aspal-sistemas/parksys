@@ -341,6 +341,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint optimizado para obtener parques con sus amenidades para filtrado
+  apiRouter.get("/parks-with-amenities", async (_req: Request, res: Response) => {
+    try {
+      const result = await pool.query(`
+        SELECT 
+          p.id as park_id,
+          COALESCE(
+            json_agg(
+              CASE WHEN pa.amenity_id IS NOT NULL 
+              THEN pa.amenity_id 
+              ELSE NULL END
+            ) FILTER (WHERE pa.amenity_id IS NOT NULL),
+            '[]'::json
+          ) as amenity_ids
+        FROM parks p
+        LEFT JOIN park_amenities pa ON p.id = pa.park_id
+        GROUP BY p.id
+        ORDER BY p.id
+      `);
+      
+      const parkAmenities = result.rows.map(row => ({
+        parkId: row.park_id,
+        amenityIds: Array.isArray(row.amenity_ids) ? row.amenity_ids : []
+      }));
+      
+      res.json(parkAmenities);
+    } catch (error) {
+      console.error("Error al obtener parques con amenidades:", error);
+      res.status(500).json({ 
+        message: "Error al obtener parques con amenidades",
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      });
+    }
+  });
+
   // Ruta para obtener estadísticas del dashboard de parques (DEBE IR ANTES DE /parks/:id)
   apiRouter.get("/parks/dashboard", async (_req: Request, res: Response) => {
     try {

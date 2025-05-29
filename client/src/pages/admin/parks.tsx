@@ -77,25 +77,11 @@ const AdminParks = () => {
     queryKey: ['/api/amenities'],
   });
 
-  // Fetch parks with amenities for filtering
+  // Fetch parks with amenities for filtering using optimized endpoint
   const { 
     data: parkAmenities = [] 
   } = useQuery({
     queryKey: ['/api/parks-with-amenities'],
-    queryFn: async () => {
-      const parksData = await fetch('/api/parks').then(res => res.json());
-      const parkAmenitiesData = await Promise.all(
-        parksData.map(async (park: Park) => {
-          const amenitiesResponse = await fetch(`/api/parks/${park.id}/amenities`);
-          const parkAmenities = await amenitiesResponse.json();
-          return {
-            parkId: park.id,
-            amenityIds: parkAmenities.map((a: any) => a.id)
-          };
-        })
-      );
-      return parkAmenitiesData;
-    },
   });
 
   // Function to fetch park dependencies
