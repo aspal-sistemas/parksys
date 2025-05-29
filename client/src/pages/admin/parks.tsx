@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ interface ParkDependencies {
 const AdminParks = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [location] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMunicipality, setFilterMunicipality] = useState<string>('all');
   const [filterParkType, setFilterParkType] = useState<string>('all');
@@ -50,6 +52,15 @@ const AdminParks = () => {
   const [parkToDelete, setParkToDelete] = useState<Park | null>(null);
   const [parkDependencies, setParkDependencies] = useState<ParkDependencies | null>(null);
   const [loadingDependencies, setLoadingDependencies] = useState(false);
+
+  // Effect to handle URL parameters for amenity filtering
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.split('?')[1] || '');
+    const amenityParam = urlParams.get('amenity');
+    if (amenityParam) {
+      setFilterAmenity(amenityParam);
+    }
+  }, [location]);
 
   // Fetch all parks with automatic refresh
   const { 
