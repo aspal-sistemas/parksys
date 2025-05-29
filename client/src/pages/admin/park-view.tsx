@@ -371,9 +371,18 @@ export default function AdminParkView() {
                 {displayPark.area && (
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-gray-700">Área:</span>
+                      <span className="font-medium text-gray-700">Superficie Total:</span>
                     </div>
                     <p className="text-gray-600">{displayPark.area} m²</p>
+                  </div>
+                )}
+
+                {displayPark.greenArea && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-gray-700">Área Permeable:</span>
+                    </div>
+                    <p className="text-gray-600">{displayPark.greenArea} m²</p>
                   </div>
                 )}
 

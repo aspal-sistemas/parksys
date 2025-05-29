@@ -112,7 +112,7 @@ const ParksDashboard = () => {
   const mexicoCenter: [number, number] = [19.4326, -99.1332]; // Ciudad de México
 
   return (
-    <AdminLayout title="Dashboard de Parques">
+    <AdminLayout title="Resumen operativo">
       <div className="space-y-6">
         {/* Estadísticas principales */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -139,7 +139,22 @@ const ParksDashboard = () => {
                 {data.totalSurface ? `${(data.totalSurface / 10000).toFixed(1)} ha` : 'N/A'}
               </div>
               <p className="text-xs text-muted-foreground">
-                Área verde: {data.totalGreenArea ? `${(data.totalGreenArea / 10000).toFixed(1)} ha` : 'N/A'}
+                Superficie total de parques
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Área Permeable</CardTitle>
+              <Trees className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {data.totalGreenArea ? `${(data.totalGreenArea / 10000).toFixed(1)} ha` : 'N/A'}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Superficie permeable total
               </p>
             </CardContent>
           </Card>
