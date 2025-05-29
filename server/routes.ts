@@ -747,7 +747,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const amenityStats = amenities.map((amenity: any) => {
         const parksWithThisAmenity = parks.filter((park: any) => 
-          park.amenities?.some((a: any) => a.id === amenity.id)
+          park.amenities?.some((a: any) => a.amenityId === amenity.id)
         );
         return {
           ...amenity,
