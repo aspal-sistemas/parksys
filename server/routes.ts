@@ -902,7 +902,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/parks/:id/amenities", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
+      console.log(`Obteniendo amenidades para parque ${parkId}`);
       const amenities = await storage.getParkAmenities(parkId);
+      console.log(`Resultado: ${amenities.length} amenidades encontradas`);
       res.json(amenities);
     } catch (error) {
       console.error("Error en endpoint de amenidades:", error);

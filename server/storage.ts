@@ -583,7 +583,7 @@ export class DatabaseStorage implements IStorage {
   async getParkAmenities(parkId: number): Promise<any[]> {
     try {
       // Usar consulta SQL directa para evitar problemas con relaciones de Drizzle
-      const result = await pool.query(`
+      const result = await db.execute(sql`
         SELECT 
           pa.id,
           pa.park_id as "parkId",
@@ -594,10 +594,11 @@ export class DatabaseStorage implements IStorage {
           a.icon as "amenityIcon"
         FROM park_amenities pa
         INNER JOIN amenities a ON pa.amenity_id = a.id
-        WHERE pa.park_id = $1
+        WHERE pa.park_id = ${parkId}
         ORDER BY a.name
-      `, [parkId]);
+      `);
       
+      console.log(`Amenidades encontradas para parque ${parkId}:`, result.rows.length);
       return result.rows || [];
     } catch (error) {
       console.error(`Error al obtener amenidades del parque ${parkId}:`, error);
