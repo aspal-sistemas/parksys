@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
@@ -566,33 +567,7 @@ export default function AdminParkView() {
         </TabsContent>
 
         <TabsContent value="amenities" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Amenidades del Parque ({park.amenities?.length || 0})</CardTitle>
-              <CardDescription>Servicios e infraestructura disponible</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {park.amenities?.map((amenity: any) => (
-                  <div key={amenity.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                    <div className="text-2xl">{getIconSymbol(amenity.amenityIcon || amenity.icon)}</div>
-                    <div>
-                      <h4 className="font-medium">{amenity.amenityName || amenity.name}</h4>
-                      {amenity.quantity && amenity.quantity > 1 && (
-                        <p className="text-sm text-gray-500">Cantidad: {amenity.quantity}</p>
-                      )}
-                      {amenity.status && (
-                        <p className="text-sm text-gray-500">Estado: {amenity.status}</p>
-                      )}
-                      {amenity.description && (
-                        <p className="text-sm text-gray-600">{amenity.description}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <AmenitiesTable parkId={parseInt(id || "0")} />
         </TabsContent>
 
         <TabsContent value="activities" className="space-y-4">
@@ -799,3 +774,93 @@ export default function AdminParkView() {
     </div>
   );
 }
+
+// Component for displaying amenities in a table format
+interface AmenitiesTableProps {
+  parkId: number;
+}
+
+const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
+  const { data: amenities, isLoading, error } = useQuery({
+    queryKey: [`/api/parks/${parkId}/amenities`],
+  });
+
+  const amenitiesArray = Array.isArray(amenities) ? amenities : [];
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Amenidades del Parque</CardTitle>
+          <CardDescription>Cargando servicios e infraestructura...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center p-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Amenidades del Parque</CardTitle>
+          <CardDescription>Error al cargar las amenidades</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-red-500">No se pudieron cargar las amenidades del parque.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Amenidades del Parque ({amenities?.length || 0})</CardTitle>
+        <CardDescription>Servicios e infraestructura disponible</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {amenities && amenities.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Amenidad</TableHead>
+                <TableHead>Cantidad</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Descripción</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {amenities.map((amenity: any) => (
+                <TableRow key={amenity.id}>
+                  <TableCell className="flex items-center gap-2">
+                    <span className="text-xl">{getIconSymbol(amenity.amenityIcon)}</span>
+                    <span className="font-medium">{amenity.amenityName}</span>
+                  </TableCell>
+                  <TableCell>{amenity.quantity || 1}</TableCell>
+                  <TableCell>
+                    <Badge 
+                      variant={amenity.status === 'Activa' ? 'default' : 
+                               amenity.status === 'Mantenimiento' ? 'secondary' : 'destructive'}
+                    >
+                      {amenity.status || 'Activa'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-gray-600">
+                    {amenity.description || '-'}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <p className="text-gray-500 italic">No hay amenidades registradas para este parque.</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
