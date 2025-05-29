@@ -110,6 +110,15 @@ export default function ParkEdit() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
+  // State for amenity management
+  const [selectedAmenity, setSelectedAmenity] = React.useState<number | null>(null);
+  const [newAmenityData, setNewAmenityData] = React.useState({
+    moduleName: '',
+    surfaceArea: '',
+    locationLatitude: '',
+    locationLongitude: ''
+  });
+
   // Consultar datos del parque
   const { data: park, isLoading: isLoadingPark } = useQuery({
     queryKey: [`/api/parks/${id}`],
@@ -938,33 +947,101 @@ export default function ParkEdit() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      {/* Selector para agregar nueva amenidad */}
+                      {/* Formulario para agregar nueva amenidad */}
                       <div className="border rounded-lg p-4 bg-gray-50">
                         <h4 className="font-medium mb-3 flex items-center gap-2">
                           <Plus className="h-4 w-4" />
                           Agregar Amenidad
                         </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <Select onValueChange={(value) => {
-                            const amenityId = parseInt(value);
-                            if (amenityId && (!Array.isArray(parkAmenities) || !parkAmenities.some((pa: any) => pa.amenityId === amenityId))) {
-                              addAmenityMutation.mutate({ amenityId });
-                            }
-                          }}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar amenidad" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {availableAmenities?.filter((amenity: any) => 
-                                !Array.isArray(parkAmenities) || !parkAmenities.some((pa: any) => pa.amenityId === amenity.id)
-                              ).map((amenity: any) => (
-                                <SelectItem key={amenity.id} value={amenity.id.toString()}>
-                                  {amenity.icon && <span className="mr-2">{getIconSymbol(amenity.icon)}</span>}
-                                  {amenity.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Amenidad</label>
+                            <Select onValueChange={(value) => {
+                              const amenityId = parseInt(value);
+                              if (amenityId) {
+                                setSelectedAmenity(amenityId);
+                              }
+                            }}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Seleccionar amenidad" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {availableAmenities?.map((amenity: any) => (
+                                  <SelectItem key={amenity.id} value={amenity.id.toString()}>
+                                    {amenity.icon && <span className="mr-2">{getIconSymbol(amenity.icon)}</span>}
+                                    {amenity.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Nombre del Módulo</label>
+                            <Input 
+                              placeholder="Ej: Módulo A"
+                              value={newAmenityData.moduleName}
+                              onChange={(e) => setNewAmenityData(prev => ({ ...prev, moduleName: e.target.value }))}
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Superficie (m²)</label>
+                            <Input 
+                              type="number"
+                              placeholder="0.00"
+                              value={newAmenityData.surfaceArea}
+                              onChange={(e) => setNewAmenityData(prev => ({ ...prev, surfaceArea: e.target.value }))}
+                            />
+                          </div>
+                          
+                          <div className="flex items-end">
+                            <Button 
+                              type="button"
+                              onClick={() => {
+                                if (selectedAmenity) {
+                                  addAmenityMutation.mutate({ 
+                                    amenityId: selectedAmenity,
+                                    moduleName: newAmenityData.moduleName,
+                                    surfaceArea: newAmenityData.surfaceArea ? parseFloat(newAmenityData.surfaceArea) : undefined,
+                                    locationLatitude: newAmenityData.locationLatitude ? parseFloat(newAmenityData.locationLatitude) : undefined,
+                                    locationLongitude: newAmenityData.locationLongitude ? parseFloat(newAmenityData.locationLongitude) : undefined
+                                  });
+                                  setSelectedAmenity(null);
+                                  setNewAmenityData({ moduleName: '', surfaceArea: '', locationLatitude: '', locationLongitude: '' });
+                                }
+                              }}
+                              disabled={!selectedAmenity || addAmenityMutation.isPending}
+                              className="w-full"
+                            >
+                              {addAmenityMutation.isPending ? 'Agregando...' : 'Agregar'}
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Campos adicionales para coordenadas */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Latitud (opcional)</label>
+                            <Input 
+                              type="number"
+                              step="0.000001"
+                              placeholder="19.432608"
+                              value={newAmenityData.locationLatitude}
+                              onChange={(e) => setNewAmenityData(prev => ({ ...prev, locationLatitude: e.target.value }))}
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Longitud (opcional)</label>
+                            <Input 
+                              type="number"
+                              step="0.000001"
+                              placeholder="-99.133209"
+                              value={newAmenityData.locationLongitude}
+                              onChange={(e) => setNewAmenityData(prev => ({ ...prev, locationLongitude: e.target.value }))}
+                            />
+                          </div>
                         </div>
                       </div>
 
@@ -983,8 +1060,14 @@ export default function ParkEdit() {
                                     )}
                                     <div>
                                       <p className="font-medium">{amenity?.name || 'Amenidad desconocida'}</p>
-                                      {parkAmenity.quantity > 1 && (
-                                        <p className="text-sm text-gray-500">Cantidad: {parkAmenity.quantity}</p>
+                                      {parkAmenity.moduleName && (
+                                        <p className="text-sm text-gray-500">Módulo: {parkAmenity.moduleName}</p>
+                                      )}
+                                      {parkAmenity.surfaceArea && (
+                                        <p className="text-sm text-gray-500">Superficie: {parseFloat(parkAmenity.surfaceArea).toLocaleString()} m²</p>
+                                      )}
+                                      {parkAmenity.locationLatitude && parkAmenity.locationLongitude && (
+                                        <p className="text-sm text-gray-500">📍 {parseFloat(parkAmenity.locationLatitude).toFixed(6)}, {parseFloat(parkAmenity.locationLongitude).toFixed(6)}</p>
                                       )}
                                       {parkAmenity.status && (
                                         <p className="text-sm text-gray-500">Estado: {parkAmenity.status}</p>

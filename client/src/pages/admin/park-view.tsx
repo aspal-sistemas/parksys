@@ -829,9 +829,9 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
             <TableHeader>
               <TableRow>
                 <TableHead>Amenidad</TableHead>
-                <TableHead>Cantidad</TableHead>
+                <TableHead>Nombre del Módulo</TableHead>
+                <TableHead>Superficie (m²)</TableHead>
                 <TableHead>Estado</TableHead>
-                <TableHead>Descripción</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -841,7 +841,17 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
                     <span className="text-xl">{getIconSymbol(amenity.amenityIcon)}</span>
                     <span className="font-medium">{amenity.amenityName}</span>
                   </TableCell>
-                  <TableCell>{amenity.quantity || 1}</TableCell>
+                  <TableCell>
+                    <span className="font-medium">{amenity.moduleName || '-'}</span>
+                    {amenity.locationLatitude && amenity.locationLongitude && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        📍 {parseFloat(amenity.locationLatitude).toFixed(6)}, {parseFloat(amenity.locationLongitude).toFixed(6)}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {amenity.surfaceArea ? `${parseFloat(amenity.surfaceArea).toLocaleString()} m²` : '-'}
+                  </TableCell>
                   <TableCell>
                     <Badge 
                       variant={amenity.status === 'Activa' ? 'default' : 
@@ -849,9 +859,6 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
                     >
                       {amenity.status || 'Activa'}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-gray-600">
-                    {amenity.description || '-'}
                   </TableCell>
                 </TableRow>
               ))}
