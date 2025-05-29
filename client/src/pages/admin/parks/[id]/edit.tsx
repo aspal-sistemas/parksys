@@ -16,7 +16,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Save, Building, MapPin, Phone, Mail, Globe, Clock, Info } from "lucide-react";
+import { ArrowLeft, Save, Building, MapPin, Phone, Mail, Globe, Clock, Info, Wrench, Plus, X } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -175,6 +175,18 @@ export default function ParkEdit() {
     queryKey: ["/api/municipalities"],
   });
 
+  // Consultar amenidades disponibles
+  const { data: availableAmenities } = useQuery({
+    queryKey: ["/api/amenities"],
+  });
+
+  // Consultar amenidades actuales del parque
+  const { data: parkAmenities, refetch: refetchParkAmenities } = useQuery({
+    queryKey: ["/api/parks", id, "amenities"],
+    queryFn: () => apiRequest(`/api/parks/${id}/amenities`),
+    enabled: !!id,
+  });
+
   // Mutación para actualizar el parque
   const updateParkMutation = useMutation({
     mutationFn: async (values: ParkEditFormValues) => {
@@ -263,6 +275,53 @@ export default function ParkEdit() {
     },
   });
 
+  // Mutación para agregar amenidad al parque
+  const addAmenityMutation = useMutation({
+    mutationFn: async ({ amenityId, quantity = 1, description = "" }: { amenityId: number; quantity?: number; description?: string }) => {
+      return await apiRequest(`/api/parks/${id}/amenities`, {
+        method: 'POST',
+        data: { amenityId, quantity, description }
+      });
+    },
+    onSuccess: () => {
+      refetchParkAmenities();
+      toast({
+        title: "Amenidad agregada",
+        description: "La amenidad se agregó correctamente al parque.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: `Error al agregar amenidad: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutación para quitar amenidad del parque
+  const removeAmenityMutation = useMutation({
+    mutationFn: async (amenityId: number) => {
+      return await apiRequest(`/api/parks/${id}/amenities/${amenityId}`, {
+        method: 'DELETE'
+      });
+    },
+    onSuccess: () => {
+      refetchParkAmenities();
+      toast({
+        title: "Amenidad removida",
+        description: "La amenidad se removió correctamente del parque.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: `Error al remover amenidad: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (values: ParkEditFormValues) => {
     console.log('FORMULARIO ENVIADO - onSubmit ejecutado con valores:', values);
     updateParkMutation.mutate(values);
@@ -328,7 +387,7 @@ export default function ParkEdit() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <Tabs defaultValue="basic" className="space-y-6">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="basic" className="flex items-center gap-2">
                     <Info className="h-4 w-4" />
                     Información Básica
@@ -340,6 +399,10 @@ export default function ParkEdit() {
                   <TabsTrigger value="characteristics" className="flex items-center gap-2">
                     <Building className="h-4 w-4" />
                     Características
+                  </TabsTrigger>
+                  <TabsTrigger value="amenities" className="flex items-center gap-2">
+                    <Wrench className="h-4 w-4" />
+                    Amenidades
                   </TabsTrigger>
                 </TabsList>
 
@@ -792,6 +855,97 @@ export default function ParkEdit() {
                             </FormItem>
                           )}
                         />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Amenidades */}
+                <TabsContent value="amenities" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Wrench className="h-5 w-5" />
+                        Gestión de Amenidades
+                      </CardTitle>
+                      <CardDescription>
+                        Agregar o quitar amenidades disponibles en este parque
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Selector para agregar nueva amenidad */}
+                      <div className="border rounded-lg p-4 bg-gray-50">
+                        <h4 className="font-medium mb-3 flex items-center gap-2">
+                          <Plus className="h-4 w-4" />
+                          Agregar Amenidad
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <Select onValueChange={(value) => {
+                            const amenityId = parseInt(value);
+                            if (amenityId && !parkAmenities?.some((pa: any) => pa.amenityId === amenityId)) {
+                              addAmenityMutation.mutate({ amenityId });
+                            }
+                          }}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar amenidad" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableAmenities?.filter((amenity: any) => 
+                                !parkAmenities?.some((pa: any) => pa.amenityId === amenity.id)
+                              ).map((amenity: any) => (
+                                <SelectItem key={amenity.id} value={amenity.id.toString()}>
+                                  {amenity.icon && <span className="mr-2">{amenity.icon}</span>}
+                                  {amenity.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      {/* Lista de amenidades actuales del parque */}
+                      <div>
+                        <h4 className="font-medium mb-3">Amenidades Actuales</h4>
+                        {parkAmenities && parkAmenities.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {parkAmenities.map((parkAmenity: any) => {
+                              const amenity = availableAmenities?.find((a: any) => a.id === parkAmenity.amenityId);
+                              return (
+                                <div key={parkAmenity.id} className="border rounded-lg p-4 bg-white flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    {amenity?.icon && (
+                                      <span className="text-lg">{amenity.icon}</span>
+                                    )}
+                                    <div>
+                                      <p className="font-medium">{amenity?.name || 'Amenidad desconocida'}</p>
+                                      {parkAmenity.quantity > 1 && (
+                                        <p className="text-sm text-gray-500">Cantidad: {parkAmenity.quantity}</p>
+                                      )}
+                                      {parkAmenity.description && (
+                                        <p className="text-sm text-gray-500">{parkAmenity.description}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeAmenityMutation.mutate(parkAmenity.id)}
+                                    disabled={removeAmenityMutation.isPending}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 text-gray-500">
+                            <Wrench className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                            <p>No hay amenidades asignadas a este parque</p>
+                            <p className="text-sm">Usa el selector de arriba para agregar amenidades</p>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
