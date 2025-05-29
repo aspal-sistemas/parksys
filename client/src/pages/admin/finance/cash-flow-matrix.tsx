@@ -4,7 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Download, TrendingUp, TrendingDown } from "lucide-react";
+import { RefreshCw, Download, TrendingUp, TrendingDown, Calculator, BarChart3, Settings } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -16,6 +21,22 @@ interface CashFlowData {
     type: 'income' | 'expense';
     monthlyValues: number[];
     total: number;
+    growthRate?: number;
+  }[];
+  summaries: {
+    monthly: { income: number[]; expenses: number[]; net: number[] };
+    annual: { income: number; expenses: number; net: number };
+  };
+}
+
+interface ProjectedYearData {
+  year: number;
+  categories: {
+    name: string;
+    type: 'income' | 'expense';
+    monthlyValues: number[];
+    total: number;
+    growthRate: number;
   }[];
   summaries: {
     monthly: { income: number[]; expenses: number[]; net: number[] };
@@ -28,6 +49,11 @@ export default function CashFlowMatrix() {
   const [selectedPark, setSelectedPark] = useState<string>("all");
   const [viewPeriod, setViewPeriod] = useState<'monthly' | 'quarterly' | 'annual'>('monthly');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showProjections, setShowProjections] = useState<boolean>(false);
+  const [projectionYears, setProjectionYears] = useState<number>(5);
+  const [inflationRate, setInflationRate] = useState<number>(3.5);
+  const [selectedScenario, setSelectedScenario] = useState<'optimista' | 'realista' | 'pesimista'>('realista');
+  const [customGrowthRates, setCustomGrowthRates] = useState<{[key: string]: number}>({});
   const { toast } = useToast();
 
   // Cargar datos reales de la matriz de flujo de efectivo
@@ -49,6 +75,148 @@ export default function CashFlowMatrix() {
   const { data: expenseCategories } = useQuery({
     queryKey: ["/api/expense-categories"],
   });
+
+  // Cargar datos históricos para proyecciones (últimos 3 años)
+  const { data: historicalData } = useQuery({
+    queryKey: ["/api/cash-flow-historical", selectedPark],
+    enabled: showProjections
+  });
+
+  // Preparar datos base
+  const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+  
+  const data: CashFlowData = (cashFlowData as CashFlowData) || {
+    year: selectedYear,
+    months,
+    categories: [],
+    summaries: {
+      monthly: { income: new Array(12).fill(0), expenses: new Array(12).fill(0), net: new Array(12).fill(0) },
+      annual: { income: 0, expenses: 0, net: 0 }
+    }
+  };
+
+  // Funciones de cálculo de proyecciones
+  const calculateTrendGrowth = (historicalValues: number[]) => {
+    if (historicalValues.length < 2) return 0;
+    const sum = historicalValues.reduce((acc, val, idx) => acc + val * (idx + 1), 0);
+    const sumX = historicalValues.reduce((acc, _, idx) => acc + (idx + 1), 0);
+    const sumY = historicalValues.reduce((acc, val) => acc + val, 0);
+    const sumXY = sum;
+    const sumX2 = historicalValues.reduce((acc, _, idx) => acc + Math.pow(idx + 1, 2), 0);
+    const n = historicalValues.length;
+    
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    const lastValue = historicalValues[historicalValues.length - 1];
+    return lastValue > 0 ? (slope / lastValue) * 100 : 0;
+  };
+
+  const getScenarioMultiplier = (scenario: 'optimista' | 'realista' | 'pesimista') => {
+    switch (scenario) {
+      case 'optimista': return 1.2;
+      case 'pesimista': return 0.8;
+      default: return 1.0;
+    }
+  };
+
+  const calculateProjections = (currentData: CashFlowData): ProjectedYearData[] | null => {
+    if (!currentData) return null;
+
+    const projections: ProjectedYearData[] = [];
+    const currentYear = new Date().getFullYear();
+    
+    for (let year = currentYear + 1; year <= currentYear + projectionYears; year++) {
+      const yearProjection: ProjectedYearData = {
+        year,
+        categories: currentData.categories.map(category => {
+          const baseGrowth = customGrowthRates[category.name] !== undefined 
+            ? customGrowthRates[category.name] 
+            : calculateTrendGrowth(category.monthlyValues);
+          
+          const adjustedGrowth = baseGrowth * getScenarioMultiplier(selectedScenario);
+          const inflationAdjustment = category.type === 'expense' ? inflationRate : 0;
+          const totalGrowth = (adjustedGrowth + inflationAdjustment) / 100;
+          
+          const projectedTotal = category.total * Math.pow(1 + totalGrowth, year - currentYear);
+          const monthlyAverage = projectedTotal / 12;
+          
+          return {
+            ...category,
+            total: projectedTotal,
+            monthlyValues: Array(12).fill(monthlyAverage),
+            growthRate: totalGrowth * 100
+          };
+        }),
+        summaries: {
+          annual: { income: 0, expenses: 0, net: 0 },
+          monthly: {
+            income: Array(12).fill(0),
+            expenses: Array(12).fill(0),
+            net: Array(12).fill(0)
+          }
+        }
+      };
+      
+      // Calcular resúmenes del año proyectado
+      const income = yearProjection.categories
+        .filter(cat => cat.type === 'income')
+        .reduce((sum, cat) => sum + cat.total, 0);
+      
+      const expenses = yearProjection.categories
+        .filter(cat => cat.type === 'expense')
+        .reduce((sum, cat) => sum + cat.total, 0);
+      
+      yearProjection.summaries = {
+        annual: { income, expenses, net: income - expenses },
+        monthly: {
+          income: Array(12).fill(income / 12),
+          expenses: Array(12).fill(expenses / 12),
+          net: Array(12).fill((income - expenses) / 12)
+        }
+      };
+      
+      projections.push(yearProjection);
+    }
+    
+    return projections;
+  };
+
+  // Calcular proyecciones
+  const projectedData = showProjections ? calculateProjections(data) : null;
+
+  // Preparar datos para gráficos
+  const prepareChartData = () => {
+    if (!data) return [];
+    
+    const chartData = [{
+      year: selectedYear,
+      ingresos: data.summaries.annual.income,
+      gastos: data.summaries.annual.expenses,
+      flujoNeto: data.summaries.annual.net,
+      tipo: 'histórico'
+    }];
+    
+    if (projectedData) {
+      projectedData.forEach(projection => {
+        chartData.push({
+          year: projection.year,
+          ingresos: projection.summaries.annual.income,
+          gastos: projection.summaries.annual.expenses,
+          flujoNeto: projection.summaries.annual.net,
+          tipo: 'proyectado'
+        });
+      });
+    }
+    
+    return chartData;
+  };
+
+  const exportToExcel = () => {
+    // Implementar exportación a Excel
+    toast({
+      title: "Exportación",
+      description: "La funcionalidad de exportación estará disponible próximamente.",
+    });
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -78,7 +246,6 @@ export default function CashFlowMatrix() {
     }).format(amount);
   };
 
-  const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
   const quarters = ["Q1", "Q2", "Q3", "Q4"];
   const quarterNames = ["1er Trimestre", "2do Trimestre", "3er Trimestre", "4to Trimestre"];
 
@@ -155,11 +322,18 @@ export default function CashFlowMatrix() {
             </p>
           </div>
           <div className="flex gap-4">
+            <Button 
+              onClick={() => setShowProjections(!showProjections)} 
+              variant={showProjections ? "default" : "outline"}
+            >
+              <Calculator className="h-4 w-4 mr-2" />
+              {showProjections ? 'Ocultar' : 'Mostrar'} Proyecciones
+            </Button>
             <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline">
               <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
               Actualizar
             </Button>
-            <Button variant="outline">
+            <Button onClick={exportToExcel} variant="outline">
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
