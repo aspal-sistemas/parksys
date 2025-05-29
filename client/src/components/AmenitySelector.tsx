@@ -82,7 +82,13 @@ const AmenitySelector: React.FC<AmenitySelectorProps> = ({
           'Authorization': 'Bearer direct-token-1'
         },
         body: JSON.stringify({
-          amenityId: amenity.id
+          amenityId: amenity.id,
+          moduleName: '',
+          locationLatitude: null,
+          locationLongitude: null,
+          surfaceArea: null,
+          status: 'Activa',
+          description: ''
         })
       });
 

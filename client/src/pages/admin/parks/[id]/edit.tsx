@@ -310,14 +310,38 @@ export default function ParkEdit() {
 
   // Mutación para agregar amenidad al parque
   const addAmenityMutation = useMutation({
-    mutationFn: async ({ amenityId, quantity = 1, description = "" }: { amenityId: number; quantity?: number; description?: string }) => {
+    mutationFn: async ({ 
+      amenityId, 
+      moduleName = "", 
+      locationLatitude = null, 
+      locationLongitude = null, 
+      surfaceArea = null,
+      status = "Activa", 
+      description = "" 
+    }: { 
+      amenityId: number; 
+      moduleName?: string; 
+      locationLatitude?: number | null;
+      locationLongitude?: number | null;
+      surfaceArea?: number | null;
+      status?: string;
+      description?: string; 
+    }) => {
       // Usar el endpoint directo que bypasa el middleware
       const response = await fetch(`/api/parks/${id}/amenities`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ amenityId, quantity, description })
+        body: JSON.stringify({ 
+          amenityId, 
+          moduleName, 
+          locationLatitude, 
+          locationLongitude, 
+          surfaceArea,
+          status, 
+          description 
+        })
       });
       
       if (!response.ok) {
