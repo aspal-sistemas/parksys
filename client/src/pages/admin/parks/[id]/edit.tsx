@@ -14,9 +14,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Save, Building, MapPin, Phone, Mail, Globe, Clock, Info, Wrench, Plus, X } from "lucide-react";
+import { ArrowLeft, Save, Building, MapPin, Phone, Mail, Globe, Clock, Info, Wrench, Plus, X, Trash2, Map } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -399,6 +402,42 @@ export default function ParkEdit() {
       toast({
         title: "Error",
         description: `Error al remover amenidad: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutación para actualizar amenidad del parque
+  const updateAmenityMutation = useMutation({
+    mutationFn: async ({ amenityId, data }: { amenityId: number; data: any }) => {
+      const response = await fetch(`/api/parks/${id}/amenities/${amenityId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al actualizar amenidad');
+      }
+      
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}/amenities`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}`] });
+      refetchParkAmenities();
+      toast({
+        title: "Amenidad actualizada",
+        description: "La amenidad se actualizó correctamente.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: `Error al actualizar amenidad: ${error.message}`,
         variant: "destructive",
       });
     },
@@ -1043,82 +1082,87 @@ export default function ParkEdit() {
                           </div>
                         </div>
                         
-                        {/* Campos adicionales para coordenadas */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                          <div>
-                            <label className="text-sm font-medium mb-2 block">Latitud (opcional)</label>
-                            <Input 
-                              type="number"
-                              step="0.000001"
-                              placeholder="19.432608"
-                              value={newAmenityData.locationLatitude}
-                              onChange={(e) => setNewAmenityData(prev => ({ ...prev, locationLatitude: e.target.value }))}
+                        {/* Selector de ubicación con mapa interactivo */}
+                        <div className="mt-4">
+                          <label className="text-sm font-medium mb-2 block">Ubicación en el Parque (opcional)</label>
+                          <div className="border rounded-lg p-4 bg-white">
+                            <MapSelector
+                              defaultCenter={{
+                                lat: park?.latitude ? parseFloat(park.latitude) : 19.432608,
+                                lng: park?.longitude ? parseFloat(park.longitude) : -99.133209
+                              }}
+                              onLocationSelect={(location) => {
+                                setNewAmenityData(prev => ({
+                                  ...prev,
+                                  locationLatitude: location.lat.toString(),
+                                  locationLongitude: location.lng.toString()
+                                }));
+                              }}
+                              selectedLocation={
+                                newAmenityData.locationLatitude && newAmenityData.locationLongitude
+                                  ? {
+                                      lat: parseFloat(newAmenityData.locationLatitude),
+                                      lng: parseFloat(newAmenityData.locationLongitude)
+                                    }
+                                  : null
+                              }
+                              className="h-64"
                             />
-                          </div>
-                          
-                          <div>
-                            <label className="text-sm font-medium mb-2 block">Longitud (opcional)</label>
-                            <Input 
-                              type="number"
-                              step="0.000001"
-                              placeholder="-99.133209"
-                              value={newAmenityData.locationLongitude}
-                              onChange={(e) => setNewAmenityData(prev => ({ ...prev, locationLongitude: e.target.value }))}
-                            />
+                            {newAmenityData.locationLatitude && newAmenityData.locationLongitude && (
+                              <div className="text-xs text-gray-500 mt-2">
+                                📍 {parseFloat(newAmenityData.locationLatitude).toFixed(6)}, {parseFloat(newAmenityData.locationLongitude).toFixed(6)}
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="ml-2 h-auto p-1"
+                                  onClick={() => setNewAmenityData(prev => ({ ...prev, locationLatitude: '', locationLongitude: '' }))}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
 
-                      {/* Lista de amenidades actuales del parque */}
+                      {/* Tabla de amenidades actuales del parque */}
                       <div>
                         <h4 className="font-medium mb-3">Amenidades Actuales</h4>
                         {Array.isArray(parkAmenities) && parkAmenities.length > 0 ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {parkAmenities.map((parkAmenity: any) => {
-                              const amenity = availableAmenities?.find((a: any) => a.id === parkAmenity.amenityId);
-                              return (
-                                <div key={parkAmenity.id} className="border rounded-lg p-4 bg-white flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    {amenity?.icon && (
-                                      <span className="text-lg">{getIconSymbol(amenity.icon)}</span>
-                                    )}
-                                    <div>
-                                      <p className="font-medium">{amenity?.name || 'Amenidad desconocida'}</p>
-                                      {parkAmenity.moduleName && (
-                                        <p className="text-sm text-gray-500">Módulo: {parkAmenity.moduleName}</p>
-                                      )}
-                                      {parkAmenity.surfaceArea && (
-                                        <p className="text-sm text-gray-500">Superficie: {parseFloat(parkAmenity.surfaceArea).toLocaleString()} m²</p>
-                                      )}
-                                      {parkAmenity.locationLatitude && parkAmenity.locationLongitude && (
-                                        <p className="text-sm text-gray-500">📍 {parseFloat(parkAmenity.locationLatitude).toFixed(6)}, {parseFloat(parkAmenity.locationLongitude).toFixed(6)}</p>
-                                      )}
-                                      {parkAmenity.status && (
-                                        <p className="text-sm text-gray-500">Estado: {parkAmenity.status}</p>
-                                      )}
-                                      {parkAmenity.description && (
-                                        <p className="text-sm text-gray-500">{parkAmenity.description}</p>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      console.log('Eliminando amenidad:', parkAmenity.amenityId);
-                                      removeAmenityMutation.mutate(parkAmenity.amenityId);
-                                    }}
-                                    disabled={removeAmenityMutation.isPending}
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                    type="button"
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              );
-                            })}
+                          <div className="border rounded-lg">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Nombre del Módulo</TableHead>
+                                  <TableHead>Amenidad</TableHead>
+                                  <TableHead>Superficie (m²)</TableHead>
+                                  <TableHead>Ubicación</TableHead>
+                                  <TableHead>Estado</TableHead>
+                                  <TableHead className="w-[100px]">Acciones</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {parkAmenities.map((parkAmenity: any) => {
+                                  const amenity = availableAmenities?.find((a: any) => a.id === parkAmenity.amenityId);
+                                  return (
+                                    <AmenityTableRow
+                                      key={parkAmenity.id}
+                                      parkAmenity={parkAmenity}
+                                      amenity={amenity}
+                                      onUpdate={(data) => updateAmenityMutation.mutate({ amenityId: parkAmenity.id, data })}
+                                      onDelete={() => removeAmenityMutation.mutate(parkAmenity.amenityId)}
+                                      isUpdating={updateAmenityMutation.isPending}
+                                      isDeleting={removeAmenityMutation.isPending}
+                                      parkCenter={{
+                                        lat: park?.latitude ? parseFloat(park.latitude) : 19.432608,
+                                        lng: park?.longitude ? parseFloat(park.longitude) : -99.133209
+                                      }}
+                                    />
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
                           </div>
                         ) : (
                           <div className="text-center py-8 text-gray-500">
