@@ -261,10 +261,19 @@ export default function AmenitiesDashboard() {
                     margin={{ top: 5, right: 30, left: 150, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" domain={[0, 'dataMax + 1']} />
+                    <XAxis type="number" />
                     <YAxis dataKey="parkName" type="category" width={140} tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Bar dataKey="amenitiesCount" fill="#0088FE" />
+                    <Tooltip 
+                      formatter={(value, name) => [value, 'Amenidades']}
+                      labelFormatter={(label) => `Parque: ${label}`}
+                    />
+                    <Bar 
+                      dataKey="amenitiesCount" 
+                      fill="#3B82F6" 
+                      stroke="#1E40AF" 
+                      strokeWidth={1}
+                      radius={[0, 2, 2, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
