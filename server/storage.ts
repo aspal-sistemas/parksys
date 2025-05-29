@@ -596,6 +596,7 @@ export class DatabaseStorage implements IStorage {
           pa.park_id as "parkId",
           pa.amenity_id as "amenityId",
           pa.quantity,
+          pa.status,
           pa.description,
           a.name as "amenityName",
           a.icon as "amenityIcon"

@@ -573,11 +573,11 @@ export default function AdminParkView() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {park.amenities?.map((amenity) => (
+                {park.amenities?.map((amenity: any) => (
                   <div key={amenity.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                    <div className="text-2xl">{getIconSymbol(amenity.icon)}</div>
+                    <div className="text-2xl">{getIconSymbol(amenity.amenityIcon || amenity.icon)}</div>
                     <div>
-                      <h4 className="font-medium">{amenity.name}</h4>
+                      <h4 className="font-medium">{amenity.amenityName || amenity.name}</h4>
                       {amenity.quantity && amenity.quantity > 1 && (
                         <p className="text-sm text-gray-500">Cantidad: {amenity.quantity}</p>
                       )}
