@@ -1014,9 +1014,17 @@ export default function ParkEdit() {
                         <MapSelector
                           latitude={form.watch("latitude")}
                           longitude={form.watch("longitude")}
-                          onLocationChange={(lat, lng) => {
-                            form.setValue("latitude", lat);
-                            form.setValue("longitude", lng);
+                          selectedLocation={
+                            form.watch("latitude") && form.watch("longitude")
+                              ? {
+                                  lat: parseFloat(form.watch("latitude")),
+                                  lng: parseFloat(form.watch("longitude"))
+                                }
+                              : null
+                          }
+                          onLocationSelect={(location) => {
+                            form.setValue("latitude", location.lat.toString());
+                            form.setValue("longitude", location.lng.toString());
                           }}
                           className="w-full"
                         />
