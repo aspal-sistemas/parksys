@@ -45,6 +45,7 @@ const AdminParks = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMunicipality, setFilterMunicipality] = useState<string>('all');
   const [filterParkType, setFilterParkType] = useState<string>('all');
+  const [filterAmenity, setFilterAmenity] = useState<string>('all');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [parkToDelete, setParkToDelete] = useState<Park | null>(null);
   const [parkDependencies, setParkDependencies] = useState<ParkDependencies | null>(null);
@@ -67,6 +68,34 @@ const AdminParks = () => {
     data: municipalities = [] 
   } = useQuery({
     queryKey: ['/api/municipalities'],
+  });
+
+  // Fetch amenities for filter
+  const { 
+    data: amenities = [] 
+  } = useQuery({
+    queryKey: ['/api/amenities'],
+  });
+
+  // Fetch parks with amenities for filtering
+  const { 
+    data: parkAmenities = [] 
+  } = useQuery({
+    queryKey: ['/api/parks-with-amenities'],
+    queryFn: async () => {
+      const parksData = await fetch('/api/parks').then(res => res.json());
+      const parkAmenitiesData = await Promise.all(
+        parksData.map(async (park: Park) => {
+          const amenitiesResponse = await fetch(`/api/parks/${park.id}/amenities`);
+          const parkAmenities = await amenitiesResponse.json();
+          return {
+            parkId: park.id,
+            amenityIds: parkAmenities.map((a: any) => a.id)
+          };
+        })
+      );
+      return parkAmenitiesData;
+    },
   });
 
   // Function to fetch park dependencies
@@ -129,9 +158,17 @@ const AdminParks = () => {
         return false;
       }
       
+      // Apply amenity filter
+      if (filterAmenity !== 'all') {
+        const parkAmenityData = (parkAmenities as any[]).find((pa: any) => pa.parkId === park.id);
+        if (!parkAmenityData || !parkAmenityData.amenityIds.includes(parseInt(filterAmenity))) {
+          return false;
+        }
+      }
+      
       return true;
     }).sort((a, b) => a.name.localeCompare(b.name));
-  }, [parks, searchQuery, filterMunicipality, filterParkType]);
+  }, [parks, searchQuery, filterMunicipality, filterParkType, filterAmenity, parkAmenities]);
 
   // Get municipality name by ID
   const getMunicipalityName = (municipalityId: number) => {
@@ -160,6 +197,7 @@ const AdminParks = () => {
     setSearchQuery('');
     setFilterMunicipality('all');
     setFilterParkType('all');
+    setFilterAmenity('all');
   };
 
   // Handle opening delete dialog
@@ -274,8 +312,22 @@ const AdminParks = () => {
               <SelectItem value="deportivo">Deportivo</SelectItem>
             </SelectContent>
           </Select>
+
+          <Select value={filterAmenity} onValueChange={setFilterAmenity}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Amenidad" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las amenidades</SelectItem>
+              {(amenities as any[])?.map((amenity: any) => (
+                <SelectItem key={amenity.id} value={amenity.id.toString()}>
+                  {amenity.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           
-          {(searchQuery || filterMunicipality !== 'all' || filterParkType !== 'all') && (
+          {(searchQuery || filterMunicipality !== 'all' || filterParkType !== 'all' || filterAmenity !== 'all') && (
             <Button variant="ghost" onClick={handleClearFilters} aria-label="Limpiar filtros">
               <X className="h-4 w-4" />
             </Button>
