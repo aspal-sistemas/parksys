@@ -385,11 +385,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalParksResult = await pool.query('SELECT COUNT(*) as count FROM parks');
       const totalParks = parseInt(totalParksResult.rows[0].count);
       
-      // Superficie total y área verde (sumando las áreas de todos los parques)
+      // Superficie total y área permeable (sumando las áreas de todos los parques)
       const surfaceResult = await pool.query(`
         SELECT 
           SUM(CASE WHEN area IS NOT NULL AND area::text ~ '^[0-9.]+$' THEN area::numeric ELSE 0 END) as total_surface,
-          SUM(CASE WHEN area IS NOT NULL AND area::text ~ '^[0-9.]+$' THEN area::numeric * 0.7 ELSE 0 END) as total_green_area
+          SUM(CASE WHEN green_area IS NOT NULL AND green_area::text ~ '^[0-9.]+$' THEN green_area::numeric ELSE 0 END) as total_green_area
         FROM parks
       `);
       const totalSurface = parseFloat(surfaceResult.rows[0].total_surface) || 0;

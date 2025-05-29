@@ -624,11 +624,17 @@ export const parks = pgTable("parks", {
   postalCode: text("postal_code"),
   latitude: text("latitude").notNull(),
   longitude: text("longitude").notNull(),
-  // surfaceArea: decimal("surface_area"), // Comentado porque la columna no existe en la BD
+  area: text("area"), // Superficie total
+  greenArea: text("green_area"), // Área permeable
+  foundationYear: integer("foundation_year"),
+  administrator: text("administrator"),
+  conservationStatus: text("conservation_status"),
+  regulationUrl: text("regulation_url"),
   openingHours: text("opening_hours"),
-  // closingHours: text("closing_hours"), // Comentado porque la columna no existe en la BD
-  // active: boolean("active").notNull().default(true), // Comentado porque la columna no existe en la BD
-  // mainImageUrl: text("main_image_url"), // Comentado porque la columna no existe en la BD
+  contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  videoUrl: text("video_url"),
+  isDeleted: boolean("is_deleted").default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
 });
