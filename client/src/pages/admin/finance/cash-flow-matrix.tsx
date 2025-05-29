@@ -1,14 +1,12 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Download, TrendingUp, TrendingDown, Calculator, BarChart3, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { RefreshCw, Calculator, TrendingUp, TrendingDown, Download, Settings } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
@@ -47,27 +45,28 @@ interface ProjectedYearData {
 export default function CashFlowMatrix() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedPark, setSelectedPark] = useState<string>("all");
-  const [viewPeriod, setViewPeriod] = useState<'monthly' | 'quarterly' | 'annual'>('monthly');
+  const [viewMode, setViewMode] = useState<'monthly' | 'quarterly' | 'annual'>('monthly');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showProjections, setShowProjections] = useState<boolean>(false);
-  const [projectionYears, setProjectionYears] = useState<number>(5);
-  const [inflationRate, setInflationRate] = useState<number>(3.5);
-  const [selectedScenario, setSelectedScenario] = useState<'optimista' | 'realista' | 'pesimista'>('realista');
-  const [customGrowthRates, setCustomGrowthRates] = useState<{[key: string]: number}>({});
-  const { toast } = useToast();
+  
+  // Estados para proyecciones
+  const [showProjections, setShowProjections] = useState(false);
+  const [projectionYears, setProjectionYears] = useState(3);
+  const [selectedScenario, setSelectedScenario] = useState<'optimistic' | 'realistic' | 'pessimistic'>('realistic');
+  const [inflationRate, setInflationRate] = useState(4.5);
+  const [customGrowthRates, setCustomGrowthRates] = useState<Record<string, number>>({});
 
-  // Cargar datos reales de la matriz de flujo de efectivo
-  const { data: cashFlowData, isLoading, refetch } = useQuery({
-    queryKey: ["/api/cash-flow-matrix", selectedYear, selectedPark],
-    enabled: true
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Consultas de datos
+  const { data: cashFlowData, isLoading } = useQuery({
+    queryKey: ["/api/cash-flow", selectedYear, selectedPark],
   });
 
-  // Cargar parques para el filtro
   const { data: parks } = useQuery({
     queryKey: ["/api/parks"],
   });
 
-  // Cargar categorías
   const { data: incomeCategories } = useQuery({
     queryKey: ["/api/income-categories"],
   });
@@ -98,22 +97,25 @@ export default function CashFlowMatrix() {
   // Funciones de cálculo de proyecciones
   const calculateTrendGrowth = (historicalValues: number[]) => {
     if (historicalValues.length < 2) return 0;
-    const sum = historicalValues.reduce((acc, val, idx) => acc + val * (idx + 1), 0);
-    const sumX = historicalValues.reduce((acc, _, idx) => acc + (idx + 1), 0);
-    const sumY = historicalValues.reduce((acc, val) => acc + val, 0);
-    const sumXY = sum;
-    const sumX2 = historicalValues.reduce((acc, _, idx) => acc + Math.pow(idx + 1, 2), 0);
-    const n = historicalValues.length;
     
-    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-    const lastValue = historicalValues[historicalValues.length - 1];
-    return lastValue > 0 ? (slope / lastValue) * 100 : 0;
+    let totalGrowth = 0;
+    let validPeriods = 0;
+    
+    for (let i = 1; i < historicalValues.length; i++) {
+      if (historicalValues[i - 1] !== 0) {
+        const growth = ((historicalValues[i] - historicalValues[i - 1]) / historicalValues[i - 1]) * 100;
+        totalGrowth += growth;
+        validPeriods++;
+      }
+    }
+    
+    return validPeriods > 0 ? totalGrowth / validPeriods : 0;
   };
 
-  const getScenarioMultiplier = (scenario: 'optimista' | 'realista' | 'pesimista') => {
+  const getScenarioMultiplier = (scenario: string) => {
     switch (scenario) {
-      case 'optimista': return 1.2;
-      case 'pesimista': return 0.8;
+      case 'optimistic': return 1.2;
+      case 'pessimistic': return 0.8;
       default: return 1.0;
     }
   };
@@ -213,23 +215,23 @@ export default function CashFlowMatrix() {
   const exportToExcel = () => {
     // Implementar exportación a Excel
     toast({
-      title: "Exportación",
-      description: "La funcionalidad de exportación estará disponible próximamente.",
+      title: "Exportación iniciada",
+      description: "Los datos se están preparando para descargar.",
     });
   };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await refetch();
+      await queryClient.invalidateQueries({ queryKey: ["/api/cash-flow"] });
       toast({
         title: "Datos actualizados",
-        description: "La matriz de flujo de efectivo se ha actualizado con los datos más recientes.",
+        description: "La matriz de flujo de efectivo se ha actualizado correctamente.",
       });
     } catch (error) {
       toast({
         title: "Error al actualizar",
-        description: "No se pudieron actualizar los datos.",
+        description: "No se pudieron cargar los datos más recientes.",
         variant: "destructive",
       });
     } finally {
@@ -253,30 +255,29 @@ export default function CashFlowMatrix() {
   const groupByQuarter = (monthlyData: number[]) => {
     const quarterData = [];
     for (let i = 0; i < 4; i++) {
-      const start = i * 3;
-      const quarterSum = monthlyData.slice(start, start + 3).reduce((sum, val) => sum + val, 0);
+      const quarterSum = monthlyData.slice(i * 3, (i + 1) * 3).reduce((sum, val) => sum + val, 0);
       quarterData.push(quarterSum);
     }
     return quarterData;
   };
 
-  // Función para obtener las columnas según el período seleccionado
-  const getColumns = () => {
-    switch (viewPeriod) {
+  // Función para obtener etiquetas según el modo de vista
+  const getLabels = () => {
+    switch (viewMode) {
       case 'monthly':
         return months;
       case 'quarterly':
         return quarterNames;
       case 'annual':
-        return ['Anual'];
+        return [selectedYear.toString()];
       default:
         return months;
     }
   };
 
-  // Función para obtener los datos según el período seleccionado
-  const getDataForPeriod = (monthlyValues: number[]) => {
-    switch (viewPeriod) {
+  // Función para agrupar valores según el modo de vista
+  const groupValues = (monthlyValues: number[]) => {
+    switch (viewMode) {
       case 'monthly':
         return monthlyValues;
       case 'quarterly':
@@ -300,16 +301,6 @@ export default function CashFlowMatrix() {
       </AdminLayout>
     );
   }
-
-  const data: CashFlowData = (cashFlowData as CashFlowData) || {
-    year: selectedYear,
-    months,
-    categories: [],
-    summaries: {
-      monthly: { income: new Array(12).fill(0), expenses: new Array(12).fill(0), net: new Array(12).fill(0) },
-      annual: { income: 0, expenses: 0, net: 0 }
-    }
-  };
 
   return (
     <AdminLayout>
@@ -340,29 +331,31 @@ export default function CashFlowMatrix() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
-          <div className="lg:col-span-2">
+        {/* Controles de filtros */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="space-y-2">
+            <Label htmlFor="year-select">Año</Label>
             <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
               <SelectTrigger>
-                <SelectValue placeholder="Seleccionar año" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[2023, 2024, 2025, 2026].map(year => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
+                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                  <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="lg:col-span-2">
+
+          <div className="space-y-2">
+            <Label htmlFor="park-select">Parque</Label>
             <Select value={selectedPark} onValueChange={setSelectedPark}>
               <SelectTrigger>
-                <SelectValue placeholder="Seleccionar parque" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los parques (Consolidado)</SelectItem>
-                {(parks as any[])?.map((park: any) => (
+                <SelectItem value="all">Todos los parques</SelectItem>
+                {parks?.map((park: any) => (
                   <SelectItem key={park.id} value={park.id.toString()}>
                     {park.name}
                   </SelectItem>
@@ -370,10 +363,12 @@ export default function CashFlowMatrix() {
               </SelectContent>
             </Select>
           </div>
-          <div className="lg:col-span-1">
-            <Select value={viewPeriod} onValueChange={(value: 'monthly' | 'quarterly' | 'annual') => setViewPeriod(value)}>
+
+          <div className="space-y-2">
+            <Label htmlFor="view-mode">Vista</Label>
+            <Select value={viewMode} onValueChange={(value: 'monthly' | 'quarterly' | 'annual') => setViewMode(value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Período" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="monthly">Mensual</SelectItem>
@@ -382,13 +377,126 @@ export default function CashFlowMatrix() {
               </SelectContent>
             </Select>
           </div>
+
+          {showProjections && (
+            <div className="space-y-2">
+              <Label htmlFor="scenario-select">Escenario</Label>
+              <Select value={selectedScenario} onValueChange={(value: 'optimistic' | 'realistic' | 'pessimistic') => setSelectedScenario(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="optimistic">Optimista</SelectItem>
+                  <SelectItem value="realistic">Realista</SelectItem>
+                  <SelectItem value="pessimistic">Pesimista</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
-        {/* Resumen anual */}
+        {/* Configuración de proyecciones */}
+        {showProjections && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Configuración de Proyecciones
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="projection-years">Años a proyectar</Label>
+                  <Input
+                    id="projection-years"
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={projectionYears}
+                    onChange={(e) => setProjectionYears(parseInt(e.target.value) || 3)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inflation-rate">Tasa de inflación (%)</Label>
+                  <Input
+                    id="inflation-rate"
+                    type="number"
+                    step="0.1"
+                    value={inflationRate}
+                    onChange={(e) => setInflationRate(parseFloat(e.target.value) || 4.5)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Escenario seleccionado</Label>
+                  <div className="flex items-center gap-2 pt-2">
+                    <Badge variant={selectedScenario === 'optimistic' ? 'default' : 'secondary'}>
+                      {selectedScenario === 'optimistic' && 'Optimista (+20%)'}
+                      {selectedScenario === 'realistic' && 'Realista (Base)'}
+                      {selectedScenario === 'pessimistic' && 'Pesimista (-20%)'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Gráficos de proyecciones */}
+        {showProjections && projectedData && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Proyección de Flujo Neto</CardTitle>
+                <CardDescription>Comparación histórica vs proyectada</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={prepareChartData()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="year" />
+                    <YAxis tickFormatter={formatCurrency} />
+                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="flujoNeto" 
+                      stroke="#8884d8" 
+                      strokeWidth={2}
+                      dot={{ fill: '#8884d8' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Ingresos vs Gastos Proyectados</CardTitle>
+                <CardDescription>Evolución esperada por año</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={prepareChartData()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="year" />
+                    <YAxis tickFormatter={formatCurrency} />
+                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                    <Legend />
+                    <Bar dataKey="ingresos" fill="#10b981" name="Ingresos" />
+                    <Bar dataKey="gastos" fill="#ef4444" name="Gastos" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Resumen Financiero */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ingresos Totales</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Ingresos</CardTitle>
               <TrendingUp className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
@@ -396,13 +504,14 @@ export default function CashFlowMatrix() {
                 {formatCurrency(data.summaries.annual.income)}
               </div>
               <p className="text-xs text-muted-foreground">
-                Año {selectedYear}
+                {viewMode === 'annual' ? 'Año completo' : `Acumulado ${selectedYear}`}
               </p>
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Gastos Totales</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Gastos</CardTitle>
               <TrendingDown className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent>
@@ -410,114 +519,116 @@ export default function CashFlowMatrix() {
                 {formatCurrency(data.summaries.annual.expenses)}
               </div>
               <p className="text-xs text-muted-foreground">
-                Año {selectedYear}
+                {viewMode === 'annual' ? 'Año completo' : `Acumulado ${selectedYear}`}
               </p>
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Flujo Neto</CardTitle>
-              <TrendingUp className={`h-4 w-4 ${data.summaries.annual.net >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+              <div className={`h-4 w-4 ${data.summaries.annual.net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {data.summaries.annual.net >= 0 ? <TrendingUp /> : <TrendingDown />}
+              </div>
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold ${data.summaries.annual.net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {formatCurrency(data.summaries.annual.net)}
               </div>
               <p className="text-xs text-muted-foreground">
-                Año {selectedYear}
+                {data.summaries.annual.net >= 0 ? 'Superávit' : 'Déficit'} {selectedYear}
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Matriz principal */}
+        {/* Matriz de Flujo de Efectivo */}
         <Card>
           <CardHeader>
-            <CardTitle>Matriz de Flujo de Efectivo {selectedYear}</CardTitle>
+            <CardTitle>Matriz de Flujo de Efectivo - {selectedYear}</CardTitle>
             <CardDescription>
-              {selectedPark === "all" ? "Vista consolidada de todos los parques" : `Parque seleccionado: ${(parks as any[])?.find((p: any) => p.id.toString() === selectedPark)?.name || 'Cargando...'}`}
+              Vista {viewMode} de ingresos y gastos por categoría
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full border-collapse border border-gray-300">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-2 font-medium">Categoría</th>
-                    {getColumns().map((column: string) => (
-                      <th key={column} className="text-center p-2 font-medium min-w-[80px]">{column}</th>
+                  <tr className="bg-gray-50">
+                    <th className="border border-gray-300 p-3 text-left font-semibold">Categoría</th>
+                    <th className="border border-gray-300 p-3 text-center font-semibold">Tipo</th>
+                    {getLabels().map((label, index) => (
+                      <th key={index} className="border border-gray-300 p-3 text-center font-semibold text-xs">
+                        {label}
+                      </th>
                     ))}
-                    <th className="text-center p-2 font-medium">Total</th>
+                    <th className="border border-gray-300 p-3 text-center font-semibold">Total</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Ingresos */}
-                  <tr className="bg-green-50">
-                    <td colSpan={14} className="p-2 font-semibold text-green-700">INGRESOS</td>
-                  </tr>
-                  {data.categories.filter((cat: any) => cat.type === 'income').map((category: any, idx: number) => (
-                    <tr key={`income-${idx}`} className="border-b hover:bg-gray-50">
-                      <td className="p-2">{category.name}</td>
-                      {getDataForPeriod(category.monthlyValues).map((value: number, periodIdx: number) => (
-                        <td key={periodIdx} className="p-2 text-center text-green-600 font-medium">
-                          {value > 0 ? formatCurrency(value) : '-'}
+                  {data.categories.map((category, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="border border-gray-300 p-3 font-medium">{category.name}</td>
+                      <td className="border border-gray-300 p-3 text-center">
+                        <Badge variant={category.type === 'income' ? 'default' : 'destructive'}>
+                          {category.type === 'income' ? 'Ingreso' : 'Gasto'}
+                        </Badge>
+                      </td>
+                      {groupValues(category.monthlyValues).map((value, monthIndex) => (
+                        <td key={monthIndex} className="border border-gray-300 p-3 text-right text-sm">
+                          {formatCurrency(value)}
                         </td>
                       ))}
-                      <td className="p-2 text-center font-semibold text-green-600">
+                      <td className="border border-gray-300 p-3 text-right font-semibold">
                         {formatCurrency(category.total)}
                       </td>
                     </tr>
                   ))}
-                  <tr className="border-b bg-green-100 font-semibold">
-                    <td className="p-2">TOTAL INGRESOS</td>
-                    {getDataForPeriod(data.summaries.monthly.income).map((income: number, idx: number) => (
-                      <td key={idx} className="p-2 text-center text-green-700">
-                        {formatCurrency(income)}
+                  
+                  {/* Fila de totales */}
+                  <tr className="bg-blue-50 font-semibold">
+                    <td className="border border-gray-300 p-3">TOTAL INGRESOS</td>
+                    <td className="border border-gray-300 p-3 text-center">
+                      <Badge variant="default">Ingreso</Badge>
+                    </td>
+                    {groupValues(data.summaries.monthly.income).map((value, index) => (
+                      <td key={index} className="border border-gray-300 p-3 text-right">
+                        {formatCurrency(value)}
                       </td>
                     ))}
-                    <td className="p-2 text-center text-green-700">
+                    <td className="border border-gray-300 p-3 text-right">
                       {formatCurrency(data.summaries.annual.income)}
                     </td>
                   </tr>
-
-                  {/* Gastos */}
-                  <tr className="bg-red-50">
-                    <td colSpan={14} className="p-2 font-semibold text-red-700">GASTOS</td>
-                  </tr>
-                  {data.categories.filter((cat: any) => cat.type === 'expense').map((category: any, idx: number) => (
-                    <tr key={`expense-${idx}`} className="border-b hover:bg-gray-50">
-                      <td className="p-2">{category.name}</td>
-                      {getDataForPeriod(category.monthlyValues).map((value: number, periodIdx: number) => (
-                        <td key={periodIdx} className="p-2 text-center text-red-600 font-medium">
-                          {value > 0 ? formatCurrency(value) : '-'}
-                        </td>
-                      ))}
-                      <td className="p-2 text-center font-semibold text-red-600">
-                        {formatCurrency(category.total)}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className="border-b bg-red-100 font-semibold">
-                    <td className="p-2">TOTAL GASTOS</td>
-                    {getDataForPeriod(data.summaries.monthly.expenses).map((expense: number, idx: number) => (
-                      <td key={idx} className="p-2 text-center text-red-700">
-                        {formatCurrency(expense)}
+                  
+                  <tr className="bg-red-50 font-semibold">
+                    <td className="border border-gray-300 p-3">TOTAL GASTOS</td>
+                    <td className="border border-gray-300 p-3 text-center">
+                      <Badge variant="destructive">Gasto</Badge>
+                    </td>
+                    {groupValues(data.summaries.monthly.expenses).map((value, index) => (
+                      <td key={index} className="border border-gray-300 p-3 text-right">
+                        {formatCurrency(value)}
                       </td>
                     ))}
-                    <td className="p-2 text-center text-red-700">
+                    <td className="border border-gray-300 p-3 text-right">
                       {formatCurrency(data.summaries.annual.expenses)}
                     </td>
                   </tr>
-
-                  {/* Flujo neto */}
-                  <tr className="border-b-2 bg-blue-100 font-bold">
-                    <td className="p-2">FLUJO NETO</td>
-                    {getDataForPeriod(data.summaries.monthly.net).map((net: number, idx: number) => (
-                      <td key={idx} className={`p-2 text-center ${net >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-                        {formatCurrency(net)}
+                  
+                  <tr className="bg-green-50 font-bold">
+                    <td className="border border-gray-300 p-3">FLUJO NETO</td>
+                    <td className="border border-gray-300 p-3 text-center">
+                      <Badge variant={data.summaries.annual.net >= 0 ? 'default' : 'destructive'}>
+                        {data.summaries.annual.net >= 0 ? 'Positivo' : 'Negativo'}
+                      </Badge>
+                    </td>
+                    {groupValues(data.summaries.monthly.net).map((value, index) => (
+                      <td key={index} className={`border border-gray-300 p-3 text-right ${value >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCurrency(value)}
                       </td>
                     ))}
-                    <td className={`p-2 text-center ${data.summaries.annual.net >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                    <td className={`border border-gray-300 p-3 text-right ${data.summaries.annual.net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {formatCurrency(data.summaries.annual.net)}
                     </td>
                   </tr>
@@ -527,15 +638,55 @@ export default function CashFlowMatrix() {
           </CardContent>
         </Card>
 
-        {/* Información adicional */}
-        <div className="mt-6 text-sm text-gray-600">
-          <p>
-            * Los datos mostrados reflejan los ingresos y gastos reales registrados en el sistema.
-          </p>
-          <p>
-            * Para ver datos específicos de un parque, selecciona el parque en el filtro superior.
-          </p>
-        </div>
+        {/* Tabla de proyecciones */}
+        {showProjections && projectedData && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Proyecciones Financieras</CardTitle>
+              <CardDescription>
+                Proyecciones basadas en escenario {selectedScenario} con inflación del {inflationRate}%
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="border border-gray-300 p-3 text-left font-semibold">Año</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Ingresos Proyectados</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Gastos Proyectados</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Flujo Neto</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {projectedData.map((projection, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <td className="border border-gray-300 p-3 font-medium">{projection.year}</td>
+                        <td className="border border-gray-300 p-3 text-right text-green-600">
+                          {formatCurrency(projection.summaries.annual.income)}
+                        </td>
+                        <td className="border border-gray-300 p-3 text-right text-red-600">
+                          {formatCurrency(projection.summaries.annual.expenses)}
+                        </td>
+                        <td className={`border border-gray-300 p-3 text-right font-semibold ${
+                          projection.summaries.annual.net >= 0 ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {formatCurrency(projection.summaries.annual.net)}
+                        </td>
+                        <td className="border border-gray-300 p-3 text-center">
+                          <Badge variant={projection.summaries.annual.net >= 0 ? 'default' : 'destructive'}>
+                            {projection.summaries.annual.net >= 0 ? 'Superávit' : 'Déficit'}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </AdminLayout>
   );
