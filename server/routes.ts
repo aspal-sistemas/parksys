@@ -767,8 +767,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           value: amenity.parksCount,
           color: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'][index % 6]
         })),
-        utilizationByPark: parks.slice(0, 8).map((park: any) => ({
-          parkName: park.name.length > 15 ? park.name.substring(0, 15) + '...' : park.name,
+        utilizationByPark: parks.map((park: any) => ({
+          parkName: park.name.length > 20 ? park.name.substring(0, 20) + '...' : park.name,
           amenitiesCount: park.amenities?.length || 0
         })).sort((a: any, b: any) => b.amenitiesCount - a.amenitiesCount),
         statusDistribution: [
