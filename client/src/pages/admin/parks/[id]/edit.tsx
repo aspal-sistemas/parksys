@@ -550,11 +550,11 @@ export default function ParkEdit() {
                   {editData.locationLatitude && editData.locationLongitude ? 'Cambiar' : 'Establecer'}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl">
+              <DialogContent className="max-w-3xl">
                 <DialogHeader>
                   <DialogTitle>Seleccionar Ubicación</DialogTitle>
                 </DialogHeader>
-                <div className="h-96">
+                <div className="h-64">
                   <MapSelector
                     defaultCenter={parkCenter}
                     onLocationSelect={(location) => {
@@ -1301,7 +1301,7 @@ export default function ParkEdit() {
                         {/* Selector de ubicación con mapa interactivo */}
                         <div className="mt-4">
                           <label className="text-sm font-medium mb-2 block">Ubicación en el Parque (opcional)</label>
-                          <div className="border rounded-lg p-4 bg-white">
+                          <div className="border rounded-lg p-3 bg-white">
                             <MapSelector
                               defaultCenter={{
                                 lat: park?.latitude ? parseFloat(park.latitude) : 19.432608,
@@ -1322,7 +1322,7 @@ export default function ParkEdit() {
                                     }
                                   : null
                               }
-                              className="h-64"
+                              className="h-48"
                             />
                             {newAmenityData.locationLatitude && newAmenityData.locationLongitude && (
                               <div className="text-xs text-gray-500 mt-2">
