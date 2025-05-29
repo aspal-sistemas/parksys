@@ -500,27 +500,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Import parks from Excel/CSV - Version robusta con manejo de errores
-  apiRouter.post("/parks/import", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.post("/parks/import", isAuthenticated, upload.single('file'), async (req: Request, res: Response) => {
     try {
       console.log("Iniciando proceso de importación de parques");
+      console.log("Body completo:", req.body);
+      console.log("Archivo recibido:", req.file ? req.file.filename : "No hay archivo");
       
-      // Validar que se envió un archivo
-      if (!req.body.municipalityId) {
+      const municipalityId = req.body.municipalityId;
+      
+      if (!municipalityId) {
+        console.log("No se encontró municipalityId en el body");
         return res.status(400).json({
           success: false,
-          message: "Debe seleccionar un municipio"
+          message: "Debe seleccionar un municipio",
+          receivedData: req.body
         });
       }
 
-      // Por ahora, retornamos una respuesta de éxito sin procesar el archivo
-      // para evitar que el sistema se crashee
-      console.log("Municipio seleccionado:", req.body.municipalityId);
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Debe seleccionar un archivo para importar"
+        });
+      }
+
+      console.log("Municipio seleccionado:", municipalityId);
+      console.log("Archivo:", req.file.originalname);
       
       res.json({
         success: true,
-        message: "Funcionalidad de importación en desarrollo. El archivo fue recibido correctamente.",
+        message: "Archivo recibido correctamente. La funcionalidad de importación está en desarrollo.",
         parksImported: 0,
-        municipalityId: req.body.municipalityId
+        municipalityId: municipalityId,
+        fileName: req.file.originalname
       });
       
     } catch (error) {
