@@ -1418,6 +1418,29 @@ export default function ParkEdit() {
                 <Link href={`/admin/parks/${id}/view`}>
                   <Button variant="outline">Cancelar</Button>
                 </Link>
+                
+                {/* Botón de diagnóstico temporal */}
+                <Button 
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    console.log('=== DIAGNÓSTICO COMPLETO ===');
+                    console.log('Form values:', form.getValues());
+                    console.log('Form errors:', form.formState.errors);
+                    console.log('Form isValid:', form.formState.isValid);
+                    console.log('Form isDirty:', form.formState.isDirty);
+                    
+                    // Intentar envío directo
+                    const values = form.getValues();
+                    console.log('Intentando envío directo con valores:', values);
+                    updateParkMutation.mutate(values);
+                  }}
+                  disabled={updateParkMutation.isPending}
+                  className="min-w-32"
+                >
+                  Guardar (Directo)
+                </Button>
+                
                 <Button 
                   type="submit" 
                   disabled={updateParkMutation.isPending}
