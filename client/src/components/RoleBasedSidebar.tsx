@@ -319,13 +319,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       >
         Egresos
       </NavItem>
-      <NavItem 
-        href="/admin/finance/cashflow" 
-        icon={<CircleDollarSign className="h-5 w-5" />}
-        active={location === '/admin/finance/cashflow'}
-      >
-        Flujo
-      </NavItem>
+
       <NavItem 
         href="/admin/finance/cash-flow-matrix" 
         icon={<LayoutGrid className="h-5 w-5" />}

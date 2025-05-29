@@ -288,16 +288,10 @@ export default function ParkEdit() {
       
       console.log('OBJETO COMPLETO dataToSend:', dataToSend);
       
-      console.log('ENVIANDO PETICIÓN a:', `/api/dev/parks/${id}`);
-      console.log('DATOS ENVIADOS:', dataToSend);
-      
-      const response = await apiRequest(`/api/dev/parks/${id}`, {
+      return await apiRequest(`/api/dev/parks/${id}`, {
         method: "PUT",
         data: dataToSend,
       });
-      
-      console.log('RESPUESTA RECIBIDA:', response);
-      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/parks"] });
@@ -450,9 +444,6 @@ export default function ParkEdit() {
   });
 
   const onSubmit = (values: ParkEditFormValues) => {
-    console.log('FORMULARIO ENVIADO - onSubmit ejecutado con valores:', values);
-    console.log('Form errors:', form.formState.errors);
-    console.log('Form isValid:', form.formState.isValid);
     updateParkMutation.mutate(values);
   };
 
@@ -1419,37 +1410,12 @@ export default function ParkEdit() {
                   <Button variant="outline">Cancelar</Button>
                 </Link>
                 
-                {/* Botón de diagnóstico temporal */}
-                <Button 
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    console.log('=== DIAGNÓSTICO COMPLETO ===');
-                    console.log('Form values:', form.getValues());
-                    console.log('Form errors:', form.formState.errors);
-                    console.log('Form isValid:', form.formState.isValid);
-                    console.log('Form isDirty:', form.formState.isDirty);
-                    
-                    // Intentar envío directo
-                    const values = form.getValues();
-                    console.log('Intentando envío directo con valores:', values);
-                    updateParkMutation.mutate(values);
-                  }}
-                  disabled={updateParkMutation.isPending}
-                  className="min-w-32"
-                >
-                  Guardar (Directo)
-                </Button>
+
                 
                 <Button 
                   type="submit" 
                   disabled={updateParkMutation.isPending}
                   className="min-w-32"
-                  onClick={(e) => {
-                    console.log('Botón "Guardar cambios" clickeado');
-                    console.log('Form state:', form.formState);
-                    console.log('Form values:', form.getValues());
-                  }}
                 >
                   {updateParkMutation.isPending ? (
                     <>
