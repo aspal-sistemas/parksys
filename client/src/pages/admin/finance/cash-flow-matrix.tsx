@@ -26,6 +26,7 @@ interface CashFlowData {
 export default function CashFlowMatrix() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedPark, setSelectedPark] = useState<string>("all");
+  const [viewPeriod, setViewPeriod] = useState<'monthly' | 'quarterly' | 'annual'>('monthly');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
 
@@ -78,6 +79,47 @@ export default function CashFlowMatrix() {
   };
 
   const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+  const quarters = ["Q1", "Q2", "Q3", "Q4"];
+  const quarterNames = ["1er Trimestre", "2do Trimestre", "3er Trimestre", "4to Trimestre"];
+
+  // Función para agrupar datos por trimestre
+  const groupByQuarter = (monthlyData: number[]) => {
+    const quarterData = [];
+    for (let i = 0; i < 4; i++) {
+      const start = i * 3;
+      const quarterSum = monthlyData.slice(start, start + 3).reduce((sum, val) => sum + val, 0);
+      quarterData.push(quarterSum);
+    }
+    return quarterData;
+  };
+
+  // Función para obtener las columnas según el período seleccionado
+  const getColumns = () => {
+    switch (viewPeriod) {
+      case 'monthly':
+        return months;
+      case 'quarterly':
+        return quarterNames;
+      case 'annual':
+        return ['Anual'];
+      default:
+        return months;
+    }
+  };
+
+  // Función para obtener los datos según el período seleccionado
+  const getDataForPeriod = (monthlyValues: number[]) => {
+    switch (viewPeriod) {
+      case 'monthly':
+        return monthlyValues;
+      case 'quarterly':
+        return groupByQuarter(monthlyValues);
+      case 'annual':
+        return [monthlyValues.reduce((sum, val) => sum + val, 0)];
+      default:
+        return monthlyValues;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -124,7 +166,7 @@ export default function CashFlowMatrix() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
           <div className="lg:col-span-2">
             <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
               <SelectTrigger>
@@ -151,6 +193,18 @@ export default function CashFlowMatrix() {
                     {park.name}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="lg:col-span-1">
+            <Select value={viewPeriod} onValueChange={(value: 'monthly' | 'quarterly' | 'annual') => setViewPeriod(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="monthly">Mensual</SelectItem>
+                <SelectItem value="quarterly">Trimestral</SelectItem>
+                <SelectItem value="annual">Anual</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -216,8 +270,8 @@ export default function CashFlowMatrix() {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left p-2 font-medium">Categoría</th>
-                    {months.map((month: string) => (
-                      <th key={month} className="text-center p-2 font-medium min-w-[80px]">{month}</th>
+                    {getColumns().map((column: string) => (
+                      <th key={column} className="text-center p-2 font-medium min-w-[80px]">{column}</th>
                     ))}
                     <th className="text-center p-2 font-medium">Total</th>
                   </tr>
@@ -230,8 +284,8 @@ export default function CashFlowMatrix() {
                   {data.categories.filter((cat: any) => cat.type === 'income').map((category: any, idx: number) => (
                     <tr key={`income-${idx}`} className="border-b hover:bg-gray-50">
                       <td className="p-2">{category.name}</td>
-                      {category.monthlyValues.map((value: number, monthIdx: number) => (
-                        <td key={monthIdx} className="p-2 text-center text-green-600 font-medium">
+                      {getDataForPeriod(category.monthlyValues).map((value: number, periodIdx: number) => (
+                        <td key={periodIdx} className="p-2 text-center text-green-600 font-medium">
                           {value > 0 ? formatCurrency(value) : '-'}
                         </td>
                       ))}
@@ -242,7 +296,7 @@ export default function CashFlowMatrix() {
                   ))}
                   <tr className="border-b bg-green-100 font-semibold">
                     <td className="p-2">TOTAL INGRESOS</td>
-                    {data.summaries.monthly.income.map((income: number, idx: number) => (
+                    {getDataForPeriod(data.summaries.monthly.income).map((income: number, idx: number) => (
                       <td key={idx} className="p-2 text-center text-green-700">
                         {formatCurrency(income)}
                       </td>
@@ -259,8 +313,8 @@ export default function CashFlowMatrix() {
                   {data.categories.filter((cat: any) => cat.type === 'expense').map((category: any, idx: number) => (
                     <tr key={`expense-${idx}`} className="border-b hover:bg-gray-50">
                       <td className="p-2">{category.name}</td>
-                      {category.monthlyValues.map((value: number, monthIdx: number) => (
-                        <td key={monthIdx} className="p-2 text-center text-red-600 font-medium">
+                      {getDataForPeriod(category.monthlyValues).map((value: number, periodIdx: number) => (
+                        <td key={periodIdx} className="p-2 text-center text-red-600 font-medium">
                           {value > 0 ? formatCurrency(value) : '-'}
                         </td>
                       ))}
@@ -271,7 +325,7 @@ export default function CashFlowMatrix() {
                   ))}
                   <tr className="border-b bg-red-100 font-semibold">
                     <td className="p-2">TOTAL GASTOS</td>
-                    {data.summaries.monthly.expenses.map((expense: number, idx: number) => (
+                    {getDataForPeriod(data.summaries.monthly.expenses).map((expense: number, idx: number) => (
                       <td key={idx} className="p-2 text-center text-red-700">
                         {formatCurrency(expense)}
                       </td>
@@ -284,7 +338,7 @@ export default function CashFlowMatrix() {
                   {/* Flujo neto */}
                   <tr className="border-b-2 bg-blue-100 font-bold">
                     <td className="p-2">FLUJO NETO</td>
-                    {data.summaries.monthly.net.map((net: number, idx: number) => (
+                    {getDataForPeriod(data.summaries.monthly.net).map((net: number, idx: number) => (
                       <td key={idx} className={`p-2 text-center ${net >= 0 ? 'text-green-700' : 'text-red-700'}`}>
                         {formatCurrency(net)}
                       </td>
