@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, FileUp } from "lucide-react";
+import { Plus, Edit, Trash2, FileUp, Filter, ArrowUpDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,27 +43,96 @@ import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 import { apiRequest } from "@/lib/queryClient";
 
-// Simple amenity icon component
-function AmenityIcon({ name, size = 24 }: { name: string; size?: number }) {
-  const icons: Record<string, string> = {
-    playground: "🎪",
-    sports: "⚽",
-    bathroom: "🚻",
-    parking: "🅿️",
-    restaurant: "🍽️",
-    bench: "💺",
-    fountain: "⛲",
-    wifi: "📶",
-    security: "🔒",
-    garden: "🌳",
-    park: "🏞️",
+// Simple amenity icon component with monochromatic icons
+function AmenityIcon({ name, size = 20 }: { name: string; size?: number }) {
+  const iconComponents: Record<string, React.ComponentType<{ size: number; className?: string }>> = {
+    playground: ({ size, className }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <rect x="4" y="4" width="16" height="16" rx="2"/>
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M8 8l8 8"/>
+        <path d="M16 8l-8 8"/>
+      </svg>
+    ),
+    sports: ({ size, className }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72"/>
+        <path d="M15.44 21.25c-4.37-6.03-6.02-9.42-8.03-17.72"/>
+      </svg>
+    ),
+    bathroom: ({ size, className }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <circle cx="9" cy="9" r="2"/>
+        <circle cx="15" cy="9" r="2"/>
+        <path d="M7 13h4v8"/>
+        <path d="M13 13h4v8"/>
+      </svg>
+    ),
+    parking: ({ size, className }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M8 8h4a3 3 0 0 1 0 6H8"/>
+        <path d="M8 8v8"/>
+      </svg>
+    ),
+    restaurant: ({ size, className }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+        <path d="M7 2v20"/>
+        <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3z"/>
+      </svg>
+    ),
+    bench: ({ size, className }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <path d="M4 18v-4h16v4"/>
+        <path d="M4 14V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6"/>
+        <path d="M6 18v2"/>
+        <path d="M18 18v2"/>
+      </svg>
+    ),
+    fountain: ({ size, className }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <circle cx="12" cy="12" r="8"/>
+        <circle cx="12" cy="12" r="4"/>
+        <circle cx="12" cy="12" r="1"/>
+        <path d="M12 2v2"/>
+        <path d="M12 20v2"/>
+      </svg>
+    ),
+    wifi: ({ size, className }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+        <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+        <circle cx="12" cy="20" r="1"/>
+      </svg>
+    ),
+    security: ({ size, className }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    ),
+    garden: ({ size, className }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <path d="M12 2a3 3 0 0 0-3 3c0 1 1 2 3 2s3-1 3-2a3 3 0 0 0-3-3"/>
+        <path d="M19 12a7 7 0 1 0-14 0"/>
+        <path d="M12 12v8"/>
+      </svg>
+    ),
+    park: ({ size, className }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+        <path d="M12 2a3 3 0 0 0-3 3c0 1 1 2 3 2s3-1 3-2a3 3 0 0 0-3-3"/>
+        <path d="M19 12a7 7 0 1 0-14 0"/>
+        <path d="M12 12v8"/>
+      </svg>
+    ),
   };
+
+  const IconComponent = iconComponents[name] || iconComponents.park;
   
-  return (
-    <span style={{ fontSize: size }} className="inline-block">
-      {icons[name] || icons.park}
-    </span>
-  );
+  return <IconComponent size={size} className="text-gray-600" />;
 }
 
 const AVAILABLE_ICONS = [
@@ -122,6 +191,12 @@ const AdminAmenitiesPage = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   
+  // Filtros y ordenamiento
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"name" | "parksCount" | "category">("parksCount");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  
   const [formData, setFormData] = useState<AmenityFormData>({
     name: "",
     icon: "park",
@@ -136,6 +211,45 @@ const AdminAmenitiesPage = () => {
   });
 
   const amenities = amenitiesData?.allAmenities || [];
+
+  // Filtrado y ordenamiento
+  const filteredAndSortedAmenities = amenities
+    .filter((amenity: Amenity) => {
+      const matchesSearch = amenity.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = filterCategory === "all" || amenity.category === filterCategory;
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a: Amenity, b: Amenity) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case "name":
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case "parksCount":
+          aValue = a.parksCount || 0;
+          bValue = b.parksCount || 0;
+          break;
+        case "category":
+          aValue = getCategoryLabel(a.category || "");
+          bValue = getCategoryLabel(b.category || "");
+          break;
+        default:
+          return 0;
+      }
+      
+      if (sortOrder === "asc") {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+
+  // Obtener categorías únicas para el filtro
+  const uniqueCategories = Array.from(
+    new Set(amenities.map((amenity: Amenity) => amenity.category).filter(Boolean))
+  );
 
   // Create amenity mutation
   const createAmenity = useMutation({
@@ -415,6 +529,67 @@ const AdminAmenitiesPage = () => {
             </DialogContent>
           </Dialog>
         </div>
+      </div>
+
+      {/* Controles de filtrado y ordenamiento */}
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+          {/* Búsqueda */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar amenidades..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 w-64"
+            />
+          </div>
+
+          {/* Filtro por categoría */}
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filtrar por categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las categorías</SelectItem>
+                {uniqueCategories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {getCategoryLabel(category)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Ordenamiento */}
+        <div className="flex items-center gap-2">
+          <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+          <Select value={sortBy} onValueChange={(value: "name" | "parksCount" | "category") => setSortBy(value)}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">Nombre</SelectItem>
+              <SelectItem value="parksCount">Parques</SelectItem>
+              <SelectItem value="category">Categoría</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+          >
+            {sortOrder === "asc" ? "↑" : "↓"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Estadísticas */}
+      <div className="mb-4 text-sm text-muted-foreground">
+        Mostrando {filteredAndSortedAmenities.length} de {amenities.length} amenidades
       </div>
 
       {/* Amenities Table with Parks Column */}
