@@ -248,15 +248,21 @@ export default function AmenitiesDashboard() {
               <CardTitle>Amenidades por Parque</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={data?.utilizationByPark || []}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="parkName" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="amenitiesCount" fill="#0088FE" />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="h-80 overflow-y-auto">
+                <ResponsiveContainer width="100%" height={Math.max(400, (data?.utilizationByPark || []).length * 30)}>
+                  <BarChart 
+                    data={data?.utilizationByPark || []}
+                    layout="horizontal"
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="parkName" type="category" width={120} />
+                    <Tooltip />
+                    <Bar dataKey="amenitiesCount" fill="#0088FE" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
 
