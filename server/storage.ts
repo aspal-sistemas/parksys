@@ -1,4 +1,4 @@
-import { db } from './db';
+import { db, pool } from './db';
 import { eq, sql } from "drizzle-orm";
 import * as schema from "@shared/schema";
 
@@ -583,7 +583,7 @@ export class DatabaseStorage implements IStorage {
   async getParkAmenities(parkId: number): Promise<any[]> {
     try {
       // Usar consulta SQL directa para evitar problemas con relaciones de Drizzle
-      const result = await db.execute(sql`
+      const result = await pool.query(`
         SELECT 
           pa.id,
           pa.park_id as "parkId",
@@ -594,9 +594,9 @@ export class DatabaseStorage implements IStorage {
           a.icon as "amenityIcon"
         FROM park_amenities pa
         INNER JOIN amenities a ON pa.amenity_id = a.id
-        WHERE pa.park_id = ${parkId}
+        WHERE pa.park_id = $1
         ORDER BY a.name
-      `);
+      `, [parkId]);
       
       console.log(`Amenidades encontradas para parque ${parkId}:`, result.rows.length);
       return result.rows || [];
