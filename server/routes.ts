@@ -1169,7 +1169,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           pa.id,
           pa.park_id as "parkId",
           pa.amenity_id as "amenityId",
-          pa.quantity,
+          pa.module_name as "moduleName",
+          pa.location_latitude as "locationLatitude",
+          pa.location_longitude as "locationLongitude", 
+          pa.surface_area as "surfaceArea",
+          pa.status,
           pa.description,
           a.name as "amenityName",
           a.icon as "amenityIcon"
@@ -1205,10 +1209,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("TEST - Datos recibidos:", { parkId, amenityId, body: req.body });
       
       const result = await db.execute(`
-        INSERT INTO park_amenities (park_id, amenity_id, quantity, description)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO park_amenities (park_id, amenity_id, module_name, location_latitude, location_longitude, surface_area, status, description)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING *
-      `, [parkId, amenityId, req.body.quantity || 1, req.body.description || '']);
+      `, [parkId, amenityId, req.body.moduleName || '', req.body.locationLatitude || null, req.body.locationLongitude || null, req.body.surfaceArea || null, req.body.status || 'Activa', req.body.description || '']);
       
       console.log("TEST - Resultado:", result);
       res.status(201).json(result.rows[0]);
@@ -1226,18 +1230,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const parkId = Number(req.params.id);
       const amenityId = Number(req.body.amenityId);
-      const quantity = req.body.quantity || 1;
+      const moduleName = req.body.moduleName || '';
+      const locationLatitude = req.body.locationLatitude || null;
+      const locationLongitude = req.body.locationLongitude || null;
+      const surfaceArea = req.body.surfaceArea || null;
       const status = req.body.status || 'Activa';
       const description = req.body.description || '';
       
-      console.log("Datos recibidos:", { parkId, amenityId, quantity, status, description });
+      console.log("Datos recibidos:", { parkId, amenityId, moduleName, locationLatitude, locationLongitude, surfaceArea, status, description });
       
       // Usar SQL directo con parámetros para seguridad
       const result = await pool.query(`
-        INSERT INTO park_amenities (park_id, amenity_id, quantity, status, description)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO park_amenities (park_id, amenity_id, module_name, location_latitude, location_longitude, surface_area, status, description)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING *
-      `, [parkId, amenityId, quantity, status, description]);
+      `, [parkId, amenityId, moduleName, locationLatitude, locationLongitude, surfaceArea, status, description]);
       
       console.log("Resultado de inserción:", result.rows[0]);
       res.status(201).json(result.rows[0]);

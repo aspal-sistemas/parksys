@@ -142,7 +142,9 @@ export async function getParksDirectly(filters?: any) {
           // Consultamos las amenidades relacionadas con este parque
           const amenitiesQuery = `
             SELECT a.id, a.name, a.icon, a.custom_icon_url as "customIconUrl",
-                   pa.quantity, pa.status, pa.description
+                   pa.module_name as "moduleName", pa.location_latitude as "locationLatitude",
+                   pa.location_longitude as "locationLongitude", pa.surface_area as "surfaceArea",
+                   pa.status, pa.description
             FROM amenities a
             INNER JOIN park_amenities pa ON a.id = pa.amenity_id
             WHERE pa.park_id = $1
