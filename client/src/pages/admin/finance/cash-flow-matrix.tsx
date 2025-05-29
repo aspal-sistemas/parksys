@@ -60,7 +60,15 @@ export default function CashFlowMatrix() {
 
   // Consultas de datos
   const { data: cashFlowData, isLoading } = useQuery({
-    queryKey: ["/api/cash-flow", selectedYear, selectedPark],
+    queryKey: ["/api/cash-flow-matrix", selectedYear, selectedPark],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        year: selectedYear.toString(),
+        ...(selectedPark !== "all" && { parkId: selectedPark })
+      });
+      const response = await fetch(`/api/cash-flow-matrix?${params}`);
+      return response.json();
+    }
   });
 
   const { data: parks } = useQuery({
@@ -355,7 +363,7 @@ export default function CashFlowMatrix() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los parques</SelectItem>
-                {parks?.map((park: any) => (
+                {parks && Array.isArray(parks) && parks.map((park: any) => (
                   <SelectItem key={park.id} value={park.id.toString()}>
                     {park.name}
                   </SelectItem>
