@@ -248,34 +248,39 @@ export default function AmenitiesDashboard() {
               <CardTitle>Amenidades por Parque</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Debug: mostrar los datos */}
-              <div className="mb-4 text-xs text-gray-500">
-                Datos: {(data?.utilizationByPark || []).length} parques encontrados
-              </div>
-              
               <div className="h-80 overflow-y-auto">
-                <ResponsiveContainer width="100%" height={Math.max(400, (data?.utilizationByPark || []).length * 40)}>
-                  <BarChart 
-                    data={data?.utilizationByPark || []}
-                    layout="horizontal"
-                    margin={{ top: 5, right: 30, left: 150, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="parkName" type="category" width={140} tick={{ fontSize: 12 }} />
-                    <Tooltip 
-                      formatter={(value, name) => [value, 'Amenidades']}
-                      labelFormatter={(label) => `Parque: ${label}`}
-                    />
-                    <Bar 
-                      dataKey="amenitiesCount" 
-                      fill="#3B82F6" 
-                      stroke="#1E40AF" 
-                      strokeWidth={1}
-                      radius={[0, 2, 2, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="space-y-3">
+                  {(data?.utilizationByPark || []).map((park: any, index: number) => {
+                    const maxValue = Math.max(...(data?.utilizationByPark || []).map((p: any) => p.amenitiesCount));
+                    const percentage = maxValue > 0 ? (park.amenitiesCount / maxValue) * 100 : 0;
+                    
+                    return (
+                      <div key={index} className="flex items-center space-x-3">
+                        <div className="w-32 text-sm font-medium text-right text-gray-700 truncate">
+                          {park.parkName}
+                        </div>
+                        <div className="flex-1 flex items-center space-x-2">
+                          <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
+                            <div 
+                              className="bg-blue-500 h-6 rounded-full flex items-center justify-end pr-2 transition-all duration-500"
+                              style={{ width: `${Math.max(percentage, 5)}%` }}
+                            >
+                              <span className="text-white text-xs font-medium">
+                                {park.amenitiesCount}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {(data?.utilizationByPark || []).length === 0 && (
+                  <div className="text-center text-gray-500 py-8">
+                    No hay datos de parques disponibles
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
