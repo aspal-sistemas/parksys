@@ -14,16 +14,18 @@ Icon.Default.mergeOptions({
 interface MapSelectorProps {
   latitude?: string;
   longitude?: string;
-  onLocationChange: (lat: string, lng: string) => void;
+  defaultCenter?: { lat: number; lng: number };
+  selectedLocation?: { lat: number; lng: number } | null;
+  onLocationSelect: (location: { lat: number; lng: number }) => void;
   className?: string;
 }
 
 // Componente para manejar clics en el mapa
-function MapClickHandler({ onLocationChange }: { onLocationChange: (lat: string, lng: string) => void }) {
+function MapClickHandler({ onLocationSelect }: { onLocationSelect: (location: { lat: number; lng: number }) => void }) {
   useMapEvents({
     click: (e) => {
       const { lat, lng } = e.latlng;
-      onLocationChange(lat.toString(), lng.toString());
+      onLocationSelect({ lat, lng });
     },
   });
   return null;
@@ -46,11 +48,13 @@ function MapController({ latitude, longitude }: { latitude?: string; longitude?:
   return null;
 }
 
-export function MapSelector({ latitude, longitude, onLocationChange, className }: MapSelectorProps) {
+export function MapSelector({ latitude, longitude, defaultCenter, selectedLocation, onLocationSelect, className }: MapSelectorProps) {
   const [position, setPosition] = useState<[number, number] | null>(null);
 
   useEffect(() => {
-    if (latitude && longitude) {
+    if (defaultCenter) {
+      setPosition([defaultCenter.lat, defaultCenter.lng]);
+    } else if (latitude && longitude) {
       const lat = parseFloat(latitude);
       const lng = parseFloat(longitude);
       if (!isNaN(lat) && !isNaN(lng)) {
@@ -60,16 +64,7 @@ export function MapSelector({ latitude, longitude, onLocationChange, className }
       // Coordenadas por defecto para México (Centro del país)
       setPosition([19.4326, -99.1332]);
     }
-  }, [latitude, longitude]);
-
-  const handleLocationChange = (lat: string, lng: string) => {
-    const latNum = parseFloat(lat);
-    const lngNum = parseFloat(lng);
-    if (!isNaN(latNum) && !isNaN(lngNum)) {
-      setPosition([latNum, lngNum]);
-      onLocationSelect({ lat: latNum, lng: lngNum });
-    }
-  };
+  }, [latitude, longitude, defaultCenter]);
 
   if (!position) {
     return <div className="h-64 bg-gray-200 rounded-lg flex items-center justify-center">Cargando mapa...</div>;
@@ -91,14 +86,14 @@ export function MapSelector({ latitude, longitude, onLocationChange, className }
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <MapClickHandler onLocationChange={handleLocationChange} />
+          <MapClickHandler onLocationSelect={onLocationSelect} />
           <MapController latitude={latitude} longitude={longitude} />
-          {position && <Marker position={position} />}
+          {selectedLocation && <Marker position={[selectedLocation.lat, selectedLocation.lng]} />}
         </MapContainer>
       </div>
-      {position && (
+      {selectedLocation && (
         <div className="mt-2 text-xs text-gray-500">
-          Coordenadas seleccionadas: {position[0].toFixed(6)}, {position[1].toFixed(6)}
+          Coordenadas seleccionadas: {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
         </div>
       )}
     </div>
