@@ -929,7 +929,7 @@ export default function ParkEdit() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => removeAmenityMutation.mutate(parkAmenity.id)}
+                                    onClick={() => removeAmenityMutation.mutate(parkAmenity.amenityId)}
                                     disabled={removeAmenityMutation.isPending}
                                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                   >
