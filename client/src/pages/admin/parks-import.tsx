@@ -10,6 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Municipality } from '@shared/schema';
+import { apiRequest } from '@/lib/queryClient';
 
 const ParksImport = () => {
   const { toast } = useToast();
@@ -101,9 +102,9 @@ const ParksImport = () => {
       formData.append('file', selectedFile);
       formData.append('municipalityId', selectedMunicipality);
       
-      const response = await fetch('/api/parks/import', {
+      const response = await apiRequest('/api/parks/import', {
         method: 'POST',
-        body: formData,
+        data: formData,
       });
       
       const result = await response.json();
