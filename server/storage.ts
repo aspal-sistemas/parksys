@@ -619,6 +619,38 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  async createPark(parkData: any): Promise<any> {
+    try {
+      const result = await db.insert(parks).values({
+        name: parkData.name,
+        municipalityId: parkData.municipalityId,
+        parkType: parkData.parkType || 'Urban',
+        description: parkData.description || '',
+        address: parkData.address || '',
+        postalCode: parkData.postalCode || '',
+        latitude: parkData.latitude || '0',
+        longitude: parkData.longitude || '0',
+        area: parkData.area || '0',
+        foundationYear: parkData.foundationYear || new Date().getFullYear(),
+        administrator: parkData.administrator || '',
+        conservationStatus: parkData.conservationStatus || 'Good',
+        regulationUrl: parkData.regulationUrl || '',
+        openingHours: parkData.openingHours || '{}',
+        contactEmail: parkData.contactEmail || '',
+        contactPhone: parkData.contactPhone || '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isDeleted: false,
+        videoUrl: parkData.videoUrl || ''
+      }).returning();
+      
+      return result[0];
+    } catch (error) {
+      console.error("Error al crear parque:", error);
+      throw error;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();
