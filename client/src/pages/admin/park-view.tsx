@@ -578,7 +578,15 @@ export default function AdminParkView() {
                     <div className="text-2xl">{getIconSymbol(amenity.icon)}</div>
                     <div>
                       <h4 className="font-medium">{amenity.name}</h4>
-                      <p className="text-sm text-gray-600">{amenity.description}</p>
+                      {amenity.quantity && amenity.quantity > 1 && (
+                        <p className="text-sm text-gray-500">Cantidad: {amenity.quantity}</p>
+                      )}
+                      {amenity.status && (
+                        <p className="text-sm text-gray-500">Estado: {amenity.status}</p>
+                      )}
+                      {amenity.description && (
+                        <p className="text-sm text-gray-600">{amenity.description}</p>
+                      )}
                     </div>
                   </div>
                 ))}

@@ -939,9 +939,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const parksWithThisAmenity = parks.filter((park: any) => 
           park.amenities?.some((a: any) => a.amenityId === amenity.id)
         );
+        
+        // Calculate total modules (quantity) for this amenity across all parks
+        const totalModules = parks.reduce((sum: number, park: any) => {
+          const parkAmenities = park.amenities?.filter((a: any) => a.amenityId === amenity.id) || [];
+          return sum + parkAmenities.reduce((amenitySum: number, a: any) => amenitySum + (a.quantity || 1), 0);
+        }, 0);
+        
         return {
           ...amenity,
           parksCount: parksWithThisAmenity.length,
+          totalModules: totalModules,
           utilizationRate: parks.length > 0 ? Math.round((parksWithThisAmenity.length / parks.length) * 100) : 0
         };
       }).sort((a: any, b: any) => b.parksCount - a.parksCount);
@@ -1216,16 +1224,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parkId = Number(req.params.id);
       const amenityId = Number(req.body.amenityId);
       const quantity = req.body.quantity || 1;
+      const status = req.body.status || 'Activa';
       const description = req.body.description || '';
       
-      console.log("Datos recibidos:", { parkId, amenityId, quantity, description });
+      console.log("Datos recibidos:", { parkId, amenityId, quantity, status, description });
       
-      // Usar SQL directo sin parámetros para evitar problemas
+      // Usar SQL directo con parámetros para seguridad
       const result = await pool.query(`
-        INSERT INTO park_amenities (park_id, amenity_id, quantity, description)
-        VALUES (${parkId}, ${amenityId}, ${quantity}, '${description}')
+        INSERT INTO park_amenities (park_id, amenity_id, quantity, status, description)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *
-      `);
+      `, [parkId, amenityId, quantity, status, description]);
       
       console.log("Resultado de inserción:", result.rows[0]);
       res.status(201).json(result.rows[0]);

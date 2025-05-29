@@ -986,6 +986,9 @@ export default function ParkEdit() {
                                       {parkAmenity.quantity > 1 && (
                                         <p className="text-sm text-gray-500">Cantidad: {parkAmenity.quantity}</p>
                                       )}
+                                      {parkAmenity.status && (
+                                        <p className="text-sm text-gray-500">Estado: {parkAmenity.status}</p>
+                                      )}
                                       {parkAmenity.description && (
                                         <p className="text-sm text-gray-500">{parkAmenity.description}</p>
                                       )}
