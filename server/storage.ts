@@ -582,22 +582,22 @@ export class DatabaseStorage implements IStorage {
 
   async getParkAmenities(parkId: number): Promise<any[]> {
     try {
-      const result = await db.execute(`
-        SELECT 
-          pa.id,
-          pa.park_id as "parkId",
-          pa.amenity_id as "amenityId",
-          pa.quantity,
-          pa.description,
-          a.name as "amenityName",
-          a.icon as "amenityIcon"
-        FROM park_amenities pa
-        JOIN amenities a ON pa.amenity_id = a.id
-        WHERE pa.park_id = $1
-        ORDER BY a.name
-      `, [parkId]);
+      const result = await db.query.parkAmenities.findMany({
+        where: eq(parkAmenities.parkId, parkId),
+        with: {
+          amenity: true
+        }
+      });
       
-      return result.rows || [];
+      return result.map(pa => ({
+        id: pa.id,
+        parkId: pa.parkId,
+        amenityId: pa.amenityId,
+        quantity: pa.quantity,
+        description: pa.description,
+        amenityName: pa.amenity.name,
+        amenityIcon: pa.amenity.icon
+      }));
     } catch (error) {
       console.error(`Error al obtener amenidades del parque ${parkId}:`, error);
       return [];
