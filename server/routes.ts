@@ -867,23 +867,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test endpoint without auth
+  apiRouter.post("/test/parks/:id/amenities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const amenityId = Number(req.body.amenityId);
+      
+      console.log("TEST - Datos recibidos:", { parkId, amenityId, body: req.body });
+      
+      const result = await db.execute(`
+        INSERT INTO park_amenities (park_id, amenity_id, quantity, description)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *
+      `, [parkId, amenityId, req.body.quantity || 1, req.body.description || '']);
+      
+      console.log("TEST - Resultado:", result);
+      res.status(201).json(result.rows[0]);
+    } catch (error) {
+      console.error("TEST - Error:", error);
+      res.status(500).json({ 
+        message: "Test error",
+        details: error.message 
+      });
+    }
+  });
+
   // Add an amenity to a park (admin/municipality only)
   apiRouter.post("/parks/:id/amenities", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
       const amenityId = Number(req.body.amenityId);
       
-      const data = insertParkAmenitySchema.parse({ parkId, amenityId });
-      const result = await storage.addAmenityToPark(data);
+      const result = await db.execute(`
+        INSERT INTO park_amenities (park_id, amenity_id, quantity, description)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *
+      `, [parkId, amenityId, req.body.quantity || 1, req.body.description || '']);
       
-      res.status(201).json(result);
+      res.status(201).json(result.rows[0]);
     } catch (error) {
-      if (error instanceof ZodError) {
-        const validationError = fromZodError(error);
-        return res.status(400).json({ message: validationError.message });
-      }
-      console.error(error);
-      res.status(500).json({ message: "Error adding amenity to park" });
+      console.error("Error al agregar amenidad:", error);
+      res.status(500).json({ 
+        message: "Error adding amenity to park",
+        details: error.message 
+      });
     }
   });
 
