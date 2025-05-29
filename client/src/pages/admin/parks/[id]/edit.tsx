@@ -318,6 +318,8 @@ export default function ParkEdit() {
       return await response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/parks", id, "amenities"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}`] });
       refetchParkAmenities();
       toast({
         title: "Amenidad agregada",
@@ -341,6 +343,8 @@ export default function ParkEdit() {
       });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/parks", id, "amenities"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}`] });
       refetchParkAmenities();
       toast({
         title: "Amenidad removida",
