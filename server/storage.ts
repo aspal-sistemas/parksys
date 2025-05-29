@@ -61,24 +61,31 @@ export class DatabaseStorage implements IStorage {
     try {
       const parksData = await this.getParks(filters);
       
-      // Agregamos datos extendidos vacíos para compatibilidad
-      return parksData.map(park => ({
-        ...park,
-        amenities: [],
-        activities: [],
-        documents: [],
-        images: [],
-        trees: {
-          total: 0,
-          bySpecies: {},
-          byHealth: {
-            'Bueno': 0,
-            'Regular': 0,
-            'Malo': 0,
-            'Desconocido': 0
-          }
-        }
-      }));
+      // Obtener las amenidades reales para cada parque
+      const parksWithAmenities = await Promise.all(
+        parksData.map(async (park) => {
+          const amenities = await this.getParkAmenities(park.id);
+          return {
+            ...park,
+            amenities: amenities || [],
+            activities: [],
+            documents: [],
+            images: [],
+            trees: {
+              total: 0,
+              bySpecies: {},
+              byHealth: {
+                'Bueno': 0,
+                'Regular': 0,
+                'Malo': 0,
+                'Desconocido': 0
+              }
+            }
+          };
+        })
+      );
+      
+      return parksWithAmenities;
     } catch (error) {
       console.error("Error al obtener parques extendidos:", error);
       return [];
