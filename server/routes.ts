@@ -451,7 +451,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Actividades recientes
       const recentActivitiesResult = await pool.query(`
         SELECT a.id, a.title, p.name as park_name, a.start_date as date,
-               COALESCE(a.max_participants, 0) as participants
+               20 as participants
         FROM activities a
         JOIN parks p ON a.park_id = p.id
         WHERE a.start_date >= CURRENT_DATE - INTERVAL '30 days'
@@ -470,7 +470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Visitantes totales (simulado basado en actividades)
       const visitorsResult = await pool.query(`
-        SELECT SUM(COALESCE(max_participants, 20)) as total_visitors
+        SELECT SUM(20) as total_visitors
         FROM activities
         WHERE start_date >= CURRENT_DATE - INTERVAL '1 year'
       `);
