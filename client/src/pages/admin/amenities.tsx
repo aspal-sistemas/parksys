@@ -164,6 +164,7 @@ type Amenity = {
   icon: string | null;
   category?: string;
   parksCount?: number;
+  totalModules?: number;
   createdAt: Date;
 };
 
@@ -611,6 +612,7 @@ const AdminAmenitiesPage = () => {
               <TableHead>Nombre</TableHead>
               <TableHead>Categoría</TableHead>
               <TableHead>Parques</TableHead>
+              <TableHead>Total Módulos</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -638,6 +640,11 @@ const AdminAmenitiesPage = () => {
                       {amenity.parksCount || 0} parques
                     </Badge>
                   </Button>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+                    {amenity.totalModules || 0} módulos
+                  </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
