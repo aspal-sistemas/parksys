@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit, Trash2, FileUp, Filter, ArrowUpDown, Search } from "lucide-react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -183,6 +184,7 @@ function getCategoryLabel(category: string): string {
 const AdminAmenitiesPage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -351,6 +353,12 @@ const AdminAmenitiesPage = () => {
   const handleDeleteClick = (amenity: Amenity) => {
     setCurrentAmenity(amenity);
     setIsDeleteDialogOpen(true);
+  };
+
+  const handleParksClick = (amenityId: number) => {
+    // Navegar a la página de parques con el filtro de amenidad activado
+    const url = `/admin/parks?amenity=${amenityId}`;
+    setLocation(url);
   };
 
   const handleCreateSubmit = (e: React.FormEvent) => {
@@ -619,9 +627,17 @@ const AdminAmenitiesPage = () => {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                    {amenity.parksCount || 0} parques
-                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleParksClick(amenity.id)}
+                    className="p-2 h-auto hover:bg-blue-50"
+                    disabled={!amenity.parksCount || amenity.parksCount === 0}
+                  >
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer">
+                      {amenity.parksCount || 0} parques
+                    </Badge>
+                  </Button>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
