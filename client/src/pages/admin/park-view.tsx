@@ -48,6 +48,7 @@ interface ParkDetails {
   latitude?: number;
   longitude?: number;
   area?: number;
+  greenArea?: string;
   foundationYear?: number;
   administrator?: string;
   conservationStatus?: string;
@@ -382,7 +383,7 @@ export default function AdminParkView() {
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium text-gray-700">Área Permeable:</span>
                     </div>
-                    <p className="text-gray-600">{displayPark.greenArea} m²</p>
+                    <p className="text-gray-600">{parseFloat(displayPark.greenArea).toLocaleString()} m²</p>
                   </div>
                 )}
 
