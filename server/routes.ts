@@ -927,6 +927,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete specific amenity from a park
+  apiRouter.delete("/parks/:parkId/amenities/:amenityId", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const amenityId = Number(req.params.amenityId);
+      
+      const result = await pool.query(`
+        DELETE FROM park_amenities 
+        WHERE park_id = $1 AND amenity_id = $2
+        RETURNING *
+      `, [parkId, amenityId]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Amenidad no encontrada en este parque" });
+      }
+      
+      res.json({ 
+        message: "Amenidad eliminada correctamente",
+        deletedAmenity: result.rows[0]
+      });
+    } catch (error) {
+      console.error("Error al eliminar amenidad del parque:", error);
+      res.status(500).json({ message: "Error al eliminar amenidad del parque" });
+    }
+  });
+
   // Test endpoint for amenities - different path to avoid conflicts
   apiRouter.get("/test-amenities/:parkId", async (req: Request, res: Response) => {
     console.log(`[TEST AMENITIES] Ejecutándose para parque ${req.params.parkId}`);
