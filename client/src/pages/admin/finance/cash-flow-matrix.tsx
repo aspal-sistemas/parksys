@@ -54,6 +54,8 @@ export default function CashFlowMatrix() {
   const [selectedScenario, setSelectedScenario] = useState<'optimistic' | 'realistic' | 'pessimistic'>('realistic');
   const [inflationRate, setInflationRate] = useState(4.5);
   const [customGrowthRates, setCustomGrowthRates] = useState<Record<string, number>>({});
+  const [showCustomGrowthPanel, setShowCustomGrowthPanel] = useState(false);
+  const [categoryGrowthByYear, setCategoryGrowthByYear] = useState<Record<string, Record<number, number>>>({});
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -138,9 +140,20 @@ export default function CashFlowMatrix() {
       const yearProjection: ProjectedYearData = {
         year,
         categories: currentData.categories.map(category => {
-          const baseGrowth = customGrowthRates[category.name] !== undefined 
-            ? customGrowthRates[category.name] 
-            : calculateTrendGrowth(category.monthlyValues);
+          // Verificar si hay un factor de crecimiento específico para esta categoría y año
+          const specificGrowthRate = categoryGrowthByYear[category.name]?.[year];
+          
+          let baseGrowth: number;
+          if (specificGrowthRate !== undefined) {
+            // Usar el factor específico por año
+            baseGrowth = specificGrowthRate;
+          } else if (customGrowthRates[category.name] !== undefined) {
+            // Usar el factor general de la categoría
+            baseGrowth = customGrowthRates[category.name];
+          } else {
+            // Calcular tendencia histórica
+            baseGrowth = calculateTrendGrowth(category.monthlyValues);
+          }
           
           const adjustedGrowth = baseGrowth * getScenarioMultiplier(selectedScenario);
           const inflationAdjustment = category.type === 'expense' ? inflationRate : 0;
@@ -328,6 +341,15 @@ export default function CashFlowMatrix() {
               <Calculator className="h-4 w-4 mr-2" />
               {showProjections ? 'Ocultar' : 'Mostrar'} Proyecciones
             </Button>
+            {showProjections && (
+              <Button 
+                onClick={() => setShowCustomGrowthPanel(!showCustomGrowthPanel)}
+                variant={showCustomGrowthPanel ? "default" : "outline"}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                {showCustomGrowthPanel ? 'Ocultar' : 'Configurar'} Factores
+              </Button>
+            )}
             <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline">
               <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
               Actualizar
@@ -402,6 +424,79 @@ export default function CashFlowMatrix() {
             </div>
           )}
         </div>
+
+        {/* Panel de configuración de factores personalizados */}
+        {showCustomGrowthPanel && data && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Factores de Crecimiento Personalizados
+              </CardTitle>
+              <CardDescription>
+                Configure factores específicos por categoría y año para proyecciones más precisas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {data.categories.map((category) => (
+                  <div key={category.name} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-medium text-sm">
+                        {category.name} ({category.type === 'income' ? 'Ingreso' : 'Egreso'})
+                      </h4>
+                      <Badge variant={category.type === 'income' ? 'default' : 'destructive'}>
+                        {formatCurrency(category.total)}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                      {Array.from({ length: projectionYears }, (_, i) => {
+                        const year = new Date().getFullYear() + 1 + i;
+                        const currentValue = categoryGrowthByYear[category.name]?.[year] || 0;
+                        return (
+                          <div key={year} className="space-y-2">
+                            <Label className="text-xs">{year}</Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                step="0.1"
+                                placeholder="0.0"
+                                value={currentValue || ''}
+                                onChange={(e) => {
+                                  const value = parseFloat(e.target.value) || 0;
+                                  setCategoryGrowthByYear(prev => ({
+                                    ...prev,
+                                    [category.name]: {
+                                      ...prev[category.name],
+                                      [year]: value
+                                    }
+                                  }));
+                                }}
+                                className="text-xs"
+                              />
+                              <span className="text-xs text-gray-500">%</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center pt-4 border-t">
+                  <div className="text-sm text-gray-600">
+                    Los valores negativos representan decrementos. Si no se especifica un valor, se usará la tendencia histórica.
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCategoryGrowthByYear({})}
+                  >
+                    Limpiar Todo
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Configuración de proyecciones */}
         {showProjections && (
