@@ -828,8 +828,8 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Amenidad</TableHead>
                 <TableHead>Nombre del Módulo</TableHead>
+                <TableHead>Amenidad</TableHead>
                 <TableHead>Superficie (m²)</TableHead>
                 <TableHead>Estado</TableHead>
               </TableRow>
@@ -837,10 +837,6 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
             <TableBody>
               {amenitiesArray.map((amenity: any) => (
                 <TableRow key={amenity.id}>
-                  <TableCell className="flex items-center gap-2">
-                    <span className="text-xl">{getIconSymbol(amenity.amenityIcon)}</span>
-                    <span className="font-medium">{amenity.amenityName}</span>
-                  </TableCell>
                   <TableCell>
                     <span className="font-medium">{amenity.moduleName || '-'}</span>
                     {amenity.locationLatitude && amenity.locationLongitude && (
@@ -848,6 +844,10 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
                         📍 {parseFloat(amenity.locationLatitude).toFixed(6)}, {parseFloat(amenity.locationLongitude).toFixed(6)}
                       </div>
                     )}
+                  </TableCell>
+                  <TableCell className="flex items-center gap-2">
+                    <span className="text-xl">{getIconSymbol(amenity.amenityIcon)}</span>
+                    <span className="font-medium">{amenity.amenityName}</span>
                   </TableCell>
                   <TableCell>
                     {amenity.surfaceArea ? `${parseFloat(amenity.surfaceArea).toLocaleString()} m²` : '-'}
