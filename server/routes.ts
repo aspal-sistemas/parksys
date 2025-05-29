@@ -761,6 +761,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalParks: parks.length,
         averageAmenitiesPerPark: parks.length ? Math.round((totalAmenityAssignments / parks.length) * 100) / 100 : 0,
         mostPopularAmenities: amenityStats.slice(0, 5),
+        allAmenities: amenityStats,
         amenityDistribution: amenityStats.slice(0, 6).map((amenity: any, index: number) => ({
           name: amenity.name.length > 12 ? amenity.name.substring(0, 12) + '...' : amenity.name,
           value: amenity.parksCount,

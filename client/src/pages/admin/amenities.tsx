@@ -135,7 +135,7 @@ const AdminAmenitiesPage = () => {
     queryKey: ["/api/amenities/dashboard"],
   });
 
-  const amenities = amenitiesData?.mostPopularAmenities || [];
+  const amenities = amenitiesData?.allAmenities || [];
 
   // Create amenity mutation
   const createAmenity = useMutation({
