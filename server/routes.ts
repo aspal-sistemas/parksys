@@ -11,6 +11,7 @@ import { db, pool } from "./db";
 import { sql, eq } from "drizzle-orm";
 import { deleteAllVolunteers, deleteVolunteer } from "./delete-all-volunteers";
 import * as schema from "@shared/schema";
+const { parkAmenities } = schema;
 import { videoRouter } from "./video_routes";
 import { registerVolunteerRoutes } from "./volunteerRoutes";
 import { registerInstructorRoutes } from "./instructorRoutes";
@@ -898,7 +899,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parkId = Number(req.params.id);
       const amenityId = Number(req.body.amenityId);
       
-      const result = await db.execute(`
+      // Usar pool directamente para evitar problemas con Drizzle
+      const result = await pool.query(`
         INSERT INTO park_amenities (park_id, amenity_id, quantity, description)
         VALUES ($1, $2, $3, $4)
         RETURNING *
