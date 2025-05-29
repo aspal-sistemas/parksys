@@ -784,6 +784,166 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error fetching amenities dashboard data" });
     }
   });
+
+  // Ruta para obtener estadísticas del dashboard de parques
+  apiRouter.get("/parks/dashboard", async (_req: Request, res: Response) => {
+    try {
+      console.log("Iniciando cálculo de estadísticas del dashboard de parques...");
+      
+      // Estadísticas básicas
+      const totalParksResult = await pool.query('SELECT COUNT(*) as count FROM parks');
+      const totalParks = parseInt(totalParksResult.rows[0].count);
+      
+      // Superficie total y área verde (sumando las áreas de todos los parques)
+      const surfaceResult = await pool.query(`
+        SELECT 
+          SUM(CASE WHEN area IS NOT NULL THEN area ELSE 0 END) as total_surface,
+          SUM(CASE WHEN area IS NOT NULL THEN area * 0.7 ELSE 0 END) as total_green_area
+        FROM parks
+      `);
+      const totalSurface = parseFloat(surfaceResult.rows[0].total_surface) || 0;
+      const totalGreenArea = parseFloat(surfaceResult.rows[0].total_green_area) || 0;
+      
+      // Parques activos (asumiendo que todos son activos si no tienen campo de estado)
+      const activeParks = totalParks;
+      
+      // Total de actividades
+      const activitiesResult = await pool.query('SELECT COUNT(*) as count FROM activities');
+      const totalActivities = parseInt(activitiesResult.rows[0].count);
+      
+      // Total de voluntarios
+      const volunteersResult = await pool.query('SELECT COUNT(*) as count FROM volunteers WHERE status = $1', ['active']);
+      const totalVolunteers = parseInt(volunteersResult.rows[0].count);
+      
+      // Total de árboles en inventario
+      const treesResult = await pool.query('SELECT COUNT(*) as count FROM trees');
+      const totalTrees = parseInt(treesResult.rows[0].count);
+      
+      // Áreas en mantenimiento (simulado por actividades de mantenimiento)
+      const maintenanceResult = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM activities 
+        WHERE LOWER(title) LIKE '%mantenimiento%' 
+           OR LOWER(description) LIKE '%mantenimiento%'
+           OR LOWER(title) LIKE '%limpieza%'
+      `);
+      const maintenanceAreas = parseInt(maintenanceResult.rows[0].count);
+      
+      // Parques por municipio
+      const parksByMunicipalityResult = await pool.query(`
+        SELECT m.name as municipality_name, COUNT(p.id) as count
+        FROM municipalities m
+        LEFT JOIN parks p ON m.id = p.municipality_id
+        GROUP BY m.id, m.name
+        HAVING COUNT(p.id) > 0
+        ORDER BY count DESC
+      `);
+      
+      // Parques por tipo
+      const parksByTypeResult = await pool.query(`
+        SELECT park_type as type, COUNT(*) as count
+        FROM parks
+        WHERE park_type IS NOT NULL
+        GROUP BY park_type
+        ORDER BY count DESC
+      `);
+      
+      // Estado de conservación
+      const conservationStatusResult = await pool.query(`
+        SELECT conservation_status as status, COUNT(*) as count
+        FROM parks
+        WHERE conservation_status IS NOT NULL
+        GROUP BY conservation_status
+        ORDER BY count DESC
+      `);
+      
+      // Actividades recientes
+      const recentActivitiesResult = await pool.query(`
+        SELECT a.id, a.title, p.name as park_name, a.start_date as date,
+               COALESCE(a.max_participants, 0) as participants
+        FROM activities a
+        JOIN parks p ON a.park_id = p.id
+        WHERE a.start_date >= CURRENT_DATE - INTERVAL '30 days'
+        ORDER BY a.start_date DESC
+        LIMIT 5
+      `);
+      
+      // Parques con coordenadas para el mapa
+      const parksWithCoordinatesResult = await pool.query(`
+        SELECT p.id, p.name, p.latitude, p.longitude, m.name as municipality,
+               p.park_type as type, p.area, p.conservation_status as status
+        FROM parks p
+        LEFT JOIN municipalities m ON p.municipality_id = m.id
+        WHERE p.latitude IS NOT NULL AND p.longitude IS NOT NULL
+      `);
+      
+      // Visitantes totales (simulado basado en actividades)
+      const visitorsResult = await pool.query(`
+        SELECT SUM(COALESCE(max_participants, 20)) as total_visitors
+        FROM activities
+        WHERE start_date >= CURRENT_DATE - INTERVAL '1 year'
+      `);
+      const totalVisitors = parseInt(visitorsResult.rows[0].total_visitors) || 0;
+      
+      // Calificación promedio (simulado basado en evaluaciones de voluntarios)
+      const ratingsResult = await pool.query(`
+        SELECT AVG(overall_rating) as avg_rating
+        FROM volunteer_evaluations
+      `);
+      const averageRating = parseFloat(ratingsResult.rows[0].avg_rating) || 0;
+      
+      const dashboardData = {
+        totalParks,
+        totalSurface,
+        totalGreenArea,
+        totalVisitors,
+        activeParks,
+        maintenanceAreas,
+        totalActivities,
+        totalVolunteers,
+        totalTrees,
+        averageRating,
+        parksByMunicipality: parksByMunicipalityResult.rows.map(row => ({
+          municipalityName: row.municipality_name,
+          count: parseInt(row.count)
+        })),
+        parksByType: parksByTypeResult.rows.map(row => ({
+          type: row.type,
+          count: parseInt(row.count)
+        })),
+        conservationStatus: conservationStatusResult.rows.map(row => ({
+          status: row.status,
+          count: parseInt(row.count)
+        })),
+        recentActivities: recentActivitiesResult.rows.map(row => ({
+          id: row.id,
+          title: row.title,
+          parkName: row.park_name,
+          date: row.date,
+          participants: parseInt(row.participants)
+        })),
+        parksWithCoordinates: parksWithCoordinatesResult.rows.map(row => ({
+          id: row.id,
+          name: row.name,
+          latitude: parseFloat(row.latitude),
+          longitude: parseFloat(row.longitude),
+          municipality: row.municipality || 'Sin municipio',
+          type: row.type || 'Sin tipo',
+          area: parseFloat(row.area) || 0,
+          status: row.status || 'Sin estado'
+        }))
+      };
+      
+      console.log("Estadísticas del dashboard de parques calculadas exitosamente");
+      res.json(dashboardData);
+    } catch (error) {
+      console.error("Error al calcular estadísticas del dashboard de parques:", error);
+      res.status(500).json({ 
+        message: "Error al calcular estadísticas del dashboard de parques",
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      });
+    }
+  });
   
   // Create a new amenity (admin only)
   apiRouter.post("/amenities", isAuthenticated, async (req: Request, res: Response) => {
