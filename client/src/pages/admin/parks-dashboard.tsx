@@ -246,7 +246,10 @@ const ParksDashboard = () => {
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                {data.parksWithCoordinates?.map((park) => (
+                {data.parksWithCoordinates?.filter(park => 
+                  park.latitude != null && park.longitude != null && 
+                  !isNaN(park.latitude) && !isNaN(park.longitude)
+                ).map((park) => (
                   <Marker
                     key={park.id}
                     position={[park.latitude, park.longitude]}
