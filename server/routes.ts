@@ -894,18 +894,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add an amenity to a park (admin/municipality only)
-  apiRouter.post("/parks/:id/amenities", async (req: Request, res: Response) => {
+  app.post("/api/parks/:id/amenities", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
       const amenityId = Number(req.body.amenityId);
+      const quantity = req.body.quantity || 1;
+      const description = req.body.description || '';
       
-      // Usar pool directamente para evitar problemas con Drizzle
+      console.log("Datos recibidos:", { parkId, amenityId, quantity, description });
+      
+      // Usar SQL directo sin parámetros para evitar problemas
       const result = await pool.query(`
         INSERT INTO park_amenities (park_id, amenity_id, quantity, description)
-        VALUES ($1, $2, $3, $4)
+        VALUES (${parkId}, ${amenityId}, ${quantity}, '${description}')
         RETURNING *
-      `, [parkId, amenityId, req.body.quantity || 1, req.body.description || '']);
+      `);
       
+      console.log("Resultado de inserción:", result.rows[0]);
       res.status(201).json(result.rows[0]);
     } catch (error) {
       console.error("Error al agregar amenidad:", error);
