@@ -554,8 +554,9 @@ export default function ParkEdit() {
                 <DialogHeader>
                   <DialogTitle>Seleccionar Ubicación</DialogTitle>
                 </DialogHeader>
-                <div className="h-64">
+                <div className="w-full h-64 overflow-hidden rounded-lg">
                   <MapSelector
+                    key={`dialog-map-${parkCenter.lat}-${parkCenter.lng}`}
                     defaultCenter={parkCenter}
                     onLocationSelect={(location) => {
                       setEditData(prev => ({
@@ -572,7 +573,7 @@ export default function ParkEdit() {
                           }
                         : null
                     }
-                    className="h-full"
+                    className="w-full h-full"
                   />
                 </div>
                 {editData.locationLatitude && editData.locationLongitude && (
@@ -1301,29 +1302,32 @@ export default function ParkEdit() {
                         {/* Selector de ubicación con mapa interactivo */}
                         <div className="mt-4">
                           <label className="text-sm font-medium mb-2 block">Ubicación en el Parque (opcional)</label>
-                          <div className="border rounded-lg p-3 bg-white">
-                            <MapSelector
-                              defaultCenter={{
-                                lat: park?.latitude ? parseFloat(park.latitude) : 19.432608,
-                                lng: park?.longitude ? parseFloat(park.longitude) : -99.133209
-                              }}
-                              onLocationSelect={(location) => {
-                                setNewAmenityData(prev => ({
-                                  ...prev,
-                                  locationLatitude: location.lat.toString(),
-                                  locationLongitude: location.lng.toString()
-                                }));
-                              }}
-                              selectedLocation={
-                                newAmenityData.locationLatitude && newAmenityData.locationLongitude
-                                  ? {
-                                      lat: parseFloat(newAmenityData.locationLatitude),
-                                      lng: parseFloat(newAmenityData.locationLongitude)
-                                    }
-                                  : null
-                              }
-                              className="h-48"
-                            />
+                          <div className="border rounded-lg p-3 bg-white overflow-hidden">
+                            <div className="w-full h-48 relative">
+                              <MapSelector
+                                key={`map-${park?.id}-${park?.latitude}-${park?.longitude}`}
+                                defaultCenter={{
+                                  lat: park?.latitude ? parseFloat(park.latitude) : 19.432608,
+                                  lng: park?.longitude ? parseFloat(park.longitude) : -99.133209
+                                }}
+                                onLocationSelect={(location) => {
+                                  setNewAmenityData(prev => ({
+                                    ...prev,
+                                    locationLatitude: location.lat.toString(),
+                                    locationLongitude: location.lng.toString()
+                                  }));
+                                }}
+                                selectedLocation={
+                                  newAmenityData.locationLatitude && newAmenityData.locationLongitude
+                                    ? {
+                                        lat: parseFloat(newAmenityData.locationLatitude),
+                                        lng: parseFloat(newAmenityData.locationLongitude)
+                                      }
+                                    : null
+                                }
+                                className="w-full h-full"
+                              />
+                            </div>
                             {newAmenityData.locationLatitude && newAmenityData.locationLongitude && (
                               <div className="text-xs text-gray-500 mt-2">
                                 📍 {parseFloat(newAmenityData.locationLatitude).toFixed(6)}, {parseFloat(newAmenityData.locationLongitude).toFixed(6)}
