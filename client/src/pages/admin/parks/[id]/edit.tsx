@@ -22,6 +22,29 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { MapSelector } from "@/components/ui/map-selector";
 
+// Función para mapear nombres de iconos a símbolos Unicode
+const getIconSymbol = (iconName: string): string => {
+  const iconMap: Record<string, string> = {
+    'playground': '🛝',
+    'toilet': '🚽',
+    'sportsCourt': '🏀',
+    'bicycle': '🚴',
+    'pets': '🐕',
+    'bench': '🪑',
+    'fountain': '⛲',
+    'parking': '🚗',
+    'security': '🔒',
+    'wifi': '📶',
+    'restaurant': '🍽️',
+    'cafe': '☕',
+    'garden': '🌺',
+    'lake': '🏞️',
+    'trail': '🥾'
+  };
+  
+  return iconMap[iconName] || '📍';
+};
+
 // Schema de validación para el formulario
 const parkEditSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
@@ -278,10 +301,21 @@ export default function ParkEdit() {
   // Mutación para agregar amenidad al parque
   const addAmenityMutation = useMutation({
     mutationFn: async ({ amenityId, quantity = 1, description = "" }: { amenityId: number; quantity?: number; description?: string }) => {
-      return await apiRequest(`/api/parks/${id}/amenities`, {
+      // Usar el endpoint directo que bypasa el middleware
+      const response = await fetch(`/api/parks/${id}/amenities`, {
         method: 'POST',
-        data: { amenityId, quantity, description }
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ amenityId, quantity, description })
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al agregar amenidad');
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       refetchParkAmenities();
@@ -894,7 +928,7 @@ export default function ParkEdit() {
                                 !Array.isArray(parkAmenities) || !parkAmenities.some((pa: any) => pa.amenityId === amenity.id)
                               ).map((amenity: any) => (
                                 <SelectItem key={amenity.id} value={amenity.id.toString()}>
-                                  {amenity.icon && <span className="mr-2">{amenity.icon}</span>}
+                                  {amenity.icon && <span className="mr-2">{getIconSymbol(amenity.icon)}</span>}
                                   {amenity.name}
                                 </SelectItem>
                               ))}
@@ -914,7 +948,7 @@ export default function ParkEdit() {
                                 <div key={parkAmenity.id} className="border rounded-lg p-4 bg-white flex items-center justify-between">
                                   <div className="flex items-center gap-3">
                                     {amenity?.icon && (
-                                      <span className="text-lg">{amenity.icon}</span>
+                                      <span className="text-lg">{getIconSymbol(amenity.icon)}</span>
                                     )}
                                     <div>
                                       <p className="font-medium">{amenity?.name || 'Amenidad desconocida'}</p>

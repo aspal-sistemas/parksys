@@ -9,6 +9,29 @@ import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTrian
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
 
+// Función para mapear nombres de iconos a símbolos Unicode
+const getIconSymbol = (iconName: string): string => {
+  const iconMap: Record<string, string> = {
+    'playground': '🛝',
+    'toilet': '🚽',
+    'sportsCourt': '🏀',
+    'bicycle': '🚴',
+    'pets': '🐕',
+    'bench': '🪑',
+    'fountain': '⛲',
+    'parking': '🚗',
+    'security': '🔒',
+    'wifi': '📶',
+    'restaurant': '🍽️',
+    'cafe': '☕',
+    'garden': '🌺',
+    'lake': '🏞️',
+    'trail': '🥾'
+  };
+  
+  return iconMap[iconName] || '📍';
+};
+
 interface ParkDetails {
   id: number;
   name: string;
@@ -542,7 +565,7 @@ export default function AdminParkView() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {park.amenities?.map((amenity) => (
                   <div key={amenity.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                    <div className="text-2xl">{amenity.icon}</div>
+                    <div className="text-2xl">{getIconSymbol(amenity.icon)}</div>
                     <div>
                       <h4 className="font-medium">{amenity.name}</h4>
                       <p className="text-sm text-gray-600">{amenity.description}</p>
