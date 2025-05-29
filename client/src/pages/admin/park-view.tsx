@@ -820,11 +820,11 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Amenidades del Parque ({amenities?.length || 0})</CardTitle>
+        <CardTitle>Amenidades del Parque ({amenitiesArray.length})</CardTitle>
         <CardDescription>Servicios e infraestructura disponible</CardDescription>
       </CardHeader>
       <CardContent>
-        {amenities && amenities.length > 0 ? (
+        {amenitiesArray.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -835,7 +835,7 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {amenities.map((amenity: any) => (
+              {amenitiesArray.map((amenity: any) => (
                 <TableRow key={amenity.id}>
                   <TableCell className="flex items-center gap-2">
                     <span className="text-xl">{getIconSymbol(amenity.amenityIcon)}</span>
