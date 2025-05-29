@@ -95,6 +95,7 @@ const parkEditSchema = z.object({
   latitude: z.string().optional(),
   longitude: z.string().optional(),
   area: z.string().optional(),
+  greenArea: z.string().optional(),
   foundationYear: z.coerce.number().optional(),
   administrator: z.string().optional(),
   conservationStatus: z.string().optional(),
@@ -184,6 +185,7 @@ export default function ParkEdit() {
         latitude: park.latitude?.toString() || "",
         longitude: park.longitude?.toString() || "",
         area: park.area?.toString() || "",
+        greenArea: park.greenArea || "",
         foundationYear: park.foundationYear || undefined,
         administrator: park.administrator || "",
         conservationStatus: park.conservationStatus || "",
@@ -798,15 +800,31 @@ export default function ParkEdit() {
                           name="area"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Área (m²)</FormLabel>
+                              <FormLabel>Superficie Total (m²)</FormLabel>
                               <FormControl>
-                                <Input placeholder="Área en metros cuadrados" {...field} />
+                                <Input placeholder="Superficie total en metros cuadrados" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
 
+                        <FormField
+                          control={form.control}
+                          name="greenArea"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Área Permeable (m²)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Área permeable en metros cuadrados" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
                           control={form.control}
                           name="foundationYear"

@@ -785,7 +785,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Primero extraemos solo los campos válidos que vamos a actualizar
         const {
           name, description, address, postalCode, latitude, longitude,
-          area, parkType, openingHours, contactPhone, contactEmail,
+          area, greenArea, parkType, openingHours, contactPhone, contactEmail,
           administrator, conservationStatus, regulationUrl, foundationYear, videoUrl,
           municipalityId
         } = req.body;
@@ -799,6 +799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (latitude !== undefined) fieldsToUpdate.latitude = latitude;
         if (longitude !== undefined) fieldsToUpdate.longitude = longitude;
         if (area !== undefined) fieldsToUpdate.area = area;
+        if (greenArea !== undefined) fieldsToUpdate.green_area = greenArea;
         if (parkType !== undefined) fieldsToUpdate.park_type = parkType;
         if (openingHours !== undefined) fieldsToUpdate.opening_hours = openingHours;
         if (contactPhone !== undefined) fieldsToUpdate.contact_phone = contactPhone;
