@@ -898,13 +898,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get amenities for a specific park - endpoint principal
+  // Get amenities for a specific park
   apiRouter.get("/parks/:id/amenities", async (req: Request, res: Response) => {
+    console.log(`[AMENITIES ENDPOINT] Ejecutándose para parque ${req.params.id}`);
+    
     try {
       const parkId = Number(req.params.id);
-      console.log(`[AMENITIES] Obteniendo amenidades para parque ${parkId}`);
+      console.log(`[AMENITIES] Buscando amenidades para parque ${parkId}`);
       
-      // Consulta SQL directa que sabemos funciona
       const result = await pool.query(`
         SELECT 
           pa.id,
@@ -920,12 +921,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ORDER BY a.name
       `, [parkId]);
       
-      console.log(`[AMENITIES] Encontradas ${result.rows.length} amenidades para parque ${parkId}`);
-      console.log(`[AMENITIES] Datos:`, result.rows);
+      console.log(`[AMENITIES] Resultado: ${result.rows.length} amenidades encontradas`);
+      if (result.rows.length > 0) {
+        console.log(`[AMENITIES] Primera amenidad:`, result.rows[0]);
+      }
+      
       res.json(result.rows);
     } catch (error) {
-      console.error("[AMENITIES] Error:", error);
+      console.error("[AMENITIES] Error completo:", error);
       res.status(500).json({ message: "Error fetching park amenities" });
+    }
+  });
+
+  // Test endpoint for amenities - different path to avoid conflicts
+  apiRouter.get("/test-amenities/:parkId", async (req: Request, res: Response) => {
+    console.log(`[TEST AMENITIES] Ejecutándose para parque ${req.params.parkId}`);
+    
+    try {
+      const parkId = Number(req.params.parkId);
+      console.log(`[TEST AMENITIES] Buscando amenidades para parque ${parkId}`);
+      
+      const result = await pool.query(`
+        SELECT 
+          pa.id,
+          pa.park_id as "parkId",
+          pa.amenity_id as "amenityId",
+          pa.quantity,
+          pa.description,
+          a.name as "amenityName",
+          a.icon as "amenityIcon"
+        FROM park_amenities pa
+        INNER JOIN amenities a ON pa.amenity_id = a.id
+        WHERE pa.park_id = $1
+        ORDER BY a.name
+      `, [parkId]);
+      
+      console.log(`[TEST AMENITIES] Resultado: ${result.rows.length} amenidades encontradas`);
+      if (result.rows.length > 0) {
+        console.log(`[TEST AMENITIES] Primera amenidad:`, result.rows[0]);
+      }
+      
+      res.json({
+        success: true,
+        parkId: parkId,
+        count: result.rows.length,
+        amenities: result.rows
+      });
+    } catch (error) {
+      console.error("[TEST AMENITIES] Error completo:", error);
+      res.status(500).json({ success: false, error: "Error fetching park amenities" });
     }
   });
 
@@ -2165,7 +2209,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get amenities for a specific park - for external applications
+  // DISABLED - This endpoint was interfering with the main amenities endpoint
+  /*
   publicRouter.get("/parks/:id/amenities", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
@@ -2192,6 +2237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  */
   
   // Get activities for a specific park - for external applications
   publicRouter.get("/parks/:id/activities", async (req: Request, res: Response) => {
