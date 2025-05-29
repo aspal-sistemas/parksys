@@ -44,6 +44,8 @@ export interface IStorage {
   deleteAssetCategory(id: number): Promise<boolean>;
   getAssets(filters?: any): Promise<any[]>;
   getAsset(id: number): Promise<any>;
+  getParkAmenities(parkId: number): Promise<any[]>;
+  addAmenityToPark(data: any): Promise<any>;
   removeAmenityFromPark(parkId: number, amenityId: number): Promise<boolean>;
   isAmenityInUse(amenityId: number): Promise<boolean>;
   deleteAmenity(amenityId: number): Promise<boolean>;
@@ -361,11 +363,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getParkAmenities(parkId: number): Promise<any[]> {
-    // Retornamos directamente un array vacío para evitar errores
-    // mientras se mantiene la funcionalidad básica del formulario
-    return [];
-  }
+
   
   async getAssetCategories(): Promise<any[]> {
     try {
@@ -579,6 +577,46 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error(`Error al obtener activo ${id}:`, error);
       return undefined;
+    }
+  }
+
+  async getParkAmenities(parkId: number): Promise<any[]> {
+    try {
+      const result = await db.execute(`
+        SELECT 
+          pa.id,
+          pa.park_id as "parkId",
+          pa.amenity_id as "amenityId",
+          pa.quantity,
+          pa.description,
+          a.name as "amenityName",
+          a.icon as "amenityIcon"
+        FROM park_amenities pa
+        JOIN amenities a ON pa.amenity_id = a.id
+        WHERE pa.park_id = $1
+        ORDER BY a.name
+      `, [parkId]);
+      
+      return result.rows || [];
+    } catch (error) {
+      console.error(`Error al obtener amenidades del parque ${parkId}:`, error);
+      return [];
+    }
+  }
+
+  async addAmenityToPark(data: any): Promise<any> {
+    try {
+      const result = await db.insert(parkAmenities).values({
+        parkId: data.parkId,
+        amenityId: data.amenityId,
+        quantity: data.quantity || 1,
+        description: data.description || ''
+      }).returning();
+      
+      return result[0];
+    } catch (error) {
+      console.error("Error al agregar amenidad al parque:", error);
+      throw error;
     }
   }
 }
