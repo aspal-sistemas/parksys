@@ -132,6 +132,7 @@ export const parkAmenities = pgTable("park_amenities", {
   amenityId: integer("amenity_id").notNull(),
   description: text("description"),
   quantity: integer("quantity").default(1),
+  status: text("status").default("Activa"),
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
