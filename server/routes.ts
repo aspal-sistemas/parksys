@@ -1130,6 +1130,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update specific amenity in a park
+  apiRouter.put("/parks/:parkId/amenities/:amenityId", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const amenityId = Number(req.params.amenityId);
+      const { moduleName, surfaceArea, status, locationLatitude, locationLongitude } = req.body;
+      
+      const result = await pool.query(`
+        UPDATE park_amenities 
+        SET 
+          nombre_modulo = $3,
+          superficie = $4,
+          status = $5,
+          ubicacion = CASE 
+            WHEN $6::numeric IS NOT NULL AND $7::numeric IS NOT NULL 
+            THEN POINT($7, $6)
+            ELSE NULL 
+          END,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1 AND park_id = $2
+        RETURNING *
+      `, [amenityId, parkId, moduleName, surfaceArea, status, locationLatitude, locationLongitude]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Amenidad no encontrada en este parque" });
+      }
+      
+      res.json({ 
+        message: "Amenidad actualizada correctamente",
+        updatedAmenity: result.rows[0]
+      });
+    } catch (error) {
+      console.error("Error al actualizar amenidad del parque:", error);
+      res.status(500).json({ message: "Error al actualizar amenidad del parque" });
+    }
+  });
+
   // Delete specific amenity from a park
   apiRouter.delete("/parks/:parkId/amenities/:amenityId", async (req: Request, res: Response) => {
     try {

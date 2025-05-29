@@ -448,6 +448,222 @@ export default function ParkEdit() {
     updateParkMutation.mutate(values);
   };
 
+  // Componente para cada fila editable de amenidad
+  const AmenityTableRow = ({ 
+    parkAmenity, 
+    amenity, 
+    onUpdate, 
+    onDelete, 
+    isUpdating, 
+    isDeleting,
+    parkCenter 
+  }: {
+    parkAmenity: any;
+    amenity: any;
+    onUpdate: (data: any) => void;
+    onDelete: () => void;
+    isUpdating: boolean;
+    isDeleting: boolean;
+    parkCenter: { lat: number; lng: number };
+  }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editData, setEditData] = useState({
+      moduleName: parkAmenity.moduleName || '',
+      surfaceArea: parkAmenity.surfaceArea || '',
+      status: parkAmenity.status || 'Activo',
+      locationLatitude: parkAmenity.locationLatitude || '',
+      locationLongitude: parkAmenity.locationLongitude || ''
+    });
+
+    const handleSave = () => {
+      onUpdate({
+        moduleName: editData.moduleName,
+        surfaceArea: editData.surfaceArea ? parseFloat(editData.surfaceArea) : null,
+        status: editData.status,
+        locationLatitude: editData.locationLatitude ? parseFloat(editData.locationLatitude) : null,
+        locationLongitude: editData.locationLongitude ? parseFloat(editData.locationLongitude) : null
+      });
+      setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+      setEditData({
+        moduleName: parkAmenity.moduleName || '',
+        surfaceArea: parkAmenity.surfaceArea || '',
+        status: parkAmenity.status || 'Activo',
+        locationLatitude: parkAmenity.locationLatitude || '',
+        locationLongitude: parkAmenity.locationLongitude || ''
+      });
+      setIsEditing(false);
+    };
+
+    const getStatusBadge = (status: string) => {
+      const statusConfig = {
+        'Activo': { variant: 'default' as const, text: 'Activo' },
+        'Mantenimiento': { variant: 'secondary' as const, text: 'Mantenimiento' },
+        'Inactivo': { variant: 'destructive' as const, text: 'Inactivo' }
+      };
+      const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['Activo'];
+      return <Badge variant={config.variant}>{config.text}</Badge>;
+    };
+
+    return (
+      <TableRow>
+        <TableCell>
+          {isEditing ? (
+            <Input
+              value={editData.moduleName}
+              onChange={(e) => setEditData(prev => ({ ...prev, moduleName: e.target.value }))}
+              placeholder="Nombre del módulo"
+            />
+          ) : (
+            parkAmenity.moduleName || '-'
+          )}
+        </TableCell>
+        
+        <TableCell>
+          <div className="flex items-center gap-2">
+            {amenity?.icon && <span>{getIconSymbol(amenity.icon)}</span>}
+            {amenity?.name || 'Amenidad desconocida'}
+          </div>
+        </TableCell>
+        
+        <TableCell>
+          {isEditing ? (
+            <Input
+              type="number"
+              value={editData.surfaceArea}
+              onChange={(e) => setEditData(prev => ({ ...prev, surfaceArea: e.target.value }))}
+              placeholder="0.00"
+            />
+          ) : (
+            parkAmenity.surfaceArea ? `${parseFloat(parkAmenity.surfaceArea).toLocaleString()} m²` : '-'
+          )}
+        </TableCell>
+        
+        <TableCell>
+          {isEditing ? (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Map className="h-4 w-4 mr-1" />
+                  {editData.locationLatitude && editData.locationLongitude ? 'Cambiar' : 'Establecer'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl">
+                <DialogHeader>
+                  <DialogTitle>Seleccionar Ubicación</DialogTitle>
+                </DialogHeader>
+                <div className="h-96">
+                  <MapSelector
+                    defaultCenter={parkCenter}
+                    onLocationSelect={(location) => {
+                      setEditData(prev => ({
+                        ...prev,
+                        locationLatitude: location.lat.toString(),
+                        locationLongitude: location.lng.toString()
+                      }));
+                    }}
+                    selectedLocation={
+                      editData.locationLatitude && editData.locationLongitude
+                        ? {
+                            lat: parseFloat(editData.locationLatitude),
+                            lng: parseFloat(editData.locationLongitude)
+                          }
+                        : null
+                    }
+                    className="h-full"
+                  />
+                </div>
+                {editData.locationLatitude && editData.locationLongitude && (
+                  <div className="text-sm text-gray-500">
+                    📍 {parseFloat(editData.locationLatitude).toFixed(6)}, {parseFloat(editData.locationLongitude).toFixed(6)}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-2 h-auto p-1"
+                      onClick={() => setEditData(prev => ({ ...prev, locationLatitude: '', locationLongitude: '' }))}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+          ) : (
+            parkAmenity.locationLatitude && parkAmenity.locationLongitude ? (
+              <span className="text-sm">📍 {parseFloat(parkAmenity.locationLatitude).toFixed(6)}, {parseFloat(parkAmenity.locationLongitude).toFixed(6)}</span>
+            ) : (
+              '-'
+            )
+          )}
+        </TableCell>
+        
+        <TableCell>
+          {isEditing ? (
+            <Select value={editData.status} onValueChange={(value) => setEditData(prev => ({ ...prev, status: value }))}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Activo">Activo</SelectItem>
+                <SelectItem value="Mantenimiento">Mantenimiento</SelectItem>
+                <SelectItem value="Inactivo">Inactivo</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            getStatusBadge(parkAmenity.status || 'Activo')
+          )}
+        </TableCell>
+        
+        <TableCell>
+          <div className="flex items-center gap-1">
+            {isEditing ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={isUpdating}
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancel}
+                  disabled={isUpdating}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  disabled={isUpdating || isDeleting}
+                >
+                  ✏️
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onDelete}
+                  disabled={isUpdating || isDeleting}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  };
+
   if (isLoadingPark) {
     return (
       <div className="flex h-screen bg-gray-50">
