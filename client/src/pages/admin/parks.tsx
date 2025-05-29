@@ -55,12 +55,12 @@ const AdminParks = () => {
 
   // Effect to handle URL parameters for amenity filtering
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.split('?')[1] || '');
+    const urlParams = new URLSearchParams(window.location.search);
     const amenityParam = urlParams.get('amenity');
     if (amenityParam) {
       setFilterAmenity(amenityParam);
     }
-  }, [location]);
+  }, []);
 
   // Fetch all parks with automatic refresh
   const { 
