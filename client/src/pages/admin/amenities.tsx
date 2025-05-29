@@ -169,11 +169,13 @@ type Amenity = {
 function getCategoryLabel(category: string): string {
   const labels: Record<string, string> = {
     recreacion: "Recreación",
+    "recreación": "Recreación",
     deportes: "Deportes", 
     servicios: "Servicios",
     naturaleza: "Naturaleza",
     cultura: "Cultura",
-    accesibilidad: "Accesibilidad"
+    accesibilidad: "Accesibilidad",
+    infraestructura: "Infraestructura"
   };
   return labels[category] || "Servicios";
 }
@@ -249,7 +251,7 @@ const AdminAmenitiesPage = () => {
   // Obtener categorías únicas para el filtro
   const uniqueCategories = Array.from(
     new Set(amenities.map((amenity: Amenity) => amenity.category).filter(Boolean))
-  );
+  ).sort();
 
   // Create amenity mutation
   const createAmenity = useMutation({
