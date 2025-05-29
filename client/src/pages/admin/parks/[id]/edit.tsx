@@ -337,9 +337,19 @@ export default function ParkEdit() {
   // Mutación para quitar amenidad del parque
   const removeAmenityMutation = useMutation({
     mutationFn: async (amenityId: number) => {
-      return await apiRequest(`/api/parks/${id}/amenities/${amenityId}`, {
-        method: 'DELETE'
+      const response = await fetch(`/api/parks/${id}/amenities/${amenityId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al eliminar amenidad');
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}/amenities`] });
