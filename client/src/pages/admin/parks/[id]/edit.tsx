@@ -882,7 +882,7 @@ export default function ParkEdit() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <Select onValueChange={(value) => {
                             const amenityId = parseInt(value);
-                            if (amenityId && !parkAmenities?.some((pa: any) => pa.amenityId === amenityId)) {
+                            if (amenityId && (!Array.isArray(parkAmenities) || !parkAmenities.some((pa: any) => pa.amenityId === amenityId))) {
                               addAmenityMutation.mutate({ amenityId });
                             }
                           }}>
@@ -891,7 +891,7 @@ export default function ParkEdit() {
                             </SelectTrigger>
                             <SelectContent>
                               {availableAmenities?.filter((amenity: any) => 
-                                !parkAmenities?.some((pa: any) => pa.amenityId === amenity.id)
+                                !Array.isArray(parkAmenities) || !parkAmenities.some((pa: any) => pa.amenityId === amenity.id)
                               ).map((amenity: any) => (
                                 <SelectItem key={amenity.id} value={amenity.id.toString()}>
                                   {amenity.icon && <span className="mr-2">{amenity.icon}</span>}
@@ -906,7 +906,7 @@ export default function ParkEdit() {
                       {/* Lista de amenidades actuales del parque */}
                       <div>
                         <h4 className="font-medium mb-3">Amenidades Actuales</h4>
-                        {parkAmenities && parkAmenities.length > 0 ? (
+                        {Array.isArray(parkAmenities) && parkAmenities.length > 0 ? (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {parkAmenities.map((parkAmenity: any) => {
                               const amenity = availableAmenities?.find((a: any) => a.id === parkAmenity.amenityId);
