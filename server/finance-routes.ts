@@ -22,14 +22,25 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
 
   // ============ CATEGORÍAS DE INGRESOS ============
   
-  // Obtener todas las categorías de ingresos
+  // Obtener todas las categorías de ingresos (incluye activas e inactivas para el catálogo)
   apiRouter.get("/income-categories", async (_req: Request, res: Response) => {
     try {
-      const categories = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+      const categories = await db.select().from(incomeCategories);
       console.log("Categorías encontradas:", categories);
       res.json(categories);
     } catch (error) {
       console.error("Error al obtener categorías de ingresos:", error);
+      res.status(500).json({ message: "Error al obtener categorías de ingresos" });
+    }
+  });
+
+  // Obtener solo las categorías de ingresos activas (para matriz de flujo)
+  apiRouter.get("/income-categories/active", async (_req: Request, res: Response) => {
+    try {
+      const categories = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+      res.json(categories);
+    } catch (error) {
+      console.error("Error al obtener categorías de ingresos activas:", error);
       res.status(500).json({ message: "Error al obtener categorías de ingresos" });
     }
   });
@@ -207,13 +218,24 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
 
   // ============ CATEGORÍAS DE EGRESOS ============
   
-  // Obtener todas las categorías de egresos
+  // Obtener todas las categorías de egresos (incluye activas e inactivas para el catálogo)
   apiRouter.get("/expense-categories", async (_req: Request, res: Response) => {
+    try {
+      const categories = await db.select().from(expenseCategories);
+      res.json(categories);
+    } catch (error) {
+      console.error("Error al obtener categorías de egresos:", error);
+      res.status(500).json({ message: "Error al obtener categorías de egresos" });
+    }
+  });
+
+  // Obtener solo las categorías de egresos activas (para matriz de flujo)
+  apiRouter.get("/expense-categories/active", async (_req: Request, res: Response) => {
     try {
       const categories = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
       res.json(categories);
     } catch (error) {
-      console.error("Error al obtener categorías de egresos:", error);
+      console.error("Error al obtener categorías de egresos activas:", error);
       res.status(500).json({ message: "Error al obtener categorías de egresos" });
     }
   });

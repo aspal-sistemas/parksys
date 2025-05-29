@@ -78,11 +78,11 @@ export default function CashFlowMatrix() {
   });
 
   const { data: incomeCategories } = useQuery({
-    queryKey: ["/api/income-categories"],
+    queryKey: ["/api/income-categories/active"],
   });
 
   const { data: expenseCategories } = useQuery({
-    queryKey: ["/api/expense-categories"],
+    queryKey: ["/api/expense-categories/active"],
   });
 
   // Cargar datos históricos para proyecciones (últimos 3 años)
