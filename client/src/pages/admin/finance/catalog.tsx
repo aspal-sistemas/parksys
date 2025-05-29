@@ -231,6 +231,54 @@ export default function CatalogPage() {
     },
   });
 
+  // Mutación para cambiar estado activo de categoría de ingresos
+  const toggleIncomeCategoryStatusMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
+      return await apiRequest(`/api/income-categories/${id}/status`, {
+        method: 'PUT',
+        data: { isActive }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/income-categories'] });
+      toast({
+        title: "Estado actualizado",
+        description: "El estado de la categoría se ha actualizado exitosamente.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el estado de la categoría.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutación para cambiar estado activo de categoría de egresos
+  const toggleExpenseCategoryStatusMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
+      return await apiRequest(`/api/expense-categories/${id}/status`, {
+        method: 'PUT',
+        data: { isActive }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/expense-categories'] });
+      toast({
+        title: "Estado actualizado",
+        description: "El estado de la categoría se ha actualizado exitosamente.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el estado de la categoría.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Mutación para crear proveedor
   const createProviderMutation = useMutation({
     mutationFn: async (providerData: any) => {
@@ -532,9 +580,23 @@ export default function CatalogPage() {
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Badge variant="secondary" className="bg-green-100 text-green-800">
-                              Activa
+                            <Badge 
+                              variant={category.isActive ? "default" : "secondary"} 
+                              className={category.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}
+                            >
+                              {category.isActive ? "Activa" : "Inactiva"}
                             </Badge>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => toggleIncomeCategoryStatusMutation.mutate({ 
+                                id: category.id, 
+                                isActive: !category.isActive 
+                              })}
+                              title={category.isActive ? "Desactivar categoría" : "Activar categoría"}
+                            >
+                              {category.isActive ? "🔴" : "🟢"}
+                            </Button>
                             <Button 
                               variant="ghost" 
                               size="sm"
@@ -643,9 +705,23 @@ export default function CatalogPage() {
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Badge variant="secondary" className="bg-red-100 text-red-800">
-                              Activa
+                            <Badge 
+                              variant={category.isActive ? "default" : "secondary"} 
+                              className={category.isActive ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-600"}
+                            >
+                              {category.isActive ? "Activa" : "Inactiva"}
                             </Badge>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => toggleExpenseCategoryStatusMutation.mutate({ 
+                                id: category.id, 
+                                isActive: !category.isActive 
+                              })}
+                              title={category.isActive ? "Desactivar categoría" : "Activar categoría"}
+                            >
+                              {category.isActive ? "🔴" : "🟢"}
+                            </Button>
                             <Button 
                               variant="ghost" 
                               size="sm"

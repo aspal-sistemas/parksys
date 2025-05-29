@@ -163,6 +163,31 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     }
   });
 
+  // Cambiar estado activo/inactivo de categoría de ingresos
+  apiRouter.put("/income-categories/:id/status", async (req: Request, res: Response) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      const [updatedCategory] = await db.update(incomeCategories)
+        .set({ 
+          isActive: isActive,
+          updatedAt: new Date()
+        })
+        .where(eq(incomeCategories.id, categoryId))
+        .returning();
+      
+      if (!updatedCategory) {
+        return res.status(404).json({ message: "Categoría no encontrada" });
+      }
+      
+      res.json(updatedCategory);
+    } catch (error) {
+      console.error("Error al actualizar estado de categoría de ingresos:", error);
+      res.status(500).json({ message: "Error al actualizar estado de categoría" });
+    }
+  });
+
   // Obtener subcategorías por categoría de ingresos
   apiRouter.get("/income-categories/:categoryId/subcategories", async (req: Request, res: Response) => {
     try {
@@ -311,6 +336,31 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
         message: "Error al actualizar categoría de egresos", 
         error: error.message 
       });
+    }
+  });
+
+  // Cambiar estado activo/inactivo de categoría de egresos
+  apiRouter.put("/expense-categories/:id/status", async (req: Request, res: Response) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      const [updatedCategory] = await db.update(expenseCategories)
+        .set({ 
+          isActive: isActive,
+          updatedAt: new Date()
+        })
+        .where(eq(expenseCategories.id, categoryId))
+        .returning();
+      
+      if (!updatedCategory) {
+        return res.status(404).json({ message: "Categoría no encontrada" });
+      }
+      
+      res.json(updatedCategory);
+    } catch (error) {
+      console.error("Error al actualizar estado de categoría de egresos:", error);
+      res.status(500).json({ message: "Error al actualizar estado de categoría" });
     }
   });
 
