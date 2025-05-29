@@ -67,7 +67,7 @@ export function MapSelector({ latitude, longitude, onLocationChange, className }
     const lngNum = parseFloat(lng);
     if (!isNaN(latNum) && !isNaN(lngNum)) {
       setPosition([latNum, lngNum]);
-      onLocationChange(lat, lng);
+      onLocationSelect({ lat: latNum, lng: lngNum });
     }
   };
 
