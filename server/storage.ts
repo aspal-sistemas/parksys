@@ -595,7 +595,10 @@ export class DatabaseStorage implements IStorage {
           pa.id,
           pa.park_id as "parkId",
           pa.amenity_id as "amenityId",
-          pa.quantity,
+          pa.module_name as "moduleName",
+          pa.location_latitude as "locationLatitude",
+          pa.location_longitude as "locationLongitude",
+          pa.surface_area as "surfaceArea",
           pa.status,
           pa.description,
           a.name as "amenityName",
@@ -619,7 +622,10 @@ export class DatabaseStorage implements IStorage {
       const result = await db.insert(parkAmenities).values({
         parkId: data.parkId,
         amenityId: data.amenityId,
-        quantity: data.quantity || 1,
+        moduleName: data.moduleName || '',
+        locationLatitude: data.locationLatitude,
+        locationLongitude: data.locationLongitude,
+        surfaceArea: data.surfaceArea,
         description: data.description || ''
       }).returning();
       

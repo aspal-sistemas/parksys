@@ -131,7 +131,10 @@ export const parkAmenities = pgTable("park_amenities", {
   parkId: integer("park_id").notNull(),
   amenityId: integer("amenity_id").notNull(),
   description: text("description"),
-  quantity: integer("quantity").default(1),
+  moduleName: text("module_name"),
+  locationLatitude: decimal("location_latitude", { precision: 10, scale: 8 }),
+  locationLongitude: decimal("location_longitude", { precision: 11, scale: 8 }),
+  surfaceArea: decimal("surface_area", { precision: 10, scale: 2 }),
   status: text("status").default("Activa"),
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
