@@ -89,10 +89,10 @@ const ParksDashboard = () => {
 
   if (error) {
     return (
-      <AdminLayout title="Dashboard de Parques">
+      <AdminLayout title="Resumen Operativo de Parques">
         <div className="text-center py-8">
           <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-4" />
-          <p className="text-gray-600">Error al cargar los datos del dashboard</p>
+          <p className="text-gray-600">Error al cargar los datos del resumen operativo</p>
         </div>
       </AdminLayout>
     );
@@ -100,7 +100,7 @@ const ParksDashboard = () => {
 
   if (!data) {
     return (
-      <AdminLayout title="Dashboard de Parques">
+      <AdminLayout title="Resumen Operativo de Parques">
         <div className="text-center py-8">
           <p className="text-gray-600">No hay datos disponibles</p>
         </div>
