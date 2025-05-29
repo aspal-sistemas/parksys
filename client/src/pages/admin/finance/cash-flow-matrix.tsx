@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RefreshCw, Calculator, TrendingUp, TrendingDown, Download, Settings } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { RefreshCw, Calculator, TrendingUp, TrendingDown, Download, Settings, Upload, FileText } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
@@ -56,6 +57,13 @@ export default function CashFlowMatrix() {
   const [customGrowthRates, setCustomGrowthRates] = useState<Record<string, number>>({});
   const [showCustomGrowthPanel, setShowCustomGrowthPanel] = useState(false);
   const [categoryGrowthByYear, setCategoryGrowthByYear] = useState<Record<string, Record<number, number>>>({});
+
+  // Estados para importación CSV
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importType, setImportType] = useState<'historical' | 'projections'>('historical');
+  const [importDataType, setImportDataType] = useState<'income' | 'expense'>('income');
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();

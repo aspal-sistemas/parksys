@@ -13,6 +13,57 @@ import {
   cashFlowProjections
 } from "../shared/finance-schema";
 import { eq, and, gte, lte, sum, desc, asc, sql } from "drizzle-orm";
+import multer from "multer";
+import path from "path";
+
+// Configuración de multer para carga de archivos CSV
+const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'text/csv' || path.extname(file.originalname) === '.csv') {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos CSV'));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB máximo
+  }
+});
+
+/**
+ * Función para procesar datos CSV de ingresos/egresos históricos
+ */
+async function processCsvData(csvContent: string, type: 'income' | 'expense', parkId?: number) {
+  const lines = csvContent.split('\n').filter(line => line.trim());
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+  
+  const records = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',').map(v => v.trim());
+    if (values.length < headers.length) continue;
+    
+    const record: any = {};
+    headers.forEach((header, index) => {
+      record[header] = values[index];
+    });
+    
+    // Validar campos requeridos
+    if (!record.fecha || !record.monto || !record.categoria) {
+      continue;
+    }
+    
+    records.push({
+      date: record.fecha,
+      amount: parseFloat(record.monto.replace(/[^0-9.-]/g, '')),
+      categoryName: record.categoria,
+      description: record.descripcion || '',
+      parkId: parkId || parseInt(record.parque_id) || 1
+    });
+  }
+  
+  return records;
+}
 
 /**
  * Registra las rutas para el módulo financiero
@@ -1294,6 +1345,226 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
       console.error("Error al obtener matriz de flujo de efectivo:", error);
       res.status(500).json({ message: "Error al obtener matriz de flujo de efectivo" });
     }
+  });
+
+  // ============ IMPORTACIÓN CSV ============
+  
+  // Importar datos históricos desde CSV
+  apiRouter.post("/import/historical-data", isAuthenticated, upload.single('csvFile'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se ha enviado ningún archivo CSV" });
+      }
+
+      const csvContent = req.file.buffer.toString('utf-8');
+      const { type, parkId } = req.body;
+      
+      if (!type || !['income', 'expense'].includes(type)) {
+        return res.status(400).json({ message: "Tipo de datos inválido. Debe ser 'income' o 'expense'" });
+      }
+
+      const records = await processCsvData(csvContent, type, parkId ? parseInt(parkId) : undefined);
+      
+      if (records.length === 0) {
+        return res.status(400).json({ message: "No se encontraron registros válidos en el archivo CSV" });
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+      const errors = [];
+
+      for (const record of records) {
+        try {
+          // Buscar la categoría por nombre
+          const categoryTable = type === 'income' ? incomeCategories : expenseCategories;
+          const [category] = await db.select()
+            .from(categoryTable)
+            .where(eq(categoryTable.name, record.categoryName))
+            .limit(1);
+
+          if (!category) {
+            errors.push(`Categoría no encontrada: ${record.categoryName}`);
+            errorCount++;
+            continue;
+          }
+
+          // Extraer mes y año de la fecha
+          const date = new Date(record.date);
+          const month = date.getMonth() + 1;
+          const year = date.getFullYear();
+
+          // Insertar el registro
+          const targetTable = type === 'income' ? actualIncomes : actualExpenses;
+          await db.insert(targetTable).values({
+            categoryId: category.id,
+            description: record.description,
+            amount: record.amount.toString(),
+            date: record.date,
+            month,
+            year,
+            parkId: record.parkId,
+            createdById: req.user?.id,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+
+          successCount++;
+        } catch (error) {
+          console.error("Error al insertar registro:", error);
+          errors.push(`Error en registro: ${record.description}`);
+          errorCount++;
+        }
+      }
+
+      res.json({
+        message: `Importación completada. ${successCount} registros insertados, ${errorCount} errores.`,
+        successCount,
+        errorCount,
+        errors: errors.slice(0, 10) // Limitar a 10 errores para no sobrecargar la respuesta
+      });
+
+    } catch (error) {
+      console.error("Error al procesar archivo CSV:", error);
+      res.status(500).json({ message: "Error al procesar el archivo CSV" });
+    }
+  });
+
+  // Importar proyecciones desde CSV
+  apiRouter.post("/import/projections", isAuthenticated, upload.single('csvFile'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se ha enviado ningún archivo CSV" });
+      }
+
+      const csvContent = req.file.buffer.toString('utf-8');
+      const { type, parkId, scenario = 'realistic' } = req.body;
+      
+      if (!type || !['income', 'expense'].includes(type)) {
+        return res.status(400).json({ message: "Tipo de datos inválido. Debe ser 'income' o 'expense'" });
+      }
+
+      const lines = csvContent.split('\n').filter(line => line.trim());
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      
+      const projections = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        if (values.length < headers.length) continue;
+        
+        const record: any = {};
+        headers.forEach((header, index) => {
+          record[header] = values[index];
+        });
+        
+        // Validar campos requeridos para proyecciones
+        if (!record.categoria || !record.año || !record.mes || !record.monto) {
+          continue;
+        }
+        
+        projections.push({
+          categoryName: record.categoria,
+          year: parseInt(record.año),
+          month: parseInt(record.mes),
+          amount: parseFloat(record.monto.replace(/[^0-9.-]/g, '')),
+          scenario: record.escenario || scenario,
+          parkId: parkId ? parseInt(parkId) : parseInt(record.parque_id) || 1
+        });
+      }
+
+      if (projections.length === 0) {
+        return res.status(400).json({ message: "No se encontraron proyecciones válidas en el archivo CSV" });
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+      const errors = [];
+
+      for (const projection of projections) {
+        try {
+          // Buscar la categoría por nombre
+          const categoryTable = type === 'income' ? incomeCategories : expenseCategories;
+          const [category] = await db.select()
+            .from(categoryTable)
+            .where(eq(categoryTable.name, projection.categoryName))
+            .limit(1);
+
+          if (!category) {
+            errors.push(`Categoría no encontrada: ${projection.categoryName}`);
+            errorCount++;
+            continue;
+          }
+
+          // Insertar o actualizar la proyección
+          await db.insert(cashFlowProjections).values({
+            categoryId: category.id,
+            categoryType: type,
+            year: projection.year,
+            month: projection.month,
+            projectedAmount: projection.amount.toString(),
+            scenario: projection.scenario,
+            parkId: projection.parkId,
+            createdById: req.user?.id,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }).onConflictDoUpdate({
+            target: [cashFlowProjections.categoryId, cashFlowProjections.year, cashFlowProjections.month, cashFlowProjections.scenario, cashFlowProjections.parkId],
+            set: {
+              projectedAmount: projection.amount.toString(),
+              updatedAt: new Date()
+            }
+          });
+
+          successCount++;
+        } catch (error) {
+          console.error("Error al insertar proyección:", error);
+          errors.push(`Error en proyección: ${projection.categoryName} - ${projection.year}/${projection.month}`);
+          errorCount++;
+        }
+      }
+
+      res.json({
+        message: `Importación de proyecciones completada. ${successCount} registros insertados/actualizados, ${errorCount} errores.`,
+        successCount,
+        errorCount,
+        errors: errors.slice(0, 10)
+      });
+
+    } catch (error) {
+      console.error("Error al procesar archivo CSV de proyecciones:", error);
+      res.status(500).json({ message: "Error al procesar el archivo CSV de proyecciones" });
+    }
+  });
+
+  // Obtener plantilla CSV para datos históricos
+  apiRouter.get("/import/template/historical", async (req: Request, res: Response) => {
+    const { type } = req.query;
+    
+    const csvHeader = 'fecha,categoria,monto,descripcion,parque_id\n';
+    const csvExample = type === 'income' 
+      ? '2024-01-15,Concesiones,25000.00,Pago mensual concesión cafetería,1\n2024-01-20,Eventos,15000.00,Renta de espacio para evento corporativo,1'
+      : '2024-01-15,Mantenimiento,18000.00,Compra de herramientas de jardinería,1\n2024-01-20,Servicios,8500.00,Factura de electricidad mensual,1';
+    
+    const csvContent = csvHeader + csvExample;
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="plantilla_${type === 'income' ? 'ingresos' : 'egresos'}_historicos.csv"`);
+    res.send(csvContent);
+  });
+
+  // Obtener plantilla CSV para proyecciones
+  apiRouter.get("/import/template/projections", async (req: Request, res: Response) => {
+    const { type } = req.query;
+    
+    const csvHeader = 'categoria,año,mes,monto,escenario,parque_id\n';
+    const csvExample = type === 'income'
+      ? 'Concesiones,2025,1,27000.00,realistic,1\nEventos,2025,1,16000.00,realistic,1\nConcesiones,2025,2,28000.00,optimistic,1'
+      : 'Mantenimiento,2025,1,19000.00,realistic,1\nServicios,2025,1,9000.00,realistic,1\nMantenimiento,2025,2,20000.00,pessimistic,1';
+    
+    const csvContent = csvHeader + csvExample;
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="plantilla_${type === 'income' ? 'ingresos' : 'egresos'}_proyecciones.csv"`);
+    res.send(csvContent);
   });
 
   console.log("Rutas del módulo financiero registradas correctamente");
