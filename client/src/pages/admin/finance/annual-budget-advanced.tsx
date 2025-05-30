@@ -66,9 +66,9 @@ export default function AnnualBudgetAdvanced() {
 
   const { data: budgets = [], isLoading } = useQuery({
     queryKey: ['/api/budgets'],
-    queryFn: () => {
-      // Temporalmente sin filtros para mostrar todos los presupuestos
-      return apiRequest('/api/budgets');
+    queryFn: async () => {
+      const response = await apiRequest('/api/budgets');
+      return await response.json();
     },
   });
 
