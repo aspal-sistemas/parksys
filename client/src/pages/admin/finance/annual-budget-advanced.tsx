@@ -530,8 +530,16 @@ function BudgetDetailView({ budget }: { budget: Budget }) {
 
 function BudgetLinesTable({ budgetId, type }: { budgetId: number; type: 'income' | 'expenses' }) {
   const [showAddLineDialog, setShowAddLineDialog] = useState(false);
-  const { data: lines = [] } = useQuery({
+  const { data: lines = [], isLoading, error } = useQuery({
     queryKey: [`/api/budgets/${budgetId}/${type}-lines`],
+    queryFn: async () => {
+      const endpoint = `/api/budgets/${budgetId}/${type}-lines`;
+      console.log(`Fetching budget lines from: ${endpoint}`);
+      const response = await apiRequest(endpoint);
+      const data = await response.json();
+      console.log(`Budget lines data for ${type}:`, data);
+      return data;
+    },
   });
 
   const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery({
