@@ -17,9 +17,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Save, Building, MapPin, Phone, Mail, Globe, Clock, Info, Wrench, Plus, X, Trash2, Map } from "lucide-react";
+import { ArrowLeft, Save, Building, MapPin, Phone, Mail, Globe, Clock, Info, Wrench, Trash2, Map } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -1959,6 +1959,137 @@ export default function ParkEdit() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para crear nueva amenidad */}
+      <Dialog open={isCreateNewAmenityModalOpen} onOpenChange={setIsCreateNewAmenityModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Crear Nueva Amenidad</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateNewAmenity} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Nombre de la Amenidad</label>
+              <Input
+                value={newAmenityFormData.name}
+                onChange={(e) => setNewAmenityFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Ej: Área de Juegos Infantiles"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Categoría</label>
+              {isCreatingNewCategory ? (
+                <div className="flex gap-2">
+                  <Input
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Nombre de la nueva categoría"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      if (newCategoryName.trim()) {
+                        const formattedCategory = newCategoryName.toLowerCase().replace(/\s+/g, '_');
+                        setNewAmenityFormData(prev => ({ ...prev, category: formattedCategory }));
+                        setIsCreatingNewCategory(false);
+                        setNewCategoryName("");
+                      }
+                    }}
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsCreatingNewCategory(false);
+                      setNewCategoryName("");
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Select 
+                    value={newAmenityFormData.category} 
+                    onValueChange={(value) => setNewAmenityFormData(prev => ({ ...prev, category: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recreacion">Recreación</SelectItem>
+                      <SelectItem value="deportes">Deportes</SelectItem>
+                      <SelectItem value="servicios">Servicios</SelectItem>
+                      <SelectItem value="naturaleza">Naturaleza</SelectItem>
+                      <SelectItem value="cultura">Cultura</SelectItem>
+                      <SelectItem value="accesibilidad">Accesibilidad</SelectItem>
+                      <SelectItem value="infraestructura">Infraestructura</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCreatingNewCategory(true)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Icono</label>
+              <Select 
+                value={newAmenityFormData.icon} 
+                onValueChange={(value) => setNewAmenityFormData(prev => ({ ...prev, icon: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un icono" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AVAILABLE_ICONS.map((icon) => (
+                    <SelectItem key={icon.name} value={icon.name}>
+                      {icon.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsCreateNewAmenityModalOpen(false);
+                  setNewAmenityFormData({
+                    name: '',
+                    icon: 'park',
+                    category: 'servicios',
+                    iconType: 'system',
+                    customIconUrl: null
+                  });
+                  setIsCreatingNewCategory(false);
+                  setNewCategoryName("");
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={createAmenityMutation.isPending || !newAmenityFormData.name.trim()}
+              >
+                {createAmenityMutation.isPending ? 'Creando...' : 'Crear Amenidad'}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
