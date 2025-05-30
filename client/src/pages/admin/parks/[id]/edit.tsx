@@ -528,13 +528,23 @@ export default function ParkEdit() {
     };
 
     const getStatusBadge = (status: string) => {
-      const statusConfig = {
-        'Activo': { variant: 'default' as const, text: 'Activo' },
-        'Mantenimiento': { variant: 'secondary' as const, text: 'Mantenimiento' },
-        'Inactivo': { variant: 'destructive' as const, text: 'Inactivo' }
-      };
-      const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['Activo'];
-      return <Badge variant={config.variant}>{config.text}</Badge>;
+      const normalizedStatus = status?.toLowerCase();
+      
+      switch (normalizedStatus) {
+        case 'activa':
+        case 'activo':
+        case 'active':
+          return <Badge className="bg-green-100 text-green-800">Activa</Badge>;
+        case 'inactiva':
+        case 'inactivo':
+        case 'inactive':
+          return <Badge className="bg-red-100 text-red-800">Inactiva</Badge>;
+        case 'mantenimiento':
+        case 'maintenance':
+          return <Badge className="bg-yellow-100 text-yellow-800">Mantenimiento</Badge>;
+        default:
+          return <Badge className="bg-gray-100 text-gray-800">{status || 'Sin estado'}</Badge>;
+      }
     };
 
     return (
