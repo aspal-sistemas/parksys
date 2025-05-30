@@ -32,6 +32,7 @@ import {
   RefreshCw,
   Download
 } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
 
 interface BudgetDashboard {
   year: number;
@@ -202,61 +203,62 @@ export default function BudgetTracking() {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Seguimiento Presupuestario</h1>
-          <p className="text-muted-foreground">
-            Monitoreo en tiempo real del presupuesto vs gastos reales
-          </p>
+    <AdminLayout>
+      <div className="container mx-auto py-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Seguimiento Presupuestario</h1>
+            <p className="text-muted-foreground">
+              Monitoreo en tiempo real del presupuesto vs gastos reales
+            </p>
+          </div>
+          
+          <div className="flex gap-4">
+            <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[2024, 2025, 2026].map(year => (
+                  <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedPark} onValueChange={setSelectedPark}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los parques</SelectItem>
+                {parksData?.map((park: any) => (
+                  <SelectItem key={park.id} value={park.id.toString()}>
+                    {park.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button onClick={() => refetchDashboard()} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualizar
+            </Button>
+          </div>
         </div>
-        
-        <div className="flex gap-4">
-          <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {[2024, 2025, 2026].map(year => (
-                <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
 
-          <Select value={selectedPark} onValueChange={setSelectedPark}>
-            <SelectTrigger className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los parques</SelectItem>
-              {parks?.map((park: any) => (
-                <SelectItem key={park.id} value={park.id.toString()}>
-                  {park.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="variance">Análisis de Variaciones</TabsTrigger>
+            <TabsTrigger value="projections">Proyecciones Ajustadas</TabsTrigger>
+            <TabsTrigger value="alerts">Alertas</TabsTrigger>
+          </TabsList>
 
-          <Button onClick={() => refetchDashboard()} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualizar
-          </Button>
-        </div>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="variance">Análisis de Variaciones</TabsTrigger>
-          <TabsTrigger value="projections">Proyecciones Ajustadas</TabsTrigger>
-          <TabsTrigger value="alerts">Alertas</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="dashboard" className="space-y-6">
-          {dashboard && (
-            <>
-              {/* Resumen general */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <TabsContent value="dashboard" className="space-y-6">
+            {dashboard && (
+              <>
+                {/* Resumen general */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Ingresos Totales</CardTitle>
@@ -608,6 +610,7 @@ export default function BudgetTracking() {
           )}
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
