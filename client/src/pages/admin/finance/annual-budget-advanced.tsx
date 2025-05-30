@@ -1001,11 +1001,14 @@ function AddBudgetLineDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]" aria-describedby="budget-line-dialog-description">
         <DialogHeader>
           <DialogTitle>
             Agregar Línea de {type === 'income' ? 'Ingreso' : 'Gasto'}
           </DialogTitle>
+          <div id="budget-line-dialog-description" className="text-sm text-muted-foreground">
+            Complete los campos para agregar una nueva línea al presupuesto.
+          </div>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -1037,7 +1040,7 @@ function AddBudgetLineDialog({
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="loading" disabled>
                     Cargando categorías...
                   </SelectItem>
                 )}
