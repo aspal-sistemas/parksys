@@ -525,12 +525,12 @@ const CreateAssetPage: React.FC = () => {
                               <SelectValue placeholder="Seleccione un responsable" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Sin responsable asignado</SelectItem>
-                              {users?.map((user: any) => (
+                              <SelectItem value="none">Sin responsable asignado</SelectItem>
+                              {users && Array.isArray(users) ? users.map((user: any) => (
                                 <SelectItem key={user.id} value={user.id.toString()}>
                                   {user.username} ({user.role})
                                 </SelectItem>
-                              ))}
+                              )) : null}
                             </SelectContent>
                           </Select>
                         </FormControl>
