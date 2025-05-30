@@ -227,12 +227,13 @@ export class DatabaseStorage implements IStorage {
 
   async isAmenityInUse(amenityId: number): Promise<boolean> {
     try {
-      const [result] = await db.execute(sql`
+      const { pool } = await import('./db');
+      const result = await pool.query(`
         SELECT COUNT(*) as count 
         FROM park_amenities 
-        WHERE amenity_id = ${amenityId}
-      `);
-      const count = Number(result.count || 0);
+        WHERE amenity_id = $1
+      `, [amenityId]);
+      const count = Number(result.rows[0]?.count || 0);
       console.log(`Amenidad ${amenityId} está siendo usada en ${count} parques`);
       return count > 0;
     } catch (error) {
