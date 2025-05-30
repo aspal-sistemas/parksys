@@ -64,13 +64,14 @@ export const expenseSubcategories = pgTable("expense_subcategories", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Tabla de presupuestos anuales por municipio
+// Tabla de presupuestos anuales por municipio y parque
 export const budgets = pgTable("budgets", {
   id: serial("id").primaryKey(),
   municipalityId: integer("municipality_id"),
+  parkId: integer("park_id"), // Para presupuestos específicos por parque
   year: integer("year").notNull(),
   name: varchar("name", { length: 100 }).notNull(),
-  status: varchar("status", { length: 20 }).default("draft"), // draft, approved, active
+  status: varchar("status", { length: 20 }).default("draft"), // draft, approved, active, archived
   totalIncome: decimal("total_income", { precision: 15, scale: 2 }).default("0"),
   totalExpenses: decimal("total_expenses", { precision: 15, scale: 2 }).default("0"),
   notes: text("notes"),

@@ -7,9 +7,11 @@ import {
   incomeCategories,
   expenseCategories,
   incomeSubcategories,
-  expenseSubcategories
+  expenseSubcategories,
+  actualIncomes,
+  actualExpenses
 } from "@shared/finance-schema";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, isNull } from "drizzle-orm";
 
 /**
  * Registra las rutas para el módulo de presupuesto anual
