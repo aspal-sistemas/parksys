@@ -13,10 +13,8 @@ const {
   activities,
   incidents,
   parkImages,
-  assets,
   volunteers,
   instructors,
-  evaluations,
   documents
 } = schema;
 
@@ -44,6 +42,10 @@ export interface IStorage {
   deleteAssetCategory(id: number): Promise<boolean>;
   getAssets(filters?: any): Promise<any[]>;
   getAsset(id: number): Promise<any>;
+  createAsset(assetData: any): Promise<any>;
+  updateAsset(id: number, assetData: any): Promise<any>;
+  deleteAsset(id: number): Promise<boolean>;
+  createAssetHistoryEntry(historyData: any): Promise<any>;
   getParkAmenities(parkId: number): Promise<any[]>;
   addAmenityToPark(data: any): Promise<any>;
   removeAmenityFromPark(parkId: number, amenityId: number): Promise<boolean>;
@@ -585,6 +587,150 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error(`Error al obtener activo ${id}:`, error);
       return undefined;
+    }
+  }
+
+  async createAsset(assetData: any): Promise<any> {
+    try {
+      const result = await pool.query(`
+        INSERT INTO assets (
+          name, serial_number, category_id, park_id, amenity_id,
+          location_description, latitude, longitude, acquisition_date,
+          acquisition_cost, current_value, manufacturer, model,
+          status, condition, maintenance_frequency, last_maintenance_date,
+          next_maintenance_date, expected_lifespan, notes, qr_code,
+          responsible_person_id, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
+          $14, $15, $16, $17, $18, $19, $20, $21, $22, NOW(), NOW()
+        ) RETURNING *
+      `, [
+        assetData.name,
+        assetData.serialNumber,
+        assetData.categoryId,
+        assetData.parkId,
+        assetData.amenityId || null,
+        assetData.locationDescription,
+        assetData.latitude,
+        assetData.longitude,
+        assetData.acquisitionDate,
+        assetData.acquisitionCost,
+        assetData.currentValue,
+        assetData.manufacturer,
+        assetData.model,
+        assetData.status,
+        assetData.condition,
+        assetData.maintenanceFrequency,
+        assetData.lastMaintenanceDate,
+        assetData.nextMaintenanceDate,
+        assetData.expectedLifespan,
+        assetData.notes,
+        assetData.qrCode,
+        assetData.responsiblePersonId
+      ]);
+
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error al crear activo:", error);
+      throw error;
+    }
+  }
+
+  async updateAsset(id: number, assetData: any): Promise<any> {
+    try {
+      const result = await pool.query(`
+        UPDATE assets SET
+          name = COALESCE($2, name),
+          serial_number = COALESCE($3, serial_number),
+          category_id = COALESCE($4, category_id),
+          park_id = COALESCE($5, park_id),
+          amenity_id = COALESCE($6, amenity_id),
+          location_description = COALESCE($7, location_description),
+          latitude = COALESCE($8, latitude),
+          longitude = COALESCE($9, longitude),
+          acquisition_date = COALESCE($10, acquisition_date),
+          acquisition_cost = COALESCE($11, acquisition_cost),
+          current_value = COALESCE($12, current_value),
+          manufacturer = COALESCE($13, manufacturer),
+          model = COALESCE($14, model),
+          status = COALESCE($15, status),
+          condition = COALESCE($16, condition),
+          maintenance_frequency = COALESCE($17, maintenance_frequency),
+          last_maintenance_date = COALESCE($18, last_maintenance_date),
+          next_maintenance_date = COALESCE($19, next_maintenance_date),
+          expected_lifespan = COALESCE($20, expected_lifespan),
+          notes = COALESCE($21, notes),
+          qr_code = COALESCE($22, qr_code),
+          responsible_person_id = COALESCE($23, responsible_person_id),
+          updated_at = NOW()
+        WHERE id = $1
+        RETURNING *
+      `, [
+        id,
+        assetData.name,
+        assetData.serialNumber,
+        assetData.categoryId,
+        assetData.parkId,
+        assetData.amenityId,
+        assetData.locationDescription,
+        assetData.latitude,
+        assetData.longitude,
+        assetData.acquisitionDate,
+        assetData.acquisitionCost,
+        assetData.currentValue,
+        assetData.manufacturer,
+        assetData.model,
+        assetData.status,
+        assetData.condition,
+        assetData.maintenanceFrequency,
+        assetData.lastMaintenanceDate,
+        assetData.nextMaintenanceDate,
+        assetData.expectedLifespan,
+        assetData.notes,
+        assetData.qrCode,
+        assetData.responsiblePersonId
+      ]);
+
+      return result.rows[0];
+    } catch (error) {
+      console.error(`Error al actualizar activo ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async deleteAsset(id: number): Promise<boolean> {
+    try {
+      const result = await pool.query('DELETE FROM assets WHERE id = $1', [id]);
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error(`Error al eliminar activo ${id}:`, error);
+      return false;
+    }
+  }
+
+  async createAssetHistoryEntry(historyData: any): Promise<any> {
+    try {
+      const result = await pool.query(`
+        INSERT INTO asset_history (
+          asset_id, change_type, date, description, changed_by,
+          previous_value, new_value, notes, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+        RETURNING *
+      `, [
+        historyData.assetId,
+        historyData.changeType,
+        historyData.date,
+        historyData.description,
+        historyData.changedBy,
+        historyData.previousValue,
+        historyData.newValue,
+        historyData.notes
+      ]);
+
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error al crear entrada de historial:", error);
+      throw error;
     }
   }
 
