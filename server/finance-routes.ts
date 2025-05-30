@@ -159,7 +159,7 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   });
 
   // Obtener solo las categorías de ingresos activas (para matriz de flujo)
-  apiRouter.get("/income-categories/active", async (_req: Request, res: Response) => {
+  apiRouter.get("/finance/income-categories/active", async (_req: Request, res: Response) => {
     try {
       const categories = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
       res.json(categories);
@@ -343,7 +343,7 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   // ============ CATEGORÍAS DE EGRESOS ============
   
   // Obtener todas las categorías de egresos (incluye activas e inactivas para el catálogo)
-  apiRouter.get("/expense-categories", async (_req: Request, res: Response) => {
+  apiRouter.get("/finance/expense-categories", async (_req: Request, res: Response) => {
     try {
       const categories = await db.select().from(expenseCategories);
       res.json(categories);
@@ -354,7 +354,7 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   });
 
   // Obtener solo las categorías de egresos activas (para matriz de flujo)
-  apiRouter.get("/expense-categories/active", async (_req: Request, res: Response) => {
+  apiRouter.get("/finance/expense-categories/active", async (_req: Request, res: Response) => {
     try {
       const categories = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
       res.json(categories);
