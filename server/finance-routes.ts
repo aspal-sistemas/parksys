@@ -1639,5 +1639,402 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     res.send(csvContent);
   });
 
+  // ============ MÓDULO DE SEGUIMIENTO PRESUPUESTARIO ============
+
+  // Dashboard comparativo presupuesto vs real
+  apiRouter.get("/budget-tracking/dashboard/:parkId/:year", async (req: Request, res: Response) => {
+    try {
+      const { parkId, year } = req.params;
+      const yearInt = parseInt(year);
+      const parkIdInt = parkId === 'all' ? null : parseInt(parkId);
+
+      // Obtener ingresos reales
+      let incomeQuery = db.select().from(actualIncomes).where(eq(actualIncomes.year, yearInt));
+      if (parkIdInt) {
+        incomeQuery = incomeQuery.where(eq(actualIncomes.parkId, parkIdInt));
+      }
+      const realIncomes = await incomeQuery;
+
+      // Obtener egresos reales
+      let expenseQuery = db.select().from(actualExpenses).where(eq(actualExpenses.year, yearInt));
+      if (parkIdInt) {
+        expenseQuery = expenseQuery.where(eq(actualExpenses.parkId, parkIdInt));
+      }
+      const realExpenses = await expenseQuery;
+
+      // Obtener categorías activas
+      const activeIncomeCategories = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+      const activeExpenseCategories = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+
+      // Procesar datos por mes
+      const monthlyComparison = [];
+      for (let month = 1; month <= 12; month++) {
+        const monthData = {
+          month,
+          monthName: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'][month - 1],
+          realIncome: 0,
+          realExpense: 0,
+          incomeCategories: [],
+          expenseCategories: []
+        };
+
+        // Calcular ingresos reales por categoría
+        for (const category of activeIncomeCategories) {
+          const categoryRealIncomes = realIncomes.filter(income => 
+            income.categoryId === category.id && income.month === month
+          );
+          const realAmount = categoryRealIncomes.reduce((sum, income) => sum + parseFloat(income.amount), 0);
+
+          monthData.incomeCategories.push({
+            categoryId: category.id,
+            categoryName: category.name,
+            real: realAmount
+          });
+          monthData.realIncome += realAmount;
+        }
+
+        // Calcular egresos reales por categoría
+        for (const category of activeExpenseCategories) {
+          const categoryRealExpenses = realExpenses.filter(expense => 
+            expense.categoryId === category.id && expense.month === month
+          );
+          const realAmount = categoryRealExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+
+          monthData.expenseCategories.push({
+            categoryId: category.id,
+            categoryName: category.name,
+            real: realAmount
+          });
+          monthData.realExpense += realAmount;
+        }
+
+        monthlyComparison.push(monthData);
+      }
+
+      // Calcular métricas totales
+      const totalRealIncome = monthlyComparison.reduce((sum, month) => sum + month.realIncome, 0);
+      const totalRealExpense = monthlyComparison.reduce((sum, month) => sum + month.realExpense, 0);
+
+      const dashboard = {
+        year: yearInt,
+        parkId: parkIdInt,
+        summary: {
+          totalRealIncome,
+          totalRealExpense,
+          netReal: totalRealIncome - totalRealExpense,
+          avgMonthlyIncome: totalRealIncome / 12,
+          avgMonthlyExpense: totalRealExpense / 12
+        },
+        monthlyComparison,
+        alerts: []
+      };
+
+      // Generar alertas básicas
+      const currentMonth = new Date().getMonth() + 1;
+      if (currentMonth <= 12) {
+        const currentMonthData = monthlyComparison[currentMonth - 1];
+        const avgIncome = totalRealIncome / Math.max(currentMonth - 1, 1);
+        const avgExpense = totalRealExpense / Math.max(currentMonth - 1, 1);
+
+        if (currentMonthData.realExpense > avgExpense * 1.5) {
+          dashboard.alerts.push({
+            type: 'warning',
+            message: `Gastos en ${currentMonthData.monthName} exceden significativamente el promedio mensual`,
+            month: currentMonth
+          });
+        }
+        if (currentMonthData.realIncome < avgIncome * 0.7) {
+          dashboard.alerts.push({
+            type: 'danger',
+            message: `Ingresos en ${currentMonthData.monthName} están por debajo del promedio mensual`,
+            month: currentMonth
+          });
+        }
+      }
+
+      res.json(dashboard);
+    } catch (error) {
+      console.error("Error al obtener dashboard de seguimiento presupuestario:", error);
+      res.status(500).json({ message: "Error al obtener dashboard de seguimiento presupuestario" });
+    }
+  });
+
+  // Análisis de variaciones por categoría
+  apiRouter.get("/budget-tracking/variance-analysis/:parkId/:year", async (req: Request, res: Response) => {
+    try {
+      const { parkId, year } = req.params;
+      const yearInt = parseInt(year);
+      const parkIdInt = parkId === 'all' ? null : parseInt(parkId);
+
+      // Obtener categorías activas
+      const incomeCategories = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+      const expenseCategories = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+
+      // Obtener datos reales
+      let incomeQuery = db.select().from(actualIncomes).where(eq(actualIncomes.year, yearInt));
+      let expenseQuery = db.select().from(actualExpenses).where(eq(actualExpenses.year, yearInt));
+      
+      if (parkIdInt) {
+        incomeQuery = incomeQuery.where(eq(actualIncomes.parkId, parkIdInt));
+        expenseQuery = expenseQuery.where(eq(actualExpenses.parkId, parkIdInt));
+      }
+
+      const realIncomes = await incomeQuery;
+      const realExpenses = await expenseQuery;
+
+      const varianceAnalysis = {
+        incomeVariances: [],
+        expenseVariances: [],
+        trends: []
+      };
+
+      // Analizar ingresos por categoría
+      for (const category of incomeCategories) {
+        const categoryIncomes = realIncomes.filter(income => income.categoryId === category.id);
+        const totalReal = categoryIncomes.reduce((sum, income) => sum + parseFloat(income.amount), 0);
+        
+        const monthlyData = [];
+        for (let month = 1; month <= 12; month++) {
+          const monthIncomes = categoryIncomes.filter(income => income.month === month);
+          const monthReal = monthIncomes.reduce((sum, income) => sum + parseFloat(income.amount), 0);
+          monthlyData.push({
+            month,
+            real: monthReal
+          });
+        }
+
+        varianceAnalysis.incomeVariances.push({
+          categoryId: category.id,
+          categoryName: category.name,
+          totalReal,
+          monthlyData,
+          avgMonthly: totalReal / 12,
+          trend: 'stable' // Se calcularía con una función de análisis de tendencias
+        });
+      }
+
+      // Analizar egresos por categoría
+      for (const category of expenseCategories) {
+        const categoryExpenses = realExpenses.filter(expense => expense.categoryId === category.id);
+        const totalReal = categoryExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+        
+        const monthlyData = [];
+        for (let month = 1; month <= 12; month++) {
+          const monthExpenses = categoryExpenses.filter(expense => expense.month === month);
+          const monthReal = monthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+          monthlyData.push({
+            month,
+            real: monthReal
+          });
+        }
+
+        varianceAnalysis.expenseVariances.push({
+          categoryId: category.id,
+          categoryName: category.name,
+          totalReal,
+          monthlyData,
+          avgMonthly: totalReal / 12,
+          trend: 'stable' // Se calcularía con una función de análisis de tendencias
+        });
+      }
+
+      res.json(varianceAnalysis);
+    } catch (error) {
+      console.error("Error al obtener análisis de variaciones:", error);
+      res.status(500).json({ message: "Error al obtener análisis de variaciones" });
+    }
+  });
+
+  // Proyecciones ajustadas basadas en datos reales
+  apiRouter.get("/budget-tracking/adjusted-projections/:parkId/:year", async (req: Request, res: Response) => {
+    try {
+      const { parkId, year } = req.params;
+      const yearInt = parseInt(year);
+      const parkIdInt = parkId === 'all' ? null : parseInt(parkId);
+      const currentMonth = new Date().getMonth() + 1;
+
+      // Obtener datos reales hasta el mes actual
+      let incomeQuery = db.select().from(actualIncomes)
+        .where(and(
+          eq(actualIncomes.year, yearInt),
+          lte(actualIncomes.month, currentMonth)
+        ));
+      
+      let expenseQuery = db.select().from(actualExpenses)
+        .where(and(
+          eq(actualExpenses.year, yearInt),
+          lte(actualExpenses.month, currentMonth)
+        ));
+
+      if (parkIdInt) {
+        incomeQuery = incomeQuery.where(eq(actualIncomes.parkId, parkIdInt));
+        expenseQuery = expenseQuery.where(eq(actualExpenses.parkId, parkIdInt));
+      }
+
+      const realIncomes = await incomeQuery;
+      const realExpenses = await expenseQuery;
+
+      // Obtener categorías activas
+      const incomeCategories = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+      const expenseCategories = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+
+      const adjustedProjections = {
+        year: yearInt,
+        currentMonth,
+        incomeProjections: [],
+        expenseProjections: [],
+        yearEndProjection: {
+          totalIncome: 0,
+          totalExpense: 0,
+          netProjection: 0
+        }
+      };
+
+      // Proyecciones de ingresos
+      for (const category of incomeCategories) {
+        const categoryIncomes = realIncomes.filter(income => income.categoryId === category.id);
+        const realToDate = categoryIncomes.reduce((sum, income) => sum + parseFloat(income.amount), 0);
+        
+        const monthsWithData = Math.max(currentMonth, 1);
+        const monthlyAverage = realToDate / monthsWithData;
+        
+        const remainingMonths = 12 - currentMonth;
+        const projectedRemaining = monthlyAverage * remainingMonths;
+        const yearEndProjection = realToDate + projectedRemaining;
+
+        const projection = {
+          categoryId: category.id,
+          categoryName: category.name,
+          realToDate,
+          monthlyAverage,
+          projectedRemaining,
+          yearEndProjection,
+          confidenceLevel: monthsWithData >= 3 ? 'high' : monthsWithData >= 2 ? 'medium' : 'low'
+        };
+
+        adjustedProjections.incomeProjections.push(projection);
+        adjustedProjections.yearEndProjection.totalIncome += yearEndProjection;
+      }
+
+      // Proyecciones de egresos
+      for (const category of expenseCategories) {
+        const categoryExpenses = realExpenses.filter(expense => expense.categoryId === category.id);
+        const realToDate = categoryExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+        
+        const monthsWithData = Math.max(currentMonth, 1);
+        const monthlyAverage = realToDate / monthsWithData;
+        
+        const remainingMonths = 12 - currentMonth;
+        const projectedRemaining = monthlyAverage * remainingMonths;
+        const yearEndProjection = realToDate + projectedRemaining;
+
+        const projection = {
+          categoryId: category.id,
+          categoryName: category.name,
+          realToDate,
+          monthlyAverage,
+          projectedRemaining,
+          yearEndProjection,
+          confidenceLevel: monthsWithData >= 3 ? 'high' : monthsWithData >= 2 ? 'medium' : 'low'
+        };
+
+        adjustedProjections.expenseProjections.push(projection);
+        adjustedProjections.yearEndProjection.totalExpense += yearEndProjection;
+      }
+
+      adjustedProjections.yearEndProjection.netProjection = 
+        adjustedProjections.yearEndProjection.totalIncome - 
+        adjustedProjections.yearEndProjection.totalExpense;
+
+      res.json(adjustedProjections);
+    } catch (error) {
+      console.error("Error al obtener proyecciones ajustadas:", error);
+      res.status(500).json({ message: "Error al obtener proyecciones ajustadas" });
+    }
+  });
+
+  // Alertas presupuestarias
+  apiRouter.get("/budget-tracking/alerts/:parkId", async (req: Request, res: Response) => {
+    try {
+      const { parkId } = req.params;
+      const parkIdInt = parkId === 'all' ? null : parseInt(parkId);
+      const currentYear = new Date().getFullYear();
+      const currentMonth = new Date().getMonth() + 1;
+
+      let incomeQuery = db.select().from(actualIncomes).where(eq(actualIncomes.year, currentYear));
+      let expenseQuery = db.select().from(actualExpenses).where(eq(actualExpenses.year, currentYear));
+
+      if (parkIdInt) {
+        incomeQuery = incomeQuery.where(eq(actualIncomes.parkId, parkIdInt));
+        expenseQuery = expenseQuery.where(eq(actualExpenses.parkId, parkIdInt));
+      }
+
+      const realIncomes = await incomeQuery;
+      const realExpenses = await expenseQuery;
+      const alerts = [];
+
+      // Verificar egresos excesivos por categoría
+      const expenseCategories = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+      
+      for (const category of expenseCategories) {
+        const monthExpenses = realExpenses.filter(expense => 
+          expense.categoryId === category.id && expense.month === currentMonth
+        );
+        const monthTotal = monthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+        
+        const previousMonthsExpenses = realExpenses.filter(expense => 
+          expense.categoryId === category.id && expense.month < currentMonth
+        );
+        const avgPreviousMonths = previousMonthsExpenses.length > 0 
+          ? previousMonthsExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0) / (currentMonth - 1)
+          : 0;
+
+        if (monthTotal > avgPreviousMonths * 1.5 && avgPreviousMonths > 0) {
+          alerts.push({
+            type: 'expense_spike',
+            severity: 'warning',
+            category: category.name,
+            message: `Gastos en ${category.name} este mes (${monthTotal.toLocaleString()}) exceden 150% del promedio mensual`,
+            amount: monthTotal,
+            threshold: avgPreviousMonths * 1.5
+          });
+        }
+      }
+
+      // Verificar ingresos por debajo del promedio
+      const incomeCategories = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+      
+      for (const category of incomeCategories) {
+        const monthIncomes = realIncomes.filter(income => 
+          income.categoryId === category.id && income.month === currentMonth
+        );
+        const monthTotal = monthIncomes.reduce((sum, income) => sum + parseFloat(income.amount), 0);
+        
+        const previousMonthsIncomes = realIncomes.filter(income => 
+          income.categoryId === category.id && income.month < currentMonth
+        );
+        const avgPreviousMonths = previousMonthsIncomes.length > 0 
+          ? previousMonthsIncomes.reduce((sum, income) => sum + parseFloat(income.amount), 0) / (currentMonth - 1)
+          : 0;
+
+        if (monthTotal < avgPreviousMonths * 0.7 && avgPreviousMonths > 0) {
+          alerts.push({
+            type: 'income_drop',
+            severity: 'danger',
+            category: category.name,
+            message: `Ingresos en ${category.name} este mes (${monthTotal.toLocaleString()}) están 30% por debajo del promedio mensual`,
+            amount: monthTotal,
+            threshold: avgPreviousMonths * 0.7
+          });
+        }
+      }
+
+      res.json({ alerts, generatedAt: new Date() });
+    } catch (error) {
+      console.error("Error al obtener alertas presupuestarias:", error);
+      res.status(500).json({ message: "Error al obtener alertas presupuestarias" });
+    }
+  });
+
   console.log("Rutas del módulo financiero registradas correctamente");
 }
