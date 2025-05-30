@@ -144,9 +144,9 @@ const CreateAssetPage: React.FC = () => {
   const selectedAmenityId = form.watch('amenityId');
   useEffect(() => {
     if (selectedAmenityId && selectedAmenityId > 0 && amenities && Array.isArray(amenities)) {
-      const selectedAmenity = amenities.find((a: any) => (a.amenityId || a.id) === selectedAmenityId);
+      const selectedAmenity = amenities.find((a: any) => a.amenityId === selectedAmenityId);
       if (selectedAmenity) {
-        form.setValue('locationDescription', selectedAmenity.amenityName || selectedAmenity.name || '');
+        form.setValue('locationDescription', selectedAmenity.amenityName || '');
       }
     }
   }, [selectedAmenityId, amenities, form]);
@@ -488,8 +488,8 @@ const CreateAssetPage: React.FC = () => {
                             <SelectContent>
                               <SelectItem value="0">Sin amenidad específica</SelectItem>
                               {amenities && Array.isArray(amenities) ? amenities.map((amenity: any) => (
-                                <SelectItem key={amenity.amenityId || amenity.id} value={(amenity.amenityId || amenity.id)?.toString() || ''}>
-                                  {amenity.amenityName || amenity.name}
+                                <SelectItem key={amenity.id} value={amenity.amenityId?.toString() || ''}>
+                                  {amenity.amenityName}
                                 </SelectItem>
                               )) : null}
                             </SelectContent>
