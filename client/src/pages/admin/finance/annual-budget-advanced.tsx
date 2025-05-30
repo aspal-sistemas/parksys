@@ -491,8 +491,13 @@ function BudgetDetailView({ budget }: { budget: Budget }) {
 }
 
 function BudgetLinesTable({ budgetId, type }: { budgetId: number; type: 'income' | 'expenses' }) {
+  const [showAddLineDialog, setShowAddLineDialog] = useState(false);
   const { data: lines = [] } = useQuery({
     queryKey: [`/api/budgets/${budgetId}/${type}-lines`],
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: [`/api/finance/${type === 'income' ? 'income' : 'expense'}-categories`],
   });
 
   return (
@@ -501,11 +506,19 @@ function BudgetLinesTable({ budgetId, type }: { budgetId: number; type: 'income'
         <h3 className="text-lg font-semibold">
           Líneas de {type === 'income' ? 'Ingresos' : 'Gastos'}
         </h3>
-        <Button size="sm">
+        <Button size="sm" onClick={() => setShowAddLineDialog(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Agregar Línea
         </Button>
       </div>
+
+      <AddBudgetLineDialog
+        open={showAddLineDialog}
+        onOpenChange={setShowAddLineDialog}
+        budgetId={budgetId}
+        type={type}
+        categories={categories}
+      />
       
       <div className="border rounded-lg overflow-hidden">
         <table className="w-full">
@@ -903,5 +916,168 @@ function BudgetAnalytics({ budgetId }: { budgetId: number }) {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function AddBudgetLineDialog({ 
+  open, 
+  onOpenChange, 
+  budgetId, 
+  type, 
+  categories 
+}: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  budgetId: number; 
+  type: 'income' | 'expenses'; 
+  categories: any[];
+}) {
+  const [formData, setFormData] = useState({
+    concept: '',
+    categoryId: '',
+    projectedAmount: '',
+    description: ''
+  });
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const createLineMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest(`/api/budgets/${budgetId}/${type}-lines`, {
+        method: 'POST',
+        data
+      });
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/budgets/${budgetId}/${type}-lines`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
+      toast({
+        title: "Línea agregada",
+        description: `La línea de ${type === 'income' ? 'ingreso' : 'gasto'} ha sido agregada exitosamente.`,
+      });
+      setFormData({ concept: '', categoryId: '', projectedAmount: '', description: '' });
+      onOpenChange(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "No se pudo agregar la línea. Por favor intenta de nuevo.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.concept || !formData.categoryId || !formData.projectedAmount) {
+      toast({
+        title: "Campos requeridos",
+        description: "Por favor completa todos los campos obligatorios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createLineMutation.mutate({
+      budgetId,
+      categoryId: parseInt(formData.categoryId),
+      concept: formData.concept,
+      projectedAmount: parseFloat(formData.projectedAmount),
+      description: formData.description || null
+    });
+  };
+
+  const activeCategories = Array.isArray(categories) ? 
+    categories.filter((cat: any) => cat.isActive) : [];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>
+            Agregar Línea de {type === 'income' ? 'Ingreso' : 'Gasto'}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="concept">Concepto *</Label>
+            <Input
+              id="concept"
+              value={formData.concept}
+              onChange={(e) => setFormData({ ...formData, concept: e.target.value })}
+              placeholder={`Ej: ${type === 'income' ? 'Ingresos por eventos deportivos' : 'Gastos de mantenimiento de jardines'}`}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="categoryId">Categoría *</Label>
+            <Select 
+              value={formData.categoryId} 
+              onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                {activeCategories.map((category: any) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    {category.name} - {category.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="projectedAmount">Monto Proyectado *</Label>
+            <Input
+              id="projectedAmount"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.projectedAmount}
+              onChange={(e) => setFormData({ ...formData, projectedAmount: e.target.value })}
+              placeholder="0.00"
+              required
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Ingresa el monto en pesos mexicanos
+            </p>
+          </div>
+
+          <div>
+            <Label htmlFor="description">Descripción (Opcional)</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Detalles adicionales sobre esta línea presupuestaria..."
+              rows={3}
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={createLineMutation.isPending}
+            >
+              {createLineMutation.isPending ? "Guardando..." : "Agregar Línea"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
