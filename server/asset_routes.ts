@@ -223,36 +223,44 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
 
   apiRouter.post("/assets", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const parsedAsset = insertAssetSchema.safeParse(req.body);
-      if (!parsedAsset.success) {
-        return res.status(400).json({ message: "Datos de activo inválidos", errors: parsedAsset.error.format() });
+      console.log("Datos recibidos para crear activo:", req.body);
+      
+      // Validación básica sin usar el schema de Drizzle
+      const requiredFields = ['name', 'categoryId', 'parkId', 'status', 'condition'];
+      for (const field of requiredFields) {
+        if (!req.body[field]) {
+          return res.status(400).json({ message: `El campo ${field} es requerido` });
+        }
       }
       
       // Verificar que exista el parque
-      const park = await storage.getPark(parsedAsset.data.parkId);
+      const park = await storage.getPark(req.body.parkId);
       if (!park) {
         return res.status(400).json({ message: "El parque especificado no existe" });
       }
       
       // Verificar que exista la categoría
-      const category = await storage.getAssetCategory(parsedAsset.data.categoryId);
+      const category = await storage.getAssetCategory(req.body.categoryId);
       if (!category) {
         return res.status(400).json({ message: "La categoría especificada no existe" });
       }
       
-      const asset = await storage.createAsset(parsedAsset.data);
+      const asset = await storage.createAsset(req.body);
+      console.log("Activo creado exitosamente:", asset);
       
       // Crear entrada en el historial
-      await storage.createAssetHistoryEntry({
-        assetId: asset.id,
-        changeType: "acquisition",
-        date: new Date(),
-        description: "Activo registrado en el sistema",
-        changedBy: (req.user as any)?.id || 1, // ID del usuario o admin por defecto
-        previousValue: null,
-        newValue: null,
-        notes: "Registro inicial del activo"
-      });
+      if (asset && asset.id) {
+        await storage.createAssetHistoryEntry({
+          assetId: asset.id,
+          changeType: "acquisition",
+          date: new Date(),
+          description: "Activo registrado en el sistema",
+          changedBy: (req.user as any)?.id || 1, // ID del usuario o admin por defecto
+          previousValue: null,
+          newValue: null,
+          notes: "Registro inicial del activo"
+        });
+      }
       
       res.status(201).json(asset);
     } catch (error) {
