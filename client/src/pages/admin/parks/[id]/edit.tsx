@@ -117,12 +117,21 @@ export default function ParkEdit() {
   const [selectedAmenity, setSelectedAmenity] = React.useState<number | null>(null);
   const [isAddAmenityModalOpen, setIsAddAmenityModalOpen] = React.useState(false);
   const [isViewAmenityModalOpen, setIsViewAmenityModalOpen] = React.useState(false);
+  const [isEditAmenityModalOpen, setIsEditAmenityModalOpen] = React.useState(false);
   const [viewingAmenity, setViewingAmenity] = React.useState<any>(null);
+  const [editingAmenity, setEditingAmenity] = React.useState<any>(null);
   const [newAmenityData, setNewAmenityData] = React.useState({
     moduleName: '',
     surfaceArea: '',
     locationLatitude: '',
     locationLongitude: ''
+  });
+  const [editAmenityData, setEditAmenityData] = React.useState({
+    moduleName: '',
+    surfaceArea: '',
+    locationLatitude: '',
+    locationLongitude: '',
+    status: 'Activa'
   });
 
   // Consultar datos del parque
@@ -452,6 +461,19 @@ export default function ParkEdit() {
     setIsViewAmenityModalOpen(true);
   };
 
+  // Función para editar amenidad
+  const handleEditAmenity = (amenity: any) => {
+    setEditingAmenity(amenity);
+    setEditAmenityData({
+      moduleName: amenity.moduleName || '',
+      surfaceArea: amenity.surfaceArea?.toString() || '',
+      locationLatitude: amenity.locationLatitude?.toString() || '',
+      locationLongitude: amenity.locationLongitude?.toString() || '',
+      status: amenity.status || 'Activa'
+    });
+    setIsEditAmenityModalOpen(true);
+  };
+
   const onSubmit = (values: ParkEditFormValues) => {
     updateParkMutation.mutate(values);
   };
@@ -664,8 +686,9 @@ export default function ParkEdit() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => handleEditAmenity({ ...parkAmenity, amenityInfo: amenity })}
                   disabled={isUpdating || isDeleting}
+                  className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
                 >
                   ✏️
                 </Button>
@@ -1672,6 +1695,126 @@ export default function ParkEdit() {
                   onClick={() => setIsViewAmenityModalOpen(false)}
                 >
                   Cerrar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para editar amenidad */}
+      <Dialog open={isEditAmenityModalOpen} onOpenChange={setIsEditAmenityModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Editar Módulo de Amenidad</DialogTitle>
+          </DialogHeader>
+          {editingAmenity && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Tipo de Amenidad</label>
+                <div className="p-3 bg-gray-100 rounded-lg">
+                  <p className="font-semibold text-gray-700">
+                    {editingAmenity.amenityInfo?.name || 'No especificado'}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Nombre del Módulo</label>
+                <Input
+                  value={editAmenityData.moduleName}
+                  onChange={(e) => setEditAmenityData(prev => ({ ...prev, moduleName: e.target.value }))}
+                  placeholder="Ej: Antonio Albarrán"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Superficie (m²)</label>
+                <Input
+                  type="number"
+                  value={editAmenityData.surfaceArea}
+                  onChange={(e) => setEditAmenityData(prev => ({ ...prev, surfaceArea: e.target.value }))}
+                  placeholder="Superficie en metros cuadrados"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Estado</label>
+                <Select onValueChange={(value) => setEditAmenityData(prev => ({ ...prev, status: value }))} value={editAmenityData.status}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona el estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Activa">Activa</SelectItem>
+                    <SelectItem value="Inactiva">Inactiva</SelectItem>
+                    <SelectItem value="Mantenimiento">Mantenimiento</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Ubicación</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    step="any"
+                    value={editAmenityData.locationLatitude}
+                    onChange={(e) => setEditAmenityData(prev => ({ ...prev, locationLatitude: e.target.value }))}
+                    placeholder="Latitud"
+                  />
+                  <Input
+                    type="number"
+                    step="any"
+                    value={editAmenityData.locationLongitude}
+                    onChange={(e) => setEditAmenityData(prev => ({ ...prev, locationLongitude: e.target.value }))}
+                    placeholder="Longitud"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditAmenityModalOpen(false);
+                    setEditingAmenity(null);
+                    setEditAmenityData({
+                      moduleName: '',
+                      surfaceArea: '',
+                      locationLatitude: '',
+                      locationLongitude: '',
+                      status: 'Activa'
+                    });
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={() => {
+                    updateAmenityMutation.mutate({
+                      amenityId: editingAmenity.id,
+                      data: {
+                        moduleName: editAmenityData.moduleName,
+                        surfaceArea: editAmenityData.surfaceArea ? parseFloat(editAmenityData.surfaceArea) : undefined,
+                        locationLatitude: editAmenityData.locationLatitude ? parseFloat(editAmenityData.locationLatitude) : undefined,
+                        locationLongitude: editAmenityData.locationLongitude ? parseFloat(editAmenityData.locationLongitude) : undefined,
+                        status: editAmenityData.status
+                      }
+                    });
+                    setIsEditAmenityModalOpen(false);
+                    setEditingAmenity(null);
+                    setEditAmenityData({
+                      moduleName: '',
+                      surfaceArea: '',
+                      locationLatitude: '',
+                      locationLongitude: '',
+                      status: 'Activa'
+                    });
+                  }}
+                  disabled={updateAmenityMutation.isPending}
+                  className="bg-yellow-600 hover:bg-yellow-700"
+                >
+                  {updateAmenityMutation.isPending ? 'Actualizando...' : 'Actualizar Amenidad'}
                 </Button>
               </div>
             </div>
