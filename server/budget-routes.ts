@@ -20,19 +20,44 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
   // Obtener presupuestos
   apiRouter.get("/budgets", async (req: Request, res: Response) => {
     try {
-      const { year, municipalityId } = req.query;
+      console.log("=== OBTENIENDO PRESUPUESTOS ===");
+      console.log("Query params:", req.query);
+      
+      const { year, municipalityId, parkId, status } = req.query;
       
       let query = db.select().from(budgets);
+      const conditions = [];
       
       if (year) {
-        query = query.where(eq(budgets.year, parseInt(year as string)));
+        conditions.push(eq(budgets.year, parseInt(year as string)));
+        console.log("Filtro año:", year);
       }
       
-      if (municipalityId && municipalityId !== "") {
-        query = query.where(eq(budgets.municipalityId, parseInt(municipalityId as string)));
+      if (municipalityId && municipalityId !== "" && municipalityId !== "all") {
+        conditions.push(eq(budgets.municipalityId, parseInt(municipalityId as string)));
+        console.log("Filtro municipio:", municipalityId);
+      }
+      
+      if (parkId && parkId !== "" && parkId !== "all") {
+        conditions.push(eq(budgets.parkId, parseInt(parkId as string)));
+        console.log("Filtro parque:", parkId);
+      }
+      
+      if (status && status !== "" && status !== "all") {
+        conditions.push(eq(budgets.status, status as string));
+        console.log("Filtro estado:", status);
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
       }
       
       const result = await query.orderBy(desc(budgets.createdAt));
+      
+      console.log(`Presupuestos encontrados: ${result.length}`);
+      if (result.length > 0) {
+        console.log("IDs:", result.map(b => b.id));
+      }
       
       res.json(result);
     } catch (error) {
