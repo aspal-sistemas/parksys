@@ -117,7 +117,7 @@ const CreateAssetPage: React.FC = () => {
   // Consultar amenidades del parque seleccionado
   const selectedParkId = form.watch('parkId');
   const { data: amenities, isLoading: isLoadingAmenities } = useQuery({
-    queryKey: ['/api/parks', selectedParkId, 'amenities'],
+    queryKey: [`/api/parks/${selectedParkId}/amenities`],
     enabled: !!selectedParkId && selectedParkId > 0,
   });
 
