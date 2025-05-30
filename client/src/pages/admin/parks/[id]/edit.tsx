@@ -115,6 +115,7 @@ export default function ParkEdit() {
 
   // State for amenity management
   const [selectedAmenity, setSelectedAmenity] = React.useState<number | null>(null);
+  const [isAddAmenityModalOpen, setIsAddAmenityModalOpen] = React.useState(false);
   const [newAmenityData, setNewAmenityData] = React.useState({
     moduleName: '',
     surfaceArea: '',
@@ -1234,128 +1235,150 @@ export default function ParkEdit() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      {/* Formulario para agregar nueva amenidad */}
-                      <div className="border rounded-lg p-4 bg-gray-50">
-                        <h4 className="font-medium mb-3 flex items-center gap-2">
-                          <Plus className="h-4 w-4" />
-                          Agregar Amenidad
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                          <div>
-                            <label className="text-sm font-medium mb-2 block">Amenidad</label>
-                            <Select onValueChange={(value) => {
-                              const amenityId = parseInt(value);
-                              if (amenityId) {
-                                setSelectedAmenity(amenityId);
-                              }
-                            }}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Seleccionar amenidad" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {availableAmenities?.map((amenity: any) => (
-                                  <SelectItem key={amenity.id} value={amenity.id.toString()}>
-                                    {amenity.icon && <span className="mr-2">{getIconSymbol(amenity.icon)}</span>}
-                                    {amenity.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          
-                          <div>
-                            <label className="text-sm font-medium mb-2 block">Nombre del Módulo</label>
-                            <Input 
-                              placeholder="Ej: Módulo A"
-                              value={newAmenityData.moduleName}
-                              onChange={(e) => setNewAmenityData(prev => ({ ...prev, moduleName: e.target.value }))}
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="text-sm font-medium mb-2 block">Superficie (m²)</label>
-                            <Input 
-                              type="number"
-                              placeholder="0.00"
-                              value={newAmenityData.surfaceArea}
-                              onChange={(e) => setNewAmenityData(prev => ({ ...prev, surfaceArea: e.target.value }))}
-                            />
-                          </div>
-                          
-                          <div className="flex items-end">
-                            <Button 
-                              type="button"
-                              onClick={() => {
-                                if (selectedAmenity) {
-                                  addAmenityMutation.mutate({ 
-                                    amenityId: selectedAmenity,
-                                    moduleName: newAmenityData.moduleName,
-                                    surfaceArea: newAmenityData.surfaceArea ? parseFloat(newAmenityData.surfaceArea) : undefined,
-                                    locationLatitude: newAmenityData.locationLatitude ? parseFloat(newAmenityData.locationLatitude) : undefined,
-                                    locationLongitude: newAmenityData.locationLongitude ? parseFloat(newAmenityData.locationLongitude) : undefined
-                                  });
-                                  setSelectedAmenity(null);
-                                  setNewAmenityData({ moduleName: '', surfaceArea: '', locationLatitude: '', locationLongitude: '' });
-                                }
-                              }}
-                              disabled={!selectedAmenity || addAmenityMutation.isPending}
-                              className="w-full"
-                            >
-                              {addAmenityMutation.isPending ? 'Agregando...' : 'Agregar'}
+                      {/* Botón para abrir modal de agregar amenidad */}
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-medium">Amenidades Actuales</h4>
+                        <Dialog open={isAddAmenityModalOpen} onOpenChange={setIsAddAmenityModalOpen}>
+                          <DialogTrigger asChild>
+                            <Button className="flex items-center gap-2">
+                              <Plus className="h-4 w-4" />
+                              Agregar Amenidad
                             </Button>
-                          </div>
-                        </div>
-                        
-                        {/* Selector de ubicación con mapa interactivo */}
-                        <div className="mt-4">
-                          <label className="text-sm font-medium mb-2 block">Ubicación en el Parque (opcional)</label>
-                          <div className="border rounded-lg p-3 bg-white overflow-hidden">
-                            <div className="w-full h-48 relative">
-                              <MapSelector
-                                key={`map-${park?.id}-${park?.latitude}-${park?.longitude}`}
-                                defaultCenter={{
-                                  lat: park?.latitude ? parseFloat(park.latitude) : 19.432608,
-                                  lng: park?.longitude ? parseFloat(park.longitude) : -99.133209
-                                }}
-                                onLocationSelect={(location) => {
-                                  setNewAmenityData(prev => ({
-                                    ...prev,
-                                    locationLatitude: location.lat.toString(),
-                                    locationLongitude: location.lng.toString()
-                                  }));
-                                }}
-                                selectedLocation={
-                                  newAmenityData.locationLatitude && newAmenityData.locationLongitude
-                                    ? {
-                                        lat: parseFloat(newAmenityData.locationLatitude),
-                                        lng: parseFloat(newAmenityData.locationLongitude)
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>Agregar Nueva Amenidad</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <label className="text-sm font-medium mb-2 block">Amenidad</label>
+                                  <Select onValueChange={(value) => {
+                                    const amenityId = parseInt(value);
+                                    if (amenityId) {
+                                      setSelectedAmenity(amenityId);
+                                    }
+                                  }}>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Seleccionar amenidad" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {availableAmenities?.map((amenity: any) => (
+                                        <SelectItem key={amenity.id} value={amenity.id.toString()}>
+                                          {amenity.icon && <span className="mr-2">{getIconSymbol(amenity.icon)}</span>}
+                                          {amenity.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                
+                                <div>
+                                  <label className="text-sm font-medium mb-2 block">Nombre del Módulo</label>
+                                  <Input 
+                                    placeholder="Ej: Módulo A"
+                                    value={newAmenityData.moduleName}
+                                    onChange={(e) => setNewAmenityData(prev => ({ ...prev, moduleName: e.target.value }))}
+                                  />
+                                </div>
+                                
+                                <div className="md:col-span-2">
+                                  <label className="text-sm font-medium mb-2 block">Superficie (m²)</label>
+                                  <Input 
+                                    type="number"
+                                    placeholder="0.00"
+                                    value={newAmenityData.surfaceArea}
+                                    onChange={(e) => setNewAmenityData(prev => ({ ...prev, surfaceArea: e.target.value }))}
+                                  />
+                                </div>
+                              </div>
+                              
+                              {/* Selector de ubicación con mapa interactivo */}
+                              <div>
+                                <label className="text-sm font-medium mb-2 block">Ubicación en el Parque (opcional)</label>
+                                <div className="border rounded-lg p-3 bg-white overflow-hidden">
+                                  <div className="w-full h-48 relative">
+                                    <MapSelector
+                                      key={`map-${park?.id}-${park?.latitude}-${park?.longitude}`}
+                                      defaultCenter={{
+                                        lat: park?.latitude ? parseFloat(park.latitude) : 19.432608,
+                                        lng: park?.longitude ? parseFloat(park.longitude) : -99.133209
+                                      }}
+                                      onLocationSelect={(location) => {
+                                        setNewAmenityData(prev => ({
+                                          ...prev,
+                                          locationLatitude: location.lat.toString(),
+                                          locationLongitude: location.lng.toString()
+                                        }));
+                                      }}
+                                      selectedLocation={
+                                        newAmenityData.locationLatitude && newAmenityData.locationLongitude
+                                          ? {
+                                              lat: parseFloat(newAmenityData.locationLatitude),
+                                              lng: parseFloat(newAmenityData.locationLongitude)
+                                            }
+                                          : null
                                       }
-                                    : null
-                                }
-                                className="w-full h-full"
-                              />
-                            </div>
-                            {newAmenityData.locationLatitude && newAmenityData.locationLongitude && (
-                              <div className="text-xs text-gray-500 mt-2">
-                                📍 {parseFloat(newAmenityData.locationLatitude).toFixed(6)}, {parseFloat(newAmenityData.locationLongitude).toFixed(6)}
-                                <Button
+                                      className="w-full h-full"
+                                    />
+                                  </div>
+                                  {newAmenityData.locationLatitude && newAmenityData.locationLongitude && (
+                                    <div className="text-xs text-gray-500 mt-2">
+                                      📍 {parseFloat(newAmenityData.locationLatitude).toFixed(6)}, {parseFloat(newAmenityData.locationLongitude).toFixed(6)}
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="ml-2 h-auto p-1"
+                                        onClick={() => setNewAmenityData(prev => ({ ...prev, locationLatitude: '', locationLongitude: '' }))}
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="flex justify-end gap-2 pt-4">
+                                <Button 
                                   type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="ml-2 h-auto p-1"
-                                  onClick={() => setNewAmenityData(prev => ({ ...prev, locationLatitude: '', locationLongitude: '' }))}
+                                  variant="outline"
+                                  onClick={() => {
+                                    setIsAddAmenityModalOpen(false);
+                                    setSelectedAmenity(null);
+                                    setNewAmenityData({ moduleName: '', surfaceArea: '', locationLatitude: '', locationLongitude: '' });
+                                  }}
                                 >
-                                  <X className="h-3 w-3" />
+                                  Cancelar
+                                </Button>
+                                <Button 
+                                  type="button"
+                                  onClick={() => {
+                                    if (selectedAmenity) {
+                                      addAmenityMutation.mutate({ 
+                                        amenityId: selectedAmenity,
+                                        moduleName: newAmenityData.moduleName,
+                                        surfaceArea: newAmenityData.surfaceArea ? parseFloat(newAmenityData.surfaceArea) : undefined,
+                                        locationLatitude: newAmenityData.locationLatitude ? parseFloat(newAmenityData.locationLatitude) : undefined,
+                                        locationLongitude: newAmenityData.locationLongitude ? parseFloat(newAmenityData.locationLongitude) : undefined
+                                      });
+                                      setSelectedAmenity(null);
+                                      setNewAmenityData({ moduleName: '', surfaceArea: '', locationLatitude: '', locationLongitude: '' });
+                                      setIsAddAmenityModalOpen(false);
+                                    }
+                                  }}
+                                  disabled={!selectedAmenity || addAmenityMutation.isPending}
+                                >
+                                  {addAmenityMutation.isPending ? 'Agregando...' : 'Agregar'}
                                 </Button>
                               </div>
-                            )}
-                          </div>
-                        </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
 
                       {/* Tabla de amenidades actuales del parque */}
                       <div>
-                        <h4 className="font-medium mb-3">Amenidades Actuales</h4>
                         {Array.isArray(parkAmenities) && parkAmenities.length > 0 ? (
                           <div className="border rounded-lg">
                             <Table>
