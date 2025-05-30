@@ -277,6 +277,8 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
 
       const newLine = await db.insert(budgetIncomeLines).values(lineData).returning();
       
+      console.log(`=== RECALCULANDO TOTALES PARA PRESUPUESTO ${id} ===`);
+      
       // Recalcular totales usando consulta SQL directa
       await db.execute(sql`
         UPDATE budgets 
@@ -295,6 +297,10 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
       `);
 
       console.log(`Totales del presupuesto ${id} recalculados automáticamente después de agregar línea de ingresos`);
+      
+      // Verificar los nuevos totales
+      const updatedBudget = await db.select().from(budgets).where(eq(budgets.id, parseInt(id)));
+      console.log(`Nuevos totales: Ingresos=${updatedBudget[0]?.totalIncome}, Gastos=${updatedBudget[0]?.totalExpenses}`);
 
       res.status(201).json(newLine[0]);
     } catch (error) {

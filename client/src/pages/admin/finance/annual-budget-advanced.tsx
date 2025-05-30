@@ -71,7 +71,7 @@ export default function AnnualBudgetAdvanced() {
       return await response.json();
     },
     staleTime: 0, // Forzar que los datos siempre se consideren obsoletos
-    cacheTime: 0, // No mantener caché
+    gcTime: 0, // No mantener caché
   });
 
   const { data: parks = [] } = useQuery({
