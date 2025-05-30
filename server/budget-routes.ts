@@ -12,6 +12,9 @@ import {
   actualExpenses
 } from "@shared/finance-schema";
 import { eq, and, desc, asc, isNull, sql } from "drizzle-orm";
+import multer from "multer";
+import csv from "csv-parser";
+import { Readable } from "stream";
 
 /**
  * Función auxiliar para recalcular totales de un presupuesto
@@ -43,6 +46,21 @@ async function recalculateBudgetTotals(budgetId: number) {
     return false;
   }
 }
+
+// Configuración de multer para el manejo de archivos
+const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos CSV'), false);
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB límite
+  }
+});
 
 /**
  * Registra las rutas para el módulo de presupuesto anual
@@ -431,5 +449,140 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
       console.error("Error en recálculo manual:", error);
       res.status(500).json({ message: "Error al recalcular totales" });
     }
+  });
+
+  // Importar datos desde CSV
+  apiRouter.post("/budgets/import-csv", isAuthenticated, upload.single('file'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se ha proporcionado un archivo" });
+      }
+
+      const { type, budgetId } = req.body;
+      const csvData = req.file.buffer.toString('utf-8');
+      
+      let imported = 0;
+
+      if (type === 'budget') {
+        // Importar presupuestos completos
+        imported = await importBudgetsFromCSV(csvData);
+      } else if (type === 'lines') {
+        if (!budgetId) {
+          return res.status(400).json({ message: "Se requiere budgetId para importar líneas" });
+        }
+        imported = await importBudgetLinesFromCSV(csvData, parseInt(budgetId));
+      } else {
+        return res.status(400).json({ message: "Tipo de importación no válido" });
+      }
+
+      res.json({ 
+        message: "Importación completada", 
+        imported,
+        type 
+      });
+
+    } catch (error) {
+      console.error("Error en importación CSV:", error);
+      res.status(500).json({ 
+        message: "Error al procesar el archivo CSV",
+        error: error instanceof Error ? error.message : "Error desconocido"
+      });
+    }
+  });
+}
+
+// Función para importar presupuestos desde CSV
+async function importBudgetsFromCSV(csvData: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const results: any[] = [];
+    const stream = Readable.from([csvData]);
+    
+    stream
+      .pipe(csv())
+      .on('data', (data) => results.push(data))
+      .on('end', async () => {
+        try {
+          let imported = 0;
+          
+          for (const row of results) {
+            if (row.name && row.year) {
+              await db.insert(budgets).values({
+                name: row.name,
+                year: parseInt(row.year),
+                status: row.status || 'draft',
+                municipalityId: row.municipalityId ? parseInt(row.municipalityId) : null,
+                parkId: row.parkId ? parseInt(row.parkId) : null,
+                notes: row.notes || null,
+                totalIncome: '0.00',
+                totalExpenses: '0.00'
+              });
+              imported++;
+            }
+          }
+          
+          resolve(imported);
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .on('error', reject);
+  });
+}
+
+// Función para importar líneas de presupuesto desde CSV
+async function importBudgetLinesFromCSV(csvData: string, budgetId: number): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const results: any[] = [];
+    const stream = Readable.from([csvData]);
+    
+    stream
+      .pipe(csv())
+      .on('data', (data) => results.push(data))
+      .on('end', async () => {
+        try {
+          let imported = 0;
+          
+          for (const row of results) {
+            if (row.concept && row.categoryId && row.type && row.projectedAmount) {
+              const lineData = {
+                budgetId,
+                categoryId: parseInt(row.categoryId),
+                subcategoryId: row.subcategoryId ? parseInt(row.subcategoryId) : null,
+                concept: row.concept,
+                projectedAmount: parseFloat(row.projectedAmount).toFixed(2),
+                january: row.january ? parseFloat(row.january).toFixed(2) : '0.00',
+                february: row.february ? parseFloat(row.february).toFixed(2) : '0.00',
+                march: row.march ? parseFloat(row.march).toFixed(2) : '0.00',
+                april: row.april ? parseFloat(row.april).toFixed(2) : '0.00',
+                may: row.may ? parseFloat(row.may).toFixed(2) : '0.00',
+                june: row.june ? parseFloat(row.june).toFixed(2) : '0.00',
+                july: row.july ? parseFloat(row.july).toFixed(2) : '0.00',
+                august: row.august ? parseFloat(row.august).toFixed(2) : '0.00',
+                september: row.september ? parseFloat(row.september).toFixed(2) : '0.00',
+                october: row.october ? parseFloat(row.october).toFixed(2) : '0.00',
+                november: row.november ? parseFloat(row.november).toFixed(2) : '0.00',
+                december: row.december ? parseFloat(row.december).toFixed(2) : '0.00',
+                notes: row.notes || null
+              };
+
+              if (row.type === 'income') {
+                await db.insert(budgetIncomeLines).values(lineData);
+              } else if (row.type === 'expense') {
+                await db.insert(budgetExpenseLines).values(lineData);
+              }
+              
+              imported++;
+            }
+          }
+          
+          // Recalcular totales del presupuesto
+          await recalculateBudgetTotals(budgetId);
+          
+          resolve(imported);
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .on('error', reject);
   });
 }
