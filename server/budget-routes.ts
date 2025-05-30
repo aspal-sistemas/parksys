@@ -204,6 +204,40 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
     }
   });
 
+  // Obtener líneas de ingresos de un presupuesto
+  apiRouter.get("/budgets/:id/income-lines", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      const incomeLines = await db.select().from(budgetIncomeLines)
+        .where(eq(budgetIncomeLines.budgetId, parseInt(id)))
+        .orderBy(asc(budgetIncomeLines.concept));
+      
+      console.log(`Líneas de ingresos para presupuesto ${id}:`, incomeLines);
+      res.json(incomeLines);
+    } catch (error) {
+      console.error("Error al obtener líneas de ingresos:", error);
+      res.status(500).json({ message: "Error al obtener líneas de ingresos" });
+    }
+  });
+
+  // Obtener líneas de gastos de un presupuesto
+  apiRouter.get("/budgets/:id/expenses-lines", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      const expenseLines = await db.select().from(budgetExpenseLines)
+        .where(eq(budgetExpenseLines.budgetId, parseInt(id)))
+        .orderBy(asc(budgetExpenseLines.concept));
+      
+      console.log(`Líneas de gastos para presupuesto ${id}:`, expenseLines);
+      res.json(expenseLines);
+    } catch (error) {
+      console.error("Error al obtener líneas de gastos:", error);
+      res.status(500).json({ message: "Error al obtener líneas de gastos" });
+    }
+  });
+
   // Crear línea de ingresos
   apiRouter.post("/budgets/:id/income-lines", isAuthenticated, async (req: Request, res: Response) => {
     try {
