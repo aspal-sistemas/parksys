@@ -958,8 +958,11 @@ function AddBudgetLineDialog({
       return await response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/budgets/${budgetId}/${type}-lines`] });
+      // Invalidar todas las consultas relacionadas para forzar una actualización
+      queryClient.invalidateQueries({ queryKey: [`/api/budgets/${budgetId}/income-lines`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/budgets/${budgetId}/expenses-lines`] });
       queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
+      
       toast({
         title: "Línea agregada",
         description: `La línea de ${type === 'income' ? 'ingreso' : 'gasto'} ha sido agregada exitosamente.`,
