@@ -116,6 +116,8 @@ export default function ParkEdit() {
   // State for amenity management
   const [selectedAmenity, setSelectedAmenity] = React.useState<number | null>(null);
   const [isAddAmenityModalOpen, setIsAddAmenityModalOpen] = React.useState(false);
+  const [isViewAmenityModalOpen, setIsViewAmenityModalOpen] = React.useState(false);
+  const [viewingAmenity, setViewingAmenity] = React.useState<any>(null);
   const [newAmenityData, setNewAmenityData] = React.useState({
     moduleName: '',
     surfaceArea: '',
@@ -444,6 +446,12 @@ export default function ParkEdit() {
     },
   });
 
+  // Función para ver detalles de amenidad
+  const handleViewAmenity = (amenity: any) => {
+    setViewingAmenity(amenity);
+    setIsViewAmenityModalOpen(true);
+  };
+
   const onSubmit = (values: ParkEditFormValues) => {
     updateParkMutation.mutate(values);
   };
@@ -642,6 +650,16 @@ export default function ParkEdit() {
               </>
             ) : (
               <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleViewAmenity(amenity)}
+                  disabled={isUpdating || isDeleting}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                >
+                  👁️
+                </Button>
                 <Button
                   type="button"
                   variant="ghost"
@@ -1461,6 +1479,205 @@ export default function ParkEdit() {
           </Form>
         </div>
       </div>
+
+      {/* Modal para agregar amenidad */}
+      <Dialog open={isAddAmenityModalOpen} onOpenChange={setIsAddAmenityModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Agregar Nueva Amenidad</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Tipo de Amenidad</label>
+              <Select onValueChange={(value) => setSelectedAmenity(Number(value))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una amenidad" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableAmenities?.map((amenity: any) => (
+                    <SelectItem key={amenity.id} value={amenity.id.toString()}>
+                      {amenity.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Nombre del Módulo</label>
+              <Input
+                value={newAmenityData.moduleName}
+                onChange={(e) => setNewAmenityData(prev => ({ ...prev, moduleName: e.target.value }))}
+                placeholder="Ej: Antonio Albarrán"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Superficie (m²)</label>
+              <Input
+                type="number"
+                value={newAmenityData.surfaceArea}
+                onChange={(e) => setNewAmenityData(prev => ({ ...prev, surfaceArea: e.target.value }))}
+                placeholder="Superficie en metros cuadrados"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Ubicación</label>
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  type="number"
+                  step="any"
+                  value={newAmenityData.locationLatitude}
+                  onChange={(e) => setNewAmenityData(prev => ({ ...prev, locationLatitude: e.target.value }))}
+                  placeholder="Latitud"
+                />
+                <Input
+                  type="number"
+                  step="any"
+                  value={newAmenityData.locationLongitude}
+                  onChange={(e) => setNewAmenityData(prev => ({ ...prev, locationLongitude: e.target.value }))}
+                  placeholder="Longitud"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsAddAmenityModalOpen(false);
+                  setSelectedAmenity(null);
+                  setNewAmenityData({
+                    moduleName: '',
+                    surfaceArea: '',
+                    locationLatitude: '',
+                    locationLongitude: ''
+                  });
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => {
+                  if (selectedAmenity) {
+                    addAmenityMutation.mutate({
+                      amenityId: selectedAmenity,
+                      moduleName: newAmenityData.moduleName,
+                      surfaceArea: newAmenityData.surfaceArea ? parseFloat(newAmenityData.surfaceArea) : undefined,
+                      locationLatitude: newAmenityData.locationLatitude ? parseFloat(newAmenityData.locationLatitude) : undefined,
+                      locationLongitude: newAmenityData.locationLongitude ? parseFloat(newAmenityData.locationLongitude) : undefined,
+                      status: 'Activa'
+                    });
+                    setIsAddAmenityModalOpen(false);
+                    setSelectedAmenity(null);
+                    setNewAmenityData({
+                      moduleName: '',
+                      surfaceArea: '',
+                      locationLatitude: '',
+                      locationLongitude: ''
+                    });
+                  }
+                }}
+                disabled={!selectedAmenity || addAmenityMutation.isPending}
+              >
+                {addAmenityMutation.isPending ? 'Agregando...' : 'Agregar Amenidad'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para ver detalles de amenidad */}
+      <Dialog open={isViewAmenityModalOpen} onOpenChange={setIsViewAmenityModalOpen}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>Detalles del Módulo de Amenidad</DialogTitle>
+          </DialogHeader>
+          {viewingAmenity && (
+            <div className="space-y-6">
+              {/* Información básica */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600">Tipo de Amenidad</label>
+                  <p className="text-lg font-semibold">
+                    {availableAmenities?.find((a: any) => a.id === viewingAmenity.amenityId)?.name || 'No especificado'}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600">Nombre del Módulo</label>
+                  <p className="text-lg font-semibold">{viewingAmenity.moduleName || 'Sin nombre'}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600">Superficie</label>
+                  <p className="text-lg">{viewingAmenity.surfaceArea ? `${viewingAmenity.surfaceArea} m²` : 'No especificada'}</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600">Estado</label>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    viewingAmenity.status === 'Activa' ? 'bg-green-100 text-green-800' :
+                    viewingAmenity.status === 'Inactiva' ? 'bg-red-100 text-red-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {viewingAmenity.status || 'Sin estado'}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600">Fecha de Creación</label>
+                  <p className="text-sm text-gray-600">
+                    {viewingAmenity.createdAt ? new Date(viewingAmenity.createdAt).toLocaleDateString('es-MX') : 'No disponible'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Ubicación */}
+              {(viewingAmenity.locationLatitude && viewingAmenity.locationLongitude) && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600">Ubicación</label>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-sm">
+                      <strong>Latitud:</strong> {viewingAmenity.locationLatitude}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Longitud:</strong> {viewingAmenity.locationLongitude}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Descripción */}
+              {viewingAmenity.description && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600">Descripción</label>
+                  <p className="text-sm bg-gray-50 p-3 rounded-lg">{viewingAmenity.description}</p>
+                </div>
+              )}
+
+              {/* Acciones */}
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsViewAmenityModalOpen(false)}
+                >
+                  Cerrar
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsViewAmenityModalOpen(false);
+                    // Aquí podrías abrir el modal de edición si lo implementas
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Editar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
