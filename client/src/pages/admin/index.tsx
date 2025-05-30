@@ -273,24 +273,30 @@ const AdminDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {parks.slice(-3).reverse().map((park: any, i: number) => (
-                <div key={i} className="flex items-center">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-                    <MapPin className="h-5 w-5 text-primary" />
+              {Array.isArray(parks) && parks.length > 0 ? (
+                parks.slice(-3).reverse().map((park: any, i: number) => (
+                  <div key={i} className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                      <MapPin className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium leading-none">{park.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {park.address?.substring(0, 30) || 'Sin dirección'}...
+                      </p>
+                    </div>
+                    <Link href={`/admin/parks/${park.id}`}>
+                      <Button variant="ghost" size="icon">
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
                   </div>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">{park.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {park.address?.substring(0, 30) || 'Sin dirección'}...
-                    </p>
-                  </div>
-                  <Link href={`/admin/parks/${park.id}`}>
-                    <Button variant="ghost" size="icon">
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
+                ))
+              ) : (
+                <div className="text-center text-gray-500">
+                  No hay parques disponibles
                 </div>
-              ))}
+              )}
               
               <Link href="/admin/parks">
                 <Button variant="outline" className="w-full mt-2">

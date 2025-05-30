@@ -18,7 +18,7 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
   // Obtener presupuestos
   apiRouter.get("/budgets", async (req: Request, res: Response) => {
     try {
-      const { year, parkId } = req.query;
+      const { year, municipalityId } = req.query;
       
       let query = db.select().from(budgets);
       
@@ -26,8 +26,8 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
         query = query.where(eq(budgets.year, parseInt(year as string)));
       }
       
-      if (parkId && parkId !== "") {
-        query = query.where(eq(budgets.parkId, parseInt(parkId as string)));
+      if (municipalityId && municipalityId !== "") {
+        query = query.where(eq(budgets.municipalityId, parseInt(municipalityId as string)));
       }
       
       const result = await query.orderBy(desc(budgets.createdAt));
@@ -63,16 +63,16 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
   // Crear nuevo presupuesto
   apiRouter.post("/budgets", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const { name, parkId, year, status, notes } = req.body;
+      const { name, municipalityId, year, status, notes } = req.body;
       
       const newBudget = await db.insert(budgets).values({
         name,
-        parkId: parseInt(parkId),
+        municipalityId: municipalityId ? parseInt(municipalityId) : null,
         year: parseInt(year),
         status: status || 'draft',
         notes,
-        totalIncomeProjected: "0",
-        totalExpenseProjected: "0"
+        totalIncome: "0",
+        totalExpenses: "0"
       }).returning();
       
       res.status(201).json(newBudget[0]);
@@ -413,8 +413,8 @@ async function recalculateBudgetTotals(budgetId: number) {
     // Actualizar el presupuesto
     await db.update(budgets)
       .set({
-        totalIncomeProjected: totalIncome.toString(),
-        totalExpenseProjected: totalExpense.toString(),
+        totalIncome: totalIncome.toString(),
+        totalExpenses: totalExpense.toString(),
         updatedAt: new Date()
       })
       .where(eq(budgets.id, budgetId));
