@@ -1406,7 +1406,7 @@ export default function ParkEdit() {
                           <DialogTrigger asChild>
                             <Button className="flex items-center gap-2">
                               <Plus className="h-4 w-4" />
-                              Agregar Amenidad
+                              Agregar módulo
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="max-w-2xl">
@@ -1787,15 +1787,26 @@ export default function ParkEdit() {
 
               {(viewingAmenity.locationLatitude && viewingAmenity.locationLongitude) && (
                 <div>
-                  <label className="block text-sm font-medium mb-2">Ubicación</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600">Latitud</p>
-                      <p className="font-medium">{viewingAmenity.locationLatitude}</p>
+                  <label className="block text-sm font-medium mb-2">Ubicación en el Parque</label>
+                  <div className="border rounded-lg p-3 bg-white overflow-hidden">
+                    <div className="w-full h-48 relative mb-2">
+                      <MapSelector
+                        key={`view-map-${viewingAmenity.id}`}
+                        defaultCenter={{
+                          lat: park?.latitude ? parseFloat(park.latitude) : 19.432608,
+                          lng: park?.longitude ? parseFloat(park.longitude) : -99.133209
+                        }}
+                        onLocationSelect={() => {}} // Solo lectura en vista
+                        selectedLocation={{
+                          lat: parseFloat(viewingAmenity.locationLatitude),
+                          lng: parseFloat(viewingAmenity.locationLongitude)
+                        }}
+                        className="w-full h-full"
+                        readOnly={true}
+                      />
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600">Longitud</p>
-                      <p className="font-medium">{viewingAmenity.locationLongitude}</p>
+                    <div className="text-xs text-gray-500">
+                      📍 {parseFloat(viewingAmenity.locationLatitude).toFixed(6)}, {parseFloat(viewingAmenity.locationLongitude).toFixed(6)}
                     </div>
                   </div>
                 </div>
@@ -1883,22 +1894,47 @@ export default function ParkEdit() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Ubicación</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    type="number"
-                    step="any"
-                    value={editAmenityData.locationLatitude}
-                    onChange={(e) => setEditAmenityData(prev => ({ ...prev, locationLatitude: e.target.value }))}
-                    placeholder="Latitud"
-                  />
-                  <Input
-                    type="number"
-                    step="any"
-                    value={editAmenityData.locationLongitude}
-                    onChange={(e) => setEditAmenityData(prev => ({ ...prev, locationLongitude: e.target.value }))}
-                    placeholder="Longitud"
-                  />
+                <label className="block text-sm font-medium mb-2">Ubicación en el Parque (opcional)</label>
+                <div className="border rounded-lg p-3 bg-white overflow-hidden">
+                  <div className="w-full h-48 relative">
+                    <MapSelector
+                      key={`edit-map-${editingAmenity.id}`}
+                      defaultCenter={{
+                        lat: park?.latitude ? parseFloat(park.latitude) : 19.432608,
+                        lng: park?.longitude ? parseFloat(park.longitude) : -99.133209
+                      }}
+                      onLocationSelect={(location) => {
+                        setEditAmenityData(prev => ({
+                          ...prev,
+                          locationLatitude: location.lat.toString(),
+                          locationLongitude: location.lng.toString()
+                        }));
+                      }}
+                      selectedLocation={
+                        editAmenityData.locationLatitude && editAmenityData.locationLongitude
+                          ? {
+                              lat: parseFloat(editAmenityData.locationLatitude),
+                              lng: parseFloat(editAmenityData.locationLongitude)
+                            }
+                          : null
+                      }
+                      className="w-full h-full"
+                    />
+                  </div>
+                  {editAmenityData.locationLatitude && editAmenityData.locationLongitude && (
+                    <div className="text-xs text-gray-500 mt-2">
+                      📍 {parseFloat(editAmenityData.locationLatitude).toFixed(6)}, {parseFloat(editAmenityData.locationLongitude).toFixed(6)}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="ml-2 h-auto p-1"
+                        onClick={() => setEditAmenityData(prev => ({ ...prev, locationLatitude: '', locationLongitude: '' }))}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 
