@@ -213,7 +213,7 @@ export default function AnnualBudget() {
       createBudgetMutation.mutate({
         ...budgetData,
         year: selectedYear,
-        parkId: selectedPark !== "all" ? parseInt(selectedPark) : 1,
+        municipalityId: selectedPark !== "all" ? parseInt(selectedPark) : null,
       });
     }
   };
@@ -233,8 +233,8 @@ export default function AnnualBudget() {
   };
 
   const calculateBudgetTotals = (budget: Budget) => {
-    const incomeTotal = parseFloat(budget.totalIncomeProjected || "0");
-    const expenseTotal = parseFloat(budget.totalExpenseProjected || "0");
+    const incomeTotal = parseFloat(budget.totalIncome || "0");
+    const expenseTotal = parseFloat(budget.totalExpenses || "0");
     return {
       income: incomeTotal,
       expense: expenseTotal,
