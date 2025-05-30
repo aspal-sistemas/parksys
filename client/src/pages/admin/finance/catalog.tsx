@@ -92,26 +92,10 @@ export default function CatalogPage() {
     queryKey: ['/api/finance/expense-categories'],
   });
 
-  // Obtener proveedores
-  const { data: providers, isLoading: providersLoading } = useQuery({
-    queryKey: ['/api/providers'],
-  });
-
-  // Obtener registros de ingresos
-  const { data: incomeRecords, isLoading: incomeRecordsLoading } = useQuery({
-    queryKey: ['/api/income-records'],
-  });
-
-  // Obtener parques
+  // Obtener parques para referencia
   const { data: parks } = useQuery({
     queryKey: ['/api/parks'],
   });
-
-  // Obtener tipos de proveedores
-  const providerTypesQuery = useQuery({
-    queryKey: ['/api/provider-types'],
-  });
-  const { data: providerTypes } = providerTypesQuery;
 
   // Mutación para crear categoría de ingresos
   const createIncomeCategoryMutation = useMutation({
