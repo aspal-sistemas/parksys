@@ -13,6 +13,8 @@ import {
 } from "@shared/finance-schema";
 import { eq, and, desc, asc, isNull, sql } from "drizzle-orm";
 
+
+
 /**
  * Registra las rutas para el módulo de presupuesto anual
  */
@@ -277,9 +279,8 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
 
       const newLine = await db.insert(budgetIncomeLines).values(lineData).returning();
       
-      console.log(`=== RECALCULANDO TOTALES PARA PRESUPUESTO ${id} ===`);
-      
       // Recalcular totales usando consulta SQL directa
+      console.log(`=== RECALCULANDO TOTALES PARA PRESUPUESTO ${id} ===`);
       await db.execute(sql`
         UPDATE budgets 
         SET total_income = (
@@ -295,12 +296,7 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
         updated_at = NOW()
         WHERE id = ${parseInt(id)}
       `);
-
-      console.log(`Totales del presupuesto ${id} recalculados automáticamente después de agregar línea de ingresos`);
-      
-      // Verificar los nuevos totales
-      const updatedBudget = await db.select().from(budgets).where(eq(budgets.id, parseInt(id)));
-      console.log(`Nuevos totales: Ingresos=${updatedBudget[0]?.totalIncome}, Gastos=${updatedBudget[0]?.totalExpenses}`);
+      console.log(`Totales del presupuesto ${id} recalculados automáticamente`);
 
       res.status(201).json(newLine[0]);
     } catch (error) {
@@ -532,48 +528,3 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
   });
 }
 
-/**
- * Recalcula los totales de un presupuesto basado en sus líneas
- */
-async function recalculateBudgetTotals(budgetId: number) {
-  try {
-    console.log(`Recalculando totales para presupuesto ${budgetId}`);
-    
-    // Calcular total de ingresos
-    const incomeLines = await db.select().from(budgetIncomeLines)
-      .where(eq(budgetIncomeLines.budgetId, budgetId));
-    
-    const totalIncome = incomeLines.reduce((total, line) => {
-      const amount = parseFloat(line.projectedAmount || "0");
-      console.log(`Línea de ingreso: ${line.concept} - ${amount}`);
-      return total + amount;
-    }, 0);
-
-    // Calcular total de egresos
-    const expenseLines = await db.select().from(budgetExpenseLines)
-      .where(eq(budgetExpenseLines.budgetId, budgetId));
-    
-    const totalExpense = expenseLines.reduce((total, line) => {
-      const amount = parseFloat(line.projectedAmount || "0");
-      console.log(`Línea de egreso: ${line.concept} - ${amount}`);
-      return total + amount;
-    }, 0);
-
-    console.log(`Totales calculados - Ingresos: ${totalIncome}, Egresos: ${totalExpense}`);
-
-    // Actualizar el presupuesto
-    const result = await db.update(budgets)
-      .set({
-        totalIncome: totalIncome.toString(),
-        totalExpenses: totalExpense.toString(),
-        updatedAt: new Date()
-      })
-      .where(eq(budgets.id, budgetId))
-      .returning();
-
-    console.log(`Presupuesto actualizado:`, result[0]);
-
-  } catch (error) {
-    console.error("Error al recalcular totales del presupuesto:", error);
-  }
-}
