@@ -360,4 +360,42 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
       res.status(500).json({ message: "Error al eliminar línea presupuestaria" });
     }
   });
+
+  // Recalcular totales manualmente
+  apiRouter.post("/budgets/:id/recalculate", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const budgetId = parseInt(id);
+      
+      console.log(`=== RECÁLCULO MANUAL PARA PRESUPUESTO ${budgetId} ===`);
+      
+      const success = await recalculateBudgetTotals(budgetId);
+      
+      if (success) {
+        // Obtener el presupuesto actualizado
+        const updatedBudget = await db.select().from(budgets)
+          .where(eq(budgets.id, budgetId));
+        
+        if (updatedBudget.length === 0) {
+          return res.status(404).json({ message: "Presupuesto no encontrado" });
+        }
+        
+        const processedBudget = {
+          ...updatedBudget[0],
+          totalIncome: parseFloat(updatedBudget[0].totalIncome || "0"),
+          totalExpenses: parseFloat(updatedBudget[0].totalExpenses || "0")
+        };
+        
+        res.json({ 
+          message: "Totales recalculados correctamente",
+          budget: processedBudget
+        });
+      } else {
+        res.status(500).json({ message: "Error al recalcular totales" });
+      }
+    } catch (error) {
+      console.error("Error en recálculo manual:", error);
+      res.status(500).json({ message: "Error al recalcular totales" });
+    }
+  });
 }

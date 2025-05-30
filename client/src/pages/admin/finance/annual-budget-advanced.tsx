@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Eye, Edit, Trash2, Copy, BarChart3 } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Copy, BarChart3, Calculator } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -150,6 +150,26 @@ export default function AnnualBudgetAdvanced() {
     },
   });
 
+  const recalculateBudgetMutation = useMutation({
+    mutationFn: (budgetId: number) => apiRequest(`/api/budgets/${budgetId}/recalculate`, {
+      method: 'POST',
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
+      toast({
+        title: "Totales recalculados",
+        description: "Los totales del presupuesto se han actualizado correctamente",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudieron recalcular los totales",
+        variant: "destructive",
+      });
+    },
+  });
+
   const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i - 2);
 
   return (
@@ -282,8 +302,18 @@ export default function AnnualBudgetAdvanced() {
                         variant="outline"
                         size="sm"
                         onClick={() => duplicateBudgetMutation.mutate(budget.id)}
+                        disabled={duplicateBudgetMutation.isPending}
                       >
                         <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => recalculateBudgetMutation.mutate(budget.id)}
+                        disabled={recalculateBudgetMutation.isPending}
+                        title="Recalcular totales"
+                      >
+                        <Calculator className="h-4 w-4" />
                       </Button>
                       <Select 
                         value={budget.status} 
