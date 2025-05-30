@@ -681,11 +681,14 @@ function BudgetDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
+    console.log("Datos del formulario antes de enviar:", formData);
+    const dataToSave = {
       ...formData,
       municipalityId: parseInt(formData.municipalityId) || null,
       year
-    });
+    };
+    console.log("Datos finales a enviar:", dataToSave);
+    onSave(dataToSave);
   };
 
   return (
