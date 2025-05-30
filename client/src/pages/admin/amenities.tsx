@@ -179,7 +179,17 @@ function getCategoryLabel(category: string): string {
     accesibilidad: "Accesibilidad",
     infraestructura: "Infraestructura"
   };
-  return labels[category] || "Servicios";
+  
+  // Si existe en el mapeo predefinido, usarlo
+  if (labels[category]) {
+    return labels[category];
+  }
+  
+  // Si es una categoría personalizada, convertir a formato legible
+  return category
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }
 
 const AdminAmenitiesPage = () => {
@@ -209,6 +219,10 @@ const AdminAmenitiesPage = () => {
     iconType: 'system',
     customIconUrl: null
   });
+
+  // Estado para nueva categoría
+  const [isCreatingNewCategory, setIsCreatingNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   // Fetch amenities with park count
   const { data: amenitiesData, isLoading } = useQuery({
@@ -484,23 +498,88 @@ const AdminAmenitiesPage = () => {
                 
                 <div className="grid gap-2">
                   <Label htmlFor="category">Categoría</Label>
-                  <Select 
-                    value={formData.category} 
-                    onValueChange={(value) => setFormData({ ...formData, category: value })}
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona una categoría" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="recreacion">Recreación</SelectItem>
-                      <SelectItem value="deportes">Deportes</SelectItem>
-                      <SelectItem value="servicios">Servicios</SelectItem>
-                      <SelectItem value="naturaleza">Naturaleza</SelectItem>
-                      <SelectItem value="cultura">Cultura</SelectItem>
-                      <SelectItem value="accesibilidad">Accesibilidad</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {!isCreatingNewCategory ? (
+                    <div className="space-y-2">
+                      <Select 
+                        value={formData.category} 
+                        onValueChange={(value) => setFormData({ ...formData, category: value })}
+                        required
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona una categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="recreacion">Recreación</SelectItem>
+                          <SelectItem value="deportes">Deportes</SelectItem>
+                          <SelectItem value="servicios">Servicios</SelectItem>
+                          <SelectItem value="naturaleza">Naturaleza</SelectItem>
+                          <SelectItem value="cultura">Cultura</SelectItem>
+                          <SelectItem value="accesibilidad">Accesibilidad</SelectItem>
+                          <SelectItem value="infraestructura">Infraestructura</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button 
+                        type="button"
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setIsCreatingNewCategory(true)}
+                        className="w-full"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Crear nueva categoría
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Nombre de la nueva categoría"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (newCategoryName.trim()) {
+                              setFormData({ ...formData, category: newCategoryName.toLowerCase().replace(/\s+/g, '_') });
+                              setIsCreatingNewCategory(false);
+                              setNewCategoryName("");
+                            }
+                          }
+                        }}
+                      />
+                      <div className="flex gap-2">
+                        <Button 
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            if (newCategoryName.trim()) {
+                              setFormData({ ...formData, category: newCategoryName.toLowerCase().replace(/\s+/g, '_') });
+                              setIsCreatingNewCategory(false);
+                              setNewCategoryName("");
+                            }
+                          }}
+                          disabled={!newCategoryName.trim()}
+                        >
+                          Agregar
+                        </Button>
+                        <Button 
+                          type="button"
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setIsCreatingNewCategory(false);
+                            setNewCategoryName("");
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {formData.category && (
+                    <div className="text-sm text-muted-foreground">
+                      Categoría seleccionada: {getCategoryLabel(formData.category)}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid gap-2">
@@ -692,23 +771,88 @@ const AdminAmenitiesPage = () => {
             
             <div className="grid gap-2">
               <Label htmlFor="edit-category">Categoría</Label>
-              <Select 
-                value={formData.category} 
-                onValueChange={(value) => setFormData({ ...formData, category: value })}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona una categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recreacion">Recreación</SelectItem>
-                  <SelectItem value="deportes">Deportes</SelectItem>
-                  <SelectItem value="servicios">Servicios</SelectItem>
-                  <SelectItem value="naturaleza">Naturaleza</SelectItem>
-                  <SelectItem value="cultura">Cultura</SelectItem>
-                  <SelectItem value="accesibilidad">Accesibilidad</SelectItem>
-                </SelectContent>
-              </Select>
+              {!isCreatingNewCategory ? (
+                <div className="space-y-2">
+                  <Select 
+                    value={formData.category} 
+                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recreacion">Recreación</SelectItem>
+                      <SelectItem value="deportes">Deportes</SelectItem>
+                      <SelectItem value="servicios">Servicios</SelectItem>
+                      <SelectItem value="naturaleza">Naturaleza</SelectItem>
+                      <SelectItem value="cultura">Cultura</SelectItem>
+                      <SelectItem value="accesibilidad">Accesibilidad</SelectItem>
+                      <SelectItem value="infraestructura">Infraestructura</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsCreatingNewCategory(true)}
+                    className="w-full"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Crear nueva categoría
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Nombre de la nueva categoría"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (newCategoryName.trim()) {
+                          setFormData({ ...formData, category: newCategoryName.toLowerCase().replace(/\s+/g, '_') });
+                          setIsCreatingNewCategory(false);
+                          setNewCategoryName("");
+                        }
+                      }
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button"
+                      size="sm"
+                      onClick={() => {
+                        if (newCategoryName.trim()) {
+                          setFormData({ ...formData, category: newCategoryName.toLowerCase().replace(/\s+/g, '_') });
+                          setIsCreatingNewCategory(false);
+                          setNewCategoryName("");
+                        }
+                      }}
+                      disabled={!newCategoryName.trim()}
+                    >
+                      Agregar
+                    </Button>
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setIsCreatingNewCategory(false);
+                        setNewCategoryName("");
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {formData.category && (
+                <div className="text-sm text-muted-foreground">
+                  Categoría seleccionada: {getCategoryLabel(formData.category)}
+                </div>
+              )}
             </div>
 
             <div className="grid gap-2">
