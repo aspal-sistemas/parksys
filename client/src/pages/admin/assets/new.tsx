@@ -185,8 +185,8 @@ const CreateAssetPage: React.FC = () => {
           setMapPosition(parkPosition);
           // Reset selected location when park changes
           setSelectedLocation(null);
-          form.setValue('latitude', null);
-          form.setValue('longitude', null);
+          form.setValue('latitude', '');
+          form.setValue('longitude', '');
         }
       }
     }
