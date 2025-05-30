@@ -1350,7 +1350,7 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   // ============ IMPORTACIÓN CSV ============
   
   // Importar datos históricos desde CSV
-  apiRouter.post("/import/historical-data", isAuthenticated, upload.single('csvFile'), async (req: Request, res: Response) => {
+  apiRouter.post("/import/historical-data", upload.single('csvFile'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No se ha enviado ningún archivo CSV" });
@@ -1430,7 +1430,7 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   });
 
   // Importar proyecciones desde CSV
-  apiRouter.post("/import/projections", isAuthenticated, upload.single('csvFile'), async (req: Request, res: Response) => {
+  apiRouter.post("/import/projections", upload.single('csvFile'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No se ha enviado ningún archivo CSV" });
