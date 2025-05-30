@@ -31,9 +31,8 @@ const statusColors = {
 };
 
 export default function BudgetSimple() {
-  const { data: budgets = [], isLoading } = useQuery({
+  const { data: budgets, isLoading } = useQuery({
     queryKey: ['/api/budgets'],
-    queryFn: () => apiRequest('/api/budgets'),
   });
 
   // Asegurar que budgets es un array
