@@ -118,6 +118,7 @@ export default function ParkEdit() {
   const [isAddAmenityModalOpen, setIsAddAmenityModalOpen] = React.useState(false);
   const [isViewAmenityModalOpen, setIsViewAmenityModalOpen] = React.useState(false);
   const [isEditAmenityModalOpen, setIsEditAmenityModalOpen] = React.useState(false);
+  const [isCreateNewAmenityModalOpen, setIsCreateNewAmenityModalOpen] = React.useState(false);
   const [viewingAmenity, setViewingAmenity] = React.useState<any>(null);
   const [editingAmenity, setEditingAmenity] = React.useState<any>(null);
   const [newAmenityData, setNewAmenityData] = React.useState({
@@ -133,6 +134,17 @@ export default function ParkEdit() {
     locationLongitude: '',
     status: 'Activa'
   });
+
+  // Estado para crear nueva amenidad
+  const [newAmenityFormData, setNewAmenityFormData] = React.useState({
+    name: '',
+    icon: 'park',
+    category: 'servicios',
+    iconType: 'system' as 'system' | 'custom',
+    customIconUrl: null as string | null
+  });
+  const [isCreatingNewCategory, setIsCreatingNewCategory] = React.useState(false);
+  const [newCategoryName, setNewCategoryName] = React.useState("");
 
   // Consultar datos del parque
   const { data: park, isLoading: isLoadingPark } = useQuery({
@@ -455,6 +467,53 @@ export default function ParkEdit() {
     },
   });
 
+  // Mutación para crear nueva amenidad
+  const createAmenityMutation = useMutation({
+    mutationFn: async (amenityData: any) => {
+      const response = await fetch('/api/amenities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(amenityData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al crear amenidad');
+      }
+      
+      return await response.json();
+    },
+    onSuccess: (newAmenity) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/amenities"] });
+      toast({
+        title: "Amenidad creada",
+        description: "La nueva amenidad se creó correctamente.",
+      });
+      // Seleccionar automáticamente la nueva amenidad en el selector
+      setSelectedAmenity(newAmenity.id);
+      setIsCreateNewAmenityModalOpen(false);
+      // Resetear el formulario
+      setNewAmenityFormData({
+        name: '',
+        icon: 'park',
+        category: 'servicios',
+        iconType: 'system',
+        customIconUrl: null
+      });
+      setIsCreatingNewCategory(false);
+      setNewCategoryName("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: `Error al crear amenidad: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Función para ver detalles de amenidad
   const handleViewAmenity = (amenity: any) => {
     setViewingAmenity(amenity);
@@ -476,6 +535,66 @@ export default function ParkEdit() {
 
   const onSubmit = (values: ParkEditFormValues) => {
     updateParkMutation.mutate(values);
+  };
+
+  // Funciones de utilidad para categorías
+  function getCategoryLabel(category: string): string {
+    const labels: Record<string, string> = {
+      recreacion: "Recreación",
+      "recreación": "Recreación",
+      deportes: "Deportes", 
+      servicios: "Servicios",
+      naturaleza: "Naturaleza",
+      cultura: "Cultura",
+      accesibilidad: "Accesibilidad",
+      infraestructura: "Infraestructura"
+    };
+    
+    // Si existe en el mapeo predefinido, usarlo
+    if (labels[category]) {
+      return labels[category];
+    }
+    
+    // Si es una categoría personalizada, convertir a formato legible
+    return category
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+  // Iconos disponibles para amenidades
+  const AVAILABLE_ICONS = [
+    { name: "playground", label: "Parque Infantil" },
+    { name: "toilet", label: "Baños" },
+    { name: "sportsCourt", label: "Cancha Deportiva" },
+    { name: "bicycle", label: "Ciclismo" },
+    { name: "pets", label: "Mascotas Permitidas" },
+    { name: "bench", label: "Bancas" },
+    { name: "fountain", label: "Fuente" },
+    { name: "parking", label: "Estacionamiento" },
+    { name: "security", label: "Seguridad" },
+    { name: "wifi", label: "Wi-Fi" },
+    { name: "restaurant", label: "Restaurante" },
+    { name: "cafe", label: "Café" },
+    { name: "garden", label: "Jardín" },
+    { name: "lake", label: "Lago" },
+    { name: "trail", label: "Senderos" },
+    { name: "park", label: "Parque" },
+  ];
+
+  // Función para manejar la creación de nueva amenidad
+  const handleCreateNewAmenity = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const amenityData = {
+      name: newAmenityFormData.name,
+      icon: newAmenityFormData.icon,
+      category: newAmenityFormData.category,
+      iconType: newAmenityFormData.iconType,
+      customIconUrl: newAmenityFormData.customIconUrl,
+    };
+    
+    createAmenityMutation.mutate(amenityData);
   };
 
   // Componente para cada fila editable de amenidad
@@ -1522,18 +1641,29 @@ export default function ParkEdit() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">Tipo de Amenidad</label>
-              <Select onValueChange={(value) => setSelectedAmenity(Number(value))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona una amenidad" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableAmenities?.map((amenity: any) => (
-                    <SelectItem key={amenity.id} value={amenity.id.toString()}>
-                      {amenity.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select onValueChange={(value) => setSelectedAmenity(Number(value))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una amenidad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableAmenities?.map((amenity: any) => (
+                      <SelectItem key={amenity.id} value={amenity.id.toString()}>
+                        {amenity.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCreateNewAmenityModalOpen(true)}
+                  className="whitespace-nowrap"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Nueva
+                </Button>
+              </div>
             </div>
 
             <div>
