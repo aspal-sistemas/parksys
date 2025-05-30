@@ -147,7 +147,7 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   // ============ CATEGORÍAS DE INGRESOS ============
   
   // Obtener todas las categorías de ingresos (incluye activas e inactivas para el catálogo)
-  apiRouter.get("/income-categories", async (_req: Request, res: Response) => {
+  apiRouter.get("/finance/income-categories", async (_req: Request, res: Response) => {
     try {
       const categories = await db.select().from(incomeCategories);
       console.log("Categorías encontradas:", categories);
