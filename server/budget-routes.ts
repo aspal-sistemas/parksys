@@ -277,24 +277,24 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
 
       const newLine = await db.insert(budgetIncomeLines).values(lineData).returning();
       
-      // Recalcular totales inmediatamente después de insertar
-      const totalIncome = await db.select({
-        total: sql<number>`COALESCE(SUM(${budgetIncomeLines.projectedAmount}), 0)`
-      }).from(budgetIncomeLines).where(eq(budgetIncomeLines.budgetId, parseInt(id)));
-      
-      const totalExpenses = await db.select({
-        total: sql<number>`COALESCE(SUM(${budgetExpenseLines.projectedAmount}), 0)`
-      }).from(budgetExpenseLines).where(eq(budgetExpenseLines.budgetId, parseInt(id)));
-      
-      await db.update(budgets)
-        .set({
-          totalIncome: totalIncome[0].total.toString(),
-          totalExpenses: totalExpenses[0].total.toString(),
-          updatedAt: new Date()
-        })
-        .where(eq(budgets.id, parseInt(id)));
+      // Recalcular totales usando consulta SQL directa
+      await db.execute(sql`
+        UPDATE budgets 
+        SET total_income = (
+          SELECT COALESCE(SUM(projected_amount), 0) 
+          FROM budget_income_lines 
+          WHERE budget_id = ${parseInt(id)}
+        ),
+        total_expenses = (
+          SELECT COALESCE(SUM(projected_amount), 0) 
+          FROM budget_expense_lines 
+          WHERE budget_id = ${parseInt(id)}
+        ),
+        updated_at = NOW()
+        WHERE id = ${parseInt(id)}
+      `);
 
-      console.log(`Totales actualizados para presupuesto ${id}: Ingresos=${totalIncome[0].total}, Egresos=${totalExpenses[0].total}`);
+      console.log(`Totales del presupuesto ${id} recalculados automáticamente después de agregar línea de ingresos`);
 
       res.status(201).json(newLine[0]);
     } catch (error) {
@@ -332,24 +332,24 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
 
       const newLine = await db.insert(budgetExpenseLines).values(lineData).returning();
       
-      // Recalcular totales inmediatamente después de insertar
-      const totalIncome = await db.select({
-        total: sql<number>`COALESCE(SUM(${budgetIncomeLines.projectedAmount}), 0)`
-      }).from(budgetIncomeLines).where(eq(budgetIncomeLines.budgetId, parseInt(id)));
-      
-      const totalExpenses = await db.select({
-        total: sql<number>`COALESCE(SUM(${budgetExpenseLines.projectedAmount}), 0)`
-      }).from(budgetExpenseLines).where(eq(budgetExpenseLines.budgetId, parseInt(id)));
-      
-      await db.update(budgets)
-        .set({
-          totalIncome: totalIncome[0].total.toString(),
-          totalExpenses: totalExpenses[0].total.toString(),
-          updatedAt: new Date()
-        })
-        .where(eq(budgets.id, parseInt(id)));
+      // Recalcular totales usando consulta SQL directa
+      await db.execute(sql`
+        UPDATE budgets 
+        SET total_income = (
+          SELECT COALESCE(SUM(projected_amount), 0) 
+          FROM budget_income_lines 
+          WHERE budget_id = ${parseInt(id)}
+        ),
+        total_expenses = (
+          SELECT COALESCE(SUM(projected_amount), 0) 
+          FROM budget_expense_lines 
+          WHERE budget_id = ${parseInt(id)}
+        ),
+        updated_at = NOW()
+        WHERE id = ${parseInt(id)}
+      `);
 
-      console.log(`Totales actualizados para presupuesto ${id}: Ingresos=${totalIncome[0].total}, Egresos=${totalExpenses[0].total}`);
+      console.log(`Totales del presupuesto ${id} recalculados automáticamente después de agregar línea de gastos`);
 
       res.status(201).json(newLine[0]);
     } catch (error) {
