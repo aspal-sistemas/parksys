@@ -530,6 +530,10 @@ function BudgetDetailView({ budget }: { budget: Budget }) {
 
 function BudgetLinesTable({ budgetId, type }: { budgetId: number; type: 'income' | 'expenses' }) {
   const [showAddLineDialog, setShowAddLineDialog] = useState(false);
+  const [editingLine, setEditingLine] = useState<BudgetLine | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
   const { data: lines = [], isLoading, error } = useQuery({
     queryKey: [`/api/budgets/${budgetId}/${type}-lines`],
     queryFn: async () => {
@@ -539,6 +543,29 @@ function BudgetLinesTable({ budgetId, type }: { budgetId: number; type: 'income'
       const data = await response.json();
       console.log(`Budget lines data for ${type}:`, data);
       return data;
+    },
+  });
+
+  const deleteLineMutation = useMutation({
+    mutationFn: async (lineId: number) => {
+      return await apiRequest(`/api/budget-lines/${lineId}`, {
+        method: 'DELETE'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/budgets/${budgetId}/${type}-lines`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
+      toast({
+        title: "Línea eliminada",
+        description: "La línea presupuestaria se ha eliminado correctamente",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la línea presupuestaria",
+        variant: "destructive",
+      });
     },
   });
 
@@ -566,10 +593,14 @@ function BudgetLinesTable({ budgetId, type }: { budgetId: number; type: 'income'
 
       <AddBudgetLineDialog
         open={showAddLineDialog}
-        onOpenChange={setShowAddLineDialog}
+        onOpenChange={(open) => {
+          setShowAddLineDialog(open);
+          if (!open) setEditingLine(null);
+        }}
         budgetId={budgetId}
         type={type}
         categories={categories}
+        editingLine={editingLine}
       />
       
       <div className="border rounded-lg overflow-hidden">
@@ -593,10 +624,22 @@ function BudgetLinesTable({ budgetId, type }: { budgetId: number; type: 'income'
                   </td>
                   <td className="px-4 py-2 text-center">
                     <div className="flex justify-center gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setEditingLine(line);
+                          setShowAddLineDialog(true);
+                        }}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => deleteLineMutation.mutate(line.id)}
+                        disabled={deleteLineMutation.isPending}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -976,13 +1019,15 @@ function AddBudgetLineDialog({
   onOpenChange, 
   budgetId, 
   type, 
-  categories 
+  categories,
+  editingLine 
 }: { 
   open: boolean; 
   onOpenChange: (open: boolean) => void; 
   budgetId: number; 
   type: 'income' | 'expenses'; 
   categories: any[];
+  editingLine?: BudgetLine | null;
 }) {
   const [formData, setFormData] = useState({
     concept: '',
@@ -991,17 +1036,46 @@ function AddBudgetLineDialog({
     description: ''
   });
 
+  // Rellenar formulario cuando se edita una línea
+  React.useEffect(() => {
+    if (editingLine && open) {
+      setFormData({
+        concept: editingLine.concept,
+        categoryId: editingLine.categoryId?.toString() || '',
+        projectedAmount: editingLine.projectedAmount,
+        description: editingLine.notes || ''
+      });
+    } else if (!editingLine && open) {
+      setFormData({
+        concept: '',
+        categoryId: '',
+        projectedAmount: '',
+        description: ''
+      });
+    }
+  }, [editingLine, open]);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const createLineMutation = useMutation({
+  const saveLineMutation = useMutation({
     mutationFn: async (data: any) => {
-      const endpoint = type === 'income' ? 'income-lines' : 'expenses-lines';
-      const response = await apiRequest(`/api/budgets/${budgetId}/${endpoint}`, {
-        method: 'POST',
-        data
-      });
-      return await response.json();
+      if (editingLine) {
+        // Editar línea existente
+        const response = await apiRequest(`/api/budget-lines/${editingLine.id}`, {
+          method: 'PUT',
+          data
+        });
+        return await response.json();
+      } else {
+        // Crear nueva línea
+        const endpoint = type === 'income' ? 'income-lines' : 'expenses-lines';
+        const response = await apiRequest(`/api/budgets/${budgetId}/${endpoint}`, {
+          method: 'POST',
+          data
+        });
+        return await response.json();
+      }
     },
     onSuccess: () => {
       // Invalidar todas las consultas relacionadas para forzar una actualización completa
@@ -1013,8 +1087,10 @@ function AddBudgetLineDialog({
       queryClient.refetchQueries({ queryKey: ['/api/budgets'] });
       
       toast({
-        title: "Línea agregada",
-        description: `La línea de ${type === 'income' ? 'ingreso' : 'gasto'} ha sido agregada exitosamente.`,
+        title: editingLine ? "Línea actualizada" : "Línea agregada",
+        description: editingLine ? 
+          "La línea presupuestaria se ha actualizado correctamente" :
+          `La línea de ${type === 'income' ? 'ingreso' : 'gasto'} ha sido agregada exitosamente.`,
       });
       setFormData({ concept: '', categoryId: '', projectedAmount: '', description: '' });
       onOpenChange(false);
@@ -1022,7 +1098,9 @@ function AddBudgetLineDialog({
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: "No se pudo agregar la línea. Por favor intenta de nuevo.",
+        description: editingLine ? 
+          "No se pudo actualizar la línea. Por favor intenta de nuevo." :
+          "No se pudo agregar la línea. Por favor intenta de nuevo.",
         variant: "destructive",
       });
     }
@@ -1040,7 +1118,7 @@ function AddBudgetLineDialog({
       return;
     }
 
-    createLineMutation.mutate({
+    saveLineMutation.mutate({
       budgetId,
       categoryId: parseInt(formData.categoryId),
       concept: formData.concept,
@@ -1138,9 +1216,10 @@ function AddBudgetLineDialog({
             </Button>
             <Button 
               type="submit" 
-              disabled={createLineMutation.isPending}
+              disabled={saveLineMutation.isPending}
             >
-              {createLineMutation.isPending ? "Guardando..." : "Agregar Línea"}
+              {saveLineMutation.isPending ? "Guardando..." : 
+               editingLine ? "Actualizar Línea" : "Agregar Línea"}
             </Button>
           </div>
         </form>
