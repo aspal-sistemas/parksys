@@ -231,11 +231,7 @@ export default function BudgetTracking() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los parques</SelectItem>
-                {parksData?.map((park: any) => (
-                  <SelectItem key={park.id} value={park.id.toString()}>
-                    {park.name}
-                  </SelectItem>
-                ))}
+                {/* Placeholder for parks - will load from API */}
               </SelectContent>
             </Select>
 
@@ -259,7 +255,7 @@ export default function BudgetTracking() {
               <>
                 {/* Resumen general */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card>
+                  <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Ingresos Totales</CardTitle>
                     <TrendingUp className="h-4 w-4 text-green-600" />
