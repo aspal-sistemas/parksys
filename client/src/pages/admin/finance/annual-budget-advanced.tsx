@@ -496,8 +496,14 @@ function BudgetLinesTable({ budgetId, type }: { budgetId: number; type: 'income'
     queryKey: [`/api/budgets/${budgetId}/${type}-lines`],
   });
 
-  const { data: categories = [] } = useQuery({
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery({
     queryKey: [`/api/finance/${type === 'income' ? 'income' : 'expense'}-categories`],
+    queryFn: async () => {
+      const response = await apiRequest(`/api/finance/${type === 'income' ? 'income' : 'expense'}-categories`);
+      const data = await response.json();
+      console.log(`Categories for ${type}:`, data);
+      return data;
+    },
   });
 
   return (
@@ -944,7 +950,8 @@ function AddBudgetLineDialog({
 
   const createLineMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest(`/api/budgets/${budgetId}/${type}-lines`, {
+      const endpoint = type === 'income' ? 'income-lines' : 'expenses-lines';
+      const response = await apiRequest(`/api/budgets/${budgetId}/${endpoint}`, {
         method: 'POST',
         data
       });
@@ -990,8 +997,8 @@ function AddBudgetLineDialog({
     });
   };
 
-  const activeCategories = Array.isArray(categories) ? 
-    categories.filter((cat: any) => cat.isActive) : [];
+  // Mostrar todas las categorías, no solo las activas
+  const availableCategories = Array.isArray(categories) ? categories : [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -1024,9 +1031,9 @@ function AddBudgetLineDialog({
                 <SelectValue placeholder="Seleccionar categoría" />
               </SelectTrigger>
               <SelectContent>
-                {activeCategories.map((category: any) => (
+                {availableCategories.map((category: any) => (
                   <SelectItem key={category.id} value={category.id.toString()}>
-                    {category.name} - {category.code}
+                    {category.name} - {category.code} {!category.isActive && '(Inactiva)'}
                   </SelectItem>
                 ))}
               </SelectContent>

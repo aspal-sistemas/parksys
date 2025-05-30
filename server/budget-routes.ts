@@ -248,7 +248,81 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
     }
   });
 
-  // Crear línea presupuestaria
+  // Crear línea de ingresos
+  apiRouter.post("/budgets/:id/income-lines", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { categoryId, subcategoryId, concept, projectedAmount, description } = req.body;
+
+      const lineData = {
+        budgetId: parseInt(id),
+        categoryId: parseInt(categoryId),
+        subcategoryId: subcategoryId ? parseInt(subcategoryId) : null,
+        concept,
+        projectedAmount: projectedAmount.toString(),
+        january: "0",
+        february: "0",
+        march: "0",
+        april: "0",
+        may: "0",
+        june: "0",
+        july: "0",
+        august: "0",
+        september: "0",
+        october: "0",
+        november: "0",
+        december: "0",
+        notes: description || null
+      };
+
+      const newLine = await db.insert(budgetIncomeLines).values(lineData).returning();
+      await recalculateBudgetTotals(parseInt(id));
+
+      res.status(201).json(newLine[0]);
+    } catch (error) {
+      console.error("Error al crear línea de ingresos:", error);
+      res.status(500).json({ message: "Error al crear línea de ingresos" });
+    }
+  });
+
+  // Crear línea de gastos
+  apiRouter.post("/budgets/:id/expenses-lines", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { categoryId, subcategoryId, concept, projectedAmount, description } = req.body;
+
+      const lineData = {
+        budgetId: parseInt(id),
+        categoryId: parseInt(categoryId),
+        subcategoryId: subcategoryId ? parseInt(subcategoryId) : null,
+        concept,
+        projectedAmount: projectedAmount.toString(),
+        january: "0",
+        february: "0",
+        march: "0",
+        april: "0",
+        may: "0",
+        june: "0",
+        july: "0",
+        august: "0",
+        september: "0",
+        october: "0",
+        november: "0",
+        december: "0",
+        notes: description || null
+      };
+
+      const newLine = await db.insert(budgetExpenseLines).values(lineData).returning();
+      await recalculateBudgetTotals(parseInt(id));
+
+      res.status(201).json(newLine[0]);
+    } catch (error) {
+      console.error("Error al crear línea de gastos:", error);
+      res.status(500).json({ message: "Error al crear línea de gastos" });
+    }
+  });
+
+  // Crear línea presupuestaria (endpoint genérico original)
   apiRouter.post("/budgets/:id/lines", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
