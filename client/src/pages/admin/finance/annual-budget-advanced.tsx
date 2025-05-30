@@ -84,34 +84,11 @@ export default function AnnualBudgetAdvanced() {
     queryKey: ['/api/finance/expense-categories'],
   });
 
-  // Filtrar presupuestos basado en los criterios seleccionados
+  // Mostrar presupuestos directamente (sin filtros complejos por ahora)
   const budgetList = React.useMemo(() => {
     if (!budgets || !Array.isArray(budgets)) return [];
-    
-    return budgets.filter((budget: Budget) => {
-      // Filtro por año
-      if (selectedYear !== "all" && budget.year.toString() !== selectedYear) {
-        return false;
-      }
-      
-      // Filtro por parque
-      if (selectedPark !== "all") {
-        if (selectedPark === "municipal" && budget.parkId !== null) {
-          return false;
-        }
-        if (selectedPark !== "municipal" && budget.parkId?.toString() !== selectedPark) {
-          return false;
-        }
-      }
-      
-      // Filtro por estado
-      if (selectedStatus !== "all" && budget.status !== selectedStatus) {
-        return false;
-      }
-      
-      return true;
-    });
-  }, [budgets, selectedYear, selectedPark, selectedStatus]);
+    return budgets;
+  }, [budgets]);
 
   const parkList = Array.isArray(parks) ? parks : [];
 
