@@ -487,8 +487,10 @@ const CreateAssetPage: React.FC = () => {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="0">Sin amenidad específica</SelectItem>
-                              {amenities && Array.isArray(amenities) ? amenities.map((amenity: any) => (
-                                <SelectItem key={amenity.id} value={amenity.amenityId?.toString() || ''}>
+                              {amenities && Array.isArray(amenities) ? amenities
+                                .filter((amenity: any) => amenity.amenityId && amenity.amenityName)
+                                .map((amenity: any) => (
+                                <SelectItem key={amenity.id} value={amenity.amenityId.toString()}>
                                   {amenity.amenityName}
                                 </SelectItem>
                               )) : null}
