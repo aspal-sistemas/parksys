@@ -1184,3 +1184,9 @@ export const incomeRecordsRelations = relations(incomeRecords, ({ one }) => ({
     references: [users.id]
   })
 }));
+
+// Relaciones para amenidades (incluye la relación con activos)
+export const amenitiesRelations = relations(amenities, ({ many }) => ({
+  parkAmenities: many(parkAmenities),
+  assets: many(() => import("./asset-schema").then(m => m.assets))
+}));

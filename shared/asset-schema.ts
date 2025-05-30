@@ -2,7 +2,7 @@ import { pgTable, text, serial, integer, boolean, timestamp, date, decimal, json
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
-import { parks, users } from "./schema";
+import { parks, users, amenities } from "./schema";
 
 // 1. Tabla de categorías de activos
 export const assetCategories = pgTable("asset_categories", {
@@ -24,7 +24,8 @@ export const assets = pgTable("assets", {
   serialNumber: text("serial_number"), // Número de serie o identificador único del activo
   categoryId: integer("category_id").notNull(),
   parkId: integer("park_id").notNull(), // Parque donde se encuentra el activo
-  locationDescription: text("location_description"), // Descripción textual de la ubicación
+  amenityId: integer("amenity_id"), // Amenidad donde se encuentra el activo (opcional)
+  locationDescription: text("location_description"), // Descripción textual de la ubicación (manual o desde amenidad)
   latitude: text("latitude"), // Coordenadas para ubicación exacta
   longitude: text("longitude"),
   acquisitionDate: date("acquisition_date"), // Fecha de adquisición
@@ -102,6 +103,10 @@ export const assetsRelations = relations(assets, ({ one, many }) => ({
   park: one(parks, {
     fields: [assets.parkId],
     references: [parks.id]
+  }),
+  amenity: one(amenities, {
+    fields: [assets.amenityId],
+    references: [amenities.id]
   }),
   maintenances: many(assetMaintenances),
   historyEntries: many(assetHistory),
