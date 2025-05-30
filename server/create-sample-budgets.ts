@@ -175,15 +175,11 @@ export async function createSampleBudgets() {
   }
 }
 
-// Ejecutar si se llama directamente
-if (require.main === module) {
-  createSampleBudgets()
-    .then(() => {
-      console.log("Script completado");
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      process.exit(1);
-    });
-}
+// Ejecutar automáticamente
+createSampleBudgets()
+  .then(() => {
+    console.log("Script completado");
+  })
+  .catch((error) => {
+    console.error("Error:", error);
+  });
