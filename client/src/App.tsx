@@ -518,9 +518,9 @@ function Router() {
           </Suspense>
         </Route>
         
-        <Route path="/admin/finance/budget-tracking">
-          <Suspense fallback={<div className="p-8 text-center">Cargando seguimiento presupuestario...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/finance/budget-tracking')))}
+        <Route path="/admin/finance/annual-budget">
+          <Suspense fallback={<div className="p-8 text-center">Cargando presupuesto anual...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/annual-budget')))}
           </Suspense>
         </Route>
 

@@ -34,6 +34,7 @@ import { registerConcessionLocationsRoutes } from "./concession-locations-routes
 import { registerConcessionPaymentsRoutes } from "./concession-payments-routes";
 import { registerConcessionEvaluationRoutes } from "./concession-evaluations-routes";
 import { registerFinanceRoutes } from "./finance-routes";
+import { registerBudgetRoutes } from "./budget-routes";
 import { registerFinanceUpdateRoutes } from "./finance-update-routes";
 import { 
   uploadParkFile, 
@@ -123,6 +124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo financiero
   registerFinanceRoutes(app, apiRouter, isAuthenticated);
+  registerBudgetRoutes(app, apiRouter, isAuthenticated);
   registerFinanceUpdateRoutes(app, apiRouter);
 
   // Rutas de edición específicas con nombres únicos
