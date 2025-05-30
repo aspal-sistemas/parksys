@@ -495,12 +495,16 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
  */
 async function recalculateBudgetTotals(budgetId: number) {
   try {
+    console.log(`Recalculando totales para presupuesto ${budgetId}`);
+    
     // Calcular total de ingresos
     const incomeLines = await db.select().from(budgetIncomeLines)
       .where(eq(budgetIncomeLines.budgetId, budgetId));
     
     const totalIncome = incomeLines.reduce((total, line) => {
-      return total + parseFloat(line.projectedAmount || "0");
+      const amount = parseFloat(line.projectedAmount || "0");
+      console.log(`Línea de ingreso: ${line.concept} - ${amount}`);
+      return total + amount;
     }, 0);
 
     // Calcular total de egresos
@@ -508,17 +512,24 @@ async function recalculateBudgetTotals(budgetId: number) {
       .where(eq(budgetExpenseLines.budgetId, budgetId));
     
     const totalExpense = expenseLines.reduce((total, line) => {
-      return total + parseFloat(line.projectedAmount || "0");
+      const amount = parseFloat(line.projectedAmount || "0");
+      console.log(`Línea de egreso: ${line.concept} - ${amount}`);
+      return total + amount;
     }, 0);
 
+    console.log(`Totales calculados - Ingresos: ${totalIncome}, Egresos: ${totalExpense}`);
+
     // Actualizar el presupuesto
-    await db.update(budgets)
+    const result = await db.update(budgets)
       .set({
         totalIncome: totalIncome.toString(),
         totalExpenses: totalExpense.toString(),
         updatedAt: new Date()
       })
-      .where(eq(budgets.id, budgetId));
+      .where(eq(budgets.id, budgetId))
+      .returning();
+
+    console.log(`Presupuesto actualizado:`, result[0]);
 
   } catch (error) {
     console.error("Error al recalcular totales del presupuesto:", error);
