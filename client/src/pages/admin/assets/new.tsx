@@ -128,6 +128,10 @@ const CreateAssetPage: React.FC = () => {
     console.log('Amenities data:', amenities);
     console.log('Is loading amenities:', isLoadingAmenities);
     console.log('Query enabled:', !!selectedParkId && selectedParkId > 0);
+    if (amenities && Array.isArray(amenities)) {
+      console.log('First amenity sample:', amenities[0]);
+      console.log('Filtered amenities:', amenities.filter((amenity: any) => amenity.amenityId && amenity.amenityName));
+    }
     console.log('======================');
   }, [selectedParkId, amenities, isLoadingAmenities]);
   
