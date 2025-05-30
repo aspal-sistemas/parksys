@@ -328,11 +328,11 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         Matriz de Flujo
       </NavItem>
       <NavItem 
-        href="/admin/finance/budget-tracking" 
+        href="/admin/finance/annual-budget" 
         icon={<Target className="h-5 w-5" />}
-        active={location === '/admin/finance/budget-tracking'}
+        active={location === '/admin/finance/annual-budget'}
       >
-        Seguimiento Presupuestario
+        Presupuesto Anual
       </NavItem>
       <NavItem 
         href="/admin/finance/calculator" 

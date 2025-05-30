@@ -62,4 +62,5 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
   );
 };
 
+export { AdminLayout };
 export default AdminLayout;
