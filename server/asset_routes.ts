@@ -248,20 +248,6 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
       const asset = await storage.createAsset(req.body);
       console.log("Activo creado exitosamente:", asset);
       
-      // Crear entrada en el historial
-      if (asset && asset.id) {
-        await storage.createAssetHistoryEntry({
-          assetId: asset.id,
-          changeType: "acquisition",
-          date: new Date(),
-          description: "Activo registrado en el sistema",
-          changedBy: (req.user as any)?.id || 1, // ID del usuario o admin por defecto
-          previousValue: null,
-          newValue: null,
-          notes: "Registro inicial del activo"
-        });
-      }
-      
       res.status(201).json(asset);
     } catch (error) {
       console.error("Error al crear activo:", error);

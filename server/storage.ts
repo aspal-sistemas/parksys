@@ -654,27 +654,27 @@ export class DatabaseStorage implements IStorage {
         ) RETURNING *
       `, [
         assetData.name,
-        assetData.serialNumber,
-        assetData.categoryId,
-        assetData.parkId,
-        assetData.amenityId || null,
-        assetData.locationDescription,
+        assetData.serialNumber || assetData.serial_number,
+        assetData.categoryId || assetData.category_id,
+        assetData.parkId || assetData.park_id,
+        assetData.amenityId || assetData.amenity_id || null,
+        assetData.locationDescription || assetData.location_description,
         assetData.latitude,
         assetData.longitude,
-        assetData.acquisitionDate,
-        assetData.acquisitionCost,
-        assetData.currentValue,
+        assetData.acquisitionDate || assetData.acquisition_date,
+        assetData.acquisitionCost || assetData.acquisition_cost,
+        assetData.currentValue || assetData.current_value,
         assetData.manufacturer,
         assetData.model,
         assetData.status,
         assetData.condition,
-        assetData.maintenanceFrequency,
-        assetData.lastMaintenanceDate,
-        assetData.nextMaintenanceDate,
-        assetData.expectedLifespan,
+        assetData.maintenanceFrequency || assetData.maintenance_frequency,
+        assetData.lastMaintenanceDate || assetData.last_maintenance_date,
+        assetData.nextMaintenanceDate || assetData.next_maintenance_date,
+        assetData.expectedLifespan || assetData.expected_lifespan,
         assetData.notes,
-        assetData.qrCode,
-        assetData.responsiblePersonId
+        assetData.qrCode || assetData.qr_code,
+        assetData.responsiblePersonId || assetData.responsible_person_id
       ]);
 
       return result.rows[0];
