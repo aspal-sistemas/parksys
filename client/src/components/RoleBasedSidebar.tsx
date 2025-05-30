@@ -512,6 +512,48 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
     </ModuleNav>
 
     <ModuleNav 
+      title="Voluntarios" 
+      icon={<Users className="h-5 w-5" />}
+      value="volunteers"
+    >
+      <NavItem 
+        href="/admin/volunteers" 
+        icon={<Users className="h-5 w-5" />}
+        active={location === '/admin/volunteers'}
+      >
+        Gestión
+      </NavItem>
+      <NavItem 
+        href="/admin/volunteers/participations" 
+        icon={<Calendar className="h-5 w-5" />}
+        active={location === '/admin/volunteers/participations'}
+      >
+        Participaciones
+      </NavItem>
+      <NavItem 
+        href="/admin/volunteers/evaluations" 
+        icon={<Clipboard className="h-5 w-5" />}
+        active={location === '/admin/volunteers/evaluations'}
+      >
+        Evaluaciones
+      </NavItem>
+      <NavItem 
+        href="/admin/volunteers/recognitions" 
+        icon={<Award className="h-5 w-5" />}
+        active={location === '/admin/volunteers/recognitions'}
+      >
+        Reconocimientos
+      </NavItem>
+      <NavItem 
+        href="/admin/volunteers/dashboard" 
+        icon={<BarChart className="h-5 w-5" />}
+        active={location === '/admin/volunteers/dashboard'}
+      >
+        Dashboard
+      </NavItem>
+    </ModuleNav>
+
+    <ModuleNav 
       title="Arbolado" 
       icon={<TreePine className="h-5 w-5" />}
       value="trees"
