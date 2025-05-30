@@ -99,6 +99,51 @@ export default function CashFlowMatrix() {
     enabled: showProjections
   });
 
+  // Mutación para importar datos CSV
+  const importCsvMutation = useMutation({
+    mutationFn: async ({ file, type, dataType }: { file: File; type: 'historical' | 'projections'; dataType: 'income' | 'expense' }) => {
+      const formData = new FormData();
+      formData.append('csvFile', file);
+      formData.append('type', dataType);
+      if (selectedPark !== "all") {
+        formData.append('parkId', selectedPark);
+      }
+      
+      const endpoint = type === 'historical' ? '/api/import/historical-data' : '/api/import/projections';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al importar archivo CSV');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Importación exitosa",
+        description: `${data.message}. ${data.successCount} registros procesados.`,
+      });
+      
+      // Invalidar caché para actualizar datos
+      queryClient.invalidateQueries({ queryKey: ["/api/cash-flow-matrix"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cash-flow-historical"] });
+      
+      setShowImportDialog(false);
+      setIsUploading(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error en la importación",
+        description: error.message,
+        variant: "destructive",
+      });
+      setIsUploading(false);
+    },
+  });
+
   // Preparar datos base
   const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
   
@@ -277,6 +322,29 @@ export default function CashFlowMatrix() {
     }).format(amount);
   };
 
+  // Funciones para importación CSV
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      importCsvMutation.mutate({
+        file,
+        type: importType,
+        dataType: importDataType
+      });
+    }
+  };
+
+  const downloadTemplate = (type: 'historical' | 'projections', dataType: 'income' | 'expense') => {
+    const url = `/api/import/template/${type}?type=${dataType}`;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `plantilla_${dataType === 'income' ? 'ingresos' : 'egresos'}_${type === 'historical' ? 'historicos' : 'proyecciones'}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const quarters = ["Q1", "Q2", "Q3", "Q4"];
   const quarterNames = ["1er Trimestre", "2do Trimestre", "3er Trimestre", "4to Trimestre"];
 
@@ -366,6 +434,91 @@ export default function CashFlowMatrix() {
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
+            <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Importar CSV
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Importar Datos desde CSV</DialogTitle>
+                  <DialogDescription>
+                    Importe datos históricos o proyecciones financieras desde archivos CSV
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Tipo de importación</Label>
+                    <Select value={importType} onValueChange={(value: 'historical' | 'projections') => setImportType(value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="historical">Datos históricos</SelectItem>
+                        <SelectItem value="projections">Proyecciones</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Tipo de datos</Label>
+                    <Select value={importDataType} onValueChange={(value: 'income' | 'expense') => setImportDataType(value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="income">Ingresos</SelectItem>
+                        <SelectItem value="expense">Egresos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                    <div className="text-center">
+                      <FileText className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                      <div className="text-sm text-gray-600 mb-4">
+                        Seleccione un archivo CSV para importar
+                      </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".csv"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                      <Button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                        className="mb-2"
+                      >
+                        {isUploading ? 'Subiendo...' : 'Seleccionar archivo'}
+                      </Button>
+                      <div className="flex gap-2 justify-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadTemplate(importType, importDataType)}
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Plantilla
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded">
+                    <strong>Formato esperado:</strong>
+                    {importType === 'historical' ? (
+                      <div>fecha, categoria, monto, descripcion, parque_id</div>
+                    ) : (
+                      <div>categoria, año, mes, monto, escenario, parque_id</div>
+                    )}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
