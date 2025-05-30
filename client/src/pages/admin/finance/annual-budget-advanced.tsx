@@ -1134,7 +1134,7 @@ function AddBudgetLineDialog({
       <DialogContent className="sm:max-w-[500px]" aria-describedby="budget-line-dialog-description">
         <DialogHeader>
           <DialogTitle>
-            Agregar Línea de {type === 'income' ? 'Ingreso' : 'Gasto'}
+            {editingLine ? 'Editar' : 'Agregar'} Línea de {type === 'income' ? 'Ingreso' : 'Gasto'}
           </DialogTitle>
           <div id="budget-line-dialog-description" className="text-sm text-muted-foreground">
             Complete los campos para agregar una nueva línea al presupuesto.
