@@ -47,16 +47,16 @@ export default function VolunteersPage() {
   });
 
   // Filtrar voluntarios
-  const filteredVolunteers = volunteers?.filter((volunteer: Volunteer) => {
+  const filteredVolunteers = volunteers.filter((volunteer: any) => {
     const matchesSearch = 
-      (volunteer.firstName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (volunteer.firstName?.toLowerCase() || volunteer.full_name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
       (volunteer.lastName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
       (volunteer.email?.toLowerCase() || "").includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === "all" || volunteer.status === statusFilter;
     
     return matchesSearch && matchesStatus;
-  }) || [];
+  });
 
   const handleViewDetails = (volunteer: Volunteer) => {
     setSelectedVolunteer(volunteer);
@@ -129,7 +129,7 @@ export default function VolunteersPage() {
                 <Users className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Voluntarios</p>
-                  <p className="text-2xl font-bold">{volunteers?.length || 0}</p>
+                  <p className="text-2xl font-bold">{volunteers.length || 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -142,7 +142,7 @@ export default function VolunteersPage() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Activos</p>
                   <p className="text-2xl font-bold">
-                    {volunteers?.filter((v: Volunteer) => v.status === 'activo').length || 0}
+                    {volunteers.filter((v: any) => v.status === 'activo').length || 0}
                   </p>
                 </div>
               </div>
@@ -156,7 +156,7 @@ export default function VolunteersPage() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Horas Totales</p>
                   <p className="text-2xl font-bold">
-                    {volunteers?.reduce((sum: number, v: Volunteer) => sum + (v.totalHours || 0), 0) || 0}
+                    {volunteers.reduce((sum: number, v: any) => sum + (v.totalHours || v.total_hours || 0), 0) || 0}
                   </p>
                 </div>
               </div>
@@ -170,8 +170,8 @@ export default function VolunteersPage() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Nuevos este mes</p>
                   <p className="text-2xl font-bold">
-                    {volunteers?.filter((v: Volunteer) => {
-                      const joinDate = new Date(v.joinDate);
+                    {volunteers.filter((v: any) => {
+                      const joinDate = new Date(v.joinDate || v.join_date || v.createdAt);
                       const now = new Date();
                       return joinDate.getMonth() === now.getMonth() && joinDate.getFullYear() === now.getFullYear();
                     }).length || 0}
@@ -202,23 +202,23 @@ export default function VolunteersPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {filteredVolunteers.map((volunteer: Volunteer) => (
+                {filteredVolunteers.map((volunteer: any) => (
                   <div key={volunteer.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <div>
                           <h3 className="font-semibold text-lg">
-                            {volunteer.firstName} {volunteer.lastName}
+                            {volunteer.full_name || `${volunteer.firstName || ''} ${volunteer.lastName || ''}`.trim()}
                           </h3>
                           <p className="text-gray-600">{volunteer.email}</p>
                           <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
-                              <span>Desde: {new Date(volunteer.joinDate).toLocaleDateString()}</span>
+                              <span>Desde: {new Date(volunteer.joinDate || volunteer.join_date || volunteer.createdAt).toLocaleDateString()}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock className="h-4 w-4" />
-                              <span>{volunteer.totalHours || 0} horas</span>
+                              <span>{volunteer.totalHours || volunteer.total_hours || 0} horas</span>
                             </div>
                             {volunteer.preferredParkId && (
                               <div className="flex items-center gap-1">
@@ -236,8 +236,8 @@ export default function VolunteersPage() {
                           )}
                         </div>
                         <div className="flex flex-col items-end gap-2">
-                          <Badge className={getStatusColor(volunteer.status)}>
-                            {volunteer.status}
+                          <Badge className={getStatusColor(volunteer.status || 'activo')}>
+                            {volunteer.status || 'activo'}
                           </Badge>
                           <div className="flex gap-2">
                             <Button
