@@ -1026,13 +1026,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customIconUrl: req.body.customIconUrl || null
       };
       
-      const updatedAmenity = await storage.updateAmenity(id, data);
+      const result = await pool.query(`
+        UPDATE amenities 
+        SET 
+          name = $2,
+          icon = $3,
+          category = $4,
+          icon_type = $5,
+          custom_icon_url = $6
+        WHERE id = $1
+        RETURNING *
+      `, [id, data.name, data.icon, data.category, data.iconType, data.customIconUrl]);
       
-      if (!updatedAmenity) {
+      if (result.rows.length === 0) {
         return res.status(404).json({ message: "Amenidad no encontrada" });
       }
       
-      res.json(updatedAmenity);
+      res.json(result.rows[0]);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error updating amenity" });
