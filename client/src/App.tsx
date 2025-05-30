@@ -523,6 +523,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/finance/annual-budget-advanced')))}
           </Suspense>
         </Route>
+        <Route path="/admin/finance/annual-budget-advanced">
+          <Suspense fallback={<div className="p-8 text-center">Cargando presupuesto anual avanzado...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/annual-budget-advanced')))}
+          </Suspense>
+        </Route>
 
         {/* Rutas del módulo de Recursos Humanos */}
         <Route path="/admin/hr/employees">
