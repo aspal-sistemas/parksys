@@ -70,6 +70,8 @@ export default function AnnualBudgetAdvanced() {
       const response = await apiRequest('/api/budgets');
       return await response.json();
     },
+    staleTime: 0, // Forzar que los datos siempre se consideren obsoletos
+    cacheTime: 0, // No mantener caché
   });
 
   const { data: parks = [] } = useQuery({
@@ -441,22 +443,28 @@ function BudgetDetailView({ budget }: { budget: Budget }) {
         <div className="text-center">
           <p className="text-sm text-gray-600">Ingresos Proyectados</p>
           <p className="text-2xl font-bold text-green-600">
-            {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(parseFloat(budget.totalIncome))}
+            {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(
+              budget.totalIncome ? parseFloat(budget.totalIncome.toString()) : 0
+            )}
           </p>
         </div>
         <div className="text-center">
           <p className="text-sm text-gray-600">Gastos Proyectados</p>
           <p className="text-2xl font-bold text-red-600">
-            {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(parseFloat(budget.totalExpenses))}
+            {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(
+              budget.totalExpenses ? parseFloat(budget.totalExpenses.toString()) : 0
+            )}
           </p>
         </div>
         <div className="text-center">
           <p className="text-sm text-gray-600">Balance</p>
           <p className={`text-2xl font-bold ${
-            parseFloat(budget.totalIncome) - parseFloat(budget.totalExpenses) >= 0 ? 'text-green-600' : 'text-red-600'
+            (budget.totalIncome ? parseFloat(budget.totalIncome.toString()) : 0) - 
+            (budget.totalExpenses ? parseFloat(budget.totalExpenses.toString()) : 0) >= 0 ? 'text-green-600' : 'text-red-600'
           }`}>
             {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(
-              parseFloat(budget.totalIncome) - parseFloat(budget.totalExpenses)
+              (budget.totalIncome ? parseFloat(budget.totalIncome.toString()) : 0) - 
+              (budget.totalExpenses ? parseFloat(budget.totalExpenses.toString()) : 0)
             )}
           </p>
         </div>
