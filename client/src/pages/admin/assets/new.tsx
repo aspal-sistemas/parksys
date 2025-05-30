@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -79,6 +79,19 @@ const assetCreateSchema = z.object({
 });
 
 type AssetFormData = z.infer<typeof assetCreateSchema>;
+
+// Componente para actualizar la vista del mapa
+function MapUpdater({ center }: { center: [number, number] }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (center) {
+      map.setView(center, 16);
+    }
+  }, [center, map]);
+
+  return null;
+}
 
 // Componente para manejar clicks en el mapa
 function LocationPicker({ position, onLocationSelect }: { 
@@ -667,6 +680,7 @@ const CreateAssetPage: React.FC = () => {
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                           />
+                          <MapUpdater center={mapPosition} />
                           <LocationPicker 
                             position={selectedLocation} 
                             onLocationSelect={handleLocationSelect}
