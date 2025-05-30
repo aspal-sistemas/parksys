@@ -108,7 +108,7 @@ const months = [
 
 export default function AnnualBudget() {
   const [selectedBudget, setSelectedBudget] = useState<number | null>(null);
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() + 1);
+  const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [selectedPark, setSelectedPark] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("budgets");
   const [showBudgetDialog, setShowBudgetDialog] = useState(false);
