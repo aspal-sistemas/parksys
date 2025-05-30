@@ -32,6 +32,73 @@ const upload = multer({
 });
 
 /**
+ * Función para convertir fecha de diferentes formatos a ISO (YYYY-MM-DD)
+ */
+function parseDate(dateString: string): string {
+  if (!dateString) return '';
+  
+  // Eliminar espacios y comillas
+  const cleanDate = dateString.trim().replace(/['"]/g, '');
+  
+  // Formato DD/MM/YY o DD/MM/YYYY
+  if (cleanDate.includes('/')) {
+    const parts = cleanDate.split('/');
+    if (parts.length === 3) {
+      let [day, month, year] = parts;
+      
+      // Convertir año de 2 dígitos a 4 dígitos
+      if (year.length === 2) {
+        const currentYear = new Date().getFullYear();
+        const century = Math.floor(currentYear / 100) * 100;
+        year = (parseInt(year) + century).toString();
+      }
+      
+      // Asegurar formato con ceros a la izquierda
+      day = day.padStart(2, '0');
+      month = month.padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    }
+  }
+  
+  // Formato DD-MM-YY o DD-MM-YYYY
+  if (cleanDate.includes('-') && !cleanDate.startsWith('20')) {
+    const parts = cleanDate.split('-');
+    if (parts.length === 3) {
+      let [day, month, year] = parts;
+      
+      if (year.length === 2) {
+        const currentYear = new Date().getFullYear();
+        const century = Math.floor(currentYear / 100) * 100;
+        year = (parseInt(year) + century).toString();
+      }
+      
+      day = day.padStart(2, '0');
+      month = month.padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    }
+  }
+  
+  // Si ya está en formato ISO (YYYY-MM-DD), devolverlo tal como está
+  if (cleanDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return cleanDate;
+  }
+  
+  // Si no coincide con ningún formato, intentar parsear con Date
+  try {
+    const parsedDate = new Date(cleanDate);
+    if (!isNaN(parsedDate.getTime())) {
+      return parsedDate.toISOString().split('T')[0];
+    }
+  } catch (e) {
+    console.warn('No se pudo parsear la fecha:', cleanDate);
+  }
+  
+  return '';
+}
+
+/**
  * Función para procesar datos CSV de ingresos/egresos históricos
  */
 async function processCsvData(csvContent: string, type: 'income' | 'expense', parkId?: number) {
@@ -53,8 +120,14 @@ async function processCsvData(csvContent: string, type: 'income' | 'expense', pa
       continue;
     }
     
+    const parsedDate = parseDate(record.fecha);
+    if (!parsedDate) {
+      console.warn('Fecha inválida encontrada:', record.fecha);
+      continue;
+    }
+
     records.push({
-      date: record.fecha,
+      date: parsedDate,
       amount: parseFloat(record.monto.replace(/[^0-9.-]/g, '')),
       categoryName: record.categoria,
       description: record.descripcion || '',
