@@ -1001,8 +1001,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customIconUrl: req.body.customIconUrl || null
       };
       
-      const newAmenity = await storage.createAmenity(data);
-      res.status(201).json(newAmenity);
+      const result = await pool.query(`
+        INSERT INTO amenities (name, icon, category, icon_type, custom_icon_url)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *
+      `, [data.name, data.icon, data.category, data.iconType, data.customIconUrl]);
+      
+      res.status(201).json(result.rows[0]);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error creating amenity" });
