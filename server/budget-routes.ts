@@ -11,7 +11,7 @@ import {
   actualIncomes,
   actualExpenses
 } from "@shared/finance-schema";
-import { eq, and, desc, asc, isNull } from "drizzle-orm";
+import { eq, and, desc, asc, isNull, sql } from "drizzle-orm";
 
 /**
  * Registra las rutas para el módulo de presupuesto anual
@@ -276,7 +276,25 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
       };
 
       const newLine = await db.insert(budgetIncomeLines).values(lineData).returning();
-      await recalculateBudgetTotals(parseInt(id));
+      
+      // Recalcular totales inmediatamente después de insertar
+      const totalIncome = await db.select({
+        total: sql<number>`COALESCE(SUM(${budgetIncomeLines.projectedAmount}), 0)`
+      }).from(budgetIncomeLines).where(eq(budgetIncomeLines.budgetId, parseInt(id)));
+      
+      const totalExpenses = await db.select({
+        total: sql<number>`COALESCE(SUM(${budgetExpenseLines.projectedAmount}), 0)`
+      }).from(budgetExpenseLines).where(eq(budgetExpenseLines.budgetId, parseInt(id)));
+      
+      await db.update(budgets)
+        .set({
+          totalIncome: totalIncome[0].total.toString(),
+          totalExpenses: totalExpenses[0].total.toString(),
+          updatedAt: new Date()
+        })
+        .where(eq(budgets.id, parseInt(id)));
+
+      console.log(`Totales actualizados para presupuesto ${id}: Ingresos=${totalIncome[0].total}, Egresos=${totalExpenses[0].total}`);
 
       res.status(201).json(newLine[0]);
     } catch (error) {
@@ -313,7 +331,25 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
       };
 
       const newLine = await db.insert(budgetExpenseLines).values(lineData).returning();
-      await recalculateBudgetTotals(parseInt(id));
+      
+      // Recalcular totales inmediatamente después de insertar
+      const totalIncome = await db.select({
+        total: sql<number>`COALESCE(SUM(${budgetIncomeLines.projectedAmount}), 0)`
+      }).from(budgetIncomeLines).where(eq(budgetIncomeLines.budgetId, parseInt(id)));
+      
+      const totalExpenses = await db.select({
+        total: sql<number>`COALESCE(SUM(${budgetExpenseLines.projectedAmount}), 0)`
+      }).from(budgetExpenseLines).where(eq(budgetExpenseLines.budgetId, parseInt(id)));
+      
+      await db.update(budgets)
+        .set({
+          totalIncome: totalIncome[0].total.toString(),
+          totalExpenses: totalExpenses[0].total.toString(),
+          updatedAt: new Date()
+        })
+        .where(eq(budgets.id, parseInt(id)));
+
+      console.log(`Totales actualizados para presupuesto ${id}: Ingresos=${totalIncome[0].total}, Egresos=${totalExpenses[0].total}`);
 
       res.status(201).json(newLine[0]);
     } catch (error) {
