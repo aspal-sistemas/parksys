@@ -520,7 +520,7 @@ function Router() {
         
         <Route path="/admin/finance/annual-budget">
           <Suspense fallback={<div className="p-8 text-center">Cargando presupuesto anual...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/finance/budget-simple')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/budget-test')))}
           </Suspense>
         </Route>
 
