@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Eye, Edit, Trash2, Copy, BarChart3, Calculator } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Copy, BarChart3, Calculator, Upload, Download } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -177,24 +177,30 @@ export default function AnnualBudgetAdvanced() {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Gestión de Presupuesto Anual</h1>
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Presupuesto
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Crear Nuevo Presupuesto</DialogTitle>
-              </DialogHeader>
-              <CreateBudgetForm 
-                parks={parkList}
-                onSubmit={(data) => createBudgetMutation.mutate(data)}
-                isLoading={createBudgetMutation.isPending}
-              />
-            </DialogContent>
-          </Dialog>
+          <div className="flex gap-3">
+            <Button variant="outline">
+              <Upload className="h-4 w-4 mr-2" />
+              Importar CSV
+            </Button>
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nuevo Presupuesto
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Crear Nuevo Presupuesto</DialogTitle>
+                </DialogHeader>
+                <CreateBudgetForm 
+                  parks={parkList}
+                  onSubmit={(data: any) => createBudgetMutation.mutate(data)}
+                  isLoading={createBudgetMutation.isPending}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Filtros */}
