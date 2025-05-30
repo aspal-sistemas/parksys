@@ -120,11 +120,25 @@ const CreateAssetPage: React.FC = () => {
     queryKey: ['/api/parks', selectedParkId, 'amenities'],
     enabled: !!selectedParkId && selectedParkId > 0,
   });
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Selected Park ID:', selectedParkId);
+    console.log('Amenities data:', amenities);
+    console.log('Is loading amenities:', isLoadingAmenities);
+  }, [selectedParkId, amenities, isLoadingAmenities]);
   
   // Consultar usuarios para responsables
   const { data: users, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['/api/users'],
   });
+
+  // Watch park selection to reset amenity field
+  useEffect(() => {
+    if (selectedParkId) {
+      form.setValue('amenityId', 0); // Reset amenity selection when park changes
+    }
+  }, [selectedParkId, form]);
 
   // Watch amenity selection to auto-fill location
   const selectedAmenityId = form.watch('amenityId');
