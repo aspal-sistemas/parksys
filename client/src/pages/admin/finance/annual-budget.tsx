@@ -154,6 +154,14 @@ export default function AnnualBudget() {
       setShowBudgetDialog(false);
       setEditingBudget(null);
     },
+    onError: (error: any) => {
+      console.error('Error al crear presupuesto:', error);
+      if (error.message?.includes('autenticación')) {
+        alert('Error: Es necesario estar autenticado para crear presupuestos. Por favor, inicia sesión.');
+      } else {
+        alert('Error al crear presupuesto: ' + (error.message || 'Error desconocido'));
+      }
+    },
   });
 
   const updateBudgetMutation = useMutation({
