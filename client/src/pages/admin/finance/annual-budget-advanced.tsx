@@ -236,12 +236,22 @@ export default function AnnualBudgetAdvanced() {
         </Card>
 
         {/* Lista de presupuestos */}
+        <div className="mb-4 p-2 bg-gray-100 text-xs">
+          Debug: {isLoading ? 'Cargando...' : `${budgetList.length} presupuestos encontrados`}
+          {!isLoading && budgetList.length > 0 && (
+            <div>IDs: {budgetList.map((b: Budget) => b.id).join(', ')}</div>
+          )}
+        </div>
+        
         {isLoading ? (
           <div>Cargando presupuestos...</div>
         ) : budgetList.length === 0 ? (
           <Card>
             <CardContent className="p-6">
               <p className="text-center text-gray-500">No hay presupuestos para los filtros seleccionados</p>
+              <p className="text-center text-xs text-gray-400 mt-2">
+                Filtros actuales: Año {selectedYear}, Parque: {selectedPark}, Estado: {selectedStatus}
+              </p>
             </CardContent>
           </Card>
         ) : (
