@@ -14,37 +14,6 @@ import {
 import { eq, and, desc, asc, isNull, sql } from "drizzle-orm";
 
 /**
- * Función auxiliar para recalcular totales de un presupuesto
- */
-async function recalculateBudgetTotals(budgetId: number) {
-  try {
-    console.log(`=== RECALCULANDO TOTALES PARA PRESUPUESTO ${budgetId} ===`);
-    
-    await db.execute(sql`
-      UPDATE budgets 
-      SET total_income = (
-        SELECT COALESCE(SUM(CAST(projected_amount AS NUMERIC)), 0) 
-        FROM budget_income_lines 
-        WHERE budget_id = ${budgetId}
-      ),
-      total_expenses = (
-        SELECT COALESCE(SUM(CAST(projected_amount AS NUMERIC)), 0) 
-        FROM budget_expense_lines 
-        WHERE budget_id = ${budgetId}
-      ),
-      updated_at = NOW()
-      WHERE id = ${budgetId}
-    `);
-    
-    console.log(`Totales del presupuesto ${budgetId} recalculados automáticamente`);
-    return true;
-  } catch (error) {
-    console.error(`Error recalculando totales para presupuesto ${budgetId}:`, error);
-    return false;
-  }
-}
-
-/**
  * Registra las rutas para el módulo de presupuesto anual
  */
 export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
@@ -231,8 +200,24 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
 
       const newLine = await db.insert(budgetIncomeLines).values(lineData).returning();
       
-      // Recalcular totales automáticamente
-      await recalculateBudgetTotals(parseInt(id));
+      // Recalcular totales usando consulta SQL directa
+      console.log(`=== RECALCULANDO TOTALES PARA PRESUPUESTO ${id} ===`);
+      await db.execute(sql`
+        UPDATE budgets 
+        SET total_income = (
+          SELECT COALESCE(SUM(projected_amount), 0) 
+          FROM budget_income_lines 
+          WHERE budget_id = ${parseInt(id)}
+        ),
+        total_expenses = (
+          SELECT COALESCE(SUM(projected_amount), 0) 
+          FROM budget_expense_lines 
+          WHERE budget_id = ${parseInt(id)}
+        ),
+        updated_at = NOW()
+        WHERE id = ${parseInt(id)}
+      `);
+      console.log(`Totales del presupuesto ${id} recalculados automáticamente`);
 
       res.status(201).json(newLine[0]);
     } catch (error) {
@@ -268,8 +253,24 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
 
       const newLine = await db.insert(budgetExpenseLines).values(lineData).returning();
       
-      // Recalcular totales automáticamente
-      await recalculateBudgetTotals(parseInt(id));
+      // Recalcular totales usando consulta SQL directa
+      console.log(`=== RECALCULANDO TOTALES PARA PRESUPUESTO ${id} ===`);
+      await db.execute(sql`
+        UPDATE budgets 
+        SET total_income = (
+          SELECT COALESCE(SUM(projected_amount), 0) 
+          FROM budget_income_lines 
+          WHERE budget_id = ${parseInt(id)}
+        ),
+        total_expenses = (
+          SELECT COALESCE(SUM(projected_amount), 0) 
+          FROM budget_expense_lines 
+          WHERE budget_id = ${parseInt(id)}
+        ),
+        updated_at = NOW()
+        WHERE id = ${parseInt(id)}
+      `);
+      console.log(`Totales del presupuesto ${id} recalculados automáticamente`);
 
       res.status(201).json(newLine[0]);
     } catch (error) {
@@ -311,7 +312,23 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
 
       // Recalcular totales del presupuesto
       if (budgetId) {
-        await recalculateBudgetTotals(budgetId);
+        console.log(`=== RECALCULANDO TOTALES PARA PRESUPUESTO ${budgetId} ===`);
+        await db.execute(sql`
+          UPDATE budgets 
+          SET total_income = (
+            SELECT COALESCE(SUM(projected_amount), 0) 
+            FROM budget_income_lines 
+            WHERE budget_id = ${budgetId}
+          ),
+          total_expenses = (
+            SELECT COALESCE(SUM(projected_amount), 0) 
+            FROM budget_expense_lines 
+            WHERE budget_id = ${budgetId}
+          ),
+          updated_at = NOW()
+          WHERE id = ${budgetId}
+        `);
+        console.log(`Totales del presupuesto ${budgetId} recalculados automáticamente`);
       }
       
       res.json(updatedLine[0]);
@@ -351,7 +368,23 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
 
       // Recalcular totales del presupuesto
       if (budgetId) {
-        await recalculateBudgetTotals(budgetId);
+        console.log(`=== RECALCULANDO TOTALES PARA PRESUPUESTO ${budgetId} ===`);
+        await db.execute(sql`
+          UPDATE budgets 
+          SET total_income = (
+            SELECT COALESCE(SUM(projected_amount), 0) 
+            FROM budget_income_lines 
+            WHERE budget_id = ${budgetId}
+          ),
+          total_expenses = (
+            SELECT COALESCE(SUM(projected_amount), 0) 
+            FROM budget_expense_lines 
+            WHERE budget_id = ${budgetId}
+          ),
+          updated_at = NOW()
+          WHERE id = ${budgetId}
+        `);
+        console.log(`Totales del presupuesto ${budgetId} recalculados automáticamente`);
       }
       
       res.json({ message: "Línea presupuestaria eliminada correctamente" });
