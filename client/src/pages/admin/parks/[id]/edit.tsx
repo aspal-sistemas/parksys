@@ -1401,7 +1401,7 @@ export default function ParkEdit() {
                                       parkAmenity={parkAmenity}
                                       amenity={amenity}
                                       onUpdate={(data) => updateAmenityMutation.mutate({ amenityId: parkAmenity.id, data })}
-                                      onDelete={() => removeAmenityMutation.mutate(parkAmenity.amenityId)}
+                                      onDelete={() => removeAmenityMutation.mutate(parkAmenity.id)}
                                       isUpdating={updateAmenityMutation.isPending}
                                       isDeleting={removeAmenityMutation.isPending}
                                       parkCenter={{

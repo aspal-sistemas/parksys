@@ -1173,13 +1173,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.delete("/parks/:parkId/amenities/:amenityId", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.parkId);
-      const amenityId = Number(req.params.amenityId);
+      const parkAmenityId = Number(req.params.amenityId); // Este es el ID del registro park_amenities, no el amenity_id
       
       const result = await pool.query(`
         DELETE FROM park_amenities 
-        WHERE park_id = $1 AND amenity_id = $2
+        WHERE id = $1 AND park_id = $2
         RETURNING *
-      `, [parkId, amenityId]);
+      `, [parkAmenityId, parkId]);
       
       if (result.rows.length === 0) {
         return res.status(404).json({ message: "Amenidad no encontrada en este parque" });
