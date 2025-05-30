@@ -54,7 +54,7 @@ const statusColors = {
 };
 
 export default function AnnualBudgetAdvanced() {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState(2026); // Cambiar a 2026 donde hay más presupuestos
   const [selectedPark, setSelectedPark] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
