@@ -1470,14 +1470,13 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
           const targetTable = type === 'income' ? actualIncomes : actualExpenses;
           await db.insert(targetTable).values({
             categoryId: category.id,
+            concept: record.description || `Importación CSV - ${record.categoryName}`,
             description: record.description,
             amount: record.amount.toString(),
             date: record.date,
             month,
             year,
             parkId: record.parkId,
-            createdById: req.user?.id,
-            createdAt: new Date(),
             updatedAt: new Date()
           });
 
