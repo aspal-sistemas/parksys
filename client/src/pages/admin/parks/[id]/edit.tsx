@@ -654,7 +654,7 @@ export default function ParkEdit() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleViewAmenity(amenity)}
+                  onClick={() => handleViewAmenity({ ...parkAmenity, amenityInfo: amenity })}
                   disabled={isUpdating || isDeleting}
                   className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                 >
@@ -1590,33 +1590,38 @@ export default function ParkEdit() {
 
       {/* Modal para ver detalles de amenidad */}
       <Dialog open={isViewAmenityModalOpen} onOpenChange={setIsViewAmenityModalOpen}>
-        <DialogContent className="sm:max-w-[800px]">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Detalles del Módulo de Amenidad</DialogTitle>
           </DialogHeader>
           {viewingAmenity && (
-            <div className="space-y-6">
-              {/* Información básica */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-600">Tipo de Amenidad</label>
-                  <p className="text-lg font-semibold">
-                    {availableAmenities?.find((a: any) => a.id === viewingAmenity.amenityId)?.name || 'No especificado'}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Tipo de Amenidad</label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="font-semibold">
+                    {viewingAmenity.amenityInfo?.name || 'No especificado'}
                   </p>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-600">Nombre del Módulo</label>
-                  <p className="text-lg font-semibold">{viewingAmenity.moduleName || 'Sin nombre'}</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-600">Superficie</label>
-                  <p className="text-lg">{viewingAmenity.surfaceArea ? `${viewingAmenity.surfaceArea} m²` : 'No especificada'}</p>
+              <div>
+                <label className="block text-sm font-medium mb-2">Nombre del Módulo</label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="font-semibold">{viewingAmenity.moduleName || 'Sin nombre'}</p>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-600">Estado</label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Superficie (m²)</label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p>{viewingAmenity.surfaceArea ? `${viewingAmenity.surfaceArea} m²` : 'No especificada'}</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Estado</label>
+                <div className="p-3 bg-gray-50 rounded-lg">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     viewingAmenity.status === 'Activa' ? 'bg-green-100 text-green-800' :
                     viewingAmenity.status === 'Inactiva' ? 'bg-red-100 text-red-800' :
@@ -1625,53 +1630,48 @@ export default function ParkEdit() {
                     {viewingAmenity.status || 'Sin estado'}
                   </span>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-600">Fecha de Creación</label>
-                  <p className="text-sm text-gray-600">
+              </div>
+
+              {(viewingAmenity.locationLatitude && viewingAmenity.locationLongitude) && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Ubicación</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600">Latitud</p>
+                      <p className="font-medium">{viewingAmenity.locationLatitude}</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600">Longitud</p>
+                      <p className="font-medium">{viewingAmenity.locationLongitude}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {viewingAmenity.description && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Descripción</label>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p>{viewingAmenity.description}</p>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Fecha de Creación</label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm">
                     {viewingAmenity.createdAt ? new Date(viewingAmenity.createdAt).toLocaleDateString('es-MX') : 'No disponible'}
                   </p>
                 </div>
               </div>
 
-              {/* Ubicación */}
-              {(viewingAmenity.locationLatitude && viewingAmenity.locationLongitude) && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-600">Ubicación</label>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm">
-                      <strong>Latitud:</strong> {viewingAmenity.locationLatitude}
-                    </p>
-                    <p className="text-sm">
-                      <strong>Longitud:</strong> {viewingAmenity.locationLongitude}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Descripción */}
-              {viewingAmenity.description && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-600">Descripción</label>
-                  <p className="text-sm bg-gray-50 p-3 rounded-lg">{viewingAmenity.description}</p>
-                </div>
-              )}
-
-              {/* Acciones */}
-              <div className="flex justify-end gap-2 pt-4 border-t">
+              <div className="flex justify-end gap-2">
                 <Button
                   variant="outline"
                   onClick={() => setIsViewAmenityModalOpen(false)}
                 >
                   Cerrar
-                </Button>
-                <Button
-                  onClick={() => {
-                    setIsViewAmenityModalOpen(false);
-                    // Aquí podrías abrir el modal de edición si lo implementas
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Editar
                 </Button>
               </div>
             </div>
