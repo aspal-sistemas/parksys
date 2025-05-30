@@ -219,7 +219,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<BarChart className="h-5 w-5" />}
         active={location === '/admin/amenities-dashboard'}
       >
-        Dashboard
+        Resumen Operativo
       </NavItem>
       <NavItem 
         href="/admin/amenities" 
