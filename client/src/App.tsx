@@ -517,6 +517,12 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/finance/catalog')))}
           </Suspense>
         </Route>
+        
+        <Route path="/admin/finance/budget-tracking">
+          <Suspense fallback={<div className="p-8 text-center">Cargando seguimiento presupuestario...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/budget-tracking')))}
+          </Suspense>
+        </Route>
 
         {/* Rutas del módulo de Recursos Humanos */}
         <Route path="/admin/hr/employees">
