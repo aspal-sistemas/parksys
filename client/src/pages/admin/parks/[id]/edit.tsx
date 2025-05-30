@@ -470,20 +470,10 @@ export default function ParkEdit() {
   // Mutación para crear nueva amenidad
   const createAmenityMutation = useMutation({
     mutationFn: async (amenityData: any) => {
-      const response = await fetch('/api/amenities', {
+      return await apiRequest('/api/amenities', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(amenityData)
+        data: amenityData
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al crear amenidad');
-      }
-      
-      return await response.json();
     },
     onSuccess: (newAmenity) => {
       queryClient.invalidateQueries({ queryKey: ["/api/amenities"] });
