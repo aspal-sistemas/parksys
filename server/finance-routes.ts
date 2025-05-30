@@ -617,11 +617,11 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
   // Obtener todos los presupuestos
   apiRouter.get("/budgets", async (req: Request, res: Response) => {
     try {
-      const { parkId, year } = req.query;
+      const { municipalityId, year } = req.query;
       let query = db.select().from(budgets);
       
-      if (parkId) {
-        query = query.where(eq(budgets.parkId, parseInt(parkId as string)));
+      if (municipalityId) {
+        query = query.where(eq(budgets.municipalityId, parseInt(municipalityId as string)));
       }
       if (year) {
         query = query.where(eq(budgets.year, parseInt(year as string)));

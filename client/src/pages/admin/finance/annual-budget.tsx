@@ -281,11 +281,11 @@ export default function AnnualBudget() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los parques</SelectItem>
-                {parks.map((park: any) => (
+                {Array.isArray(parks) ? parks.map((park: any) => (
                   <SelectItem key={park.id} value={park.id.toString()}>
                     {park.name}
                   </SelectItem>
-                ))}
+                )) : null}
               </SelectContent>
             </Select>
 
@@ -708,11 +708,11 @@ function BudgetDialog({
                 <SelectValue placeholder="Seleccionar parque" />
               </SelectTrigger>
               <SelectContent>
-                {parks.map((park: any) => (
+                {Array.isArray(parks) ? parks.map((park: any) => (
                   <SelectItem key={park.id} value={park.id.toString()}>
                     {park.name}
                   </SelectItem>
-                ))}
+                )) : null}
               </SelectContent>
             </Select>
           </div>
@@ -799,7 +799,7 @@ function BudgetLineDialog({
   });
 
   const categories = type === "income" ? incomeCategories : expenseCategories;
-  const selectedCategory = categories.find(c => c.id === parseInt(formData.categoryId));
+  const selectedCategory = Array.isArray(categories) ? categories.find(c => c.id === parseInt(formData.categoryId)) : null;
 
   useState(() => {
     if (line) {
@@ -909,11 +909,11 @@ function BudgetLineDialog({
                   <SelectValue placeholder="Seleccionar categoría" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category: Category) => (
+                  {Array.isArray(categories) ? categories.map((category: Category) => (
                     <SelectItem key={category.id} value={category.id.toString()}>
                       {category.code} - {category.name}
                     </SelectItem>
-                  ))}
+                  )) : null}
                 </SelectContent>
               </Select>
             </div>
