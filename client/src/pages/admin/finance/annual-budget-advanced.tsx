@@ -65,12 +65,10 @@ export default function AnnualBudgetAdvanced() {
   const queryClient = useQueryClient();
 
   const { data: budgets = [], isLoading } = useQuery({
-    queryKey: ['/api/budgets', selectedYear, selectedPark, selectedStatus],
+    queryKey: ['/api/budgets'],
     queryFn: () => {
-      let url = `/api/budgets?year=${selectedYear}`;
-      if (selectedPark !== "all") url += `&parkId=${selectedPark}`;
-      if (selectedStatus !== "all") url += `&status=${selectedStatus}`;
-      return apiRequest(url);
+      // Temporalmente sin filtros para mostrar todos los presupuestos
+      return apiRequest('/api/budgets');
     },
   });
 
