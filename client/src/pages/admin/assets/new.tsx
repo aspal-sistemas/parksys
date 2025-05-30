@@ -123,9 +123,12 @@ const CreateAssetPage: React.FC = () => {
 
   // Debug logging
   useEffect(() => {
+    console.log('=== AMENITIES DEBUG ===');
     console.log('Selected Park ID:', selectedParkId);
     console.log('Amenities data:', amenities);
     console.log('Is loading amenities:', isLoadingAmenities);
+    console.log('Query enabled:', !!selectedParkId && selectedParkId > 0);
+    console.log('======================');
   }, [selectedParkId, amenities, isLoadingAmenities]);
   
   // Consultar usuarios para responsables
