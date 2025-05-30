@@ -61,7 +61,7 @@ export function registerBudgetRoutes(app: any, apiRouter: Router, isAuthenticate
   });
 
   // Crear nuevo presupuesto
-  apiRouter.post("/budgets", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.post("/budgets", async (req: Request, res: Response) => {
     try {
       const { name, municipalityId, year, status, notes } = req.body;
       
