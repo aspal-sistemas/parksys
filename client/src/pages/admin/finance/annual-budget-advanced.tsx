@@ -958,10 +958,13 @@ function AddBudgetLineDialog({
       return await response.json();
     },
     onSuccess: () => {
-      // Invalidar todas las consultas relacionadas para forzar una actualización
+      // Invalidar todas las consultas relacionadas para forzar una actualización completa
       queryClient.invalidateQueries({ queryKey: [`/api/budgets/${budgetId}/income-lines`] });
       queryClient.invalidateQueries({ queryKey: [`/api/budgets/${budgetId}/expenses-lines`] });
       queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
+      
+      // Forzar refetch inmediato de los datos del presupuesto
+      queryClient.refetchQueries({ queryKey: ['/api/budgets'] });
       
       toast({
         title: "Línea agregada",
