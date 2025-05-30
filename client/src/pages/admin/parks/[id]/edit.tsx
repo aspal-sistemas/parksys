@@ -1411,30 +1411,41 @@ export default function ParkEdit() {
                           </DialogTrigger>
                           <DialogContent className="max-w-2xl">
                             <DialogHeader>
-                              <DialogTitle>Agregar Nueva Amenidad</DialogTitle>
+                              <DialogTitle>Agregar módulo</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                   <label className="text-sm font-medium mb-2 block">Amenidad</label>
-                                  <Select onValueChange={(value) => {
-                                    const amenityId = parseInt(value);
-                                    if (amenityId) {
-                                      setSelectedAmenity(amenityId);
-                                    }
-                                  }}>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Seleccionar amenidad" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {availableAmenities?.map((amenity: any) => (
-                                        <SelectItem key={amenity.id} value={amenity.id.toString()}>
-                                          {amenity.icon && <span className="mr-2">{getIconSymbol(amenity.icon)}</span>}
-                                          {amenity.name}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
+                                  <div className="flex gap-2">
+                                    <Select onValueChange={(value) => {
+                                      const amenityId = parseInt(value);
+                                      if (amenityId) {
+                                        setSelectedAmenity(amenityId);
+                                      }
+                                    }}>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Seleccionar amenidad" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {availableAmenities?.map((amenity: any) => (
+                                          <SelectItem key={amenity.id} value={amenity.id.toString()}>
+                                            {amenity.icon && <span className="mr-2">{getIconSymbol(amenity.icon)}</span>}
+                                            {amenity.name}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      onClick={() => setIsCreateNewAmenityModalOpen(true)}
+                                      className="whitespace-nowrap"
+                                    >
+                                      <Plus className="h-4 w-4 mr-1" />
+                                      Nueva
+                                    </Button>
+                                  </div>
                                 </div>
                                 
                                 <div>
@@ -1622,124 +1633,7 @@ export default function ParkEdit() {
         </div>
       </div>
 
-      {/* Modal para agregar amenidad */}
-      <Dialog open={isAddAmenityModalOpen} onOpenChange={setIsAddAmenityModalOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Agregar Nueva Amenidad</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Tipo de Amenidad</label>
-              <div className="flex gap-2">
-                <Select onValueChange={(value) => setSelectedAmenity(Number(value))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una amenidad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableAmenities?.map((amenity: any) => (
-                      <SelectItem key={amenity.id} value={amenity.id.toString()}>
-                        {amenity.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreateNewAmenityModalOpen(true)}
-                  className="whitespace-nowrap"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Nueva
-                </Button>
-              </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Nombre del Módulo</label>
-              <Input
-                value={newAmenityData.moduleName}
-                onChange={(e) => setNewAmenityData(prev => ({ ...prev, moduleName: e.target.value }))}
-                placeholder="Ej: Antonio Albarrán"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Superficie (m²)</label>
-              <Input
-                type="number"
-                value={newAmenityData.surfaceArea}
-                onChange={(e) => setNewAmenityData(prev => ({ ...prev, surfaceArea: e.target.value }))}
-                placeholder="Superficie en metros cuadrados"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Ubicación</label>
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  type="number"
-                  step="any"
-                  value={newAmenityData.locationLatitude}
-                  onChange={(e) => setNewAmenityData(prev => ({ ...prev, locationLatitude: e.target.value }))}
-                  placeholder="Latitud"
-                />
-                <Input
-                  type="number"
-                  step="any"
-                  value={newAmenityData.locationLongitude}
-                  onChange={(e) => setNewAmenityData(prev => ({ ...prev, locationLongitude: e.target.value }))}
-                  placeholder="Longitud"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsAddAmenityModalOpen(false);
-                  setSelectedAmenity(null);
-                  setNewAmenityData({
-                    moduleName: '',
-                    surfaceArea: '',
-                    locationLatitude: '',
-                    locationLongitude: ''
-                  });
-                }}
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => {
-                  if (selectedAmenity) {
-                    addAmenityMutation.mutate({
-                      amenityId: selectedAmenity,
-                      moduleName: newAmenityData.moduleName,
-                      surfaceArea: newAmenityData.surfaceArea ? parseFloat(newAmenityData.surfaceArea) : undefined,
-                      locationLatitude: newAmenityData.locationLatitude ? parseFloat(newAmenityData.locationLatitude) : undefined,
-                      locationLongitude: newAmenityData.locationLongitude ? parseFloat(newAmenityData.locationLongitude) : undefined,
-                      status: 'Activa'
-                    });
-                    setIsAddAmenityModalOpen(false);
-                    setSelectedAmenity(null);
-                    setNewAmenityData({
-                      moduleName: '',
-                      surfaceArea: '',
-                      locationLatitude: '',
-                      locationLongitude: ''
-                    });
-                  }
-                }}
-                disabled={!selectedAmenity || addAmenityMutation.isPending}
-              >
-                {addAmenityMutation.isPending ? 'Agregando...' : 'Agregar Amenidad'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Modal para ver detalles de amenidad */}
       <Dialog open={isViewAmenityModalOpen} onOpenChange={setIsViewAmenityModalOpen}>
