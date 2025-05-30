@@ -572,8 +572,56 @@ export class DatabaseStorage implements IStorage {
 
   async getAssets(filters?: any): Promise<any[]> {
     try {
-      // Consulta SQL
-      return [];
+      let query = `
+        SELECT 
+          a.*,
+          c.name as category_name,
+          c.icon as category_icon,
+          c.color as category_color,
+          p.name as park_name
+        FROM assets a
+        LEFT JOIN asset_categories c ON a.category_id = c.id
+        LEFT JOIN parks p ON a.park_id = p.id
+        WHERE 1=1
+      `;
+      
+      const params: any[] = [];
+      let paramIndex = 1;
+      
+      if (filters?.parkId) {
+        query += ` AND a.park_id = $${paramIndex}`;
+        params.push(filters.parkId);
+        paramIndex++;
+      }
+      
+      if (filters?.categoryId) {
+        query += ` AND a.category_id = $${paramIndex}`;
+        params.push(filters.categoryId);
+        paramIndex++;
+      }
+      
+      if (filters?.status) {
+        query += ` AND a.status = $${paramIndex}`;
+        params.push(filters.status);
+        paramIndex++;
+      }
+      
+      if (filters?.condition) {
+        query += ` AND a.condition = $${paramIndex}`;
+        params.push(filters.condition);
+        paramIndex++;
+      }
+      
+      if (filters?.search) {
+        query += ` AND (a.name ILIKE $${paramIndex} OR a.serial_number ILIKE $${paramIndex})`;
+        params.push(`%${filters.search}%`);
+        paramIndex++;
+      }
+      
+      query += ` ORDER BY a.created_at DESC`;
+      
+      const result = await pool.query(query, params);
+      return result.rows || [];
     } catch (error) {
       console.error("Error al obtener activos:", error);
       return [];
