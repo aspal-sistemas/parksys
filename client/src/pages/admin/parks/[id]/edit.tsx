@@ -622,6 +622,7 @@ export default function ParkEdit() {
             {isEditing ? (
               <>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   onClick={handleSave}
@@ -630,6 +631,7 @@ export default function ParkEdit() {
                   <Check className="h-4 w-4" />
                 </Button>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   onClick={handleCancel}
@@ -641,6 +643,7 @@ export default function ParkEdit() {
             ) : (
               <>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsEditing(true)}
@@ -649,6 +652,7 @@ export default function ParkEdit() {
                   ✏️
                 </Button>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   onClick={onDelete}
