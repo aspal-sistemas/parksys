@@ -2,6 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default markers in Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 import { 
   ArrowLeft, 
   Save,
@@ -69,10 +80,28 @@ const assetCreateSchema = z.object({
 
 type AssetFormData = z.infer<typeof assetCreateSchema>;
 
+// Componente para manejar clicks en el mapa
+function LocationPicker({ position, onLocationSelect }: { 
+  position: [number, number] | null; 
+  onLocationSelect: (lat: number, lng: number) => void 
+}) {
+  useMapEvents({
+    click(e) {
+      onLocationSelect(e.latlng.lat, e.latlng.lng);
+    },
+  });
+
+  return position ? <Marker position={position} /> : null;
+}
+
 const CreateAssetPage: React.FC = () => {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Estado para el mapa
+  const [mapPosition, setMapPosition] = useState<[number, number] | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
   
   // Formulario para crear activo
   const form = useForm<AssetFormData>({
@@ -140,12 +169,35 @@ const CreateAssetPage: React.FC = () => {
     queryKey: ['/api/users'],
   });
 
-  // Watch park selection to reset amenity field
+  // Watch park selection to reset amenity field and update map
   useEffect(() => {
     if (selectedParkId) {
       form.setValue('amenityId', 0); // Reset amenity selection when park changes
+      
+      // Find selected park and update map position
+      if (parks && Array.isArray(parks)) {
+        const selectedPark = parks.find((park: any) => park.id === selectedParkId);
+        if (selectedPark && selectedPark.latitude && selectedPark.longitude) {
+          const parkPosition: [number, number] = [
+            parseFloat(selectedPark.latitude),
+            parseFloat(selectedPark.longitude)
+          ];
+          setMapPosition(parkPosition);
+          // Reset selected location when park changes
+          setSelectedLocation(null);
+          form.setValue('latitude', null);
+          form.setValue('longitude', null);
+        }
+      }
     }
-  }, [selectedParkId, form]);
+  }, [selectedParkId, form, parks]);
+
+  // Handle map location selection
+  const handleLocationSelect = (lat: number, lng: number) => {
+    setSelectedLocation([lat, lng]);
+    form.setValue('latitude', lat.toString());
+    form.setValue('longitude', lng.toString());
+  };
 
   // Watch amenity selection to auto-fill location
   const selectedAmenityId = form.watch('amenityId');
@@ -597,6 +649,37 @@ const CreateAssetPage: React.FC = () => {
                       </FormItem>
                     )}
                   />
+
+                  {/* Mapa interactivo */}
+                  {mapPosition && (
+                    <div className="col-span-2">
+                      <FormLabel>Ubicación en el mapa</FormLabel>
+                      <FormDescription className="mb-2">
+                        Haz clic en el mapa para seleccionar la ubicación exacta del activo
+                      </FormDescription>
+                      <div className="h-64 w-full border rounded-md overflow-hidden">
+                        <MapContainer
+                          center={mapPosition}
+                          zoom={16}
+                          style={{ height: '100%', width: '100%' }}
+                        >
+                          <TileLayer
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                          />
+                          <LocationPicker 
+                            position={selectedLocation} 
+                            onLocationSelect={handleLocationSelect}
+                          />
+                        </MapContainer>
+                      </div>
+                      {selectedLocation && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Ubicación seleccionada: {selectedLocation[0].toFixed(6)}, {selectedLocation[1].toFixed(6)}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
