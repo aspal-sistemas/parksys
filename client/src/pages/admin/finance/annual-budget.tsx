@@ -18,12 +18,12 @@ import { formatCurrency } from "@/lib/utils";
 
 interface Budget {
   id: number;
-  parkId: number;
+  municipalityId: number | null;
   year: number;
   name: string;
   status: string;
-  totalIncomeProjected: string;
-  totalExpenseProjected: string;
+  totalIncome: string;
+  totalExpenses: string;
   notes: string;
   createdAt: string;
   updatedAt: string;
@@ -648,7 +648,7 @@ function BudgetDialog({
 }) {
   const [formData, setFormData] = useState({
     name: "",
-    parkId: "",
+    municipalityId: "",
     status: "draft",
     notes: ""
   });
@@ -657,14 +657,14 @@ function BudgetDialog({
     if (budget) {
       setFormData({
         name: budget.name,
-        parkId: budget.parkId.toString(),
+        municipalityId: budget.municipalityId?.toString() || "",
         status: budget.status,
         notes: budget.notes || ""
       });
     } else {
       setFormData({
         name: `Presupuesto ${year}`,
-        parkId: "",
+        municipalityId: "",
         status: "draft",
         notes: ""
       });
@@ -675,7 +675,8 @@ function BudgetDialog({
     e.preventDefault();
     onSave({
       ...formData,
-      parkId: parseInt(formData.parkId)
+      municipalityId: parseInt(formData.municipalityId) || null,
+      year
     });
   };
 
@@ -699,10 +700,10 @@ function BudgetDialog({
           </div>
           
           <div>
-            <Label htmlFor="parkId">Parque</Label>
+            <Label htmlFor="municipalityId">Parque</Label>
             <Select 
-              value={formData.parkId} 
-              onValueChange={(value) => setFormData({ ...formData, parkId: value })}
+              value={formData.municipalityId} 
+              onValueChange={(value) => setFormData({ ...formData, municipalityId: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar parque" />
