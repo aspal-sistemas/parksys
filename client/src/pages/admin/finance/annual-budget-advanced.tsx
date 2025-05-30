@@ -60,6 +60,7 @@ export default function AnnualBudgetAdvanced() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [csvImportDialogOpen, setCsvImportDialogOpen] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -178,7 +179,7 @@ export default function AnnualBudgetAdvanced() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Gestión de Presupuesto Anual</h1>
           <div className="flex gap-3">
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => setCsvImportDialogOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Importar CSV
             </Button>
@@ -383,6 +384,20 @@ export default function AnnualBudgetAdvanced() {
             </DialogContent>
           </Dialog>
         )}
+
+        {/* Diálogo de Importación CSV */}
+        <CSVImportDialog
+          open={csvImportDialogOpen}
+          onOpenChange={setCsvImportDialogOpen}
+          parks={parkList}
+          onImportComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ['/api/budgets'] });
+            toast({
+              title: "Importación completada",
+              description: "Los datos del CSV han sido importados correctamente.",
+            });
+          }}
+        />
       </div>
     </AdminLayout>
   );
@@ -1229,6 +1244,261 @@ function AddBudgetLineDialog({
             </Button>
           </div>
         </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Componente para importación CSV
+function CSVImportDialog({ open, onOpenChange, parks, onImportComplete }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  parks: Park[];
+  onImportComplete: () => void;
+}) {
+  const [file, setFile] = useState<File | null>(null);
+  const [importType, setImportType] = useState<'budget' | 'lines'>('budget');
+  const [selectedBudgetId, setSelectedBudgetId] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [preview, setPreview] = useState<any[]>([]);
+  const { toast } = useToast();
+
+  const { data: budgets = [] } = useQuery({
+    queryKey: ['/api/budgets'],
+    enabled: importType === 'lines'
+  });
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile && selectedFile.type === 'text/csv') {
+      setFile(selectedFile);
+      parseCSVPreview(selectedFile);
+    } else {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona un archivo CSV válido.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const parseCSVPreview = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      const lines = text.split('\n').filter(line => line.trim());
+      const headers = lines[0].split(',').map(h => h.trim());
+      const data = lines.slice(1, 6).map(line => {
+        const values = line.split(',').map(v => v.trim());
+        const row: any = {};
+        headers.forEach((header, index) => {
+          row[header] = values[index] || '';
+        });
+        return row;
+      });
+      setPreview(data);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleImport = async () => {
+    if (!file) {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona un archivo CSV.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (importType === 'lines' && !selectedBudgetId) {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona un presupuesto para importar las líneas.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', importType);
+      if (importType === 'lines') {
+        formData.append('budgetId', selectedBudgetId);
+      }
+
+      const response = await fetch('/api/budgets/import-csv', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al importar el archivo');
+      }
+
+      const result = await response.json();
+      
+      toast({
+        title: "Importación exitosa",
+        description: `Se importaron ${result.imported} registros correctamente.`,
+      });
+
+      onImportComplete();
+      onOpenChange(false);
+      setFile(null);
+      setPreview([]);
+      
+    } catch (error) {
+      toast({
+        title: "Error de importación",
+        description: "Hubo un error al procesar el archivo CSV.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    let csvContent = '';
+    
+    if (importType === 'budget') {
+      csvContent = 'name,year,status,municipalityId,parkId,notes\n';
+      csvContent += 'Presupuesto Ejemplo 2024,2024,draft,,1,Presupuesto de ejemplo\n';
+    } else {
+      csvContent = 'concept,categoryId,type,projectedAmount,january,february,march,april,may,june,july,august,september,october,november,december,notes\n';
+      csvContent += 'Ingresos por estacionamiento,1,income,120000,10000,10000,10000,10000,10000,10000,10000,10000,10000,10000,10000,10000,Ingresos mensuales estimados\n';
+      csvContent += 'Mantenimiento de jardines,4,expense,60000,5000,5000,5000,5000,5000,5000,5000,5000,5000,5000,5000,5000,Mantenimiento mensual\n';
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `plantilla_${importType === 'budget' ? 'presupuestos' : 'lineas'}.csv`;
+    link.click();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Importar Datos desde CSV</DialogTitle>
+          <div className="text-sm text-muted-foreground">
+            Carga presupuestos históricos y proyectados desde archivos CSV
+          </div>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Tipo de importación */}
+          <div className="space-y-3">
+            <Label>Tipo de Importación</Label>
+            <Select value={importType} onValueChange={(value: 'budget' | 'lines') => setImportType(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="budget">Presupuestos Completos</SelectItem>
+                <SelectItem value="lines">Líneas de Presupuesto</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Selección de presupuesto para líneas */}
+          {importType === 'lines' && (
+            <div className="space-y-3">
+              <Label>Presupuesto Destino</Label>
+              <Select value={selectedBudgetId} onValueChange={setSelectedBudgetId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un presupuesto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {budgets.map((budget: Budget) => (
+                    <SelectItem key={budget.id} value={budget.id.toString()}>
+                      {budget.name} - {budget.year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Descarga de plantilla */}
+          <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
+            <div>
+              <h4 className="font-medium">Plantilla CSV</h4>
+              <p className="text-sm text-gray-600">
+                Descarga la plantilla para {importType === 'budget' ? 'presupuestos' : 'líneas de presupuesto'}
+              </p>
+            </div>
+            <Button variant="outline" onClick={downloadTemplate}>
+              <Download className="h-4 w-4 mr-2" />
+              Descargar Plantilla
+            </Button>
+          </div>
+
+          {/* Selección de archivo */}
+          <div className="space-y-3">
+            <Label>Archivo CSV</Label>
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleFileChange}
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+            {file && (
+              <p className="text-sm text-green-600">
+                Archivo seleccionado: {file.name}
+              </p>
+            )}
+          </div>
+
+          {/* Vista previa */}
+          {preview.length > 0 && (
+            <div className="space-y-3">
+              <Label>Vista Previa (primeras 5 filas)</Label>
+              <div className="border rounded-lg overflow-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      {Object.keys(preview[0]).map((key) => (
+                        <th key={key} className="p-2 text-left font-medium">
+                          {key}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {preview.map((row, index) => (
+                      <tr key={index} className="border-t">
+                        {Object.values(row).map((value: any, cellIndex) => (
+                          <td key={cellIndex} className="p-2">
+                            {value}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Botones de acción */}
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleImport} 
+              disabled={!file || isUploading || (importType === 'lines' && !selectedBudgetId)}
+            >
+              {isUploading ? "Importando..." : "Importar Datos"}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
