@@ -997,8 +997,7 @@ function AddBudgetLineDialog({
     });
   };
 
-  // Mostrar todas las categorías, no solo las activas
-  const availableCategories = Array.isArray(categories) ? categories : [];
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -1031,11 +1030,17 @@ function AddBudgetLineDialog({
                 <SelectValue placeholder="Seleccionar categoría" />
               </SelectTrigger>
               <SelectContent>
-                {availableCategories.map((category: any) => (
-                  <SelectItem key={category.id} value={category.id.toString()}>
-                    {category.name} - {category.code} {!category.isActive && '(Inactiva)'}
+                {categories && categories.length > 0 ? (
+                  categories.map((category: any) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name} - {category.code} {!category.isActive && '(Inactiva)'}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="" disabled>
+                    Cargando categorías...
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
           </div>
