@@ -129,7 +129,7 @@ const CreateAssetPage: React.FC = () => {
   // Watch amenity selection to auto-fill location
   const selectedAmenityId = form.watch('amenityId');
   useEffect(() => {
-    if (selectedAmenityId && amenities) {
+    if (selectedAmenityId && selectedAmenityId > 0 && amenities && Array.isArray(amenities)) {
       const selectedAmenity = amenities.find((a: any) => a.amenityId === selectedAmenityId);
       if (selectedAmenity) {
         form.setValue('locationDescription', selectedAmenity.amenityName || '');
@@ -140,13 +140,7 @@ const CreateAssetPage: React.FC = () => {
   // Mutación para crear activo
   const createMutation = useMutation({
     mutationFn: (newAsset: AssetFormData) => {
-      return apiRequest('/api/assets', {
-        method: 'POST',
-        body: JSON.stringify(newAsset),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      return apiRequest('/api/assets', 'POST', newAsset);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
@@ -271,11 +265,11 @@ const CreateAssetPage: React.FC = () => {
                               <SelectValue placeholder="Seleccione una categoría" />
                             </SelectTrigger>
                             <SelectContent>
-                              {categories?.map((category: any) => (
+                              {categories && Array.isArray(categories) ? categories.map((category: any) => (
                                 <SelectItem key={category.id} value={category.id.toString()}>
                                   {category.name}
                                 </SelectItem>
-                              ))}
+                              )) : null}
                             </SelectContent>
                           </Select>
                         </FormControl>
@@ -450,11 +444,11 @@ const CreateAssetPage: React.FC = () => {
                               <SelectValue placeholder="Seleccione un parque" />
                             </SelectTrigger>
                             <SelectContent>
-                              {parks?.map((park: any) => (
+                              {parks && Array.isArray(parks) ? parks.map((park: any) => (
                                 <SelectItem key={park.id} value={park.id.toString()}>
                                   {park.name}
                                 </SelectItem>
-                              ))}
+                              )) : null}
                             </SelectContent>
                           </Select>
                         </FormControl>
@@ -478,12 +472,12 @@ const CreateAssetPage: React.FC = () => {
                               <SelectValue placeholder="Seleccione una amenidad" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Sin amenidad específica</SelectItem>
-                              {amenities?.map((amenity: any) => (
+                              <SelectItem value="0">Sin amenidad específica</SelectItem>
+                              {amenities && Array.isArray(amenities) ? amenities.map((amenity: any) => (
                                 <SelectItem key={amenity.amenityId} value={amenity.amenityId.toString()}>
                                   {amenity.amenityName}
                                 </SelectItem>
-                              ))}
+                              )) : null}
                             </SelectContent>
                           </Select>
                         </FormControl>
@@ -708,7 +702,7 @@ const CreateAssetPage: React.FC = () => {
                               <SelectValue placeholder="Seleccione frecuencia" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Sin mantenimiento programado</SelectItem>
+                              <SelectItem value="none">Sin mantenimiento programado</SelectItem>
                               {MAINTENANCE_FREQUENCIES.map((frequency) => (
                                 <SelectItem key={frequency.value} value={frequency.value}>
                                   {frequency.label}
