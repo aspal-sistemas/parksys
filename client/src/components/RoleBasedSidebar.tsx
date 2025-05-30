@@ -325,14 +325,14 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<LayoutGrid className="h-5 w-5" />}
         active={location === '/admin/finance/cash-flow-matrix'}
       >
-        Matriz de Flujo
+        Flujo
       </NavItem>
       <NavItem 
         href="/admin/finance/annual-budget" 
         icon={<Target className="h-5 w-5" />}
         active={location === '/admin/finance/annual-budget'}
       >
-        Presupuesto Anual
+        Presupuesto
       </NavItem>
       <NavItem 
         href="/admin/finance/calculator" 

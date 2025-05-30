@@ -84,12 +84,12 @@ export default function CatalogPage() {
 
   // Obtener categorías de ingresos
   const { data: incomeCategories, isLoading: incomeCategoriesLoading } = useQuery({
-    queryKey: ['/api/income-categories'],
+    queryKey: ['/api/finance/income-categories'],
   });
 
   // Obtener categorías de egresos
   const { data: expenseCategories, isLoading: expenseCategoriesLoading } = useQuery({
-    queryKey: ['/api/expense-categories'],
+    queryKey: ['/api/finance/expense-categories'],
   });
 
   // Obtener proveedores
@@ -116,13 +116,13 @@ export default function CatalogPage() {
   // Mutación para crear categoría de ingresos
   const createIncomeCategoryMutation = useMutation({
     mutationFn: async (categoryData: { name: string; description: string }) => {
-      return apiRequest('/api/income-categories', {
+      return apiRequest('/api/finance/income-categories', {
         method: 'POST',
         data: categoryData,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/income-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/finance/income-categories'] });
       toast({
         title: "Categoría creada",
         description: "La categoría de ingresos se ha creado exitosamente.",
@@ -143,13 +143,13 @@ export default function CatalogPage() {
   // Mutación para crear categoría de egresos
   const createExpenseCategoryMutation = useMutation({
     mutationFn: async (categoryData: { name: string; description: string }) => {
-      return apiRequest('/api/expense-categories', {
+      return apiRequest('/api/finance/expense-categories', {
         method: 'POST',
         data: categoryData,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/expense-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/finance/expense-categories'] });
       toast({
         title: "Categoría creada",
         description: "La categoría de egresos se ha creado exitosamente.",
