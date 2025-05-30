@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,7 +84,35 @@ export default function AnnualBudgetAdvanced() {
     queryKey: ['/api/finance/expense-categories'],
   });
 
-  const budgetList = Array.isArray(budgets) ? budgets : [];
+  // Filtrar presupuestos basado en los criterios seleccionados
+  const budgetList = React.useMemo(() => {
+    if (!budgets || !Array.isArray(budgets)) return [];
+    
+    return budgets.filter((budget: Budget) => {
+      // Filtro por año
+      if (selectedYear !== "all" && budget.year.toString() !== selectedYear) {
+        return false;
+      }
+      
+      // Filtro por parque
+      if (selectedPark !== "all") {
+        if (selectedPark === "municipal" && budget.parkId !== null) {
+          return false;
+        }
+        if (selectedPark !== "municipal" && budget.parkId?.toString() !== selectedPark) {
+          return false;
+        }
+      }
+      
+      // Filtro por estado
+      if (selectedStatus !== "all" && budget.status !== selectedStatus) {
+        return false;
+      }
+      
+      return true;
+    });
+  }, [budgets, selectedYear, selectedPark, selectedStatus]);
+
   const parkList = Array.isArray(parks) ? parks : [];
 
   const formatCurrency = (amount: string | number) => {
