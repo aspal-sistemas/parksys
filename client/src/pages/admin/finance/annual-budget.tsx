@@ -122,7 +122,7 @@ export default function AnnualBudget() {
   // Queries
   const { data: budgets = [], isLoading: budgetsLoading } = useQuery({
     queryKey: ['/api/budgets', selectedYear, selectedPark],
-    queryFn: () => apiRequest(`/api/budgets?year=${selectedYear}&parkId=${selectedPark !== "all" ? selectedPark : ""}`),
+    queryFn: () => apiRequest(`/api/budgets?year=${selectedYear}&municipalityId=${selectedPark !== "all" ? selectedPark : ""}`),
   });
 
   const { data: incomeCategories = [] } = useQuery({
@@ -306,7 +306,7 @@ export default function AnnualBudget() {
 
           <TabsContent value="budgets" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {budgets.map((budget: Budget) => {
+              {Array.isArray(budgets) && budgets.map((budget: Budget) => {
                 const totals = calculateBudgetTotals(budget);
                 return (
                   <Card key={budget.id} className={`cursor-pointer transition-all ${
