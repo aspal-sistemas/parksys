@@ -240,7 +240,12 @@ export default function AnnualBudgetAdvanced() {
 
         {/* Lista de presupuestos */}
         <div className="mb-4 p-2 bg-gray-100 text-xs">
-          Debug: {isLoading ? 'Cargando...' : `${budgetList.length} presupuestos encontrados`}
+          <div>Debug: {isLoading ? 'Cargando...' : `${budgetList.length} presupuestos encontrados`}</div>
+          <div>Raw budgets type: {typeof budgets}, isArray: {Array.isArray(budgets)}</div>
+          <div>Raw budgets length: {budgets?.length || 'undefined'}</div>
+          {budgets && typeof budgets === 'object' && (
+            <div>First budget: {JSON.stringify(budgets[0])}</div>
+          )}
           {!isLoading && budgetList.length > 0 && (
             <div>IDs: {budgetList.map((b: Budget) => b.id).join(', ')}</div>
           )}
