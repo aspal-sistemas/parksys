@@ -145,6 +145,26 @@ const EditAssetPage = () => {
       }
     }
   }, [asset]);
+
+  // Efecto para centrar el mapa en el parque seleccionado cuando se cambia
+  useEffect(() => {
+    if (selectedParkId && parks) {
+      const selectedPark = parks.find((park: any) => park.id === selectedParkId);
+      if (selectedPark && selectedPark.latitude && selectedPark.longitude) {
+        const lat = parseFloat(selectedPark.latitude);
+        const lng = parseFloat(selectedPark.longitude);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          setMapCenter([lat, lng]);
+          // Si no hay coordenadas del activo, usar las del parque como punto inicial
+          if (!selectedPosition) {
+            setSelectedPosition([lat, lng]);
+            form.setValue('latitude', lat);
+            form.setValue('longitude', lng);
+          }
+        }
+      }
+    }
+  }, [selectedParkId, parks, selectedPosition, form]);
   
   // Obtener listado de parques
   const { data: parks, isLoading: parksLoading } = useQuery({
@@ -157,8 +177,11 @@ const EditAssetPage = () => {
   });
 
   // Obtener listado de amenidades
+  // Obtener amenidades del parque seleccionado  
+  const selectedParkId = form.watch('parkId');
   const { data: amenities, isLoading: amenitiesLoading } = useQuery({
-    queryKey: ['/api/amenities'],
+    queryKey: [`/api/parks/${selectedParkId}/amenities`],
+    enabled: !!selectedParkId,
   });
 
   // Obtener listado de usuarios para responsable
@@ -519,74 +542,7 @@ const EditAssetPage = () => {
                   </div>
                 </div>
                 
-                {/* Ubicación y Geolocalización */}
-                <div className="border p-4 rounded-md bg-blue-50 mt-6">
-                  <h3 className="text-lg font-medium mb-4">Ubicación y Geolocalización</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="location"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Descripción de Ubicación</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="Ej: Cerca de la entrada principal" 
-                              {...field} 
-                              value={field.value || ''}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Describe dónde se encuentra
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="latitude"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Latitud</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="Ej: 19.432608" 
-                              {...field} 
-                              value={field.value || ''}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Coordenada norte/sur
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="longitude"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Longitud</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="Ej: -99.133209" 
-                              {...field} 
-                              value={field.value || ''}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Coordenada este/oeste
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
+
 
                 {/* Sección de Ubicación con Mapa Interactivo */}
                 <Card>
