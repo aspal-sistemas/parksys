@@ -276,7 +276,7 @@ const EditAssetPage = () => {
     console.log("=== ENVÍO DIRECTO ACTIVADO ===");
     
     try {
-      const formValues = form.getValues();
+      const formValues = form.getValues() as any;
       console.log("Valores actuales del formulario:", formValues);
       
       // Validar campos requeridos manualmente
@@ -840,7 +840,10 @@ const EditAssetPage = () => {
                   </Button>
                   <Button 
                     type="button"
-                    onClick={handleDirectSubmit}
+                    onClick={() => {
+                      console.log("BOTÓN GUARDAR DIRECTO CLICKEADO");
+                      handleDirectSubmit();
+                    }}
                     disabled={updateMutation.isPending}
                     variant="secondary"
                   >
