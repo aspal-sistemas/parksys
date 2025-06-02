@@ -335,25 +335,24 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
   apiRouter.delete("/assets/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
-      const existingAsset = await storage.getAsset(id);
-      if (!existingAsset) {
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "ID de activo inválido" });
+      }
+
+      // Importar la conexión a la BD desde el módulo db.ts
+      const { pool } = await import('./db');
+      
+      // Verificar que el activo existe antes de eliminar
+      const existingAssetResult = await pool.query("SELECT * FROM assets WHERE id = $1", [id]);
+      if (existingAssetResult.rows.length === 0) {
         return res.status(404).json({ message: "Activo no encontrado" });
       }
       
-      const deleted = await storage.deleteAsset(id);
-      if (deleted) {
-        // Crear entrada en el historial
-        await storage.createAssetHistoryEntry({
-          assetId: id,
-          changeType: "retirement",
-          date: new Date(),
-          description: "Baja del activo en el sistema",
-          changedBy: (req.user as any)?.id || 1, // ID del usuario o admin por defecto
-          previousValue: existingAsset,
-          newValue: null,
-          notes: req.body.historyNotes || "Eliminación del activo"
-        });
-        
+      // Eliminar el activo directamente
+      const deleteResult = await pool.query("DELETE FROM assets WHERE id = $1", [id]);
+      
+      if (deleteResult.rowCount && deleteResult.rowCount > 0) {
         res.json({ message: "Activo eliminado correctamente" });
       } else {
         res.status(500).json({ message: "Error al eliminar el activo" });
