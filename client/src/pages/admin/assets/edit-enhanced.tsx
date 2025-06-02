@@ -58,6 +58,7 @@ export default function EditAssetEnhanced() {
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
   const [mapPosition, setMapPosition] = useState<[number, number] | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([19.432608, -99.133209]); // Centro de Ciudad de México por defecto
   
   // Estados para datos de selección
   const [parks, setParks] = useState([]);
@@ -102,13 +103,28 @@ export default function EditAssetEnhanced() {
         setLatitude(asset.latitude || '');
         setLongitude(asset.longitude || '');
         
-        // Configurar posición del mapa si hay coordenadas
+        // Configurar posición del mapa si hay coordenadas del activo
         if (asset.latitude && asset.longitude) {
           const lat = parseFloat(asset.latitude);
           const lng = parseFloat(asset.longitude);
           if (!isNaN(lat) && !isNaN(lng)) {
             setMapPosition([lat, lng]);
+            setMapCenter([lat, lng]); // Centrar el mapa en la ubicación del activo
           }
+        } else if (asset.parkId) {
+          // Si no hay coordenadas del activo, centrar en el parque
+          fetch(`/api/parks/${asset.parkId}`)
+            .then(res => res.json())
+            .then(park => {
+              if (park.latitude && park.longitude) {
+                const lat = parseFloat(park.latitude);
+                const lng = parseFloat(park.longitude);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                  setMapCenter([lat, lng]);
+                }
+              }
+            })
+            .catch(err => console.error('Error al cargar ubicación del parque:', err));
         }
         
         // Corregir manejo de fechas para evitar problemas de zona horaria
@@ -165,12 +181,31 @@ export default function EditAssetEnhanced() {
   }, [name, assetDataLoaded]);
 
   // Función para manejar el cambio manual de parque
-  const handleParkChange = (newParkId: string) => {
+  const handleParkChange = async (newParkId: string) => {
     setParkId(newParkId);
     if (assetDataLoaded) {
       // Solo limpiar si ya se cargaron los datos del activo (cambio manual)
       setAmenityId('');
       setLocationDesc('');
+    }
+    
+    // Centrar el mapa en la ubicación del parque seleccionado
+    if (newParkId) {
+      try {
+        const response = await fetch(`/api/parks/${newParkId}`);
+        if (response.ok) {
+          const park = await response.json();
+          if (park.latitude && park.longitude) {
+            const lat = parseFloat(park.latitude);
+            const lng = parseFloat(park.longitude);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              setMapCenter([lat, lng]);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar ubicación del parque:', error);
+      }
     }
   };
 
@@ -512,9 +547,10 @@ export default function EditAssetEnhanced() {
                 <p className="text-sm text-gray-600">Haz clic en el mapa para establecer la ubicación del activo</p>
                 <div className="h-64 w-full border rounded-lg overflow-hidden">
                   <MapContainer
-                    center={mapPosition || [19.432608, -99.133209]} // Centro de Ciudad de México por defecto
+                    center={mapCenter}
                     zoom={13}
                     style={{ height: '100%', width: '100%' }}
+                    key={`${mapCenter[0]}-${mapCenter[1]}`} // Forzar re-render cuando cambie el centro
                   >
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
