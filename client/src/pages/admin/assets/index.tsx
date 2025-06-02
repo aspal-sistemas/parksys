@@ -134,14 +134,12 @@ const AssetsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedPark, setSelectedPark] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('all');
+  const [refreshKey, setRefreshKey] = useState(0);
   
-  // Consultar datos de activos con timestamp único para evitar cache
+  // Consultar datos de activos con clave de actualización manual
   const { data: assets, isLoading, isError } = useQuery<Asset[]>({
-    queryKey: ['/api/assets', Date.now()],
-    queryFn: () => fetch(`/api/assets?t=${Date.now()}`).then(res => res.json()),
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    queryKey: ['/api/assets', refreshKey],
+    queryFn: () => fetch(`/api/assets?_=${refreshKey}`).then(res => res.json()),
   });
   
   // Consultar datos de categorías
