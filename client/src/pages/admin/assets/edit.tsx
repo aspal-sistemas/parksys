@@ -64,7 +64,7 @@ const assetSchema = z.object({
   status: z.string().min(1, "El estado es obligatorio"),
   condition: z.string().min(1, "La condición es obligatoria"),
   acquisitionDate: z.string().optional(),
-  acquisitionCost: z.string().optional(),
+  acquisitionCost: z.union([z.number(), z.null()]).optional(),
   currentValue: z.string().optional(),
   depreciationRate: z.string().optional(),
   warrantyExpirationDate: z.string().optional(),
