@@ -140,7 +140,7 @@ export default function EditAssetSimple() {
       serialNumber: formData.serialNumber || null,
       parkId: Number(formData.parkId),
       categoryId: Number(formData.categoryId),
-      amenityId: formData.amenityId ? Number(formData.amenityId) : null,
+      amenityId: formData.amenityId && formData.amenityId !== "none" ? Number(formData.amenityId) : null,
       status: formData.status,
       condition: formData.condition,
       acquisitionDate: formData.acquisitionDate || null,
@@ -253,7 +253,7 @@ export default function EditAssetSimple() {
                   <SelectValue placeholder="Seleccionar amenidad" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin amenidad</SelectItem>
+                  <SelectItem value="none">Sin amenidad</SelectItem>
                   {amenities?.map((amenity: any) => (
                     <SelectItem key={amenity.id} value={amenity.id.toString()}>
                       {amenity.name}
