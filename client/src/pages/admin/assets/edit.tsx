@@ -60,7 +60,7 @@ const assetSchema = z.object({
   serialNumber: z.string().optional(),
   parkId: z.coerce.number().min(1, "Debe seleccionar un parque"),
   categoryId: z.coerce.number().min(1, "Debe seleccionar una categoría"),
-  amenityId: z.coerce.number().optional(),
+  amenityId: z.union([z.coerce.number(), z.literal("none")]).optional(),
   status: z.string().min(1, "El estado es obligatorio"),
   condition: z.string().min(1, "La condición es obligatoria"),
   acquisitionDate: z.string().optional(),
@@ -168,7 +168,7 @@ const EditAssetPage = () => {
       serialNumber: '',
       parkId: undefined,
       categoryId: undefined,
-      amenityId: undefined,
+      amenityId: "none",
       status: '',
       condition: '',
       acquisitionDate: '',
@@ -189,7 +189,7 @@ const EditAssetPage = () => {
         serialNumber: asset.serialNumber || '',
         parkId: asset.parkId,
         categoryId: asset.categoryId,
-        amenityId: asset.amenityId,
+        amenityId: asset.amenityId || "none",
         status: asset.status || '',
         condition: asset.condition || '',
         acquisitionDate: asset.acquisitionDate || '',
@@ -240,7 +240,12 @@ const EditAssetPage = () => {
   
   // Manejar envío del formulario
   const onSubmit = (data: AssetFormValues) => {
-    updateMutation.mutate(data);
+    // Convertir "none" a null para amenityId antes de enviar
+    const processedData = {
+      ...data,
+      amenityId: data.amenityId === "none" ? null : data.amenityId
+    };
+    updateMutation.mutate(processedData);
   };
 
   // Efecto para centrar el mapa cuando cambia el parque o cuando se carga el activo
@@ -272,7 +277,7 @@ const EditAssetPage = () => {
   // Efecto para auto-completar descripción de ubicación basada en amenidad seleccionada
   useEffect(() => {
     const amenityId = form.watch('amenityId');
-    if (amenityId === "" || amenityId === null || amenityId === undefined) {
+    if (amenityId === "none" || amenityId === "" || amenityId === null || amenityId === undefined) {
       // Si no hay amenidad seleccionada, usar "Sin amenidad"
       form.setValue('location', 'Sin amenidad');
     } else if (amenityId && amenities) {
@@ -612,14 +617,14 @@ const EditAssetPage = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Amenidad (Opcional)</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value?.toString() || ""}>
+                            <Select onValueChange={field.onChange} value={field.value?.toString() || "none"}>
                               <FormControl>
                                 <SelectTrigger className="z-50">
                                   <SelectValue placeholder="Seleccionar amenidad" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent className="z-50">
-                                <SelectItem value="">Sin amenidad</SelectItem>
+                                <SelectItem value="none">Sin amenidad</SelectItem>
                                 {amenities?.map((amenity: any) => (
                                   <SelectItem key={amenity.amenityId || amenity.id} value={(amenity.amenityId || amenity.id).toString()}>
                                     {amenity.amenityName || amenity.name || 'Amenidad sin nombre'}
