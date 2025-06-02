@@ -53,27 +53,23 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 
-// Esquema de validación completo para activos
+// Esquema de validación simplificado y corregido
 const assetSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio"),
-  description: z.string().optional(),
-  serialNumber: z.string().optional(),
+  description: z.string().default(""),
+  serialNumber: z.string().default(""),
   parkId: z.coerce.number().min(1, "Debe seleccionar un parque"),
   categoryId: z.coerce.number().min(1, "Debe seleccionar una categoría"),
-  amenityId: z.union([z.coerce.number(), z.literal("none")]).optional(),
+  amenityId: z.union([z.coerce.number(), z.literal("none"), z.literal("")]).optional(),
   status: z.string().min(1, "El estado es obligatorio"),
   condition: z.string().min(1, "La condición es obligatoria"),
-  acquisitionDate: z.string().optional(),
-  acquisitionCost: z.string().optional(),
-  currentValue: z.string().optional(),
-  depreciationRate: z.string().optional(),
-  warrantyExpirationDate: z.string().optional(),
-  maintenanceSchedule: z.string().optional(),
-  location: z.string().optional(),
-  latitude: z.union([z.string(), z.number()]).optional(),
-  longitude: z.union([z.string(), z.number()]).optional(),
-  responsiblePersonId: z.coerce.number().optional(),
-  notes: z.string().optional(),
+  acquisitionDate: z.string().default(""),
+  acquisitionCost: z.string().default(""),
+  currentValue: z.string().default(""),
+  location: z.string().default(""),
+  latitude: z.string().default(""),
+  longitude: z.string().default(""),
+  notes: z.string().default(""),
 });
 
 type AssetFormValues = z.infer<typeof assetSchema>;
@@ -179,13 +175,13 @@ const EditAssetPage = () => {
       name: '',
       description: '',
       serialNumber: '',
-      parkId: undefined,
-      categoryId: undefined,
+      parkId: 1, // Valor por defecto válido
+      categoryId: 1, // Valor por defecto válido
       amenityId: "none",
-      status: '',
-      condition: '',
+      status: 'activo',
+      condition: 'bueno',
       acquisitionDate: '',
-      acquisitionCost: null,
+      acquisitionCost: '',
       location: '',
       latitude: '',
       longitude: '',
@@ -200,18 +196,29 @@ const EditAssetPage = () => {
         name: asset.name || '',
         description: asset.description || '',
         serialNumber: asset.serialNumber || '',
-        parkId: asset.parkId,
-        categoryId: asset.categoryId,
-        amenityId: asset.amenityId || "none",
-        status: asset.status || '',
-        condition: asset.condition || '',
+        parkId: asset.parkId || 1,
+        categoryId: asset.categoryId || 1,
+        amenityId: asset.amenityId ? String(asset.amenityId) : "none",
+        status: asset.status || 'activo',
+        condition: asset.condition || 'bueno',
         acquisitionDate: asset.acquisitionDate || '',
-        acquisitionCost: asset.acquisitionCost,
-        location: asset.location || '',
-        latitude: asset.latitude || '',
-        longitude: asset.longitude || '',
+        acquisitionCost: asset.acquisitionCost ? String(asset.acquisitionCost) : '',
+        currentValue: asset.currentValue ? String(asset.currentValue) : '',
+        location: asset.locationDescription || '',
+        latitude: asset.latitude ? String(asset.latitude) : '',
+        longitude: asset.longitude ? String(asset.longitude) : '',
         notes: asset.notes || ''
       });
+      
+      // Actualizar también la posición del mapa si hay coordenadas
+      if (asset.latitude && asset.longitude) {
+        const lat = parseFloat(asset.latitude);
+        const lng = parseFloat(asset.longitude);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          setSelectedPosition([lat, lng]);
+          setMapCenter([lat, lng]);
+        }
+      }
     }
   }, [asset, form]);
 
@@ -230,7 +237,7 @@ const EditAssetPage = () => {
   // Mutación para actualizar el activo
   const updateMutation = useMutation({
     mutationFn: (data: AssetFormValues) => {
-      return apiRequest(`/api/assets/${id}`, 'PUT', data);
+      return apiRequest(`/api/simple-assets/${id}`, 'PUT', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/assets/${id}`] });
