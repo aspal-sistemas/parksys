@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Helmet } from 'react-helmet';
@@ -136,11 +136,19 @@ const AssetsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [refreshKey, setRefreshKey] = useState(0);
   
-  // Consultar datos de activos con clave de actualización manual
-  const { data: assets, isLoading, isError } = useQuery<Asset[]>({
-    queryKey: ['/api/assets', refreshKey],
-    queryFn: () => fetch(`/api/assets?_=${refreshKey}`).then(res => res.json()),
+  // Consultar datos de activos
+  const { data: assets, isLoading, isError, refetch } = useQuery<Asset[]>({
+    queryKey: ['/api/assets'],
   });
+
+  // Auto-refrescar cada 30 segundos para mostrar cambios inmediatamente
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [refetch]);
   
   // Consultar datos de categorías
   const { data: categories } = useQuery({
