@@ -8,6 +8,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Save, MapPin } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Configurar el icono del marcador por defecto de Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Componente para manejar clics en el mapa
+function LocationMarker({ position, setPosition }: { position: [number, number] | null, setPosition: (pos: [number, number]) => void }) {
+  const map = useMapEvents({
+    click(e) {
+      setPosition([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+
+  return position === null ? null : (
+    <Marker position={position} />
+  );
+}
 
 export default function EditAssetEnhanced() {
   const [, params] = useRoute('/admin/assets/:id/edit-enhanced');
@@ -31,6 +55,9 @@ export default function EditAssetEnhanced() {
   const [location, setLocationDesc] = useState('');
   const [acquisitionDate, setAcquisitionDate] = useState('');
   const [amenityId, setAmenityId] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [mapPosition, setMapPosition] = useState<[number, number] | null>(null);
   
   // Estados para datos de selección
   const [parks, setParks] = useState([]);
@@ -72,6 +99,18 @@ export default function EditAssetEnhanced() {
         setCategoryId(asset.categoryId ? String(asset.categoryId) : '');
         setLocationDesc(asset.locationDescription || '');
         setAmenityId(asset.amenityId ? String(asset.amenityId) : '');
+        setLatitude(asset.latitude || '');
+        setLongitude(asset.longitude || '');
+        
+        // Configurar posición del mapa si hay coordenadas
+        if (asset.latitude && asset.longitude) {
+          const lat = parseFloat(asset.latitude);
+          const lng = parseFloat(asset.longitude);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            setMapPosition([lat, lng]);
+          }
+        }
+        
         // Corregir manejo de fechas para evitar problemas de zona horaria
         if (asset.acquisitionDate) {
           const date = new Date(asset.acquisitionDate + 'T00:00:00');
@@ -147,6 +186,22 @@ export default function EditAssetEnhanced() {
     } else {
       // Limpiar descripción de ubicación cuando se selecciona "Sin amenidad" o se quita la selección
       setLocationDesc('');
+    }
+  };
+
+  // Función para manejar el cambio de posición en el mapa
+  const handleMapPositionChange = (newPosition: [number, number]) => {
+    setMapPosition(newPosition);
+    setLatitude(newPosition[0].toFixed(6));
+    setLongitude(newPosition[1].toFixed(6));
+  };
+
+  // Función para actualizar el mapa cuando cambian las coordenadas manualmente
+  const handleCoordinateChange = () => {
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      setMapPosition([lat, lng]);
     }
   };
 
