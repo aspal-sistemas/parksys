@@ -83,6 +83,19 @@ interface MapClickHandlerProps {
   onLocationSelect: (lat: number, lng: number) => void;
 }
 
+// Componente para actualizar la vista del mapa
+function MapUpdater({ center }: { center: [number, number] }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (center) {
+      map.setView(center, 16);
+    }
+  }, [center, map]);
+
+  return null;
+}
+
 function MapClickHandler({ onLocationSelect }: MapClickHandlerProps) {
   useMapEvents({
     click: (e) => {
@@ -655,6 +668,7 @@ const EditAssetPage = () => {
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                           />
+                          <MapUpdater center={mapCenter} />
                           <MapClickHandler onLocationSelect={handleLocationSelect} />
                           {selectedPosition && (
                             <Marker position={selectedPosition} />
