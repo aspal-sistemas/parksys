@@ -131,7 +131,7 @@ export default function EditAssetEnhanced() {
 
       console.log('Enviando datos:', updateData);
 
-      const response = await fetch(`/api/simple-assets/${id}`, {
+      const response = await fetch(`/api/assets/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
