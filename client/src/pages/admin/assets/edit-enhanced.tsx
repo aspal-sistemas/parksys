@@ -108,6 +108,8 @@ export default function EditAssetEnhanced() {
     } else {
       setAmenities([]);
       setAmenityId('');
+      // Limpiar descripción de ubicación cuando no hay parque seleccionado
+      setLocationDesc('');
     }
   }, [parkId]);
 
@@ -120,6 +122,9 @@ export default function EditAssetEnhanced() {
       if (selectedAmenity) {
         setLocationDesc(selectedAmenity.name);
       }
+    } else {
+      // Limpiar descripción de ubicación cuando se selecciona "Sin amenidad" o se quita la selección
+      setLocationDesc('');
     }
   };
 

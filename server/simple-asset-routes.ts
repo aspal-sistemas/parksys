@@ -60,7 +60,7 @@ router.put("/assets/:id", async (req: Request, res: Response) => {
     if (req.body.acquisitionCost !== undefined) updateData.acquisitionCost = parseFloat(req.body.acquisitionCost);
     if (req.body.latitude !== undefined) updateData.latitude = String(req.body.latitude);
     if (req.body.longitude !== undefined) updateData.longitude = String(req.body.longitude);
-    if (req.body.location !== undefined) updateData.location = req.body.location;
+    if (req.body.location !== undefined) updateData.locationDescription = req.body.location;
     if (req.body.notes !== undefined) updateData.notes = req.body.notes;
     if (req.body.serialNumber !== undefined) updateData.serialNumber = req.body.serialNumber;
     if (req.body.acquisitionDate !== undefined) updateData.acquisitionDate = req.body.acquisitionDate;
