@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Helmet } from 'react-helmet';
 import { 
@@ -44,6 +44,8 @@ import {
 } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import { queryClient } from '@/lib/queryClient';
 import { 
   Dialog, 
   DialogContent, 
@@ -137,6 +139,7 @@ const AssetsPage: React.FC = () => {
   const [selectedPark, setSelectedPark] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('all');
   const [refreshKey, setRefreshKey] = useState(0);
+  const { toast } = useToast();
   
   // Consultar datos de activos
   const { data: assets, isLoading, isError, refetch } = useQuery<Asset[]>({
@@ -160,6 +163,39 @@ const AssetsPage: React.FC = () => {
   // Consultar datos de parques
   const { data: parks } = useQuery({
     queryKey: ['/api/parks'],
+  });
+
+  // Mutación para eliminar activos
+  const deleteAssetMutation = useMutation({
+    mutationFn: async (assetId: number) => {
+      const response = await fetch(`/api/assets/${assetId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al eliminar el activo');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
+      toast({
+        title: "Activo eliminado",
+        description: "El activo ha sido eliminado correctamente del sistema.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error al eliminar",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
   
   // Filtrar activos según criterios seleccionados
