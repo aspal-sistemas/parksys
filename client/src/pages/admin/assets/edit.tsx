@@ -240,25 +240,45 @@ const EditAssetPage = () => {
     updateMutation.mutate(data);
   };
 
-  // Efecto para centrar el mapa en el parque seleccionado cuando se cambia
+  // Efecto para centrar el mapa cuando cambia el parque o cuando se carga el activo
   useEffect(() => {
     if (selectedParkId && parks) {
       const selectedPark = parks.find((park: any) => park.id === selectedParkId);
       if (selectedPark && selectedPark.latitude && selectedPark.longitude) {
-        const lat = parseFloat(selectedPark.latitude);
-        const lng = parseFloat(selectedPark.longitude);
-        if (!isNaN(lat) && !isNaN(lng)) {
-          setMapCenter([lat, lng]);
-          // Si no hay coordenadas del activo, usar las del parque como punto inicial
-          if (!selectedPosition) {
-            setSelectedPosition([lat, lng]);
-            form.setValue('latitude', lat);
-            form.setValue('longitude', lng);
+        const parkLat = parseFloat(selectedPark.latitude);
+        const parkLng = parseFloat(selectedPark.longitude);
+        if (!isNaN(parkLat) && !isNaN(parkLng)) {
+          // Si el activo tiene coordenadas, usar las del activo, sino las del parque
+          if (asset && asset.latitude && asset.longitude) {
+            const assetLat = parseFloat(asset.latitude);
+            const assetLng = parseFloat(asset.longitude);
+            if (!isNaN(assetLat) && !isNaN(assetLng)) {
+              setMapCenter([assetLat, assetLng]);
+              if (!selectedPosition) {
+                setSelectedPosition([assetLat, assetLng]);
+              }
+            }
+          } else {
+            setMapCenter([parkLat, parkLng]);
           }
         }
       }
     }
-  }, [selectedParkId, parks, selectedPosition, form]);
+  }, [selectedParkId, parks, asset, selectedPosition]);
+
+  // Efecto para auto-completar descripción de ubicación basada en amenidad seleccionada
+  useEffect(() => {
+    const amenityId = form.watch('amenityId');
+    if (amenityId && amenities) {
+      const selectedAmenity = amenities.find((amenity: any) => amenity.amenityId === parseInt(amenityId) || amenity.id === parseInt(amenityId));
+      if (selectedAmenity) {
+        const amenityName = selectedAmenity.amenity?.name || selectedAmenity.name;
+        if (amenityName) {
+          form.setValue('location', `Cerca de ${amenityName.toLowerCase()}`);
+        }
+      }
+    }
+  }, [form.watch('amenityId'), amenities, form]);
   
   // Formatear costo para mostrar
   const formatCurrency = (value: number | null | undefined) => {
@@ -581,7 +601,7 @@ const EditAssetPage = () => {
 
                       <FormField
                         control={form.control}
-                        name="responsiblePersonId"
+                        name="amenityId"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Amenidad (Opcional)</FormLabel>
@@ -593,8 +613,8 @@ const EditAssetPage = () => {
                               </FormControl>
                               <SelectContent className="z-50">
                                 {amenities?.map((amenity: any) => (
-                                  <SelectItem key={amenity.id} value={amenity.id.toString()}>
-                                    {amenity.name}
+                                  <SelectItem key={amenity.amenityId || amenity.id} value={(amenity.amenityId || amenity.id).toString()}>
+                                    {amenity.amenity?.name || amenity.name || 'Amenidad sin nombre'}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
