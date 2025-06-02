@@ -139,12 +139,17 @@ export default function EditAssetEnhanced() {
         body: JSON.stringify(updateData),
       });
 
+      console.log('Status de respuesta:', response.status);
+      console.log('Headers de respuesta:', Object.fromEntries(response.headers.entries()));
+
       if (!response.ok) {
-        throw new Error(`Error HTTP: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Error del servidor:', errorText);
+        throw new Error(`Error HTTP ${response.status}: ${errorText}`);
       }
 
       const result = await response.json();
-      console.log('Resultado:', result);
+      console.log('Resultado exitoso:', result);
 
       setSuccess('Activo actualizado correctamente');
       
