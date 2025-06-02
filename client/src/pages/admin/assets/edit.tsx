@@ -189,6 +189,7 @@ const EditAssetPage = () => {
         serialNumber: asset.serialNumber || '',
         parkId: asset.parkId,
         categoryId: asset.categoryId,
+        amenityId: asset.amenityId,
         status: asset.status || '',
         condition: asset.condition || '',
         acquisitionDate: asset.acquisitionDate || '',
