@@ -1,6 +1,7 @@
 import { db, pool } from './db';
 import { eq, sql } from "drizzle-orm";
 import * as schema from "@shared/schema";
+import { assets, assetCategories, assetMaintenances, assetHistory } from "@shared/asset-schema";
 
 const {
   users,
@@ -737,8 +738,8 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAsset(id: number): Promise<boolean> {
     try {
-      const result = await pool.query('DELETE FROM assets WHERE id = $1', [id]);
-      return result.rowCount > 0;
+      const result = await db.delete(assets).where(eq(assets.id, id));
+      return (result.rowCount || 0) > 0;
     } catch (error) {
       console.error(`Error al eliminar activo ${id}:`, error);
       return false;
