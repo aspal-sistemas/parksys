@@ -11,7 +11,9 @@ import {
   AlertTriangle,
   MapPin,
   User,
-  Eye
+  Eye,
+  Edit,
+  Trash2
 } from 'lucide-react';
 
 import AdminLayout from '@/components/AdminLayout';
@@ -216,6 +218,17 @@ const AssetsPage: React.FC = () => {
   const handleViewAsset = (assetId: number) => {
     setLocation(`/admin/assets/${assetId}`);
   };
+
+  const handleEditAsset = (assetId: number) => {
+    setLocation(`/admin/assets/edit/${assetId}`);
+  };
+
+  const handleDeleteAsset = (assetId: number) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este activo? Esta acción no se puede deshacer.')) {
+      // Implementar la eliminación aquí
+      console.log('Eliminar activo:', assetId);
+    }
+  };
   
   // Función para limpiar todos los filtros
   const clearFilters = () => {
@@ -321,7 +334,10 @@ const AssetsPage: React.FC = () => {
               {isLoading ? (
                 <Skeleton className="h-8 w-24" />
               ) : (
-                `$${assets?.reduce((total, asset) => total + (asset.acquisition_cost || 0), 0).toLocaleString('es-MX')}`
+                `$${assets?.reduce((total, asset) => {
+                  const cost = asset.current_value || asset.acquisition_cost || 0;
+                  return total + (typeof cost === 'number' ? cost : 0);
+                }, 0).toLocaleString('es-MX')}`
               )}
             </div>
           </CardContent>
@@ -521,7 +537,7 @@ const AssetsPage: React.FC = () => {
                         }
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -530,6 +546,24 @@ const AssetsPage: React.FC = () => {
                           >
                             <Eye className="h-4 w-4" />
                             <span className="sr-only">Ver detalles</span>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-100"
+                            onClick={() => handleEditAsset(asset.id)}
+                          >
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Editar activo</span>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-800 hover:bg-red-100"
+                            onClick={() => handleDeleteAsset(asset.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Eliminar activo</span>
                           </Button>
                           <Button
                             variant="ghost"
