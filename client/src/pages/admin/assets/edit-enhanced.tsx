@@ -69,7 +69,13 @@ export default function EditAssetEnhanced() {
         setParkId(asset.parkId ? String(asset.parkId) : '');
         setCategoryId(asset.categoryId ? String(asset.categoryId) : '');
         setLocationDesc(asset.locationDescription || '');
-        setAcquisitionDate(asset.acquisitionDate || '');
+        // Corregir manejo de fechas para evitar problemas de zona horaria
+        if (asset.acquisitionDate) {
+          const date = new Date(asset.acquisitionDate + 'T00:00:00');
+          setAcquisitionDate(date.toISOString().split('T')[0]);
+        } else {
+          setAcquisitionDate('');
+        }
       })
       .catch(err => {
         console.error('Error al cargar activo:', err);
