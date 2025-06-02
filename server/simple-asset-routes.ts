@@ -63,6 +63,7 @@ router.put("/assets/:id", async (req: Request, res: Response) => {
     if (req.body.location !== undefined) updateData.location = req.body.location;
     if (req.body.notes !== undefined) updateData.notes = req.body.notes;
     if (req.body.serialNumber !== undefined) updateData.serialNumber = req.body.serialNumber;
+    if (req.body.acquisitionDate !== undefined) updateData.acquisitionDate = req.body.acquisitionDate;
     if (req.body.amenityId !== undefined) {
       console.log("=== PROCESANDO AMENITY ID ===");
       console.log("Valor recibido:", req.body.amenityId);
