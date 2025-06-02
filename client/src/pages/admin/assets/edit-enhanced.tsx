@@ -98,6 +98,9 @@ export default function EditAssetEnhanced() {
       .catch(err => console.error('Error al cargar categorías:', err));
   }, [id]);
 
+  // Estado para controlar si ya se cargaron los datos iniciales del activo
+  const [assetDataLoaded, setAssetDataLoaded] = useState(false);
+  
   // Cargar amenidades cuando cambie el parque seleccionado
   useEffect(() => {
     if (parkId) {
@@ -107,23 +110,30 @@ export default function EditAssetEnhanced() {
         .catch(err => console.error('Error al cargar amenidades:', err));
     } else {
       setAmenities([]);
-      setAmenityId('');
-      setLocationDesc('');
+      if (assetDataLoaded) {
+        // Solo limpiar si ya se cargaron los datos del activo (cambio manual)
+        setAmenityId('');
+        setLocationDesc('');
+      }
     }
-  }, [parkId]);
+  }, [parkId, assetDataLoaded]);
 
-  // Efecto separado para manejar el reseteo solo cuando el usuario cambie de parque manualmente
-  const [initialLoad, setInitialLoad] = useState(true);
+  // Marcar cuando se carguen los datos del activo por primera vez
   useEffect(() => {
-    if (!initialLoad && parkId) {
-      // Solo limpiar si no es la carga inicial (es decir, el usuario cambió el parque)
+    if (name && !assetDataLoaded) {
+      setAssetDataLoaded(true);
+    }
+  }, [name, assetDataLoaded]);
+
+  // Función para manejar el cambio manual de parque
+  const handleParkChange = (newParkId: string) => {
+    setParkId(newParkId);
+    if (assetDataLoaded) {
+      // Solo limpiar si ya se cargaron los datos del activo (cambio manual)
       setAmenityId('');
       setLocationDesc('');
     }
-    if (initialLoad) {
-      setInitialLoad(false);
-    }
-  }, [parkId, initialLoad]);
+  };
 
   // Función para manejar el cambio de amenidad y actualizar la descripción de ubicación
   const handleAmenityChange = (selectedAmenityId: string) => {
@@ -281,7 +291,7 @@ export default function EditAssetEnhanced() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Parque *</Label>
-                <Select value={parkId} onValueChange={setParkId}>
+                <Select value={parkId} onValueChange={handleParkChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar parque" />
                   </SelectTrigger>
