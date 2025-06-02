@@ -259,10 +259,9 @@ const AssetsPage: React.FC = () => {
     setLocation(`/admin/assets/edit/${assetId}`);
   };
 
-  const handleDeleteAsset = (assetId: number) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este activo? Esta acción no se puede deshacer.')) {
-      // Implementar la eliminación aquí
-      console.log('Eliminar activo:', assetId);
+  const handleDeleteAsset = (assetId: number, assetName: string) => {
+    if (window.confirm(`¿Estás seguro de que deseas eliminar el activo "${assetName}"? Esta acción no se puede deshacer.`)) {
+      deleteAssetMutation.mutate(assetId);
     }
   };
   
@@ -596,7 +595,7 @@ const AssetsPage: React.FC = () => {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0 text-red-600 hover:text-red-800 hover:bg-red-100"
-                            onClick={() => handleDeleteAsset(asset.id)}
+                            onClick={() => handleDeleteAsset(asset.id, asset.name)}
                           >
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Eliminar activo</span>
