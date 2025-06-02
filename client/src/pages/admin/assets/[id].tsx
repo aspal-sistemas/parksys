@@ -74,7 +74,9 @@ import { Separator } from '@/components/ui/separator';
 // Función para formatear fechas
 const formatDate = (dateString: string | null) => {
   if (!dateString) return 'N/A';
-  return new Date(dateString).toLocaleDateString('es-MX', {
+  // Agregar tiempo para evitar problemas de zona horaria
+  const date = new Date(dateString + 'T00:00:00');
+  return date.toLocaleDateString('es-MX', {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
