@@ -256,7 +256,10 @@ const EditAssetPage = () => {
     // Convertir "none" a null para amenityId antes de enviar
     const processedData = {
       ...data,
-      amenityId: data.amenityId === "none" ? null : data.amenityId
+      amenityId: data.amenityId === "none" ? null : data.amenityId,
+      // Incluir las coordenadas del mapa si están seleccionadas
+      latitude: selectedPosition ? selectedPosition[0] : data.latitude,
+      longitude: selectedPosition ? selectedPosition[1] : data.longitude
     };
     updateMutation.mutate(processedData);
   };
