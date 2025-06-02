@@ -346,6 +346,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/edit-basic')))}
           </Suspense>
         </Route>
+        <Route path="/admin/assets/:id/edit-enhanced">
+          <Suspense fallback={<div className="p-8 text-center">Cargando editor mejorado...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/edit-enhanced')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/assets/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando detalles del activo...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/[id]')))}
