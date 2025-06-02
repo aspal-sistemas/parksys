@@ -272,12 +272,16 @@ const EditAssetPage = () => {
   // Efecto para auto-completar descripción de ubicación basada en amenidad seleccionada
   useEffect(() => {
     const amenityId = form.watch('amenityId');
-    if (amenityId && amenities) {
+    if (amenityId === "" || amenityId === null || amenityId === undefined) {
+      // Si no hay amenidad seleccionada, usar "Sin amenidad"
+      form.setValue('location', 'Sin amenidad');
+    } else if (amenityId && amenities) {
       const selectedAmenity = amenities.find((amenity: any) => amenity.amenityId === parseInt(amenityId) || amenity.id === parseInt(amenityId));
       if (selectedAmenity) {
         const amenityName = selectedAmenity.amenityName || selectedAmenity.name;
         if (amenityName) {
-          form.setValue('location', `Cerca de ${amenityName.toLowerCase()}`);
+          // Usar exactamente el mismo texto que se muestra en el dropdown
+          form.setValue('location', amenityName);
         }
       }
     }
@@ -608,13 +612,14 @@ const EditAssetPage = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Amenidad (Opcional)</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                            <Select onValueChange={field.onChange} value={field.value?.toString() || ""}>
                               <FormControl>
                                 <SelectTrigger className="z-50">
                                   <SelectValue placeholder="Seleccionar amenidad" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent className="z-50">
+                                <SelectItem value="">Sin amenidad</SelectItem>
                                 {amenities?.map((amenity: any) => (
                                   <SelectItem key={amenity.amenityId || amenity.id} value={(amenity.amenityId || amenity.id).toString()}>
                                     {amenity.amenityName || amenity.name || 'Amenidad sin nombre'}
