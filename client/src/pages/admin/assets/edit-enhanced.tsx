@@ -120,12 +120,12 @@ export default function EditAssetEnhanced() {
         description: description.trim(),
         serialNumber: serialNumber.trim(),
         notes: notes.trim(),
-        acquisitionCost: cost ? parseFloat(cost) : undefined,
+        acquisitionCost: cost ? cost.trim() : undefined, // Enviar como string
         status,
         condition,
         parkId: parseInt(parkId),
         categoryId: parseInt(categoryId),
-        locationDescription: location.trim(),
+        location: location.trim(), // Cambiar de locationDescription a location
         acquisitionDate: acquisitionDate || undefined
       };
 
