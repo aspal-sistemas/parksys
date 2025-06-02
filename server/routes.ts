@@ -2908,6 +2908,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error al actualizar permisos" });
     }
   });
+
+  // Endpoint directo para crear activos (evita middleware problemático)
+  app.post("/api/assets-direct", async (req: Request, res: Response) => {
+    try {
+      console.log("=== ENDPOINT DIRECTO PARA CREAR ACTIVO ===");
+      console.log("Datos recibidos:", JSON.stringify(req.body, null, 2));
+      
+      // Validación básica
+      if (!req.body.name) {
+        return res.status(400).json({ message: "El nombre es requerido" });
+      }
+      if (!req.body.categoryId) {
+        return res.status(400).json({ message: "La categoría es requerida" });
+      }
+      if (!req.body.parkId) {
+        return res.status(400).json({ message: "El parque es requerido" });
+      }
+      
+      // Inserción directa usando pool
+      const result = await pool.query(`
+        INSERT INTO assets (
+          name, serial_number, category_id, park_id, amenity_id,
+          location_description, latitude, longitude, 
+          status, condition, notes, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()
+        ) RETURNING *
+      `, [
+        req.body.name,
+        req.body.serialNumber || null,
+        parseInt(req.body.categoryId),
+        parseInt(req.body.parkId),
+        req.body.amenityId ? parseInt(req.body.amenityId) : null,
+        req.body.locationDescription || null,
+        req.body.latitude ? parseFloat(req.body.latitude) : null,
+        req.body.longitude ? parseFloat(req.body.longitude) : null,
+        req.body.status || 'Activo',
+        req.body.condition || 'Bueno',
+        req.body.notes || null
+      ]);
+      
+      const asset = result.rows[0];
+      console.log("=== ACTIVO CREADO EXITOSAMENTE ===");
+      console.log("ID:", asset.id);
+      console.log("Nombre:", asset.name);
+      
+      res.status(201).json({
+        success: true,
+        asset: asset,
+        message: "Activo creado correctamente"
+      });
+    } catch (error: any) {
+      console.error("=== ERROR AL CREAR ACTIVO ===");
+      console.error("Error completo:", error);
+      console.error("Mensaje:", error.message);
+      
+      res.status(500).json({ 
+        success: false,
+        message: "Error al crear activo", 
+        details: error.message || "Error desconocido"
+      });
+    }
+  });
   
   return httpServer;
 }

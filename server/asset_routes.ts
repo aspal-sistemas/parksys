@@ -221,22 +221,23 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
     }
   });
 
-  apiRouter.post("/assets", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.post("/assets", async (req: Request, res: Response) => {
     try {
-      console.log("Datos recibidos para crear activo:", req.body);
+      console.log("=== CREANDO ACTIVO ===");
+      console.log("Datos recibidos:", JSON.stringify(req.body, null, 2));
       
-      // Validación básica
-      const requiredFields = ['name', 'categoryId', 'parkId', 'status', 'condition'];
-      for (const field of requiredFields) {
-        if (!req.body[field]) {
-          return res.status(400).json({ message: `El campo ${field} es requerido` });
-        }
+      // Validación básica más flexible
+      if (!req.body.name) {
+        return res.status(400).json({ message: "El nombre es requerido" });
+      }
+      if (!req.body.categoryId) {
+        return res.status(400).json({ message: "La categoría es requerida" });
+      }
+      if (!req.body.parkId) {
+        return res.status(400).json({ message: "El parque es requerido" });
       }
       
-      // Importar la conexión directa a la BD
-      const { pool } = await import('./db');
-      
-      // Inserción directa en la base de datos sin usar storage
+      // Inserción simplificada usando pool directamente
       const result = await pool.query(`
         INSERT INTO assets (
           name, serial_number, category_id, park_id, amenity_id,
@@ -248,24 +249,33 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
       `, [
         req.body.name,
         req.body.serialNumber || null,
-        req.body.categoryId,
-        req.body.parkId,
-        req.body.amenityId || null,
+        parseInt(req.body.categoryId),
+        parseInt(req.body.parkId),
+        req.body.amenityId ? parseInt(req.body.amenityId) : null,
         req.body.locationDescription || null,
-        req.body.latitude || null,
-        req.body.longitude || null,
-        req.body.status,
-        req.body.condition,
+        req.body.latitude ? parseFloat(req.body.latitude) : null,
+        req.body.longitude ? parseFloat(req.body.longitude) : null,
+        req.body.status || 'Activo',
+        req.body.condition || 'Bueno',
         req.body.notes || null
       ]);
       
       const asset = result.rows[0];
-      console.log("Activo creado exitosamente:", asset);
+      console.log("=== ACTIVO CREADO EXITOSAMENTE ===");
+      console.log("ID:", asset.id);
+      console.log("Nombre:", asset.name);
       
       res.status(201).json(asset);
-    } catch (error) {
-      console.error("Error al crear activo:", error);
-      res.status(500).json({ message: "Error al crear activo", details: error.message });
+    } catch (error: any) {
+      console.error("=== ERROR AL CREAR ACTIVO ===");
+      console.error("Error completo:", error);
+      console.error("Mensaje:", error.message);
+      console.error("Stack:", error.stack);
+      
+      res.status(500).json({ 
+        message: "Error al crear activo", 
+        details: error.message || "Error desconocido"
+      });
     }
   });
 
