@@ -225,7 +225,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
     try {
       console.log("Datos recibidos para crear activo:", req.body);
       
-      // Validación básica sin usar el schema de Drizzle
+      // Validación básica
       const requiredFields = ['name', 'categoryId', 'parkId', 'status', 'condition'];
       for (const field of requiredFields) {
         if (!req.body[field]) {
@@ -233,25 +233,39 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
         }
       }
       
-      // Verificar que exista el parque
-      const park = await storage.getPark(req.body.parkId);
-      if (!park) {
-        return res.status(400).json({ message: "El parque especificado no existe" });
-      }
+      // Importar la conexión directa a la BD
+      const { pool } = await import('./db');
       
-      // Verificar que exista la categoría
-      const category = await storage.getAssetCategory(req.body.categoryId);
-      if (!category) {
-        return res.status(400).json({ message: "La categoría especificada no existe" });
-      }
+      // Inserción directa en la base de datos sin usar storage
+      const result = await pool.query(`
+        INSERT INTO assets (
+          name, serial_number, category_id, park_id, amenity_id,
+          location_description, latitude, longitude, 
+          status, condition, notes, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()
+        ) RETURNING *
+      `, [
+        req.body.name,
+        req.body.serialNumber || null,
+        req.body.categoryId,
+        req.body.parkId,
+        req.body.amenityId || null,
+        req.body.locationDescription || null,
+        req.body.latitude || null,
+        req.body.longitude || null,
+        req.body.status,
+        req.body.condition,
+        req.body.notes || null
+      ]);
       
-      const asset = await storage.createAsset(req.body);
+      const asset = result.rows[0];
       console.log("Activo creado exitosamente:", asset);
       
       res.status(201).json(asset);
     } catch (error) {
       console.error("Error al crear activo:", error);
-      res.status(500).json({ message: "Error al crear activo" });
+      res.status(500).json({ message: "Error al crear activo", details: error.message });
     }
   });
 

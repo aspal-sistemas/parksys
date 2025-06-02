@@ -640,43 +640,32 @@ export class DatabaseStorage implements IStorage {
 
   async createAsset(assetData: any): Promise<any> {
     try {
+      console.log("Datos recibidos en createAsset:", assetData);
+      
+      // Crear una inserción más simple con solo los campos requeridos
       const result = await pool.query(`
         INSERT INTO assets (
           name, serial_number, category_id, park_id, amenity_id,
-          location_description, latitude, longitude, acquisition_date,
-          acquisition_cost, current_value, manufacturer, model,
-          status, condition, maintenance_frequency, last_maintenance_date,
-          next_maintenance_date, expected_lifespan, notes, qr_code,
-          responsible_person_id, created_at, updated_at
+          location_description, latitude, longitude, 
+          status, condition, notes, created_at, updated_at
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
-          $14, $15, $16, $17, $18, $19, $20, $21, $22, NOW(), NOW()
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()
         ) RETURNING *
       `, [
         assetData.name,
-        assetData.serialNumber || assetData.serial_number,
+        assetData.serialNumber || assetData.serial_number || null,
         assetData.categoryId || assetData.category_id,
         assetData.parkId || assetData.park_id,
         assetData.amenityId || assetData.amenity_id || null,
-        assetData.locationDescription || assetData.location_description,
-        assetData.latitude,
-        assetData.longitude,
-        assetData.acquisitionDate || assetData.acquisition_date,
-        assetData.acquisitionCost || assetData.acquisition_cost,
-        assetData.currentValue || assetData.current_value,
-        assetData.manufacturer,
-        assetData.model,
-        assetData.status,
-        assetData.condition,
-        assetData.maintenanceFrequency || assetData.maintenance_frequency,
-        assetData.lastMaintenanceDate || assetData.last_maintenance_date,
-        assetData.nextMaintenanceDate || assetData.next_maintenance_date,
-        assetData.expectedLifespan || assetData.expected_lifespan,
-        assetData.notes,
-        assetData.qrCode || assetData.qr_code,
-        assetData.responsiblePersonId || assetData.responsible_person_id
+        assetData.locationDescription || assetData.location_description || null,
+        assetData.latitude || null,
+        assetData.longitude || null,
+        assetData.status || 'Activo',
+        assetData.condition || 'Bueno',
+        assetData.notes || null
       ]);
 
+      console.log("Activo creado exitosamente:", result.rows[0]);
       return result.rows[0];
     } catch (error) {
       console.error("Error al crear activo:", error);
