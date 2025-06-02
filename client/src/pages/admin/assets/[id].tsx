@@ -468,7 +468,7 @@ const AssetDetailPage: React.FC = () => {
             Registrar Mantenimiento
           </Button>
           <Button 
-            onClick={() => window.location.href = `/admin/assets/${id}/edit`} 
+            onClick={() => window.location.href = `/admin/assets/${id}/edit-enhanced`} 
             variant="outline"
           >
             <Edit className="mr-2 h-4 w-4" />
