@@ -333,7 +333,7 @@ function Router() {
         </Route>
         <Route path="/admin/assets/:id/edit">
           <Suspense fallback={<div className="p-8 text-center">Cargando editor de activo...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/assets/edit')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/[id]/edit')))}
           </Suspense>
         </Route>
         <Route path="/admin/assets/:id">

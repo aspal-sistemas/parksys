@@ -256,7 +256,7 @@ const AssetsPage: React.FC = () => {
   };
 
   const handleEditAsset = (assetId: number) => {
-    setLocation(`/admin/assets/edit/${assetId}`);
+    setLocation(`/admin/assets/${assetId}/edit`);
   };
 
   const handleDeleteAsset = (assetId: number, assetName: string) => {
