@@ -70,8 +70,8 @@ const assetSchema = z.object({
   warrantyExpirationDate: z.string().optional(),
   maintenanceSchedule: z.string().optional(),
   location: z.string().optional(),
-  latitude: z.coerce.number().optional(),
-  longitude: z.coerce.number().optional(),
+  latitude: z.string().optional(),
+  longitude: z.string().optional(),
   responsiblePersonId: z.coerce.number().optional(),
   notes: z.string().optional(),
 });
