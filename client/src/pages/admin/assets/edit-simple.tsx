@@ -402,11 +402,46 @@ export default function EditAssetSimple() {
               Cancelar
             </Button>
             <Button 
-              onClick={handleSubmit}
+              onClick={() => {
+                console.log("=== BOTÓN CLICKEADO ===");
+                handleSubmit();
+              }}
               disabled={updateMutation.isPending}
             >
               {updateMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
               <Save className="ml-2 h-4 w-4" />
+            </Button>
+            <Button 
+              onClick={() => {
+                console.log("=== PRUEBA DIRECTA ===");
+                console.log("ID:", id);
+                console.log("Formulario:", formData);
+                
+                const testData = {
+                  name: formData.name + " (Actualizado)",
+                  description: formData.description,
+                  serialNumber: formData.serialNumber,
+                  parkId: Number(formData.parkId),
+                  categoryId: Number(formData.categoryId),
+                  amenityId: null,
+                  status: "activo",
+                  condition: "bueno",
+                  acquisitionDate: null,
+                  acquisitionCost: 2500.00,
+                  currentValue: null,
+                  location: null,
+                  latitude: null,
+                  longitude: null,
+                  notes: "Actualizado desde formulario simple"
+                };
+                
+                console.log("Enviando datos de prueba:", testData);
+                updateMutation.mutate(testData);
+              }}
+              variant="secondary"
+              disabled={updateMutation.isPending}
+            >
+              Prueba Directa
             </Button>
           </div>
         </CardContent>
