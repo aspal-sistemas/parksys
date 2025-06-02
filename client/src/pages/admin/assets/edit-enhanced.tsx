@@ -105,10 +105,13 @@ export default function EditAssetEnhanced() {
         .then(res => res.json())
         .then(data => setAmenities(data))
         .catch(err => console.error('Error al cargar amenidades:', err));
+      
+      // Limpiar amenidad y descripción al cambiar de parque
+      setAmenityId('');
+      setLocationDesc('');
     } else {
       setAmenities([]);
       setAmenityId('');
-      // Limpiar descripción de ubicación cuando no hay parque seleccionado
       setLocationDesc('');
     }
   }, [parkId]);
