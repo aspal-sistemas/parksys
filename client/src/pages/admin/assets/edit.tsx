@@ -253,6 +253,11 @@ const EditAssetPage = () => {
   
   // Manejar envío del formulario
   const onSubmit = (data: AssetFormValues) => {
+    console.log("=== DATOS DEL FORMULARIO ===");
+    console.log("Datos originales del formulario:", data);
+    console.log("Posición seleccionada en mapa:", selectedPosition);
+    console.log("Errores del formulario:", form.formState.errors);
+    
     // Convertir "none" a null para amenityId antes de enviar
     const processedData = {
       ...data,
@@ -261,6 +266,8 @@ const EditAssetPage = () => {
       latitude: selectedPosition ? selectedPosition[0].toString() : data.latitude,
       longitude: selectedPosition ? selectedPosition[1].toString() : data.longitude
     };
+    
+    console.log("Datos procesados para enviar:", processedData);
     updateMutation.mutate(processedData);
   };
 
