@@ -621,11 +621,6 @@ export class DatabaseStorage implements IStorage {
       query += ` ORDER BY a.created_at DESC`;
       
       const result = await pool.query(query, params);
-      console.log("=== DEBUG GETASSETS ===");
-      console.log("Query ejecutada:", query);
-      console.log("Parámetros:", params);
-      console.log("Número de activos encontrados:", result.rows?.length || 0);
-      console.log("Primeros 3 activos:", result.rows?.slice(0, 3).map(r => ({id: r.id, name: r.name})));
       return result.rows || [];
     } catch (error) {
       console.error("Error al obtener activos:", error);
