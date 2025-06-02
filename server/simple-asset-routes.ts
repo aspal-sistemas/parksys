@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { db } from "./db";
 import { assets } from "../shared/asset-schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const router = express.Router();
 
@@ -108,6 +108,26 @@ router.put("/assets/:id", async (req: Request, res: Response) => {
       message: "Error al actualizar activo", 
       error: error instanceof Error ? error.message : "Error desconocido"
     });
+  }
+});
+
+// Endpoint para obtener amenidades de un parque específico
+router.get("/parks/:parkId/amenities", async (req: Request, res: Response) => {
+  try {
+    const parkId = parseInt(req.params.parkId);
+    
+    const result = await db.execute(sql`
+      SELECT a.id, a.name, a.icon, a.category
+      FROM amenities a
+      INNER JOIN park_amenities pa ON a.id = pa.amenity_id
+      WHERE pa.park_id = ${parkId}
+      ORDER BY a.name
+    `);
+    
+    res.json(result.rows || []);
+  } catch (error) {
+    console.error('Error al obtener amenidades del parque:', error);
+    res.status(500).json({ message: 'Error al obtener amenidades del parque' });
   }
 });
 

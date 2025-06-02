@@ -30,10 +30,12 @@ export default function EditAssetEnhanced() {
   const [categoryId, setCategoryId] = useState('');
   const [location, setLocationDesc] = useState('');
   const [acquisitionDate, setAcquisitionDate] = useState('');
+  const [amenityId, setAmenityId] = useState('');
   
   // Estados para datos de selección
   const [parks, setParks] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [amenities, setAmenities] = useState([]);
 
   // Opciones de estado y condición
   const statusOptions = [
@@ -69,6 +71,7 @@ export default function EditAssetEnhanced() {
         setParkId(asset.parkId ? String(asset.parkId) : '');
         setCategoryId(asset.categoryId ? String(asset.categoryId) : '');
         setLocationDesc(asset.locationDescription || '');
+        setAmenityId(asset.amenityId ? String(asset.amenityId) : '');
         // Corregir manejo de fechas para evitar problemas de zona horaria
         if (asset.acquisitionDate) {
           const date = new Date(asset.acquisitionDate + 'T00:00:00');
@@ -94,6 +97,31 @@ export default function EditAssetEnhanced() {
       .then(data => setCategories(data))
       .catch(err => console.error('Error al cargar categorías:', err));
   }, [id]);
+
+  // Cargar amenidades cuando cambie el parque seleccionado
+  useEffect(() => {
+    if (parkId) {
+      fetch(`/api/parks/${parkId}/amenities`)
+        .then(res => res.json())
+        .then(data => setAmenities(data))
+        .catch(err => console.error('Error al cargar amenidades:', err));
+    } else {
+      setAmenities([]);
+      setAmenityId('');
+    }
+  }, [parkId]);
+
+  // Función para manejar el cambio de amenidad y actualizar la descripción de ubicación
+  const handleAmenityChange = (selectedAmenityId) => {
+    setAmenityId(selectedAmenityId);
+    
+    if (selectedAmenityId && selectedAmenityId !== 'none') {
+      const selectedAmenity = amenities.find(a => a.id === parseInt(selectedAmenityId));
+      if (selectedAmenity) {
+        setLocationDesc(selectedAmenity.name);
+      }
+    }
+  };
 
   const handleSave = async () => {
     if (!id) {
