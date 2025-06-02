@@ -248,7 +248,7 @@ const EditAssetPage = () => {
     updateMutation.mutate(processedData);
   };
 
-  // Efecto para centrar el mapa cuando cambia el parque o cuando se carga el activo
+  // Efecto para centrar el mapa cuando cambia el parque seleccionado
   useEffect(() => {
     if (selectedParkId && parks) {
       const selectedPark = parks.find((park: any) => park.id === selectedParkId);
@@ -256,23 +256,23 @@ const EditAssetPage = () => {
         const parkLat = parseFloat(selectedPark.latitude);
         const parkLng = parseFloat(selectedPark.longitude);
         if (!isNaN(parkLat) && !isNaN(parkLng)) {
-          // Si el activo tiene coordenadas, usar las del activo, sino las del parque
-          if (asset && asset.latitude && asset.longitude) {
-            const assetLat = parseFloat(asset.latitude);
-            const assetLng = parseFloat(asset.longitude);
-            if (!isNaN(assetLat) && !isNaN(assetLng)) {
-              setMapCenter([assetLat, assetLng]);
-              if (!selectedPosition) {
-                setSelectedPosition([assetLat, assetLng]);
-              }
-            }
-          } else {
-            setMapCenter([parkLat, parkLng]);
-          }
+          setMapCenter([parkLat, parkLng]);
         }
       }
     }
-  }, [selectedParkId, parks, asset, selectedPosition]);
+  }, [selectedParkId, parks]);
+
+  // Efecto para centrar el mapa en las coordenadas del activo cuando se carga
+  useEffect(() => {
+    if (asset && asset.latitude && asset.longitude && parks) {
+      const assetLat = parseFloat(asset.latitude);
+      const assetLng = parseFloat(asset.longitude);
+      if (!isNaN(assetLat) && !isNaN(assetLng)) {
+        setMapCenter([assetLat, assetLng]);
+        setSelectedPosition([assetLat, assetLng]);
+      }
+    }
+  }, [asset, parks]);
 
   // Efecto para auto-completar descripción de ubicación basada en amenidad seleccionada
   useEffect(() => {
