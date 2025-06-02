@@ -229,20 +229,21 @@ const CreateAssetPage: React.FC = () => {
       return apiRequest('/api/assets-direct', 'POST', newAsset);
     },
     onSuccess: (data) => {
-      // Invalidar múltiples queries relacionadas con activos
+      // Invalidar cache de forma más agresiva
       queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
       queryClient.invalidateQueries({ queryKey: ['/api/asset-categories'] });
-      queryClient.refetchQueries({ queryKey: ['/api/assets'] });
+      queryClient.removeQueries({ queryKey: ['/api/assets'] });
       
       toast({
         title: "Activo creado",
         description: "El activo se ha creado correctamente.",
       });
       
-      // Navegar al listado de activos con un pequeño delay para asegurar que se actualice
+      // Navegar al listado de activos y forzar recarga de página
+      setLocation('/admin/assets');
       setTimeout(() => {
-        setLocation('/admin/assets');
-      }, 500);
+        window.location.reload();
+      }, 100);
     },
     onError: (error) => {
       toast({
