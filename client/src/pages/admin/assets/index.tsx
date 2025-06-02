@@ -135,9 +135,10 @@ const AssetsPage: React.FC = () => {
   const [selectedPark, setSelectedPark] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('all');
   
-  // Consultar datos de activos con cache deshabilitado temporalmente
+  // Consultar datos de activos con timestamp único para evitar cache
   const { data: assets, isLoading, isError } = useQuery<Asset[]>({
-    queryKey: ['/api/assets'],
+    queryKey: ['/api/assets', Date.now()],
+    queryFn: () => fetch(`/api/assets?t=${Date.now()}`).then(res => res.json()),
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
