@@ -135,9 +135,12 @@ const AssetsPage: React.FC = () => {
   const [selectedPark, setSelectedPark] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('all');
   
-  // Consultar datos de activos
+  // Consultar datos de activos con cache deshabilitado temporalmente
   const { data: assets, isLoading, isError } = useQuery<Asset[]>({
     queryKey: ['/api/assets'],
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
   
   // Consultar datos de categorías
