@@ -164,7 +164,12 @@ const AssetsPage: React.FC = () => {
   const filteredAssets = React.useMemo(() => {
     if (!assets) return [];
     
-    return assets.filter((asset) => {
+    console.log("=== DEBUG FRONTEND FILTERING ===");
+    console.log("Total assets received:", assets.length);
+    console.log("First asset sample:", assets[0]);
+    console.log("Active filters:", { searchTerm, selectedStatus, selectedCondition, selectedCategory, selectedPark, activeTab });
+    
+    const filtered = assets.filter((asset) => {
       // Filtrar por término de búsqueda
       const matchesSearch = 
         searchTerm === '' ||
@@ -195,6 +200,13 @@ const AssetsPage: React.FC = () => {
       
       return matchesSearch && matchesStatus && matchesCondition && matchesCategory && matchesPark && matchesTab;
     });
+    
+    console.log("Filtered assets count:", filtered.length);
+    if (filtered.length < assets.length) {
+      console.log("Some assets were filtered out. First filtered asset:", filtered[0]);
+    }
+    
+    return filtered;
   }, [assets, searchTerm, selectedStatus, selectedCondition, selectedCategory, selectedPark, activeTab]);
   
   // Número de activos que requieren mantenimiento
