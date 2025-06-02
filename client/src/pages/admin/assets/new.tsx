@@ -563,7 +563,7 @@ const CreateAssetPage: React.FC = () => {
                             <SelectTrigger>
                               <SelectValue placeholder="Seleccione una amenidad" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="z-[1001]">
                               <SelectItem value="0">Sin amenidad específica</SelectItem>
                               {amenities && Array.isArray(amenities) ? amenities
                                 .filter((amenity: any) => amenity.amenityId && amenity.amenityName)
@@ -618,7 +618,7 @@ const CreateAssetPage: React.FC = () => {
                             <SelectTrigger>
                               <SelectValue placeholder="Seleccione un responsable" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="z-[1001]">
                               <SelectItem value="none">Sin responsable asignado</SelectItem>
                               {users && Array.isArray(users) ? users.map((user: any) => (
                                 <SelectItem key={user.id} value={user.id.toString()}>
