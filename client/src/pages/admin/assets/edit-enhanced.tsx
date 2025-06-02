@@ -105,16 +105,25 @@ export default function EditAssetEnhanced() {
         .then(res => res.json())
         .then(data => setAmenities(data))
         .catch(err => console.error('Error al cargar amenidades:', err));
-      
-      // Limpiar amenidad y descripción al cambiar de parque
-      setAmenityId('');
-      setLocationDesc('');
     } else {
       setAmenities([]);
       setAmenityId('');
       setLocationDesc('');
     }
   }, [parkId]);
+
+  // Efecto separado para manejar el reseteo solo cuando el usuario cambie de parque manualmente
+  const [initialLoad, setInitialLoad] = useState(true);
+  useEffect(() => {
+    if (!initialLoad && parkId) {
+      // Solo limpiar si no es la carga inicial (es decir, el usuario cambió el parque)
+      setAmenityId('');
+      setLocationDesc('');
+    }
+    if (initialLoad) {
+      setInitialLoad(false);
+    }
+  }, [parkId, initialLoad]);
 
   // Función para manejar el cambio de amenidad y actualizar la descripción de ubicación
   const handleAmenityChange = (selectedAmenityId: string) => {
