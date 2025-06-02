@@ -129,8 +129,6 @@ export default function EditAssetEnhanced() {
         acquisitionDate: acquisitionDate || undefined
       };
 
-      console.log('Enviando datos:', updateData);
-
       const response = await fetch(`/api/assets/${id}`, {
         method: 'PUT',
         headers: {
@@ -139,17 +137,12 @@ export default function EditAssetEnhanced() {
         body: JSON.stringify(updateData),
       });
 
-      console.log('Status de respuesta:', response.status);
-      console.log('Headers de respuesta:', Object.fromEntries(response.headers.entries()));
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error del servidor:', errorText);
         throw new Error(`Error HTTP ${response.status}: ${errorText}`);
       }
 
       const result = await response.json();
-      console.log('Resultado exitoso:', result);
 
       setSuccess('Activo actualizado correctamente');
       
