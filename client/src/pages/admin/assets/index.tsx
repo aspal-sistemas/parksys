@@ -110,20 +110,20 @@ interface Asset {
   id: number;
   name: string;
   description: string | null;
-  serialNumber: string | null;
-  acquisitionDate: string | null;
-  acquisitionCost: number | null;
-  parkId: number;
+  serial_number: string | null;
+  acquisition_date: string | null;
+  acquisition_cost: number | null;
+  park_id: number;
   parkName?: string;
-  categoryId: number;
+  category_id: number;
   categoryName?: string;
   status: string;
   condition: string;
-  location: string | null;
-  lastMaintenanceDate: string | null;
-  nextMaintenanceDate: string | null;
-  createdAt: string;
-  updatedAt: string;
+  location_description: string | null;
+  last_maintenance_date: string | null;
+  next_maintenance_date: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 const AssetsPage: React.FC = () => {
@@ -170,8 +170,8 @@ const AssetsPage: React.FC = () => {
         searchTerm === '' ||
         asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (asset.description && asset.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (asset.serialNumber && asset.serialNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (asset.location && asset.location.toLowerCase().includes(searchTerm.toLowerCase()));
+        (asset.serial_number && asset.serial_number.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (asset.location_description && asset.location_description.toLowerCase().includes(searchTerm.toLowerCase()));
       
       // Filtrar por estado
       const matchesStatus = selectedStatus === '' || asset.status === selectedStatus;
@@ -180,16 +180,16 @@ const AssetsPage: React.FC = () => {
       const matchesCondition = selectedCondition === '' || asset.condition === selectedCondition;
       
       // Filtrar por categoría
-      const matchesCategory = selectedCategory === '' || asset.categoryId.toString() === selectedCategory;
+      const matchesCategory = selectedCategory === '' || asset.category_id.toString() === selectedCategory;
       
       // Filtrar por parque
-      const matchesPark = selectedPark === '' || asset.parkId.toString() === selectedPark;
+      const matchesPark = selectedPark === '' || asset.park_id.toString() === selectedPark;
       
       // Filtrar por pestaña activa
       let matchesTab = true;
       if (activeTab === 'maintenance') {
         const now = new Date();
-        const nextMaintenance = asset.nextMaintenanceDate ? new Date(asset.nextMaintenanceDate) : null;
+        const nextMaintenance = asset.next_maintenance_date ? new Date(asset.next_maintenance_date) : null;
         matchesTab = !!nextMaintenance && nextMaintenance <= now;
       }
       
@@ -489,7 +489,7 @@ const AssetsPage: React.FC = () => {
                       <TableCell>{asset.categoryName}</TableCell>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span>{asset.location || 'N/A'}</span>
+                          <span>{asset.location_description || 'N/A'}</span>
                           <span className="text-xs text-muted-foreground">{asset.parkName}</span>
                         </div>
                       </TableCell>
@@ -503,20 +503,20 @@ const AssetsPage: React.FC = () => {
                           {asset.condition}
                         </Badge>
                       </TableCell>
-                      <TableCell>{formatDate(asset.lastMaintenanceDate)}</TableCell>
+                      <TableCell>{formatDate(asset.last_maintenance_date)}</TableCell>
                       <TableCell>
-                        {asset.nextMaintenanceDate && (
+                        {asset.next_maintenance_date && (
                           <div className="flex items-center">
-                            {new Date(asset.nextMaintenanceDate) <= new Date() && (
+                            {new Date(asset.next_maintenance_date) <= new Date() && (
                               <AlertTriangle className="mr-1 h-4 w-4 text-yellow-500" />
                             )}
-                            {formatDate(asset.nextMaintenanceDate)}
+                            {formatDate(asset.next_maintenance_date)}
                           </div>
                         )}
                       </TableCell>
                       <TableCell>
-                        {asset.acquisitionCost 
-                          ? `$${asset.acquisitionCost.toLocaleString('es-MX')}` 
+                        {asset.acquisition_cost 
+                          ? `$${asset.acquisition_cost.toLocaleString('es-MX')}` 
                           : 'N/A'
                         }
                       </TableCell>
