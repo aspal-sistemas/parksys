@@ -750,6 +750,12 @@ const EditAssetPage = () => {
                   <Button 
                     type="submit" 
                     disabled={updateMutation.isPending}
+                    onClick={() => {
+                      console.log("=== BOTÓN GUARDAR CLICKEADO ===");
+                      console.log("Errores de validación:", form.formState.errors);
+                      console.log("Estado del formulario válido:", form.formState.isValid);
+                      console.log("Valores actuales del formulario:", form.getValues());
+                    }}
                   >
                     {updateMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
                     <Save className="ml-2 h-4 w-4" />
