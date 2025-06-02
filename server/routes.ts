@@ -2915,14 +2915,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("=== ENDPOINT DIRECTO PARA CREAR ACTIVO ===");
       console.log("Datos recibidos:", JSON.stringify(req.body, null, 2));
       
-      // Validación básica
+      // Validación simplificada - solo verificar que existan los campos necesarios
+      const categoryId = req.body.categoryId || req.body.category_id;
+      const parkId = req.body.parkId || req.body.park_id;
+      
+      console.log("Validando campos:");
+      console.log("- name:", req.body.name);
+      console.log("- categoryId final:", categoryId);
+      console.log("- parkId final:", parkId);
+      
       if (!req.body.name) {
         return res.status(400).json({ message: "El nombre es requerido" });
       }
-      if (!req.body.categoryId) {
+      if (!categoryId) {
+        console.log("Falló validación de categoría");
         return res.status(400).json({ message: "La categoría es requerida" });
       }
-      if (!req.body.parkId) {
+      if (!parkId) {
+        console.log("Falló validación de parque");
         return res.status(400).json({ message: "El parque es requerido" });
       }
       
@@ -2937,11 +2947,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ) RETURNING *
       `, [
         req.body.name,
-        req.body.serialNumber || null,
-        parseInt(req.body.categoryId),
-        parseInt(req.body.parkId),
-        req.body.amenityId ? parseInt(req.body.amenityId) : null,
-        req.body.locationDescription || null,
+        req.body.serialNumber || req.body.serial_number || null,
+        parseInt(req.body.categoryId || req.body.category_id),
+        parseInt(req.body.parkId || req.body.park_id),
+        req.body.amenityId || req.body.amenity_id ? parseInt(req.body.amenityId || req.body.amenity_id) : null,
+        req.body.locationDescription || req.body.location_description || null,
         req.body.latitude ? parseFloat(req.body.latitude) : null,
         req.body.longitude ? parseFloat(req.body.longitude) : null,
         req.body.status || 'Activo',
