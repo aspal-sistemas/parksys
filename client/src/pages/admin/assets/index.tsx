@@ -203,7 +203,7 @@ const AssetsPage: React.FC = () => {
     
     const now = new Date();
     return assets.filter(asset => {
-      const nextMaintenance = asset.nextMaintenanceDate ? new Date(asset.nextMaintenanceDate) : null;
+      const nextMaintenance = asset.next_maintenance_date ? new Date(asset.next_maintenance_date) : null;
       return !!nextMaintenance && nextMaintenance <= now;
     }).length;
   }, [assets]);
@@ -321,7 +321,7 @@ const AssetsPage: React.FC = () => {
               {isLoading ? (
                 <Skeleton className="h-8 w-24" />
               ) : (
-                `$${assets?.reduce((total, asset) => total + (asset.acquisitionCost || 0), 0).toLocaleString('es-MX')}`
+                `$${assets?.reduce((total, asset) => total + (asset.acquisition_cost || 0), 0).toLocaleString('es-MX')}`
               )}
             </div>
           </CardContent>
