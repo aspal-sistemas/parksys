@@ -271,6 +271,75 @@ const EditAssetPage = () => {
     updateMutation.mutate(processedData);
   };
 
+  // Función alternativa para envío directo
+  const handleDirectSubmit = async () => {
+    console.log("=== ENVÍO DIRECTO ACTIVADO ===");
+    
+    try {
+      const formValues = form.getValues();
+      console.log("Valores actuales del formulario:", formValues);
+      
+      // Validar campos requeridos manualmente
+      if (!formValues.name || formValues.name.trim() === '') {
+        toast({
+          title: "Error de validación",
+          description: "El nombre del activo es obligatorio.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!formValues.parkId) {
+        toast({
+          title: "Error de validación", 
+          description: "Debe seleccionar un parque.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!formValues.categoryId) {
+        toast({
+          title: "Error de validación",
+          description: "Debe seleccionar una categoría.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Preparar datos para envío
+      const updateData = {
+        name: formValues.name.trim(),
+        description: formValues.description || null,
+        serialNumber: formValues.serialNumber || null,
+        parkId: Number(formValues.parkId),
+        categoryId: Number(formValues.categoryId),
+        amenityId: formValues.amenityId === "none" ? null : Number(formValues.amenityId),
+        status: formValues.status || 'activo',
+        condition: formValues.condition || 'bueno',
+        acquisitionDate: formValues.acquisitionDate || null,
+        acquisitionCost: formValues.acquisitionCost || null,
+        currentValue: formValues.currentValue || null,
+        location: formValues.location || null,
+        latitude: selectedPosition ? selectedPosition[0].toString() : (formValues.latitude || null),
+        longitude: selectedPosition ? selectedPosition[1].toString() : (formValues.longitude || null),
+        notes: formValues.notes || null
+      };
+
+      console.log("Datos preparados para envío directo:", updateData);
+      
+      updateMutation.mutate(updateData);
+      
+    } catch (error) {
+      console.error("Error en envío directo:", error);
+      toast({
+        title: "Error",
+        description: "Ha ocurrido un error al procesar los datos.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Efecto para centrar el mapa cuando cambia el parque seleccionado
   useEffect(() => {
     if (selectedParkId && parks) {
@@ -767,6 +836,15 @@ const EditAssetPage = () => {
                     }}
                   >
                     {updateMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
+                    <Save className="ml-2 h-4 w-4" />
+                  </Button>
+                  <Button 
+                    type="button"
+                    onClick={handleDirectSubmit}
+                    disabled={updateMutation.isPending}
+                    variant="secondary"
+                  >
+                    {updateMutation.isPending ? 'Guardando...' : 'Guardar Directo'}
                     <Save className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
