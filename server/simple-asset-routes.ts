@@ -64,8 +64,29 @@ router.put("/assets/:id", async (req: Request, res: Response) => {
     if (req.body.notes !== undefined) updateData.notes = req.body.notes;
     if (req.body.serialNumber !== undefined) updateData.serialNumber = req.body.serialNumber;
     if (req.body.amenityId !== undefined) {
-      updateData.amenityId = req.body.amenityId === "none" ? null : parseInt(req.body.amenityId);
+      console.log("=== PROCESANDO AMENITY ID ===");
+      console.log("Valor recibido:", req.body.amenityId);
+      console.log("Tipo:", typeof req.body.amenityId);
+      
+      if (req.body.amenityId === null || req.body.amenityId === "none" || req.body.amenityId === "" || req.body.amenityId === undefined) {
+        updateData.amenityId = null;
+        console.log("Asignando null a amenityId");
+      } else {
+        updateData.amenityId = parseInt(req.body.amenityId);
+        console.log("Asignando parseInt result:", updateData.amenityId);
+      }
+    } else {
+      console.log("amenityId no está definido en el body");
     }
+    
+    // Verificar si hay algún campo que se esté procesando incorrectamente
+    console.log("=== VERIFICACIÓN FINAL DE DATOS ===");
+    Object.keys(updateData).forEach(key => {
+      if (typeof updateData[key] === 'number' && isNaN(updateData[key])) {
+        console.log(`CAMPO CON NaN DETECTADO: ${key} = ${updateData[key]}`);
+        updateData[key] = null; // Corregir NaN a null
+      }
+    });
     
     updateData.updatedAt = new Date();
     
