@@ -12,7 +12,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
 export default function EditAssetSimple() {
-  const [, params] = useRoute('/admin/assets/:id/edit');
+  const [, params] = useRoute('/admin/assets/:id/edit-simple');
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -103,7 +103,19 @@ export default function EditAssetSimple() {
 
   const handleSubmit = () => {
     console.log("=== INICIANDO ENVÍO SIMPLE ===");
+    console.log("ID del activo:", id);
+    console.log("Parámetros de la URL:", params);
     console.log("Datos del formulario:", formData);
+
+    // Validar que tenemos un ID válido
+    if (!id || isNaN(Number(id))) {
+      toast({
+        title: "Error",
+        description: "ID de activo no válido.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Validaciones básicas
     if (!formData.name.trim()) {
