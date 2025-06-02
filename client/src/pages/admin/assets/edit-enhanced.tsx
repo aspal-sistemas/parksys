@@ -243,7 +243,9 @@ export default function EditAssetEnhanced() {
         categoryId: parseInt(categoryId),
         location: location.trim(), // Cambiar de locationDescription a location
         acquisitionDate: acquisitionDate || undefined,
-        amenityId: amenityId && amenityId !== 'none' ? parseInt(amenityId) : null
+        amenityId: amenityId && amenityId !== 'none' ? parseInt(amenityId) : null,
+        latitude: latitude.trim() || undefined,
+        longitude: longitude.trim() || undefined
       };
 
       const response = await fetch(`/api/assets/${id}`, {
@@ -470,6 +472,60 @@ export default function EditAssetEnhanced() {
                   placeholder={amenityId && amenityId !== 'none' ? "Se completó automáticamente desde la amenidad" : "Descripción manual de la ubicación"}
                   className="pl-10"
                 />
+              </div>
+            </div>
+
+            {/* Sección de ubicación geográfica */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-blue-600" />
+                <Label className="text-lg font-medium">Ubicación Geográfica</Label>
+              </div>
+              
+              {/* Campos de coordenadas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="latitude">Latitud</Label>
+                  <Input
+                    id="latitude"
+                    value={latitude}
+                    onChange={(e) => setLatitude(e.target.value)}
+                    onBlur={handleCoordinateChange}
+                    placeholder="Ej: 19.432608"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="longitude">Longitud</Label>
+                  <Input
+                    id="longitude"
+                    value={longitude}
+                    onChange={(e) => setLongitude(e.target.value)}
+                    onBlur={handleCoordinateChange}
+                    placeholder="Ej: -99.133209"
+                  />
+                </div>
+              </div>
+
+              {/* Mapa interactivo */}
+              <div className="space-y-2">
+                <Label>Mapa Interactivo</Label>
+                <p className="text-sm text-gray-600">Haz clic en el mapa para establecer la ubicación del activo</p>
+                <div className="h-64 w-full border rounded-lg overflow-hidden">
+                  <MapContainer
+                    center={mapPosition || [19.432608, -99.133209]} // Centro de Ciudad de México por defecto
+                    zoom={13}
+                    style={{ height: '100%', width: '100%' }}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <LocationMarker 
+                      position={mapPosition} 
+                      setPosition={handleMapPositionChange}
+                    />
+                  </MapContainer>
+                </div>
               </div>
             </div>
 
