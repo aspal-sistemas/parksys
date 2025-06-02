@@ -257,9 +257,9 @@ const EditAssetPage = () => {
     const processedData = {
       ...data,
       amenityId: data.amenityId === "none" ? null : data.amenityId,
-      // Incluir las coordenadas del mapa si están seleccionadas
-      latitude: selectedPosition ? selectedPosition[0] : data.latitude,
-      longitude: selectedPosition ? selectedPosition[1] : data.longitude
+      // Incluir las coordenadas del mapa si están seleccionadas, convertir a string
+      latitude: selectedPosition ? selectedPosition[0].toString() : data.latitude,
+      longitude: selectedPosition ? selectedPosition[1].toString() : data.longitude
     };
     updateMutation.mutate(processedData);
   };
