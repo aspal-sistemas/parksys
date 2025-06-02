@@ -676,60 +676,43 @@ export class DatabaseStorage implements IStorage {
 
   async updateAsset(id: number, assetData: any): Promise<any> {
     try {
-      const result = await pool.query(`
-        UPDATE assets SET
-          name = COALESCE($2, name),
-          serial_number = COALESCE($3, serial_number),
-          category_id = COALESCE($4, category_id),
-          park_id = COALESCE($5, park_id),
-          amenity_id = COALESCE($6, amenity_id),
-          location_description = COALESCE($7, location_description),
-          latitude = COALESCE($8, latitude),
-          longitude = COALESCE($9, longitude),
-          acquisition_date = COALESCE($10, acquisition_date),
-          acquisition_cost = COALESCE($11, acquisition_cost),
-          current_value = COALESCE($12, current_value),
-          manufacturer = COALESCE($13, manufacturer),
-          model = COALESCE($14, model),
-          status = COALESCE($15, status),
-          condition = COALESCE($16, condition),
-          maintenance_frequency = COALESCE($17, maintenance_frequency),
-          last_maintenance_date = COALESCE($18, last_maintenance_date),
-          next_maintenance_date = COALESCE($19, next_maintenance_date),
-          expected_lifespan = COALESCE($20, expected_lifespan),
-          notes = COALESCE($21, notes),
-          qr_code = COALESCE($22, qr_code),
-          responsible_person_id = COALESCE($23, responsible_person_id),
-          updated_at = NOW()
-        WHERE id = $1
-        RETURNING *
-      `, [
-        id,
-        assetData.name,
-        assetData.serialNumber,
-        assetData.categoryId,
-        assetData.parkId,
-        assetData.amenityId,
-        assetData.locationDescription,
-        assetData.latitude,
-        assetData.longitude,
-        assetData.acquisitionDate,
-        assetData.acquisitionCost,
-        assetData.currentValue,
-        assetData.manufacturer,
-        assetData.model,
-        assetData.status,
-        assetData.condition,
-        assetData.maintenanceFrequency,
-        assetData.lastMaintenanceDate,
-        assetData.nextMaintenanceDate,
-        assetData.expectedLifespan,
-        assetData.notes,
-        assetData.qrCode,
-        assetData.responsiblePersonId
-      ]);
+      // Preparar los datos de actualización, omitiendo valores undefined
+      const updateData: any = {};
+      
+      if (assetData.name !== undefined) updateData.name = assetData.name;
+      if (assetData.serialNumber !== undefined) updateData.serialNumber = assetData.serialNumber;
+      if (assetData.categoryId !== undefined) updateData.categoryId = assetData.categoryId;
+      if (assetData.parkId !== undefined) updateData.parkId = assetData.parkId;
+      if (assetData.amenityId !== undefined) updateData.amenityId = assetData.amenityId;
+      if (assetData.location !== undefined) updateData.location = assetData.location;
+      if (assetData.latitude !== undefined) updateData.latitude = assetData.latitude;
+      if (assetData.longitude !== undefined) updateData.longitude = assetData.longitude;
+      if (assetData.acquisitionDate !== undefined) updateData.acquisitionDate = assetData.acquisitionDate;
+      if (assetData.acquisitionCost !== undefined) updateData.acquisitionCost = assetData.acquisitionCost;
+      if (assetData.currentValue !== undefined) updateData.currentValue = assetData.currentValue;
+      if (assetData.manufacturer !== undefined) updateData.manufacturer = assetData.manufacturer;
+      if (assetData.model !== undefined) updateData.model = assetData.model;
+      if (assetData.status !== undefined) updateData.status = assetData.status;
+      if (assetData.condition !== undefined) updateData.condition = assetData.condition;
+      if (assetData.maintenanceFrequency !== undefined) updateData.maintenanceFrequency = assetData.maintenanceFrequency;
+      if (assetData.lastMaintenanceDate !== undefined) updateData.lastMaintenanceDate = assetData.lastMaintenanceDate;
+      if (assetData.nextMaintenanceDate !== undefined) updateData.nextMaintenanceDate = assetData.nextMaintenanceDate;
+      if (assetData.expectedLifespan !== undefined) updateData.expectedLifespan = assetData.expectedLifespan;
+      if (assetData.notes !== undefined) updateData.notes = assetData.notes;
+      if (assetData.qrCode !== undefined) updateData.qrCode = assetData.qrCode;
+      if (assetData.responsiblePersonId !== undefined) updateData.responsiblePersonId = assetData.responsiblePersonId;
+      if (assetData.description !== undefined) updateData.description = assetData.description;
+      
+      // Siempre actualizar updatedAt
+      updateData.updatedAt = new Date();
 
-      return result.rows[0];
+      const [updatedAsset] = await db
+        .update(assets)
+        .set(updateData)
+        .where(eq(assets.id, id))
+        .returning();
+
+      return updatedAsset;
     } catch (error) {
       console.error(`Error al actualizar activo ${id}:`, error);
       throw error;
