@@ -60,6 +60,7 @@ const assetSchema = z.object({
   serialNumber: z.string().optional(),
   parkId: z.coerce.number().min(1, "Debe seleccionar un parque"),
   categoryId: z.coerce.number().min(1, "Debe seleccionar una categoría"),
+  amenityId: z.coerce.number().optional(),
   status: z.string().min(1, "El estado es obligatorio"),
   condition: z.string().min(1, "La condición es obligatoria"),
   acquisitionDate: z.string().optional(),
@@ -167,6 +168,7 @@ const EditAssetPage = () => {
       serialNumber: '',
       parkId: undefined,
       categoryId: undefined,
+      amenityId: undefined,
       status: '',
       condition: '',
       acquisitionDate: '',
@@ -272,7 +274,7 @@ const EditAssetPage = () => {
     if (amenityId && amenities) {
       const selectedAmenity = amenities.find((amenity: any) => amenity.amenityId === parseInt(amenityId) || amenity.id === parseInt(amenityId));
       if (selectedAmenity) {
-        const amenityName = selectedAmenity.amenity?.name || selectedAmenity.name;
+        const amenityName = selectedAmenity.amenityName || selectedAmenity.name;
         if (amenityName) {
           form.setValue('location', `Cerca de ${amenityName.toLowerCase()}`);
         }
@@ -614,7 +616,7 @@ const EditAssetPage = () => {
                               <SelectContent className="z-50">
                                 {amenities?.map((amenity: any) => (
                                   <SelectItem key={amenity.amenityId || amenity.id} value={(amenity.amenityId || amenity.id).toString()}>
-                                    {amenity.amenity?.name || amenity.name || 'Amenidad sin nombre'}
+                                    {amenity.amenityName || amenity.name || 'Amenidad sin nombre'}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
