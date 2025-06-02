@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default markers in Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
 import { apiRequest } from '@/lib/queryClient';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,7 +24,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Save } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Save,
+  MapPin,
+  Calendar,
+  DollarSign,
+  User,
+  Settings
+} from 'lucide-react';
 import {
   Form,
   FormControl,
@@ -32,6 +53,45 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 
+// Esquema de validación completo para activos
+const assetSchema = z.object({
+  name: z.string().min(1, "El nombre es obligatorio"),
+  description: z.string().optional(),
+  serialNumber: z.string().optional(),
+  parkId: z.coerce.number().min(1, "Debe seleccionar un parque"),
+  categoryId: z.coerce.number().min(1, "Debe seleccionar una categoría"),
+  status: z.string().min(1, "El estado es obligatorio"),
+  condition: z.string().min(1, "La condición es obligatoria"),
+  acquisitionDate: z.string().optional(),
+  acquisitionCost: z.string().optional(),
+  currentValue: z.string().optional(),
+  depreciationRate: z.string().optional(),
+  warrantyExpirationDate: z.string().optional(),
+  maintenanceSchedule: z.string().optional(),
+  location: z.string().optional(),
+  latitude: z.coerce.number().optional(),
+  longitude: z.coerce.number().optional(),
+  responsiblePersonId: z.coerce.number().optional(),
+  notes: z.string().optional(),
+});
+
+type AssetFormValues = z.infer<typeof assetSchema>;
+
+// Componente para manejar clics en el mapa
+interface MapClickHandlerProps {
+  onLocationSelect: (lat: number, lng: number) => void;
+}
+
+function MapClickHandler({ onLocationSelect }: MapClickHandlerProps) {
+  useMapEvents({
+    click: (e) => {
+      const { lat, lng } = e.latlng;
+      onLocationSelect(lat, lng);
+    },
+  });
+  return null;
+}
+
 // Constantes de estado y condición para activos
 const ASSET_STATUSES = [
   { value: 'active', label: 'Activo' },
@@ -48,24 +108,7 @@ const ASSET_CONDITIONS = [
   { value: 'critical', label: 'Crítico' }
 ];
 
-// Esquema de validación para el formulario de activo
-const assetSchema = z.object({
-  name: z.string().min(1, "El nombre es obligatorio"),
-  description: z.string().nullable().optional(),
-  serialNumber: z.string().nullable().optional(),
-  parkId: z.number().min(1, "Debe seleccionar un parque"),
-  categoryId: z.number().min(1, "Debe seleccionar una categoría"),
-  status: z.string().min(1, "Debe seleccionar un estado"),
-  condition: z.string().min(1, "Debe seleccionar una condición"),
-  acquisitionDate: z.string().nullable().optional(),
-  acquisitionCost: z.number().nullable().optional(),
-  location: z.string().nullable().optional(),
-  latitude: z.string().nullable().optional(),
-  longitude: z.string().nullable().optional(),
-  notes: z.string().nullable().optional()
-});
 
-type AssetFormValues = z.infer<typeof assetSchema>;
 
 const EditAssetPage = () => {
   const params = useParams();
