@@ -128,6 +128,12 @@ const EditAssetPage = () => {
     form.setValue('longitude', lng);
   };
 
+  // Obtener datos del activo
+  const { data: asset, isLoading: assetLoading } = useQuery({
+    queryKey: [`/api/assets/${id}`],
+    enabled: !!id,
+  });
+
   // Efecto para inicializar la posición del mapa cuando se cargan los datos del activo
   useEffect(() => {
     if (asset && asset.latitude && asset.longitude) {
@@ -139,12 +145,6 @@ const EditAssetPage = () => {
       }
     }
   }, [asset]);
-  
-  // Obtener datos del activo
-  const { data: asset, isLoading: assetLoading } = useQuery({
-    queryKey: [`/api/assets/${id}`],
-    enabled: !!id,
-  });
   
   // Obtener listado de parques
   const { data: parks, isLoading: parksLoading } = useQuery({
