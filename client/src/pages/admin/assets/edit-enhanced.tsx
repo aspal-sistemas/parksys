@@ -112,11 +112,11 @@ export default function EditAssetEnhanced() {
   }, [parkId]);
 
   // Función para manejar el cambio de amenidad y actualizar la descripción de ubicación
-  const handleAmenityChange = (selectedAmenityId) => {
+  const handleAmenityChange = (selectedAmenityId: string) => {
     setAmenityId(selectedAmenityId);
     
     if (selectedAmenityId && selectedAmenityId !== 'none') {
-      const selectedAmenity = amenities.find(a => a.id === parseInt(selectedAmenityId));
+      const selectedAmenity = amenities.find((a: any) => a.id === parseInt(selectedAmenityId));
       if (selectedAmenity) {
         setLocationDesc(selectedAmenity.name);
       }
@@ -160,7 +160,8 @@ export default function EditAssetEnhanced() {
         parkId: parseInt(parkId),
         categoryId: parseInt(categoryId),
         location: location.trim(), // Cambiar de locationDescription a location
-        acquisitionDate: acquisitionDate || undefined
+        acquisitionDate: acquisitionDate || undefined,
+        amenityId: amenityId && amenityId !== 'none' ? parseInt(amenityId) : null
       };
 
       const response = await fetch(`/api/assets/${id}`, {
@@ -294,6 +295,28 @@ export default function EditAssetEnhanced() {
               </div>
             </div>
 
+            {/* Amenidad (opcional) */}
+            <div>
+              <Label>Amenidad (Opcional)</Label>
+              <Select 
+                value={amenityId} 
+                onValueChange={handleAmenityChange}
+                disabled={!parkId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={parkId ? "Seleccionar amenidad" : "Primero seleccione un parque"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin amenidad</SelectItem>
+                  {amenities.map((amenity: any) => (
+                    <SelectItem key={amenity.id} value={String(amenity.id)}>
+                      {amenity.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Estado y condición */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -355,14 +378,14 @@ export default function EditAssetEnhanced() {
             </div>
 
             <div>
-              <Label htmlFor="location">Ubicación</Label>
+              <Label htmlFor="location">Descripción de Ubicación</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   id="location"
                   value={location}
                   onChange={(e) => setLocationDesc(e.target.value)}
-                  placeholder="Descripción de la ubicación"
+                  placeholder={amenityId && amenityId !== 'none' ? "Se completó automáticamente desde la amenidad" : "Descripción manual de la ubicación"}
                   className="pl-10"
                 />
               </div>
