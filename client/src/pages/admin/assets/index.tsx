@@ -335,8 +335,9 @@ const AssetsPage: React.FC = () => {
                 <Skeleton className="h-8 w-24" />
               ) : (
                 `$${assets?.reduce((total, asset) => {
-                  const cost = asset.acquisition_cost || 0;
-                  return total + (typeof cost === 'number' ? cost : 0);
+                  console.log('Procesando activo:', asset.name, 'cost:', asset.acquisition_cost, 'type:', typeof asset.acquisition_cost);
+                  const cost = parseFloat(asset.acquisition_cost) || 0;
+                  return total + cost;
                 }, 0).toLocaleString('es-MX')}`
               )}
             </div>
