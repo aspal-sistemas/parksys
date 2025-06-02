@@ -557,6 +557,7 @@ const EditAssetPage = () => {
                           <FormControl>
                             <Input 
                               type="number" 
+                              step="0.01"
                               placeholder="Costo en pesos" 
                               {...field} 
                               value={field.value === null ? '' : field.value}
