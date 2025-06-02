@@ -158,19 +158,6 @@ const EditAssetPage = () => {
     queryKey: ['/api/asset-categories'],
   });
 
-  // Obtener listado de amenidades
-  // Obtener amenidades del parque seleccionado  
-  const selectedParkId = form.watch('parkId');
-  const { data: amenities, isLoading: amenitiesLoading } = useQuery({
-    queryKey: [`/api/parks/${selectedParkId}/amenities`],
-    enabled: !!selectedParkId,
-  });
-
-  // Obtener listado de usuarios para responsable
-  const { data: users, isLoading: usersLoading } = useQuery({
-    queryKey: ['/api/users'],
-  });
-  
   // Configurar formulario
   const form = useForm<AssetFormValues>({
     resolver: zodResolver(assetSchema),
@@ -211,6 +198,18 @@ const EditAssetPage = () => {
       });
     }
   }, [asset, form]);
+
+  // Obtener amenidades del parque seleccionado  
+  const selectedParkId = form.watch('parkId');
+  const { data: amenities, isLoading: amenitiesLoading } = useQuery({
+    queryKey: [`/api/parks/${selectedParkId}/amenities`],
+    enabled: !!selectedParkId,
+  });
+
+  // Obtener listado de usuarios para responsable
+  const { data: users, isLoading: usersLoading } = useQuery({
+    queryKey: ['/api/users'],
+  });
   
   // Mutación para actualizar el activo
   const updateMutation = useMutation({
