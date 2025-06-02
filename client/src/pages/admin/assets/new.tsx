@@ -226,7 +226,10 @@ const CreateAssetPage: React.FC = () => {
   // Mutación para crear activo usando endpoint directo
   const createMutation = useMutation({
     mutationFn: (newAsset: AssetFormData) => {
-      return apiRequest('/api/assets-direct', 'POST', newAsset);
+      return apiRequest('/api/assets-direct', {
+        method: 'POST',
+        data: newAsset
+      });
     },
     onSuccess: (data) => {
       // Invalidar todas las queries relacionadas con activos
