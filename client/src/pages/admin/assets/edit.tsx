@@ -117,6 +117,29 @@ const EditAssetPage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // Estado para el mapa interactivo
+  const [selectedPosition, setSelectedPosition] = useState<[number, number] | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([20.6597, -103.3496]); // Guadalajara por defecto
+
+  // Función para manejar la selección de ubicación en el mapa
+  const handleLocationSelect = (lat: number, lng: number) => {
+    setSelectedPosition([lat, lng]);
+    form.setValue('latitude', lat);
+    form.setValue('longitude', lng);
+  };
+
+  // Efecto para inicializar la posición del mapa cuando se cargan los datos del activo
+  useEffect(() => {
+    if (asset && asset.latitude && asset.longitude) {
+      const lat = parseFloat(asset.latitude);
+      const lng = parseFloat(asset.longitude);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        setSelectedPosition([lat, lng]);
+        setMapCenter([lat, lng]);
+      }
+    }
+  }, [asset]);
+  
   // Obtener datos del activo
   const { data: asset, isLoading: assetLoading } = useQuery({
     queryKey: [`/api/assets/${id}`],
@@ -131,6 +154,16 @@ const EditAssetPage = () => {
   // Obtener listado de categorías
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ['/api/asset-categories'],
+  });
+
+  // Obtener listado de amenidades
+  const { data: amenities, isLoading: amenitiesLoading } = useQuery({
+    queryKey: ['/api/amenities'],
+  });
+
+  // Obtener listado de usuarios para responsable
+  const { data: users, isLoading: usersLoading } = useQuery({
+    queryKey: ['/api/users'],
   });
   
   // Configurar formulario
@@ -554,6 +587,142 @@ const EditAssetPage = () => {
                     />
                   </div>
                 </div>
+
+                {/* Sección de Ubicación con Mapa Interactivo */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5" />
+                      Ubicación del Activo
+                    </CardTitle>
+                    <CardDescription>
+                      Selecciona la ubicación exacta del activo en el mapa
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="location"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Descripción de Ubicación</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Ej: Cerca de la entrada principal" 
+                                {...field} 
+                                value={field.value || ''}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Descripción textual de la ubicación
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="responsiblePersonId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Amenidad (Opcional)</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                              <FormControl>
+                                <SelectTrigger className="z-50">
+                                  <SelectValue placeholder="Seleccionar amenidad" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="z-50">
+                                {amenities?.map((amenity: any) => (
+                                  <SelectItem key={amenity.id} value={amenity.id.toString()}>
+                                    {amenity.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Amenidad asociada con este activo
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Mapa Interactivo */}
+                    <div className="space-y-2">
+                      <FormLabel>Seleccionar ubicación en el mapa</FormLabel>
+                      <div className="h-96 w-full border rounded-lg overflow-hidden">
+                        <MapContainer
+                          center={mapCenter}
+                          zoom={13}
+                          style={{ height: '100%', width: '100%' }}
+                          className="z-0"
+                        >
+                          <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          />
+                          <MapClickHandler onLocationSelect={handleLocationSelect} />
+                          {selectedPosition && (
+                            <Marker position={selectedPosition} />
+                          )}
+                        </MapContainer>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Haz clic en el mapa para seleccionar la ubicación exacta del activo
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="latitude"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Latitud</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Ej: 20.659698" 
+                                {...field} 
+                                value={field.value?.toString() || ''}
+                                readOnly
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Se actualiza automáticamente al seleccionar en el mapa
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="longitude"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Longitud</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Ej: -103.349609" 
+                                {...field} 
+                                value={field.value?.toString() || ''}
+                                readOnly
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Se actualiza automáticamente al seleccionar en el mapa
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
                 
                 <div className="flex justify-end gap-4">
                   <Button 
