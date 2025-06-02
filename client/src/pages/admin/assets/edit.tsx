@@ -365,7 +365,16 @@ const EditAssetPage = () => {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form 
+                onSubmit={(e) => {
+                  console.log("=== EVENTO SUBMIT INTERCEPTADO ===");
+                  e.preventDefault();
+                  console.log("Valores antes de validación:", form.getValues());
+                  console.log("Errores de validación:", form.formState.errors);
+                  form.handleSubmit(onSubmit)(e);
+                }} 
+                className="space-y-6"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Información básica */}
                   <div className="space-y-4">
