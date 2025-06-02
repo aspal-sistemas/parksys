@@ -146,25 +146,7 @@ const EditAssetPage = () => {
     }
   }, [asset]);
 
-  // Efecto para centrar el mapa en el parque seleccionado cuando se cambia
-  useEffect(() => {
-    if (selectedParkId && parks) {
-      const selectedPark = parks.find((park: any) => park.id === selectedParkId);
-      if (selectedPark && selectedPark.latitude && selectedPark.longitude) {
-        const lat = parseFloat(selectedPark.latitude);
-        const lng = parseFloat(selectedPark.longitude);
-        if (!isNaN(lat) && !isNaN(lng)) {
-          setMapCenter([lat, lng]);
-          // Si no hay coordenadas del activo, usar las del parque como punto inicial
-          if (!selectedPosition) {
-            setSelectedPosition([lat, lng]);
-            form.setValue('latitude', lat);
-            form.setValue('longitude', lng);
-          }
-        }
-      }
-    }
-  }, [selectedParkId, parks, selectedPosition, form]);
+
   
   // Obtener listado de parques
   const { data: parks, isLoading: parksLoading } = useQuery({
@@ -258,6 +240,26 @@ const EditAssetPage = () => {
   const onSubmit = (data: AssetFormValues) => {
     updateMutation.mutate(data);
   };
+
+  // Efecto para centrar el mapa en el parque seleccionado cuando se cambia
+  useEffect(() => {
+    if (selectedParkId && parks) {
+      const selectedPark = parks.find((park: any) => park.id === selectedParkId);
+      if (selectedPark && selectedPark.latitude && selectedPark.longitude) {
+        const lat = parseFloat(selectedPark.latitude);
+        const lng = parseFloat(selectedPark.longitude);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          setMapCenter([lat, lng]);
+          // Si no hay coordenadas del activo, usar las del parque como punto inicial
+          if (!selectedPosition) {
+            setSelectedPosition([lat, lng]);
+            form.setValue('latitude', lat);
+            form.setValue('longitude', lng);
+          }
+        }
+      }
+    }
+  }, [selectedParkId, parks, selectedPosition, form]);
   
   // Formatear costo para mostrar
   const formatCurrency = (value: number | null | undefined) => {
