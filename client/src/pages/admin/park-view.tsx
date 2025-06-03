@@ -1155,7 +1155,7 @@ const AmenitiesTable = ({
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => deleteAmenityMutation.mutate(amenity.id)}
+                              onClick={() => deleteAmenityMutation.mutate(amenity.parkAmenityId)}
                               className="bg-red-600 hover:bg-red-700"
                               disabled={deleteAmenityMutation.isPending}
                             >
