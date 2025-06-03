@@ -217,11 +217,7 @@ export default function AdminParkView() {
     enabled: !!id,
   });
 
-  // Función para forzar actualización de datos
-  const forceRefresh = React.useCallback(async () => {
-    setRefreshKey(prev => prev + 1);
-    await refetchPark();
-  }, [refetchPark]);
+
 
   // Obtener amenidades disponibles para agregar
   const { data: availableAmenities } = useQuery({
@@ -244,7 +240,8 @@ export default function AdminParkView() {
       });
       
       // Forzar actualización inmediata de los datos
-      await forceRefresh();
+      setRefreshKey(prev => prev + 1);
+      await refetchPark();
     },
     onError: () => {
       toast({
@@ -1011,7 +1008,8 @@ const AmenitiesTable = ({
       });
       
       // Forzar actualización inmediata de los datos
-      await forceRefresh();
+      setRefreshKey(prev => prev + 1);
+      await refetchPark();
     },
     onError: () => {
       toast({
