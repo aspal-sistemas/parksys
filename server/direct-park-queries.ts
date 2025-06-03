@@ -497,6 +497,76 @@ export async function getParkByIdDirectly(parkId: number) {
       console.error("Error al obtener estadísticas de árboles:", err);
     }
     
+    // Obtener activos del parque
+    try {
+      // Verificamos si la tabla assets existe
+      const tableExists = await pool.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_name = 'assets'
+        ) as exists
+      `);
+      
+      if (tableExists.rows[0].exists) {
+        console.log("Obteniendo activos del parque...");
+        
+        // Consultamos los activos con información de categoría
+        const assetsQuery = `
+          SELECT 
+            a.id,
+            a.name,
+            a.serial_number as "serialNumber",
+            a.status,
+            a.condition,
+            a.location_description as "locationDescription",
+            a.latitude,
+            a.longitude,
+            a.last_maintenance_date as "lastMaintenanceDate",
+            a.next_maintenance_date as "nextMaintenanceDate",
+            a.acquisition_date as "acquisitionDate",
+            a.acquisition_cost as "acquisitionCost",
+            a.current_value as "currentValue",
+            a.manufacturer,
+            a.model,
+            a.notes,
+            ac.name as "categoryName"
+          FROM assets a
+          LEFT JOIN asset_categories ac ON a.category_id = ac.id
+          WHERE a.park_id = $1
+          ORDER BY a.name
+        `;
+        
+        const assetsResult = await pool.query(assetsQuery, [parkId]);
+        console.log("Activos encontrados:", assetsResult.rowCount);
+        
+        extendedPark.assets = assetsResult.rows.map(asset => ({
+          id: asset.id,
+          name: asset.name,
+          category: asset.categoryName || 'Sin categoría',
+          condition: asset.condition || 'bueno',
+          lastMaintenance: asset.lastMaintenanceDate,
+          serialNumber: asset.serialNumber,
+          status: asset.status,
+          locationDescription: asset.locationDescription,
+          latitude: asset.latitude,
+          longitude: asset.longitude,
+          manufacturer: asset.manufacturer,
+          model: asset.model,
+          notes: asset.notes,
+          acquisitionDate: asset.acquisitionDate,
+          acquisitionCost: asset.acquisitionCost,
+          currentValue: asset.currentValue,
+          nextMaintenanceDate: asset.nextMaintenanceDate
+        })) || [];
+      } else {
+        console.log("La tabla assets no existe, usando array vacío");
+        extendedPark.assets = [];
+      }
+    } catch (err) {
+      console.error("Error al obtener activos:", err);
+      extendedPark.assets = [];
+    }
+    
     console.log("Preparando objeto de parque extendido");
     return extendedPark;
   } catch (error) {
