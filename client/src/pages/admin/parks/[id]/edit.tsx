@@ -889,7 +889,7 @@ export default function ParkEdit() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <Tabs defaultValue="basic" className="space-y-6">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="basic" className="flex items-center gap-2">
                     <Info className="h-4 w-4" />
                     Información Básica
@@ -901,10 +901,6 @@ export default function ParkEdit() {
                   <TabsTrigger value="characteristics" className="flex items-center gap-2">
                     <Building className="h-4 w-4" />
                     Características
-                  </TabsTrigger>
-                  <TabsTrigger value="amenities" className="flex items-center gap-2">
-                    <Wrench className="h-4 w-4" />
-                    Amenidades
                   </TabsTrigger>
                 </TabsList>
 
@@ -1385,20 +1381,7 @@ export default function ParkEdit() {
                     </CardContent>
                   </Card>
                 </TabsContent>
-
-                {/* Amenidades */}
-                <TabsContent value="amenities" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Wrench className="h-5 w-5" />
-                        Gestión de Amenidades
-                      </CardTitle>
-                      <CardDescription>
-                        Agregar o quitar amenidades disponibles en este parque
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
+              </Tabs>
                       {/* Botón para abrir modal de agregar amenidad */}
                       <div className="flex justify-between items-center">
                         <h4 className="font-medium">Amenidades Actuales</h4>
