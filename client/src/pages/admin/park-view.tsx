@@ -1346,6 +1346,18 @@ function AddAmenityForm({ availableAmenities, onSubmit, isLoading, onCancel, par
                 longitude={parkData.longitude || -103.3496}
                 parkName={parkData.name}
                 height="256px"
+                onMapClick={(lat, lng) => {
+                  form.setValue("locationLatitude", lat.toString());
+                  form.setValue("locationLongitude", lng.toString());
+                }}
+                selectedLocation={
+                  form.watch("locationLatitude") && form.watch("locationLongitude")
+                    ? {
+                        lat: parseFloat(form.watch("locationLatitude")),
+                        lng: parseFloat(form.watch("locationLongitude"))
+                      }
+                    : null
+                }
               />
             )}
           </div>
