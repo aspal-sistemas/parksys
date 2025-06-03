@@ -402,8 +402,11 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
       const maintenanceResult = await pool.query(
         `SELECT am.*, u.username as performed_by_name 
          FROM asset_maintenances am
-         LEFT JOIN users u ON am.performed_by::integer = u.id
-         WHERE am.asset_id = $1::integer
+         LEFT JOIN users u ON CASE 
+           WHEN am.performer_id IS NOT NULL THEN am.performer_id = u.id 
+           ELSE false 
+         END
+         WHERE am.asset_id = $1
          ORDER BY am.date DESC`,
         [assetId]
       );
