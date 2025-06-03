@@ -916,7 +916,7 @@ export default function AdminParkView() {
                           <SelectItem value="all">Todos los módulos</SelectItem>
                           {park?.amenities?.map(amenity => (
                             <SelectItem key={amenity.id} value={amenity.id.toString()}>
-                              {amenity.name}
+                              {amenity.moduleName || amenity.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
