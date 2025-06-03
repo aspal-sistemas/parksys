@@ -1436,50 +1436,43 @@ export default function AdminParkView() {
           {selectedAsset && selectedAsset.latitude && selectedAsset.longitude && (
             <div className="flex-1 h-full">
               <MapViewer
-                center={[
-                  parseFloat(selectedAsset.latitude.toString()),
-                  parseFloat(selectedAsset.longitude.toString())
-                ]}
-                markers={[{
-                  position: [
-                    parseFloat(selectedAsset.latitude.toString()),
-                    parseFloat(selectedAsset.longitude.toString())
-                  ],
-                  popup: `
-                    <div class="p-2">
-                      <h3 class="font-semibold">${selectedAsset.name}</h3>
-                      <p class="text-sm text-gray-600">${selectedAsset.category || 'Sin categoría'}</p>
-                      ${selectedAsset.locationDescription ? 
-                        `<p class="text-sm mt-1">${selectedAsset.locationDescription}</p>` : 
-                        ''
-                      }
-                      <div class="mt-2 flex gap-2">
-                        <span class="inline-block px-2 py-1 text-xs rounded ${
-                          selectedAsset.condition === 'excellent' ? 'bg-green-100 text-green-800' :
-                          selectedAsset.condition === 'good' ? 'bg-blue-100 text-blue-800' :
-                          selectedAsset.condition === 'regular' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }">
-                          ${selectedAsset.condition === 'excellent' ? 'Excelente' :
-                            selectedAsset.condition === 'good' ? 'Bueno' :
-                            selectedAsset.condition === 'regular' ? 'Regular' :
-                            selectedAsset.condition === 'poor' ? 'Malo' : 
-                            selectedAsset.condition
-                          }
-                        </span>
-                        <span class="inline-block px-2 py-1 text-xs rounded ${
-                          selectedAsset.status === 'active' ? 'bg-green-100 text-green-800' :
-                          'bg-gray-100 text-gray-800'
-                        }">
-                          ${selectedAsset.status === 'active' ? 'Activo' : selectedAsset.status}
-                        </span>
-                      </div>
-                    </div>
-                  `
-                }]}
-                zoom={18}
-                height="100%"
+                latitude={selectedAsset.latitude}
+                longitude={selectedAsset.longitude}
+                parkName={selectedAsset.name}
+                height="500px"
+                className="w-full"
               />
+              
+              {/* Información adicional del activo debajo del mapa */}
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Categoría:</span>
+                    <span className="ml-2 text-sm text-gray-600">{selectedAsset.category || 'Sin categoría'}</span>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Estado:</span>
+                    <span className={`ml-2 inline-block px-2 py-1 text-xs rounded ${
+                      selectedAsset.condition === 'excellent' ? 'bg-green-100 text-green-800' :
+                      selectedAsset.condition === 'good' ? 'bg-blue-100 text-blue-800' :
+                      selectedAsset.condition === 'regular' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {selectedAsset.condition === 'excellent' ? 'Excelente' :
+                       selectedAsset.condition === 'good' ? 'Bueno' :
+                       selectedAsset.condition === 'regular' ? 'Regular' :
+                       selectedAsset.condition === 'poor' ? 'Malo' : 
+                       selectedAsset.condition}
+                    </span>
+                  </div>
+                  {selectedAsset.locationDescription && (
+                    <div className="col-span-2">
+                      <span className="text-sm font-medium text-gray-700">Descripción de ubicación:</span>
+                      <p className="mt-1 text-sm text-gray-600">{selectedAsset.locationDescription}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
           
