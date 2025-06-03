@@ -510,7 +510,7 @@ export async function getParkByIdDirectly(parkId: number) {
       if (tableExists.rows[0].exists) {
         console.log("Obteniendo activos del parque...");
         
-        // Consultamos los activos con información de categoría
+        // Consultamos los activos con información de categoría y amenidad
         const assetsQuery = `
           SELECT 
             a.id,
@@ -529,6 +529,7 @@ export async function getParkByIdDirectly(parkId: number) {
             a.manufacturer,
             a.model,
             a.notes,
+            a.amenity_id as "amenityId",
             ac.name as "categoryName"
           FROM assets a
           LEFT JOIN asset_categories ac ON a.category_id = ac.id
@@ -556,7 +557,8 @@ export async function getParkByIdDirectly(parkId: number) {
           acquisitionDate: asset.acquisitionDate,
           acquisitionCost: asset.acquisitionCost,
           currentValue: asset.currentValue,
-          nextMaintenanceDate: asset.nextMaintenanceDate
+          nextMaintenanceDate: asset.nextMaintenanceDate,
+          amenityId: asset.amenityId
         })) || [];
       } else {
         console.log("La tabla assets no existe, usando array vacío");

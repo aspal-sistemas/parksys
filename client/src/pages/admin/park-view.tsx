@@ -903,6 +903,26 @@ export default function AdminParkView() {
                       </Select>
                     </div>
 
+                    {/* Filtro por amenidad */}
+                    <div>
+                      <Select
+                        value={assetFilters.amenity}
+                        onValueChange={(value) => setAssetFilters(prev => ({ ...prev, amenity: value }))}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Módulo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos los módulos</SelectItem>
+                          {park?.amenities?.map(amenity => (
+                            <SelectItem key={amenity.id} value={amenity.id.toString()}>
+                              {amenity.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     {/* Filtro por estado */}
                     <div>
                       <Select
