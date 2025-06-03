@@ -955,14 +955,18 @@ const AmenitiesTable = ({
   editingAmenity,
   setEditingAmenity
 }: AmenitiesTableProps) => {
-  const { data: amenities, isLoading, error } = useQuery({
-    queryKey: [`/api/parks/${parkId}/amenities`],
-  });
-  
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const amenitiesArray = Array.isArray(amenities) ? amenities : [];
+  // Use amenities data from parkData instead of separate query
+  const amenitiesArray = Array.isArray(parkData?.amenities) ? parkData.amenities.map(amenity => ({
+    ...amenity,
+    amenityName: amenity.name,
+    amenityIcon: amenity.icon
+  })) : [];
+  
+  const isLoading = !parkData;
+  const error = false;
 
   // Mutation para eliminar amenidad
   const deleteAmenityMutation = useMutation({
@@ -976,10 +980,8 @@ const AmenitiesTable = ({
         title: "Amenidad eliminada",
         description: "La amenidad ha sido eliminada exitosamente.",
       });
-      // Invalidar múltiples consultas para asegurar que la página se actualice completamente
-      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/amenities`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/details`] });
+      // Recargar página para mostrar cambios inmediatamente
+      setTimeout(() => window.location.reload(), 1000);
     },
     onError: () => {
       toast({
