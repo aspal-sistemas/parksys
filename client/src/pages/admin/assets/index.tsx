@@ -566,8 +566,8 @@ const AssetsPage: React.FC = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        {asset.acquisition_cost 
-                          ? `$${parseFloat(asset.acquisition_cost.toString()).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+                        {asset.acquisitionCost 
+                          ? `$${parseFloat(asset.acquisitionCost.toString()).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
                           : 'N/A'
                         }
                       </TableCell>
