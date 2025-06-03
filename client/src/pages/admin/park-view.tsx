@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -962,12 +962,12 @@ const AmenitiesTable = ({ parkId, isAddAmenityModalOpen, setIsAddAmenityModalOpe
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Agregar Amenidad
+                Agregar Módulo
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle>Agregar Amenidad al Parque</DialogTitle>
+                <DialogTitle>Agregar módulo</DialogTitle>
                 <DialogDescription>
                   Selecciona una amenidad existente para agregar al parque.
                 </DialogDescription>
