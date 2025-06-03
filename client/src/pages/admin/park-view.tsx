@@ -1,3 +1,4 @@
+import React from "react";
 import { useParams, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,11 +9,41 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+
+// Esquema para agregar amenidad a parque
+const addAmenitySchema = z.object({
+  amenityId: z.number().min(1, "Seleccione una amenidad"),
+  moduleName: z.string().min(1, "El nombre del módulo es requerido"),
+  surfaceArea: z.string().optional(),
+  locationLatitude: z.string().optional(),
+  locationLongitude: z.string().optional(),
+  status: z.string().default("Activa"),
+  description: z.string().optional(),
+});
+
+// Esquema para editar amenidad de parque
+const editAmenitySchema = z.object({
+  moduleName: z.string().min(1, "El nombre del módulo es requerido"),
+  surfaceArea: z.string().optional(),
+  locationLatitude: z.string().optional(),
+  locationLongitude: z.string().optional(),
+  status: z.string().default("Activa"),
+  description: z.string().optional(),
+});
+
+type AddAmenityFormData = z.infer<typeof addAmenitySchema>;
+type EditAmenityFormData = z.infer<typeof editAmenitySchema>;
 
 // Función para mapear nombres de iconos a símbolos Unicode
 const getIconSymbol = (iconName: string): string => {
@@ -171,11 +202,73 @@ function formatOpeningHours(openingHours: string | null): JSX.Element {
 
 export default function AdminParkView() {
   const { id } = useParams();
+  const { toast } = useToast();
+
+  // Estados para modales de amenidades
+  const [isAddAmenityModalOpen, setIsAddAmenityModalOpen] = React.useState(false);
+  const [isEditAmenityModalOpen, setIsEditAmenityModalOpen] = React.useState(false);
+  const [editingAmenity, setEditingAmenity] = React.useState<any>(null);
   
   // Get complete park data from the main API endpoint that has all fields
   const { data: park, isLoading, error } = useQuery<ParkDetails>({
     queryKey: [`/api/parks/${id}`],
     enabled: !!id,
+  });
+
+  // Obtener amenidades disponibles para agregar
+  const { data: availableAmenities } = useQuery({
+    queryKey: ['/api/amenities'],
+  });
+
+  // Mutación para agregar amenidad al parque
+  const addAmenityMutation = useMutation({
+    mutationFn: async (data: AddAmenityFormData) => {
+      return apiRequest(`/api/parks/${id}/amenities`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}`] });
+      setIsAddAmenityModalOpen(false);
+      toast({
+        title: "Amenidad agregada",
+        description: "La amenidad se ha agregado al parque exitosamente.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo agregar la amenidad al parque.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutación para editar amenidad del parque
+  const editAmenityMutation = useMutation({
+    mutationFn: async ({ amenityId, data }: { amenityId: number; data: EditAmenityFormData }) => {
+      return apiRequest(`/api/parks/${id}/amenities/${amenityId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}`] });
+      setIsEditAmenityModalOpen(false);
+      setEditingAmenity(null);
+      toast({
+        title: "Amenidad actualizada",
+        description: "La amenidad se ha actualizado exitosamente.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar la amenidad.",
+        variant: "destructive",
+      });
+    },
   });
 
   if (isLoading) {
