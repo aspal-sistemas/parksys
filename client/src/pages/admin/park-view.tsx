@@ -664,7 +664,13 @@ export default function AdminParkView() {
         </TabsContent>
 
         <TabsContent value="amenities" className="space-y-4">
-          <AmenitiesTable parkId={parseInt(id || "0")} />
+          <AmenitiesTable 
+            parkId={parseInt(id || "0")} 
+            isAddAmenityModalOpen={isAddAmenityModalOpen}
+            setIsAddAmenityModalOpen={setIsAddAmenityModalOpen}
+            availableAmenities={availableAmenities || []}
+            addAmenityMutation={addAmenityMutation}
+          />
         </TabsContent>
 
         <TabsContent value="activities" className="space-y-4">
@@ -881,7 +887,7 @@ interface AmenitiesTableProps {
   addAmenityMutation: any;
 }
 
-const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
+const AmenitiesTable = ({ parkId, isAddAmenityModalOpen, setIsAddAmenityModalOpen, availableAmenities, addAmenityMutation }: AmenitiesTableProps) => {
   const { data: amenities, isLoading, error } = useQuery({
     queryKey: [`/api/parks/${parkId}/amenities`],
   });
