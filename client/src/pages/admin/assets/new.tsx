@@ -168,16 +168,18 @@ const CreateAssetPage: React.FC = () => {
   // Debug logging
   useEffect(() => {
     console.log('=== AMENITIES DEBUG ===');
-    console.log('Selected Park ID:', selectedParkId);
+    console.log('Selected Park ID (state):', selectedParkId);
+    console.log('Form Park ID:', form.watch('parkId'));
     console.log('Amenities data:', amenities);
     console.log('Is loading amenities:', isLoadingAmenities);
     console.log('Query enabled:', !!selectedParkId && selectedParkId > 0);
+    console.log('Query key:', [`/api/parks/${selectedParkId}/amenities`]);
     if (amenities && Array.isArray(amenities)) {
+      console.log('Amenities count:', amenities.length);
       console.log('First amenity sample:', amenities[0]);
-      console.log('Filtered amenities:', amenities.filter((amenity: any) => amenity.amenityId && amenity.amenityName));
     }
     console.log('======================');
-  }, [selectedParkId, amenities, isLoadingAmenities]);
+  }, [selectedParkId, amenities, isLoadingAmenities, form]);
   
   // Consultar usuarios para responsables
   const { data: users, isLoading: isLoadingUsers } = useQuery({
