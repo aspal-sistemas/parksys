@@ -370,9 +370,9 @@ const AssetsPage: React.FC = () => {
                 <Skeleton className="h-8 w-24" />
               ) : (
                 `$${assets?.reduce((total, asset) => {
-                  const cost = parseFloat(asset.acquisition_cost) || 0;
+                  const cost = parseFloat(asset.acquisition_cost?.toString() || '0') || 0;
                   return total + cost;
-                }, 0).toLocaleString('es-MX')}`
+                }, 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
               )}
             </div>
           </CardContent>
@@ -567,7 +567,7 @@ const AssetsPage: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         {asset.acquisition_cost 
-                          ? `$${asset.acquisition_cost.toLocaleString('es-MX')}` 
+                          ? `$${parseFloat(asset.acquisition_cost.toString()).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
                           : 'N/A'
                         }
                       </TableCell>
