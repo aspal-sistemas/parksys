@@ -2938,6 +2938,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "El parque es requerido" });
       }
       
+      // Si hay amenityId, necesitamos obtener el amenity_id real de la tabla park_amenities
+      let realAmenityId = null;
+      if (req.body.amenityId || req.body.amenity_id) {
+        const parkAmenityId = parseInt(req.body.amenityId || req.body.amenity_id);
+        const amenityResult = await pool.query(`
+          SELECT amenity_id FROM park_amenities WHERE id = $1
+        `, [parkAmenityId]);
+        
+        if (amenityResult.rows.length > 0) {
+          realAmenityId = amenityResult.rows[0].amenity_id;
+          console.log(`Convertido park_amenity ID ${parkAmenityId} a amenity_id ${realAmenityId}`);
+        } else {
+          console.log(`No se encontró park_amenity con ID ${parkAmenityId}`);
+        }
+      }
+
       // Inserción directa usando pool
       const result = await pool.query(`
         INSERT INTO assets (
@@ -2952,7 +2968,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.body.serialNumber || req.body.serial_number || null,
         parseInt(req.body.categoryId || req.body.category_id),
         parseInt(req.body.parkId || req.body.park_id),
-        req.body.amenityId || req.body.amenity_id ? parseInt(req.body.amenityId || req.body.amenity_id) : null,
+        realAmenityId,
         req.body.locationDescription || req.body.location_description || null,
         req.body.latitude ? parseFloat(req.body.latitude) : null,
         req.body.longitude ? parseFloat(req.body.longitude) : null,
