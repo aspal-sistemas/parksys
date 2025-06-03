@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus, Filter, SortAsc } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
 import { useToast } from "@/hooks/use-toast";
@@ -213,6 +213,15 @@ export default function AdminParkView() {
   const [viewingAmenity, setViewingAmenity] = React.useState<any>(null);
   const [refreshKey, setRefreshKey] = React.useState(0);
   
+  // Estados para filtros de activos
+  const [assetFilters, setAssetFilters] = React.useState({
+    category: '',
+    status: '',
+    condition: '',
+    sortBy: 'name',
+    sortOrder: 'asc' as 'asc' | 'desc'
+  });
+  
   // Get complete park data from the main API endpoint that has all fields
   const { data: park, isLoading, error, refetch: refetchPark } = useQuery<ParkDetails>({
     queryKey: [`/api/parks/${id}`, refreshKey],
@@ -314,6 +323,75 @@ export default function AdminParkView() {
 
   // Use the park data directly from the main API
   const displayPark = park;
+
+  // Funciones de filtrado y ordenamiento para activos
+  const getFilteredAndSortedAssets = () => {
+    if (!park?.assets) return [];
+    
+    let filtered = park.assets.filter(asset => {
+      const matchesCategory = !assetFilters.category || asset.category?.toLowerCase().includes(assetFilters.category.toLowerCase());
+      const matchesStatus = !assetFilters.status || asset.status?.toLowerCase() === assetFilters.status.toLowerCase();
+      const matchesCondition = !assetFilters.condition || asset.condition?.toLowerCase() === assetFilters.condition.toLowerCase();
+      
+      return matchesCategory && matchesStatus && matchesCondition;
+    });
+
+    // Ordenamiento
+    filtered.sort((a, b) => {
+      let aValue = '';
+      let bValue = '';
+      
+      switch (assetFilters.sortBy) {
+        case 'name':
+          aValue = a.name?.toLowerCase() || '';
+          bValue = b.name?.toLowerCase() || '';
+          break;
+        case 'category':
+          aValue = a.category?.toLowerCase() || '';
+          bValue = b.category?.toLowerCase() || '';
+          break;
+        case 'condition':
+          aValue = a.condition?.toLowerCase() || '';
+          bValue = b.condition?.toLowerCase() || '';
+          break;
+        case 'acquisitionDate':
+          aValue = a.acquisitionDate || '';
+          bValue = b.acquisitionDate || '';
+          break;
+        case 'lastMaintenance':
+          aValue = a.lastMaintenance || '';
+          bValue = b.lastMaintenance || '';
+          break;
+        default:
+          aValue = a.name?.toLowerCase() || '';
+          bValue = b.name?.toLowerCase() || '';
+      }
+      
+      if (assetFilters.sortOrder === 'desc') {
+        return bValue.localeCompare(aValue);
+      }
+      return aValue.localeCompare(bValue);
+    });
+
+    return filtered;
+  };
+
+  const filteredAssets = getFilteredAndSortedAssets();
+
+  // Obtener listas únicas para los filtros
+  const uniqueCategories = [...new Set(park?.assets?.map(asset => asset.category).filter(Boolean))];
+  const uniqueStatuses = [...new Set(park?.assets?.map(asset => asset.status).filter(Boolean))];
+  const uniqueConditions = [...new Set(park?.assets?.map(asset => asset.condition).filter(Boolean))];
+
+  const clearAssetFilters = () => {
+    setAssetFilters({
+      category: '',
+      status: '',
+      condition: '',
+      sortBy: 'name',
+      sortOrder: 'asc'
+    });
+  };
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -760,7 +838,140 @@ export default function AdminParkView() {
               </Link>
             </CardHeader>
             <CardContent>
-              {park.assets?.length === 0 ? (
+              {/* Filtros para activos */}
+              {park.assets && park.assets.length > 0 && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Filter className="h-4 w-4 text-gray-600" />
+                    <span className="font-medium text-gray-700">Filtros y Ordenamiento</span>
+                    <span className="ml-auto text-sm text-gray-500">
+                      ({filteredAssets.length} de {park.assets.length} activos)
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    {/* Filtro por categoría */}
+                    <div>
+                      <Select
+                        value={assetFilters.category}
+                        onValueChange={(value) => setAssetFilters(prev => ({ ...prev, category: value }))}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Todas las categorías</SelectItem>
+                          {uniqueCategories.map(category => (
+                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Filtro por estado */}
+                    <div>
+                      <Select
+                        value={assetFilters.status}
+                        onValueChange={(value) => setAssetFilters(prev => ({ ...prev, status: value }))}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Todos los estados</SelectItem>
+                          {uniqueStatuses.map(status => (
+                            <SelectItem key={status} value={status}>
+                              {status === 'active' ? 'Activo' : status}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Filtro por condición */}
+                    <div>
+                      <Select
+                        value={assetFilters.condition}
+                        onValueChange={(value) => setAssetFilters(prev => ({ ...prev, condition: value }))}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Condición" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Todas las condiciones</SelectItem>
+                          {uniqueConditions.map(condition => (
+                            <SelectItem key={condition} value={condition}>
+                              {condition === 'excellent' ? 'Excelente' : 
+                               condition === 'good' ? 'Bueno' : 
+                               condition === 'regular' ? 'Regular' : 
+                               condition === 'bad' ? 'Malo' : condition}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Ordenar por */}
+                    <div>
+                      <Select
+                        value={assetFilters.sortBy}
+                        onValueChange={(value) => setAssetFilters(prev => ({ ...prev, sortBy: value }))}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Ordenar por" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="name">Nombre</SelectItem>
+                          <SelectItem value="category">Categoría</SelectItem>
+                          <SelectItem value="condition">Condición</SelectItem>
+                          <SelectItem value="acquisitionDate">Fecha de Adquisición</SelectItem>
+                          <SelectItem value="lastMaintenance">Último Mantenimiento</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Dirección de ordenamiento */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant={assetFilters.sortOrder === 'asc' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setAssetFilters(prev => ({ ...prev, sortOrder: 'asc' }))}
+                        className="flex-1"
+                      >
+                        <SortAsc className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={assetFilters.sortOrder === 'desc' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setAssetFilters(prev => ({ ...prev, sortOrder: 'desc' }))}
+                        className="flex-1"
+                      >
+                        <SortAsc className="h-4 w-4 rotate-180" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Botón para limpiar filtros */}
+                  {(assetFilters.category || assetFilters.status || assetFilters.condition || assetFilters.sortBy !== 'name') && (
+                    <div className="mt-3 flex justify-end">
+                      <Button variant="outline" size="sm" onClick={clearAssetFilters}>
+                        Limpiar Filtros
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {filteredAssets.length === 0 && park.assets && park.assets.length > 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Filter className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-lg font-medium mb-2">No se encontraron activos</p>
+                  <p className="text-sm">Prueba ajustando los filtros de búsqueda.</p>
+                  <Button variant="outline" className="mt-4" onClick={clearAssetFilters}>
+                    Limpiar Filtros
+                  </Button>
+                </div>
+              ) : park.assets?.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <Wrench className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                   <p className="text-lg font-medium mb-2">No hay activos registrados</p>
@@ -774,7 +985,7 @@ export default function AdminParkView() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {park.assets?.map((asset) => (
+                  {filteredAssets.map((asset) => (
                     <div key={asset.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
