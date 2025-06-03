@@ -670,6 +670,7 @@ export default function AdminParkView() {
             setIsAddAmenityModalOpen={setIsAddAmenityModalOpen}
             availableAmenities={availableAmenities || []}
             addAmenityMutation={addAmenityMutation}
+            parkData={park}
           />
         </TabsContent>
 
@@ -872,7 +873,23 @@ export default function AdminParkView() {
           </Card>
         </TabsContent>
       </Tabs>
-        </div>
+
+      {/* Modal para agregar amenidad */}
+      <Dialog open={isAddAmenityModalOpen} onOpenChange={setIsAddAmenityModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Agregar módulo</DialogTitle>
+          </DialogHeader>
+          <AddAmenityForm
+            availableAmenities={availableAmenities || []}
+            onSubmit={(data) => addAmenityMutation.mutate(data)}
+            isLoading={addAmenityMutation.isPending}
+            onCancel={() => setIsAddAmenityModalOpen(false)}
+            parkData={park}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
       </div>
     </div>
   );
