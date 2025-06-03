@@ -215,9 +215,9 @@ export default function AdminParkView() {
   
   // Estados para filtros de activos
   const [assetFilters, setAssetFilters] = React.useState({
-    category: '',
-    status: '',
-    condition: '',
+    category: 'all',
+    status: 'all',
+    condition: 'all',
     sortBy: 'name',
     sortOrder: 'asc' as 'asc' | 'desc'
   });
@@ -329,9 +329,9 @@ export default function AdminParkView() {
     if (!park?.assets) return [];
     
     let filtered = park.assets.filter(asset => {
-      const matchesCategory = !assetFilters.category || asset.category?.toLowerCase().includes(assetFilters.category.toLowerCase());
-      const matchesStatus = !assetFilters.status || asset.status?.toLowerCase() === assetFilters.status.toLowerCase();
-      const matchesCondition = !assetFilters.condition || asset.condition?.toLowerCase() === assetFilters.condition.toLowerCase();
+      const matchesCategory = !assetFilters.category || assetFilters.category === 'all' || asset.category?.toLowerCase().includes(assetFilters.category.toLowerCase());
+      const matchesStatus = !assetFilters.status || assetFilters.status === 'all' || asset.status?.toLowerCase() === assetFilters.status.toLowerCase();
+      const matchesCondition = !assetFilters.condition || assetFilters.condition === 'all' || asset.condition?.toLowerCase() === assetFilters.condition.toLowerCase();
       
       return matchesCategory && matchesStatus && matchesCondition;
     });
@@ -385,9 +385,9 @@ export default function AdminParkView() {
 
   const clearAssetFilters = () => {
     setAssetFilters({
-      category: '',
-      status: '',
-      condition: '',
+      category: 'all',
+      status: 'all',
+      condition: 'all',
       sortBy: 'name',
       sortOrder: 'asc'
     });
@@ -860,7 +860,7 @@ export default function AdminParkView() {
                           <SelectValue placeholder="Categoría" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Todas las categorías</SelectItem>
+                          <SelectItem value="all">Todas las categorías</SelectItem>
                           {uniqueCategories.map(category => (
                             <SelectItem key={category} value={category}>{category}</SelectItem>
                           ))}
@@ -878,7 +878,7 @@ export default function AdminParkView() {
                           <SelectValue placeholder="Estado" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Todos los estados</SelectItem>
+                          <SelectItem value="all">Todos los estados</SelectItem>
                           {uniqueStatuses.map(status => (
                             <SelectItem key={status} value={status}>
                               {status === 'active' ? 'Activo' : status}
@@ -898,7 +898,7 @@ export default function AdminParkView() {
                           <SelectValue placeholder="Condición" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Todas las condiciones</SelectItem>
+                          <SelectItem value="all">Todas las condiciones</SelectItem>
                           {uniqueConditions.map(condition => (
                             <SelectItem key={condition} value={condition}>
                               {condition === 'excellent' ? 'Excelente' : 
@@ -952,7 +952,7 @@ export default function AdminParkView() {
                   </div>
 
                   {/* Botón para limpiar filtros */}
-                  {(assetFilters.category || assetFilters.status || assetFilters.condition || assetFilters.sortBy !== 'name') && (
+                  {(assetFilters.category !== 'all' || assetFilters.status !== 'all' || assetFilters.condition !== 'all' || assetFilters.sortBy !== 'name') && (
                     <div className="mt-3 flex justify-end">
                       <Button variant="outline" size="sm" onClick={clearAssetFilters}>
                         Limpiar Filtros
