@@ -57,7 +57,7 @@ const assetCreateSchema = z.object({
   description: z.string().nullable().optional(),
   serialNumber: z.string().nullable().optional(),
   categoryId: z.number().min(1, 'La categoría es obligatoria'),
-  parkId: z.number().min(1, 'El parque es obligatorio'),
+  parkId: z.number().min(1, 'El parque es obligatorio').nullable(),
   amenityId: z.number().nullable().optional(),
   locationDescription: z.string().nullable().optional(),
   latitude: z.string().nullable().optional(),
@@ -124,7 +124,7 @@ const CreateAssetPage: React.FC = () => {
       description: '',
       serialNumber: '',
       categoryId: 0,
-      parkId: 0,
+      parkId: null,
       amenityId: null,
       locationDescription: '',
       latitude: '',
@@ -185,7 +185,7 @@ const CreateAssetPage: React.FC = () => {
   // Watch park selection to reset amenity field and update map
   useEffect(() => {
     if (selectedParkId) {
-      form.setValue('amenityId', 0); // Reset amenity selection when park changes
+      form.setValue('amenityId', null); // Reset amenity selection when park changes
       
       // Find selected park and update map position
       if (parks && Array.isArray(parks)) {
@@ -215,11 +215,14 @@ const CreateAssetPage: React.FC = () => {
   // Watch amenity selection to auto-fill location
   const selectedAmenityId = form.watch('amenityId');
   useEffect(() => {
-    if (selectedAmenityId && selectedAmenityId > 0 && amenities && Array.isArray(amenities)) {
+    if (selectedAmenityId && selectedAmenityId !== null && amenities && Array.isArray(amenities)) {
       const selectedAmenity = amenities.find((a: any) => a.amenityId === selectedAmenityId);
       if (selectedAmenity) {
         form.setValue('locationDescription', selectedAmenity.amenityName || '');
       }
+    } else if (selectedAmenityId === null) {
+      // Clear location description when no amenity is selected
+      form.setValue('locationDescription', '');
     }
   }, [selectedAmenityId, amenities, form]);
   
@@ -558,13 +561,19 @@ const CreateAssetPage: React.FC = () => {
                         <FormControl>
                           <Select 
                             value={field.value ? field.value.toString() : ''}
-                            onValueChange={(value) => field.onChange(value ? parseInt(value) : null)}
+                            onValueChange={(value) => {
+                              if (value === '' || value === 'none') {
+                                field.onChange(null);
+                              } else {
+                                field.onChange(parseInt(value));
+                              }
+                            }}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Seleccione una amenidad" />
                             </SelectTrigger>
                             <SelectContent className="z-[1001]">
-                              <SelectItem value="0">Sin amenidad específica</SelectItem>
+                              <SelectItem value="none">Sin amenidad específica</SelectItem>
                               {amenities && Array.isArray(amenities) ? amenities
                                 .filter((amenity: any) => amenity.amenityId && amenity.amenityName)
                                 .map((amenity: any) => (
