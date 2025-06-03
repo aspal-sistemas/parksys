@@ -57,7 +57,7 @@ const assetCreateSchema = z.object({
   description: z.string().nullable().optional(),
   serialNumber: z.string().nullable().optional(),
   categoryId: z.number().min(1, 'La categoría es obligatoria'),
-  parkId: z.number().min(1, 'El parque es obligatorio').nullable(),
+  parkId: z.number().min(1, 'El parque es obligatorio'),
   amenityId: z.number().nullable().optional(),
   locationDescription: z.string().nullable().optional(),
   latitude: z.string().nullable().optional(),
@@ -124,7 +124,7 @@ const CreateAssetPage: React.FC = () => {
       description: '',
       serialNumber: '',
       categoryId: 0,
-      parkId: null,
+      parkId: 0,
       amenityId: null,
       locationDescription: '',
       latitude: '',
@@ -156,8 +156,10 @@ const CreateAssetPage: React.FC = () => {
     queryKey: ['/api/parks'],
   });
   
+  // Estado para el parque seleccionado
+  const [selectedParkId, setSelectedParkId] = useState<number>(0);
+  
   // Consultar amenidades del parque seleccionado
-  const selectedParkId = form.watch('parkId');
   const { data: amenities, isLoading: isLoadingAmenities } = useQuery({
     queryKey: [`/api/parks/${selectedParkId}/amenities`],
     enabled: !!selectedParkId && selectedParkId > 0,
@@ -529,7 +531,9 @@ const CreateAssetPage: React.FC = () => {
                           <Select 
                             value={field.value ? field.value.toString() : ''}
                             onValueChange={(value) => {
-                              field.onChange(parseInt(value));
+                              const parkId = parseInt(value);
+                              field.onChange(parkId);
+                              setSelectedParkId(parkId);
                               // Reset amenity when park changes
                               form.setValue('amenityId', null);
                               form.setValue('locationDescription', '');
