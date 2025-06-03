@@ -142,4 +142,29 @@ router.get("/parks/:parkId/amenities", async (req: Request, res: Response) => {
   }
 });
 
+// Endpoint para eliminar una amenidad instalada en un parque
+router.delete("/park-amenities/:id", async (req: Request, res: Response) => {
+  try {
+    const amenityId = parseInt(req.params.id);
+    
+    if (isNaN(amenityId)) {
+      return res.status(400).json({ message: 'ID de amenidad inválido' });
+    }
+    
+    const result = await db.execute(sql`
+      DELETE FROM park_amenities 
+      WHERE id = ${amenityId}
+    `);
+    
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Amenidad no encontrada' });
+    }
+    
+    res.json({ message: 'Amenidad eliminada exitosamente' });
+  } catch (error) {
+    console.error('Error al eliminar amenidad:', error);
+    res.status(500).json({ message: 'Error al eliminar amenidad' });
+  }
+});
+
 export { router as simpleAssetRouter };

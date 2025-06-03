@@ -872,6 +872,7 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
                 <TableHead>Amenidad</TableHead>
                 <TableHead>Superficie (m²)</TableHead>
                 <TableHead>Estado</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -899,6 +900,51 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
                     >
                       {amenity.status || 'Activa'}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                      >
+                        <Link href={`/admin/assets/edit/${amenity.id}`}>
+                          <Edit className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar amenidad?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción eliminará permanentemente la amenidad "{amenity.moduleName}" 
+                              del parque. Esta acción no se puede deshacer.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteAmenityMutation.mutate(amenity.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                              disabled={deleteAmenityMutation.isPending}
+                            >
+                              {deleteAmenityMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
