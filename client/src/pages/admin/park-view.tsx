@@ -747,29 +747,154 @@ export default function AdminParkView() {
 
         <TabsContent value="assets" className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Activos ({park.assets?.length || 0})</CardTitle>
-              <CardDescription>Equipamiento e infraestructura del parque</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div>
+                <CardTitle>Activos ({park.assets?.length || 0})</CardTitle>
+                <CardDescription>Equipamiento e infraestructura del parque</CardDescription>
+              </div>
+              <Link href={`/admin/assets/new?parkId=${id}`}>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar Activo
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {park.assets?.map((asset) => (
-                  <div key={asset.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">{asset.name}</h4>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
-                        <span>📂 {asset.category}</span>
-                        {asset.lastMaintenance && (
-                          <span>🔧 Último mantenimiento: {new Date(asset.lastMaintenance).toLocaleDateString()}</span>
-                        )}
+              {park.assets?.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Wrench className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-lg font-medium mb-2">No hay activos registrados</p>
+                  <p className="text-sm">Este parque aún no tiene activos asignados.</p>
+                  <Link href={`/admin/assets/new?parkId=${id}`}>
+                    <Button className="mt-4" variant="outline">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Agregar primer activo
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {park.assets?.map((asset) => (
+                    <div key={asset.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h4 className="font-semibold text-lg">{asset.name}</h4>
+                            <Badge variant={getConditionBadge(asset.condition)}>
+                              {asset.condition}
+                            </Badge>
+                            {asset.status && (
+                              <Badge variant={asset.status === 'active' ? 'default' : 'secondary'}>
+                                {asset.status === 'active' ? 'Activo' : asset.status}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="font-medium text-gray-700">Categoría:</span>
+                                <span className="text-gray-600">{asset.category || 'Sin categoría'}</span>
+                              </div>
+                              
+                              {asset.serialNumber && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="font-medium text-gray-700">Número de Serie:</span>
+                                  <span className="text-gray-600 font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                                    {asset.serialNumber}
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {asset.locationDescription && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <MapPin className="h-4 w-4 text-gray-500" />
+                                  <span className="font-medium text-gray-700">Ubicación:</span>
+                                  <span className="text-gray-600">{asset.locationDescription}</span>
+                                </div>
+                              )}
+                              
+                              {(asset.manufacturer || asset.model) && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="font-medium text-gray-700">Fabricante/Modelo:</span>
+                                  <span className="text-gray-600">
+                                    {[asset.manufacturer, asset.model].filter(Boolean).join(' - ')}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="space-y-2">
+                              {asset.acquisitionDate && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Calendar className="h-4 w-4 text-gray-500" />
+                                  <span className="font-medium text-gray-700">Fecha de Adquisición:</span>
+                                  <span className="text-gray-600">
+                                    {new Date(asset.acquisitionDate).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {asset.lastMaintenance && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Wrench className="h-4 w-4 text-gray-500" />
+                                  <span className="font-medium text-gray-700">Último Mantenimiento:</span>
+                                  <span className="text-gray-600">
+                                    {new Date(asset.lastMaintenance).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {asset.nextMaintenanceDate && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Clock className="h-4 w-4 text-gray-500" />
+                                  <span className="font-medium text-gray-700">Próximo Mantenimiento:</span>
+                                  <span className="text-gray-600">
+                                    {new Date(asset.nextMaintenanceDate).toLocaleDateString()}
+                                  </span>
+                                  {new Date(asset.nextMaintenanceDate) < new Date() && (
+                                    <Badge variant="destructive" className="ml-2">Vencido</Badge>
+                                  )}
+                                </div>
+                              )}
+                              
+                              {(asset.acquisitionCost || asset.currentValue) && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="font-medium text-gray-700">Valor:</span>
+                                  <span className="text-gray-600">
+                                    {asset.currentValue 
+                                      ? `$${parseFloat(asset.currentValue).toLocaleString()}` 
+                                      : asset.acquisitionCost 
+                                        ? `$${parseFloat(asset.acquisitionCost).toLocaleString()} (adquisición)`
+                                        : 'No especificado'
+                                    }
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {asset.notes && (
+                            <div className="mt-3 p-3 bg-blue-50 rounded-md">
+                              <p className="text-sm text-blue-800">
+                                <span className="font-medium">Notas:</span> {asset.notes}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="ml-4 flex flex-col gap-2">
+                          <Link href={`/admin/assets/${asset.id}/edit`}>
+                            <Button size="sm" variant="outline">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                    <Badge variant={getConditionBadge(asset.condition)}>
-                      {asset.condition}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
