@@ -378,10 +378,10 @@ export default function AdminParkView() {
 
   const filteredAssets = getFilteredAndSortedAssets();
 
-  // Obtener listas únicas para los filtros
-  const uniqueCategories = [...new Set(park?.assets?.map(asset => asset.category).filter(Boolean))];
-  const uniqueStatuses = [...new Set(park?.assets?.map(asset => asset.status).filter(Boolean))];
-  const uniqueConditions = [...new Set(park?.assets?.map(asset => asset.condition).filter(Boolean))];
+  // Obtener listas únicas para los filtros (normalizar a minúsculas para evitar duplicados)
+  const uniqueCategories = [...new Set(park?.assets?.map(asset => asset.category?.toLowerCase()).filter(Boolean))];
+  const uniqueStatuses = [...new Set(park?.assets?.map(asset => asset.status?.toLowerCase()).filter(Boolean))];
+  const uniqueConditions = [...new Set(park?.assets?.map(asset => asset.condition?.toLowerCase()).filter(Boolean))];
 
   const clearAssetFilters = () => {
     setAssetFilters({
@@ -862,7 +862,9 @@ export default function AdminParkView() {
                         <SelectContent>
                           <SelectItem value="all">Todas las categorías</SelectItem>
                           {uniqueCategories.map(category => (
-                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                            <SelectItem key={category} value={category}>
+                              {category.charAt(0).toUpperCase() + category.slice(1)}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -881,7 +883,9 @@ export default function AdminParkView() {
                           <SelectItem value="all">Todos los estados</SelectItem>
                           {uniqueStatuses.map(status => (
                             <SelectItem key={status} value={status}>
-                              {status === 'active' ? 'Activo' : status}
+                              {status === 'active' ? 'Activo' : 
+                               status === 'activo' ? 'Activo' :
+                               status.charAt(0).toUpperCase() + status.slice(1)}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -902,9 +906,13 @@ export default function AdminParkView() {
                           {uniqueConditions.map(condition => (
                             <SelectItem key={condition} value={condition}>
                               {condition === 'excellent' ? 'Excelente' : 
+                               condition === 'excelente' ? 'Excelente' :
                                condition === 'good' ? 'Bueno' : 
+                               condition === 'bueno' ? 'Bueno' :
                                condition === 'regular' ? 'Regular' : 
-                               condition === 'bad' ? 'Malo' : condition}
+                               condition === 'bad' ? 'Malo' : 
+                               condition === 'malo' ? 'Malo' :
+                               condition.charAt(0).toUpperCase() + condition.slice(1)}
                             </SelectItem>
                           ))}
                         </SelectContent>
