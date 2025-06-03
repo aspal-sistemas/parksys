@@ -156,8 +156,8 @@ const CreateAssetPage: React.FC = () => {
     queryKey: ['/api/parks'],
   });
   
-  // Estado para el parque seleccionado
-  const [selectedParkId, setSelectedParkId] = useState<number>(0);
+  // Obtener el parque seleccionado del formulario
+  const selectedParkId = form.watch('parkId');
   
   // Consultar amenidades del parque seleccionado
   const { data: amenities, isLoading: isLoadingAmenities } = useQuery({
@@ -174,8 +174,10 @@ const CreateAssetPage: React.FC = () => {
 
   // Watch park selection to reset amenity field and update map
   useEffect(() => {
-    if (selectedParkId) {
-      form.setValue('amenityId', null); // Reset amenity selection when park changes
+    if (selectedParkId && selectedParkId > 0) {
+      // Reset amenity selection when park changes
+      form.setValue('amenityId', null);
+      form.setValue('locationDescription', '');
       
       // Find selected park and update map position
       if (parks && Array.isArray(parks)) {
@@ -522,7 +524,6 @@ const CreateAssetPage: React.FC = () => {
                             onValueChange={(value) => {
                               const parkId = parseInt(value);
                               field.onChange(parkId);
-                              setSelectedParkId(parkId);
                               // Reset amenity when park changes
                               form.setValue('amenityId', null);
                               form.setValue('locationDescription', '');
