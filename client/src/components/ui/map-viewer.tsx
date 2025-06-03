@@ -75,9 +75,10 @@ export function MapViewer({
           center={position}
           zoom={15}
           style={{ height: '100%', width: '100%' }}
-          scrollWheelZoom={false}
+          scrollWheelZoom={true}
           zoomControl={true}
           dragging={true}
+          doubleClickZoom={true}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
