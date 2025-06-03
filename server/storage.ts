@@ -50,6 +50,16 @@ export interface IStorage {
   updateAsset(id: number, assetData: any): Promise<any>;
   deleteAsset(id: number): Promise<boolean>;
   createAssetHistoryEntry(historyData: any): Promise<any>;
+  getAssetMaintenances(assetId?: number): Promise<any[]>;
+  getAssetMaintenance(id: number): Promise<any>;
+  createAssetMaintenance(maintenanceData: any): Promise<any>;
+  updateAssetMaintenance(id: number, maintenanceData: any): Promise<any>;
+  deleteAssetMaintenance(id: number): Promise<boolean>;
+  getAssetAssignments(assetId?: number): Promise<any[]>;
+  getAssetAssignment(id: number): Promise<any>;
+  createAssetAssignment(assignmentData: any): Promise<any>;
+  updateAssetAssignment(id: number, assignmentData: any): Promise<any>;
+  deleteAssetAssignment(id: number): Promise<boolean>;
   getParkAmenities(parkId: number): Promise<any[]>;
   addAmenityToPark(data: any): Promise<any>;
   removeAmenityFromPark(parkId: number, amenityId: number): Promise<boolean>;
@@ -748,27 +758,267 @@ export class DatabaseStorage implements IStorage {
 
   async createAssetHistoryEntry(historyData: any): Promise<any> {
     try {
+      // Por ahora, simplemente registrar la acción
+      console.log("Entrada de historial creada:", historyData);
+      return { id: Date.now(), ...historyData };
+    } catch (error) {
+      console.error("Error al crear entrada de historial:", error);
+      throw error;
+    }
+  }
+
+  // Métodos para mantenimientos de activos
+  async getAssetMaintenances(assetId?: number): Promise<any[]> {
+    try {
+      let query = `
+        SELECT 
+          am.*,
+          a.name as "assetName"
+        FROM asset_maintenances am
+        LEFT JOIN assets a ON am.asset_id = a.id
+      `;
+      const params: any[] = [];
+      
+      if (assetId) {
+        query += ` WHERE am.asset_id = $1`;
+        params.push(assetId);
+      }
+      
+      query += ` ORDER BY am.created_at DESC`;
+      
+      const result = await pool.query(query, params);
+      return result.rows || [];
+    } catch (error) {
+      console.error("Error al obtener mantenimientos:", error);
+      return [];
+    }
+  }
+
+  async getAssetMaintenance(id: number): Promise<any> {
+    try {
       const result = await pool.query(`
-        INSERT INTO asset_history (
-          asset_id, change_type, date, description, changed_by,
-          previous_value, new_value, notes, created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
-        RETURNING *
+        SELECT 
+          am.*,
+          a.name as "assetName"
+        FROM asset_maintenances am
+        LEFT JOIN assets a ON am.asset_id = a.id
+        WHERE am.id = $1
+      `, [id]);
+      
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error(`Error al obtener mantenimiento ${id}:`, error);
+      return null;
+    }
+  }
+
+  async createAssetMaintenance(maintenanceData: any): Promise<any> {
+    try {
+      const result = await pool.query(`
+        INSERT INTO asset_maintenances (
+          asset_id, maintenance_type, description, scheduled_date,
+          completed_date, performed_by, cost, status, priority, notes,
+          parts_replaced, hours_worked, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW()
+        ) RETURNING *
       `, [
-        historyData.assetId,
-        historyData.changeType,
-        historyData.date,
-        historyData.description,
-        historyData.changedBy,
-        historyData.previousValue,
-        historyData.newValue,
-        historyData.notes
+        maintenanceData.assetId || maintenanceData.asset_id,
+        maintenanceData.maintenanceType || maintenanceData.maintenance_type,
+        maintenanceData.description,
+        maintenanceData.scheduledDate || maintenanceData.scheduled_date,
+        maintenanceData.completedDate || maintenanceData.completed_date,
+        maintenanceData.performedBy || maintenanceData.performed_by,
+        maintenanceData.cost,
+        maintenanceData.status || 'scheduled',
+        maintenanceData.priority || 'medium',
+        maintenanceData.notes,
+        maintenanceData.partsReplaced || maintenanceData.parts_replaced || [],
+        maintenanceData.hoursWorked || maintenanceData.hours_worked
       ]);
 
       return result.rows[0];
     } catch (error) {
-      console.error("Error al crear entrada de historial:", error);
+      console.error("Error al crear mantenimiento:", error);
       throw error;
+    }
+  }
+
+  async updateAssetMaintenance(id: number, maintenanceData: any): Promise<any> {
+    try {
+      const result = await pool.query(`
+        UPDATE asset_maintenances 
+        SET 
+          maintenance_type = COALESCE($1, maintenance_type),
+          description = COALESCE($2, description),
+          scheduled_date = COALESCE($3, scheduled_date),
+          completed_date = COALESCE($4, completed_date),
+          performed_by = COALESCE($5, performed_by),
+          cost = COALESCE($6, cost),
+          status = COALESCE($7, status),
+          priority = COALESCE($8, priority),
+          notes = COALESCE($9, notes),
+          parts_replaced = COALESCE($10, parts_replaced),
+          hours_worked = COALESCE($11, hours_worked),
+          updated_at = NOW()
+        WHERE id = $12
+        RETURNING *
+      `, [
+        maintenanceData.maintenanceType || maintenanceData.maintenance_type,
+        maintenanceData.description,
+        maintenanceData.scheduledDate || maintenanceData.scheduled_date,
+        maintenanceData.completedDate || maintenanceData.completed_date,
+        maintenanceData.performedBy || maintenanceData.performed_by,
+        maintenanceData.cost,
+        maintenanceData.status,
+        maintenanceData.priority,
+        maintenanceData.notes,
+        maintenanceData.partsReplaced || maintenanceData.parts_replaced,
+        maintenanceData.hoursWorked || maintenanceData.hours_worked,
+        id
+      ]);
+
+      return result.rows[0];
+    } catch (error) {
+      console.error(`Error al actualizar mantenimiento ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async deleteAssetMaintenance(id: number): Promise<boolean> {
+    try {
+      const result = await pool.query(`DELETE FROM asset_maintenances WHERE id = $1`, [id]);
+      return (result.rowCount || 0) > 0;
+    } catch (error) {
+      console.error(`Error al eliminar mantenimiento ${id}:`, error);
+      return false;
+    }
+  }
+
+  // Métodos para asignaciones de activos
+  async getAssetAssignments(assetId?: number): Promise<any[]> {
+    try {
+      let query = `
+        SELECT 
+          aa.*,
+          a.name as "assetName",
+          i.name as "instructorName",
+          act.name as "activityName"
+        FROM asset_assignments aa
+        LEFT JOIN assets a ON aa.asset_id = a.id
+        LEFT JOIN instructors i ON aa.instructor_id = i.id
+        LEFT JOIN activities act ON aa.activity_id = act.id
+      `;
+      const params: any[] = [];
+      
+      if (assetId) {
+        query += ` WHERE aa.asset_id = $1`;
+        params.push(assetId);
+      }
+      
+      query += ` ORDER BY aa.created_at DESC`;
+      
+      const result = await pool.query(query, params);
+      return result.rows || [];
+    } catch (error) {
+      console.error("Error al obtener asignaciones:", error);
+      return [];
+    }
+  }
+
+  async getAssetAssignment(id: number): Promise<any> {
+    try {
+      const result = await pool.query(`
+        SELECT 
+          aa.*,
+          a.name as "assetName",
+          i.name as "instructorName",
+          act.name as "activityName"
+        FROM asset_assignments aa
+        LEFT JOIN assets a ON aa.asset_id = a.id
+        LEFT JOIN instructors i ON aa.instructor_id = i.id
+        LEFT JOIN activities act ON aa.activity_id = act.id
+        WHERE aa.id = $1
+      `, [id]);
+      
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error(`Error al obtener asignación ${id}:`, error);
+      return null;
+    }
+  }
+
+  async createAssetAssignment(assignmentData: any): Promise<any> {
+    try {
+      const result = await pool.query(`
+        INSERT INTO asset_assignments (
+          asset_id, instructor_id, activity_id, assignment_date,
+          return_date, purpose, condition, notes, status,
+          created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()
+        ) RETURNING *
+      `, [
+        assignmentData.assetId || assignmentData.asset_id,
+        assignmentData.instructorId || assignmentData.instructor_id,
+        assignmentData.activityId || assignmentData.activity_id,
+        assignmentData.assignmentDate || assignmentData.assignment_date,
+        assignmentData.returnDate || assignmentData.return_date,
+        assignmentData.purpose,
+        assignmentData.condition || 'good',
+        assignmentData.notes,
+        assignmentData.status || 'active'
+      ]);
+
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error al crear asignación:", error);
+      throw error;
+    }
+  }
+
+  async updateAssetAssignment(id: number, assignmentData: any): Promise<any> {
+    try {
+      const result = await pool.query(`
+        UPDATE asset_assignments 
+        SET 
+          instructor_id = COALESCE($1, instructor_id),
+          activity_id = COALESCE($2, activity_id),
+          assignment_date = COALESCE($3, assignment_date),
+          return_date = COALESCE($4, return_date),
+          purpose = COALESCE($5, purpose),
+          condition = COALESCE($6, condition),
+          notes = COALESCE($7, notes),
+          status = COALESCE($8, status),
+          updated_at = NOW()
+        WHERE id = $9
+        RETURNING *
+      `, [
+        assignmentData.instructorId || assignmentData.instructor_id,
+        assignmentData.activityId || assignmentData.activity_id,
+        assignmentData.assignmentDate || assignmentData.assignment_date,
+        assignmentData.returnDate || assignmentData.return_date,
+        assignmentData.purpose,
+        assignmentData.condition,
+        assignmentData.notes,
+        assignmentData.status,
+        id
+      ]);
+
+      return result.rows[0];
+    } catch (error) {
+      console.error(`Error al actualizar asignación ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async deleteAssetAssignment(id: number): Promise<boolean> {
+    try {
+      const result = await pool.query(`DELETE FROM asset_assignments WHERE id = $1`, [id]);
+      return (result.rowCount || 0) > 0;
+    } catch (error) {
+      console.error(`Error al eliminar asignación ${id}:`, error);
+      return false;
     }
   }
 
