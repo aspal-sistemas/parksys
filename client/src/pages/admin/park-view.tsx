@@ -208,7 +208,9 @@ export default function AdminParkView() {
   // Estados para modales de amenidades
   const [isAddAmenityModalOpen, setIsAddAmenityModalOpen] = React.useState(false);
   const [isEditAmenityModalOpen, setIsEditAmenityModalOpen] = React.useState(false);
+  const [isViewAmenityModalOpen, setIsViewAmenityModalOpen] = React.useState(false);
   const [editingAmenity, setEditingAmenity] = React.useState<any>(null);
+  const [viewingAmenity, setViewingAmenity] = React.useState<any>(null);
   const [refreshKey, setRefreshKey] = React.useState(0);
   
   // Get complete park data from the main API endpoint that has all fields
@@ -923,6 +925,108 @@ export default function AdminParkView() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Modal para ver detalles de amenidad */}
+      <Dialog open={isViewAmenityModalOpen} onOpenChange={setIsViewAmenityModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Detalles del Módulo de Amenidad</DialogTitle>
+          </DialogHeader>
+          {viewingAmenity && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Tipo de Amenidad</label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{getIconSymbol(viewingAmenity.amenityIcon)}</span>
+                    <p className="font-semibold">
+                      {viewingAmenity.amenityName || 'No especificado'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Nombre del Módulo</label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="font-semibold">{viewingAmenity.moduleName || 'Sin nombre'}</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Superficie (m²)</label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p>{viewingAmenity.surfaceArea ? `${viewingAmenity.surfaceArea} m²` : 'No especificada'}</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Estado</label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    viewingAmenity.status === 'Activa' ? 'bg-green-100 text-green-800' :
+                    viewingAmenity.status === 'Inactiva' ? 'bg-red-100 text-red-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {viewingAmenity.status || 'Sin estado'}
+                  </span>
+                </div>
+              </div>
+
+              {(viewingAmenity.locationLatitude && viewingAmenity.locationLongitude) && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Ubicación en el Parque</label>
+                  <div className="border rounded-lg p-3 bg-white overflow-hidden">
+                    <div className="w-full h-48 relative mb-2">
+                      <MapViewer
+                        latitude={park?.latitude || 20.6597}
+                        longitude={park?.longitude || -103.3496}
+                        parkName={park?.name || "Parque"}
+                        height="192px"
+                        selectedLocation={{
+                          lat: parseFloat(viewingAmenity.locationLatitude),
+                          lng: parseFloat(viewingAmenity.locationLongitude)
+                        }}
+                        readOnly={true}
+                      />
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      📍 {parseFloat(viewingAmenity.locationLatitude).toFixed(6)}, {parseFloat(viewingAmenity.locationLongitude).toFixed(6)}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {viewingAmenity.description && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Descripción</label>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p>{viewingAmenity.description}</p>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Fecha de Creación</label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm">
+                    {viewingAmenity.createdAt ? new Date(viewingAmenity.createdAt).toLocaleDateString('es-MX') : 'No disponible'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsViewAmenityModalOpen(false)}
+                >
+                  Cerrar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
       </div>
     </div>
@@ -941,6 +1045,10 @@ interface AmenitiesTableProps {
   setIsEditAmenityModalOpen: (open: boolean) => void;
   editingAmenity: any;
   setEditingAmenity: (amenity: any) => void;
+  isViewAmenityModalOpen: boolean;
+  setIsViewAmenityModalOpen: (open: boolean) => void;
+  viewingAmenity: any;
+  setViewingAmenity: (amenity: any) => void;
 }
 
 const AmenitiesTable = ({ 
@@ -953,7 +1061,11 @@ const AmenitiesTable = ({
   isEditAmenityModalOpen,
   setIsEditAmenityModalOpen,
   editingAmenity,
-  setEditingAmenity
+  setEditingAmenity,
+  isViewAmenityModalOpen,
+  setIsViewAmenityModalOpen,
+  viewingAmenity,
+  setViewingAmenity
 }: AmenitiesTableProps) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -1123,6 +1235,19 @@ const AmenitiesTable = ({
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => {
+                          setViewingAmenity(amenity);
+                          setIsViewAmenityModalOpen(true);
+                        }}
+                        title="Ver detalles"
+                      >
+                        <Info className="h-4 w-4" />
+                      </Button>
+                      
+                      <Button
                         variant="outline"
                         size="sm"
                         className="h-8 w-8 p-0"
@@ -1130,6 +1255,7 @@ const AmenitiesTable = ({
                           setEditingAmenity(amenity);
                           setIsEditAmenityModalOpen(true);
                         }}
+                        title="Editar amenidad"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
