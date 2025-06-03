@@ -208,8 +208,8 @@ const CreateAssetPage: React.FC = () => {
   const selectedAmenityId = form.watch('amenityId');
   useEffect(() => {
     if (selectedAmenityId && selectedAmenityId !== null && amenities && Array.isArray(amenities)) {
-      // Las amenidades usan la estructura {amenityId, amenityName, moduleName, ...}
-      const selectedAmenity = amenities.find((a: any) => a.amenityId === selectedAmenityId);
+      // Las amenidades usan el ID único de park_amenities
+      const selectedAmenity = amenities.find((a: any) => a.id === selectedAmenityId);
       if (selectedAmenity) {
         const locationText = selectedAmenity.moduleName 
           ? `${selectedAmenity.amenityName} - ${selectedAmenity.moduleName}`
@@ -572,9 +572,9 @@ const CreateAssetPage: React.FC = () => {
                             <SelectContent className="z-[1001]">
                               <SelectItem value="none">Sin amenidad específica</SelectItem>
                               {amenities && Array.isArray(amenities) ? amenities
-                                .filter((amenity: any) => amenity.amenityId && amenity.amenityName)
+                                .filter((amenity: any) => amenity.id && amenity.amenityName)
                                 .map((amenity: any) => (
-                                <SelectItem key={amenity.amenityId} value={amenity.amenityId.toString()}>
+                                <SelectItem key={amenity.id} value={amenity.id.toString()}>
                                   {amenity.amenityName} - {amenity.moduleName || 'Módulo general'}
                                 </SelectItem>
                               )) : null}
