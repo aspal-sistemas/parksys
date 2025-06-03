@@ -671,6 +671,10 @@ export default function AdminParkView() {
             availableAmenities={availableAmenities || []}
             addAmenityMutation={addAmenityMutation}
             parkData={park}
+            isEditAmenityModalOpen={isEditAmenityModalOpen}
+            setIsEditAmenityModalOpen={setIsEditAmenityModalOpen}
+            editingAmenity={editingAmenity}
+            setEditingAmenity={setEditingAmenity}
           />
         </TabsContent>
 
@@ -889,6 +893,30 @@ export default function AdminParkView() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Modal para editar amenidad */}
+      <Dialog open={isEditAmenityModalOpen} onOpenChange={setIsEditAmenityModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Módulo de Amenidad</DialogTitle>
+            <DialogDescription>
+              Modifique la configuración del módulo de amenidad seleccionado.
+            </DialogDescription>
+          </DialogHeader>
+          {editingAmenity && (
+            <EditAmenityForm
+              amenity={editingAmenity}
+              onSubmit={(data) => editAmenityMutation.mutate({ amenityId: editingAmenity.id, data })}
+              isLoading={editAmenityMutation.isPending}
+              onCancel={() => {
+                setIsEditAmenityModalOpen(false);
+                setEditingAmenity(null);
+              }}
+              parkData={park}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
       </div>
     </div>
@@ -903,9 +931,24 @@ interface AmenitiesTableProps {
   availableAmenities: any[];
   addAmenityMutation: any;
   parkData?: ParkDetails;
+  isEditAmenityModalOpen: boolean;
+  setIsEditAmenityModalOpen: (open: boolean) => void;
+  editingAmenity: any;
+  setEditingAmenity: (amenity: any) => void;
 }
 
-const AmenitiesTable = ({ parkId, isAddAmenityModalOpen, setIsAddAmenityModalOpen, availableAmenities, addAmenityMutation, parkData }: AmenitiesTableProps) => {
+const AmenitiesTable = ({ 
+  parkId, 
+  isAddAmenityModalOpen, 
+  setIsAddAmenityModalOpen, 
+  availableAmenities, 
+  addAmenityMutation, 
+  parkData,
+  isEditAmenityModalOpen,
+  setIsEditAmenityModalOpen,
+  editingAmenity,
+  setEditingAmenity
+}: AmenitiesTableProps) => {
   const { data: amenities, isLoading, error } = useQuery({
     queryKey: [`/api/parks/${parkId}/amenities`],
   });
@@ -933,6 +976,32 @@ const AmenitiesTable = ({ parkId, isAddAmenityModalOpen, setIsAddAmenityModalOpe
       toast({
         title: "Error",
         description: "No se pudo eliminar la amenidad.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation para editar amenidad
+  const editAmenityMutation = useMutation({
+    mutationFn: async ({ amenityId, data }: { amenityId: number; data: EditAmenityFormData }) => {
+      return apiRequest(`/api/parks/${parkId}/amenities/${amenityId}`, {
+        method: 'PUT',
+        data: data,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/amenities`] });
+      setIsEditAmenityModalOpen(false);
+      setEditingAmenity(null);
+      toast({
+        title: "Amenidad actualizada",
+        description: "La amenidad se ha actualizado exitosamente.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar la amenidad.",
         variant: "destructive",
       });
     },
