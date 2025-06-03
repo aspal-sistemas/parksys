@@ -208,10 +208,13 @@ const CreateAssetPage: React.FC = () => {
   const selectedAmenityId = form.watch('amenityId');
   useEffect(() => {
     if (selectedAmenityId && selectedAmenityId !== null && amenities && Array.isArray(amenities)) {
-      // Las amenidades usan la estructura {amenityId, amenityName, ...}
+      // Las amenidades usan la estructura {amenityId, amenityName, moduleName, ...}
       const selectedAmenity = amenities.find((a: any) => a.amenityId === selectedAmenityId);
       if (selectedAmenity) {
-        form.setValue('locationDescription', selectedAmenity.amenityName || '');
+        const locationText = selectedAmenity.moduleName 
+          ? `${selectedAmenity.amenityName} - ${selectedAmenity.moduleName}`
+          : selectedAmenity.amenityName;
+        form.setValue('locationDescription', locationText || '');
       }
     } else if (selectedAmenityId === null) {
       // Clear location description when no amenity is selected
@@ -572,7 +575,7 @@ const CreateAssetPage: React.FC = () => {
                                 .filter((amenity: any) => amenity.amenityId && amenity.amenityName)
                                 .map((amenity: any) => (
                                 <SelectItem key={amenity.amenityId} value={amenity.amenityId.toString()}>
-                                  {amenity.amenityName}
+                                  {amenity.amenityName} - {amenity.moduleName || 'Módulo general'}
                                 </SelectItem>
                               )) : null}
                             </SelectContent>
