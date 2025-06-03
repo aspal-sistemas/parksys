@@ -856,7 +856,7 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
             <CardDescription>Servicios e infraestructura disponible</CardDescription>
           </div>
           <Button asChild>
-            <Link href={`/admin/assets/new?parkId=${parkId}`}>
+            <Link href={`/admin/parks/${parkId}/edit#amenidades`}>
               <Plus className="h-4 w-4 mr-2" />
               Agregar Amenidad
             </Link>
@@ -909,7 +909,7 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
                         size="sm"
                         className="h-8 w-8 p-0"
                       >
-                        <Link href={`/admin/assets/edit/${amenity.id}`}>
+                        <Link href={`/admin/parks/${parkId}/edit?editAmenityId=${amenity.id}#amenidades`}>
                           <Edit className="h-4 w-4" />
                         </Link>
                       </Button>
