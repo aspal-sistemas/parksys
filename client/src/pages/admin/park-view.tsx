@@ -1,14 +1,18 @@
 import { useParams, Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 // Función para mapear nombres de iconos a símbolos Unicode
 const getIconSymbol = (iconName: string): string => {
@@ -784,8 +788,34 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
   const { data: amenities, isLoading, error } = useQuery({
     queryKey: [`/api/parks/${parkId}/amenities`],
   });
+  
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const amenitiesArray = Array.isArray(amenities) ? amenities : [];
+
+  // Mutation para eliminar amenidad
+  const deleteAmenityMutation = useMutation({
+    mutationFn: async (amenityId: number) => {
+      await apiRequest(`/api/park-amenities/${amenityId}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Amenidad eliminada",
+        description: "La amenidad ha sido eliminada exitosamente.",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/amenities`] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la amenidad.",
+        variant: "destructive",
+      });
+    },
+  });
 
   if (isLoading) {
     return (
@@ -820,8 +850,18 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Amenidades del Parque ({amenitiesArray.length})</CardTitle>
-        <CardDescription>Servicios e infraestructura disponible</CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Amenidades del Parque ({amenitiesArray.length})</CardTitle>
+            <CardDescription>Servicios e infraestructura disponible</CardDescription>
+          </div>
+          <Button asChild>
+            <Link href={`/admin/assets/new?parkId=${parkId}`}>
+              <Plus className="h-4 w-4 mr-2" />
+              Agregar Amenidad
+            </Link>
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {amenitiesArray.length > 0 ? (
