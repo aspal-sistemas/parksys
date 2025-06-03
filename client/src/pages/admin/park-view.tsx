@@ -1041,14 +1041,15 @@ const AmenitiesTable = ({ parkId, isAddAmenityModalOpen, setIsAddAmenityModalOpe
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
-                        asChild
                         variant="outline"
                         size="sm"
                         className="h-8 w-8 p-0"
+                        onClick={() => {
+                          setEditingAmenity(amenity);
+                          setIsEditAmenityModalOpen(true);
+                        }}
                       >
-                        <Link href={`/admin/parks/${parkId}/edit?editAmenityId=${amenity.id}#amenidades`}>
-                          <Edit className="h-4 w-4" />
-                        </Link>
+                        <Edit className="h-4 w-4" />
                       </Button>
                       
                       <AlertDialog>
@@ -1279,6 +1280,176 @@ function AddAmenityForm({ availableAmenities, onSubmit, isLoading, onCancel, par
           </Button>
           <Button type="submit" disabled={isLoading}>
             {isLoading ? 'Agregando...' : 'Agregar Amenidad'}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
+
+// Componente para el formulario de editar amenidad
+interface EditAmenityFormProps {
+  amenity: any;
+  onSubmit: (data: EditAmenityFormData) => void;
+  isLoading: boolean;
+  onCancel: () => void;
+  parkData?: ParkDetails;
+}
+
+function EditAmenityForm({ amenity, onSubmit, isLoading, onCancel, parkData }: EditAmenityFormProps) {
+  const form = useForm<EditAmenityFormData>({
+    resolver: zodResolver(editAmenitySchema),
+    defaultValues: {
+      moduleName: amenity.moduleName || "",
+      surfaceArea: amenity.surfaceArea || "",
+      locationLatitude: amenity.locationLatitude || "",
+      locationLongitude: amenity.locationLongitude || "",
+      status: amenity.status || "Activa",
+      description: amenity.description || "",
+    },
+  });
+
+  const handleSubmit = (data: EditAmenityFormData) => {
+    onSubmit(data);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{getIconSymbol(amenity.amenityIcon)}</span>
+            <div>
+              <h3 className="font-semibold text-blue-900">{amenity.amenityName}</h3>
+              <p className="text-sm text-blue-700">Editando módulo de amenidad</p>
+            </div>
+          </div>
+        </div>
+
+        <FormField
+          control={form.control}
+          name="moduleName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nombre del Módulo</FormLabel>
+              <FormControl>
+                <Input placeholder="Ej: Cancha de Fútbol Norte" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="surfaceArea"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Superficie (m²)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej: 500" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estado</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione el estado" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Activa">Activa</SelectItem>
+                    <SelectItem value="Mantenimiento">Mantenimiento</SelectItem>
+                    <SelectItem value="Inactiva">Inactiva</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="locationLatitude"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Latitud</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej: 20.6597" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="locationLongitude"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Longitud</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej: -103.3496" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descripción</FormLabel>
+              <FormControl>
+                <Input placeholder="Descripción adicional..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Sección del mapa interactivo */}
+        <div className="space-y-2">
+          <FormLabel>Ubicación en el Parque (opcional)</FormLabel>
+          <p className="text-sm text-gray-600">Haz clic en el mapa para actualizar la ubicación del módulo</p>
+          <div className="h-64 border rounded-lg overflow-hidden">
+            {parkData && (
+              <MapViewer
+                latitude={parkData.latitude || 20.6597}
+                longitude={parkData.longitude || -103.3496}
+                parkName={parkData.name}
+                height="256px"
+              />
+            )}
+          </div>
+          {form.watch("locationLatitude") && form.watch("locationLongitude") && (
+            <p className="text-xs text-green-600">
+              Coordenadas actuales: {form.watch("locationLatitude")}, {form.watch("locationLongitude")}
+            </p>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Guardando...' : 'Guardar Cambios'}
           </Button>
         </div>
       </form>
