@@ -683,6 +683,10 @@ export default function AdminParkView() {
             setIsEditAmenityModalOpen={setIsEditAmenityModalOpen}
             editingAmenity={editingAmenity}
             setEditingAmenity={setEditingAmenity}
+            isViewAmenityModalOpen={isViewAmenityModalOpen}
+            setIsViewAmenityModalOpen={setIsViewAmenityModalOpen}
+            viewingAmenity={viewingAmenity}
+            setViewingAmenity={setViewingAmenity}
           />
         </TabsContent>
 
@@ -979,15 +983,14 @@ export default function AdminParkView() {
                   <div className="border rounded-lg p-3 bg-white overflow-hidden">
                     <div className="w-full h-48 relative mb-2">
                       <MapViewer
-                        latitude={park?.latitude || 20.6597}
-                        longitude={park?.longitude || -103.3496}
+                        latitude={parseFloat(park?.latitude || "20.6597")}
+                        longitude={parseFloat(park?.longitude || "-103.3496")}
                         parkName={park?.name || "Parque"}
                         height="192px"
                         selectedLocation={{
                           lat: parseFloat(viewingAmenity.locationLatitude),
                           lng: parseFloat(viewingAmenity.locationLongitude)
                         }}
-                        readOnly={true}
                       />
                     </div>
                     <div className="text-xs text-gray-500">
