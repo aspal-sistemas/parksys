@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus, Filter, SortAsc, Map } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus, Filter, SortAsc, Map as MapIcon } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
 import { useToast } from "@/hooks/use-toast";
@@ -121,6 +121,17 @@ interface ParkDetails {
     status: string;
     condition: string;
     lastMaintenance?: string;
+    latitude?: number;
+    longitude?: number;
+    locationDescription?: string;
+    serialNumber?: string;
+    manufacturer?: string;
+    model?: string;
+    notes?: string;
+    acquisitionDate?: string;
+    acquisitionCost?: string;
+    currentValue?: string;
+    nextMaintenanceDate?: string;
   }>;
   incidents: Array<{
     id: number;
@@ -222,6 +233,10 @@ export default function AdminParkView() {
     sortBy: 'name',
     sortOrder: 'asc' as 'asc' | 'desc'
   });
+
+  // Estados para modal de mapa de activos
+  const [isAssetMapModalOpen, setIsAssetMapModalOpen] = React.useState(false);
+  const [selectedAsset, setSelectedAsset] = React.useState<any>(null);
   
   // Get complete park data from the main API endpoint that has all fields
   const { data: park, isLoading, error, refetch: refetchPark } = useQuery<ParkDetails>({
@@ -1117,6 +1132,19 @@ export default function AdminParkView() {
                         </div>
                         
                         <div className="ml-4 flex flex-col gap-2">
+                          {(asset.latitude && asset.longitude) && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedAsset(asset);
+                                setIsAssetMapModalOpen(true);
+                              }}
+                              title="Ver ubicación en mapa"
+                            >
+                              <MapIcon className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Link href={`/admin/assets/${asset.id}/edit`}>
                             <Button size="sm" variant="outline">
                               <Edit className="h-4 w-4" />
@@ -1386,6 +1414,83 @@ export default function AdminParkView() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para mostrar ubicación del activo en mapa */}
+      <Dialog open={isAssetMapModalOpen} onOpenChange={setIsAssetMapModalOpen}>
+        <DialogContent className="max-w-4xl h-[600px]">
+          <DialogHeader>
+            <DialogTitle>
+              Ubicación del Activo: {selectedAsset?.name}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedAsset?.locationDescription && (
+                <span className="text-sm text-gray-600">
+                  {selectedAsset.locationDescription}
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedAsset && selectedAsset.latitude && selectedAsset.longitude && (
+            <div className="flex-1 h-full">
+              <MapViewer
+                center={[
+                  parseFloat(selectedAsset.latitude.toString()),
+                  parseFloat(selectedAsset.longitude.toString())
+                ]}
+                markers={[{
+                  position: [
+                    parseFloat(selectedAsset.latitude.toString()),
+                    parseFloat(selectedAsset.longitude.toString())
+                  ],
+                  popup: `
+                    <div class="p-2">
+                      <h3 class="font-semibold">${selectedAsset.name}</h3>
+                      <p class="text-sm text-gray-600">${selectedAsset.category || 'Sin categoría'}</p>
+                      ${selectedAsset.locationDescription ? 
+                        `<p class="text-sm mt-1">${selectedAsset.locationDescription}</p>` : 
+                        ''
+                      }
+                      <div class="mt-2 flex gap-2">
+                        <span class="inline-block px-2 py-1 text-xs rounded ${
+                          selectedAsset.condition === 'excellent' ? 'bg-green-100 text-green-800' :
+                          selectedAsset.condition === 'good' ? 'bg-blue-100 text-blue-800' :
+                          selectedAsset.condition === 'regular' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }">
+                          ${selectedAsset.condition === 'excellent' ? 'Excelente' :
+                            selectedAsset.condition === 'good' ? 'Bueno' :
+                            selectedAsset.condition === 'regular' ? 'Regular' :
+                            selectedAsset.condition === 'poor' ? 'Malo' : 
+                            selectedAsset.condition
+                          }
+                        </span>
+                        <span class="inline-block px-2 py-1 text-xs rounded ${
+                          selectedAsset.status === 'active' ? 'bg-green-100 text-green-800' :
+                          'bg-gray-100 text-gray-800'
+                        }">
+                          ${selectedAsset.status === 'active' ? 'Activo' : selectedAsset.status}
+                        </span>
+                      </div>
+                    </div>
+                  `
+                }]}
+                zoom={18}
+                height="100%"
+              />
+            </div>
+          )}
+          
+          <div className="flex justify-end gap-2 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsAssetMapModalOpen(false)}
+            >
+              Cerrar
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
