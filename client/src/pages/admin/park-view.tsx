@@ -885,9 +885,10 @@ interface AmenitiesTableProps {
   setIsAddAmenityModalOpen: (open: boolean) => void;
   availableAmenities: any[];
   addAmenityMutation: any;
+  parkData?: ParkDetails;
 }
 
-const AmenitiesTable = ({ parkId, isAddAmenityModalOpen, setIsAddAmenityModalOpen, availableAmenities, addAmenityMutation }: AmenitiesTableProps) => {
+const AmenitiesTable = ({ parkId, isAddAmenityModalOpen, setIsAddAmenityModalOpen, availableAmenities, addAmenityMutation, parkData }: AmenitiesTableProps) => {
   const { data: amenities, isLoading, error } = useQuery({
     queryKey: [`/api/parks/${parkId}/amenities`],
   });
@@ -1083,9 +1084,10 @@ interface AddAmenityFormProps {
   onSubmit: (data: AddAmenityFormData) => void;
   isLoading: boolean;
   onCancel: () => void;
+  parkData?: ParkDetails;
 }
 
-function AddAmenityForm({ availableAmenities, onSubmit, isLoading, onCancel }: AddAmenityFormProps) {
+function AddAmenityForm({ availableAmenities, onSubmit, isLoading, onCancel, parkData }: AddAmenityFormProps) {
   const form = useForm<AddAmenityFormData>({
     resolver: zodResolver(addAmenitySchema),
     defaultValues: {
@@ -1098,6 +1100,12 @@ function AddAmenityForm({ availableAmenities, onSubmit, isLoading, onCancel }: A
       description: "",
     },
   });
+
+  // Handler para actualizar coordenadas desde el mapa
+  const handleMapClick = (lat: number, lng: number) => {
+    form.setValue("locationLatitude", lat.toString());
+    form.setValue("locationLongitude", lng.toString());
+  };
 
   return (
     <Form {...form}>
@@ -1226,6 +1234,27 @@ function AddAmenityForm({ availableAmenities, onSubmit, isLoading, onCancel }: A
             </FormItem>
           )}
         />
+
+        {/* Sección del mapa interactivo */}
+        <div className="space-y-2">
+          <FormLabel>Ubicación en el Parque (opcional)</FormLabel>
+          <p className="text-sm text-gray-600">Haz clic en el mapa para seleccionar la ubicación del módulo</p>
+          <div className="h-64 border rounded-lg overflow-hidden">
+            {parkData && (
+              <MapViewer
+                latitude={parkData.latitude || 20.6597}
+                longitude={parkData.longitude || -103.3496}
+                parkName={parkData.name}
+                height="256px"
+              />
+            )}
+          </div>
+          {form.watch("locationLatitude") && form.watch("locationLongitude") && (
+            <p className="text-xs text-green-600">
+              Coordenadas seleccionadas: {form.watch("locationLatitude")}, {form.watch("locationLongitude")}
+            </p>
+          )}
+        </div>
 
         <div className="flex justify-end gap-2 pt-4">
           <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
