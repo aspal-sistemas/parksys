@@ -912,7 +912,7 @@ export default function AdminParkView() {
           {editingAmenity && (
             <EditAmenityForm
               amenity={editingAmenity}
-              onSubmit={(data) => editAmenityMutation.mutate({ amenityId: editingAmenity.id, data })}
+              onSubmit={(data) => editAmenityMutation.mutate({ amenityId: editingAmenity.parkAmenityId, data })}
               isLoading={editAmenityMutation.isPending}
               onCancel={() => {
                 setIsEditAmenityModalOpen(false);

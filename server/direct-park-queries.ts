@@ -269,7 +269,7 @@ export async function getParkByIdDirectly(parkId: number) {
     try {
       const amenitiesResult = await pool.query(`
         SELECT a.id, a.name, a.icon, a.category, a.icon_type as "iconType", a.custom_icon_url as "customIconUrl",
-               pa.module_name as "moduleName", pa.location_latitude as "locationLatitude",
+               pa.id as "parkAmenityId", pa.module_name as "moduleName", pa.location_latitude as "locationLatitude",
                pa.location_longitude as "locationLongitude", pa.surface_area as "surfaceArea",
                pa.status, pa.description
         FROM amenities a
