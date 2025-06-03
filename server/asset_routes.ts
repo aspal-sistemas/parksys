@@ -349,13 +349,30 @@ export function registerAssetRoutes(app: any, apiRouter: Router) {
         return res.status(404).json({ message: "Activo no encontrado" });
       }
       
-      // Eliminar el activo directamente
-      const deleteResult = await pool.query("DELETE FROM assets WHERE id = $1", [id]);
+      // Iniciar transacción para eliminar en cascada
+      await pool.query('BEGIN');
       
-      if (deleteResult.rowCount && deleteResult.rowCount > 0) {
-        res.json({ message: "Activo eliminado correctamente" });
-      } else {
-        res.status(500).json({ message: "Error al eliminar el activo" });
+      try {
+        // Eliminar registros relacionados primero
+        await pool.query("DELETE FROM asset_maintenances WHERE asset_id = $1", [id]);
+        await pool.query("DELETE FROM asset_history WHERE asset_id = $1", [id]);
+        await pool.query("DELETE FROM asset_assignments WHERE asset_id = $1", [id]);
+        
+        // Eliminar el activo
+        const deleteResult = await pool.query("DELETE FROM assets WHERE id = $1", [id]);
+        
+        // Confirmar transacción
+        await pool.query('COMMIT');
+        
+        if (deleteResult.rowCount && deleteResult.rowCount > 0) {
+          res.json({ message: "Activo eliminado correctamente" });
+        } else {
+          res.status(500).json({ message: "Error al eliminar el activo" });
+        }
+      } catch (transactionError) {
+        // Revertir transacción en caso de error
+        await pool.query('ROLLBACK');
+        throw transactionError;
       }
     } catch (error) {
       console.error(`Error al eliminar activo ${req.params.id}:`, error);
