@@ -132,6 +132,7 @@ interface ParkDetails {
     acquisitionCost?: string;
     currentValue?: string;
     nextMaintenanceDate?: string;
+    amenityId?: number;
   }>;
   incidents: Array<{
     id: number;
@@ -228,6 +229,7 @@ export default function AdminParkView() {
   // Estados para filtros de activos
   const [assetFilters, setAssetFilters] = React.useState({
     category: 'all',
+    amenity: 'all',
     status: 'all',
     condition: 'all',
     sortBy: 'name',
@@ -346,10 +348,11 @@ export default function AdminParkView() {
     
     let filtered = park.assets.filter(asset => {
       const matchesCategory = !assetFilters.category || assetFilters.category === 'all' || asset.category?.toLowerCase().includes(assetFilters.category.toLowerCase());
+      const matchesAmenity = !assetFilters.amenity || assetFilters.amenity === 'all' || (asset.amenityId && asset.amenityId.toString() === assetFilters.amenity);
       const matchesStatus = !assetFilters.status || assetFilters.status === 'all' || asset.status?.toLowerCase() === assetFilters.status.toLowerCase();
       const matchesCondition = !assetFilters.condition || assetFilters.condition === 'all' || asset.condition?.toLowerCase() === assetFilters.condition.toLowerCase();
       
-      return matchesCategory && matchesStatus && matchesCondition;
+      return matchesCategory && matchesAmenity && matchesStatus && matchesCondition;
     });
 
     // Ordenamiento
@@ -415,6 +418,7 @@ export default function AdminParkView() {
   const clearAssetFilters = () => {
     setAssetFilters({
       category: 'all',
+      amenity: 'all',
       status: 'all',
       condition: 'all',
       sortBy: 'name',
