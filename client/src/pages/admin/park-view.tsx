@@ -229,7 +229,10 @@ export default function AdminParkView() {
       });
     },
     onSuccess: () => {
+      // Invalidar múltiples consultas para asegurar que la página se actualice completamente
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}/amenities`] });
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}/details`] });
       setIsAddAmenityModalOpen(false);
       toast({
         title: "Amenidad agregada",
@@ -970,7 +973,10 @@ const AmenitiesTable = ({
         title: "Amenidad eliminada",
         description: "La amenidad ha sido eliminada exitosamente.",
       });
+      // Invalidar múltiples consultas para asegurar que la página se actualice completamente
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/amenities`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/details`] });
     },
     onError: () => {
       toast({
@@ -990,7 +996,10 @@ const AmenitiesTable = ({
       });
     },
     onSuccess: () => {
+      // Invalidar múltiples consultas para asegurar que la página se actualice completamente
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/amenities`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/details`] });
       setIsEditAmenityModalOpen(false);
       setEditingAmenity(null);
       toast({
