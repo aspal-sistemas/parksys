@@ -229,15 +229,16 @@ export default function AdminParkView() {
       });
     },
     onSuccess: () => {
-      // Invalidar múltiples consultas para asegurar que la página se actualice completamente
-      queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}/amenities`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/parks/${id}/details`] });
       setIsAddAmenityModalOpen(false);
       toast({
         title: "Amenidad agregada",
         description: "La amenidad se ha agregado al parque exitosamente.",
       });
+      
+      // Recargar la página para mostrar cambios inmediatamente
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     },
     onError: () => {
       toast({
@@ -996,16 +997,17 @@ const AmenitiesTable = ({
       });
     },
     onSuccess: () => {
-      // Invalidar múltiples consultas para asegurar que la página se actualice completamente
-      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/amenities`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/details`] });
       setIsEditAmenityModalOpen(false);
       setEditingAmenity(null);
       toast({
         title: "Amenidad actualizada",
         description: "La amenidad se ha actualizado exitosamente.",
       });
+      
+      // Recargar la página para mostrar cambios inmediatamente
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     },
     onError: () => {
       toast({
