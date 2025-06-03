@@ -111,15 +111,26 @@ router.put("/assets/:id", async (req: Request, res: Response) => {
   }
 });
 
-// Endpoint para obtener amenidades de un parque específico
+// Endpoint para obtener amenidades instaladas en un parque específico
 router.get("/parks/:parkId/amenities", async (req: Request, res: Response) => {
   try {
     const parkId = parseInt(req.params.parkId);
     
     const result = await db.execute(sql`
-      SELECT a.id, a.name, a.icon, a.category
-      FROM amenities a
-      INNER JOIN park_amenities pa ON a.id = pa.amenity_id
+      SELECT 
+        pa.id,
+        pa.park_id as "parkId",
+        pa.amenity_id as "amenityId",
+        pa.module_name as "moduleName",
+        pa.location_latitude as "locationLatitude",
+        pa.location_longitude as "locationLongitude",
+        pa.surface_area as "surfaceArea",
+        pa.status,
+        pa.description,
+        a.name as "amenityName",
+        a.icon as "amenityIcon"
+      FROM park_amenities pa
+      INNER JOIN amenities a ON pa.amenity_id = a.id
       WHERE pa.park_id = ${parkId}
       ORDER BY a.name
     `);

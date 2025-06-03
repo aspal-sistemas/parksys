@@ -1118,6 +1118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/parks/:id/amenities", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
+      console.log(`DEBUG: Endpoint /parks/${parkId}/amenities llamado - Devolviendo park_amenities`);
       
       // Usar la consulta SQL que sabemos que funciona
       const result = await pool.query(`
