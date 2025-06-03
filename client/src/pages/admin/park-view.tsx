@@ -19,7 +19,7 @@ import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTrian
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 // Esquema para agregar amenidad a parque
 const addAmenitySchema = z.object({
@@ -225,7 +225,7 @@ export default function AdminParkView() {
     mutationFn: async (data: AddAmenityFormData) => {
       return apiRequest(`/api/parks/${id}/amenities`, {
         method: 'POST',
-        body: JSON.stringify(data),
+        data: data,
       });
     },
     onSuccess: () => {
@@ -250,7 +250,7 @@ export default function AdminParkView() {
     mutationFn: async ({ amenityId, data }: { amenityId: number; data: EditAmenityFormData }) => {
       return apiRequest(`/api/parks/${id}/amenities/${amenityId}`, {
         method: 'PUT',
-        body: JSON.stringify(data),
+        data: data,
       });
     },
     onSuccess: () => {
@@ -875,6 +875,10 @@ export default function AdminParkView() {
 // Component for displaying amenities in a table format
 interface AmenitiesTableProps {
   parkId: number;
+  isAddAmenityModalOpen: boolean;
+  setIsAddAmenityModalOpen: (open: boolean) => void;
+  availableAmenities: any[];
+  addAmenityMutation: any;
 }
 
 const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
@@ -948,12 +952,28 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
             <CardTitle>Amenidades del Parque ({amenitiesArray.length})</CardTitle>
             <CardDescription>Servicios e infraestructura disponible</CardDescription>
           </div>
-          <Button asChild>
-            <Link href={`/admin/parks/${parkId}/edit#amenidades`}>
-              <Plus className="h-4 w-4 mr-2" />
-              Agregar Amenidad
-            </Link>
-          </Button>
+          <Dialog open={isAddAmenityModalOpen} onOpenChange={setIsAddAmenityModalOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Agregar Amenidad
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Agregar Amenidad al Parque</DialogTitle>
+                <DialogDescription>
+                  Selecciona una amenidad existente para agregar al parque.
+                </DialogDescription>
+              </DialogHeader>
+              <AddAmenityForm 
+                availableAmenities={availableAmenities || []}
+                onSubmit={(data) => addAmenityMutation.mutate(data)}
+                isLoading={addAmenityMutation.isPending}
+                onCancel={() => setIsAddAmenityModalOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       </CardHeader>
       <CardContent>
@@ -1050,3 +1070,166 @@ const AmenitiesTable = ({ parkId }: AmenitiesTableProps) => {
     </Card>
   );
 };
+
+// Componente para el formulario de agregar amenidad
+interface AddAmenityFormProps {
+  availableAmenities: any[];
+  onSubmit: (data: AddAmenityFormData) => void;
+  isLoading: boolean;
+  onCancel: () => void;
+}
+
+function AddAmenityForm({ availableAmenities, onSubmit, isLoading, onCancel }: AddAmenityFormProps) {
+  const form = useForm<AddAmenityFormData>({
+    resolver: zodResolver(addAmenitySchema),
+    defaultValues: {
+      amenityId: 0,
+      moduleName: "",
+      surfaceArea: "",
+      locationLatitude: "",
+      locationLongitude: "",
+      status: "Activa",
+      description: "",
+    },
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="amenityId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Amenidad</FormLabel>
+              <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una amenidad" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {availableAmenities.map((amenity) => (
+                    <SelectItem key={amenity.id} value={amenity.id.toString()}>
+                      <div className="flex items-center gap-2">
+                        <span>{getIconSymbol(amenity.icon)}</span>
+                        <span>{amenity.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="moduleName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nombre del Módulo</FormLabel>
+              <FormControl>
+                <Input placeholder="Ej: Módulo Central, Área Norte..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="surfaceArea"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Superficie (m²)</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="0" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estado</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Activa">Activa</SelectItem>
+                    <SelectItem value="Mantenimiento">Mantenimiento</SelectItem>
+                    <SelectItem value="Inactiva">Inactiva</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="locationLatitude"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Latitud</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej: 20.6597" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="locationLongitude"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Longitud</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej: -103.3496" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descripción</FormLabel>
+              <FormControl>
+                <Input placeholder="Descripción adicional..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Agregando...' : 'Agregar Amenidad'}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
