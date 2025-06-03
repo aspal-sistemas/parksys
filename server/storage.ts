@@ -1,7 +1,6 @@
 import { db, pool } from './db';
 import { eq, sql } from "drizzle-orm";
 import * as schema from "@shared/schema";
-import { assets, assetCategories, assetMaintenances, assetHistory } from "@shared/asset-schema";
 
 const {
   users,
@@ -16,7 +15,11 @@ const {
   parkImages,
   volunteers,
   instructors,
-  documents
+  documents,
+  assets,
+  assetCategories,
+  assetMaintenances,
+  assetAssignments
 } = schema;
 
 // Definición simplificada para almacenamiento
@@ -631,11 +634,25 @@ export class DatabaseStorage implements IStorage {
   
   async getAsset(id: number): Promise<any> {
     try {
-      // Consulta SQL
-      return null;
+      const result = await pool.query(`
+        SELECT 
+          a.*,
+          ac.name as "categoryName",
+          p.name as "parkName",
+          am.name as "amenityName",
+          u.username as "responsiblePersonName"
+        FROM assets a
+        LEFT JOIN asset_categories ac ON a.category_id = ac.id
+        LEFT JOIN parks p ON a.park_id = p.id
+        LEFT JOIN amenities am ON a.amenity_id = am.id
+        LEFT JOIN users u ON a.responsible_person_id = u.id
+        WHERE a.id = $1
+      `, [id]);
+      
+      return result.rows[0] || null;
     } catch (error) {
       console.error(`Error al obtener activo ${id}:`, error);
-      return undefined;
+      return null;
     }
   }
 

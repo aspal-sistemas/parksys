@@ -1189,3 +1189,175 @@ export const incomeRecordsRelations = relations(incomeRecords, ({ one }) => ({
 export const amenitiesRelations = relations(amenities, ({ many }) => ({
   parkAmenities: many(parkAmenities)
 }));
+
+// ============ MÓDULO DE ACTIVOS ============
+
+// Tabla de categorías de activos
+export const assetCategories = pgTable("asset_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  icon: text("icon"), // Nombre del icono a mostrar en la UI
+  color: text("color"), // Color asociado a la categoría para visualización 
+  parentId: integer("parent_id"), // Para categorías jerárquicas
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Tabla principal de activos
+export const assets = pgTable("assets", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  serialNumber: text("serial_number"), // Número de serie o identificador único del activo
+  categoryId: integer("category_id").notNull(),
+  parkId: integer("park_id").notNull(), // Parque donde se encuentra el activo
+  amenityId: integer("amenity_id"), // Amenidad donde se encuentra el activo (opcional)
+  locationDescription: text("location_description"), // Descripción textual de la ubicación
+  latitude: text("latitude"), // Coordenadas para ubicación exacta
+  longitude: text("longitude"),
+  acquisitionDate: date("acquisition_date"), // Fecha de adquisición
+  acquisitionCost: decimal("acquisition_cost", { precision: 10, scale: 2 }), // Costo de adquisición
+  currentValue: decimal("current_value", { precision: 10, scale: 2 }), // Valor actual después de depreciación
+  manufacturer: text("manufacturer"), // Fabricante
+  model: text("model"), // Modelo
+  status: text("status").notNull().default("active"), // active, maintenance, damaged, retired
+  condition: text("condition").notNull().default("good"), // excellent, good, fair, poor
+  maintenanceFrequency: text("maintenance_frequency"), // daily, weekly, monthly, quarterly, yearly
+  lastMaintenanceDate: date("last_maintenance_date"),
+  nextMaintenanceDate: date("next_maintenance_date"),
+  expectedLifespan: integer("expected_lifespan"), // Vida útil esperada en meses
+  notes: text("notes"),
+  qrCode: text("qr_code"), // URL o identificador del código QR para escaneo
+  responsiblePersonId: integer("responsible_person_id"), // Persona responsable del activo
+  photos: text("photos").array(), // URLs de fotos del activo
+  documents: text("documents").array(), // URLs de documentos relacionados
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Tabla de mantenimientos de activos
+export const assetMaintenances = pgTable("asset_maintenances", {
+  id: serial("id").primaryKey(),
+  assetId: integer("asset_id").notNull(),
+  maintenanceType: text("maintenance_type").notNull(), // preventive, corrective, emergency
+  description: text("description").notNull(),
+  scheduledDate: date("scheduled_date"),
+  completedDate: date("completed_date"),
+  performedBy: text("performed_by"), // Nombre del técnico o empresa
+  cost: decimal("cost", { precision: 10, scale: 2 }),
+  status: text("status").notNull().default("scheduled"), // scheduled, in_progress, completed, cancelled
+  priority: text("priority").notNull().default("medium"), // low, medium, high, critical
+  notes: text("notes"),
+  partsReplaced: text("parts_replaced").array(), // Lista de partes reemplazadas
+  hoursWorked: decimal("hours_worked", { precision: 5, scale: 2 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Tabla de asignaciones de activos
+export const assetAssignments = pgTable("asset_assignments", {
+  id: serial("id").primaryKey(),
+  assetId: integer("asset_id").notNull(),
+  instructorId: integer("instructor_id"), // Instructor responsable
+  activityId: integer("activity_id"), // Actividad donde se usa el activo
+  assignmentDate: date("assignment_date").notNull(),
+  returnDate: date("return_date"),
+  purpose: text("purpose"), // Propósito de la asignación
+  condition: text("condition").notNull().default("good"), // Estado al momento de asignación
+  notes: text("notes"),
+  status: text("status").notNull().default("active"), // active, returned, overdue
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Tipos exportados para activos
+export type AssetCategory = typeof assetCategories.$inferSelect;
+export type InsertAssetCategory = typeof assetCategories.$inferInsert;
+
+export type Asset = typeof assets.$inferSelect;
+export type InsertAsset = typeof assets.$inferInsert;
+
+export type AssetMaintenance = typeof assetMaintenances.$inferSelect;
+export type InsertAssetMaintenance = typeof assetMaintenances.$inferInsert;
+
+export type AssetAssignment = typeof assetAssignments.$inferSelect;
+export type InsertAssetAssignment = typeof assetAssignments.$inferInsert;
+
+// Esquemas de inserción para activos
+export const insertAssetCategorySchema = createInsertSchema(assetCategories).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertAssetSchema = createInsertSchema(assets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertAssetMaintenanceSchema = createInsertSchema(assetMaintenances).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertAssetAssignmentSchema = createInsertSchema(assetAssignments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Relaciones para activos
+export const assetCategoriesRelations = relations(assetCategories, ({ many, one }) => ({
+  assets: many(assets),
+  parent: one(assetCategories, {
+    fields: [assetCategories.parentId],
+    references: [assetCategories.id]
+  }),
+  children: many(assetCategories)
+}));
+
+export const assetsRelations = relations(assets, ({ one, many }) => ({
+  category: one(assetCategories, {
+    fields: [assets.categoryId],
+    references: [assetCategories.id]
+  }),
+  park: one(parks, {
+    fields: [assets.parkId],
+    references: [parks.id]
+  }),
+  amenity: one(amenities, {
+    fields: [assets.amenityId],
+    references: [amenities.id]
+  }),
+  responsiblePerson: one(users, {
+    fields: [assets.responsiblePersonId],
+    references: [users.id]
+  }),
+  maintenances: many(assetMaintenances),
+  assignments: many(assetAssignments)
+}));
+
+export const assetMaintenancesRelations = relations(assetMaintenances, ({ one }) => ({
+  asset: one(assets, {
+    fields: [assetMaintenances.assetId],
+    references: [assets.id]
+  })
+}));
+
+export const assetAssignmentsRelations = relations(assetAssignments, ({ one }) => ({
+  asset: one(assets, {
+    fields: [assetAssignments.assetId],
+    references: [assets.id]
+  }),
+  instructor: one(instructors, {
+    fields: [assetAssignments.instructorId],
+    references: [instructors.id]
+  }),
+  activity: one(activities, {
+    fields: [assetAssignments.activityId],
+    references: [activities.id]
+  })
+}));
