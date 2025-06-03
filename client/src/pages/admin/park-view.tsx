@@ -118,6 +118,7 @@ interface ParkDetails {
     id: number;
     name: string;
     category: string;
+    status: string;
     condition: string;
     lastMaintenance?: string;
   }>;
@@ -378,10 +379,23 @@ export default function AdminParkView() {
 
   const filteredAssets = getFilteredAndSortedAssets();
 
-  // Obtener listas únicas para los filtros (normalizar a minúsculas para evitar duplicados)
-  const uniqueCategories = [...new Set(park?.assets?.map(asset => asset.category?.toLowerCase()).filter(Boolean))];
-  const uniqueStatuses = [...new Set(park?.assets?.map(asset => asset.status?.toLowerCase()).filter(Boolean))];
-  const uniqueConditions = [...new Set(park?.assets?.map(asset => asset.condition?.toLowerCase()).filter(Boolean))];
+  // Crear mapas de valores únicos normalizados
+  const createUniqueValueMap = (values: (string | undefined)[]) => {
+    const uniqueMap = new Map<string, string>();
+    values.filter(Boolean).forEach(value => {
+      if (value) {
+        const lowerKey = value.toLowerCase();
+        if (!uniqueMap.has(lowerKey)) {
+          uniqueMap.set(lowerKey, value);
+        }
+      }
+    });
+    return Array.from(uniqueMap.keys());
+  };
+
+  const uniqueCategories = createUniqueValueMap(park?.assets?.map(asset => asset.category) || []);
+  const uniqueStatuses = createUniqueValueMap(park?.assets?.map(asset => asset.status) || []);
+  const uniqueConditions = createUniqueValueMap(park?.assets?.map(asset => asset.condition) || []);
 
   const clearAssetFilters = () => {
     setAssetFilters({
