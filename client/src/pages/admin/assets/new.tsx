@@ -208,10 +208,10 @@ const CreateAssetPage: React.FC = () => {
   const selectedAmenityId = form.watch('amenityId');
   useEffect(() => {
     if (selectedAmenityId && selectedAmenityId !== null && amenities && Array.isArray(amenities)) {
-      // Las amenidades directas usan la estructura {id, name, icon, category}
-      const selectedAmenity = amenities.find((a: any) => a.id === selectedAmenityId);
+      // Las amenidades usan la estructura {amenityId, amenityName, ...}
+      const selectedAmenity = amenities.find((a: any) => a.amenityId === selectedAmenityId);
       if (selectedAmenity) {
-        form.setValue('locationDescription', selectedAmenity.name || '');
+        form.setValue('locationDescription', selectedAmenity.amenityName || '');
       }
     } else if (selectedAmenityId === null) {
       // Clear location description when no amenity is selected
@@ -569,10 +569,10 @@ const CreateAssetPage: React.FC = () => {
                             <SelectContent className="z-[1001]">
                               <SelectItem value="none">Sin amenidad específica</SelectItem>
                               {amenities && Array.isArray(amenities) ? amenities
-                                .filter((amenity: any) => amenity.id && amenity.name)
+                                .filter((amenity: any) => amenity.amenityId && amenity.amenityName)
                                 .map((amenity: any) => (
-                                <SelectItem key={amenity.id} value={amenity.id.toString()}>
-                                  {amenity.name}
+                                <SelectItem key={amenity.amenityId} value={amenity.amenityId.toString()}>
+                                  {amenity.amenityName}
                                 </SelectItem>
                               )) : null}
                             </SelectContent>
