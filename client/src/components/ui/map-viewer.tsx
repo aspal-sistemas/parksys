@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -17,9 +17,31 @@ interface MapViewerProps {
   parkName?: string;
   className?: string;
   height?: string;
+  onMapClick?: (lat: number, lng: number) => void;
+  selectedLocation?: { lat: number; lng: number } | null;
 }
 
-export function MapViewer({ latitude, longitude, parkName, className, height = "300px" }: MapViewerProps) {
+// Componente para manejar clicks en el mapa
+function MapEvents({ onMapClick }: { onMapClick?: (lat: number, lng: number) => void }) {
+  useMapEvents({
+    click: (e) => {
+      if (onMapClick) {
+        onMapClick(e.latlng.lat, e.latlng.lng);
+      }
+    },
+  });
+  return null;
+}
+
+export function MapViewer({ 
+  latitude, 
+  longitude, 
+  parkName, 
+  className, 
+  height = "300px", 
+  onMapClick,
+  selectedLocation 
+}: MapViewerProps) {
   const [position, setPosition] = useState<[number, number] | null>(null);
 
   useEffect(() => {

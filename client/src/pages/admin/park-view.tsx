@@ -1378,6 +1378,12 @@ function EditAmenityForm({ amenity, onSubmit, isLoading, onCancel, parkData }: E
     },
   });
 
+  // Handler para actualizar coordenadas desde el mapa
+  const handleMapClick = (lat: number, lng: number) => {
+    form.setValue("locationLatitude", lat.toString());
+    form.setValue("locationLongitude", lng.toString());
+  };
+
   const handleSubmit = (data: EditAmenityFormData) => {
     onSubmit(data);
   };
@@ -1503,6 +1509,15 @@ function EditAmenityForm({ amenity, onSubmit, isLoading, onCancel, parkData }: E
                 longitude={parkData.longitude || -103.3496}
                 parkName={parkData.name}
                 height="256px"
+                onMapClick={handleMapClick}
+                selectedLocation={
+                  form.watch("locationLatitude") && form.watch("locationLongitude")
+                    ? {
+                        lat: parseFloat(form.watch("locationLatitude") || "0"),
+                        lng: parseFloat(form.watch("locationLongitude") || "0")
+                      }
+                    : null
+                }
               />
             )}
           </div>

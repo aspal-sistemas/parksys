@@ -1153,7 +1153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const parkId = Number(req.params.parkId);
       const amenityId = Number(req.params.amenityId);
-      const { moduleName, surfaceArea, status, locationLatitude, locationLongitude } = req.body;
+      const { moduleName, surfaceArea, status, locationLatitude, locationLongitude, description } = req.body;
       
       const result = await pool.query(`
         UPDATE park_amenities 
@@ -1162,10 +1162,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           surface_area = $4,
           status = $5,
           location_latitude = $6,
-          location_longitude = $7
+          location_longitude = $7,
+          description = $8
         WHERE id = $1 AND park_id = $2
         RETURNING *
-      `, [amenityId, parkId, moduleName, surfaceArea, status, locationLatitude, locationLongitude]);
+      `, [amenityId, parkId, moduleName, surfaceArea, status, locationLatitude, locationLongitude, description]);
       
       if (result.rows.length === 0) {
         return res.status(404).json({ message: "Amenidad no encontrada en este parque" });
