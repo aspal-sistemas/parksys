@@ -41,11 +41,11 @@ app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Importar rutas simplificadas de activos
-import { simpleAssetRouter } from "./simple-asset-routes";
+// Importar rutas simplificadas de activos - COMENTADO para evitar conflictos
+// import { simpleAssetRouter } from "./simple-asset-routes";
 
-// Registrar las rutas simplificadas de activos ANTES de otras rutas
-app.use('/api', simpleAssetRouter);
+// Registrar las rutas simplificadas de activos ANTES de otras rutas - COMENTADO
+// app.use('/api', simpleAssetRouter);
 
 // Registrar las rutas de actividades
 app.use('/api', activityRouter);
