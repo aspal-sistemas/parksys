@@ -65,6 +65,9 @@ export function MapViewer({
     );
   }
 
+  // Determinar qué posición mostrar para el marcador
+  const markerPosition = selectedLocation ? [selectedLocation.lat, selectedLocation.lng] as [number, number] : position;
+
   return (
     <div className={`relative ${className}`}>
       <div style={{ height, width: '100%' }} className="rounded-lg overflow-hidden border">
@@ -80,13 +83,24 @@ export function MapViewer({
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <Marker position={position} />
+          {markerPosition && <Marker position={markerPosition} />}
+          {onMapClick && <MapEvents onMapClick={onMapClick} />}
         </MapContainer>
       </div>
       <div className="mt-2 text-xs text-gray-500 flex items-center justify-between">
         <span>📍 {parkName || 'Ubicación del parque'}</span>
-        <span>{position[0].toFixed(6)}, {position[1].toFixed(6)}</span>
+        <span>
+          {selectedLocation 
+            ? `${selectedLocation.lat.toFixed(6)}, ${selectedLocation.lng.toFixed(6)}`
+            : `${position[0].toFixed(6)}, ${position[1].toFixed(6)}`
+          }
+        </span>
       </div>
+      {onMapClick && (
+        <div className="mt-1 text-xs text-blue-600">
+          Haz clic en el mapa para seleccionar una ubicación
+        </div>
+      )}
     </div>
   );
 }
