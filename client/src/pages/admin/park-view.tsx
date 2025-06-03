@@ -203,17 +203,25 @@ function formatOpeningHours(openingHours: string | null): JSX.Element {
 export default function AdminParkView() {
   const { id } = useParams();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Estados para modales de amenidades
   const [isAddAmenityModalOpen, setIsAddAmenityModalOpen] = React.useState(false);
   const [isEditAmenityModalOpen, setIsEditAmenityModalOpen] = React.useState(false);
   const [editingAmenity, setEditingAmenity] = React.useState<any>(null);
+  const [refreshKey, setRefreshKey] = React.useState(0);
   
   // Get complete park data from the main API endpoint that has all fields
-  const { data: park, isLoading, error } = useQuery<ParkDetails>({
-    queryKey: [`/api/parks/${id}`],
+  const { data: park, isLoading, error, refetch: refetchPark } = useQuery<ParkDetails>({
+    queryKey: [`/api/parks/${id}`, refreshKey],
     enabled: !!id,
   });
+
+  // Función para forzar actualización de datos
+  const forceRefresh = React.useCallback(async () => {
+    setRefreshKey(prev => prev + 1);
+    await refetchPark();
+  }, [refetchPark]);
 
   // Obtener amenidades disponibles para agregar
   const { data: availableAmenities } = useQuery({
@@ -228,17 +236,15 @@ export default function AdminParkView() {
         data: data,
       });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       setIsAddAmenityModalOpen(false);
       toast({
         title: "Amenidad agregada",
         description: "La amenidad se ha agregado al parque exitosamente.",
       });
       
-      // Recargar la página para mostrar cambios inmediatamente
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // Forzar actualización inmediata de los datos
+      await forceRefresh();
     },
     onError: () => {
       toast({
@@ -996,7 +1002,7 @@ const AmenitiesTable = ({
         data: data,
       });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       setIsEditAmenityModalOpen(false);
       setEditingAmenity(null);
       toast({
@@ -1004,10 +1010,8 @@ const AmenitiesTable = ({
         description: "La amenidad se ha actualizado exitosamente.",
       });
       
-      // Recargar la página para mostrar cambios inmediatamente
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // Forzar actualización inmediata de los datos
+      await forceRefresh();
     },
     onError: () => {
       toast({
