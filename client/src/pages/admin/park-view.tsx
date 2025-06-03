@@ -232,16 +232,15 @@ export default function AdminParkView() {
         data: data,
       });
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       setIsAddAmenityModalOpen(false);
       toast({
         title: "Amenidad agregada",
         description: "La amenidad se ha agregado al parque exitosamente.",
       });
       
-      // Forzar actualización inmediata de los datos
-      setRefreshKey(prev => prev + 1);
-      await refetchPark();
+      // Recargar página para mostrar cambios inmediatamente
+      setTimeout(() => window.location.reload(), 1000);
     },
     onError: () => {
       toast({
@@ -999,7 +998,7 @@ const AmenitiesTable = ({
         data: data,
       });
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       setIsEditAmenityModalOpen(false);
       setEditingAmenity(null);
       toast({
@@ -1007,9 +1006,8 @@ const AmenitiesTable = ({
         description: "La amenidad se ha actualizado exitosamente.",
       });
       
-      // Forzar actualización inmediata de los datos
-      setRefreshKey(prev => prev + 1);
-      await refetchPark();
+      // Recargar página para mostrar cambios inmediatamente
+      setTimeout(() => window.location.reload(), 1000);
     },
     onError: () => {
       toast({
