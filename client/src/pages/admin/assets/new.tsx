@@ -165,21 +165,7 @@ const CreateAssetPage: React.FC = () => {
     enabled: !!selectedParkId && selectedParkId > 0,
   });
 
-  // Debug logging
-  useEffect(() => {
-    console.log('=== AMENITIES DEBUG ===');
-    console.log('Selected Park ID (state):', selectedParkId);
-    console.log('Form Park ID:', form.watch('parkId'));
-    console.log('Amenities data:', amenities);
-    console.log('Is loading amenities:', isLoadingAmenities);
-    console.log('Query enabled:', !!selectedParkId && selectedParkId > 0);
-    console.log('Query key:', [`/api/parks/${selectedParkId}/amenities`]);
-    if (amenities && Array.isArray(amenities)) {
-      console.log('Amenities count:', amenities.length);
-      console.log('First amenity sample:', amenities[0]);
-    }
-    console.log('======================');
-  }, [selectedParkId, amenities, isLoadingAmenities, form]);
+
   
   // Consultar usuarios para responsables
   const { data: users, isLoading: isLoadingUsers } = useQuery({
@@ -220,9 +206,10 @@ const CreateAssetPage: React.FC = () => {
   const selectedAmenityId = form.watch('amenityId');
   useEffect(() => {
     if (selectedAmenityId && selectedAmenityId !== null && amenities && Array.isArray(amenities)) {
-      const selectedAmenity = amenities.find((a: any) => a.amenityId === selectedAmenityId);
+      // Las amenidades directas usan la estructura {id, name, icon, category}
+      const selectedAmenity = amenities.find((a: any) => a.id === selectedAmenityId);
       if (selectedAmenity) {
-        form.setValue('locationDescription', selectedAmenity.amenityName || '');
+        form.setValue('locationDescription', selectedAmenity.name || '');
       }
     } else if (selectedAmenityId === null) {
       // Clear location description when no amenity is selected
@@ -581,10 +568,10 @@ const CreateAssetPage: React.FC = () => {
                             <SelectContent className="z-[1001]">
                               <SelectItem value="none">Sin amenidad específica</SelectItem>
                               {amenities && Array.isArray(amenities) ? amenities
-                                .filter((amenity: any) => amenity.amenityId && amenity.amenityName)
+                                .filter((amenity: any) => amenity.id && amenity.name)
                                 .map((amenity: any) => (
-                                <SelectItem key={amenity.id} value={amenity.amenityId.toString()}>
-                                  {amenity.amenityName}
+                                <SelectItem key={amenity.id} value={amenity.id.toString()}>
+                                  {amenity.name}
                                 </SelectItem>
                               )) : null}
                             </SelectContent>
