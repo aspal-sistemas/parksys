@@ -398,6 +398,13 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         Listado
       </NavItem>
       <NavItem 
+        href="/admin/organizador" 
+        icon={<UserCog className="h-5 w-5" />}
+        active={location.startsWith('/admin/organizador')}
+      >
+        Organizador
+      </NavItem>
+      <NavItem 
         href="/admin/instructors" 
         icon={<GraduationCap className="h-5 w-5" />}
         active={location === '/admin/instructors'}
