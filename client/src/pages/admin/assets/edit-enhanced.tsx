@@ -89,6 +89,7 @@ export default function EditAssetEnhanced() {
     fetch(`/api/assets/${id}`)
       .then(res => res.json())
       .then(asset => {
+        console.log('Asset data loaded:', asset);
         setName(asset.name || '');
         setDescription(asset.description || '');
         setSerialNumber(asset.serialNumber || '');
@@ -96,10 +97,13 @@ export default function EditAssetEnhanced() {
         setCost(asset.acquisitionCost || '');
         setStatus(asset.status || 'activo');
         setCondition(asset.condition || 'bueno');
-        setParkId(asset.parkId ? String(asset.parkId) : '');
+        const parkIdValue = asset.parkId ? String(asset.parkId) : '';
+        const amenityIdValue = asset.amenityId ? String(asset.amenityId) : '';
+        console.log('Setting parkId:', parkIdValue, 'amenityId:', amenityIdValue);
+        setParkId(parkIdValue);
         setCategoryId(asset.categoryId ? String(asset.categoryId) : '');
         setLocationDesc(asset.locationDescription || '');
-        setAmenityId(asset.amenityId ? String(asset.amenityId) : '');
+        setAmenityId(amenityIdValue);
         setLatitude(asset.latitude || '');
         setLongitude(asset.longitude || '');
         
@@ -161,12 +165,18 @@ export default function EditAssetEnhanced() {
   
   // Cargar amenidades cuando cambie el parque seleccionado
   useEffect(() => {
+    console.log('useEffect amenities triggered - parkId:', parkId, 'assetDataLoaded:', assetDataLoaded);
     if (parkId) {
+      console.log('Loading amenities for park:', parkId);
       fetch(`/api/parks/${parkId}/amenities`)
         .then(res => res.json())
-        .then(data => setAmenities(data))
+        .then(data => {
+          console.log('Amenities loaded:', data);
+          setAmenities(data);
+        })
         .catch(err => console.error('Error al cargar amenidades:', err));
     } else {
+      console.log('No parkId, clearing amenities');
       setAmenities([]);
       if (assetDataLoaded) {
         // Solo limpiar si ya se cargaron los datos del activo (cambio manual)
