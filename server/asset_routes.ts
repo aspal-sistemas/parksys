@@ -200,12 +200,17 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         return res.status(400).json({ message: "ID de activo inválido" });
       }
 
-      const maintenances = await db
-        .select()
-        .from(assetMaintenances)
-        .where(eq(assetMaintenances.assetId, assetId));
+      // Use direct SQL query to avoid schema mismatches
+      const result = await pool.query(`
+        SELECT id, asset_id, maintenance_type, performed_by, performer_id, 
+               date, cost, description, findings, actions, next_maintenance_date, 
+               photos, status, created_at, updated_at
+        FROM asset_maintenances 
+        WHERE asset_id = $1 
+        ORDER BY date DESC
+      `, [assetId]);
 
-      res.json(maintenances);
+      res.json(result.rows || []);
     } catch (error) {
       console.error("Error al obtener mantenimientos:", error);
       res.status(500).json({ message: "Error al obtener mantenimientos del activo" });
