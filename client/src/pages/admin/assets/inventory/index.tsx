@@ -117,7 +117,10 @@ const InventoryPage: React.FC = () => {
       
       const category = categories.get(categoryName);
       category.count++;
-      category.value += asset.acquisitionCost || 0;
+      const cost = typeof asset.acquisitionCost === 'string' 
+        ? parseFloat(asset.acquisitionCost) 
+        : (asset.acquisitionCost || 0);
+      category.value += cost;
     });
     
     return Array.from(categories.values()).sort((a, b) => b.count - a.count);
@@ -140,7 +143,10 @@ const InventoryPage: React.FC = () => {
       
       const condition = conditions.get(asset.condition);
       condition.count++;
-      condition.value += asset.acquisitionCost || 0;
+      const cost = typeof asset.acquisitionCost === 'string' 
+        ? parseFloat(asset.acquisitionCost) 
+        : (asset.acquisitionCost || 0);
+      condition.value += cost;
     });
     
     return Array.from(conditions.values());

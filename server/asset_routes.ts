@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { db, pool } from "./db";
-import { assets, assetCategories, assetMaintenances } from "@shared/schema";
+import { assets, assetCategories, assetMaintenances, parks } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
 
 export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
@@ -52,18 +52,14 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
           nextMaintenanceDate: assets.nextMaintenanceDate,
           createdAt: assets.createdAt,
           updatedAt: assets.updatedAt,
-          categoryName: assetCategories.name
+          categoryName: assetCategories.name,
+          parkName: parks.name
         })
         .from(assets)
-        .leftJoin(assetCategories, eq(assets.categoryId, assetCategories.id));
+        .leftJoin(assetCategories, eq(assets.categoryId, assetCategories.id))
+        .leftJoin(parks, eq(assets.parkId, parks.id));
       
-      // Add park names manually since we don't have a parks join
-      const assetsWithParkNames = allAssets.map(asset => ({
-        ...asset,
-        parkName: getParkName(asset.parkId)
-      }));
-      
-      res.json(assetsWithParkNames);
+      res.json(allAssets);
     } catch (error) {
       console.error("Error al obtener activos:", error);
       res.status(500).json({ message: "Error al obtener activos" });
