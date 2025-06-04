@@ -887,6 +887,15 @@ const AssetDetailPage: React.FC = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="images">
+            {asset && (
+              <AssetImageManager 
+                assetId={asset.id} 
+                assetName={asset.name}
+              />
+            )}
+          </TabsContent>
         </Tabs>
       )}
       
