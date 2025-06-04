@@ -211,10 +211,10 @@ const AssetsPage: React.FC = () => {
         (asset.location_description && asset.location_description.toLowerCase().includes(searchTerm.toLowerCase()));
       
       // Filtrar por estado
-      const matchesStatus = selectedStatus === '' || asset.status === selectedStatus;
+      const matchesStatus = selectedStatus === '' || selectedStatus === 'all' || asset.status === selectedStatus;
       
       // Filtrar por condición
-      const matchesCondition = selectedCondition === '' || asset.condition === selectedCondition;
+      const matchesCondition = selectedCondition === '' || selectedCondition === 'all' || asset.condition === selectedCondition;
       
       // Filtrar por categoría
       const matchesCategory = selectedCategory === '' || selectedCategory === 'all' || (asset.categoryId && asset.categoryId.toString() === selectedCategory);
