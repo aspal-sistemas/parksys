@@ -98,9 +98,9 @@ export default function EditAssetEnhanced() {
         setStatus(asset.status || 'activo');
         setCondition(asset.condition || 'bueno');
         const parkIdValue = asset.parkId ? String(asset.parkId) : '';
-        // El asset tiene parkAmenityId que apunta al ID de park_amenities, no amenityId
-        const amenityIdValue = asset.parkAmenityId ? String(asset.parkAmenityId) : '';
-        console.log('Setting parkId:', parkIdValue, 'parkAmenityId:', amenityIdValue);
+        // El asset tiene amenityId (si está asignado a una amenidad específica)
+        const amenityIdValue = asset.amenityId ? String(asset.amenityId) : '';
+        console.log('Setting parkId:', parkIdValue, 'amenityId:', amenityIdValue);
         setParkId(parkIdValue);
         setCategoryId(asset.categoryId ? String(asset.categoryId) : '');
         setLocationDesc(asset.locationDescription || '');
@@ -168,8 +168,8 @@ export default function EditAssetEnhanced() {
   useEffect(() => {
     console.log('useEffect amenities triggered - parkId:', parkId, 'assetDataLoaded:', assetDataLoaded);
     if (parkId) {
-      console.log('Loading amenities for park:', parkId);
-      fetch(`/api/parks/${parkId}/amenities`)
+      console.log('Loading general amenities');
+      fetch('/api/amenities')
         .then(res => res.json())
         .then(data => {
           console.log('Amenities loaded:', data);
@@ -226,9 +226,8 @@ export default function EditAssetEnhanced() {
     if (selectedAmenityId && selectedAmenityId !== 'none') {
       const selectedAmenity = amenities.find((a: any) => a.id === parseInt(selectedAmenityId));
       if (selectedAmenity) {
-        // Usar name como descripción de ubicación, que es la propiedad estándar para amenidades
-        const amenityName = selectedAmenity.name || selectedAmenity.moduleName || selectedAmenity.amenityName || '';
-        setLocationDesc(amenityName);
+        // Usar name como descripción de ubicación
+        setLocationDesc(selectedAmenity.name || '');
       }
     } else {
       // Limpiar descripción de ubicación cuando se selecciona "Sin amenidad" o se quita la selección
@@ -290,7 +289,7 @@ export default function EditAssetEnhanced() {
         categoryId: parseInt(categoryId),
         location: location.trim(), // Cambiar de locationDescription a location
         acquisitionDate: acquisitionDate || undefined,
-        parkAmenityId: amenityId && amenityId !== 'none' ? parseInt(amenityId) : null,
+        amenityId: amenityId && amenityId !== 'none' ? parseInt(amenityId) : null,
         latitude: latitude.trim() || undefined,
         longitude: longitude.trim() || undefined
       };
