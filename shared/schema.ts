@@ -1272,6 +1272,21 @@ export const assetAssignments = pgTable("asset_assignments", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Tabla de imágenes de activos
+export const assetImages = pgTable("asset_images", {
+  id: serial("id").primaryKey(),
+  assetId: integer("asset_id").notNull(),
+  imageUrl: text("image_url").notNull(),
+  fileName: text("file_name").notNull(),
+  fileSize: integer("file_size"), // Tamaño en bytes
+  mimeType: text("mime_type").notNull(),
+  caption: text("caption"),
+  isPrimary: boolean("is_primary").notNull().default(false),
+  uploadedById: integer("uploaded_by_id").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // Tipos exportados para activos
 export type AssetCategory = typeof assetCategories.$inferSelect;
 export type InsertAssetCategory = typeof assetCategories.$inferInsert;
@@ -1284,6 +1299,9 @@ export type InsertAssetMaintenance = typeof assetMaintenances.$inferInsert;
 
 export type AssetAssignment = typeof assetAssignments.$inferSelect;
 export type InsertAssetAssignment = typeof assetAssignments.$inferInsert;
+
+export type AssetImage = typeof assetImages.$inferSelect;
+export type InsertAssetImage = typeof assetImages.$inferInsert;
 
 // Esquemas de inserción para activos
 export const insertAssetCategorySchema = createInsertSchema(assetCategories).omit({
@@ -1305,6 +1323,12 @@ export const insertAssetMaintenanceSchema = createInsertSchema(assetMaintenances
 });
 
 export const insertAssetAssignmentSchema = createInsertSchema(assetAssignments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertAssetImageSchema = createInsertSchema(assetImages).omit({
   id: true,
   createdAt: true,
   updatedAt: true
@@ -1338,13 +1362,25 @@ export const assetsRelations = relations(assets, ({ one, many }) => ({
     references: [users.id]
   }),
   maintenances: many(assetMaintenances),
-  assignments: many(assetAssignments)
+  assignments: many(assetAssignments),
+  images: many(assetImages)
 }));
 
 export const assetMaintenancesRelations = relations(assetMaintenances, ({ one }) => ({
   asset: one(assets, {
     fields: [assetMaintenances.assetId],
     references: [assets.id]
+  })
+}));
+
+export const assetImagesRelations = relations(assetImages, ({ one }) => ({
+  asset: one(assets, {
+    fields: [assetImages.assetId],
+    references: [assets.id]
+  }),
+  uploadedBy: one(users, {
+    fields: [assetImages.uploadedById],
+    references: [users.id]
   })
 }));
 
