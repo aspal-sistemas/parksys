@@ -25,6 +25,27 @@ interface AssetStats {
   }[];
 }
 
+// Interfaz para los datos de activos (copiada de inventory)
+interface Asset {
+  id: number;
+  name: string;
+  description: string | null;
+  serialNumber: string | null;
+  acquisitionDate: string | null;
+  acquisitionCost: number | string | null;
+  parkId: number;
+  parkName?: string;
+  categoryId: number;
+  categoryName?: string;
+  status: string;
+  condition: string;
+  locationDescription: string | null;
+  lastMaintenanceDate: string | null;
+  nextMaintenanceDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const formatCurrency = (value: number | string | null) => {
   if (value === null || value === undefined) return 'N/A';
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
@@ -40,16 +61,9 @@ const AssetsDashboard: React.FC = () => {
   const [_, setLocation] = useLocation();
 
   // Consulta para obtener todos los activos
-  const { data: assets, isLoading: assetsLoading, error: assetsError } = useQuery<any[]>({
+  const { data: assets, isLoading: assetsLoading, error: assetsError } = useQuery<Asset[]>({
     queryKey: ['/api/assets'],
   });
-  
-  // Debug: verificar datos
-  React.useEffect(() => {
-    console.log('Dashboard - Assets data:', assets);
-    console.log('Dashboard - Assets loading:', assetsLoading);
-    console.log('Dashboard - Assets error:', assetsError);
-  }, [assets, assetsLoading, assetsError]);
 
   // Consulta para obtener estadísticas de activos
   const { data: stats, isLoading: statsLoading, error } = useQuery<AssetStats>({
@@ -72,12 +86,12 @@ const AssetsDashboard: React.FC = () => {
     );
   }
 
-  // Calcular valores de la misma manera que en la página de inventario
+  // Calcular valores exactamente como en la página de inventario
   const totalAssets = assets?.length || 0;
-  const totalValue = assets?.reduce((sum: number, asset: any) => {
+  const totalValue = assets?.reduce((sum, asset) => {
     const cost = typeof asset.acquisitionCost === 'string' 
-      ? parseFloat(asset.acquisitionCost) 
-      : (asset.acquisitionCost || 0);
+      ? parseFloat(asset.acquisitionCost) || 0
+      : asset.acquisitionCost || 0;
     return sum + cost;
   }, 0) || 0;
 
