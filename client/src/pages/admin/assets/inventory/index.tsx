@@ -92,7 +92,12 @@ const InventoryPage: React.FC = () => {
   
   // Estadísticas y valores calculados
   const totalAssets = assets?.length || 0;
-  const totalValue = assets?.reduce((sum, asset) => sum + (asset.acquisitionCost || 0), 0) || 0;
+  const totalValue = assets?.reduce((sum, asset) => {
+    const cost = typeof asset.acquisitionCost === 'string' 
+      ? parseFloat(asset.acquisitionCost) 
+      : (asset.acquisitionCost || 0);
+    return sum + cost;
+  }, 0) || 0;
   
   // Agrupar por categoría y calcular valores
   const assetsByCategory = React.useMemo(() => {
