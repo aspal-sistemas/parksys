@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { db, pool } from "./db";
-import { assets, assetCategories, assetMaintenances } from "@shared/schema";
+import { assets, assetCategories, assetMaintenances, assetHistory } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
 
 export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
@@ -146,44 +146,24 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         return res.status(400).json({ message: "ID de activo inválido" });
       }
 
-      console.log(`Intentando eliminar activo con ID: ${id}`);
-
       // Check if asset exists
       const [existingAsset] = await db.select().from(assets).where(eq(assets.id, id));
       if (!existingAsset) {
         return res.status(404).json({ message: "Activo no encontrado" });
       }
 
-      console.log(`Activo encontrado, procediendo con eliminación: ${existingAsset.name}`);
-
       // Use transaction for cascading delete
       await db.transaction(async (tx) => {
-        // Delete related maintenance records first
-        const deletedMaintenances = await tx.delete(assetMaintenances).where(eq(assetMaintenances.assetId, id));
-        console.log(`Registros de mantenimiento eliminados: ${deletedMaintenances.rowCount || 0}`);
+        // Delete related maintenance records
+        await tx.delete(assetMaintenances).where(eq(assetMaintenances.assetId, id));
         
-        // Delete from asset_history table if it exists
-        try {
-          await pool.query("DELETE FROM asset_history WHERE asset_id = $1", [id]);
-          console.log("Registros de historial eliminados");
-        } catch (historyError) {
-          console.log("Tabla asset_history no existe o no hay registros");
-        }
-
-        // Delete from asset_assignments table if it exists
-        try {
-          await pool.query("DELETE FROM asset_assignments WHERE asset_id = $1", [id]);
-          console.log("Asignaciones de activos eliminadas");
-        } catch (assignmentsError) {
-          console.log("Tabla asset_assignments no existe o no hay registros");
-        }
+        // Delete related history records
+        await tx.delete(assetHistory).where(eq(assetHistory.assetId, id));
         
         // Delete the asset itself
-        const deletedAsset = await tx.delete(assets).where(eq(assets.id, id));
-        console.log(`Activo eliminado: ${deletedAsset.rowCount || 0} registros`);
+        await tx.delete(assets).where(eq(assets.id, id));
       });
 
-      console.log("Eliminación completada exitosamente");
       res.json({ message: "Activo eliminado correctamente" });
     } catch (error) {
       console.error("Error al eliminar activo:", error);
@@ -244,7 +224,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
     }
   });
 
-  // Get asset history (simplified version)
+  // Get asset history
   apiRouter.get("/assets/:id/history", async (req: Request, res: Response) => {
     try {
       const assetId = parseInt(req.params.id);
@@ -253,14 +233,12 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         return res.status(400).json({ message: "ID de activo inválido" });
       }
 
-      // Return empty array if history table doesn't exist
-      try {
-        const historyResult = await pool.query("SELECT * FROM asset_history WHERE asset_id = $1 ORDER BY created_at DESC", [assetId]);
-        res.json(historyResult.rows || []);
-      } catch (error) {
-        console.log("Tabla asset_history no existe, devolviendo array vacío");
-        res.json([]);
-      }
+      const history = await db
+        .select()
+        .from(assetHistory)
+        .where(eq(assetHistory.assetId, assetId));
+
+      res.json(history);
     } catch (error) {
       console.error("Error al obtener historial:", error);
       res.status(500).json({ message: "Error al obtener historial del activo" });
