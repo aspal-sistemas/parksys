@@ -335,63 +335,61 @@ const InventoryPage: React.FC = () => {
         </Card>
       </div>
       
-      <div className="grid gap-4 md:grid-cols-2 mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Filtros de Inventario</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Filtros de Inventario</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <Input
+                placeholder="Buscar por nombre o número de serie..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <Input
-                  placeholder="Buscar por nombre o número de serie..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    {ASSET_STATUSES.map((status) => (
+                      <SelectItem key={status} value={status}>{status}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los estados</SelectItem>
-                      {ASSET_STATUSES.map((status) => (
-                        <SelectItem key={status} value={status}>{status}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Select value={selectedCondition} onValueChange={setSelectedCondition}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Condición" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas las condiciones</SelectItem>
-                      {ASSET_CONDITIONS.map((condition) => (
-                        <SelectItem key={condition} value={condition}>{condition}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Select value={selectedPark} onValueChange={setSelectedPark}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Parque" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los parques</SelectItem>
-                      {parks?.map((park: any) => (
-                        <SelectItem key={park.id} value={park.id.toString()}>{park.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div>
+                <Select value={selectedCondition} onValueChange={setSelectedCondition}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Condición" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las condiciones</SelectItem>
+                    {ASSET_CONDITIONS.map((condition) => (
+                      <SelectItem key={condition} value={condition}>{condition}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Select value={selectedPark} onValueChange={setSelectedPark}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Parque" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los parques</SelectItem>
+                    {parks?.map((park: any) => (
+                      <SelectItem key={park.id} value={park.id.toString()}>{park.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
@@ -400,10 +398,9 @@ const InventoryPage: React.FC = () => {
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        
-      </div>
+          </div>
+        </CardContent>
+      </Card>
       
       <Card>
         <CardHeader>
