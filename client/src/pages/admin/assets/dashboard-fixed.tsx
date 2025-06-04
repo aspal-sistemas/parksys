@@ -118,10 +118,6 @@ const AssetsDashboardFixed: React.FC = () => {
             Análisis y estadísticas de activos en parques
           </p>
         </div>
-        <Button onClick={() => setLocation('/admin/assets/new')}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuevo Activo
-        </Button>
       </div>
 
       {/* Tarjetas de estadísticas principales */}

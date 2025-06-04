@@ -14,7 +14,8 @@ import {
   Edit,
   Trash2,
   AlertCircle,
-  MoreHorizontal
+  MoreHorizontal,
+  Plus
 } from 'lucide-react';
 
 import AdminLayout from '@/components/AdminLayout';
@@ -299,10 +300,14 @@ const InventoryPage: React.FC = () => {
             <Printer className="mr-2 h-4 w-4" />
             Imprimir
           </Button>
+          <Button onClick={() => setLocation('/admin/assets/new')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nuevo Activo
+          </Button>
         </div>
       </div>
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+      <div className="grid gap-4 md:grid-cols-2 mb-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total de Activos</CardTitle>
@@ -326,56 +331,6 @@ const InventoryPage: React.FC = () => {
                 formatCurrency(totalValue)
               )}
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Activos en Buen Estado</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                assets?.filter(a => 
-                  a.condition === 'Excelente' || 
-                  a.condition === 'Bueno'
-                ).length || 0
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {isLoading ? (
-                <Skeleton className="h-4 w-32" />
-              ) : (
-                `${Math.round(((assets?.filter(a => 
-                  a.condition === 'Excelente' || 
-                  a.condition === 'Bueno'
-                ).length || 0) / totalAssets) * 100) || 0}% del total`
-              )}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Activos Activos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                assets?.filter(a => a.status === 'Activo').length || 0
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {isLoading ? (
-                <Skeleton className="h-4 w-32" />
-              ) : (
-                `${Math.round(((assets?.filter(a => a.status === 'Activo').length || 0) / totalAssets) * 100) || 0}% del total`
-              )}
-            </p>
           </CardContent>
         </Card>
       </div>
@@ -448,41 +403,6 @@ const InventoryPage: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Resumen por Categoría</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Skeleton key={index} className="h-8 w-full" />
-                ))}
-              </div>
-            ) : (
-              <div className="max-h-[250px] overflow-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Categoría</TableHead>
-                      <TableHead>Cantidad</TableHead>
-                      <TableHead className="text-right">Valor</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {assetsByCategory.map((category) => (
-                      <TableRow key={category.name}>
-                        <TableCell className="font-medium">{category.name}</TableCell>
-                        <TableCell>{category.count}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(category.value)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
       
       <Card>
