@@ -85,11 +85,20 @@ export default function EditAssetEnhanced() {
   useEffect(() => {
     if (!id) return;
     
-    // Cargar activo
-    fetch(`/api/assets/${id}`)
-      .then(res => res.json())
-      .then(asset => {
-        console.log('Asset data loaded:', asset);
+    const loadData = async () => {
+      try {
+        // Cargar todos los datos en paralelo
+        const [assetRes, parksRes, categoriesRes] = await Promise.all([
+          fetch(`/api/assets/${id}`),
+          fetch('/api/parks'),
+          fetch('/api/asset-categories')
+        ]);
+
+        const asset = await assetRes.json();
+        const parksData = await parksRes.json();
+        const categoriesData = await categoriesRes.json();
+
+        // Establecer todos los datos del activo
         setName(asset.name || '');
         setDescription(asset.description || '');
         setSerialNumber(asset.serialNumber || '');
@@ -97,10 +106,10 @@ export default function EditAssetEnhanced() {
         setCost(asset.acquisitionCost || '');
         setStatus(asset.status || 'activo');
         setCondition(asset.condition || 'bueno');
+        
         const parkIdValue = asset.parkId ? String(asset.parkId) : '';
-        // El asset tiene amenityId (si está asignado a una amenidad específica)
         const amenityIdValue = asset.amenityId ? String(asset.amenityId) : '';
-        console.log('Setting parkId:', parkIdValue, 'amenityId:', amenityIdValue);
+        
         setParkId(parkIdValue);
         setCategoryId(asset.categoryId ? String(asset.categoryId) : '');
         setLocationDesc(asset.locationDescription || '');
@@ -108,31 +117,32 @@ export default function EditAssetEnhanced() {
         setLatitude(asset.latitude || '');
         setLongitude(asset.longitude || '');
         
-        // Configurar posición del mapa si hay coordenadas del activo
+        // Establecer datos de opciones
+        setParks(parksData);
+        setCategories(categoriesData);
+        
+        // Configurar posición del mapa
         if (asset.latitude && asset.longitude) {
           const lat = parseFloat(asset.latitude);
           const lng = parseFloat(asset.longitude);
           if (!isNaN(lat) && !isNaN(lng)) {
             setMapPosition([lat, lng]);
-            setMapCenter([lat, lng]); // Centrar el mapa en la ubicación del activo
+            setMapCenter([lat, lng]);
           }
         } else if (asset.parkId) {
-          // Si no hay coordenadas del activo, centrar en el parque
-          fetch(`/api/parks/${asset.parkId}`)
-            .then(res => res.json())
-            .then(park => {
-              if (park.latitude && park.longitude) {
-                const lat = parseFloat(park.latitude);
-                const lng = parseFloat(park.longitude);
-                if (!isNaN(lat) && !isNaN(lng)) {
-                  setMapCenter([lat, lng]);
-                }
-              }
-            })
-            .catch(err => console.error('Error al cargar ubicación del parque:', err));
+          // Cargar ubicación del parque si no hay coordenadas del activo
+          const parkRes = await fetch(`/api/parks/${asset.parkId}`);
+          const park = await parkRes.json();
+          if (park.latitude && park.longitude) {
+            const lat = parseFloat(park.latitude);
+            const lng = parseFloat(park.longitude);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              setMapCenter([lat, lng]);
+            }
+          }
         }
         
-        // Corregir manejo de fechas para evitar problemas de zona horaria
+        // Corregir manejo de fechas
         if (asset.acquisitionDate) {
           const date = new Date(asset.acquisitionDate + 'T00:00:00');
           setAcquisitionDate(date.toISOString().split('T')[0]);
@@ -140,51 +150,39 @@ export default function EditAssetEnhanced() {
           setAcquisitionDate('');
         }
         
-        // Marcar que los datos del activo han sido cargados
+        // Cargar amenidades del parque si hay parkId
+        if (parkIdValue) {
+          const amenitiesRes = await fetch(`/api/parks/${parkIdValue}/amenities`);
+          const amenitiesData = await amenitiesRes.json();
+          setAmenities(amenitiesData);
+        }
+        
+        // Marcar que los datos están cargados
         setAssetDataLoaded(true);
-      })
-      .catch(err => {
-        console.error('Error al cargar activo:', err);
-        setError('Error al cargar el activo');
-      });
-
-    // Cargar parques
-    fetch('/api/parks')
-      .then(res => res.json())
-      .then(data => setParks(data))
-      .catch(err => console.error('Error al cargar parques:', err));
-
-    // Cargar categorías
-    fetch('/api/asset-categories')
-      .then(res => res.json())
-      .then(data => setCategories(data))
-      .catch(err => console.error('Error al cargar categorías:', err));
+        
+      } catch (err) {
+        console.error('Error al cargar datos:', err);
+        setError('Error al cargar los datos del activo');
+      }
+    };
+    
+    loadData();
   }, [id]);
 
   // Estado para controlar si ya se cargaron los datos iniciales del activo
   const [assetDataLoaded, setAssetDataLoaded] = useState(false);
   
-  // Cargar amenidades cuando cambie el parque seleccionado
+  // Cargar amenidades cuando cambie el parque manualmente (después de la carga inicial)
   useEffect(() => {
-    console.log('useEffect amenities triggered - parkId:', parkId, 'assetDataLoaded:', assetDataLoaded);
-    if (parkId) {
-      console.log('Loading general amenities');
-      fetch('/api/amenities')
+    if (parkId && assetDataLoaded) {
+      fetch(`/api/parks/${parkId}/amenities`)
         .then(res => res.json())
-        .then(data => {
-          console.log('Amenities loaded:', data);
-          console.log('Current amenityId:', amenityId);
-          setAmenities(data);
-        })
+        .then(data => setAmenities(data))
         .catch(err => console.error('Error al cargar amenidades:', err));
-    } else {
-      console.log('No parkId, clearing amenities');
+    } else if (!parkId && assetDataLoaded) {
       setAmenities([]);
-      if (assetDataLoaded) {
-        // Solo limpiar si ya se cargaron los datos del activo (cambio manual)
-        setAmenityId('');
-        setLocationDesc('');
-      }
+      setAmenityId('');
+      setLocationDesc('');
     }
   }, [parkId, assetDataLoaded]);
 
@@ -227,7 +225,7 @@ export default function EditAssetEnhanced() {
       const selectedAmenity = amenities.find((a: any) => a.id === parseInt(selectedAmenityId));
       if (selectedAmenity) {
         // Usar name como descripción de ubicación
-        setLocationDesc(selectedAmenity.name || '');
+        setLocationDesc(selectedAmenity.moduleName || selectedAmenity.name || '');
       }
     } else {
       // Limpiar descripción de ubicación cuando se selecciona "Sin amenidad" o se quita la selección
