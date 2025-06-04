@@ -218,10 +218,10 @@ const AssetsPage: React.FC = () => {
       const matchesCondition = selectedCondition === '' || selectedCondition === 'all' || asset.condition === selectedCondition;
       
       // Filtrar por categoría
-      const matchesCategory = selectedCategory === '' || selectedCategory === 'all' || (asset.categoryId && asset.categoryId.toString() === selectedCategory);
+      const matchesCategory = selectedCategory === '' || selectedCategory === 'all' || (asset.category_id && asset.category_id.toString() === selectedCategory);
       
       // Filtrar por parque
-      const matchesPark = selectedPark === '' || selectedPark === 'all' || (asset.parkId && asset.parkId.toString() === selectedPark);
+      const matchesPark = selectedPark === '' || selectedPark === 'all' || (asset.park_id && asset.park_id.toString() === selectedPark);
       
       // Filtrar por pestaña activa
       let matchesTab = true;
@@ -381,7 +381,7 @@ const AssetsPage: React.FC = () => {
                 <Skeleton className="h-8 w-24" />
               ) : (
                 `$${assets?.reduce((total, asset) => {
-                  const cost = parseFloat((asset as any).acquisitionCost?.toString() || '0') || 0;
+                  const cost = parseFloat(asset.acquisition_cost?.toString() || '0') || 0;
                   return total + cost;
                 }, 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
               )}
