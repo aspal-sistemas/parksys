@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { db, pool } from "./db";
-import { assets, assetCategories, assetMaintenances, parks } from "@shared/schema";
+import { assets, assetCategories, assetMaintenances, parks, parkAmenities } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
 
 export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
@@ -152,9 +152,23 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         updatedAt: new Date()
       };
 
-      // Handle optional fields that might not exist in schema
+      // Handle amenityId - convert from park_amenities.id to amenities.id
       if (req.body.amenityId !== undefined && req.body.amenityId !== null) {
-        updateData.amenityId = req.body.amenityId;
+        // Get the actual amenity_id from park_amenities table
+        const [parkAmenity] = await db
+          .select({ amenityId: parkAmenities.amenityId })
+          .from(parkAmenities)
+          .where(eq(parkAmenities.id, req.body.amenityId));
+          
+        if (parkAmenity) {
+          updateData.amenityId = parkAmenity.amenityId;
+          console.log(`Convertido park_amenities.id ${req.body.amenityId} a amenities.id ${parkAmenity.amenityId}`);
+        } else {
+          updateData.amenityId = null;
+          console.log(`No se encontró park_amenity con id ${req.body.amenityId}`);
+        }
+      } else {
+        updateData.amenityId = null;
       }
 
       if (req.body.latitude) {
