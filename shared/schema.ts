@@ -1242,15 +1242,16 @@ export const assetMaintenances = pgTable("asset_maintenances", {
   assetId: integer("asset_id").notNull(),
   maintenanceType: text("maintenance_type").notNull(), // preventive, corrective, emergency
   description: text("description").notNull(),
-  scheduledDate: date("scheduled_date"),
-  completedDate: date("completed_date"),
+  date: date("date"), // Fixed to match actual database column
   performedBy: text("performed_by"), // Nombre del técnico o empresa
+  performerId: integer("performer_id"), // ID del técnico
   cost: decimal("cost", { precision: 10, scale: 2 }),
-  status: text("status").notNull().default("scheduled"), // scheduled, in_progress, completed, cancelled
-  priority: text("priority").notNull().default("medium"), // low, medium, high, critical
+  findings: text("findings"), // Hallazgos
+  actions: text("actions"), // Acciones realizadas
+  nextMaintenanceDate: date("next_maintenance_date"), // Próximo mantenimiento
+  photos: text("photos").array(), // Fotos
+  status: text("status").notNull().default("completed"), // completed, scheduled, cancelled
   notes: text("notes"),
-  partsReplaced: text("parts_replaced").array(), // Lista de partes reemplazadas
-  hoursWorked: decimal("hours_worked", { precision: 5, scale: 2 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
