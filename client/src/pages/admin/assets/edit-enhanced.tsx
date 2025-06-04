@@ -172,6 +172,7 @@ export default function EditAssetEnhanced() {
         .then(res => res.json())
         .then(data => {
           console.log('Amenities loaded:', data);
+          console.log('Current amenityId:', amenityId);
           setAmenities(data);
         })
         .catch(err => console.error('Error al cargar amenidades:', err));
@@ -440,7 +441,7 @@ export default function EditAssetEnhanced() {
                   <SelectItem value="none">Sin amenidad</SelectItem>
                   {amenities.map((amenity: any) => (
                     <SelectItem key={amenity.id} value={String(amenity.id)}>
-                      {amenity.moduleName || amenity.amenityName}
+                      {amenity.name || amenity.moduleName || amenity.amenityName || `Amenidad ${amenity.id}`}
                     </SelectItem>
                   ))}
                 </SelectContent>
