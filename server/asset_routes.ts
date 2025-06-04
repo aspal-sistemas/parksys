@@ -103,15 +103,27 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         serialNumber: req.body.serialNumber || null,
         categoryId: parseInt(req.body.categoryId),
         parkId: parseInt(req.body.parkId),
-        status: req.body.status || 'Activo',
-        condition: req.body.condition || 'Bueno',
-        location: req.body.location || null,
+        status: req.body.status || 'active',
+        condition: req.body.condition || 'good',
+        locationDescription: req.body.location || null,
         acquisitionDate: req.body.acquisitionDate || null,
-        acquisitionCost: req.body.acquisitionCost ? parseFloat(req.body.acquisitionCost) : null,
-        notes: req.body.notes || null
+        acquisitionCost: req.body.acquisitionCost ? req.body.acquisitionCost.toString() : null,
+        notes: req.body.notes || null,
+        amenityId: req.body.amenityId || null,
+        latitude: req.body.latitude || null,
+        longitude: req.body.longitude || null,
+        manufacturer: req.body.manufacturer || null,
+        model: req.body.model || null,
+        currentValue: req.body.currentValue || null,
+        maintenanceFrequency: req.body.maintenanceFrequency || null,
+        lastMaintenanceDate: req.body.lastMaintenanceDate || null,
+        nextMaintenanceDate: req.body.nextMaintenanceDate || null,
+        expectedLifespan: req.body.expectedLifespan ? parseInt(req.body.expectedLifespan) : null,
+        qrCode: req.body.qrCode || null,
+        responsiblePersonId: req.body.responsiblePersonId ? parseInt(req.body.responsiblePersonId) : null
       };
 
-      const [newAsset] = await db.insert(assets).values(assetData).returning();
+      const [newAsset] = await db.insert(assets).values([assetData]).returning();
       res.status(201).json(newAsset);
     } catch (error) {
       console.error("Error al crear activo:", error);
@@ -148,7 +160,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         condition: req.body.condition,
         locationDescription: req.body.location || null, // Map location to locationDescription
         acquisitionDate: req.body.acquisitionDate || null,
-        acquisitionCost: req.body.acquisitionCost ? parseFloat(req.body.acquisitionCost) : null,
+        acquisitionCost: req.body.acquisitionCost ? req.body.acquisitionCost.toString() : null,
         updatedAt: new Date()
       };
 
