@@ -42,10 +42,7 @@ const AssetsDashboard: React.FC = () => {
   // Consulta para obtener todos los activos
   const { data: assets, isLoading: assetsLoading } = useQuery<any[]>({
     queryKey: ['/api/assets'],
-    enabled: true,
   });
-  
-  console.log('Assets data:', assets);
 
   // Consulta para obtener estadísticas de activos
   const { data: stats, isLoading: statsLoading, error } = useQuery<AssetStats>({
@@ -74,11 +71,8 @@ const AssetsDashboard: React.FC = () => {
     const cost = typeof asset.acquisitionCost === 'string' 
       ? parseFloat(asset.acquisitionCost) 
       : (asset.acquisitionCost || 0);
-    console.log(`Asset ${asset.name}: acquisitionCost = ${asset.acquisitionCost} (${typeof asset.acquisitionCost}), parsed = ${cost}`);
     return sum + cost;
   }, 0) || 0;
-  
-  console.log(`Total assets: ${totalAssets}, Total value: ${totalValue}`);
 
   const activeAssets = stats?.byStatus?.active || 0;
 
