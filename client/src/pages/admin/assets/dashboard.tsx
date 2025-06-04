@@ -40,9 +40,16 @@ const AssetsDashboard: React.FC = () => {
   const [_, setLocation] = useLocation();
 
   // Consulta para obtener todos los activos
-  const { data: assets, isLoading: assetsLoading } = useQuery<any[]>({
+  const { data: assets, isLoading: assetsLoading, error: assetsError } = useQuery<any[]>({
     queryKey: ['/api/assets'],
   });
+  
+  // Debug: verificar datos
+  React.useEffect(() => {
+    console.log('Dashboard - Assets data:', assets);
+    console.log('Dashboard - Assets loading:', assetsLoading);
+    console.log('Dashboard - Assets error:', assetsError);
+  }, [assets, assetsLoading, assetsError]);
 
   // Consulta para obtener estadísticas de activos
   const { data: stats, isLoading: statsLoading, error } = useQuery<AssetStats>({
