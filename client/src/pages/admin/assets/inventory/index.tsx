@@ -262,7 +262,7 @@ const InventoryPage: React.FC = () => {
   };
 
   const handleEdit = (assetId: number) => {
-    setLocation(`/admin/assets/${assetId}/edit`);
+    setLocation(`/admin/assets/${assetId}/edit-enhanced`);
   };
 
   const handleReportIncident = (assetId: number) => {
