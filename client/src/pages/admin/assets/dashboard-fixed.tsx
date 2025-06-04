@@ -4,7 +4,7 @@ import { AdminLayout } from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Package, DollarSign, Wrench, Plus } from 'lucide-react';
+import { Package, DollarSign, Wrench, Plus, MapPin } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -108,6 +108,20 @@ const AssetsDashboardFixed: React.FC = () => {
     acc[category] += cost;
     return acc;
   }, {}) || {};
+
+  // Calcular activos por parque
+  const assetsByPark = assets?.reduce((acc: any, asset) => {
+    const park = asset.parkName || 'Sin parque';
+    if (!acc[park]) {
+      acc[park] = 0;
+    }
+    acc[park] += 1;
+    return acc;
+  }, {}) || {};
+
+  // Obtener el parque con más activos
+  const topPark = Object.entries(assetsByPark).sort(([,a], [,b]) => (b as number) - (a as number))[0];
+  const totalParks = Object.keys(assetsByPark).length;
 
   return (
     <AdminLayout>
@@ -235,19 +249,21 @@ const AssetsDashboardFixed: React.FC = () => {
         </Card>
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-              onClick={() => setLocation('/admin/assets/new')}>
+              onClick={() => setLocation('/admin/assets/map')}>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Plus className="mr-2 h-5 w-5" />
-              Agregar Activo
+              <MapPin className="mr-2 h-5 w-5" />
+              Activos por Parque
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Registrar un nuevo activo en el sistema
+              Distribución de activos en {totalParks} parques
             </p>
             <div className="mt-2">
-              <Badge variant="secondary">Acción rápida</Badge>
+              <Badge variant="outline">
+                {topPark ? `${topPark[0]}: ${topPark[1]} activos` : 'Sin datos'}
+              </Badge>
             </div>
           </CardContent>
         </Card>
