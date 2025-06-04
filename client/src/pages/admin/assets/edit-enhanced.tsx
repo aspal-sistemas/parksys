@@ -429,7 +429,7 @@ export default function EditAssetEnhanced() {
                   <SelectItem value="none">Sin amenidad</SelectItem>
                   {amenities.map((amenity: any) => (
                     <SelectItem key={amenity.id} value={String(amenity.id)}>
-                      {amenity.name}
+                      {amenity.amenityName || amenity.moduleName}
                     </SelectItem>
                   ))}
                 </SelectContent>
