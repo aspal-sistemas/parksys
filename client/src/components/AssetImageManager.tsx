@@ -402,7 +402,9 @@ const AssetImageManager: React.FC<AssetImageManagerProps> = ({ assetId, assetNam
                         </Button>
                       )}
                       
-                      <Dialog>
+                      <Dialog open={editingImage?.id === image.id} onOpenChange={(open) => {
+                        if (!open) setEditingImage(null);
+                      }}>
                         <DialogTrigger asChild>
                           <Button
                             size="sm"
