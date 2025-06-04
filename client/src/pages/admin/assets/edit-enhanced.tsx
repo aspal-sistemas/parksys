@@ -216,7 +216,7 @@ export default function EditAssetEnhanced() {
     if (selectedAmenityId && selectedAmenityId !== 'none') {
       const selectedAmenity = amenities.find((a: any) => a.id === parseInt(selectedAmenityId));
       if (selectedAmenity) {
-        setLocationDesc(selectedAmenity.amenityName || selectedAmenity.moduleName);
+        setLocationDesc(selectedAmenity.moduleName || selectedAmenity.amenityName);
       }
     } else {
       // Limpiar descripción de ubicación cuando se selecciona "Sin amenidad" o se quita la selección
@@ -429,7 +429,7 @@ export default function EditAssetEnhanced() {
                   <SelectItem value="none">Sin amenidad</SelectItem>
                   {amenities.map((amenity: any) => (
                     <SelectItem key={amenity.id} value={String(amenity.id)}>
-                      {amenity.amenityName || amenity.moduleName}
+                      {amenity.moduleName || amenity.amenityName}
                     </SelectItem>
                   ))}
                 </SelectContent>
