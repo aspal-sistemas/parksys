@@ -155,6 +155,18 @@ export default function EditAssetEnhanced() {
           const amenitiesRes = await fetch(`/api/parks/${parkIdValue}/amenities`);
           const amenitiesData = await amenitiesRes.json();
           setAmenities(amenitiesData);
+          
+          // Si el activo tiene amenityId, verificar que coincida con las amenidades del parque
+          if (amenityIdValue) {
+            const matchingAmenity = amenitiesData.find((a: any) => a.id === parseInt(amenityIdValue));
+            if (!matchingAmenity) {
+              // Si no encuentra la amenidad en este parque, buscar por amenity_id
+              const amenityByAmenityId = amenitiesData.find((a: any) => a.amenityId === parseInt(amenityIdValue));
+              if (amenityByAmenityId) {
+                setAmenityId(String(amenityByAmenityId.id));
+              }
+            }
+          }
         }
         
         // Marcar que los datos están cargados
