@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from './db';
 import { assetImages, assets } from '@shared/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, ne } from 'drizzle-orm';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -158,6 +158,7 @@ export function registerAssetImageRoutes(app: any, apiRouter: Router, isAuthenti
       }
 
       const { caption, isPrimary } = req.body;
+      console.log('Actualizando imagen:', { imageId, caption, isPrimary });
 
       // Verificar que la imagen existe
       const [existingImage] = await db
@@ -180,7 +181,7 @@ export function registerAssetImageRoutes(app: any, apiRouter: Router, isAuthenti
           })
           .where(and(
             eq(assetImages.assetId, existingImage.assetId),
-            eq(assetImages.id, imageId)
+            ne(assetImages.id, imageId)
           ));
       }
 

@@ -123,10 +123,7 @@ const AssetImageManager: React.FC<AssetImageManagerProps> = ({ assetId, assetNam
     mutationFn: async ({ imageId, data }: { imageId: number; data: { caption: string; isPrimary: boolean } }) => {
       return apiRequest(`/api/asset-images/${imageId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        data: data,
       });
     },
     onSuccess: () => {
