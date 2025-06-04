@@ -98,8 +98,9 @@ export default function EditAssetEnhanced() {
         setStatus(asset.status || 'activo');
         setCondition(asset.condition || 'bueno');
         const parkIdValue = asset.parkId ? String(asset.parkId) : '';
-        const amenityIdValue = asset.amenityId ? String(asset.amenityId) : '';
-        console.log('Setting parkId:', parkIdValue, 'amenityId:', amenityIdValue);
+        // El asset tiene parkAmenityId que apunta al ID de park_amenities, no amenityId
+        const amenityIdValue = asset.parkAmenityId ? String(asset.parkAmenityId) : '';
+        console.log('Setting parkId:', parkIdValue, 'parkAmenityId:', amenityIdValue);
         setParkId(parkIdValue);
         setCategoryId(asset.categoryId ? String(asset.categoryId) : '');
         setLocationDesc(asset.locationDescription || '');
@@ -289,7 +290,7 @@ export default function EditAssetEnhanced() {
         categoryId: parseInt(categoryId),
         location: location.trim(), // Cambiar de locationDescription a location
         acquisitionDate: acquisitionDate || undefined,
-        amenityId: amenityId && amenityId !== 'none' ? parseInt(amenityId) : null,
+        parkAmenityId: amenityId && amenityId !== 'none' ? parseInt(amenityId) : null,
         latitude: latitude.trim() || undefined,
         longitude: longitude.trim() || undefined
       };
