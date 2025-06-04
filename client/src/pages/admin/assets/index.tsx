@@ -217,10 +217,10 @@ const AssetsPage: React.FC = () => {
       const matchesCondition = selectedCondition === '' || asset.condition === selectedCondition;
       
       // Filtrar por categoría
-      const matchesCategory = selectedCategory === '' || (asset.categoryId && asset.categoryId.toString() === selectedCategory);
+      const matchesCategory = selectedCategory === '' || selectedCategory === 'all' || (asset.categoryId && asset.categoryId.toString() === selectedCategory);
       
       // Filtrar por parque
-      const matchesPark = selectedPark === '' || (asset.parkId && asset.parkId.toString() === selectedPark);
+      const matchesPark = selectedPark === '' || selectedPark === 'all' || (asset.parkId && asset.parkId.toString() === selectedPark);
       
       // Filtrar por pestaña activa
       let matchesTab = true;
