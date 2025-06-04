@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { Helmet } from 'react-helmet';
 import { 
   Download, 
@@ -8,7 +9,12 @@ import {
   BarChart, 
   Filter, 
   Tag,
-  Clock
+  Clock,
+  Eye,
+  Edit,
+  Trash2,
+  AlertCircle,
+  MoreHorizontal
 } from 'lucide-react';
 
 import AdminLayout from '@/components/AdminLayout';
@@ -246,6 +252,27 @@ const InventoryPage: React.FC = () => {
     setSelectedStatus('');
     setSelectedCondition('');
     setSelectedPark('');
+  };
+
+  // Handlers para las acciones
+  const handleViewDetails = (assetId: number) => {
+    window.location.href = `/admin/assets/${assetId}`;
+  };
+
+  const handleEdit = (assetId: number) => {
+    window.location.href = `/admin/assets/${assetId}/edit`;
+  };
+
+  const handleReportIncident = (assetId: number) => {
+    window.location.href = `/admin/incidents/new?assetId=${assetId}`;
+  };
+
+  const handleDelete = (assetId: number) => {
+    if (confirm('¿Estás seguro de que deseas eliminar este activo? Esta acción no se puede deshacer.')) {
+      // Aquí iría la lógica de eliminación
+      console.log('Eliminar activo:', assetId);
+      // TODO: Implementar llamada a la API para eliminar
+    }
   };
   
   return (
@@ -497,6 +524,7 @@ const InventoryPage: React.FC = () => {
                     <TableHead>Condición</TableHead>
                     <TableHead>Fecha Adquisición</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
+                    <TableHead className="text-center">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -526,6 +554,46 @@ const InventoryPage: React.FC = () => {
                       <TableCell>{formatDate(asset.acquisitionDate)}</TableCell>
                       <TableCell className="text-right">
                         {formatCurrency(asset.acquisitionCost)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            title="Ver detalles"
+                            onClick={() => handleViewDetails(asset.id)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            title="Editar"
+                            onClick={() => handleEdit(asset.id)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-orange-600 hover:text-orange-700"
+                            title="Reportar incidencia"
+                            onClick={() => handleReportIncident(asset.id)}
+                          >
+                            <AlertCircle className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                            title="Eliminar"
+                            onClick={() => handleDelete(asset.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
