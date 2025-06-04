@@ -79,18 +79,6 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     }
   };
 
-  const commonLocations = [
-    'Plaza principal',
-    'Anfiteatro',
-    'Auditorio',
-    'Área verde',
-    'Sendero principal',
-    'Zona de descanso',
-    'Área de ejercicio',
-    'Mirador',
-    'Zona administrativa'
-  ];
-
   if (!parkId) {
     return (
       <div className="space-y-2">
@@ -149,29 +137,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         </div>
       )}
 
-      {/* Common locations section */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">Ubicaciones comunes</Label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {commonLocations.map((location) => (
-            <Button
-              key={location}
-              variant={value === location ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setSelectedType('custom');
-                onChange(location);
-              }}
-              disabled={disabled}
-              className="justify-start h-auto p-2 text-xs"
-            >
-              <MapPin className="h-3 w-3 mr-1" />
-              <span className="truncate">{location}</span>
-              {value === location && <Check className="h-3 w-3 ml-auto" />}
-            </Button>
-          ))}
-        </div>
-      </div>
+
 
       {/* Custom location dialog */}
       <Dialog open={isCustomDialogOpen} onOpenChange={setIsCustomDialogOpen}>
