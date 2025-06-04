@@ -17,6 +17,7 @@ import { registerVolunteerRoutes } from "./volunteerRoutes";
 import { registerInstructorRoutes } from "./instructorRoutes";
 import { registerPublicRoutes } from "./publicRoutes";
 import { registerAssetRoutes } from "./asset_routes";
+import { registerAssetImageRoutes } from "./asset-image-routes";
 import { registerMaintenanceRoutes } from "./maintenance_routes";
 import { registerAssetAssignmentRoutes } from "./asset_assignment_routes";
 import { registerTreeRoutes } from "./tree_routes";
@@ -114,6 +115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de activos
   registerAssetRoutes(app, apiRouter, isAuthenticated);
+  registerAssetImageRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de arbolado
   registerTreeRoutes(app, apiRouter, isAuthenticated);
