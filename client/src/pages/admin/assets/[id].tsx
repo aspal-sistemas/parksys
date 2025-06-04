@@ -373,7 +373,7 @@ const AssetDetailPage: React.FC = () => {
   
   // Función para volver a la lista de activos
   const handleBackToList = () => {
-    setLocation('/admin/assets');
+    setLocation('/admin/assets/inventory');
   };
   
   // Función para abrir el diálogo de edición
