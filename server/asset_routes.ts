@@ -391,8 +391,25 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         .from(assets)
         .groupBy(assets.condition);
 
+      // Get total value and value by category
+      const totalValueResult = await db
+        .select({
+          totalValue: sql<number>`COALESCE(SUM(CAST(acquisition_cost AS DECIMAL)), 0)`
+        })
+        .from(assets);
+
+      const categoryValueResult = await db
+        .select({
+          categoryName: assetCategories.name,
+          totalValue: sql<number>`COALESCE(SUM(CAST(${assets.acquisitionCost} AS DECIMAL)), 0)`
+        })
+        .from(assets)
+        .leftJoin(assetCategories, eq(assets.categoryId, assetCategories.id))
+        .groupBy(assetCategories.name);
+
       const stats = {
         total,
+        totalValue: Number(totalValueResult[0]?.totalValue || 0),
         byStatus: statusResult.reduce((acc, item) => {
           acc[item.status] = Number(item.count);
           return acc;
@@ -400,7 +417,11 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         byCondition: conditionResult.reduce((acc, item) => {
           acc[item.condition] = Number(item.count);
           return acc;
-        }, {} as Record<string, number>)
+        }, {} as Record<string, number>),
+        categoryValues: categoryValueResult.map(item => ({
+          category: item.categoryName || 'Sin categoría',
+          totalValue: Number(item.totalValue || 0)
+        }))
       };
 
       res.json(stats);

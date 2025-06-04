@@ -16,43 +16,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Definir tipos para los datos del dashboard
 interface AssetStats {
-  totalAssets: number;
-  activeAssets: number;
-  inactiveAssets: number;
-  maintenanceAssets: number;
-  activeAssetsPercentage: number;
-  maintenanceAssetsPercentage: number;
-  conditionDistribution: {
+  total: number;
+  totalValue: number;
+  byStatus: {
     [key: string]: number;
   };
-  statusDistribution: {
+  byCondition: {
     [key: string]: number;
   };
-  needMaintenance: number;
-  needMaintenanceList: {
-    id: number;
-    name: string;
-    condition: string;
-    lastMaintenanceDate: string | null;
-    nextMaintenanceDate: string | null;
-  }[];
   categoryValues: {
     category: string;
     totalValue: number;
-  }[];
-  // Para compatibilidad
-  totalValue: number;
-  byCategory: {
-    category: string;
-    count: number;
-  }[];
-  byCondition: {
-    condition: string;
-    count: number;
-  }[];
-  byStatus: {
-    status: string;
-    count: number;
   }[];
 }
 
@@ -106,12 +80,15 @@ const getMaintenanceStatusColor = (status: string) => {
   }
 };
 
-const formatCurrency = (value: number) => {
+const formatCurrency = (value: number | string | null) => {
+  if (value === null || value === undefined) return 'N/A';
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(numValue)) return 'N/A';
   return new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
     minimumFractionDigits: 2,
-  }).format(value);
+  }).format(numValue);
 };
 
 const AssetsDashboard: React.FC = () => {
