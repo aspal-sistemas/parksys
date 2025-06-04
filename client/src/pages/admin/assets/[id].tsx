@@ -318,7 +318,7 @@ const AssetDetailPage: React.FC = () => {
   // Mutación para eliminar activo
   const deleteMutation = useMutation({
     mutationFn: () => {
-      return apiRequest(`/api/assets/${id}`, 'DELETE');
+      return apiRequest(`/api/assets/${id}`, { method: 'DELETE' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
