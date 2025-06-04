@@ -113,12 +113,12 @@ const AssetsDashboardFixed: React.FC = () => {
     <AdminLayout>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestión de Activos</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Resumen Operativo de Activos</h1>
           <p className="text-muted-foreground">
-            Panel de control para la gestión de activos del parque
+            Análisis y estadísticas de activos en parques
           </p>
         </div>
-        <Button onClick={() => setLocation('/admin/assets/create')}>
+        <Button onClick={() => setLocation('/admin/assets/new')}>
           <Plus className="mr-2 h-4 w-4" />
           Nuevo Activo
         </Button>

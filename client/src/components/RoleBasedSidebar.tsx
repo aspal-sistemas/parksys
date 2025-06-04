@@ -258,10 +258,10 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
     >
       <NavItem 
         href="/admin/assets" 
-        icon={<Package className="h-5 w-5" />}
+        icon={<BarChart className="h-5 w-5" />}
         active={location === '/admin/assets'}
       >
-        Gestión
+        Resumen Operativo
       </NavItem>
       <NavItem 
         href="/admin/assets/inventory" 
