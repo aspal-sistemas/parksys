@@ -60,28 +60,37 @@ const formatCurrency = (value: number | string | null) => {
 const AssetsDashboard: React.FC = () => {
   const [_, setLocation] = useLocation();
 
-  // Consulta para obtener todos los activos
-  const { data: assets, isLoading: assetsLoading, error: assetsError } = useQuery<Asset[]>({
+  // Consultar datos de activos
+  const { data: assets, isLoading, isError } = useQuery<Asset[]>({
     queryKey: ['/api/assets'],
   });
 
-  // Consulta para obtener estadísticas de activos
-  const { data: stats, isLoading: statsLoading, error } = useQuery<AssetStats>({
-    queryKey: ['/api/assets-stats'],
-    enabled: true,
+  // Consultar datos de parques
+  const { data: parks } = useQuery({
+    queryKey: ['/api/parks'],
   });
 
-  const isLoading = assetsLoading || statsLoading;
-
-  if (error) {
+  if (isError) {
     return (
       <AdminLayout>
         <Alert>
-          <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Error al cargar las estadísticas de activos. Por favor, intenta de nuevo.
+            Error al cargar los datos de activos. Por favor, intenta de nuevo.
           </AlertDescription>
         </Alert>
+      </AdminLayout>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+            <p className="mt-2 text-gray-600">Cargando datos...</p>
+          </div>
+        </div>
       </AdminLayout>
     );
   }
@@ -95,7 +104,9 @@ const AssetsDashboard: React.FC = () => {
     return sum + cost;
   }, 0) || 0;
 
-  const activeAssets = stats?.byStatus?.active || 0;
+  // Calcular estadísticas directamente desde los datos
+  const activeAssets = assets?.filter(asset => asset.status === 'active').length || 0;
+  const maintenanceAssets = assets?.filter(asset => asset.status === 'maintenance').length || 0;
 
   return (
     <AdminLayout>
@@ -172,7 +183,7 @@ const AssetsDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoading ? <Skeleton className="h-8 w-16" /> : (stats?.byStatus?.maintenance || 0)}
+              {isLoading ? <Skeleton className="h-8 w-16" /> : maintenanceAssets}
             </div>
           </CardContent>
         </Card>
