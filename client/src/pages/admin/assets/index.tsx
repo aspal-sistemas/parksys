@@ -13,7 +13,8 @@ import {
   User,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  RefreshCw
 } from 'lucide-react';
 
 import AdminLayout from '@/components/AdminLayout';
@@ -513,8 +514,35 @@ const AssetsPage: React.FC = () => {
               ))}
             </div>
           ) : isError ? (
-            <div className="text-center py-4 text-red-500">
-              <p>Error al cargar los datos de activos.</p>
+            <div className="text-center py-8">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+                <div className="flex flex-col items-center">
+                  <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
+                  <h3 className="text-lg font-semibold text-red-800 mb-2">Error al cargar activos</h3>
+                  <p className="text-red-600 text-center mb-4">
+                    No se pudieron cargar los datos de activos. Esto puede deberse a una conexión intermitente.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => refetch()}
+                      className="border-red-300 text-red-700 hover:bg-red-50"
+                    >
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Reintentar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.location.reload()}
+                      className="border-red-300 text-red-700 hover:bg-red-50"
+                    >
+                      Recargar página
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : filteredAssets.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
