@@ -45,12 +45,14 @@ const formatDate = (dateString: string | null) => {
 };
 
 // Función para dar formato a valores monetarios
-const formatCurrency = (value: number | null) => {
-  if (value === null) return 'N/A';
+const formatCurrency = (value: number | string | null) => {
+  if (value === null || value === undefined) return 'N/A';
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(numValue)) return 'N/A';
   return new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN'
-  }).format(value);
+  }).format(numValue);
 };
 
 // Interfaz para los datos de activos

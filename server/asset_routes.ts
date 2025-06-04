@@ -107,7 +107,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         condition: req.body.condition || 'Bueno',
         location: req.body.location || null,
         acquisitionDate: req.body.acquisitionDate || null,
-        acquisitionCost: req.body.acquisitionCost || null,
+        acquisitionCost: req.body.acquisitionCost ? parseFloat(req.body.acquisitionCost) : null,
         notes: req.body.notes || null
       };
 
@@ -148,7 +148,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         condition: req.body.condition,
         locationDescription: req.body.location || null, // Map location to locationDescription
         acquisitionDate: req.body.acquisitionDate || null,
-        acquisitionCost: req.body.acquisitionCost || null,
+        acquisitionCost: req.body.acquisitionCost ? parseFloat(req.body.acquisitionCost) : null,
         updatedAt: new Date()
       };
 
