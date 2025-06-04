@@ -124,6 +124,9 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
     try {
       const id = parseInt(req.params.id);
       
+      console.log(`Actualizando activo ID: ${id}`);
+      console.log("Datos recibidos:", JSON.stringify(req.body, null, 2));
+      
       if (isNaN(id)) {
         return res.status(400).json({ message: "ID de activo inválido" });
       }
@@ -134,20 +137,35 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         return res.status(404).json({ message: "Activo no encontrado" });
       }
 
-      const updateData = {
+      // Prepare update data with proper handling of fields
+      const updateData: any = {
         name: req.body.name,
-        description: req.body.description,
-        serialNumber: req.body.serialNumber,
+        description: req.body.description || null,
+        serialNumber: req.body.serialNumber || null,
         categoryId: req.body.categoryId,
         parkId: req.body.parkId,
         status: req.body.status,
         condition: req.body.condition,
-        location: req.body.location,
-        acquisitionDate: req.body.acquisitionDate,
-        acquisitionCost: req.body.acquisitionCost,
-        notes: req.body.notes,
+        locationDescription: req.body.location || null, // Map location to locationDescription
+        acquisitionDate: req.body.acquisitionDate || null,
+        acquisitionCost: req.body.acquisitionCost || null,
         updatedAt: new Date()
       };
+
+      // Handle optional fields that might not exist in schema
+      if (req.body.amenityId !== undefined && req.body.amenityId !== null) {
+        updateData.amenityId = req.body.amenityId;
+      }
+
+      if (req.body.latitude) {
+        updateData.latitude = req.body.latitude;
+      }
+
+      if (req.body.longitude) {
+        updateData.longitude = req.body.longitude;
+      }
+
+      console.log("Datos de actualización preparados:", JSON.stringify(updateData, null, 2));
 
       const [updatedAsset] = await db
         .update(assets)
@@ -155,10 +173,11 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         .where(eq(assets.id, id))
         .returning();
 
+      console.log("Activo actualizado exitosamente:", updatedAsset.id);
       res.json(updatedAsset);
     } catch (error) {
-      console.error("Error al actualizar activo:", error);
-      res.status(500).json({ message: "Error al actualizar activo" });
+      console.error("Error detallado al actualizar activo:", error);
+      res.status(500).json({ message: "Error al actualizar activo", details: error.message });
     }
   });
 
