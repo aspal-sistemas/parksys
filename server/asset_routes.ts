@@ -35,7 +35,45 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
   // Get all assets
   apiRouter.get("/assets", async (req: Request, res: Response) => {
     try {
-      const allAssets = await db.select().from(assets);
+      const allAssets = await db
+        .select({
+          id: assets.id,
+          name: assets.name,
+          description: assets.description,
+          serial_number: assets.serial_number,
+          acquisition_date: assets.acquisition_date,
+          acquisition_cost: assets.acquisition_cost,
+          park_id: assets.park_id,
+          category_id: assets.category_id,
+          status: assets.status,
+          condition: assets.condition,
+          location_description: assets.location_description,
+          last_maintenance_date: assets.last_maintenance_date,
+          next_maintenance_date: assets.next_maintenance_date,
+          created_at: assets.created_at,
+          updated_at: assets.updated_at,
+          categoryName: assetCategories.name,
+          parkName: sql<string>`CASE 
+            WHEN ${assets.park_id} = 1 THEN 'Parque Central'
+            WHEN ${assets.park_id} = 2 THEN 'Parque de la Revolución'
+            WHEN ${assets.park_id} = 3 THEN 'Parque de los Colomos'
+            WHEN ${assets.park_id} = 4 THEN 'Parque Alcalde'
+            WHEN ${assets.park_id} = 5 THEN 'Parque San Rafael'
+            WHEN ${assets.park_id} = 6 THEN 'Parque Metropolitano'
+            WHEN ${assets.park_id} = 7 THEN 'Parque Mirador Independencia'
+            WHEN ${assets.park_id} = 8 THEN 'Parque González Gallo'
+            WHEN ${assets.park_id} = 9 THEN 'Parque de la Amistad'
+            WHEN ${assets.park_id} = 10 THEN 'Parque de las Américas'
+            WHEN ${assets.park_id} = 11 THEN 'Parque de la Solidaridad'
+            WHEN ${assets.park_id} = 12 THEN 'Parque de la Juventud'
+            WHEN ${assets.park_id} = 13 THEN 'Parque de la Cultura'
+            WHEN ${assets.park_id} = 14 THEN 'Parque de la Tecnología'
+            ELSE CONCAT('Parque ', ${assets.park_id}::text)
+          END`
+        })
+        .from(assets)
+        .leftJoin(assetCategories, eq(assets.category_id, assetCategories.id));
+      
       res.json(allAssets);
     } catch (error) {
       console.error("Error al obtener activos:", error);
