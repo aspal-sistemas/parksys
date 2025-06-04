@@ -120,7 +120,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
   });
 
   // Update asset
-  apiRouter.put("/assets/:id", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.put("/assets/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       
