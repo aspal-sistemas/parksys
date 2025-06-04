@@ -216,7 +216,7 @@ export default function EditAssetEnhanced() {
     if (selectedAmenityId && selectedAmenityId !== 'none') {
       const selectedAmenity = amenities.find((a: any) => a.id === parseInt(selectedAmenityId));
       if (selectedAmenity) {
-        setLocationDesc(selectedAmenity.name);
+        setLocationDesc(selectedAmenity.amenityName || selectedAmenity.moduleName);
       }
     } else {
       // Limpiar descripción de ubicación cuando se selecciona "Sin amenidad" o se quita la selección
