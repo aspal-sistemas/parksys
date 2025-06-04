@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRoute, useLocation } from 'wouter';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,6 +37,7 @@ function LocationMarker({ position, setPosition }: { position: [number, number] 
 export default function EditAssetEnhanced() {
   const [, params] = useRoute('/admin/assets/:id/edit-enhanced');
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -319,6 +321,10 @@ export default function EditAssetEnhanced() {
       }
 
       const result = await response.json();
+
+      // Invalidar cache de React Query para actualizar la vista
+      queryClient.invalidateQueries({ queryKey: [`/api/assets/${id}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
 
       setSuccess('Activo actualizado correctamente');
       
