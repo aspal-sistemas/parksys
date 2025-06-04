@@ -35,6 +35,7 @@ import { Badge } from '@/components/ui/badge';
 import AdminLayout from '@/components/AdminLayout';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import LocationSelector from '@/components/LocationSelector';
 
 // Categorías de actividades
 const CATEGORIAS_ACTIVIDADES = [
@@ -60,6 +61,7 @@ const nuevaActividadSchema = z.object({
   esRecurrente: z.boolean().default(false),
   esGratuita: z.boolean().default(true),
   precio: z.number().optional(),
+  ubicacion: z.string().optional(),
   ubicaciones: z.array(z.string()).optional(),
   diasRecurrentes: z.array(z.string()).optional(),
   requisitos: z.string().optional(),
@@ -93,6 +95,7 @@ const NuevaActividadPage = () => {
       esRecurrente: false,
       esGratuita: true,
       precio: undefined,
+      ubicacion: '',
       ubicaciones: [],
       diasRecurrentes: [],
     }
@@ -274,37 +277,25 @@ const NuevaActividadPage = () => {
                   )}
                 />
 
-                {/* Sección de ubicaciones específicas */}
-                {watchParqueId && (
-                  <div className="space-y-2">
-                    <FormLabel>Ubicaciones específicas</FormLabel>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Ej: Área de juegos infantiles"
-                        value={ubicacionSeleccionada}
-                        onChange={(e) => setUbicacionSeleccionada(e.target.value)}
-                      />
-                      <Button 
-                        type="button" 
-                        onClick={agregarUbicacion}
-                        variant="outline"
-                      >
-                        Añadir
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {ubicaciones.map((ubicacion, index) => (
-                        <Badge key={index} className="flex items-center gap-1">
-                          {ubicacion}
-                          <X 
-                            className="h-3 w-3 cursor-pointer ml-1" 
-                            onClick={() => eliminarUbicacion(index)} 
-                          />
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* Ubicación con LocationSelector */}
+                <FormField
+                  control={form.control}
+                  name="ubicacion"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ubicación</FormLabel>
+                      <FormControl>
+                        <LocationSelector
+                          parkId={watchParqueId}
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Seleccionar ubicación"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* Programación y detalles */}

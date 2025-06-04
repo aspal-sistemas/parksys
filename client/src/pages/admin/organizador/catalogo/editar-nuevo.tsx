@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Checkbox } from '@/components/ui/checkbox';
+import LocationSelector from '@/components/LocationSelector';
 
 // Categorías de actividades
 const CATEGORIAS_ACTIVIDADES = [

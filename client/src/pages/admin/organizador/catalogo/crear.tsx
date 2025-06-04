@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Checkbox } from '@/components/ui/checkbox';
+import LocationSelector from '@/components/LocationSelector';
 
 // Categorías de actividades
 const CATEGORIAS_ACTIVIDADES = [
@@ -412,7 +413,12 @@ const CrearActividadPage = () => {
                     <FormItem>
                       <FormLabel>Ubicación dentro del parque</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ej: Área de juegos, Salón principal" {...field} />
+                        <LocationSelector
+                          parkId={form.watch('parkId') ? Number(form.watch('parkId')) : undefined}
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Seleccionar ubicación"
+                        />
                       </FormControl>
                       <FormDescription>
                         Especifica dónde dentro del parque se realizará la actividad
