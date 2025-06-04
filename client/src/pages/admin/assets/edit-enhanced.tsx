@@ -61,9 +61,9 @@ export default function EditAssetEnhanced() {
   const [mapCenter, setMapCenter] = useState<[number, number]>([19.432608, -99.133209]); // Centro de Ciudad de México por defecto
   
   // Estados para datos de selección
-  const [parks, setParks] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [amenities, setAmenities] = useState([]);
+  const [parks, setParks] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [amenities, setAmenities] = useState<any[]>([]);
 
   // Opciones de estado y condición
   const statusOptions = [
@@ -216,7 +216,9 @@ export default function EditAssetEnhanced() {
     if (selectedAmenityId && selectedAmenityId !== 'none') {
       const selectedAmenity = amenities.find((a: any) => a.id === parseInt(selectedAmenityId));
       if (selectedAmenity) {
-        setLocationDesc(selectedAmenity.moduleName || selectedAmenity.amenityName);
+        // Usar name como descripción de ubicación, que es la propiedad estándar para amenidades
+        const amenityName = selectedAmenity.name || selectedAmenity.moduleName || selectedAmenity.amenityName || '';
+        setLocationDesc(amenityName);
       }
     } else {
       // Limpiar descripción de ubicación cuando se selecciona "Sin amenidad" o se quita la selección
