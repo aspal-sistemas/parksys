@@ -73,17 +73,30 @@ export function registerAssetImageRoutes(app: any, apiRouter: Router, isAuthenti
   });
 
   // Subir una nueva imagen para un activo
-  apiRouter.post('/assets/:id/images', isAuthenticated, upload.single('image'), async (req: Request, res: Response) => {
+  apiRouter.post('/assets/:id/images', upload.single('image'), async (req: Request, res: Response) => {
     try {
+      console.log('Iniciando subida de imagen para activo:', req.params.id);
+      console.log('Archivo recibido:', req.file ? 'Sí' : 'No');
+      console.log('Body recibido:', req.body);
+      
       const assetId = parseInt(req.params.id);
       
       if (isNaN(assetId)) {
+        console.log('Error: ID de activo inválido');
         return res.status(400).json({ error: 'ID de activo inválido' });
       }
 
       if (!req.file) {
+        console.log('Error: No se proporcionó ningún archivo');
         return res.status(400).json({ error: 'No se proporcionó ningún archivo' });
       }
+
+      console.log('Detalles del archivo:', {
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        filename: req.file.filename
+      });
 
       // Verificar que el activo existe
       const [asset] = await db
@@ -128,10 +141,25 @@ export function registerAssetImageRoutes(app: any, apiRouter: Router, isAuthenti
         })
         .returning();
 
+      console.log('Imagen subida exitosamente:', newImage);
       res.status(201).json(newImage);
     } catch (error) {
-      console.error('Error al subir imagen:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      console.error('Error completo al subir imagen:', error);
+      console.error('Stack trace:', (error as Error).stack);
+      
+      // Verificar si es un error específico de multer
+      if ((error as any).code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'El archivo es demasiado grande. Máximo 5MB permitido.' });
+      }
+      
+      if ((error as any).message && (error as any).message.includes('Tipo de archivo no permitido')) {
+        return res.status(400).json({ error: (error as any).message });
+      }
+      
+      res.status(500).json({ 
+        error: 'Error interno del servidor',
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      });
     }
   });
 
