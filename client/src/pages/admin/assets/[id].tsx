@@ -240,12 +240,12 @@ const AssetDetailPage: React.FC = () => {
   });
   
   // Consultar categorías
-  const { data: categories } = useQuery({
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ['/api/asset-categories'],
   });
   
   // Consultar parques
-  const { data: parks } = useQuery({
+  const { data: parks, isLoading: parksLoading } = useQuery({
     queryKey: ['/api/parks'],
   });
   
@@ -573,12 +573,24 @@ const AssetDetailPage: React.FC = () => {
                       
                       <div className="flex justify-between">
                         <span className="font-medium text-gray-500">Categoría:</span>
-                        <span>{currentCategory?.name || 'No especificada'}</span>
+                        <span>
+                          {categoriesLoading ? (
+                            <Skeleton className="h-4 w-32 inline-block" />
+                          ) : (
+                            currentCategory?.name || 'No especificada'
+                          )}
+                        </span>
                       </div>
                       
                       <div className="flex justify-between">
                         <span className="font-medium text-gray-500">Parque:</span>
-                        <span>{currentPark?.name || 'No especificado'}</span>
+                        <span>
+                          {parksLoading ? (
+                            <Skeleton className="h-4 w-32 inline-block" />
+                          ) : (
+                            currentPark?.name || 'No especificado'
+                          )}
+                        </span>
                       </div>
                       
                       <div className="flex justify-between">
