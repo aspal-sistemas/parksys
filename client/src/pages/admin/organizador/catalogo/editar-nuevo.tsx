@@ -482,7 +482,12 @@ const EditarActividadPage = () => {
                     <FormItem>
                       <FormLabel>Ubicación dentro del parque</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ej: Área de juegos, Salón principal" {...field} />
+                        <LocationSelector
+                          parkId={form.watch('parkId') ? Number(form.watch('parkId')) : undefined}
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Seleccionar ubicación"
+                        />
                       </FormControl>
                       <FormDescription>
                         Especifica dónde dentro del parque se realizará la actividad
