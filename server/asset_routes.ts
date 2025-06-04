@@ -66,26 +66,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
     }
   });
 
-  // Helper function to get park name
-  function getParkName(parkId: number): string {
-    const parkNames: { [key: number]: string } = {
-      1: 'Parque Central',
-      2: 'Parque de la Revolución',
-      3: 'Parque de los Colomos',
-      4: 'Parque Alcalde',
-      5: 'Parque San Rafael',
-      6: 'Parque Metropolitano',
-      7: 'Parque Mirador Independencia',
-      8: 'Parque González Gallo',
-      9: 'Parque de la Amistad',
-      10: 'Parque de las Américas',
-      11: 'Parque de la Solidaridad',
-      12: 'Parque de la Juventud',
-      13: 'Parque de la Cultura',
-      14: 'Parque de la Tecnología'
-    };
-    return parkNames[parkId] || `Parque ${parkId}`;
-  }
+
 
   // Get asset by ID
   apiRouter.get("/assets/:id", async (req: Request, res: Response) => {
