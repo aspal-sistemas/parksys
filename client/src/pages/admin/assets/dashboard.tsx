@@ -107,6 +107,27 @@ const AssetsDashboard: React.FC = () => {
   // Calcular estadísticas directamente desde los datos
   const activeAssets = assets?.filter(asset => asset.status === 'active').length || 0;
   const maintenanceAssets = assets?.filter(asset => asset.status === 'maintenance').length || 0;
+  
+  // Calcular activos por condición
+  const assetsByCondition = assets?.reduce((acc: any, asset) => {
+    acc[asset.condition] = (acc[asset.condition] || 0) + 1;
+    return acc;
+  }, {}) || {};
+  
+  // Calcular valores por categoría
+  const assetsByCategory = assets?.reduce((acc: any, asset) => {
+    const category = asset.categoryName || 'Sin categoría';
+    const cost = typeof asset.acquisitionCost === 'string' 
+      ? parseFloat(asset.acquisitionCost) || 0
+      : asset.acquisitionCost || 0;
+    
+    if (!acc[category]) {
+      acc[category] = { count: 0, totalValue: 0 };
+    }
+    acc[category].count += 1;
+    acc[category].totalValue += cost;
+    return acc;
+  }, {}) || {};
 
   return (
     <AdminLayout>
@@ -204,10 +225,10 @@ const AssetsDashboard: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {Object.entries(stats?.byCondition || {}).map(([condition, count]) => (
+                {Object.entries(assetsByCondition).map(([condition, count]) => (
                   <div key={condition} className="flex items-center justify-between">
                     <span className="text-sm font-medium capitalize">{condition}</span>
-                    <Badge variant="outline">{count}</Badge>
+                    <Badge variant="outline">{count as number}</Badge>
                   </div>
                 ))}
               </div>
@@ -228,12 +249,13 @@ const AssetsDashboard: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {stats?.categoryValues?.map((category) => (
-                  <div key={category.category} className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{category.category}</span>
-                    <span className="font-medium">{formatCurrency(category.totalValue)}</span>
+                {Object.entries(assetsByCategory).map(([category, data]: [string, any]) => (
+                  <div key={category} className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{category}</span>
+                    <span className="font-medium">{formatCurrency(data.totalValue)}</span>
                   </div>
-                )) || (
+                ))}
+                {Object.keys(assetsByCategory).length === 0 && (
                   <p className="text-sm text-muted-foreground">No hay datos disponibles</p>
                 )}
               </div>
