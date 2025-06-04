@@ -134,6 +134,9 @@ export default function EditAssetEnhanced() {
         } else {
           setAcquisitionDate('');
         }
+        
+        // Marcar que los datos del activo han sido cargados
+        setAssetDataLoaded(true);
       })
       .catch(err => {
         console.error('Error al cargar activo:', err);
@@ -173,12 +176,7 @@ export default function EditAssetEnhanced() {
     }
   }, [parkId, assetDataLoaded]);
 
-  // Marcar cuando se carguen los datos del activo por primera vez
-  useEffect(() => {
-    if (name && !assetDataLoaded) {
-      setAssetDataLoaded(true);
-    }
-  }, [name, assetDataLoaded]);
+
 
   // Función para manejar el cambio manual de parque
   const handleParkChange = async (newParkId: string) => {
