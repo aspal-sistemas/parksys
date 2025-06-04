@@ -98,6 +98,7 @@ interface Asset {
   name: string;
   description: string | null;
   serialNumber: string | null;
+  locationDescription: string | null;
   acquisitionDate: string | null;
   acquisitionCost: number | null;
   parkId: number;
@@ -591,7 +592,7 @@ const AssetDetailPage: React.FC = () => {
                       
                       <div className="flex justify-between">
                         <span className="font-medium text-gray-500">Ubicación:</span>
-                        <span>{asset?.location || 'No especificada'}</span>
+                        <span>{asset?.locationDescription || 'No especificada'}</span>
                       </div>
                       
                       <div className="flex justify-between">
