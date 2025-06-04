@@ -1375,6 +1375,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get amenities for a specific park (for activity location selection)
+  apiRouter.get("/parks/:parkId/amenities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      
+      const result = await pool.query(`
+        SELECT DISTINCT
+          a.id,
+          a.name,
+          a.category,
+          a.icon
+        FROM amenities a
+        INNER JOIN park_amenities pa ON a.id = pa.amenity_id
+        WHERE pa.park_id = $1
+        ORDER BY a.name
+      `, [parkId]);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error("Error fetching park amenities:", error);
+      res.status(500).json({ message: "Error fetching park amenities" });
+    }
+  });
+
   // Remove an amenity from a park (admin/municipality only)
   apiRouter.delete("/parks/:parkId/amenities/:amenityId", async (req: Request, res: Response) => {
     try {
