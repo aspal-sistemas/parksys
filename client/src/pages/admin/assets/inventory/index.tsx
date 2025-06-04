@@ -83,6 +83,7 @@ interface Asset {
 }
 
 const InventoryPage: React.FC = () => {
+  const [location, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [selectedCondition, setSelectedCondition] = useState<string>('');
@@ -256,15 +257,15 @@ const InventoryPage: React.FC = () => {
 
   // Handlers para las acciones
   const handleViewDetails = (assetId: number) => {
-    window.location.href = `/admin/assets/${assetId}`;
+    setLocation(`/admin/assets/${assetId}`);
   };
 
   const handleEdit = (assetId: number) => {
-    window.location.href = `/admin/assets/${assetId}/edit`;
+    setLocation(`/admin/assets/${assetId}/edit`);
   };
 
   const handleReportIncident = (assetId: number) => {
-    window.location.href = `/admin/incidents/new?assetId=${assetId}`;
+    setLocation(`/admin/incidents/new?assetId=${assetId}`);
   };
 
   const handleDelete = (assetId: number) => {
