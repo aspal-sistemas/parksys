@@ -1,12 +1,16 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Package, DollarSign, AlertTriangle, Wrench, Plus } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Package, DollarSign, AlertTriangle, Wrench, Plus, MoreHorizontal, Eye, Edit, Trash2, AlertCircle } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 // Interfaz para los datos de activos (copiada exactamente de inventory)
 interface Asset {
@@ -39,13 +43,63 @@ const formatCurrency = (value: number | string | null) => {
   }).format(numValue);
 };
 
+const formatDate = (dateString: string | null) => {
+  if (!dateString) return 'N/A';
+  return new Date(dateString).toLocaleDateString('es-MX');
+};
+
 const AssetsDashboardFixed: React.FC = () => {
   const [_, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Consultar datos de activos exactamente igual que en inventory
   const { data: assets, isLoading, isError } = useQuery<Asset[]>({
     queryKey: ['/api/assets'],
   });
+
+  // Mutación para eliminar activo
+  const deleteAssetMutation = useMutation({
+    mutationFn: async (assetId: number) => {
+      const response = await apiRequest(`/api/assets/${assetId}`, {
+        method: 'DELETE',
+      });
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
+      toast({
+        title: "Activo eliminado",
+        description: "El activo ha sido eliminado exitosamente.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el activo. Intenta de nuevo.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Funciones para manejar acciones
+  const handleViewAsset = (assetId: number) => {
+    setLocation(`/admin/assets/${assetId}/details`);
+  };
+
+  const handleEditAsset = (assetId: number) => {
+    setLocation(`/admin/assets/${assetId}/edit`);
+  };
+
+  const handleDeleteAsset = (assetId: number) => {
+    if (confirm('¿Estás seguro de que deseas eliminar este activo? Esta acción no se puede deshacer.')) {
+      deleteAssetMutation.mutate(assetId);
+    }
+  };
+
+  const handleReportIssue = (assetId: number) => {
+    setLocation(`/admin/assets/${assetId}/report-issue`);
+  };
 
   if (isLoading) {
     return (
@@ -213,53 +267,133 @@ const AssetsDashboardFixed: React.FC = () => {
         </Card>
       </div>
 
-      {/* Botones de navegación */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-              onClick={() => setLocation('/admin/assets/inventory')}>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Package className="mr-2 h-5 w-5" />
-              Inventario de Activos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Ver y gestionar el inventario completo de activos
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-              onClick={() => setLocation('/admin/assets/maintenance')}>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Wrench className="mr-2 h-5 w-5" />
-              Mantenimiento
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Programar y gestionar el mantenimiento de activos
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-              onClick={() => setLocation('/admin/assets/reports')}>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <AlertTriangle className="mr-2 h-5 w-5" />
-              Reportes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Generar reportes y análisis de activos
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Lista detallada de activos */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Listado de Activos</span>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setLocation('/admin/assets/inventory')}>
+                <Package className="mr-2 h-4 w-4" />
+                Ver Inventario Completo
+              </Button>
+              <Button onClick={() => setLocation('/admin/assets/new')}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Activo
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="h-12 bg-gray-100 rounded animate-pulse" />
+              ))}
+            </div>
+          ) : assets && assets.length > 0 ? (
+            <div className="overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Categoría</TableHead>
+                    <TableHead>Parque</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Condición</TableHead>
+                    <TableHead>Fecha Adquisición</TableHead>
+                    <TableHead className="text-right">Valor</TableHead>
+                    <TableHead className="text-center">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {assets.map((asset) => (
+                    <TableRow key={asset.id}>
+                      <TableCell className="font-medium">{asset.id}</TableCell>
+                      <TableCell>{asset.name}</TableCell>
+                      <TableCell>{asset.categoryName || 'Sin categoría'}</TableCell>
+                      <TableCell>{asset.parkName || 'Sin asignar'}</TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={asset.status === 'active' ? 'default' : 'secondary'}
+                          className={
+                            asset.status === 'active' 
+                              ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                              : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                          }
+                        >
+                          {asset.status === 'active' ? 'Activo' : 'Mantenimiento'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant="outline"
+                          className={
+                            asset.condition === 'excellent' ? 'border-green-500 text-green-700' :
+                            asset.condition === 'good' ? 'border-blue-500 text-blue-700' :
+                            asset.condition === 'fair' ? 'border-yellow-500 text-yellow-700' :
+                            asset.condition === 'poor' ? 'border-orange-500 text-orange-700' :
+                            'border-red-500 text-red-700'
+                          }
+                        >
+                          {asset.condition === 'excellent' ? 'Excelente' :
+                           asset.condition === 'good' ? 'Bueno' :
+                           asset.condition === 'fair' ? 'Regular' :
+                           asset.condition === 'poor' ? 'Malo' : 'Crítico'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{formatDate(asset.acquisitionDate)}</TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatCurrency(asset.acquisitionCost)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewAsset(asset.id)}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Ver Detalles
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditAsset(asset.id)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleReportIssue(asset.id)}>
+                              <AlertCircle className="mr-2 h-4 w-4" />
+                              Reportar Incidencia
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteAsset(asset.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <p>No hay activos registrados en el sistema.</p>
+              <Button className="mt-4" onClick={() => setLocation('/admin/assets/new')}>
+                <Plus className="mr-2 h-4 w-4" />
+                Crear Primer Activo
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </AdminLayout>
   );
 };
