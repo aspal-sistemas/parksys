@@ -398,11 +398,15 @@ export default function EditAssetEnhanced() {
                     <SelectValue placeholder="Seleccionar parque" />
                   </SelectTrigger>
                   <SelectContent>
-                    {parks.map((park: any) => (
-                      <SelectItem key={park.id} value={String(park.id)}>
-                        {park.name}
-                      </SelectItem>
-                    ))}
+                    {parks.length > 0 ? (
+                      parks.map((park: any) => (
+                        <SelectItem key={park.id} value={String(park.id)}>
+                          {park.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="loading" disabled>Cargando parques...</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -414,11 +418,15 @@ export default function EditAssetEnhanced() {
                     <SelectValue placeholder="Seleccionar categoría" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((category: any) => (
-                      <SelectItem key={category.id} value={String(category.id)}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
+                    {categories.length > 0 ? (
+                      categories.map((category: any) => (
+                        <SelectItem key={category.id} value={String(category.id)}>
+                          {category.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="loading" disabled>Cargando categorías...</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
