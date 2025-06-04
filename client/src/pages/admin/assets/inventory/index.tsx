@@ -62,6 +62,51 @@ const formatCurrency = (value: number | string | null) => {
   }).format(numValue);
 };
 
+// Obtener el color de la badge por estado
+const getStatusBadgeColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'active':
+    case 'activo':
+      return 'bg-green-100 text-green-800 hover:bg-green-100';
+    case 'maintenance':
+    case 'mantenimiento':
+      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100';
+    case 'retired':
+    case 'retirado':
+      return 'bg-red-100 text-red-800 hover:bg-red-100';
+    case 'storage':
+    case 'almacenado':
+      return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
+    case 'en uso':
+      return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
+    default:
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
+  }
+};
+
+// Obtener el color de la badge por condición
+const getConditionBadgeColor = (condition: string) => {
+  switch (condition.toLowerCase()) {
+    case 'excellent':
+    case 'excelente':
+      return 'bg-green-100 text-green-800 hover:bg-green-100';
+    case 'good':
+    case 'bueno':
+      return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
+    case 'fair':
+    case 'regular':
+      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100';
+    case 'poor':
+    case 'malo':
+      return 'bg-orange-100 text-orange-800 hover:bg-orange-100';
+    case 'critical':
+    case 'crítico':
+      return 'bg-red-100 text-red-800 hover:bg-red-100';
+    default:
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
+  }
+};
+
 // Interfaz para los datos de activos
 interface Asset {
   id: number;
@@ -454,18 +499,12 @@ const InventoryPage: React.FC = () => {
                       <TableCell>{asset.parkName}</TableCell>
                       <TableCell>{asset.serialNumber || 'N/A'}</TableCell>
                       <TableCell>
-                        <Badge className="bg-blue-100 text-blue-800">
+                        <Badge className={getStatusBadgeColor(asset.status)}>
                           {asset.status}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={
-                          asset.condition === 'Excelente' ? 'bg-green-100 text-green-800' :
-                          asset.condition === 'Bueno' ? 'bg-blue-100 text-blue-800' :
-                          asset.condition === 'Regular' ? 'bg-yellow-100 text-yellow-800' :
-                          asset.condition === 'Malo' ? 'bg-orange-100 text-orange-800' :
-                          'bg-red-100 text-red-800'
-                        }>
+                        <Badge className={getConditionBadgeColor(asset.condition)}>
                           {asset.condition}
                         </Badge>
                       </TableCell>
