@@ -11,7 +11,8 @@ import {
   History,
   Tag,
   AlertTriangle,
-  Check
+  Check,
+  Camera
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,6 +20,7 @@ import * as z from 'zod';
 import { apiRequest } from '@/lib/queryClient';
 
 import AdminLayout from '@/components/AdminLayout';
+import AssetImageManager from '@/components/AssetImageManager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -538,6 +540,12 @@ const AssetDetailPage: React.FC = () => {
                 {history && history.length > 0 && (
                   <Badge className="ml-2">{history.length}</Badge>
                 )}
+              </div>
+            </TabsTrigger>
+            <TabsTrigger value="images">
+              <div className="flex items-center">
+                <Camera className="mr-2 h-4 w-4" />
+                Imágenes
               </div>
             </TabsTrigger>
           </TabsList>
