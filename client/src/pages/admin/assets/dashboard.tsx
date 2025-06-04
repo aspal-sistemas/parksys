@@ -39,11 +39,19 @@ const formatCurrency = (value: number | string | null) => {
 const AssetsDashboard: React.FC = () => {
   const [_, setLocation] = useLocation();
 
+  // Consulta para obtener todos los activos
+  const { data: assets, isLoading: assetsLoading } = useQuery({
+    queryKey: ['/api/assets'],
+    enabled: true,
+  });
+
   // Consulta para obtener estadísticas de activos
-  const { data: stats, isLoading, error } = useQuery<AssetStats>({
+  const { data: stats, isLoading: statsLoading, error } = useQuery<AssetStats>({
     queryKey: ['/api/assets-stats'],
     enabled: true,
   });
+
+  const isLoading = assetsLoading || statsLoading;
 
   if (error) {
     return (
@@ -58,9 +66,16 @@ const AssetsDashboard: React.FC = () => {
     );
   }
 
+  // Calcular valores de la misma manera que en la página de inventario
+  const totalAssets = assets?.length || 0;
+  const totalValue = assets?.reduce((sum: number, asset: any) => {
+    const cost = typeof asset.acquisitionCost === 'string' 
+      ? parseFloat(asset.acquisitionCost) 
+      : (asset.acquisitionCost || 0);
+    return sum + cost;
+  }, 0) || 0;
+
   const activeAssets = stats?.byStatus?.active || 0;
-  const totalAssets = stats?.total || 0;
-  const totalValue = stats?.totalValue || 0;
 
   return (
     <AdminLayout>
