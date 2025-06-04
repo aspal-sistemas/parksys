@@ -45,7 +45,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { queryClient } from '@/lib/queryClient';
+import { queryClient, apiRequest } from '@/lib/queryClient';
 import { 
   Dialog, 
   DialogContent, 
@@ -54,6 +54,17 @@ import {
   DialogHeader, 
   DialogTitle 
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { ASSET_CONDITIONS, ASSET_STATUSES } from '@/lib/constants';
 
 // Función para formatear fechas
@@ -168,19 +179,7 @@ const AssetsPage: React.FC = () => {
   // Mutación para eliminar activos
   const deleteAssetMutation = useMutation({
     mutationFn: async (assetId: number) => {
-      const response = await fetch(`/api/assets/${assetId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al eliminar el activo');
-      }
-      
-      return response.json();
+      return apiRequest(`/api/assets/${assetId}`, { method: 'DELETE' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
@@ -259,9 +258,20 @@ const AssetsPage: React.FC = () => {
     setLocation(`/admin/assets/${assetId}/edit-enhanced`);
   };
 
+  // State for delete confirmation
+  const [deleteAssetId, setDeleteAssetId] = useState<number | null>(null);
+  const [deleteAssetName, setDeleteAssetName] = useState<string>('');
+
   const handleDeleteAsset = (assetId: number, assetName: string) => {
-    if (window.confirm(`¿Estás seguro de que deseas eliminar el activo "${assetName}"? Esta acción no se puede deshacer.`)) {
-      deleteAssetMutation.mutate(assetId);
+    setDeleteAssetId(assetId);
+    setDeleteAssetName(assetName);
+  };
+
+  const confirmDeleteAsset = () => {
+    if (deleteAssetId) {
+      deleteAssetMutation.mutate(deleteAssetId);
+      setDeleteAssetId(null);
+      setDeleteAssetName('');
     }
   };
   
@@ -623,6 +633,27 @@ const AssetsPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteAssetId !== null} onOpenChange={() => setDeleteAssetId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar este activo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. El activo "{deleteAssetName}" se eliminará permanentemente del sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteAssetId(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeleteAsset}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 };
