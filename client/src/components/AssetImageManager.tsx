@@ -120,21 +120,14 @@ const AssetImageManager: React.FC<AssetImageManagerProps> = ({ assetId, assetNam
 
   // Mutación para actualizar imagen
   const updateImageMutation = useMutation({
-    mutationFn: async ({ imageId, data }: { imageId: number; data: any }) => {
-      const response = await fetch(`/api/asset-images/${imageId}`, {
+    mutationFn: async ({ imageId, data }: { imageId: number; data: { caption: string; isPrimary: boolean } }) => {
+      return apiRequest(`/api/asset-images/${imageId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al actualizar imagen');
-      }
-      
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/assets/${assetId}/images`] });
