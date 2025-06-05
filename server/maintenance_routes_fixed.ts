@@ -99,6 +99,7 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         performedBy || null
       ]);
 
+      console.log('✅ Mantenimiento creado en BD:', result.rows[0]);
       res.status(201).json(result.rows[0]);
     } catch (error) {
       console.error('Error creating maintenance:', error);

@@ -261,18 +261,17 @@ const AssetsMaintenancePage: React.FC = () => {
 
                 <div>
                   <label className="text-sm font-medium">Estado</label>
-                  <Select name="status" defaultValue="scheduled">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STATUS_TYPES.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <select 
+                    name="status" 
+                    defaultValue="scheduled"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {STATUS_TYPES.map((status) => (
+                      <option key={status.value} value={status.value}>
+                        {status.label}
+                      </option>
+                    ))}
+                  </select>
                   <p className="text-xs text-muted-foreground mt-1">
                     💡 Sugerencia: "Programado" para fechas futuras, "Completado" para fechas pasadas
                   </p>
