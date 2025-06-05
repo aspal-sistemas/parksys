@@ -72,6 +72,7 @@ interface Maintenance {
   cost?: number;
   performedBy?: string;
   notes?: string;
+  photos?: string[];
   createdAt: string;
 }
 
@@ -99,6 +100,8 @@ const AssetsMaintenancePage: React.FC = () => {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedMaintenance, setSelectedMaintenance] = useState<Maintenance | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -210,6 +213,65 @@ const AssetsMaintenancePage: React.FC = () => {
     },
   });
 
+  // Mutación para subir fotos
+  const uploadPhotosMutation = useMutation({
+    mutationFn: async ({ maintenanceId, files }: { maintenanceId: number; files: FileList }) => {
+      const formData = new FormData();
+      Array.from(files).forEach(file => {
+        formData.append('photos', file);
+      });
+      
+      const response = await fetch(`/api/maintenance-photos/${maintenanceId}`, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al subir fotos');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/asset-maintenances'] });
+      toast({
+        title: 'Fotos subidas',
+        description: 'Las fotos se han subido correctamente.',
+      });
+      setSelectedFiles(null);
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'No se pudieron subir las fotos.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Mutación para eliminar foto
+  const deletePhotoMutation = useMutation({
+    mutationFn: async ({ maintenanceId, photoIndex }: { maintenanceId: number; photoIndex: number }) => {
+      return apiRequest(`/api/maintenance-photos/${maintenanceId}/${photoIndex}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/asset-maintenances'] });
+      toast({
+        title: 'Foto eliminada',
+        description: 'La foto se ha eliminado correctamente.',
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar la foto.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Filtrar mantenimientos
   const filteredMaintenances = React.useMemo(() => {
     return maintenances.filter(maintenance => {
@@ -279,6 +341,34 @@ const AssetsMaintenancePage: React.FC = () => {
   const confirmDeleteMaintenance = () => {
     if (selectedMaintenance) {
       deleteMaintenanceMutation.mutate(selectedMaintenance.id);
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      setSelectedFiles(files);
+    }
+  };
+
+  const handleUploadPhotos = () => {
+    if (selectedMaintenance && selectedFiles) {
+      setUploadingPhotos(true);
+      uploadPhotosMutation.mutate(
+        { maintenanceId: selectedMaintenance.id, files: selectedFiles },
+        {
+          onSettled: () => setUploadingPhotos(false)
+        }
+      );
+    }
+  };
+
+  const handleDeletePhoto = (photoIndex: number) => {
+    if (selectedMaintenance) {
+      deletePhotoMutation.mutate({
+        maintenanceId: selectedMaintenance.id,
+        photoIndex
+      });
     }
   };
 
@@ -624,6 +714,27 @@ const AssetsMaintenancePage: React.FC = () => {
                   <p className="text-sm">{selectedMaintenance.notes}</p>
                 </div>
               )}
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Fotos de Evidencia</label>
+                {selectedMaintenance.photos && selectedMaintenance.photos.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {selectedMaintenance.photos.map((photo, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={photo}
+                          alt={`Evidencia ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-md border"
+                          onClick={() => window.open(photo, '_blank')}
+                          style={{ cursor: 'pointer' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No hay fotos de evidencia</p>
+                )}
+              </div>
             </div>
           )}
         </DialogContent>
@@ -720,6 +831,70 @@ const AssetsMaintenancePage: React.FC = () => {
                   defaultValue={selectedMaintenance.notes || ''}
                   placeholder="Observaciones adicionales"
                 />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Fotos de Evidencia</label>
+                
+                {/* Fotos existentes */}
+                {selectedMaintenance.photos && selectedMaintenance.photos.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mt-2 mb-4">
+                    {selectedMaintenance.photos.map((photo, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={photo}
+                          alt={`Evidencia ${index + 1}`}
+                          className="w-full h-20 object-cover rounded-md border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-1 right-1 h-6 w-6 p-0"
+                          onClick={() => handleDeletePhoto(index)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Subir nuevas fotos */}
+                <div className="space-y-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileSelect}
+                    className="file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  {selectedFiles && (
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-muted-foreground">
+                        {selectedFiles.length} archivo(s) seleccionado(s)
+                      </span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleUploadPhotos}
+                        disabled={uploadingPhotos}
+                      >
+                        {uploadingPhotos ? (
+                          <>
+                            <Upload className="mr-2 h-3 w-3 animate-spin" />
+                            Subiendo...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="mr-2 h-3 w-3" />
+                            Subir Fotos
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-end space-x-2 pt-4">
