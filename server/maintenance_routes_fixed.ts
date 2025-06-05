@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { db } from './db';
-import { assetMaintenances, assets, parkAmenities } from '../shared/schema';
-import { eq, desc, and, like, or } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 /**
  * Registra las rutas para el módulo de mantenimientos de activos
@@ -10,28 +9,25 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
   // Obtener todos los mantenimientos con información del activo
   apiRouter.get('/asset-maintenances', async (req: Request, res: Response) => {
     try {
-      const { search, status } = req.query;
+      const query = `
+        SELECT 
+          am.id,
+          am.asset_id as "assetId",
+          a.name as "assetName",
+          am.maintenance_type as "maintenanceType",
+          am.description,
+          am.date,
+          am.status,
+          am.cost,
+          am.performed_by as "performedBy",
+          am.created_at as "createdAt"
+        FROM asset_maintenances am
+        LEFT JOIN assets a ON am.asset_id = a.id
+        ORDER BY am.created_at DESC
+      `;
 
-      let query = db
-        .select({
-          id: assetMaintenances.id,
-          assetId: assetMaintenances.assetId,
-          assetName: assets.name,
-          maintenanceType: assetMaintenances.maintenanceType,
-          description: assetMaintenances.description,
-          date: assetMaintenances.date,
-          status: assetMaintenances.status,
-          cost: assetMaintenances.cost,
-          performedBy: assetMaintenances.performedBy,
-          createdAt: assetMaintenances.createdAt,
-        })
-        .from(assetMaintenances)
-        .leftJoin(assets, eq(assetMaintenances.assetId, assets.id))
-        .orderBy(desc(assetMaintenances.createdAt));
-
-      const maintenances = await query;
-
-      res.json(maintenances);
+      const result = await db.execute(query);
+      res.json(result.rows);
     } catch (error) {
       console.error('Error fetching asset maintenances:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
@@ -43,13 +39,15 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
     try {
       const assetId = parseInt(req.params.id);
 
-      const maintenances = await db
-        .select()
-        .from(assetMaintenances)
-        .where(eq(assetMaintenances.assetId, assetId))
-        .orderBy(desc(assetMaintenances.createdAt));
+      const query = `
+        SELECT *
+        FROM asset_maintenances
+        WHERE asset_id = $1
+        ORDER BY created_at DESC
+      `;
 
-      res.json(maintenances);
+      const result = await db.execute(query, [assetId]);
+      res.json(result.rows);
     } catch (error) {
       console.error('Error fetching asset maintenances:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
@@ -65,24 +63,33 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         description,
         date,
         cost,
-        performedBy,
-        notes
+        performedBy
       } = req.body;
 
-      const newMaintenance = await db
-        .insert(assetMaintenances)
-        .values({
-          assetId,
-          maintenanceType,
-          description,
-          date,
-          status: 'completed',
-          cost: cost ? cost.toString() : null,
-          performedBy: performedBy || 'Personal de mantenimiento',
-        })
-        .returning();
+      const query = `
+        INSERT INTO asset_maintenances (
+          asset_id, 
+          maintenance_type, 
+          description, 
+          date, 
+          status, 
+          cost, 
+          performed_by
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING *
+      `;
 
-      res.status(201).json(newMaintenance[0]);
+      const result = await db.execute(query, [
+        assetId,
+        maintenanceType,
+        description,
+        date,
+        'completed',
+        cost || null,
+        performedBy || 'Personal de mantenimiento'
+      ]);
+
+      res.status(201).json(result.rows[0]);
     } catch (error) {
       console.error('Error creating maintenance:', error);
       res.status(500).json({ error: 'Error al crear el mantenimiento' });
@@ -99,30 +106,38 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         date,
         status,
         cost,
-        performedBy,
-        notes
+        performedBy
       } = req.body;
 
-      const updatedMaintenance = await db
-        .update(assetMaintenances)
-        .set({
-          maintenanceType,
-          description,
-          date: date ? new Date(date) : undefined,
-          status,
-          cost: cost ? parseFloat(cost) : null,
-          performedBy,
-          notes,
-          updatedAt: new Date(),
-        })
-        .where(eq(assetMaintenances.id, maintenanceId))
-        .returning();
+      const query = `
+        UPDATE asset_maintenances 
+        SET 
+          maintenance_type = $1,
+          description = $2,
+          date = $3,
+          status = $4,
+          cost = $5,
+          performed_by = $6,
+          updated_at = NOW()
+        WHERE id = $7
+        RETURNING *
+      `;
 
-      if (updatedMaintenance.length === 0) {
+      const result = await db.execute(query, [
+        maintenanceType,
+        description,
+        date,
+        status,
+        cost,
+        performedBy,
+        maintenanceId
+      ]);
+
+      if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Mantenimiento no encontrado' });
       }
 
-      res.json(updatedMaintenance[0]);
+      res.json(result.rows[0]);
     } catch (error) {
       console.error('Error updating maintenance:', error);
       res.status(500).json({ error: 'Error al actualizar el mantenimiento' });
@@ -135,20 +150,20 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
       const maintenanceId = parseInt(req.params.id);
       const { status } = req.body;
 
-      const updatedMaintenance = await db
-        .update(assetMaintenances)
-        .set({
-          status,
-          updatedAt: new Date(),
-        })
-        .where(eq(assetMaintenances.id, maintenanceId))
-        .returning();
+      const query = `
+        UPDATE asset_maintenances 
+        SET status = $1, updated_at = NOW()
+        WHERE id = $2
+        RETURNING *
+      `;
 
-      if (updatedMaintenance.length === 0) {
+      const result = await db.execute(query, [status, maintenanceId]);
+
+      if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Mantenimiento no encontrado' });
       }
 
-      res.json(updatedMaintenance[0]);
+      res.json(result.rows[0]);
     } catch (error) {
       console.error('Error updating maintenance status:', error);
       res.status(500).json({ error: 'Error al actualizar el estado del mantenimiento' });
@@ -160,12 +175,15 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
     try {
       const maintenanceId = parseInt(req.params.id);
 
-      const deletedMaintenance = await db
-        .delete(assetMaintenances)
-        .where(eq(assetMaintenances.id, maintenanceId))
-        .returning();
+      const query = `
+        DELETE FROM asset_maintenances 
+        WHERE id = $1
+        RETURNING *
+      `;
 
-      if (deletedMaintenance.length === 0) {
+      const result = await db.execute(query, [maintenanceId]);
+
+      if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Mantenimiento no encontrado' });
       }
 
@@ -179,30 +197,27 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
   // Obtener estadísticas de mantenimientos
   apiRouter.get('/maintenance-stats', async (req: Request, res: Response) => {
     try {
-      const stats = await db
-        .select({
-          total: assetMaintenances.id,
-          status: assetMaintenances.status,
-          maintenanceType: assetMaintenances.maintenanceType,
-        })
-        .from(assetMaintenances);
+      const query = `
+        SELECT 
+          COUNT(*) as total,
+          status,
+          maintenance_type
+        FROM asset_maintenances
+        GROUP BY status, maintenance_type
+      `;
 
-      // Procesar estadísticas
-      const statusCounts = stats.reduce((acc: any, item) => {
-        acc[item.status] = (acc[item.status] || 0) + 1;
+      const result = await db.execute(query);
+      
+      const stats = result.rows.reduce((acc: any, row: any) => {
+        acc.total = (acc.total || 0) + parseInt(row.total);
+        acc.byStatus = acc.byStatus || {};
+        acc.byType = acc.byType || {};
+        acc.byStatus[row.status] = (acc.byStatus[row.status] || 0) + parseInt(row.total);
+        acc.byType[row.maintenance_type] = (acc.byType[row.maintenance_type] || 0) + parseInt(row.total);
         return acc;
       }, {});
 
-      const typeCounts = stats.reduce((acc: any, item) => {
-        acc[item.maintenanceType] = (acc[item.maintenanceType] || 0) + 1;
-        return acc;
-      }, {});
-
-      res.json({
-        total: stats.length,
-        byStatus: statusCounts,
-        byType: typeCounts,
-      });
+      res.json(stats);
     } catch (error) {
       console.error('Error fetching maintenance stats:', error);
       res.status(500).json({ error: 'Error al obtener estadísticas' });
