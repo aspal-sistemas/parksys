@@ -2,8 +2,43 @@ import { Request, Response, Router } from "express";
 import { db, pool } from "./db";
 import { assets, assetCategories, assetMaintenances, parks, parkAmenities } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
+  // Configurar multer para subida de fotos de mantenimiento
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadPath = path.join(process.cwd(), 'public', 'uploads', 'maintenance-photos');
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, `maintenance-${uniqueSuffix}${path.extname(file.originalname)}`);
+    }
+  });
+
+  const upload = multer({
+    storage: storage,
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB límite
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = /jpeg|jpg|png|gif/;
+      const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+      const mimetype = allowedTypes.test(file.mimetype);
+      
+      if (mimetype && extname) {
+        return cb(null, true);
+      } else {
+        cb(new Error('Solo se permiten archivos de imagen (jpeg, jpg, png, gif)'));
+      }
+    }
+  });
   // Get all asset categories
   apiRouter.get("/asset-categories", async (_req: Request, res: Response) => {
     try {
@@ -379,6 +414,132 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
     } catch (error) {
       console.error("Error al eliminar mantenimiento:", error);
       res.status(500).json({ message: "Error al eliminar mantenimiento" });
+    }
+  });
+
+  // Upload photos for maintenance
+  apiRouter.post("/maintenance-photos/:id", isAuthenticated, upload.array('photos', 5), async (req: Request, res: Response) => {
+    try {
+      const maintenanceId = parseInt(req.params.id);
+      
+      if (isNaN(maintenanceId)) {
+        return res.status(400).json({ message: "ID de mantenimiento inválido" });
+      }
+
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: "No se subieron archivos" });
+      }
+
+      // Generar URLs de las fotos subidas
+      const photoUrls = files.map(file => `/uploads/maintenance-photos/${file.filename}`);
+
+      // Obtener fotos existentes del mantenimiento
+      const [existingMaintenance] = await db
+        .select({ photos: assetMaintenances.photos })
+        .from(assetMaintenances)
+        .where(eq(assetMaintenances.id, maintenanceId));
+
+      if (!existingMaintenance) {
+        return res.status(404).json({ message: "Mantenimiento no encontrado" });
+      }
+
+      // Combinar fotos existentes con las nuevas
+      const existingPhotos = existingMaintenance.photos || [];
+      const allPhotos = [...existingPhotos, ...photoUrls];
+
+      // Actualizar el mantenimiento con las nuevas fotos
+      const [updatedMaintenance] = await db
+        .update(assetMaintenances)
+        .set({ photos: allPhotos })
+        .where(eq(assetMaintenances.id, maintenanceId))
+        .returning();
+
+      res.json({
+        message: 'Fotos subidas exitosamente',
+        photos: photoUrls,
+        maintenance: updatedMaintenance
+      });
+    } catch (error) {
+      console.error("Error al subir fotos:", error);
+      res.status(500).json({ message: "Error al subir fotos" });
+    }
+  });
+
+  // Get photos for maintenance
+  apiRouter.get("/maintenance-photos/:id", async (req: Request, res: Response) => {
+    try {
+      const maintenanceId = parseInt(req.params.id);
+      
+      if (isNaN(maintenanceId)) {
+        return res.status(400).json({ message: "ID de mantenimiento inválido" });
+      }
+
+      const [maintenance] = await db
+        .select({ photos: assetMaintenances.photos })
+        .from(assetMaintenances)
+        .where(eq(assetMaintenances.id, maintenanceId));
+
+      if (!maintenance) {
+        return res.status(404).json({ message: "Mantenimiento no encontrado" });
+      }
+
+      res.json({ photos: maintenance.photos || [] });
+    } catch (error) {
+      console.error("Error al obtener fotos:", error);
+      res.status(500).json({ message: "Error al obtener fotos" });
+    }
+  });
+
+  // Delete photo from maintenance
+  apiRouter.delete("/maintenance-photos/:id/:photoIndex", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const maintenanceId = parseInt(req.params.id);
+      const photoIndex = parseInt(req.params.photoIndex);
+      
+      if (isNaN(maintenanceId) || isNaN(photoIndex)) {
+        return res.status(400).json({ message: "Parámetros inválidos" });
+      }
+
+      // Obtener el mantenimiento actual
+      const [maintenance] = await db
+        .select({ photos: assetMaintenances.photos })
+        .from(assetMaintenances)
+        .where(eq(assetMaintenances.id, maintenanceId));
+
+      if (!maintenance) {
+        return res.status(404).json({ message: "Mantenimiento no encontrado" });
+      }
+
+      const photos = maintenance.photos || [];
+      if (photoIndex < 0 || photoIndex >= photos.length) {
+        return res.status(400).json({ message: "Índice de foto inválido" });
+      }
+
+      // Eliminar archivo físico
+      const photoUrl = photos[photoIndex];
+      const filePath = path.join(process.cwd(), 'public', photoUrl);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      // Eliminar la foto del array
+      const updatedPhotos = photos.filter((_, index) => index !== photoIndex);
+
+      // Actualizar el mantenimiento
+      const [updatedMaintenance] = await db
+        .update(assetMaintenances)
+        .set({ photos: updatedPhotos })
+        .where(eq(assetMaintenances.id, maintenanceId))
+        .returning();
+
+      res.json({
+        message: 'Foto eliminada exitosamente',
+        maintenance: updatedMaintenance
+      });
+    } catch (error) {
+      console.error("Error al eliminar foto:", error);
+      res.status(500).json({ message: "Error al eliminar foto" });
     }
   });
 

@@ -42,7 +42,10 @@ import {
   Filter,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  Camera,
+  Upload,
+  X
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
