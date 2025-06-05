@@ -274,13 +274,7 @@ const AdminActivitiesSimple = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button 
-                    onClick={() => window.location.href = '/admin/activities/new'}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Nueva Actividad
-                  </Button>
+
                 </div>
               </CardContent>
             </Card>
