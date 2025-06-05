@@ -41,7 +41,8 @@ import {
   Search,
   Filter,
   Eye,
-  Edit
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -91,6 +92,10 @@ const AssetsMaintenancePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedMaintenance, setSelectedMaintenance] = useState<Maintenance | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -131,6 +136,57 @@ const AssetsMaintenancePage: React.FC = () => {
     },
   });
 
+  // Mutación para editar mantenimiento
+  const editMaintenanceMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest(`/api/asset-maintenances/${data.id}`, {
+        method: 'PUT',
+        data: data,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/asset-maintenances'] });
+      toast({
+        title: 'Mantenimiento actualizado',
+        description: 'El mantenimiento se ha actualizado correctamente.',
+      });
+      setShowEditDialog(false);
+      setSelectedMaintenance(null);
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'No se pudo actualizar el mantenimiento.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Mutación para eliminar mantenimiento
+  const deleteMaintenanceMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest(`/api/asset-maintenances/${id}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/asset-maintenances'] });
+      toast({
+        title: 'Mantenimiento eliminado',
+        description: 'El mantenimiento se ha eliminado correctamente.',
+      });
+      setShowDeleteDialog(false);
+      setSelectedMaintenance(null);
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar el mantenimiento.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Filtrar mantenimientos
   const filteredMaintenances = React.useMemo(() => {
     return maintenances.filter(maintenance => {
@@ -159,6 +215,48 @@ const AssetsMaintenancePage: React.FC = () => {
 
     console.log('📝 Datos del mantenimiento enviados:', maintenanceData);
     createMaintenanceMutation.mutate(maintenanceData);
+  };
+
+  const handleEditMaintenance = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedMaintenance) return;
+    
+    const formData = new FormData(event.currentTarget);
+    
+    const maintenanceData = {
+      id: selectedMaintenance.id,
+      assetId: selectedMaintenance.assetId,
+      maintenanceType: formData.get('maintenanceType') as string,
+      description: formData.get('description') as string,
+      date: formData.get('date') as string,
+      status: formData.get('status') as string,
+      cost: formData.get('cost') ? parseFloat(formData.get('cost') as string) : null,
+      performedBy: formData.get('performedBy') as string,
+      notes: formData.get('notes') as string,
+    };
+
+    editMaintenanceMutation.mutate(maintenanceData);
+  };
+
+  const handleViewMaintenance = (maintenance: Maintenance) => {
+    setSelectedMaintenance(maintenance);
+    setShowViewDialog(true);
+  };
+
+  const handleEditMaintenanceClick = (maintenance: Maintenance) => {
+    setSelectedMaintenance(maintenance);
+    setShowEditDialog(true);
+  };
+
+  const handleDeleteMaintenanceClick = (maintenance: Maintenance) => {
+    setSelectedMaintenance(maintenance);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteMaintenance = () => {
+    if (selectedMaintenance) {
+      deleteMaintenanceMutation.mutate(selectedMaintenance.id);
+    }
   };
 
   const getStatusInfo = (status: string) => {
