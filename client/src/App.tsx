@@ -293,7 +293,7 @@ function Router() {
         </Route>
         <Route path="/admin/assets/map">
           <Suspense fallback={<div className="p-8 text-center">Cargando mapa de activos...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/assets/map-simple')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/assets/map')))}
           </Suspense>
         </Route>
         <Route path="/admin/assets/maintenance/calendar">

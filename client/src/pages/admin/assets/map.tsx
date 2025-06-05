@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
@@ -6,8 +6,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { MapPin, List, Filter, Layers, AlertTriangle } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  MapPin, 
+  List, 
+  AlertTriangle, 
+  Filter, 
+  Layers, 
+  ZoomIn, 
+  ZoomOut,
+  RotateCcw,
+  Eye,
+  Edit,
+  Wrench,
+  Calendar
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -16,21 +28,33 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix for default markers in Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 // Constantes de estado y condición para activos
 const ASSET_STATUSES = [
-  { value: 'active', label: 'Activo' },
-  { value: 'maintenance', label: 'En Mantenimiento' },
-  { value: 'retired', label: 'Retirado' },
-  { value: 'storage', label: 'En Almacén' }
+  { value: 'active', label: 'Activo', color: '#10B981' },
+  { value: 'maintenance', label: 'En Mantenimiento', color: '#F59E0B' },
+  { value: 'retired', label: 'Retirado', color: '#EF4444' },
+  { value: 'storage', label: 'En Almacén', color: '#6B7280' }
 ];
 
 const ASSET_CONDITIONS = [
-  { value: 'excellent', label: 'Excelente' },
-  { value: 'good', label: 'Bueno' },
-  { value: 'fair', label: 'Regular' },
-  { value: 'poor', label: 'Malo' },
-  { value: 'critical', label: 'Crítico' }
+  { value: 'excellent', label: 'Excelente', color: '#10B981' },
+  { value: 'good', label: 'Bueno', color: '#3B82F6' },
+  { value: 'fair', label: 'Regular', color: '#F59E0B' },
+  { value: 'poor', label: 'Malo', color: '#EF4444' },
+  { value: 'critical', label: 'Crítico', color: '#DC2626' }
 ];
 
 // Tipado para los datos
@@ -45,8 +69,14 @@ interface Asset {
   latitude: string | null;
   longitude: string | null;
   locationDescription: string | null;
-  category?: { name: string; icon: string; color: string };
-  park?: { name: string };
+  categoryName?: string;
+  parkName?: string;
+  nextMaintenanceDate?: string | null;
+  acquisitionDate?: string | null;
+  acquisitionCost?: number | null;
+  lastMaintenanceDate?: string | null;
+  maintenanceFrequency?: number | null;
+  maintenanceStatus?: string | null;
 }
 
 interface Park {
@@ -63,37 +93,95 @@ interface AssetCategory {
   color: string;
 }
 
-// Componente mapa que utiliza Google Maps
-const AssetMap: React.FC = () => {
+// Crear iconos personalizados para cada categoría y estado
+const createCustomIcon = (category: AssetCategory, status: string, condition: string) => {
+  const statusInfo = ASSET_STATUSES.find(s => s.value === status);
+  const conditionInfo = ASSET_CONDITIONS.find(c => c.value === condition);
+  
+  const color = conditionInfo?.color || category.color || '#3B82F6';
+  const borderColor = statusInfo?.color || '#6B7280';
+  
+  return L.divIcon({
+    html: `
+      <div style="
+        background-color: ${color};
+        border: 3px solid ${borderColor};
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        position: relative;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      ">
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 8px;
+          height: 8px;
+          background-color: white;
+          border-radius: 50%;
+        "></div>
+      </div>
+    `,
+    className: 'custom-div-icon',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -10]
+  });
+};
+
+// Componente para centrar el mapa
+const MapController: React.FC<{ center: [number, number]; zoom: number }> = ({ center, zoom }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    map.setView(center, zoom);
+  }, [map, center, zoom]);
+  
+  return null;
+};
+
+// Componente principal
+const AssetMapPage: React.FC = () => {
+  const [_, setLocation] = useLocation();
   const [selectedPark, setSelectedPark] = useState<number | 'all'>('all');
   const [selectedCategory, setSelectedCategory] = useState<number | 'all'>('all');
   const [selectedStatus, setSelectedStatus] = useState<string | 'all'>('all');
   const [selectedCondition, setSelectedCondition] = useState<string | 'all'>('all');
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
-  const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(null);
-  const [_, setLocation] = useLocation();
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([20.676667, -103.347222]); // Guadalajara center
+  const [mapZoom, setMapZoom] = useState<number>(12);
 
-  // Cargar datos de activos, parques y categorías
-  const { data: assets, isLoading: isLoadingAssets, error: assetsError } = useQuery({
+  // Consultar datos de activos
+  const { data: apiAssets, isLoading: assetsLoading } = useQuery<Asset[]>({
     queryKey: ['/api/assets'],
-    select: (data: Asset[]) => data.filter(asset => asset.latitude && asset.longitude),
+    staleTime: 60000,
   });
-
-  const { data: parks, isLoading: isLoadingParks } = useQuery({
+  
+  // Consultar datos de parques
+  const { data: apiParks, isLoading: parksLoading } = useQuery<Park[]>({
     queryKey: ['/api/parks'],
+    staleTime: 60000,
   });
-
-  const { data: categories, isLoading: isLoadingCategories } = useQuery({
+  
+  // Consultar datos de categorías
+  const { data: apiCategories, isLoading: categoriesLoading } = useQuery<AssetCategory[]>({
     queryKey: ['/api/asset-categories'],
+    staleTime: 60000,
   });
 
-  // Filtrar activos según las selecciones
-  const filteredAssets = React.useMemo(() => {
-    if (!assets) return [];
-    
+  const assets = apiAssets || [];
+  const parks = apiParks || [];
+  const categories = apiCategories || [];
+
+  // Filtrar activos según criterios seleccionados
+  const filteredAssets = useMemo(() => {
     return assets.filter(asset => {
+      // Solo mostrar activos con coordenadas válidas
+      if (!asset.latitude || !asset.longitude) return false;
+      
       const matchesPark = selectedPark === 'all' || asset.parkId === selectedPark;
       const matchesCategory = selectedCategory === 'all' || asset.categoryId === selectedCategory;
       const matchesStatus = selectedStatus === 'all' || asset.status === selectedStatus;
@@ -103,41 +191,43 @@ const AssetMap: React.FC = () => {
     });
   }, [assets, selectedPark, selectedCategory, selectedStatus, selectedCondition]);
 
-  // Función para mostrar un mapa estático 
-  const staticMapUrl = useCallback((lat: number = 19.4326, lng: number = -99.1332, zoom: number = 12, width: number = 600, height: number = 600) => {
-    return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=${width}x${height}&key=${process.env.VITE_GOOGLE_MAPS_API_KEY}`;
-  }, []);
-
-  // Mapa de referencia 
-  const mapRef = useCallback((node: HTMLDivElement) => {
-    // Solo usaremos un enfoque más simple para la geolocalización
-    console.log("Elemento del mapa cargado");
-    setMapLoaded(true);
-  }, []);
-
-  // Versión simplificada para mostrar activos en mapa estático
-  useEffect(() => {
-    console.log(`Mostrando ${filteredAssets.length} activos en el mapa`);
-    // Esta función ahora solo registra cambios pero no depende de la API de Google Maps
-    setMapLoaded(true);
-  }, [filteredAssets, categories]);
-  
-  // Esta función se usa cuando se selecciona un parque en la versión estática
-  useEffect(() => {
-    if (selectedPark !== 'all') {
-      console.log(`Parque seleccionado: ${selectedPark}`);
-    }
-  }, [selectedPark, parks]);
-
-  // Determinar si hay activos sin coordenadas de geolocalización
-  const unlocatedAssets = assets?.filter(asset => !asset.latitude || !asset.longitude) || [];
+  // Calcular estadísticas
+  const unlocatedAssets = assets.filter(asset => !asset.latitude || !asset.longitude);
   const showUnlocatedWarning = unlocatedAssets.length > 0;
-
-  // Determinar cuántos activos se muestran en el mapa actualmente
   const displayedAssetsCount = filteredAssets.length;
-  const totalLocatedAssets = assets?.filter(asset => asset.latitude && asset.longitude).length || 0;
+  const totalLocatedAssets = assets.filter(asset => asset.latitude && asset.longitude).length;
 
-  const isLoading = isLoadingAssets || isLoadingParks || isLoadingCategories;
+  // Centrar el mapa en los activos filtrados
+  useEffect(() => {
+    if (filteredAssets.length > 0) {
+      const validAssets = filteredAssets.filter(asset => asset.latitude && asset.longitude);
+      if (validAssets.length > 0) {
+        const lats = validAssets.map(asset => parseFloat(asset.latitude!));
+        const lngs = validAssets.map(asset => parseFloat(asset.longitude!));
+        
+        const centerLat = lats.reduce((a, b) => a + b, 0) / lats.length;
+        const centerLng = lngs.reduce((a, b) => a + b, 0) / lngs.length;
+        
+        setMapCenter([centerLat, centerLng]);
+        
+        // Ajustar zoom basado en la dispersión de los puntos
+        const latRange = Math.max(...lats) - Math.min(...lats);
+        const lngRange = Math.max(...lngs) - Math.min(...lngs);
+        const maxRange = Math.max(latRange, lngRange);
+        
+        let zoom = 12;
+        if (maxRange > 0.1) zoom = 10;
+        else if (maxRange > 0.05) zoom = 11;
+        else if (maxRange > 0.01) zoom = 13;
+        else if (maxRange > 0.005) zoom = 14;
+        else zoom = 15;
+        
+        setMapZoom(zoom);
+      }
+    }
+  }, [filteredAssets]);
+
+  const isLoading = assetsLoading || parksLoading || categoriesLoading;
 
   if (isLoading) {
     return (
@@ -253,131 +343,182 @@ const AssetMap: React.FC = () => {
           </Select>
         </div>
 
-        {/* Contenedor del mapa */}
+        {/* Mapa interactivo */}
         <Card className="mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-medium">Mapa de Ubicación de Activos</CardTitle>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Mapa Interactivo de Activos</span>
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <span>{filteredAssets.length} activos mostrados</span>
+              </div>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="border rounded-lg overflow-hidden" style={{ width: '100%', height: '600px' }}>
-            {mapLoaded ? (
-              <div>
-                {/* Mapa estático como alternativa */}
-                <img 
-                  src={staticMapUrl(19.4326, -99.1332, 12, 1200, 600)} 
-                  alt="Mapa de activos"
-                  className="w-full h-full object-cover"
+            <div className="h-[600px] w-full rounded-lg overflow-hidden border">
+              <MapContainer
+                center={mapCenter}
+                zoom={mapZoom}
+                style={{ height: '100%', width: '100%' }}
+                className="leaflet-container"
+              >
+                <MapController center={mapCenter} zoom={mapZoom} />
+                
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 
-                {/* Simulación visual de activos en el mapa */}
-                <div className="relative -mt-[600px] w-full h-[600px] pointer-events-none">
-                  {filteredAssets.map((asset, index) => {
+                <MarkerClusterGroup
+                  chunkedLoading
+                  maxClusterRadius={50}
+                  spiderfyOnMaxZoom={true}
+                  showCoverageOnHover={false}
+                >
+                  {filteredAssets.map((asset) => {
                     if (!asset.latitude || !asset.longitude) return null;
                     
-                    const lat = parseFloat(asset.latitude);
-                    const lng = parseFloat(asset.longitude);
+                    const category = categories.find(c => c.id === asset.categoryId);
+                    const park = parks.find(p => p.id === asset.parkId);
+                    const statusInfo = ASSET_STATUSES.find(s => s.value === asset.status);
+                    const conditionInfo = ASSET_CONDITIONS.find(c => c.value === asset.condition);
                     
-                    // Calcular posición aproximada en el mapa estático (simulación)
-                    const category = categories?.find(cat => cat.id === asset.categoryId);
-                    const color = category?.color || '#3B82F6';
-                    
-                    // Posiciones relativas aproximadas (solo para demo)
-                    const posLeft = 50 + (index * 3) % 80;
-                    const posTop = 30 + (index * 5) % 80;
-                    
+                    const icon = createCustomIcon(
+                      category || { id: 0, name: 'Sin categoría', icon: 'default', color: '#3B82F6' },
+                      asset.status,
+                      asset.condition
+                    );
+
                     return (
-                      <div 
+                      <Marker
                         key={asset.id}
-                        className="absolute w-5 h-5 rounded-full border-2 border-white shadow-md transition-all hover:scale-150 z-10"
-                        style={{ 
-                          backgroundColor: color,
-                          left: `${posLeft}%`, 
-                          top: `${posTop}%`,
-                        }}
-                        title={asset.name}
-                      />
+                        position={[parseFloat(asset.latitude), parseFloat(asset.longitude)]}
+                        icon={icon}
+                      >
+                        <Popup className="asset-popup" maxWidth={300}>
+                          <div className="p-2">
+                            <div className="flex items-start justify-between mb-3">
+                              <h3 className="font-semibold text-lg text-gray-900 leading-tight">
+                                {asset.name}
+                              </h3>
+                              <div 
+                                className="w-4 h-4 rounded-full ml-2 flex-shrink-0" 
+                                style={{ backgroundColor: category?.color || '#3B82F6' }}
+                              />
+                            </div>
+                            
+                            <div className="space-y-2 mb-3">
+                              <p className="text-sm text-gray-600">
+                                <strong>Categoría:</strong> {category?.name || 'Sin categoría'}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                <strong>Parque:</strong> {park?.name || 'Sin parque'}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                <strong>Ubicación:</strong> {asset.locationDescription || 'Sin descripción específica'}
+                              </p>
+                              {asset.description && (
+                                <p className="text-sm text-gray-600">
+                                  <strong>Descripción:</strong> {asset.description}
+                                </p>
+                              )}
+                            </div>
+                            
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              <Badge 
+                                variant="outline" 
+                                className="text-xs"
+                                style={{ borderColor: statusInfo?.color, color: statusInfo?.color }}
+                              >
+                                {statusInfo?.label || asset.status}
+                              </Badge>
+                              <Badge 
+                                variant="outline" 
+                                className="text-xs"
+                                style={{ borderColor: conditionInfo?.color, color: conditionInfo?.color }}
+                              >
+                                {conditionInfo?.label || asset.condition}
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex space-x-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => setLocation(`/admin/assets/${asset.id}`)}
+                                className="flex-1"
+                              >
+                                <Eye className="h-3 w-3 mr-1" />
+                                Ver
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => setLocation(`/admin/assets/edit/${asset.id}`)}
+                                className="flex-1"
+                              >
+                                <Edit className="h-3 w-3 mr-1" />
+                                Editar
+                              </Button>
+                            </div>
+                          </div>
+                        </Popup>
+                      </Marker>
                     );
                   })}
-                </div>
-              </div>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                <p className="text-gray-500">Cargando visualización de activos...</p>
-              </div>
-            )}
-          </div>
+                </MarkerClusterGroup>
+              </MapContainer>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Lista de activos visibles */}
+        {/* Leyenda del mapa */}
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-medium">Activos Mostrados en el Mapa</CardTitle>
+          <CardHeader>
+            <CardTitle>Leyenda del Mapa</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredAssets.length > 0 ? (
-                filteredAssets.map((asset) => {
-                  const category = categories?.find(cat => cat.id === asset.categoryId);
-                  const park = parks?.find(p => p.id === asset.parkId);
-                  
-                  return (
-                    <Card key={asset.id} className="overflow-hidden">
-                      <div className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-semibold truncate" title={asset.name}>
-                              {asset.name}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                              {park?.name || 'Parque no especificado'}
-                            </p>
-                          </div>
-                          <Badge 
-                            className={
-                              asset.status === 'active' ? 'bg-green-100 text-green-800 border-green-300' :
-                              asset.status === 'maintenance' ? 'bg-blue-100 text-blue-800 border-blue-300' :
-                              asset.status === 'damaged' ? 'bg-red-100 text-red-800 border-red-300' :
-                              'bg-gray-100 text-gray-800 border-gray-300'
-                            }
-                          >
-                            {ASSET_STATUSES.find(s => s.value === asset.status)?.label || asset.status}
-                          </Badge>
-                        </div>
-                        <div className="mt-2 flex items-center">
-                          <div 
-                            className="w-3 h-3 rounded-full mr-2"
-                            style={{ backgroundColor: category?.color || '#3B82F6' }}
-                          />
-                          <span className="text-sm">{category?.name || 'Sin categoría'}</span>
-                        </div>
-                        {asset.locationDescription && (
-                          <div className="mt-2 flex items-start">
-                            <MapPin className="h-4 w-4 mr-1 mt-0.5 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground line-clamp-2">
-                              {asset.locationDescription}
-                            </span>
-                          </div>
-                        )}
-                        <div className="mt-3">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="w-full"
-                            onClick={() => setLocation(`/admin/assets/${asset.id}`)}
-                          >
-                            Ver Detalles
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })
-              ) : (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-muted-foreground">No hay activos que coincidan con los criterios de filtro.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Estados */}
+              <div>
+                <h4 className="font-medium mb-3">Estados de Activos</h4>
+                <div className="space-y-2">
+                  {ASSET_STATUSES.map((status) => (
+                    <div key={status.value} className="flex items-center space-x-2">
+                      <div 
+                        className="w-4 h-4 rounded-full border-2"
+                        style={{ 
+                          backgroundColor: '#f3f4f6',
+                          borderColor: status.color
+                        }}
+                      />
+                      <span className="text-sm">{status.label}</span>
+                    </div>
+                  ))}
                 </div>
-              )}
+              </div>
+              
+              {/* Condiciones */}
+              <div>
+                <h4 className="font-medium mb-3">Condiciones de Activos</h4>
+                <div className="space-y-2">
+                  {ASSET_CONDITIONS.map((condition) => (
+                    <div key={condition.value} className="flex items-center space-x-2">
+                      <div 
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: condition.color }}
+                      />
+                      <span className="text-sm">{condition.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Cómo leer el mapa:</strong> Los marcadores muestran la condición del activo (color del círculo) 
+                y el estado operativo (color del borde). Haga clic en cualquier marcador para ver más detalles y opciones de acción.
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -386,4 +527,4 @@ const AssetMap: React.FC = () => {
   );
 };
 
-export default AssetMap;
+export default AssetMapPage;
