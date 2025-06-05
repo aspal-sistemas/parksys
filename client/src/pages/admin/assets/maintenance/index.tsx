@@ -260,7 +260,7 @@ const AssetsMaintenancePage: React.FC = () => {
 
                 <div>
                   <label className="text-sm font-medium">Estado</label>
-                  <Select name="status" defaultValue="completed">
+                  <Select name="status" defaultValue="scheduled">
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar estado" />
                     </SelectTrigger>
@@ -272,6 +272,9 @@ const AssetsMaintenancePage: React.FC = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    💡 Sugerencia: "Programado" para fechas futuras, "Completado" para fechas pasadas
+                  </p>
                 </div>
 
                 <div>

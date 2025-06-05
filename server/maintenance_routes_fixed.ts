@@ -85,7 +85,7 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         maintenanceType,
         description,
         date,
-        status || 'completed',
+        status || 'scheduled',
         cost || null,
         performedBy || null
       ]);
