@@ -6,6 +6,24 @@
   .menu-icon {
     @apply text-green-500;
   }
+  
+  /* Leaflet map z-index fixes */
+  .leaflet-container {
+    z-index: 1 !important;
+  }
+  
+  .leaflet-control-container {
+    z-index: 10 !important;
+  }
+  
+  /* Ensure dropdowns appear above map */
+  [data-radix-select-content] {
+    z-index: 60 !important;
+  }
+  
+  [data-radix-popper-content-wrapper] {
+    z-index: 60 !important;
+  }
 }
 
 @layer base {

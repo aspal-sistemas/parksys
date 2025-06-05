@@ -285,12 +285,12 @@ const AssetMapPage: React.FC = () => {
         )}
 
         {/* Filtros */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 relative z-50">
           <Select value={selectedPark.toString()} onValueChange={(value) => setSelectedPark(value === 'all' ? 'all' : parseInt(value))}>
             <SelectTrigger>
               <SelectValue placeholder="Seleccione un parque" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[60]">
               <SelectItem value="all">Todos los parques</SelectItem>
               {parks?.map((park) => (
                 <SelectItem key={park.id} value={park.id.toString()}>
@@ -304,7 +304,7 @@ const AssetMapPage: React.FC = () => {
             <SelectTrigger>
               <SelectValue placeholder="Seleccione una categoría" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[60]">
               <SelectItem value="all">Todas las categorías</SelectItem>
               {categories?.map((category) => (
                 <SelectItem key={category.id} value={category.id.toString()}>
@@ -318,7 +318,7 @@ const AssetMapPage: React.FC = () => {
             <SelectTrigger>
               <SelectValue placeholder="Seleccione un estado" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[60]">
               <SelectItem value="all">Todos los estados</SelectItem>
               {ASSET_STATUSES.map((status) => (
                 <SelectItem key={status.value} value={status.value}>
@@ -332,7 +332,7 @@ const AssetMapPage: React.FC = () => {
             <SelectTrigger>
               <SelectValue placeholder="Seleccione una condición" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[60]">
               <SelectItem value="all">Todas las condiciones</SelectItem>
               {ASSET_CONDITIONS.map((condition) => (
                 <SelectItem key={condition.value} value={condition.value}>
@@ -354,12 +354,13 @@ const AssetMapPage: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[600px] w-full rounded-lg overflow-hidden border">
+            <div className="h-[600px] w-full rounded-lg overflow-hidden border relative z-10">
               <MapContainer
                 center={mapCenter}
                 zoom={mapZoom}
-                style={{ height: '100%', width: '100%' }}
+                style={{ height: '100%', width: '100%', zIndex: 1 }}
                 className="leaflet-container"
+                zoomControl={true}
               >
                 <MapController center={mapCenter} zoom={mapZoom} />
                 
