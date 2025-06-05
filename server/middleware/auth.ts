@@ -13,73 +13,26 @@ declare global {
 
 // Middleware para verificar si el usuario está autenticado
 export const isAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
-  // En una aplicación real, esto verificaría el token JWT o la sesión
-  // Para propósitos de este proyecto, simplificamos al máximo
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'No se ha proporcionado un token de autenticación' });
-  }
-
-  const token = authHeader.split(' ')[1];
+  console.log('🔐 Verificando autenticación...');
+  console.log('Session:', req.session);
+  console.log('Headers:', req.headers);
   
-  // En una app real, verificaríamos el token JWT
-  // Para este ejemplo de desarrollo, simplemente permitimos cualquier token
-  // que empiece con 'direct-token-' o 'dummy-token-'
-  try {
-    // Simulamos la verificación del token
-    if (token.startsWith('direct-token-') || token.startsWith('dummy-token-')) {
-      // Obtenemos el ID del usuario de la cabecera personalizada
-      const userId = req.headers['x-user-id'];
-      if (!userId) {
-        // Si no tenemos el ID en la cabecera, asumimos admin (solo para desarrollo)
-        req.user = {
-          id: 1,
-          username: 'admin',
-          email: 'admin@parquesmx.com',
-          role: 'admin',
-          fullName: 'Admin System',
-          municipalityId: null
-        };
-        return next();
-      }
-      
-      // Verificamos si se envió un rol de usuario personalizado en los encabezados
-      const userRole = req.headers['x-user-role'] as string;
-      
-      try {
-        // Obtenemos el usuario de la base de datos
-        const user = await storage.getUser(Number(userId));
-        if (user) {
-          // Si se proporcionó un rol personalizado, lo utilizamos (para desarrollo)
-          if (userRole) {
-            user.role = userRole;
-          }
-          
-          // Adjuntamos el usuario a la petición para su uso posterior
-          req.user = user;
-          return next();
-        }
-      } catch (err) {
-        console.error('Error al obtener usuario:', err);
-      }
-      
-      // Si el usuario no se encuentra, usamos los datos del encabezado (solo para desarrollo)
-      req.user = {
-        id: 1,
-        username: 'admin',
-        email: 'admin@parquesmx.com',
-        role: userRole || 'admin', // Usamos el rol personalizado si se proporciona
-        fullName: 'Admin System',
-        municipalityId: null
-      };
-      next();
-    } else {
-      return res.status(401).json({ message: 'Token inválido' });
-    }
-  } catch (error) {
-    console.error('Error al verificar token:', error);
-    return res.status(500).json({ message: 'Error al verificar la autenticación' });
+  // Para desarrollo, permitir acceso directo con usuario admin por defecto
+  // En producción esto se reemplazaría con verificación de sesión real
+  if (!req.user) {
+    req.user = {
+      id: 1,
+      username: 'admin',
+      email: 'admin@parquesmx.com',
+      role: 'admin',
+      fullName: 'Admin System',
+      municipalityId: null
+    };
+    console.log('✅ Usuario admin asignado para desarrollo');
   }
+  
+  console.log('👤 Usuario autenticado:', req.user);
+  next();
 };
 
 // Middleware para verificar si el usuario tiene acceso a un municipio específico
