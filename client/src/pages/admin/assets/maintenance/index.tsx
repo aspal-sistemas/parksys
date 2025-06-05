@@ -157,11 +157,12 @@ const AssetsMaintenancePage: React.FC = () => {
       notes: formData.get('notes') as string,
     };
 
+    console.log('📝 Datos del mantenimiento enviados:', maintenanceData);
     createMaintenanceMutation.mutate(maintenanceData);
   };
 
   const getStatusInfo = (status: string) => {
-    return STATUS_TYPES.find(s => s.value === status) || STATUS_TYPES[2]; // default to completed
+    return STATUS_TYPES.find(s => s.value === status) || STATUS_TYPES[0]; // default to scheduled
   };
 
   if (maintenancesLoading) {

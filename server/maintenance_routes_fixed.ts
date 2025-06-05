@@ -67,6 +67,15 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         performedBy
       } = req.body;
 
+      console.log('🔧 Datos de mantenimiento recibidos en backend:', {
+        maintenanceType,
+        description,
+        date,
+        status,
+        cost,
+        performedBy
+      });
+
       const query = `
         INSERT INTO asset_maintenances (
           asset_id, 
