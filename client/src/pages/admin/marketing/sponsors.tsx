@@ -415,7 +415,7 @@ const SponsorsManagement = () => {
                   Nuevo Paquete
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Crear Paquete de Patrocinio</DialogTitle>
                 </DialogHeader>
@@ -469,7 +469,7 @@ const SponsorsManagement = () => {
                   Nuevo Patrocinador
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Registrar Nuevo Patrocinador</DialogTitle>
                   <DialogDescription>

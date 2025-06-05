@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'wouter';
 import { Search, Loader, Calendar, MapPin, Plus, ArrowUpDown, Filter, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -209,13 +210,12 @@ const AdminActivitiesSimple = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Actividades</h1>
-          <Button 
-            onClick={() => window.location.href = '/admin/activities/new'}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nueva Actividad
-          </Button>
+          <Link href="/admin/organizador/nueva-actividad">
+            <Button className="bg-green-600 hover:bg-green-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Nueva Actividad
+            </Button>
+          </Link>
         </div>
 
         <Tabs defaultValue="list" className="w-full">
