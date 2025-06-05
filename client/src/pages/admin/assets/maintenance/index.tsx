@@ -382,7 +382,7 @@ const AssetsMaintenancePage: React.FC = () => {
                         </TableCell>
                         <TableCell>{maintenance.performedBy || '-'}</TableCell>
                         <TableCell>
-                          {maintenance.cost ? `$${maintenance.cost.toFixed(2)}` : '-'}
+                          {maintenance.cost ? `$${parseFloat(maintenance.cost).toFixed(2)}` : '-'}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end space-x-2">
