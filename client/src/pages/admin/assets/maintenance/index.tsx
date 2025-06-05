@@ -193,8 +193,11 @@ const AssetsMaintenancePage: React.FC = () => {
         data: data,
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-maintenances'] });
+    onSuccess: async (updatedMaintenance) => {
+      // Invalidar y refetch para asegurar datos actualizados
+      await queryClient.invalidateQueries({ queryKey: ['/api/asset-maintenances'] });
+      await queryClient.refetchQueries({ queryKey: ['/api/asset-maintenances'] });
+      
       toast({
         title: 'Mantenimiento actualizado',
         description: 'El mantenimiento se ha actualizado correctamente.',
@@ -266,16 +269,16 @@ const AssetsMaintenancePage: React.FC = () => {
       return result;
     },
     onSuccess: async (result) => {
+      console.log('🎯 Actualizando interfaz después de subir fotos');
+      
       // Invalidar queries para actualizar la vista
       await queryClient.invalidateQueries({ queryKey: ['/api/asset-maintenances'] });
       
-      // Actualizar el mantenimiento seleccionado con los nuevos datos
+      // Actualizar el mantenimiento seleccionado con los nuevos datos del servidor
       if (selectedMaintenance && result.maintenance) {
+        console.log('📋 Actualizando mantenimiento seleccionado con nuevas fotos:', result.maintenance.photos);
         setSelectedMaintenance(result.maintenance);
       }
-      
-      // Forzar re-fetch de los datos para asegurar que la UI se actualice
-      await queryClient.refetchQueries({ queryKey: ['/api/asset-maintenances'] });
       
       toast({
         title: 'Fotos subidas',
@@ -455,7 +458,7 @@ const AssetsMaintenancePage: React.FC = () => {
                 Registrar Mantenimiento
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Registrar Nuevo Mantenimiento</DialogTitle>
                 <DialogDescription>
@@ -712,7 +715,7 @@ const AssetsMaintenancePage: React.FC = () => {
 
       {/* Modal para ver mantenimiento */}
       <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalles del Mantenimiento</DialogTitle>
             <DialogDescription>
@@ -802,7 +805,7 @@ const AssetsMaintenancePage: React.FC = () => {
 
       {/* Modal para editar mantenimiento */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Mantenimiento</DialogTitle>
             <DialogDescription>
