@@ -44,7 +44,7 @@ import {
   Edit,
   Trash2
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -98,6 +98,26 @@ const AssetsMaintenancePage: React.FC = () => {
   const [selectedMaintenance, setSelectedMaintenance] = useState<Maintenance | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Función para formatear fechas de forma consistente
+  const formatDateForDisplay = (dateString: string) => {
+    try {
+      const date = new Date(dateString + 'T00:00:00');
+      return format(date, 'dd/MM/yyyy', { locale: es });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  // Función para convertir fecha a formato input date
+  const formatDateForInput = (dateString: string) => {
+    try {
+      // Extraer solo la parte de fecha (YYYY-MM-DD)
+      return dateString.split('T')[0];
+    } catch (error) {
+      return dateString;
+    }
+  };
 
   // Consultar mantenimientos
   const { data: maintenances = [], isLoading: maintenancesLoading } = useQuery<Maintenance[]>({
@@ -490,7 +510,7 @@ const AssetsMaintenancePage: React.FC = () => {
                           {maintenance.description}
                         </TableCell>
                         <TableCell>
-                          {format(new Date(maintenance.date), 'dd/MM/yyyy', { locale: es })}
+                          {formatDateForDisplay(maintenance.date)}
                         </TableCell>
                         <TableCell>
                           <Badge className={statusInfo.color}>
@@ -566,7 +586,7 @@ const AssetsMaintenancePage: React.FC = () => {
               
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Fecha</label>
-                <p className="text-sm">{format(new Date(selectedMaintenance.date), 'dd/MM/yyyy', { locale: es })}</p>
+                <p className="text-sm">{formatDateForDisplay(selectedMaintenance.date)}</p>
               </div>
               
               <div>
@@ -649,7 +669,7 @@ const AssetsMaintenancePage: React.FC = () => {
                 <Input
                   type="date"
                   name="date"
-                  defaultValue={selectedMaintenance.date.split('T')[0]}
+                  defaultValue={formatDateForInput(selectedMaintenance.date)}
                   required
                 />
               </div>
@@ -734,7 +754,7 @@ const AssetsMaintenancePage: React.FC = () => {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm font-medium">Activo: {selectedMaintenance.assetName || `Activo #${selectedMaintenance.assetId}`}</p>
                 <p className="text-sm text-muted-foreground">Tipo: {MAINTENANCE_TYPES.find(t => t.value === selectedMaintenance.maintenanceType)?.label}</p>
-                <p className="text-sm text-muted-foreground">Fecha: {format(new Date(selectedMaintenance.date), 'dd/MM/yyyy', { locale: es })}</p>
+                <p className="text-sm text-muted-foreground">Fecha: {formatDateForDisplay(selectedMaintenance.date)}</p>
               </div>
 
               <div className="flex justify-end space-x-2">
