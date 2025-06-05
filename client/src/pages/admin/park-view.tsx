@@ -1443,7 +1443,7 @@ export default function AdminParkView() {
 
       {/* Modal para mostrar ubicación del activo en mapa */}
       <Dialog open={isAssetMapModalOpen} onOpenChange={setIsAssetMapModalOpen}>
-        <DialogContent className="max-w-4xl h-[600px]">
+        <DialogContent className="max-w-4xl h-[600px] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               Ubicación del Activo: {selectedAsset?.name}

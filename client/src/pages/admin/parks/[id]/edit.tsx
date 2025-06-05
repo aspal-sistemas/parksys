@@ -699,7 +699,7 @@ export default function ParkEdit() {
                   {editData.locationLatitude && editData.locationLongitude ? 'Cambiar' : 'Establecer'}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl">
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Seleccionar Ubicación</DialogTitle>
                 </DialogHeader>
