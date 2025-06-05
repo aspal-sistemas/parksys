@@ -18,7 +18,7 @@ import { registerInstructorRoutes } from "./instructorRoutes";
 import { registerPublicRoutes } from "./publicRoutes";
 import { registerAssetRoutes } from "./asset_routes";
 import { registerAssetImageRoutes } from "./asset-image-routes";
-import { registerMaintenanceRoutes } from "./maintenance_routes";
+import { registerMaintenanceRoutes } from "./maintenance_routes_fixed";
 import { registerAssetAssignmentRoutes } from "./asset_assignment_routes";
 import { registerTreeRoutes } from "./tree_routes";
 import { registerTreeMaintenanceRoutes } from "./tree_maintenance_routes";
