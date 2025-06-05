@@ -254,9 +254,9 @@ const AssetMapPage: React.FC = () => {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Mapa de Activos</h1>
           <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => setLocation('/admin/assets')}>
+            <Button variant="outline" onClick={() => setLocation('/admin/assets/inventory')}>
               <List className="mr-2 h-4 w-4" />
-              Ver Lista
+              Ver Inventario
             </Button>
             <Button onClick={() => setLocation('/admin/assets/new')}>
               <Layers className="mr-2 h-4 w-4" />
