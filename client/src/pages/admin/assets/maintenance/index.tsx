@@ -145,13 +145,36 @@ const AssetsMaintenancePage: React.FC = () => {
         data: data,
       });
     },
-    onSuccess: () => {
+    onSuccess: async (newMaintenance: any) => {
+      // Si hay fotos seleccionadas, subirlas automáticamente
+      if (selectedFiles && selectedFiles.length > 0) {
+        try {
+          const formData = new FormData();
+          Array.from(selectedFiles).forEach(file => {
+            formData.append('photos', file);
+          });
+          
+          await fetch(`/api/maintenance-photos/${newMaintenance.id}`, {
+            method: 'POST',
+            body: formData,
+          });
+        } catch (error) {
+          console.error('Error subiendo fotos:', error);
+          toast({
+            title: 'Mantenimiento creado',
+            description: 'El mantenimiento se creó pero hubo un error al subir las fotos.',
+            variant: 'destructive',
+          });
+        }
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['/api/asset-maintenances'] });
       toast({
         title: 'Mantenimiento registrado',
-        description: 'El mantenimiento se ha registrado correctamente.',
+        description: selectedFiles ? 'El mantenimiento y las fotos se han registrado correctamente.' : 'El mantenimiento se ha registrado correctamente.',
       });
       setShowCreateDialog(false);
+      setSelectedFiles(null);
     },
     onError: () => {
       toast({
@@ -512,6 +535,22 @@ const AssetsMaintenancePage: React.FC = () => {
                     name="notes" 
                     placeholder="Notas adicionales"
                   />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Fotos de Evidencia (opcional)</label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileSelect}
+                    className="file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  {selectedFiles && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {selectedFiles.length} archivo(s) seleccionado(s) - se subirán después de crear el mantenimiento
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex justify-end space-x-2">
