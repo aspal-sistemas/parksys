@@ -1,275 +1,213 @@
-import { Request, Response, Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { db } from './db';
-import { eq, and, lte, gte } from 'drizzle-orm';
-import { assets, assetMaintenances } from '../shared/asset-schema';
+import { assetMaintenances, assets, parkAmenities } from '../shared/schema';
+import { eq, desc, and, like, or } from 'drizzle-orm';
 
+/**
+ * Registra las rutas para el módulo de mantenimientos de activos
+ */
 export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
-  
-  // Obtener todos los mantenimientos programados
-  apiRouter.get("/maintenance/scheduled", isAuthenticated, async (_req: Request, res: Response) => {
+  // Obtener todos los mantenimientos con información del activo
+  apiRouter.get('/asset-maintenances', async (req: Request, res: Response) => {
     try {
-      const scheduledMaintenances = await db.query.assetMaintenances.findMany({
-        with: {
-          asset: true,
-          assignedTo: true
-        },
-        orderBy: (maintenances, { asc }) => [asc(maintenances.date)]
-      });
-      
-      return res.json(scheduledMaintenances);
+      const { search, status } = req.query;
+
+      let query = db
+        .select({
+          id: assetMaintenances.id,
+          assetId: assetMaintenances.assetId,
+          assetName: assets.name,
+          maintenanceType: assetMaintenances.maintenanceType,
+          description: assetMaintenances.description,
+          date: assetMaintenances.date,
+          status: assetMaintenances.status,
+          cost: assetMaintenances.cost,
+          performedBy: assetMaintenances.performedBy,
+          notes: assetMaintenances.notes,
+          createdAt: assetMaintenances.createdAt,
+        })
+        .from(assetMaintenances)
+        .leftJoin(assets, eq(assetMaintenances.assetId, assets.id))
+        .orderBy(desc(assetMaintenances.createdAt));
+
+      const maintenances = await query;
+
+      res.json(maintenances);
     } catch (error) {
-      console.error('Error al obtener mantenimientos programados:', error);
-      return res.status(500).json({ message: "Error al obtener los mantenimientos programados" });
+      console.error('Error fetching asset maintenances:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
     }
   });
-  
-  // Obtener mantenimientos próximos
-  apiRouter.get("/assets/maintenance/upcoming", isAuthenticated, async (_req: Request, res: Response) => {
-    try {
-      // Obtener fecha actual
-      const now = new Date();
-      
-      // Consultar mantenimientos programados para los próximos 30 días
-      const thirtyDaysFromNow = new Date();
-      thirtyDaysFromNow.setDate(now.getDate() + 30);
-      
-      const upcomingMaintenances = await db.query.assetMaintenances.findMany({
-        where: and(
-          gte(assetMaintenances.date, now),
-          lte(assetMaintenances.date, thirtyDaysFromNow)
-        ),
-        with: {
-          asset: true,
-          assignedTo: true
-        },
-        orderBy: (maintenances, { asc }) => [asc(maintenances.date)]
-      });
-      
-      // Transformar los datos para incluir la información del activo
-      const formattedMaintenances = upcomingMaintenances.map(maintenance => ({
-        id: maintenance.id,
-        assetId: maintenance.assetId,
-        name: maintenance.asset.name,
-        date: maintenance.date,
-        maintenanceType: maintenance.maintenanceType,
-        description: maintenance.description,
-        estimatedCost: maintenance.estimatedCost,
-        priority: maintenance.priority,
-        assignedTo: maintenance.assignedTo,
-        notes: maintenance.notes,
-        nextMaintenanceDate: maintenance.date
-      }));
-      
-      return res.json(formattedMaintenances);
-    } catch (error) {
-      console.error('Error al obtener próximos mantenimientos:', error);
-      return res.status(500).json({ message: "Error al obtener los próximos mantenimientos" });
-    }
-  });
-  
-  // Programar un nuevo mantenimiento
-  apiRouter.post("/maintenance/schedule", isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const { 
-        assetId, 
-        date, 
-        maintenanceType, 
-        description, 
-        estimatedCost, 
-        priority, 
-        assignedToId, 
-        notes 
-      } = req.body;
-      
-      // Validaciones básicas
-      if (!assetId || !date || !maintenanceType || !description) {
-        return res.status(400).json({ message: "Faltan campos obligatorios" });
-      }
-      
-      // Verificar que el activo existe
-      const assetExists = await db.query.assets.findFirst({
-        where: eq(assets.id, assetId)
-      });
-      
-      if (!assetExists) {
-        return res.status(404).json({ message: "El activo especificado no existe" });
-      }
-      
-      // Crear el nuevo registro de mantenimiento
-      const [newMaintenance] = await db.insert(assetMaintenances).values({
-        assetId,
-        date: new Date(date),
-        maintenanceType,
-        description,
-        estimatedCost: estimatedCost || null,
-        priority: priority || 'medium',
-        assignedToId: assignedToId || null,
-        notes: notes || null,
-        status: 'scheduled',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }).returning();
-      
-      return res.status(201).json(newMaintenance);
-    } catch (error) {
-      console.error('Error al programar mantenimiento:', error);
-      return res.status(500).json({ message: "Error al programar el mantenimiento" });
-    }
-  });
-  
+
   // Obtener mantenimientos de un activo específico
-  apiRouter.get("/assets/:id/maintenances", async (req: Request, res: Response) => {
+  apiRouter.get('/assets/:id/maintenances', async (req: Request, res: Response) => {
     try {
       const assetId = parseInt(req.params.id);
-      
-      if (isNaN(assetId)) {
-        return res.status(400).json({ message: "ID de activo no válido" });
-      }
-      
-      const maintenances = await db.query.assetMaintenances.findMany({
-        where: eq(assetMaintenances.assetId, assetId),
-        with: {
-          assignedTo: true
-        },
-        orderBy: (maintenances, { desc }) => [desc(maintenances.date)]
-      });
-      
-      return res.json(maintenances);
+
+      const maintenances = await db
+        .select()
+        .from(assetMaintenances)
+        .where(eq(assetMaintenances.assetId, assetId))
+        .orderBy(desc(assetMaintenances.createdAt));
+
+      res.json(maintenances);
     } catch (error) {
-      console.error(`Error al obtener mantenimientos del activo ${req.params.id}:`, error);
-      return res.status(500).json({ message: "Error al obtener los mantenimientos" });
+      console.error('Error fetching asset maintenances:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
     }
   });
-  
-  // Actualizar un mantenimiento programado
-  apiRouter.put("/maintenance/:id", isAuthenticated, async (req: Request, res: Response) => {
+
+  // Crear nuevo mantenimiento
+  apiRouter.post('/assets/:id/maintenances', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const maintenanceId = parseInt(req.params.id);
-      
-      if (isNaN(maintenanceId)) {
-        return res.status(400).json({ message: "ID de mantenimiento no válido" });
-      }
-      
-      const { 
-        date, 
-        maintenanceType, 
-        description, 
-        estimatedCost, 
-        priority, 
-        assignedToId, 
-        notes,
-        status
+      const assetId = parseInt(req.params.id);
+      const {
+        maintenanceType,
+        description,
+        date,
+        cost,
+        performedBy,
+        notes
       } = req.body;
-      
-      // Verificar que el mantenimiento existe
-      const maintenanceExists = await db.query.assetMaintenances.findFirst({
-        where: eq(assetMaintenances.id, maintenanceId)
-      });
-      
-      if (!maintenanceExists) {
-        return res.status(404).json({ message: "El mantenimiento especificado no existe" });
-      }
-      
-      // Actualizar el registro
-      const [updatedMaintenance] = await db
+
+      const newMaintenance = await db
+        .insert(assetMaintenances)
+        .values({
+          assetId,
+          maintenanceType,
+          description,
+          date: new Date(date),
+          status: 'completed', // Por defecto los mantenimientos se registran como completados
+          cost: cost ? parseFloat(cost) : null,
+          performedBy,
+          notes,
+        })
+        .returning();
+
+      res.status(201).json(newMaintenance[0]);
+    } catch (error) {
+      console.error('Error creating maintenance:', error);
+      res.status(500).json({ error: 'Error al crear el mantenimiento' });
+    }
+  });
+
+  // Actualizar mantenimiento
+  apiRouter.put('/asset-maintenances/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const maintenanceId = parseInt(req.params.id);
+      const {
+        maintenanceType,
+        description,
+        date,
+        status,
+        cost,
+        performedBy,
+        notes
+      } = req.body;
+
+      const updatedMaintenance = await db
         .update(assetMaintenances)
         .set({
-          date: date ? new Date(date) : maintenanceExists.date,
-          maintenanceType: maintenanceType || maintenanceExists.maintenanceType,
-          description: description || maintenanceExists.description,
-          estimatedCost: estimatedCost !== undefined ? estimatedCost : maintenanceExists.estimatedCost,
-          priority: priority || maintenanceExists.priority,
-          assignedToId: assignedToId !== undefined ? assignedToId : maintenanceExists.assignedToId,
-          notes: notes !== undefined ? notes : maintenanceExists.notes,
-          status: status || maintenanceExists.status,
-          updatedAt: new Date()
+          maintenanceType,
+          description,
+          date: date ? new Date(date) : undefined,
+          status,
+          cost: cost ? parseFloat(cost) : null,
+          performedBy,
+          notes,
+          updatedAt: new Date(),
         })
         .where(eq(assetMaintenances.id, maintenanceId))
         .returning();
-      
-      return res.json(updatedMaintenance);
+
+      if (updatedMaintenance.length === 0) {
+        return res.status(404).json({ error: 'Mantenimiento no encontrado' });
+      }
+
+      res.json(updatedMaintenance[0]);
     } catch (error) {
-      console.error(`Error al actualizar mantenimiento ${req.params.id}:`, error);
-      return res.status(500).json({ message: "Error al actualizar el mantenimiento" });
+      console.error('Error updating maintenance:', error);
+      res.status(500).json({ error: 'Error al actualizar el mantenimiento' });
     }
   });
-  
-  // Eliminar un mantenimiento programado
-  apiRouter.delete("/maintenance/:id", isAuthenticated, async (req: Request, res: Response) => {
+
+  // Actualizar solo el estado del mantenimiento
+  apiRouter.patch('/asset-maintenances/:id', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const maintenanceId = parseInt(req.params.id);
-      
-      if (isNaN(maintenanceId)) {
-        return res.status(400).json({ message: "ID de mantenimiento no válido" });
+      const { status } = req.body;
+
+      const updatedMaintenance = await db
+        .update(assetMaintenances)
+        .set({
+          status,
+          updatedAt: new Date(),
+        })
+        .where(eq(assetMaintenances.id, maintenanceId))
+        .returning();
+
+      if (updatedMaintenance.length === 0) {
+        return res.status(404).json({ error: 'Mantenimiento no encontrado' });
       }
-      
-      // Verificar que el mantenimiento existe
-      const maintenanceExists = await db.query.assetMaintenances.findFirst({
-        where: eq(assetMaintenances.id, maintenanceId)
-      });
-      
-      if (!maintenanceExists) {
-        return res.status(404).json({ message: "El mantenimiento especificado no existe" });
-      }
-      
-      // Eliminar el registro
-      await db
+
+      res.json(updatedMaintenance[0]);
+    } catch (error) {
+      console.error('Error updating maintenance status:', error);
+      res.status(500).json({ error: 'Error al actualizar el estado del mantenimiento' });
+    }
+  });
+
+  // Eliminar mantenimiento
+  apiRouter.delete('/asset-maintenances/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const maintenanceId = parseInt(req.params.id);
+
+      const deletedMaintenance = await db
         .delete(assetMaintenances)
-        .where(eq(assetMaintenances.id, maintenanceId));
-      
-      return res.json({ message: "Mantenimiento eliminado correctamente" });
-    } catch (error) {
-      console.error(`Error al eliminar mantenimiento ${req.params.id}:`, error);
-      return res.status(500).json({ message: "Error al eliminar el mantenimiento" });
-    }
-  });
-  
-  // Completar un mantenimiento programado
-  apiRouter.post("/maintenance/:id/complete", isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const maintenanceId = parseInt(req.params.id);
-      
-      if (isNaN(maintenanceId)) {
-        return res.status(400).json({ message: "ID de mantenimiento no válido" });
-      }
-      
-      const { actualCost, completionNotes } = req.body;
-      
-      // Verificar que el mantenimiento existe
-      const maintenanceExists = await db.query.assetMaintenances.findFirst({
-        where: eq(assetMaintenances.id, maintenanceId)
-      });
-      
-      if (!maintenanceExists) {
-        return res.status(404).json({ message: "El mantenimiento especificado no existe" });
-      }
-      
-      // Actualizar el registro como completado
-      const [completedMaintenance] = await db
-        .update(assetMaintenances)
-        .set({
-          status: 'completed',
-          actualCost: actualCost || null,
-          completionNotes: completionNotes || null,
-          completedAt: new Date(),
-          updatedAt: new Date()
-        })
         .where(eq(assetMaintenances.id, maintenanceId))
         .returning();
-      
-      // También actualizamos la fecha del último mantenimiento en el activo
-      await db
-        .update(assets)
-        .set({
-          lastMaintenanceDate: new Date(),
-          updatedAt: new Date()
-        })
-        .where(eq(assets.id, maintenanceExists.assetId));
-      
-      return res.json(completedMaintenance);
+
+      if (deletedMaintenance.length === 0) {
+        return res.status(404).json({ error: 'Mantenimiento no encontrado' });
+      }
+
+      res.json({ message: 'Mantenimiento eliminado correctamente' });
     } catch (error) {
-      console.error(`Error al completar mantenimiento ${req.params.id}:`, error);
-      return res.status(500).json({ message: "Error al completar el mantenimiento" });
+      console.error('Error deleting maintenance:', error);
+      res.status(500).json({ error: 'Error al eliminar el mantenimiento' });
+    }
+  });
+
+  // Obtener estadísticas de mantenimientos
+  apiRouter.get('/maintenance-stats', async (req: Request, res: Response) => {
+    try {
+      const stats = await db
+        .select({
+          total: assetMaintenances.id,
+          status: assetMaintenances.status,
+          maintenanceType: assetMaintenances.maintenanceType,
+        })
+        .from(assetMaintenances);
+
+      // Procesar estadísticas
+      const statusCounts = stats.reduce((acc: any, item) => {
+        acc[item.status] = (acc[item.status] || 0) + 1;
+        return acc;
+      }, {});
+
+      const typeCounts = stats.reduce((acc: any, item) => {
+        acc[item.maintenanceType] = (acc[item.maintenanceType] || 0) + 1;
+        return acc;
+      }, {});
+
+      res.json({
+        total: stats.length,
+        byStatus: statusCounts,
+        byType: typeCounts,
+      });
+    } catch (error) {
+      console.error('Error fetching maintenance stats:', error);
+      res.status(500).json({ error: 'Error al obtener estadísticas' });
     }
   });
 }

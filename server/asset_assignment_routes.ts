@@ -1,421 +1,309 @@
-import { Request, Response, Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { db } from './db';
-import { format } from 'date-fns';
-import { sql } from 'drizzle-orm';
+import { assetAssignments, assets, instructors, activities, parkAmenities } from '../shared/schema';
+import { eq, desc, and, like, or } from 'drizzle-orm';
 
 /**
- * Registra las rutas relacionadas con asignaciones de activos
- * @param app Aplicación Express
- * @param apiRouter Router de la API
- * @param isAuthenticated Middleware de autenticación
+ * Registra las rutas para el módulo de asignaciones de activos
  */
 export function registerAssetAssignmentRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
-  // Endpoint para crear una nueva asignación de activo a instructor
+  // Obtener todas las asignaciones con información completa
+  apiRouter.get('/asset-assignments', async (req: Request, res: Response) => {
+    try {
+      const { search, status } = req.query;
+
+      const assignments = await db
+        .select({
+          id: assetAssignments.id,
+          assetId: assetAssignments.assetId,
+          assetName: assets.name,
+          instructorId: assetAssignments.instructorId,
+          instructorName: instructors.firstName,
+          instructorLastName: instructors.lastName,
+          activityId: assetAssignments.activityId,
+          activityName: activities.name,
+          assignmentDate: assetAssignments.assignmentDate,
+          returnDate: assetAssignments.returnDate,
+          purpose: assetAssignments.purpose,
+          condition: assetAssignments.condition,
+          status: assetAssignments.status,
+          notes: assetAssignments.notes,
+          createdAt: assetAssignments.createdAt,
+        })
+        .from(assetAssignments)
+        .leftJoin(assets, eq(assetAssignments.assetId, assets.id))
+        .leftJoin(instructors, eq(assetAssignments.instructorId, instructors.id))
+        .leftJoin(activities, eq(assetAssignments.activityId, activities.id))
+        .orderBy(desc(assetAssignments.createdAt));
+
+      // Formatear los datos para incluir nombres completos
+      const formattedAssignments = assignments.map(assignment => ({
+        ...assignment,
+        instructorName: assignment.instructorName && assignment.instructorLastName 
+          ? `${assignment.instructorName} ${assignment.instructorLastName}`
+          : null,
+      }));
+
+      res.json(formattedAssignments);
+    } catch (error) {
+      console.error('Error fetching asset assignments:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Crear nueva asignación
   apiRouter.post('/asset-assignments', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const {
         assetId,
         instructorId,
-        startDate,
-        endDate,
-        purpose,
         activityId,
-        notes,
-        requiresTraining,
-        status
+        assignmentDate,
+        purpose,
+        condition,
+        notes
       } = req.body;
 
-      // Validación básica
-      if (!assetId || !instructorId || !startDate || !purpose) {
-        return res.status(400).json({
-          success: false,
-          message: 'Faltan campos requeridos: assetId, instructorId, startDate, purpose'
-        });
-      }
+      const newAssignment = await db
+        .insert(assetAssignments)
+        .values({
+          assetId: parseInt(assetId),
+          instructorId: instructorId ? parseInt(instructorId) : null,
+          activityId: activityId ? parseInt(activityId) : null,
+          assignmentDate: new Date(assignmentDate),
+          purpose,
+          condition,
+          status: 'active',
+          notes,
+        })
+        .returning();
 
-      // Verificar que el activo existe
-      const [asset] = await db.execute(
-        sql`SELECT * FROM assets WHERE id = ${assetId}`
-      );
-
-      if (!asset) {
-        return res.status(404).json({
-          success: false,
-          message: 'El activo no existe'
-        });
-      }
-
-      // Verificar que el instructor existe
-      const [instructor] = await db.execute(
-        sql`SELECT * FROM instructors WHERE id = ${instructorId}`
-      );
-
-      if (!instructor) {
-        return res.status(404).json({
-          success: false,
-          message: 'El instructor no existe'
-        });
-      }
-
-      // Verificar si hay conflictos en las fechas
-      if (startDate && endDate) {
-        const conflicts = await db.execute(
-          sql`SELECT * FROM asset_assignments 
-              WHERE asset_id = ${assetId} 
-              AND status = 'active'
-              AND (
-                (start_date <= ${startDate} AND (end_date >= ${startDate} OR end_date IS NULL))
-                OR 
-                (start_date <= ${endDate} AND (end_date >= ${endDate} OR end_date IS NULL))
-                OR
-                (start_date >= ${startDate} AND (end_date <= ${endDate} OR end_date IS NULL))
-              )`
-        );
-
-        if (conflicts && conflicts.length > 0) {
-          return res.status(409).json({
-            success: false,
-            message: 'Existe un conflicto con otra asignación en el mismo período'
-          });
-        }
-      }
-
-      // Crear la asignación
-      const [assignment] = await db.execute(
-        sql`INSERT INTO asset_assignments (
-          asset_id, 
-          instructor_id, 
-          start_date, 
-          end_date, 
-          purpose, 
-          activity_id, 
-          notes, 
-          requires_training, 
-          status,
-          created_at,
-          updated_at
-        ) VALUES (
-          ${assetId},
-          ${instructorId},
-          ${startDate},
-          ${endDate || null},
-          ${purpose},
-          ${activityId || null},
-          ${notes || null},
-          ${requiresTraining || false},
-          ${status || 'active'},
-          NOW(),
-          NOW()
-        ) RETURNING *`
-      );
-
-      // Actualizar el estado del activo si es necesario
-      await db.execute(
-        sql`UPDATE assets SET status = 'assigned', updated_at = NOW() WHERE id = ${assetId}`
-      );
-
-      return res.status(201).json({
-        success: true,
-        data: assignment,
-        message: 'Asignación creada correctamente'
-      });
+      res.status(201).json(newAssignment[0]);
     } catch (error) {
-      console.error('Error al crear asignación de activo:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error al crear la asignación de activo',
-        error: error.message
-      });
+      console.error('Error creating assignment:', error);
+      res.status(500).json({ error: 'Error al crear la asignación' });
     }
   });
 
-  // Endpoint para obtener todas las asignaciones de activos
-  apiRouter.get('/asset-assignments', isAuthenticated, async (_req: Request, res: Response) => {
+  // Obtener asignaciones de un instructor específico
+  apiRouter.get('/instructors/:id/asset-assignments', async (req: Request, res: Response) => {
     try {
-      const assignments = await db.execute(
-        sql`SELECT aa.*, 
-          a.name as asset_name, a.category_id, a.park_id,
-          i.full_name as instructor_name, i.specialties,
-          ac.title as activity_title,
-          p.name as park_name
-          FROM asset_assignments aa
-          LEFT JOIN assets a ON aa.asset_id = a.id
-          LEFT JOIN instructors i ON aa.instructor_id = i.id
-          LEFT JOIN activities ac ON aa.activity_id = ac.id
-          LEFT JOIN parks p ON a.park_id = p.id
-          ORDER BY aa.created_at DESC`
-      );
+      const instructorId = parseInt(req.params.id);
 
-      return res.json({
-        success: true,
-        data: assignments
-      });
+      const assignments = await db
+        .select({
+          id: assetAssignments.id,
+          assetId: assetAssignments.assetId,
+          assetName: assets.name,
+          assignmentDate: assetAssignments.assignmentDate,
+          returnDate: assetAssignments.returnDate,
+          purpose: assetAssignments.purpose,
+          condition: assetAssignments.condition,
+          status: assetAssignments.status,
+          notes: assetAssignments.notes,
+        })
+        .from(assetAssignments)
+        .leftJoin(assets, eq(assetAssignments.assetId, assets.id))
+        .where(eq(assetAssignments.instructorId, instructorId))
+        .orderBy(desc(assetAssignments.createdAt));
+
+      res.json(assignments);
     } catch (error) {
-      console.error('Error al obtener asignaciones de activos:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error al obtener las asignaciones de activos',
-        error: error.message
-      });
+      console.error('Error fetching instructor assignments:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
     }
   });
 
-  // Endpoint para obtener asignaciones de activos por instructor
-  apiRouter.get('/instructors/:id/asset-assignments', isAuthenticated, async (req: Request, res: Response) => {
+  // Obtener asignaciones de un activo específico
+  apiRouter.get('/assets/:id/assignments', async (req: Request, res: Response) => {
     try {
-      const instructorId = req.params.id;
-      
-      const assignments = await db.execute(
-        sql`SELECT aa.*, 
-          a.name as asset_name, a.category_id, a.park_id,
-          ac.title as activity_title,
-          p.name as park_name
-          FROM asset_assignments aa
-          LEFT JOIN assets a ON aa.asset_id = a.id
-          LEFT JOIN activities ac ON aa.activity_id = ac.id
-          LEFT JOIN parks p ON a.park_id = p.id
-          WHERE aa.instructor_id = ${instructorId}
-          ORDER BY aa.start_date DESC`
-      );
+      const assetId = parseInt(req.params.id);
 
-      return res.json({
-        success: true,
-        data: assignments
-      });
+      const assignments = await db
+        .select({
+          id: assetAssignments.id,
+          instructorId: assetAssignments.instructorId,
+          instructorName: instructors.firstName,
+          instructorLastName: instructors.lastName,
+          activityId: assetAssignments.activityId,
+          activityName: activities.name,
+          assignmentDate: assetAssignments.assignmentDate,
+          returnDate: assetAssignments.returnDate,
+          purpose: assetAssignments.purpose,
+          condition: assetAssignments.condition,
+          status: assetAssignments.status,
+          notes: assetAssignments.notes,
+        })
+        .from(assetAssignments)
+        .leftJoin(instructors, eq(assetAssignments.instructorId, instructors.id))
+        .leftJoin(activities, eq(assetAssignments.activityId, activities.id))
+        .where(eq(assetAssignments.assetId, assetId))
+        .orderBy(desc(assetAssignments.createdAt));
+
+      // Formatear los datos
+      const formattedAssignments = assignments.map(assignment => ({
+        ...assignment,
+        instructorName: assignment.instructorName && assignment.instructorLastName 
+          ? `${assignment.instructorName} ${assignment.instructorLastName}`
+          : null,
+      }));
+
+      res.json(formattedAssignments);
     } catch (error) {
-      console.error(`Error al obtener asignaciones para el instructor ${req.params.id}:`, error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error al obtener las asignaciones del instructor',
-        error: error.message
-      });
+      console.error('Error fetching asset assignments:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
     }
   });
 
-  // Endpoint para obtener asignaciones de un activo específico
-  apiRouter.get('/assets/:id/assignments', isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const assetId = req.params.id;
-      
-      const assignments = await db.execute(
-        sql`SELECT aa.*, 
-          i.full_name as instructor_name, i.specialties,
-          ac.title as activity_title
-          FROM asset_assignments aa
-          LEFT JOIN instructors i ON aa.instructor_id = i.id
-          LEFT JOIN activities ac ON aa.activity_id = ac.id
-          WHERE aa.asset_id = ${assetId}
-          ORDER BY aa.start_date DESC`
-      );
-
-      return res.json({
-        success: true,
-        data: assignments
-      });
-    } catch (error) {
-      console.error(`Error al obtener asignaciones para el activo ${req.params.id}:`, error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error al obtener las asignaciones del activo',
-        error: error.message
-      });
-    }
-  });
-
-  // Endpoint para actualizar una asignación
+  // Actualizar asignación
   apiRouter.put('/asset-assignments/:id', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const assignmentId = req.params.id;
+      const assignmentId = parseInt(req.params.id);
       const {
-        startDate,
-        endDate,
-        purpose,
+        instructorId,
         activityId,
-        notes,
-        requiresTraining,
-        status
+        assignmentDate,
+        returnDate,
+        purpose,
+        condition,
+        status,
+        notes
       } = req.body;
 
-      // Verificar que la asignación existe
-      const [existingAssignment] = await db.execute(
-        sql`SELECT * FROM asset_assignments WHERE id = ${assignmentId}`
-      );
+      const updatedAssignment = await db
+        .update(assetAssignments)
+        .set({
+          instructorId: instructorId ? parseInt(instructorId) : null,
+          activityId: activityId ? parseInt(activityId) : null,
+          assignmentDate: assignmentDate ? new Date(assignmentDate) : undefined,
+          returnDate: returnDate ? new Date(returnDate) : null,
+          purpose,
+          condition,
+          status,
+          notes,
+          updatedAt: new Date(),
+        })
+        .where(eq(assetAssignments.id, assignmentId))
+        .returning();
 
-      if (!existingAssignment) {
-        return res.status(404).json({
-          success: false,
-          message: 'La asignación no existe'
-        });
+      if (updatedAssignment.length === 0) {
+        return res.status(404).json({ error: 'Asignación no encontrada' });
       }
 
-      // Actualizar la asignación
-      const [updatedAssignment] = await db.execute(
-        sql`UPDATE asset_assignments SET
-          start_date = COALESCE(${startDate}, start_date),
-          end_date = COALESCE(${endDate}, end_date),
-          purpose = COALESCE(${purpose}, purpose),
-          activity_id = COALESCE(${activityId}, activity_id),
-          notes = COALESCE(${notes}, notes),
-          requires_training = COALESCE(${requiresTraining}, requires_training),
-          status = COALESCE(${status}, status),
-          updated_at = NOW()
-          WHERE id = ${assignmentId}
-          RETURNING *`
-      );
-
-      // Si la asignación se marca como finalizada, actualizar el estado del activo
-      if (status === 'completed' || status === 'cancelled') {
-        await db.execute(
-          sql`UPDATE assets SET status = 'available', updated_at = NOW() WHERE id = ${existingAssignment.asset_id}`
-        );
-      }
-
-      return res.json({
-        success: true,
-        data: updatedAssignment,
-        message: 'Asignación actualizada correctamente'
-      });
+      res.json(updatedAssignment[0]);
     } catch (error) {
-      console.error(`Error al actualizar la asignación ${req.params.id}:`, error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error al actualizar la asignación',
-        error: error.message
-      });
+      console.error('Error updating assignment:', error);
+      res.status(500).json({ error: 'Error al actualizar la asignación' });
     }
   });
 
-  // Endpoint para finalizar una asignación
-  apiRouter.post('/asset-assignments/:id/complete', isAuthenticated, async (req: Request, res: Response) => {
+  // Marcar activo como devuelto
+  apiRouter.post('/asset-assignments/:id/return', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const assignmentId = req.params.id;
-      const { notes, condition } = req.body;
+      const assignmentId = parseInt(req.params.id);
+      const { condition, notes } = req.body;
 
-      // Verificar que la asignación existe
-      const [existingAssignment] = await db.execute(
-        sql`SELECT * FROM asset_assignments WHERE id = ${assignmentId}`
-      );
+      const updatedAssignment = await db
+        .update(assetAssignments)
+        .set({
+          status: 'returned',
+          returnDate: new Date(),
+          condition,
+          notes,
+          updatedAt: new Date(),
+        })
+        .where(eq(assetAssignments.id, assignmentId))
+        .returning();
 
-      if (!existingAssignment) {
-        return res.status(404).json({
-          success: false,
-          message: 'La asignación no existe'
-        });
+      if (updatedAssignment.length === 0) {
+        return res.status(404).json({ error: 'Asignación no encontrada' });
       }
 
-      // Actualizar la asignación como completada
-      const [updatedAssignment] = await db.execute(
-        sql`UPDATE asset_assignments SET
-          status = 'completed',
-          end_date = COALESCE(${format(new Date(), 'yyyy-MM-dd')}, end_date),
-          notes = CASE WHEN ${notes} IS NOT NULL THEN CONCAT(notes, '\n\nDevolución: ', ${notes}) ELSE notes END,
-          updated_at = NOW()
-          WHERE id = ${assignmentId}
-          RETURNING *`
-      );
-
-      // Actualizar el estado y condición del activo
-      await db.execute(
-        sql`UPDATE assets SET 
-          status = 'available', 
-          condition = COALESCE(${condition}, condition),
-          updated_at = NOW() 
-          WHERE id = ${existingAssignment.asset_id}`
-      );
-
-      return res.json({
-        success: true,
-        data: updatedAssignment,
-        message: 'Asignación finalizada correctamente'
-      });
+      res.json(updatedAssignment[0]);
     } catch (error) {
-      console.error(`Error al finalizar la asignación ${req.params.id}:`, error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error al finalizar la asignación',
-        error: error.message
-      });
+      console.error('Error returning asset:', error);
+      res.status(500).json({ error: 'Error al procesar la devolución' });
     }
   });
 
-  // Endpoint para reportar problemas con equipamiento asignado
+  // Reportar problema con activo asignado
   apiRouter.post('/asset-assignments/:id/report-issue', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const assignmentId = req.params.id;
-      const { description, priority, issueType } = req.body;
+      const assignmentId = parseInt(req.params.id);
+      const { condition, notes } = req.body;
 
-      // Validación básica
-      if (!description || !priority || !issueType) {
-        return res.status(400).json({
-          success: false,
-          message: 'Faltan campos requeridos: description, priority, issueType'
-        });
+      const updatedAssignment = await db
+        .update(assetAssignments)
+        .set({
+          condition,
+          notes,
+          updatedAt: new Date(),
+        })
+        .where(eq(assetAssignments.id, assignmentId))
+        .returning();
+
+      if (updatedAssignment.length === 0) {
+        return res.status(404).json({ error: 'Asignación no encontrada' });
       }
 
-      // Verificar que la asignación existe
-      const [existingAssignment] = await db.execute(
-        sql`SELECT aa.*, a.id as asset_id, a.name as asset_name 
-            FROM asset_assignments aa
-            JOIN assets a ON aa.asset_id = a.id
-            WHERE aa.id = ${assignmentId}`
-      );
+      res.json(updatedAssignment[0]);
+    } catch (error) {
+      console.error('Error reporting issue:', error);
+      res.status(500).json({ error: 'Error al reportar el problema' });
+    }
+  });
 
-      if (!existingAssignment) {
-        return res.status(404).json({
-          success: false,
-          message: 'La asignación no existe'
-        });
+  // Eliminar asignación
+  apiRouter.delete('/asset-assignments/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const assignmentId = parseInt(req.params.id);
+
+      const deletedAssignment = await db
+        .delete(assetAssignments)
+        .where(eq(assetAssignments.id, assignmentId))
+        .returning();
+
+      if (deletedAssignment.length === 0) {
+        return res.status(404).json({ error: 'Asignación no encontrada' });
       }
 
-      // Crear el reporte de problema
-      const [issue] = await db.execute(
-        sql`INSERT INTO asset_issues (
-          asset_id,
-          assignment_id,
-          description,
-          issue_type,
-          priority,
-          status,
-          reported_at,
-          reported_by,
-          created_at,
-          updated_at
-        ) VALUES (
-          ${existingAssignment.asset_id},
-          ${assignmentId},
-          ${description},
-          ${issueType},
-          ${priority},
-          'pending',
-          NOW(),
-          ${req.user?.id || null},
-          NOW(),
-          NOW()
-        ) RETURNING *`
-      );
+      res.json({ message: 'Asignación eliminada correctamente' });
+    } catch (error) {
+      console.error('Error deleting assignment:', error);
+      res.status(500).json({ error: 'Error al eliminar la asignación' });
+    }
+  });
 
-      // Actualizar las notas de la asignación
-      await db.execute(
-        sql`UPDATE asset_assignments SET
-          notes = CASE WHEN notes IS NULL THEN ${'Problema reportado: ' + description}
-                      ELSE CONCAT(notes, '\n\nProblema reportado: ', ${description})
-                  END,
-          updated_at = NOW()
-          WHERE id = ${assignmentId}`
-      );
+  // Obtener estadísticas de asignaciones
+  apiRouter.get('/assignment-stats', async (req: Request, res: Response) => {
+    try {
+      const stats = await db
+        .select({
+          total: assetAssignments.id,
+          status: assetAssignments.status,
+          condition: assetAssignments.condition,
+        })
+        .from(assetAssignments);
 
-      return res.status(201).json({
-        success: true,
-        data: issue,
-        message: 'Problema reportado correctamente'
+      // Procesar estadísticas
+      const statusCounts = stats.reduce((acc: any, item) => {
+        acc[item.status] = (acc[item.status] || 0) + 1;
+        return acc;
+      }, {});
+
+      const conditionCounts = stats.reduce((acc: any, item) => {
+        acc[item.condition] = (acc[item.condition] || 0) + 1;
+        return acc;
+      }, {});
+
+      res.json({
+        total: stats.length,
+        byStatus: statusCounts,
+        byCondition: conditionCounts,
       });
     } catch (error) {
-      console.error(`Error al reportar problema para la asignación ${req.params.id}:`, error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error al reportar el problema',
-        error: error.message
-      });
+      console.error('Error fetching assignment stats:', error);
+      res.status(500).json({ error: 'Error al obtener estadísticas' });
     }
   });
 }

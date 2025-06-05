@@ -137,7 +137,7 @@ const AssetsAssignmentsPage: React.FC = () => {
     mutationFn: async (data: any) => {
       return apiRequest('/api/asset-assignments', {
         method: 'POST',
-        body: JSON.stringify(data),
+        data: data,
       });
     },
     onSuccess: () => {
@@ -162,7 +162,7 @@ const AssetsAssignmentsPage: React.FC = () => {
     mutationFn: async ({ id, condition, notes }: { id: number; condition: string; notes?: string }) => {
       return apiRequest(`/api/asset-assignments/${id}/return`, {
         method: 'POST',
-        body: JSON.stringify({ condition, notes }),
+        data: { condition, notes },
       });
     },
     onSuccess: () => {

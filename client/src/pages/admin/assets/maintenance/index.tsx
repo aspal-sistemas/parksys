@@ -111,7 +111,7 @@ const AssetsMaintenancePage: React.FC = () => {
     mutationFn: async (data: any) => {
       return apiRequest(`/api/assets/${data.assetId}/maintenances`, {
         method: 'POST',
-        body: JSON.stringify(data),
+        data: data,
       });
     },
     onSuccess: () => {
