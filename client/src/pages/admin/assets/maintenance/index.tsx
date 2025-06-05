@@ -265,8 +265,18 @@ const AssetsMaintenancePage: React.FC = () => {
       console.log('✅ Fotos subidas exitosamente:', result);
       return result;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-maintenances'] });
+    onSuccess: async (result) => {
+      // Invalidar queries para actualizar la vista
+      await queryClient.invalidateQueries({ queryKey: ['/api/asset-maintenances'] });
+      
+      // Actualizar el mantenimiento seleccionado con los nuevos datos
+      if (selectedMaintenance && result.maintenance) {
+        setSelectedMaintenance(result.maintenance);
+      }
+      
+      // Forzar re-fetch de los datos para asegurar que la UI se actualice
+      await queryClient.refetchQueries({ queryKey: ['/api/asset-maintenances'] });
+      
       toast({
         title: 'Fotos subidas',
         description: 'Las fotos se han subido correctamente.',
