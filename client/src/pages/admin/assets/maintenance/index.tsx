@@ -500,15 +500,30 @@ const AssetsMaintenancePage: React.FC = () => {
                         </TableCell>
                         <TableCell>{maintenance.performedBy || '-'}</TableCell>
                         <TableCell>
-                          {maintenance.cost ? `$${parseFloat(maintenance.cost).toFixed(2)}` : '-'}
+                          {maintenance.cost ? `$${parseFloat(maintenance.cost.toString()).toFixed(2)}` : '-'}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end space-x-2">
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleViewMaintenance(maintenance)}
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleEditMaintenanceClick(maintenance)}
+                            >
                               <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleDeleteMaintenanceClick(maintenance)}
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </TableCell>
@@ -521,6 +536,228 @@ const AssetsMaintenancePage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal para ver mantenimiento */}
+      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detalles del Mantenimiento</DialogTitle>
+            <DialogDescription>
+              Información completa del mantenimiento registrado
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedMaintenance && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Activo</label>
+                <p className="text-sm">{selectedMaintenance.assetName || `Activo #${selectedMaintenance.assetId}`}</p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Tipo de Mantenimiento</label>
+                <p className="text-sm">{MAINTENANCE_TYPES.find(t => t.value === selectedMaintenance.maintenanceType)?.label || selectedMaintenance.maintenanceType}</p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Descripción</label>
+                <p className="text-sm">{selectedMaintenance.description}</p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Fecha</label>
+                <p className="text-sm">{format(new Date(selectedMaintenance.date), 'dd/MM/yyyy', { locale: es })}</p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Estado</label>
+                <div className="mt-1">
+                  {(() => {
+                    const statusInfo = getStatusInfo(selectedMaintenance.status);
+                    const StatusIcon = statusInfo.icon;
+                    return (
+                      <Badge className={statusInfo.color}>
+                        <StatusIcon className="w-3 h-3 mr-1" />
+                        {statusInfo.label}
+                      </Badge>
+                    );
+                  })()}
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Realizado por</label>
+                <p className="text-sm">{selectedMaintenance.performedBy || 'No especificado'}</p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Costo</label>
+                <p className="text-sm">{selectedMaintenance.cost ? `$${parseFloat(selectedMaintenance.cost.toString()).toFixed(2)}` : 'No especificado'}</p>
+              </div>
+              
+              {selectedMaintenance.notes && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Notas</label>
+                  <p className="text-sm">{selectedMaintenance.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para editar mantenimiento */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Mantenimiento</DialogTitle>
+            <DialogDescription>
+              Modifica la información del mantenimiento
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedMaintenance && (
+            <form onSubmit={handleEditMaintenance} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Tipo de Mantenimiento</label>
+                <select 
+                  name="maintenanceType" 
+                  required 
+                  defaultValue={selectedMaintenance.maintenanceType}
+                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {MAINTENANCE_TYPES.map(type => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Descripción</label>
+                <Textarea
+                  name="description"
+                  defaultValue={selectedMaintenance.description}
+                  placeholder="Describe el mantenimiento realizado"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Fecha</label>
+                <Input
+                  type="date"
+                  name="date"
+                  defaultValue={selectedMaintenance.date.split('T')[0]}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Estado</label>
+                <select 
+                  name="status" 
+                  required 
+                  defaultValue={selectedMaintenance.status}
+                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {STATUS_TYPES.map(status => (
+                    <option key={status.value} value={status.value}>
+                      {status.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Costo (opcional)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  name="cost"
+                  defaultValue={selectedMaintenance.cost?.toString() || ''}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Realizado por (opcional)</label>
+                <Input
+                  name="performedBy"
+                  defaultValue={selectedMaintenance.performedBy || ''}
+                  placeholder="Nombre del técnico o empresa"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Notas (opcional)</label>
+                <Textarea
+                  name="notes"
+                  defaultValue={selectedMaintenance.notes || ''}
+                  placeholder="Observaciones adicionales"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowEditDialog(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={editMaintenanceMutation.isPending}
+                >
+                  {editMaintenanceMutation.isPending ? 'Actualizando...' : 'Actualizar'}
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para confirmar eliminación */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Eliminar Mantenimiento</DialogTitle>
+            <DialogDescription>
+              Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar este mantenimiento?
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedMaintenance && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm font-medium">Activo: {selectedMaintenance.assetName || `Activo #${selectedMaintenance.assetId}`}</p>
+                <p className="text-sm text-muted-foreground">Tipo: {MAINTENANCE_TYPES.find(t => t.value === selectedMaintenance.maintenanceType)?.label}</p>
+                <p className="text-sm text-muted-foreground">Fecha: {format(new Date(selectedMaintenance.date), 'dd/MM/yyyy', { locale: es })}</p>
+              </div>
+
+              <div className="flex justify-end space-x-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowDeleteDialog(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="destructive"
+                  onClick={confirmDeleteMaintenance}
+                  disabled={deleteMaintenanceMutation.isPending}
+                >
+                  {deleteMaintenanceMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };

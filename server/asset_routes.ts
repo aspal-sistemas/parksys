@@ -321,6 +321,67 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
     }
   });
 
+  // Update maintenance record
+  apiRouter.put("/asset-maintenances/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const maintenanceId = parseInt(req.params.id);
+      
+      if (isNaN(maintenanceId)) {
+        return res.status(400).json({ message: "ID de mantenimiento inválido" });
+      }
+
+      const updateData = {
+        maintenanceType: req.body.maintenanceType,
+        description: req.body.description,
+        date: req.body.date,
+        status: req.body.status || 'scheduled',
+        cost: req.body.cost || null,
+        performedBy: req.body.performedBy || null,
+        notes: req.body.notes || null,
+      };
+
+      const [updatedMaintenance] = await db
+        .update(assetMaintenances)
+        .set(updateData)
+        .where(eq(assetMaintenances.id, maintenanceId))
+        .returning();
+
+      if (!updatedMaintenance) {
+        return res.status(404).json({ message: "Mantenimiento no encontrado" });
+      }
+
+      res.json(updatedMaintenance);
+    } catch (error) {
+      console.error("Error al actualizar mantenimiento:", error);
+      res.status(500).json({ message: "Error al actualizar mantenimiento" });
+    }
+  });
+
+  // Delete maintenance record
+  apiRouter.delete("/asset-maintenances/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const maintenanceId = parseInt(req.params.id);
+      
+      if (isNaN(maintenanceId)) {
+        return res.status(400).json({ message: "ID de mantenimiento inválido" });
+      }
+
+      const [deletedMaintenance] = await db
+        .delete(assetMaintenances)
+        .where(eq(assetMaintenances.id, maintenanceId))
+        .returning();
+
+      if (!deletedMaintenance) {
+        return res.status(404).json({ message: "Mantenimiento no encontrado" });
+      }
+
+      res.json({ message: "Mantenimiento eliminado correctamente" });
+    } catch (error) {
+      console.error("Error al eliminar mantenimiento:", error);
+      res.status(500).json({ message: "Error al eliminar mantenimiento" });
+    }
+  });
+
   // Get asset history (simplified version)
   apiRouter.get("/assets/:id/history", async (req: Request, res: Response) => {
     try {
