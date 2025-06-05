@@ -48,6 +48,8 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
           status: assets.status,
           condition: assets.condition,
           locationDescription: assets.locationDescription,
+          latitude: assets.latitude,
+          longitude: assets.longitude,
           lastMaintenanceDate: assets.lastMaintenanceDate,
           nextMaintenanceDate: assets.nextMaintenanceDate,
           createdAt: assets.createdAt,
