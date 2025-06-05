@@ -359,11 +359,26 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
   // Update maintenance record
   apiRouter.put("/asset-maintenances/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      console.log('🔄 Actualizando mantenimiento:', req.params.id);
+      console.log('Datos recibidos:', req.body);
+      
       const maintenanceId = parseInt(req.params.id);
       
       if (isNaN(maintenanceId)) {
         return res.status(400).json({ message: "ID de mantenimiento inválido" });
       }
+
+      // Obtener el mantenimiento actual para preservar las fotos
+      const [currentMaintenance] = await db
+        .select()
+        .from(assetMaintenances)
+        .where(eq(assetMaintenances.id, maintenanceId));
+
+      if (!currentMaintenance) {
+        return res.status(404).json({ message: "Mantenimiento no encontrado" });
+      }
+
+      console.log('📋 Mantenimiento actual encontrado, fotos existentes:', currentMaintenance.photos);
 
       const updateData = {
         maintenanceType: req.body.maintenanceType,
@@ -373,7 +388,11 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         cost: req.body.cost || null,
         performedBy: req.body.performedBy || null,
         notes: req.body.notes || null,
+        // Preservar las fotos existentes
+        photos: currentMaintenance.photos || [],
       };
+
+      console.log('💾 Datos de actualización (preservando fotos):', updateData);
 
       const [updatedMaintenance] = await db
         .update(assetMaintenances)
@@ -381,10 +400,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         .where(eq(assetMaintenances.id, maintenanceId))
         .returning();
 
-      if (!updatedMaintenance) {
-        return res.status(404).json({ message: "Mantenimiento no encontrado" });
-      }
-
+      console.log('✅ Mantenimiento actualizado con fotos preservadas:', updatedMaintenance);
       res.json(updatedMaintenance);
     } catch (error) {
       console.error("Error al actualizar mantenimiento:", error);
