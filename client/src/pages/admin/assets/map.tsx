@@ -178,14 +178,37 @@ const AssetMapPage: React.FC = () => {
 
   // Filtrar activos según criterios seleccionados
   const filteredAssets = useMemo(() => {
+    console.log('Filtros actuales:', {
+      selectedPark,
+      selectedCategory,
+      selectedStatus,
+      selectedCondition,
+      totalAssets: assets.length
+    });
+    
     return assets.filter(asset => {
       // Solo mostrar activos con coordenadas válidas
-      if (!asset.latitude || !asset.longitude) return false;
+      if (!asset.latitude || !asset.longitude) {
+        console.log('Activo sin coordenadas:', asset.name);
+        return false;
+      }
       
       const matchesPark = selectedPark === 'all' || asset.parkId === selectedPark;
       const matchesCategory = selectedCategory === 'all' || asset.categoryId === selectedCategory;
       const matchesStatus = selectedStatus === 'all' || asset.status === selectedStatus;
       const matchesCondition = selectedCondition === 'all' || asset.condition === selectedCondition;
+      
+      console.log(`Activo: ${asset.name}`, {
+        parkId: asset.parkId,
+        categoryId: asset.categoryId,
+        status: asset.status,
+        condition: asset.condition,
+        matchesPark,
+        matchesCategory,
+        matchesStatus,
+        matchesCondition,
+        passesFilter: matchesPark && matchesCategory && matchesStatus && matchesCondition
+      });
       
       return matchesPark && matchesCategory && matchesStatus && matchesCondition;
     });
