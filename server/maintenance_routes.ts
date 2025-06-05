@@ -73,14 +73,13 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
       const newMaintenance = await db
         .insert(assetMaintenances)
         .values({
-          assetId,
+          asset_id: assetId,
           maintenanceType,
           description,
-          date: new Date(date),
-          status: 'completed', // Por defecto los mantenimientos se registran como completados
-          cost: cost ? parseFloat(cost) : null,
-          performedBy,
-          notes,
+          date,
+          status: 'completed',
+          cost: cost ? cost.toString() : null,
+          performedBy: performedBy || 'Personal de mantenimiento',
         })
         .returning();
 

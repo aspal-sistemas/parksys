@@ -115,6 +115,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de activos
   registerAssetRoutes(app, apiRouter, isAuthenticated);
+  registerMaintenanceRoutes(app, apiRouter, isAuthenticated);
+  registerAssetAssignmentRoutes(app, apiRouter, isAuthenticated);
   registerAssetImageRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de arbolado
