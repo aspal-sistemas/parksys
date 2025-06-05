@@ -41,20 +41,20 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Constantes de estado y condición para activos
+// Constantes de estado y condición para activos (valores en español para coincidir con la BD)
 const ASSET_STATUSES = [
-  { value: 'active', label: 'Activo', color: '#10B981' },
-  { value: 'maintenance', label: 'En Mantenimiento', color: '#F59E0B' },
-  { value: 'retired', label: 'Retirado', color: '#EF4444' },
-  { value: 'storage', label: 'En Almacén', color: '#6B7280' }
+  { value: 'activo', label: 'Activo', color: '#10B981' },
+  { value: 'mantenimiento', label: 'En Mantenimiento', color: '#F59E0B' },
+  { value: 'retirado', label: 'Retirado', color: '#EF4444' },
+  { value: 'almacen', label: 'En Almacén', color: '#6B7280' }
 ];
 
 const ASSET_CONDITIONS = [
-  { value: 'excellent', label: 'Excelente', color: '#10B981' },
-  { value: 'good', label: 'Bueno', color: '#3B82F6' },
-  { value: 'fair', label: 'Regular', color: '#F59E0B' },
-  { value: 'poor', label: 'Malo', color: '#EF4444' },
-  { value: 'critical', label: 'Crítico', color: '#DC2626' }
+  { value: 'excelente', label: 'Excelente', color: '#10B981' },
+  { value: 'bueno', label: 'Bueno', color: '#3B82F6' },
+  { value: 'regular', label: 'Regular', color: '#F59E0B' },
+  { value: 'malo', label: 'Malo', color: '#EF4444' },
+  { value: 'critico', label: 'Crítico', color: '#DC2626' }
 ];
 
 // Tipado para los datos
@@ -178,37 +178,14 @@ const AssetMapPage: React.FC = () => {
 
   // Filtrar activos según criterios seleccionados
   const filteredAssets = useMemo(() => {
-    console.log('Filtros actuales:', {
-      selectedPark,
-      selectedCategory,
-      selectedStatus,
-      selectedCondition,
-      totalAssets: assets.length
-    });
-    
     return assets.filter(asset => {
       // Solo mostrar activos con coordenadas válidas
-      if (!asset.latitude || !asset.longitude) {
-        console.log('Activo sin coordenadas:', asset.name);
-        return false;
-      }
+      if (!asset.latitude || !asset.longitude) return false;
       
       const matchesPark = selectedPark === 'all' || asset.parkId === selectedPark;
       const matchesCategory = selectedCategory === 'all' || asset.categoryId === selectedCategory;
       const matchesStatus = selectedStatus === 'all' || asset.status === selectedStatus;
       const matchesCondition = selectedCondition === 'all' || asset.condition === selectedCondition;
-      
-      console.log(`Activo: ${asset.name}`, {
-        parkId: asset.parkId,
-        categoryId: asset.categoryId,
-        status: asset.status,
-        condition: asset.condition,
-        matchesPark,
-        matchesCategory,
-        matchesStatus,
-        matchesCondition,
-        passesFilter: matchesPark && matchesCategory && matchesStatus && matchesCondition
-      });
       
       return matchesPark && matchesCategory && matchesStatus && matchesCondition;
     });
