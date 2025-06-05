@@ -268,7 +268,7 @@ export default function VolunteersPage() {
 
         {/* Dialog de detalles */}
         <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 Detalles del Voluntario: {selectedVolunteer?.firstName} {selectedVolunteer?.lastName}

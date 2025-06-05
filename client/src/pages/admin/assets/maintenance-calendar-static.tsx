@@ -475,7 +475,7 @@ const MaintenanceCalendarStaticPage = () => {
         
         {/* Diálogo para programar mantenimiento */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Programar Mantenimiento</DialogTitle>
               <DialogDescription>

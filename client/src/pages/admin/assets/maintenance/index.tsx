@@ -982,7 +982,7 @@ const AssetsMaintenancePage: React.FC = () => {
 
       {/* Modal para confirmar eliminación */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Eliminar Mantenimiento</DialogTitle>
             <DialogDescription>
