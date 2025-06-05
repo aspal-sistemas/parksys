@@ -151,6 +151,7 @@ const AssetsMaintenancePage: React.FC = () => {
       maintenanceType: formData.get('maintenanceType') as string,
       description: formData.get('description') as string,
       date: formData.get('date') as string,
+      status: formData.get('status') as string,
       cost: formData.get('cost') ? parseFloat(formData.get('cost') as string) : null,
       performedBy: formData.get('performedBy') as string,
       notes: formData.get('notes') as string,
@@ -255,6 +256,22 @@ const AssetsMaintenancePage: React.FC = () => {
                     type="date" 
                     required
                   />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Estado</label>
+                  <Select name="status" defaultValue="completed">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUS_TYPES.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>

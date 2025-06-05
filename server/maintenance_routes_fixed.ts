@@ -62,6 +62,7 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         maintenanceType,
         description,
         date,
+        status,
         cost,
         performedBy
       } = req.body;
@@ -84,9 +85,9 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         maintenanceType,
         description,
         date,
-        'completed',
+        status || 'completed',
         cost || null,
-        performedBy || 'Personal de mantenimiento'
+        performedBy || null
       ]);
 
       res.status(201).json(result.rows[0]);
