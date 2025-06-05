@@ -239,21 +239,31 @@ const AssetsMaintenancePage: React.FC = () => {
   // Mutación para subir fotos
   const uploadPhotosMutation = useMutation({
     mutationFn: async ({ maintenanceId, files }: { maintenanceId: number; files: FileList }) => {
+      console.log('📸 Iniciando subida de fotos desde frontend');
+      console.log('Maintenance ID:', maintenanceId);
+      console.log('Files count:', files.length);
+      
       const formData = new FormData();
-      Array.from(files).forEach(file => {
+      Array.from(files).forEach((file, index) => {
+        console.log(`Agregando archivo ${index + 1}:`, file.name, file.type, file.size);
         formData.append('photos', file);
       });
       
       const response = await fetch(`/api/maintenance-photos/${maintenanceId}`, {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Incluir cookies de autenticación
       });
       
       if (!response.ok) {
-        throw new Error('Error al subir fotos');
+        const errorText = await response.text();
+        console.error('Error response:', response.status, errorText);
+        throw new Error(`Error al subir fotos: ${response.status} - ${errorText}`);
       }
       
-      return response.json();
+      const result = await response.json();
+      console.log('✅ Fotos subidas exitosamente:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/asset-maintenances'] });
@@ -263,10 +273,11 @@ const AssetsMaintenancePage: React.FC = () => {
       });
       setSelectedFiles(null);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('❌ Error al subir fotos:', error);
       toast({
         title: 'Error',
-        description: 'No se pudieron subir las fotos.',
+        description: `No se pudieron subir las fotos: ${error.message}`,
         variant: 'destructive',
       });
     },

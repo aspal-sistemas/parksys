@@ -420,19 +420,36 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
   // Upload photos for maintenance
   apiRouter.post("/maintenance-photos/:id", isAuthenticated, upload.array('photos', 5), async (req: Request, res: Response) => {
     try {
+      console.log('📸 Iniciando subida de fotos para mantenimiento');
+      console.log('Request params:', req.params);
+      console.log('Files received:', req.files);
+      
       const maintenanceId = parseInt(req.params.id);
       
       if (isNaN(maintenanceId)) {
+        console.error('❌ ID de mantenimiento inválido:', req.params.id);
         return res.status(400).json({ message: "ID de mantenimiento inválido" });
       }
 
       const files = req.files as Express.Multer.File[];
       if (!files || files.length === 0) {
+        console.error('❌ No se recibieron archivos');
         return res.status(400).json({ message: "No se subieron archivos" });
       }
 
+      console.log('✅ Archivos recibidos:', files.length);
+      files.forEach((file, index) => {
+        console.log(`  Archivo ${index + 1}:`, {
+          originalname: file.originalname,
+          filename: file.filename,
+          size: file.size,
+          mimetype: file.mimetype
+        });
+      });
+
       // Generar URLs de las fotos subidas
       const photoUrls = files.map(file => `/uploads/maintenance-photos/${file.filename}`);
+      console.log('📂 URLs generadas:', photoUrls);
 
       // Obtener fotos existentes del mantenimiento
       const [existingMaintenance] = await db
@@ -441,12 +458,16 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         .where(eq(assetMaintenances.id, maintenanceId));
 
       if (!existingMaintenance) {
+        console.error('❌ Mantenimiento no encontrado:', maintenanceId);
         return res.status(404).json({ message: "Mantenimiento no encontrado" });
       }
+
+      console.log('📋 Mantenimiento encontrado, fotos existentes:', existingMaintenance.photos);
 
       // Combinar fotos existentes con las nuevas
       const existingPhotos = existingMaintenance.photos || [];
       const allPhotos = [...existingPhotos, ...photoUrls];
+      console.log('🔄 Fotos combinadas:', allPhotos);
 
       // Actualizar el mantenimiento con las nuevas fotos
       const [updatedMaintenance] = await db
@@ -455,14 +476,16 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         .where(eq(assetMaintenances.id, maintenanceId))
         .returning();
 
+      console.log('✅ Mantenimiento actualizado exitosamente');
       res.json({
         message: 'Fotos subidas exitosamente',
         photos: photoUrls,
         maintenance: updatedMaintenance
       });
     } catch (error) {
-      console.error("Error al subir fotos:", error);
-      res.status(500).json({ message: "Error al subir fotos" });
+      console.error("❌ Error detallado al subir fotos:", error);
+      console.error("Stack trace:", error instanceof Error ? error.stack : 'No stack trace available');
+      res.status(500).json({ message: "Error al subir fotos", error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
