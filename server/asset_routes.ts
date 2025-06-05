@@ -306,7 +306,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         cost: req.body.cost || null,
         performedBy: req.body.performedBy || null,
         nextMaintenanceDate: req.body.nextMaintenanceDate || null,
-        status: 'completed'
+        status: req.body.status || 'scheduled'
       };
 
       const [newMaintenance] = await db
