@@ -292,15 +292,9 @@ export class DatabaseStorage implements IStorage {
   
   async getUsers(): Promise<any[]> {
     try {
-      const result = await db.execute(`
-        SELECT id, username, email, role, full_name as "fullName", 
-               municipality_id as "municipalityId", phone, gender, 
-               birth_date as "birthDate", bio, profile_image_url as "profileImageUrl", 
-               created_at as "createdAt", updated_at as "updatedAt"
-        FROM users
-        ORDER BY full_name
-      `);
-      return result.rows || [];
+      const result = await db.select().from(users).orderBy(users.fullName);
+      console.log(`Usuarios obtenidos del storage: ${result.length}`);
+      return result;
     } catch (error) {
       console.error("Error al obtener todos los usuarios:", error);
       return [];

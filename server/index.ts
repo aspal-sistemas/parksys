@@ -246,21 +246,15 @@ app.get("/api/users-direct", async (req: Request, res: Response) => {
     console.log("=== OBTENIENDO USUARIOS DIRECTAMENTE ===");
     
     const { db } = await import("./db");
-    const result = await db.execute(`
-      SELECT id, username, email, role, full_name as "fullName", 
-             municipality_id as "municipalityId", phone, gender, 
-             birth_date as "birthDate", bio, profile_image_url as "profileImageUrl", 
-             created_at as "createdAt", updated_at as "updatedAt"
-      FROM users
-      ORDER BY id
-    `);
+    const { users } = await import("../shared/schema");
+    const result = await db.select().from(users).orderBy(users.id);
     
-    console.log(`Usuarios encontrados: ${result.rows?.length || 0}`);
+    console.log(`Usuarios encontrados: ${result.length}`);
     
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Access-Control-Allow-Origin', '*');
-    return res.json(result.rows || []);
+    return res.json(result);
   } catch (error) {
     console.error("Error al obtener usuarios directamente:", error);
     res.status(500).json({ message: "Error al obtener usuarios" });
