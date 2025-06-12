@@ -1209,62 +1209,22 @@ const AdminUsers = () => {
     queryKey: ['/api/users'],
     queryFn: async () => {
       try {
-        // En desarrollo, usamos datos de prueba directamente
-        const mockUsers = [
-          {
-            id: 1,
-            username: 'admin',
-            email: 'admin@parquesmx.com',
-            fullName: 'Administrador Sistema',
-            role: 'admin',
-            municipalityId: null,
-            createdAt: new Date('2023-01-01'),
-            updatedAt: new Date('2023-01-01')
-          },
-          {
-            id: 2,
-            username: 'guadalajara',
-            email: 'guadalajara@parquesmx.com',
-            fullName: 'Gestor Guadalajara',
-            role: 'manager',
-            municipalityId: 1,
-            createdAt: new Date('2023-01-02'),
-            updatedAt: new Date('2023-01-02')
-          },
-          {
-            id: 3,
-            username: 'usuario1',
-            email: 'usuario1@ejemplo.com',
-            fullName: 'Usuario Ejemplo',
-            role: 'user',
-            municipalityId: 1,
-            createdAt: new Date('2023-02-10'),
-            updatedAt: new Date('2023-02-10')
+        const response = await fetch('/api/users', {
+          headers: {
+            'Authorization': 'Bearer direct-token-admin',
+            'X-User-Id': '1'
           }
-        ];
+        });
         
-        // En un entorno de producción, usaríamos la API real
-        try {
-          const response = await fetch('/api/users', {
-            headers: {
-              'Authorization': 'Bearer direct-token-admin',
-              'X-User-Id': '1'
-            }
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            return data.length > 0 ? data : mockUsers;
-          }
-          
-          console.log('Usando datos de ejemplo para usuarios');
-          return mockUsers;
-        } catch (error) {
-          console.log('Error fetching users, using mock data', error);
-          return mockUsers;
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
+        
+        const data = await response.json();
+        console.log('Usuarios obtenidos de la API:', data.length);
+        return data;
       } catch (error) {
-        console.error('Error in users query:', error);
+        console.error('Error fetching users:', error);
         throw error;
       }
     }
