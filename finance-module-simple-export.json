@@ -1,0 +1,71 @@
+{
+  "name": "Módulo de Finanzas - Parques Municipales",
+  "version": "1.0.0",
+  "description": "Sistema completo de gestión financiera para parques municipales",
+  "author": "Sistema de Gestión de Parques",
+  "created": "2025-01-12",
+  
+  "features": [
+    "Dashboard financiero con KPIs en tiempo real",
+    "Registro y categorización de ingresos",
+    "Gestión de egresos con proveedores",
+    "Matriz de flujo de efectivo mensual",
+    "Presupuesto anual con líneas detalladas",
+    "Catálogo de categorías contables",
+    "Reportes ejecutivos automáticos",
+    "Calculadoras financieras integradas"
+  ],
+
+  "components": {
+    "database_tables": 10,
+    "api_endpoints": 25,
+    "frontend_pages": 7,
+    "react_components": 15
+  },
+
+  "installation": {
+    "difficulty": "Automática",
+    "time_required": "5 minutos",
+    "manual_steps": 0
+  },
+
+  "technical_stack": {
+    "backend": "Node.js + Express + TypeScript",
+    "frontend": "React + TypeScript + Tailwind CSS",
+    "database": "PostgreSQL + Drizzle ORM",
+    "validation": "Zod schemas",
+    "state_management": "React Query"
+  },
+
+  "database_structure": {
+    "income_categories": "Categorías de ingresos con códigos contables",
+    "expense_categories": "Categorías de egresos con códigos contables", 
+    "budgets": "Presupuestos anuales por parque/municipio",
+    "budget_income_lines": "Líneas detalladas de ingresos presupuestados",
+    "budget_expense_lines": "Líneas detalladas de egresos presupuestados",
+    "actual_incomes": "Registro de ingresos reales captados",
+    "actual_expenses": "Registro de egresos reales con proveedores",
+    "cash_flow_projections": "Proyecciones de flujo de efectivo"
+  },
+
+  "main_pages": {
+    "/admin/finance/dashboard": "Panel principal con métricas y KPIs",
+    "/admin/finance/incomes": "Cédula de ingresos - registro y consulta",
+    "/admin/finance/expenses": "Cédula de egresos - gastos y proveedores",
+    "/admin/finance/cashflow": "Matriz de flujo de efectivo",
+    "/admin/finance/annual-budget": "Presupuesto anual avanzado",
+    "/admin/finance/catalog": "Catálogo de categorías contables",
+    "/admin/finance/reports": "Reportes ejecutivos y exportación"
+  },
+
+  "sample_data_included": {
+    "income_categories": 5,
+    "expense_categories": 6,
+    "sample_budget": 1,
+    "sample_transactions": 10
+  },
+
+  "export_date": "2025-01-12",
+  "compatibility": "Replit + React + PostgreSQL",
+  "license": "Uso interno - Sistema de Parques Municipales"
+}

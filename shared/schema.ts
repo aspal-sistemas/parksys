@@ -3,6 +3,99 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
+// ========== MÓDULO DE FINANZAS ==========
+
+// Categorías de ingresos
+export const incomeCategories = pgTable("income_categories", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 20 }).notNull().unique(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  level: integer("level").default(1),
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Categorías de egresos
+export const expenseCategories = pgTable("expense_categories", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 20 }).notNull().unique(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  level: integer("level").default(1),
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Presupuestos anuales
+export const budgets = pgTable("budgets", {
+  id: serial("id").primaryKey(),
+  municipalityId: integer("municipality_id"),
+  parkId: integer("park_id"),
+  year: integer("year").notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  status: varchar("status", { length: 20 }).default("draft"),
+  totalIncome: decimal("total_income", { precision: 15, scale: 2 }).default("0"),
+  totalExpenses: decimal("total_expenses", { precision: 15, scale: 2 }).default("0"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Ingresos reales
+export const actualIncomes = pgTable("actual_incomes", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").notNull(),
+  categoryId: integer("category_id").references(() => incomeCategories.id),
+  concept: varchar("concept", { length: 200 }).notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  date: date("date").notNull(),
+  month: integer("month").notNull(),
+  year: integer("year").notNull(),
+  description: text("description"),
+  referenceNumber: varchar("reference_number", { length: 50 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Egresos reales
+export const actualExpenses = pgTable("actual_expenses", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").notNull(),
+  categoryId: integer("category_id").references(() => expenseCategories.id),
+  concept: varchar("concept", { length: 200 }).notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  date: date("date").notNull(),
+  month: integer("month").notNull(),
+  year: integer("year").notNull(),
+  supplier: varchar("supplier", { length: 200 }),
+  description: text("description"),
+  referenceNumber: varchar("reference_number", { length: 50 }),
+  isPaid: boolean("is_paid").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Schemas de validación para finanzas
+export const insertIncomeCategorySchema = createInsertSchema(incomeCategories);
+export const selectIncomeCategorySchema = createInsertSchema(incomeCategories);
+export type InsertIncomeCategory = z.infer<typeof insertIncomeCategorySchema>;
+export type IncomeCategory = typeof incomeCategories.$inferSelect;
+
+export const insertExpenseCategorySchema = createInsertSchema(expenseCategories);
+export const selectExpenseCategorySchema = createInsertSchema(expenseCategories);
+export type InsertExpenseCategory = z.infer<typeof insertExpenseCategorySchema>;
+export type ExpenseCategory = typeof expenseCategories.$inferSelect;
+
+export const insertActualIncomeSchema = createInsertSchema(actualIncomes);
+export const insertActualExpenseSchema = createInsertSchema(actualExpenses);
+export type InsertActualIncome = z.infer<typeof insertActualIncomeSchema>;
+export type InsertActualExpense = z.infer<typeof insertActualExpenseSchema>;
+
+// ========== FIN MÓDULO DE FINANZAS ==========
+
 // Tabla para almacenar sesiones (requerida para la autenticación con Replit)
 export const sessions = pgTable(
   "sessions",
