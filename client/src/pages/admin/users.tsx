@@ -1206,22 +1206,17 @@ const AdminUsers = () => {
     isError,
     refetch
   } = useQuery({
-    queryKey: ['/api/users'],
+    queryKey: ['/api/users-direct'],
     queryFn: async () => {
       try {
-        const response = await fetch('/api/users', {
-          headers: {
-            'Authorization': 'Bearer direct-token-admin',
-            'X-User-Id': '1'
-          }
-        });
+        const response = await fetch('/api/users-direct');
         
         if (!response.ok) {
           throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
-        console.log('Usuarios obtenidos de la API:', data.length);
+        console.log('Usuarios obtenidos de la API directa:', data.length);
         return data;
       } catch (error) {
         console.error('Error fetching users:', error);

@@ -240,6 +240,33 @@ app.post("/api/actual-incomes", async (req: Request, res: Response) => {
   }
 });
 
+// Ruta directa para probar la API de usuarios sin autenticación
+app.get("/api/users-direct", async (req: Request, res: Response) => {
+  try {
+    console.log("=== OBTENIENDO USUARIOS DIRECTAMENTE ===");
+    
+    const { db } = await import("./db");
+    const result = await db.execute(`
+      SELECT id, username, email, role, full_name as "fullName", 
+             municipality_id as "municipalityId", phone, gender, 
+             birth_date as "birthDate", bio, profile_image_url as "profileImageUrl", 
+             created_at as "createdAt", updated_at as "updatedAt"
+      FROM users
+      ORDER BY id
+    `);
+    
+    console.log(`Usuarios encontrados: ${result.rows?.length || 0}`);
+    
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.json(result.rows || []);
+  } catch (error) {
+    console.error("Error al obtener usuarios directamente:", error);
+    res.status(500).json({ message: "Error al obtener usuarios" });
+  }
+});
+
 // Servir archivos estáticos de la carpeta de uploads
 app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 
