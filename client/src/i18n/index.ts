@@ -525,7 +525,7 @@ i18n
     },
     
     defaultNS: 'common',
-    ns: ['common', 'parks', 'users', 'finance'],
+    ns: ['common', 'parks', 'users', 'finance', 'volunteers', 'assets'],
     
     supportedLngs: ['es', 'en', 'pt']
   });
