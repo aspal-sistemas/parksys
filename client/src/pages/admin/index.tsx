@@ -152,7 +152,7 @@ Cargar Datos de {t('navigation.volunteers')}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {t('navigation.incidents')} Reportados
+              {t('navigation.incidents')}
             </CardTitle>
             <Bell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -171,7 +171,7 @@ Cargar Datos de {t('navigation.volunteers')}
       
       {/* Nueva Estructura de Menú */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Nueva Estructura del Menú</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('navigation.modules')}</h2>
         <Card className="p-4">
           <CardContent>
             <p className="text-sm text-gray-600 mb-4">Se ha implementado una nueva estructura de menú con los siguientes módulos y submódulos:</p>

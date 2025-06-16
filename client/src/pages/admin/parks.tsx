@@ -286,7 +286,7 @@ const AdminParks = () => {
           
           <Select value={filterMunicipality} onValueChange={setFilterMunicipality}>
             <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder="Municipio" />
+              <SelectValue placeholder={t('forms.municipality')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('forms.allMunicipalities')}</SelectItem>
@@ -300,7 +300,7 @@ const AdminParks = () => {
           
           <Select value={filterParkType} onValueChange={setFilterParkType}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Tipo de parque" />
+              <SelectValue placeholder={t('forms.parkType')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('forms.allTypes')}</SelectItem>
@@ -316,7 +316,7 @@ const AdminParks = () => {
 
           <Select value={filterAmenity} onValueChange={setFilterAmenity}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Amenidad" />
+              <SelectValue placeholder={t('forms.amenity')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas las amenidades</SelectItem>

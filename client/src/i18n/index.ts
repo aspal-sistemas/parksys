@@ -106,7 +106,13 @@ const resources = {
         assignedTo: "Asignado a",
         createdBy: "Creado por",
         createdAt: "Creado el",
-        updatedAt: "Actualizado el"
+        updatedAt: "Actualizado el",
+        allMunicipalities: "Todos los municipios",
+        allTypes: "Todos los tipos",
+        allAmenities: "Todas las amenidades",
+        municipality: "Municipio",
+        parkType: "Tipo de parque",
+        amenity: "Amenidad"
       },
       messages: {
         welcome: "Bienvenido",
@@ -123,6 +129,24 @@ const resources = {
         deleted: "Eliminado exitosamente",
         created: "Creado exitosamente"
       }
+    },
+    dashboard: {
+      title: "Panel de Control",
+      welcome: "Bienvenido al Sistema",
+      sinceLastMonth: "desde el mes pasado",
+      systemOverview: "Resumen del Sistema",
+      recentActivity: "Actividad Reciente",
+      thisMonth: "Este mes",
+      changeVsPrevious: "Cambio vs mes anterior",
+      newUsers: "Nuevos usuarios",
+      newActivities: "Nuevas actividades",
+      scheduledMaintenances: "Mantenimientos programados",
+      registeredUsers: "Usuarios Registrados",
+      activeParks: "Parques Activos",
+      monthlyActivities: "Actividades del Mes",
+      viewAllUsers: "Ver todos los usuarios",
+      viewAllParks: "Ver todos los parques",
+      viewAllActivities: "Ver todas las actividades"
     },
     parks: {
       title: "Gestión de Parques",
