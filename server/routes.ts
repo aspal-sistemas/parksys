@@ -131,6 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerFinanceRoutes(app, apiRouter, isAuthenticated);
   registerBudgetRoutes(app, apiRouter, isAuthenticated);
   registerFinanceUpdateRoutes(app, apiRouter);
+  registerHRFinanceRoutes(app, apiRouter, isAuthenticated);
 
   // Rutas de edición específicas con nombres únicos
   apiRouter.put("/income-categories/:id", async (req: Request, res: Response) => {
