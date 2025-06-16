@@ -3,6 +3,7 @@ import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import UserProfileImage from '@/components/UserProfileImage';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { useTranslation } from 'react-i18next';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -147,47 +148,50 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
 };
 
 // Sidebar para Administrador (acceso completo)
-const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string[] }> = ({ location, defaultAccordion }) => (
-  <Accordion
-    type="multiple"
-    defaultValue={defaultAccordion}
-    className="px-3 space-y-1"
-  >
-    <NavItem 
-      href="/admin" 
-      icon={<Home className="h-5 w-5" />}
-      active={location === '/admin'}
+const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string[] }> = ({ location, defaultAccordion }) => {
+  const { t } = useTranslation('common');
+  
+  return (
+    <Accordion
+      type="multiple"
+      defaultValue={defaultAccordion}
+      className="px-3 space-y-1"
     >
-      Dashboard
-    </NavItem>
+      <NavItem 
+        href="/admin" 
+        icon={<Home className="h-5 w-5" />}
+        active={location === '/admin'}
+      >
+        {t('navigation.dashboard')}
+      </NavItem>
 
-    <ModuleNav 
-      title="Sistema" 
-      icon={<Settings className="h-5 w-5" />}
-      value="system"
-    >
-      <NavItem 
-        href="/admin/settings" 
+      <ModuleNav 
+        title={t('navigation.settings')} 
         icon={<Settings className="h-5 w-5" />}
-        active={location === '/admin/settings'}
+        value="system"
       >
-        Configuración
-      </NavItem>
-      <NavItem 
-        href="/admin/users" 
-        icon={<UserCheck className="h-5 w-5" />}
-        active={location === '/admin/users'}
-      >
-        Gestión de Usuarios
-      </NavItem>
-      <NavItem 
-        href="/admin/permissions" 
-        icon={<Shield className="h-5 w-5" />}
-        active={location === '/admin/permissions'}
-      >
-        Permisos
-      </NavItem>
-    </ModuleNav>
+        <NavItem 
+          href="/admin/settings" 
+          icon={<Settings className="h-5 w-5" />}
+          active={location === '/admin/settings'}
+        >
+          {t('navigation.settings')}
+        </NavItem>
+        <NavItem 
+          href="/admin/users" 
+          icon={<UserCheck className="h-5 w-5" />}
+          active={location === '/admin/users'}
+        >
+          {t('navigation.users')}
+        </NavItem>
+        <NavItem 
+          href="/admin/permissions" 
+          icon={<Shield className="h-5 w-5" />}
+          active={location === '/admin/permissions'}
+        >
+          Permisos
+        </NavItem>
+      </ModuleNav>
 
     <ModuleNav 
       title="Parques" 
@@ -710,7 +714,8 @@ const DirectorSidebar: React.FC<{ location: string; defaultAccordion: string[] }
       Mi perfil
     </NavItem>
   </Accordion>
-);
+  );
+};
 
 // Sidebar para Manager (gestión operativa)
 const ManagerSidebar: React.FC<{ location: string; defaultAccordion: string[] }> = ({ location, defaultAccordion }) => (
