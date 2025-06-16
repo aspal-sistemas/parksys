@@ -41,7 +41,9 @@ function Router() {
     <div className="flex flex-col min-h-screen">
       {!isAdminRoute && <Header />}
       <Switch>
-        <Route path="/" component={Home} />
+        <Route path="/landing" component={Landing} />
+        <Route path="/" component={Landing} />
+        <Route path="/home" component={Home} />
         <Route path="/parks" component={Parks} />
         <Route path="/parks/:id" component={ParkDetail} />
         <Route path="/instructors">
