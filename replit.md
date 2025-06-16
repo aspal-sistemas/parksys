@@ -1,4 +1,4 @@
-# Parks Management System
+# ParkSys - Parks Management System
 
 ## Overview
 
