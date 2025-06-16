@@ -946,7 +946,7 @@ const RoleBasedSidebar: React.FC = () => {
         </svg>
         <div className="ml-2 flex flex-col">
           <h1 className="text-xl font-heading font-semibold text-gray-900">
-            ParquesMX
+            ParkSys
           </h1>
           <span className="text-xs text-gray-500 capitalize">
             Panel {(user as any)?.role || 'Usuario'}
