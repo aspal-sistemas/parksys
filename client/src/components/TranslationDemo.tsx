@@ -15,7 +15,7 @@ export function TranslationDemo() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <h3 className="font-semibold mb-2">{t('common.navigation')}:</h3>
+          <h3 className="font-semibold mb-2">Navegación:</h3>
           <ul className="space-y-1 text-sm">
             <li>• {t('navigation.parks')}</li>
             <li>• {t('navigation.users')}</li>
@@ -40,16 +40,16 @@ export function TranslationDemo() {
         </div>
 
         <div>
-          <h3 className="font-semibold mb-2">{t('common.actions')}:</h3>
+          <h3 className="font-semibold mb-2">Acciones:</h3>
           <div className="flex gap-2 text-sm">
             <button className="px-3 py-1 bg-blue-500 text-white rounded">
-              {t('common.save')}
+              {t('actions.save')}
             </button>
             <button className="px-3 py-1 bg-gray-500 text-white rounded">
-              {t('common.cancel')}
+              {t('actions.cancel')}
             </button>
             <button className="px-3 py-1 bg-green-500 text-white rounded">
-              {t('common.edit')}
+              {t('actions.edit')}
             </button>
           </div>
         </div>
