@@ -6,6 +6,7 @@ import { activityRouter } from "./activityRoutes";
 import { testRouter } from "./testRoutes";
 import volunteerFieldRouter from "./volunteerFieldRoutes";
 import { skillsRouter } from "./update-skills-route";
+import { registerFinancialIntegrationsAPI } from "./financial-integrations-api";
 import { db } from "./db";
 import { incomeCategories, expenseCategories } from "../shared/finance-schema";
 import { eq } from "drizzle-orm";
@@ -327,6 +328,16 @@ import { initializeDatabase } from "./initialize-db";
     console.log("Rutas HR-Finanzas registradas correctamente");
   } catch (error) {
     console.error("Error al registrar rutas HR:", error);
+  }
+
+  // Registrar API de integraciones financieras múltiples
+  try {
+    const apiRouter = express.Router();
+    registerFinancialIntegrationsAPI(apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    app.use("/api", apiRouter);
+    console.log("API de integraciones financieras múltiples registrada correctamente");
+  } catch (error) {
+    console.error("Error al registrar API de integraciones financieras:", error);
   }
 
   // Endpoint DIRECTO para Matriz de Flujo de Efectivo - ANTES de Vite

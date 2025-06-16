@@ -142,6 +142,13 @@ export const actualIncomes = pgTable("actual_incomes", {
   description: text("description"),
   referenceNumber: varchar("reference_number", { length: 50 }),
   documentUrl: text("document_url"),
+  source: varchar("source", { length: 100 }), // Origen del ingreso
+  isReceived: boolean("is_received").default(false), // Si ya fue recibido
+  receivedDate: date("received_date"),
+  // Campos para integraciones automáticas
+  isConcessionsGenerated: boolean("is_concessions_generated").default(false),
+  isEventsGenerated: boolean("is_events_generated").default(false), 
+  isMarketingGenerated: boolean("is_marketing_generated").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -165,6 +172,13 @@ export const actualExpenses = pgTable("actual_expenses", {
   documentUrl: text("document_url"),
   isPaid: boolean("is_paid").default(false),
   paymentDate: date("payment_date"),
+  // Campos para integraciones automáticas  
+  isPayrollGenerated: boolean("is_payroll_generated").default(false),
+  payrollPeriodId: integer("payroll_period_id"),
+  isAssetsGenerated: boolean("is_assets_generated").default(false),
+  isTreesGenerated: boolean("is_trees_generated").default(false), 
+  isVolunteersGenerated: boolean("is_volunteers_generated").default(false),
+  isIncidentsGenerated: boolean("is_incidents_generated").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
