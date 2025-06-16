@@ -238,12 +238,12 @@ const AdminParks = () => {
 
   if (isErrorParks) {
     return (
-      <AdminLayout title="Administración de Parques">
+      <AdminLayout title={tParks('title')}>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <p className="text-red-600">Error al cargar los parques</p>
+            <p className="text-red-600">{t('messages.error')}</p>
             <Button onClick={handleRefresh} className="mt-4">
-              Intentar de nuevo
+              {t('actions.retry')}
             </Button>
           </div>
         </div>
@@ -252,22 +252,22 @@ const AdminParks = () => {
   }
 
   return (
-    <AdminLayout title="Administración de Parques">
+    <AdminLayout title={tParks('title')}>
       <div className="space-y-6">
         {/* Header with actions */}
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold text-gray-800">Parques</h2>
+          <h2 className="text-2xl font-semibold text-gray-800">{t('navigation.parks')}</h2>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleRefresh}>
-              Actualizar
+              {t('actions.refresh')}
             </Button>
             <Button variant="outline" onClick={() => window.location.href = "/admin/parks-import"}>
               <FileUp className="h-4 w-4 mr-2" />
-              Importar Parques
+              {t('actions.import')} {t('navigation.parks')}
             </Button>
             <Button onClick={() => window.location.href = "/admin/parks/new"}>
               <Plus className="h-4 w-4 mr-2" />
-              Agregar Parque
+              {tParks('newPark')}
             </Button>
           </div>
         </div>
@@ -277,7 +277,7 @@ const AdminParks = () => {
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Buscar parques..."
+              placeholder={`${t('actions.search')} ${t('navigation.parks')}...`}
               className="pl-8"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
