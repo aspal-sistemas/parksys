@@ -83,6 +83,17 @@ The system uses environment variables for database connection and supports both 
 ## Changelog
 
 - June 16, 2025. Initial setup
+- June 16, 2025. Sistema completo de internacionalización implementado - Soporte para español, inglés y portugués con selector de idioma integrado
+
+## Recent Features
+
+### Sistema de Internacionalización (i18n)
+**Implementado**: Sistema completo de múltiples idiomas
+- **Idiomas soportados**: Español (predeterminado), Inglés, Portugués
+- **Componentes**: Selector de idioma en sidebar, traducciones por módulos
+- **Estructura**: Archivos JSON organizados por idioma y módulo
+- **Funcionalidades**: Detección automática, persistencia en localStorage, cambio dinámico
+- **Extensibilidad**: Sistema preparado para agregar nuevos idiomas fácilmente
 
 ## User Preferences
 
