@@ -297,7 +297,7 @@ const Landing = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {plans.map((plan, index) => (
               <Card key={index} className={`relative ${plan.highlighted ? 'ring-2 ring-[#00a587] shadow-xl' : ''} ${plan.color} border-2`}>
                 {plan.highlighted && (
