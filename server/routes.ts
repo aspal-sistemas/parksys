@@ -37,6 +37,7 @@ import { registerConcessionEvaluationRoutes } from "./concession-evaluations-rou
 import { registerFinanceRoutes } from "./finance-routes";
 import { registerBudgetRoutes } from "./budget-routes";
 import { registerFinanceUpdateRoutes } from "./finance-update-routes";
+import { registerHRFinanceRoutes } from "./hr-finance-routes";
 import { 
   uploadParkFile, 
   handleMulterErrors, 

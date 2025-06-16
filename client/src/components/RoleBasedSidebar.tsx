@@ -360,6 +360,13 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       >
         {t('navigation.dashboard')}
       </NavItem>
+      <NavItem 
+        href="/admin/finance/hr-integration" 
+        icon={<UserCog className="h-5 w-5" />}
+        active={location === '/admin/finance/hr-integration'}
+      >
+        Integración HR
+      </NavItem>
     </ModuleNav>
 
     <ModuleNav 
