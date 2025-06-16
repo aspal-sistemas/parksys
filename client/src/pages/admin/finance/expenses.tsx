@@ -293,7 +293,7 @@ const ExpensesPage = () => {
                 Cédula de Egresos
               </h1>
               <p className="text-gray-600">
-                Gestión y registro de todos los gastos del parque
+                Gestión y registro de todos los gastos del parque (incluye nómina automática)
               </p>
             </div>
           </div>
@@ -589,9 +589,16 @@ const ExpensesPage = () => {
                       <div className="flex-1">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-medium text-gray-900">
-                              {expense.concept}
-                            </h3>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-medium text-gray-900">
+                                {expense.concept}
+                              </h3>
+                              {expense.isPayrollGenerated && (
+                                <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+                                  Nómina
+                                </Badge>
+                              )}
+                            </div>
                             <p className="text-sm text-gray-600 mt-1">
                               {expense.description}
                             </p>

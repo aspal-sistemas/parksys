@@ -302,6 +302,15 @@ import { initializeDatabase } from "./initialize-db";
       console.error("Error al cargar especies de árboles:", error);
       // Continuamos con la ejecución aunque haya un error
     }
+    
+    // Inicializar integración HR-Finanzas
+    try {
+      const { seedHRFinanceIntegration } = await import("./seed-hr-finance-integration");
+      await seedHRFinanceIntegration();
+    } catch (error) {
+      console.error("Error al inicializar integración HR-Finanzas:", error);
+      // Continuamos con la ejecución aunque haya un error
+    }
   } catch (error) {
     console.error("Error crítico al inicializar la base de datos:", error);
     // Continuamos con la ejecución aunque haya un error
