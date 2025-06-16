@@ -244,6 +244,13 @@ function Router() {
           </Suspense>
         </Route>
 
+        {/* Demostración Integraciones Múltiples */}
+        <Route path="/admin/multi-finance-demo">
+          <Suspense fallback={<div className="p-8 text-center">Cargando demostración de integraciones múltiples...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/multi-finance-demo')))}
+          </Suspense>
+        </Route>
+
         {/* Rutas para el módulo de eventos */}
         <Route path="/admin/events">
           <Suspense fallback={<div className="p-8 text-center">Cargando eventos...</div>}>
