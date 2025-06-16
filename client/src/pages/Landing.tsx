@@ -167,7 +167,7 @@ const Landing = () => {
               <a href="#contact" className="text-gray-600 hover:text-[#00a587] transition-colors">Contacto</a>
             </nav>
             <div className="flex items-center space-x-4">
-              <Link href="/admin">
+              <Link href="/admin/login">
                 <Button variant="outline" className="border-[#00a587] text-[#00a587] hover:bg-[#00a587] hover:text-white">
                   Iniciar Sesión
                 </Button>

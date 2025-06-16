@@ -38,33 +38,33 @@
     --card-foreground: 20 14.3% 4.1%;
     --border: 20 5.9% 90%;
     --input: 20 5.9% 90%;
-    --primary: 142 69% 58%; /* Green 500 */
-    --primary-foreground: 355 100% 100%;
-    --secondary: 217 91% 60%; /* Blue 500 */
-    --secondary-foreground: 210 40% 98%;
-    --accent: 142 71% 45%; /* Green 600 */
+    --primary: 167 100% 33%; /* #00a587 - Parques de México primary */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 206 26% 59%; /* #8498a5 - Parques de México gray */
+    --secondary-foreground: 0 0% 100%;
+    --accent: 167 100% 20%; /* #067f5f - Parques de México dark green */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 60 9.1% 97.8%;
-    --ring: 142 69% 58%;
+    --ring: 167 100% 33%;
     --radius: 0.5rem;
 
-    /* Chart colors */
-    --chart-1: 142 69% 58%;
-    --chart-2: 217 91% 60%;
-    --chart-3: 274 81% 56%;
-    --chart-4: 355 71% 54%;
-    --chart-5: 47 96% 58%;
+    /* Chart colors - Parques de México palette */
+    --chart-1: 167 100% 33%; /* #00a587 */
+    --chart-2: 167 100% 20%; /* #067f5f */
+    --chart-3: 73 62% 59%; /* #bcd256 */
+    --chart-4: 206 26% 59%; /* #8498a5 */
+    --chart-5: 167 50% 45%; /* complementary */
 
-    /* Sidebar colors - match with light theme */
+    /* Sidebar colors - Parques de México theme */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 20 14.3% 4.1%;
-    --sidebar-primary: 142 69% 58%;
-    --sidebar-primary-foreground: 355 100% 100%;
-    --sidebar-accent: 142 71% 45%;
+    --sidebar-primary: 167 100% 33%; /* #00a587 */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 167 100% 20%; /* #067f5f */
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 20 5.9% 90%;
-    --sidebar-ring: 142 69% 58%;
+    --sidebar-ring: 167 100% 33%;
   }
 
   .dark {
@@ -78,22 +78,22 @@
     --card-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --primary: 142 69% 58%;
-    --primary-foreground: 355 100% 100%;
-    --secondary: 217 91% 60%;
-    --secondary-foreground: 210 40% 98%;
-    --accent: 142 71% 45%;
+    --primary: 167 100% 33%; /* #00a587 - Parques de México primary */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 206 26% 59%; /* #8498a5 - Parques de México gray */
+    --secondary-foreground: 0 0% 100%;
+    --accent: 167 100% 20%; /* #067f5f - Parques de México dark green */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --ring: 240 4.9% 83.9%;
 
-    /* Sidebar colors - darker in dark mode */
+    /* Sidebar colors - Parques de México theme in dark mode */
     --sidebar-background: 240 10% 4%; 
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 142 69% 58%;
-    --sidebar-primary-foreground: 355 100% 100%;
-    --sidebar-accent: 142 71% 45%;
+    --sidebar-primary: 167 100% 33%; /* #00a587 */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 167 100% 20%; /* #067f5f */
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 240 4.9% 83.9%;
