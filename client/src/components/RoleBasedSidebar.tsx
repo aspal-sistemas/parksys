@@ -299,7 +299,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
     </ModuleNav>
 
     <ModuleNav 
-      title="Finanzas" 
+      title={t('navigation.finance')} 
       icon={<DollarSign className="h-5 w-5" />}
       value="finance"
     >
@@ -330,14 +330,14 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<LayoutGrid className="h-5 w-5" />}
         active={location === '/admin/finance/cash-flow-matrix'}
       >
-        Flujo
+        {t('navigation.cashFlow')}
       </NavItem>
       <NavItem 
         href="/admin/finance/annual-budget" 
         icon={<Target className="h-5 w-5" />}
         active={location === '/admin/finance/annual-budget'}
       >
-        Presupuesto
+        {t('navigation.budgets')}
       </NavItem>
       <NavItem 
         href="/admin/finance/calculator" 
@@ -351,19 +351,19 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<FileText className="h-5 w-5" />}
         active={location === '/admin/finance/reports'}
       >
-        Reportes
+        {t('navigation.reports')}
       </NavItem>
       <NavItem 
         href="/admin/finance/dashboard" 
         icon={<BarChart className="h-5 w-5" />}
         active={location === '/admin/finance/dashboard'}
       >
-        Dashboard
+        {t('navigation.dashboard')}
       </NavItem>
     </ModuleNav>
 
     <ModuleNav 
-      title="Eventos" 
+      title={t('navigation.events')} 
       icon={<CalendarDays className="h-5 w-5" />}
       value="events"
     >
@@ -372,7 +372,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<ListFilter className="h-5 w-5" />}
         active={location.startsWith('/admin/events') && !location.startsWith('/admin/events/new')}
       >
-        Listado
+        {t('navigation.listing')}
       </NavItem>
       <NavItem 
         href="/admin/events/new" 
@@ -391,7 +391,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
     </ModuleNav>
 
     <ModuleNav 
-      title="Actividades" 
+      title={t('navigation.activities')} 
       icon={<Calendar className="h-5 w-5" />}
       value="activities"
     >
@@ -400,7 +400,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<Activity className="h-5 w-5" />}
         active={location === '/admin/activities'}
       >
-        Listado
+        {t('navigation.listing')}
       </NavItem>
       <NavItem 
         href="/admin/organizador" 
@@ -414,7 +414,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<GraduationCap className="h-5 w-5" />}
         active={location === '/admin/instructors'}
       >
-        Instructores
+        {t('navigation.instructors')}
       </NavItem>
     </ModuleNav>
 
@@ -440,7 +440,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
     </ModuleNav>
 
     <ModuleNav 
-      title="Concesiones" 
+      title={t('navigation.concessions')} 
       icon={<Store className="h-5 w-5" />}
       value="concessions"
     >
@@ -456,7 +456,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<FileText className="h-5 w-5" />}
         active={location.startsWith('/admin/concessions/contracts')}
       >
-        Contratos
+        {t('navigation.contracts')}
       </NavItem>
       <NavItem 
         href="/admin/concessions/concessionaires" 
@@ -477,7 +477,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<BarChart className="h-5 w-5" />}
         active={location.startsWith('/admin/concessions/reports')}
       >
-        Reportes
+        {t('navigation.reports')}
       </NavItem>
     </ModuleNav>
 
@@ -524,7 +524,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
     </ModuleNav>
 
     <ModuleNav 
-      title="Voluntarios" 
+      title={t('navigation.volunteers')} 
       icon={<Users className="h-5 w-5" />}
       value="volunteers"
     >
@@ -533,21 +533,21 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<Users className="h-5 w-5" />}
         active={location === '/admin/volunteers'}
       >
-        Gestión
+        {t('navigation.management')}
       </NavItem>
       <NavItem 
         href="/admin/volunteers/participations" 
         icon={<Calendar className="h-5 w-5" />}
         active={location === '/admin/volunteers/participations'}
       >
-        Participaciones
+        {t('navigation.participants')}
       </NavItem>
       <NavItem 
         href="/admin/volunteers/evaluations" 
         icon={<Clipboard className="h-5 w-5" />}
         active={location === '/admin/volunteers/evaluations'}
       >
-        Evaluaciones
+        {t('navigation.evaluation')}
       </NavItem>
       <NavItem 
         href="/admin/volunteers/recognitions" 
@@ -561,12 +561,12 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<BarChart className="h-5 w-5" />}
         active={location === '/admin/volunteers/dashboard'}
       >
-        Dashboard
+        {t('navigation.dashboard')}
       </NavItem>
     </ModuleNav>
 
     <ModuleNav 
-      title="Arbolado" 
+      title={t('navigation.trees')} 
       icon={<TreePine className="h-5 w-5" />}
       value="trees"
     >
@@ -575,7 +575,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<Database className="h-5 w-5" />}
         active={location.startsWith('/admin/trees/inventory')}
       >
-        Inventario
+        {t('navigation.inventory')}
       </NavItem>
       <NavItem 
         href="/admin/trees/catalog" 
@@ -589,14 +589,14 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<Leaf className="h-5 w-5" />}
         active={location.startsWith('/admin/trees/species')}
       >
-        Especies
+        {t('navigation.species')}
       </NavItem>
       <NavItem 
         href="/admin/trees/maintenance" 
         icon={<Wrench className="h-5 w-5" />}
         active={location.startsWith('/admin/trees/maintenance')}
       >
-        Mantenimiento
+        {t('navigation.maintenance')}
       </NavItem>
       <NavItem 
         href="/admin/trees/health" 
