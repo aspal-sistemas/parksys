@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import { TranslationDemo } from '@/components/TranslationDemo';
 import { 
   MapPin, 
@@ -30,6 +31,9 @@ import AdminLayout from '@/components/AdminLayout';
 
 // Simplified modular dashboard component
 const AdminDashboard: React.FC = () => {
+  const { t } = useTranslation('common');
+  const { t: tParks } = useTranslation('parks');
+  
   // Fetch parks count
   const { data: parks = [] } = useQuery({
     queryKey: ['/api/parks'],
@@ -37,14 +41,14 @@ const AdminDashboard: React.FC = () => {
   
   return (
     <AdminLayout 
-      title="Dashboard" 
-      subtitle="Bienvenido al panel de administración de ParquesMX"
+      title={t('navigation.dashboard')} 
+      subtitle={tParks('welcome')}
     >
       <div className="flex items-center justify-end space-x-3 mb-6">
         <Link href="/admin/parks/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Agregar Parque
+            {tParks('newPark')}
           </Button>
         </Link>
         <Link href="/admin/parks-import">
@@ -87,7 +91,7 @@ const AdminDashboard: React.FC = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total de Parques
+              {tParks('totalParks')}
             </CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -107,7 +111,7 @@ const AdminDashboard: React.FC = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Usuarios
+              {t('navigation.users')}
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>

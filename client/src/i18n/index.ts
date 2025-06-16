@@ -65,15 +65,69 @@ const resources = {
     },
     parks: {
       title: "Gestión de Parques",
-      subtitle: "Sistema integral de administración de parques municipales"
+      subtitle: "Sistema integral de administración de parques municipales",
+      welcome: "Bienvenido al sistema de gestión de parques",
+      totalParks: "Total de Parques",
+      activeParks: "Parques Activos",
+      maintenance: "En Mantenimiento",
+      newPark: "Nuevo Parque",
+      editPark: "Editar Parque",
+      deletePark: "Eliminar Parque",
+      parkDetails: "Detalles del Parque",
+      location: "Ubicación",
+      area: "Área",
+      status: "Estado",
+      description: "Descripción"
     },
     finance: {
       title: "Gestión Financiera",
-      subtitle: "Control integral de finanzas municipales"
+      subtitle: "Control integral de finanzas municipales",
+      income: "Ingresos",
+      expenses: "Gastos",
+      balance: "Balance",
+      budget: "Presupuesto",
+      cashFlow: "Flujo de Efectivo",
+      reports: "Reportes Financieros",
+      transactions: "Transacciones",
+      summary: "Resumen Financiero"
     },
     users: {
       title: "Gestión de Usuarios",
-      subtitle: "Administración de personal y usuarios del sistema"
+      subtitle: "Administración de personal y usuarios del sistema",
+      totalUsers: "Total de Usuarios",
+      activeUsers: "Usuarios Activos",
+      newUser: "Nuevo Usuario",
+      editUser: "Editar Usuario",
+      deleteUser: "Eliminar Usuario",
+      userDetails: "Detalles del Usuario",
+      role: "Rol",
+      permissions: "Permisos",
+      lastLogin: "Último Acceso"
+    },
+    volunteers: {
+      title: "Gestión de Voluntarios",
+      subtitle: "Administración de voluntarios del sistema",
+      totalVolunteers: "Total de Voluntarios",
+      activeVolunteers: "Voluntarios Activos",
+      newVolunteer: "Nuevo Voluntario",
+      editVolunteer: "Editar Voluntario",
+      volunteerDetails: "Detalles del Voluntario",
+      experience: "Experiencia",
+      skills: "Habilidades",
+      availability: "Disponibilidad"
+    },
+    assets: {
+      title: "Gestión de Activos",
+      subtitle: "Control de inventario y activos",
+      totalAssets: "Total de Activos",
+      available: "Disponibles",
+      inUse: "En Uso",
+      maintenance: "En Mantenimiento",
+      newAsset: "Nuevo Activo",
+      editAsset: "Editar Activo",
+      assetDetails: "Detalles del Activo",
+      category: "Categoría",
+      condition: "Condición"
     }
   },
   en: {
@@ -137,15 +191,69 @@ const resources = {
     },
     parks: {
       title: "Parks Management",
-      subtitle: "Comprehensive municipal parks administration system"
+      subtitle: "Comprehensive municipal parks administration system",
+      welcome: "Welcome to the parks management system",
+      totalParks: "Total Parks",
+      activeParks: "Active Parks",
+      maintenance: "Under Maintenance",
+      newPark: "New Park",
+      editPark: "Edit Park",
+      deletePark: "Delete Park",
+      parkDetails: "Park Details",
+      location: "Location",
+      area: "Area",
+      status: "Status",
+      description: "Description"
     },
     finance: {
       title: "Financial Management",
-      subtitle: "Comprehensive municipal finance control"
+      subtitle: "Comprehensive municipal finance control",
+      income: "Income",
+      expenses: "Expenses",
+      balance: "Balance",
+      budget: "Budget",
+      cashFlow: "Cash Flow",
+      reports: "Financial Reports",
+      transactions: "Transactions",
+      summary: "Financial Summary"
     },
     users: {
       title: "User Management",
-      subtitle: "System personnel and user administration"
+      subtitle: "System personnel and user administration",
+      totalUsers: "Total Users",
+      activeUsers: "Active Users",
+      newUser: "New User",
+      editUser: "Edit User",
+      deleteUser: "Delete User",
+      userDetails: "User Details",
+      role: "Role",
+      permissions: "Permissions",
+      lastLogin: "Last Login"
+    },
+    volunteers: {
+      title: "Volunteer Management",
+      subtitle: "System volunteer administration",
+      totalVolunteers: "Total Volunteers",
+      activeVolunteers: "Active Volunteers",
+      newVolunteer: "New Volunteer",
+      editVolunteer: "Edit Volunteer",
+      volunteerDetails: "Volunteer Details",
+      experience: "Experience",
+      skills: "Skills",
+      availability: "Availability"
+    },
+    assets: {
+      title: "Asset Management",
+      subtitle: "Inventory and asset control",
+      totalAssets: "Total Assets",
+      available: "Available",
+      inUse: "In Use",
+      maintenance: "Under Maintenance",
+      newAsset: "New Asset",
+      editAsset: "Edit Asset",
+      assetDetails: "Asset Details",
+      category: "Category",
+      condition: "Condition"
     }
   },
   pt: {
@@ -209,15 +317,69 @@ const resources = {
     },
     parks: {
       title: "Gestão de Parques",
-      subtitle: "Sistema abrangente de administração de parques municipais"
+      subtitle: "Sistema abrangente de administração de parques municipais",
+      welcome: "Bem-vindo ao sistema de gestão de parques",
+      totalParks: "Total de Parques",
+      activeParks: "Parques Ativos",
+      maintenance: "Em Manutenção",
+      newPark: "Novo Parque",
+      editPark: "Editar Parque",
+      deletePark: "Excluir Parque",
+      parkDetails: "Detalhes do Parque",
+      location: "Localização",
+      area: "Área",
+      status: "Status",
+      description: "Descrição"
     },
     finance: {
       title: "Gestão Financeira",
-      subtitle: "Controle abrangente de finanças municipais"
+      subtitle: "Controle abrangente de finanças municipais",
+      income: "Receitas",
+      expenses: "Despesas",
+      balance: "Saldo",
+      budget: "Orçamento",
+      cashFlow: "Fluxo de Caixa",
+      reports: "Relatórios Financeiros",
+      transactions: "Transações",
+      summary: "Resumo Financeiro"
     },
     users: {
       title: "Gestão de Usuários",
-      subtitle: "Administração de pessoal e usuários do sistema"
+      subtitle: "Administração de pessoal e usuários do sistema",
+      totalUsers: "Total de Usuários",
+      activeUsers: "Usuários Ativos",
+      newUser: "Novo Usuário",
+      editUser: "Editar Usuário",
+      deleteUser: "Excluir Usuário",
+      userDetails: "Detalhes do Usuário",
+      role: "Função",
+      permissions: "Permissões",
+      lastLogin: "Último Acesso"
+    },
+    volunteers: {
+      title: "Gestão de Voluntários",
+      subtitle: "Administração de voluntários do sistema",
+      totalVolunteers: "Total de Voluntários",
+      activeVolunteers: "Voluntários Ativos",
+      newVolunteer: "Novo Voluntário",
+      editVolunteer: "Editar Voluntário",
+      volunteerDetails: "Detalhes do Voluntário",
+      experience: "Experiência",
+      skills: "Habilidades",
+      availability: "Disponibilidade"
+    },
+    assets: {
+      title: "Gestão de Ativos",
+      subtitle: "Controle de inventário e ativos",
+      totalAssets: "Total de Ativos",
+      available: "Disponíveis",
+      inUse: "Em Uso",
+      maintenance: "Em Manutenção",
+      newAsset: "Novo Ativo",
+      editAsset: "Editar Ativo",
+      assetDetails: "Detalhes do Ativo",
+      category: "Categoria",
+      condition: "Condição"
     }
   }
 };
