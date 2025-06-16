@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
+import { TranslationDemo } from '@/components/TranslationDemo';
 import { 
   MapPin, 
   Users, 
@@ -439,6 +440,11 @@ const AdminDashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Demostración del sistema de traducciones */}
+      <div className="mt-8">
+        <TranslationDemo />
       </div>
     </AdminLayout>
   );

@@ -925,7 +925,7 @@ const RoleBasedSidebar: React.FC = () => {
       case 'admin':
         return <AdminSidebarContent location={location} defaultAccordion={defaultAccordion} />;
       case 'director':
-        return <DirectorSidebar location={location} defaultAccordion={defaultAccordion} />;
+        return <AdminSidebarContent location={location} defaultAccordion={defaultAccordion} />;
       case 'manager':
         return <ManagerSidebar location={location} defaultAccordion={defaultAccordion} />;
       case 'instructor':
