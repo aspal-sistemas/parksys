@@ -308,6 +308,17 @@ import { initializeDatabase } from "./initialize-db";
   }
   
   const server = await registerRoutes(app);
+  
+  // Registrar rutas de Recursos Humanos integradas con Finanzas
+  try {
+    const { registerHRRoutes } = await import("./hr-routes");
+    const router = express.Router();
+    registerHRRoutes(app, router, (req: Request, res: Response, next: NextFunction) => next());
+    app.use("/api", router);
+    console.log("Rutas HR-Finanzas registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas HR:", error);
+  }
 
   // Endpoint DIRECTO para Matriz de Flujo de Efectivo - ANTES de Vite
   app.get('/api/cash-flow-matrix', (req: Request, res: Response) => {

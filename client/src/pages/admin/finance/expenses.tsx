@@ -52,6 +52,11 @@ const ExpensesPage = () => {
     queryKey: ["/api/actual-expenses"],
   });
 
+  // Obtener gastos de nómina
+  const { data: payrollExpenses = [], isLoading: payrollExpensesLoading } = useQuery({
+    queryKey: ["/api/payroll-expenses"],
+  });
+
   const { data: expenseCategories = [] } = useQuery({
     queryKey: ["/api/expense-categories"],
   });
@@ -212,11 +217,29 @@ const ExpensesPage = () => {
     setIsEditDialogOpen(true);
   };
 
+  // Combinar gastos regulares y de nómina
+  const allExpenses = useMemo(() => {
+    const regularExpenses = Array.isArray(expenses) ? expenses.map((expense: any) => ({
+      ...expense,
+      source: 'manual',
+      isPayrollGenerated: false
+    })) : [];
+    
+    const payrollExpensesFormatted = Array.isArray(payrollExpenses) ? payrollExpenses.map((expense: any) => ({
+      ...expense,
+      source: 'payroll',
+      isPayrollGenerated: true,
+      vendor: expense.supplier || 'Nómina Interna'
+    })) : [];
+    
+    return [...regularExpenses, ...payrollExpensesFormatted];
+  }, [expenses, payrollExpenses]);
+
   // Función para filtrar gastos
   const filteredExpenses = useMemo(() => {
-    if (!Array.isArray(expenses)) return [];
+    if (!Array.isArray(allExpenses)) return [];
     
-    return expenses.filter((expense: any) => {
+    return allExpenses.filter((expense: any) => {
       const expenseDate = new Date(expense.date);
       const expenseYear = expenseDate.getFullYear().toString();
       const expenseMonth = (expenseDate.getMonth() + 1).toString().padStart(2, '0');
