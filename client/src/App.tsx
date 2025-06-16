@@ -566,6 +566,13 @@ function Router() {
           </Suspense>
         </Route>
 
+        {/* Dashboard integrado HR-Finanzas */}
+        <Route path="/admin/finance/hr-integration">
+          <Suspense fallback={<div className="p-8 text-center">Cargando integración HR-Finanzas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/hr-finance-dashboard')))}
+          </Suspense>
+        </Route>
+
         {/* Rutas del módulo de Recursos Humanos */}
         <Route path="/admin/hr/employees">
           <Suspense fallback={<div className="p-8 text-center">Cargando gestión de personal...</div>}>
