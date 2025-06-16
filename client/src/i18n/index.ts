@@ -9,7 +9,7 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'es',
-    lng: 'es', // idioma por defecto
+    lng: 'es',
     debug: false,
     
     interpolation: {
@@ -26,13 +26,18 @@ i18n
     },
     
     defaultNS: 'common',
-    ns: ['common', 'parks', 'users', 'volunteers', 'finance', 'assets'],
+    ns: ['common', 'parks', 'users', 'volunteers', 'finance', 'assets', 'trees', 'concessions', 'events'],
+    
+    supportedLngs: ['es', 'en', 'pt'],
     
     resources: {
       es: {
         common: {}
       },
       en: {
+        common: {}
+      },
+      pt: {
         common: {}
       }
     }

@@ -1,0 +1,61 @@
+{
+  "title": "Parks Management",
+  "subtitle": "Comprehensive municipal parks administration system",
+  "fields": {
+    "name": "Park Name",
+    "description": "Description",
+    "type": "Park Type",
+    "municipality": "Municipality",
+    "area": "Area (m²)",
+    "coordinates": "Coordinates",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "address": "Address",
+    "manager": "Manager",
+    "contactPhone": "Contact Phone",
+    "email": "Email",
+    "openingHours": "Opening Hours",
+    "closingHours": "Closing Hours",
+    "capacity": "Capacity",
+    "accessibilityFeatures": "Accessibility Features",
+    "safetyFeatures": "Safety Features",
+    "maintenanceNotes": "Maintenance Notes"
+  },
+  "types": {
+    "urbano": "Urban",
+    "natural": "Natural",
+    "lineal": "Linear",
+    "metropolitano": "Metropolitan",
+    "vecinal": "Neighborhood",
+    "de_bolsillo": "Pocket",
+    "tematico": "Thematic"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "maintenance": "Under Maintenance",
+    "closed": "Closed"
+  },
+  "amenities": {
+    "title": "Amenities",
+    "playground": "Playground",
+    "picnic_area": "Picnic Area",
+    "restrooms": "Restrooms",
+    "parking": "Parking",
+    "trails": "Trails",
+    "sports_area": "Sports Area",
+    "fountain": "Fountain",
+    "lighting": "Lighting",
+    "benches": "Benches",
+    "pet_area": "Pet Area"
+  },
+  "actions": {
+    "addPark": "Add New Park",
+    "editPark": "Edit Park",
+    "deletePark": "Delete Park",
+    "viewDetails": "View Details",
+    "addAmenity": "Add Amenity",
+    "uploadImage": "Upload Image",
+    "setMainImage": "Set Main Image"
+  }
+}
