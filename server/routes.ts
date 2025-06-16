@@ -37,7 +37,6 @@ import { registerConcessionEvaluationRoutes } from "./concession-evaluations-rou
 import { registerFinanceRoutes } from "./finance-routes";
 import { registerBudgetRoutes } from "./budget-routes";
 import { registerFinanceUpdateRoutes } from "./finance-update-routes";
-import { registerHRFinanceRoutes } from "./hr-finance-routes";
 import { 
   uploadParkFile, 
   handleMulterErrors, 
@@ -131,7 +130,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerFinanceRoutes(app, apiRouter, isAuthenticated);
   registerBudgetRoutes(app, apiRouter, isAuthenticated);
   registerFinanceUpdateRoutes(app, apiRouter);
-  registerHRFinanceRoutes(app, apiRouter, isAuthenticated);
 
   // Rutas de edición específicas con nombres únicos
   apiRouter.put("/income-categories/:id", async (req: Request, res: Response) => {
