@@ -189,12 +189,12 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
           icon={<Shield className="h-5 w-5" />}
           active={location === '/admin/permissions'}
         >
-          Permisos
+          {t('navigation.permissions')}
         </NavItem>
       </ModuleNav>
 
     <ModuleNav 
-      title="Parques" 
+      title={t('navigation.parks')} 
       icon={<Map className="h-5 w-5" />}
       value="parks"
     >
@@ -203,19 +203,19 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<BarChart className="h-5 w-5" />}
         active={location === '/admin/parks/dashboard'}
       >
-        Resumen operativo
+        {t('navigation.operativeSummary')}
       </NavItem>
       <NavItem 
         href="/admin/parks" 
         icon={<Map className="h-5 w-5" />}
         active={location === '/admin/parks'}
       >
-        Gestión
+        {t('navigation.management')}
       </NavItem>
     </ModuleNav>
 
     <ModuleNav 
-      title="Amenidades" 
+      title={t('navigation.amenities')} 
       icon={<Package className="h-5 w-5" />}
       value="amenities"
     >
@@ -224,19 +224,19 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<BarChart className="h-5 w-5" />}
         active={location === '/admin/amenities-dashboard'}
       >
-        Resumen Operativo
+        {t('navigation.operativeSummary')}
       </NavItem>
       <NavItem 
         href="/admin/amenities" 
         icon={<Package className="h-5 w-5" />}
         active={location === '/admin/amenities'}
       >
-        Gestión
+        {t('navigation.management')}
       </NavItem>
     </ModuleNav>
 
     <ModuleNav 
-      title="Incidencias" 
+      title={t('navigation.incidents')} 
       icon={<AlertTriangle className="h-5 w-5" />}
       value="incidents"
     >
@@ -245,19 +245,19 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<ClipboardList className="h-5 w-5" />}
         active={location === '/admin/incidents'}
       >
-        Listado
+        {t('navigation.listing')}
       </NavItem>
       <NavItem 
         href="/admin/incidents/categories" 
         icon={<Tag className="h-5 w-5" />}
         active={location === '/admin/incidents/categories'}
       >
-        Categorías
+        {t('navigation.categories')}
       </NavItem>
     </ModuleNav>
 
     <ModuleNav 
-      title="Activos" 
+      title={t('navigation.assets')} 
       icon={<Package className="h-5 w-5" />}
       value="assets"
     >
@@ -266,35 +266,35 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         icon={<BarChart className="h-5 w-5" />}
         active={location === '/admin/assets'}
       >
-        Resumen Operativo
+        {t('navigation.operativeSummary')}
       </NavItem>
       <NavItem 
         href="/admin/assets/inventory" 
         icon={<Archive className="h-5 w-5" />}
         active={location.startsWith('/admin/assets/inventory')}
       >
-        Inventario
+        {t('navigation.inventory')}
       </NavItem>
       <NavItem 
         href="/admin/assets/map" 
         icon={<Map className="h-5 w-5" />}
         active={location === '/admin/assets/map'}
       >
-        Mapa
+        {t('navigation.map')}
       </NavItem>
       <NavItem 
         href="/admin/assets/maintenance" 
         icon={<Wrench className="h-5 w-5" />}
         active={location.startsWith('/admin/assets/maintenance')}
       >
-        Mantenimiento
+        {t('navigation.maintenance')}
       </NavItem>
       <NavItem 
         href="/admin/assets/assignments" 
         icon={<UserCheck className="h-5 w-5" />}
         active={location.startsWith('/admin/assets/assignments')}
       >
-        Asignaciones
+        {t('navigation.assignments')}
       </NavItem>
     </ModuleNav>
 
