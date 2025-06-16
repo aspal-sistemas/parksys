@@ -1,0 +1,59 @@
+{
+  "navigation": {
+    "dashboard": "Panel de Control",
+    "parks": "Parques", 
+    "users": "Usuarios",
+    "volunteers": "Voluntarios",
+    "instructors": "Instructores",
+    "activities": "Actividades",
+    "assets": "Activos",
+    "finance": "Finanzas",
+    "trees": "Arbolado",
+    "concessions": "Concesiones",
+    "incidents": "Incidencias",
+    "events": "Eventos",
+    "reports": "Reportes",
+    "settings": "Configuración"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar", 
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "view": "Ver",
+    "add": "Agregar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "close": "Cerrar",
+    "submit": "Enviar"
+  },
+  "forms": {
+    "name": "Nombre",
+    "email": "Correo Electrónico", 
+    "phone": "Teléfono",
+    "address": "Dirección",
+    "description": "Descripción",
+    "date": "Fecha",
+    "status": "Estado",
+    "location": "Ubicación",
+    "username": "Usuario",
+    "password": "Contraseña",
+    "fullName": "Nombre Completo",
+    "role": "Rol"
+  },
+  "messages": {
+    "saveSuccess": "Guardado exitosamente",
+    "deleteConfirm": "¿Está seguro de eliminar este elemento?",
+    "noDataFound": "No se encontraron datos",
+    "loadingData": "Cargando datos..."
+  }
+}
