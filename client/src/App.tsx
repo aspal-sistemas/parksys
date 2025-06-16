@@ -237,6 +237,13 @@ function Router() {
           </Suspense>
         </Route>
         
+        {/* Demostración Integración HR-Finanzas */}
+        <Route path="/admin/hr-finance-demo">
+          <Suspense fallback={<div className="p-8 text-center">Cargando demostración HR-Finanzas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/hr-finance-demo')))}
+          </Suspense>
+        </Route>
+
         {/* Rutas para el módulo de eventos */}
         <Route path="/admin/events">
           <Suspense fallback={<div className="p-8 text-center">Cargando eventos...</div>}>
