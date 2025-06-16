@@ -75,22 +75,6 @@ const Landing = () => {
 
   const plans = [
     {
-      name: "Community",
-      price: "Gratis",
-      period: "",
-      description: "Ideal para municipios pequeños y pruebas piloto",
-      features: [
-        "1 parque",
-        "3 usuarios administradores",
-        "Módulos básicos",
-        "Soporte por email",
-        "Backup mensual"
-      ],
-      highlighted: false,
-      buttonText: "Comenzar Gratis",
-      color: "border-gray-200"
-    },
-    {
       name: "Starter",
       price: "$149",
       period: "/mes",
