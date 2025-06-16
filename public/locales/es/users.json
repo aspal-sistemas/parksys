@@ -1,0 +1,52 @@
+{
+  "title": "Gestión de Usuarios",
+  "subtitle": "Administración de personal y usuarios del sistema",
+  "fields": {
+    "username": "Nombre de Usuario",
+    "email": "Correo Electrónico",
+    "fullName": "Nombre Completo",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "role": "Rol",
+    "phone": "Teléfono",
+    "gender": "Género",
+    "birthDate": "Fecha de Nacimiento",
+    "municipality": "Municipio",
+    "bio": "Biografía",
+    "profileImage": "Imagen de Perfil",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña"
+  },
+  "roles": {
+    "admin": "Administrador",
+    "manager": "Gestor",
+    "instructor": "Instructor",
+    "volunteer": "Voluntario",
+    "concessionaire": "Concesionario"
+  },
+  "gender": {
+    "masculino": "Masculino",
+    "femenino": "Femenino",
+    "no_especificar": "Prefiero no especificar"
+  },
+  "actions": {
+    "addUser": "Agregar Usuario",
+    "editUser": "Editar Usuario",
+    "deleteUser": "Eliminar Usuario",
+    "viewProfile": "Ver Perfil",
+    "changePassword": "Cambiar Contraseña",
+    "resetPassword": "Restablecer Contraseña",
+    "uploadPhoto": "Subir Foto"
+  },
+  "status": {
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "pending": "Pendiente",
+    "suspended": "Suspendido"
+  },
+  "filters": {
+    "allRoles": "Todos los Roles",
+    "allMunicipalities": "Todos los Municipios",
+    "allStatuses": "Todos los Estados"
+  }
+}

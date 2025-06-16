@@ -1,0 +1,55 @@
+{
+  "title": "Gestão Financeira",
+  "subtitle": "Controle abrangente de finanças municipais",
+  "dashboard": {
+    "totalIncome": "Receitas Totais",
+    "totalExpenses": "Despesas Totais",
+    "balance": "Saldo",
+    "thisMonth": "Este Mês",
+    "thisYear": "Este Ano",
+    "budgetUsed": "Orçamento Utilizado",
+    "pendingPayments": "Pagamentos Pendentes"
+  },
+  "income": {
+    "title": "Receitas",
+    "addNew": "Registrar Receita",
+    "categories": "Categorias de Receitas",
+    "concept": "Conceito",
+    "amount": "Valor",
+    "date": "Data",
+    "reference": "Referência",
+    "park": "Parque",
+    "category": "Categoria"
+  },
+  "expenses": {
+    "title": "Despesas",
+    "addNew": "Registrar Despesa",
+    "categories": "Categorias de Despesas",
+    "concept": "Conceito",
+    "amount": "Valor",
+    "date": "Data",
+    "supplier": "Fornecedor",
+    "reference": "Referência",
+    "isPaid": "Pago",
+    "pending": "Pendente",
+    "paid": "Pago"
+  },
+  "budget": {
+    "title": "Orçamento",
+    "annual": "Orçamento Anual",
+    "year": "Ano",
+    "totalIncome": "Receitas Orçadas",
+    "totalExpenses": "Despesas Orçadas",
+    "status": "Status",
+    "draft": "Rascunho",
+    "approved": "Aprovado",
+    "executed": "Executado"
+  },
+  "reports": {
+    "title": "Relatórios",
+    "cashFlow": "Fluxo de Caixa",
+    "budgetExecution": "Execução Orçamentária",
+    "monthlyReport": "Relatório Mensal",
+    "annualReport": "Relatório Anual"
+  }
+}

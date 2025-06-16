@@ -1,0 +1,55 @@
+{
+  "title": "Gestión Financiera",
+  "subtitle": "Control integral de finanzas municipales",
+  "dashboard": {
+    "totalIncome": "Ingresos Totales",
+    "totalExpenses": "Egresos Totales",
+    "balance": "Saldo",
+    "thisMonth": "Este Mes",
+    "thisYear": "Este Año",
+    "budgetUsed": "Presupuesto Utilizado",
+    "pendingPayments": "Pagos Pendientes"
+  },
+  "income": {
+    "title": "Ingresos",
+    "addNew": "Registrar Ingreso",
+    "categories": "Categorías de Ingresos",
+    "concept": "Concepto",
+    "amount": "Monto",
+    "date": "Fecha",
+    "reference": "Referencia",
+    "park": "Parque",
+    "category": "Categoría"
+  },
+  "expenses": {
+    "title": "Egresos",
+    "addNew": "Registrar Egreso",
+    "categories": "Categorías de Egresos",
+    "concept": "Concepto",
+    "amount": "Monto",
+    "date": "Fecha",
+    "supplier": "Proveedor",
+    "reference": "Referencia",
+    "isPaid": "Pagado",
+    "pending": "Pendiente",
+    "paid": "Pagado"
+  },
+  "budget": {
+    "title": "Presupuesto",
+    "annual": "Presupuesto Anual",
+    "year": "Año",
+    "totalIncome": "Ingresos Presupuestados",
+    "totalExpenses": "Egresos Presupuestados",
+    "status": "Estado",
+    "draft": "Borrador",
+    "approved": "Aprobado",
+    "executed": "Ejecutado"
+  },
+  "reports": {
+    "title": "Reportes",
+    "cashFlow": "Flujo de Efectivo",
+    "budgetExecution": "Ejecución Presupuestal",
+    "monthlyReport": "Reporte Mensual",
+    "annualReport": "Reporte Anual"
+  }
+}

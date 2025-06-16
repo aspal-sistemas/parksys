@@ -1,0 +1,55 @@
+{
+  "title": "Financial Management",
+  "subtitle": "Comprehensive municipal finance control",
+  "dashboard": {
+    "totalIncome": "Total Income",
+    "totalExpenses": "Total Expenses",
+    "balance": "Balance",
+    "thisMonth": "This Month",
+    "thisYear": "This Year",
+    "budgetUsed": "Budget Used",
+    "pendingPayments": "Pending Payments"
+  },
+  "income": {
+    "title": "Income",
+    "addNew": "Register Income",
+    "categories": "Income Categories",
+    "concept": "Concept",
+    "amount": "Amount",
+    "date": "Date",
+    "reference": "Reference",
+    "park": "Park",
+    "category": "Category"
+  },
+  "expenses": {
+    "title": "Expenses",
+    "addNew": "Register Expense",
+    "categories": "Expense Categories",
+    "concept": "Concept",
+    "amount": "Amount",
+    "date": "Date",
+    "supplier": "Supplier",
+    "reference": "Reference",
+    "isPaid": "Paid",
+    "pending": "Pending",
+    "paid": "Paid"
+  },
+  "budget": {
+    "title": "Budget",
+    "annual": "Annual Budget",
+    "year": "Year",
+    "totalIncome": "Budgeted Income",
+    "totalExpenses": "Budgeted Expenses",
+    "status": "Status",
+    "draft": "Draft",
+    "approved": "Approved",
+    "executed": "Executed"
+  },
+  "reports": {
+    "title": "Reports",
+    "cashFlow": "Cash Flow",
+    "budgetExecution": "Budget Execution",
+    "monthlyReport": "Monthly Report",
+    "annualReport": "Annual Report"
+  }
+}

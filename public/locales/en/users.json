@@ -1,0 +1,52 @@
+{
+  "title": "User Management",
+  "subtitle": "System personnel and user administration",
+  "fields": {
+    "username": "Username",
+    "email": "Email",
+    "fullName": "Full Name",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "role": "Role",
+    "phone": "Phone",
+    "gender": "Gender",
+    "birthDate": "Birth Date",
+    "municipality": "Municipality",
+    "bio": "Biography",
+    "profileImage": "Profile Image",
+    "password": "Password",
+    "confirmPassword": "Confirm Password"
+  },
+  "roles": {
+    "admin": "Administrator",
+    "manager": "Manager",
+    "instructor": "Instructor",
+    "volunteer": "Volunteer",
+    "concessionaire": "Concessionaire"
+  },
+  "gender": {
+    "masculino": "Male",
+    "femenino": "Female",
+    "no_especificar": "Prefer not to specify"
+  },
+  "actions": {
+    "addUser": "Add User",
+    "editUser": "Edit User",
+    "deleteUser": "Delete User",
+    "viewProfile": "View Profile",
+    "changePassword": "Change Password",
+    "resetPassword": "Reset Password",
+    "uploadPhoto": "Upload Photo"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "suspended": "Suspended"
+  },
+  "filters": {
+    "allRoles": "All Roles",
+    "allMunicipalities": "All Municipalities",
+    "allStatuses": "All Statuses"
+  }
+}

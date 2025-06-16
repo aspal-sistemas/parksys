@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import UserProfileImage from '@/components/UserProfileImage';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -956,7 +957,14 @@ const RoleBasedSidebar: React.FC = () => {
       
       <Separator />
       
-      <div className="p-3">
+      <div className="p-3 space-y-3">
+        {/* Selector de idioma */}
+        <div className="flex justify-center">
+          <LanguageSelector />
+        </div>
+        
+        <Separator />
+        
         <div className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
           {(user as any)?.profileImageUrl ? (
             <img 
