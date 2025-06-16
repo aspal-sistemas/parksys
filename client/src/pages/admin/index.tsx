@@ -33,6 +33,7 @@ import AdminLayout from '@/components/AdminLayout';
 const AdminDashboard: React.FC = () => {
   const { t } = useTranslation('common');
   const { t: tParks } = useTranslation('parks');
+  const { t: tDashboard } = useTranslation('dashboard');
   
   // Fetch parks count
   const { data: parks = [] } = useQuery({

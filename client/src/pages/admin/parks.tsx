@@ -289,7 +289,7 @@ const AdminParks = () => {
               <SelectValue placeholder="Municipio" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los municipios</SelectItem>
+              <SelectItem value="all">{t('forms.allMunicipalities')}</SelectItem>
               {(municipalities as any[])?.map((municipality: any) => (
                 <SelectItem key={municipality.id} value={municipality.id.toString()}>
                   {municipality.name}
@@ -303,7 +303,7 @@ const AdminParks = () => {
               <SelectValue placeholder="Tipo de parque" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los tipos</SelectItem>
+              <SelectItem value="all">{t('forms.allTypes')}</SelectItem>
               <SelectItem value="metropolitano">Metropolitano</SelectItem>
               <SelectItem value="barrial">Barrial</SelectItem>
               <SelectItem value="vecinal">Vecinal</SelectItem>
