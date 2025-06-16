@@ -1505,9 +1505,12 @@ const AdminUsers = () => {
     }
   };
 
+  const { t } = useTranslation('common');
+  const { t: tUsers } = useTranslation('users');
+
   return (
     <AdminLayout
-      title="Gestión de Usuarios"
+      title={tUsers('title')}
     >
       {/* Search and actions bar */}
       <div className="mb-6 space-y-4">
@@ -1516,7 +1519,7 @@ const AdminUsers = () => {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               type="search"
-              placeholder="Buscar usuarios..."
+              placeholder={`${t('actions.search')} ${t('navigation.users')}...`}
               className="pl-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -1529,11 +1532,11 @@ const AdminUsers = () => {
               className="flex items-center gap-2"
             >
               <Filter className="h-4 w-4" />
-              Filtros
+              {t('actions.filter')}
             </Button>
             <Button onClick={handleCreateUser}>
               <PlusCircle className="h-4 w-4 mr-2" />
-              Nuevo Usuario
+              {tUsers('newUser')}
             </Button>
           </div>
         </div>
@@ -1728,8 +1731,8 @@ const AdminUsers = () => {
       {/* Delete confirmation dialog */}
       <ConfirmDialog
         isOpen={showDeleteConfirm}
-        title="Eliminar usuario"
-        message={`¿Estás seguro que deseas eliminar al usuario ${userToDelete?.username}? Esta acción no se puede deshacer.`}
+        title={tUsers('deleteUser')}
+        message={`${t('messages.deleteConfirm')} ${userToDelete?.username}?`}
         onConfirm={handleDeleteUser}
         onCancel={() => setShowDeleteConfirm(false)}
         isLoading={deleteUserMutation.isPending}

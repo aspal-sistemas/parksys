@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -219,13 +220,16 @@ const AdminParks = () => {
     });
   };
 
+  const { t } = useTranslation('common');
+  const { t: tParks } = useTranslation('parks');
+
   if (isLoadingParks) {
     return (
-      <AdminLayout title="Administración de Parques">
+      <AdminLayout title={tParks('title')}>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Cargando parques...</p>
+            <p className="mt-2 text-gray-600">{t('messages.loading')}</p>
           </div>
         </div>
       </AdminLayout>
