@@ -54,7 +54,7 @@ const AdminDashboard: React.FC = () => {
         <Link href="/admin/parks-import">
           <Button variant="outline">
             <Upload className="mr-2 h-4 w-4" />
-            Importar Parques
+{t('actions.import')} {t('navigation.parks')}
           </Button>
         </Link>
         <Button 
@@ -81,7 +81,7 @@ const AdminDashboard: React.FC = () => {
           }}
         >
           <HeartHandshake className="mr-2 h-4 w-4" />
-          Cargar Datos de Voluntarios
+Cargar Datos de {t('navigation.volunteers')}
         </Button>
       </div>
       
@@ -131,7 +131,7 @@ const AdminDashboard: React.FC = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Actividades
+              {t('navigation.activities')}
             </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -151,7 +151,7 @@ const AdminDashboard: React.FC = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Incidentes Reportados
+              {t('navigation.incidents')} Reportados
             </CardTitle>
             <Bell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
