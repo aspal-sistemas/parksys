@@ -85,6 +85,7 @@ The system uses environment variables for database connection and supports both 
 - June 16, 2025. Initial setup
 - June 16, 2025. Sistema completo de internacionalización implementado - Soporte para español, inglés y portugués con selector de idioma integrado
 - June 16, 2025. Traducciones completas del sidebar aplicadas - Todo el sistema de navegación responde al cambio de idioma
+- June 16, 2025. Landing page comercial implementada - Página profesional de ventas con branding "Parques de México" disponible en /ventas
 
 ## Recent Features
 
