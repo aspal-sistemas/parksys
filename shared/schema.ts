@@ -1739,3 +1739,282 @@ export const payrollReceiptDetailsRelations = relations(payrollReceiptDetails, (
     references: [payrollConcepts.id]
   })
 }));
+
+// ========== MÓDULO DE VACACIONES Y PERMISOS ==========
+
+// Tipos de solicitudes
+export const requestTypeEnum = pgEnum("request_type", [
+  "vacation",        // Vacaciones
+  "permission",      // Permisos
+  "sick_leave",      // Incapacidad médica
+  "maternity_leave", // Licencia de maternidad
+  "paternity_leave", // Licencia de paternidad
+  "personal_leave",  // Licencia personal
+  "bereavement",     // Luto
+  "study_leave",     // Licencia de estudios
+  "unpaid_leave"     // Licencia sin goce de sueldo
+]);
+
+// Estados de solicitudes
+export const requestStatusEnum = pgEnum("request_status", [
+  "pending",
+  "approved",
+  "rejected",
+  "cancelled"
+]);
+
+// Tabla de solicitudes de vacaciones, permisos e incapacidades
+export const timeOffRequests = pgTable("time_off_requests", {
+  id: serial("id").primaryKey(),
+  employeeId: integer("employee_id").notNull().references(() => employees.id),
+  requestType: requestTypeEnum("request_type").notNull(),
+  
+  // Fechas
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  requestedDays: decimal("requested_days", { precision: 5, scale: 2 }).notNull(),
+  
+  // Detalles
+  reason: text("reason").notNull(),
+  description: text("description"),
+  medicalCertificate: text("medical_certificate"), // URL del certificado médico
+  attachments: text("attachments").array(), // URLs de archivos adjuntos
+  
+  // Aprobación
+  status: requestStatusEnum("status").default("pending"),
+  approvedBy: integer("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  rejectionReason: text("rejection_reason"),
+  
+  // Metadatos
+  submittedAt: timestamp("submitted_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de balance de vacaciones por empleado
+export const vacationBalances = pgTable("vacation_balances", {
+  id: serial("id").primaryKey(),
+  employeeId: integer("employee_id").notNull().references(() => employees.id),
+  year: integer("year").notNull(),
+  
+  // Días disponibles
+  totalDays: decimal("total_days", { precision: 5, scale: 2 }).notNull(), // Días totales por año
+  usedDays: decimal("used_days", { precision: 5, scale: 2 }).default("0.00"), // Días utilizados
+  pendingDays: decimal("pending_days", { precision: 5, scale: 2 }).default("0.00"), // Días pendientes de aprobación
+  availableDays: decimal("available_days", { precision: 5, scale: 2 }).notNull(), // Días disponibles
+  
+  // Fechas
+  startDate: date("start_date").notNull(), // Inicio del período
+  endDate: date("end_date").notNull(), // Fin del período
+  
+  // Metadatos
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// ========== MÓDULO DE CONTROL DE HORAS TRABAJADAS ==========
+
+// Tipos de registros de tiempo
+export const timeRecordTypeEnum = pgEnum("time_record_type", [
+  "check_in",        // Entrada
+  "check_out",       // Salida
+  "break_start",     // Inicio de descanso
+  "break_end",       // Fin de descanso
+  "overtime_start",  // Inicio de horas extra
+  "overtime_end"     // Fin de horas extra
+]);
+
+// Tabla de registros de tiempo (check-in/check-out)
+export const timeRecords = pgTable("time_records", {
+  id: serial("id").primaryKey(),
+  employeeId: integer("employee_id").notNull().references(() => employees.id),
+  
+  // Datos del registro
+  recordType: timeRecordTypeEnum("record_type").notNull(),
+  timestamp: timestamp("timestamp").notNull(),
+  date: date("date").notNull(),
+  
+  // Ubicación
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+  location: text("location"), // Descripción de la ubicación
+  
+  // Metadatos
+  notes: text("notes"),
+  isManualEntry: boolean("is_manual_entry").default(false),
+  manualReason: text("manual_reason"),
+  registeredBy: integer("registered_by").references(() => users.id),
+  
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+// Tabla de resumen diario de horas trabajadas
+export const dailyTimeSheets = pgTable("daily_time_sheets", {
+  id: serial("id").primaryKey(),
+  employeeId: integer("employee_id").notNull().references(() => employees.id),
+  date: date("date").notNull(),
+  
+  // Horarios
+  checkInTime: timestamp("check_in_time"),
+  checkOutTime: timestamp("check_out_time"),
+  
+  // Horas calculadas
+  regularHours: decimal("regular_hours", { precision: 5, scale: 2 }).default("0.00"),
+  overtimeHours: decimal("overtime_hours", { precision: 5, scale: 2 }).default("0.00"),
+  breakHours: decimal("break_hours", { precision: 5, scale: 2 }).default("0.00"),
+  totalHours: decimal("total_hours", { precision: 5, scale: 2 }).default("0.00"),
+  
+  // Estado del día
+  isLate: boolean("is_late").default(false),
+  lateMinutes: integer("late_minutes").default(0),
+  isEarlyLeave: boolean("is_early_leave").default(false),
+  earlyLeaveMinutes: integer("early_leave_minutes").default(0),
+  isAbsent: boolean("is_absent").default(false),
+  
+  // Justificaciones
+  absenceReason: text("absence_reason"),
+  lateReason: text("late_reason"),
+  isJustified: boolean("is_justified").default(false),
+  
+  // Metadatos
+  notes: text("notes"),
+  approvedBy: integer("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de horarios de trabajo por empleado
+export const workSchedules = pgTable("work_schedules", {
+  id: serial("id").primaryKey(),
+  employeeId: integer("employee_id").notNull().references(() => employees.id),
+  
+  // Días de la semana
+  monday: boolean("monday").default(true),
+  tuesday: boolean("tuesday").default(true),
+  wednesday: boolean("wednesday").default(true),
+  thursday: boolean("thursday").default(true),
+  friday: boolean("friday").default(true),
+  saturday: boolean("saturday").default(false),
+  sunday: boolean("sunday").default(false),
+  
+  // Horarios
+  startTime: text("start_time").notNull(), // Formato HH:MM
+  endTime: text("end_time").notNull(), // Formato HH:MM
+  breakStartTime: text("break_start_time"), // Hora de inicio de descanso
+  breakEndTime: text("break_end_time"), // Hora de fin de descanso
+  
+  // Configuración
+  regularHoursPerDay: decimal("regular_hours_per_day", { precision: 5, scale: 2 }).default("8.00"),
+  toleranceMinutes: integer("tolerance_minutes").default(15), // Tolerancia para llegadas tarde
+  
+  // Fechas de vigencia
+  effectiveFrom: date("effective_from").notNull(),
+  effectiveTo: date("effective_to"),
+  
+  // Metadatos
+  isActive: boolean("is_active").default(true),
+  notes: text("notes"),
+  createdBy: integer("created_by").references(() => users.id),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Schemas de validación para vacaciones y permisos
+export const insertTimeOffRequestSchema = createInsertSchema(timeOffRequests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertVacationBalanceSchema = createInsertSchema(vacationBalances).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertTimeRecordSchema = createInsertSchema(timeRecords).omit({
+  id: true,
+  createdAt: true
+});
+
+export const insertDailyTimeSheetSchema = createInsertSchema(dailyTimeSheets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertWorkScheduleSchema = createInsertSchema(workSchedules).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Tipos TypeScript
+export type InsertTimeOffRequest = z.infer<typeof insertTimeOffRequestSchema>;
+export type TimeOffRequest = typeof timeOffRequests.$inferSelect;
+export type InsertVacationBalance = z.infer<typeof insertVacationBalanceSchema>;
+export type VacationBalance = typeof vacationBalances.$inferSelect;
+export type InsertTimeRecord = z.infer<typeof insertTimeRecordSchema>;
+export type TimeRecord = typeof timeRecords.$inferSelect;
+export type InsertDailyTimeSheet = z.infer<typeof insertDailyTimeSheetSchema>;
+export type DailyTimeSheet = typeof dailyTimeSheets.$inferSelect;
+export type InsertWorkSchedule = z.infer<typeof insertWorkScheduleSchema>;
+export type WorkSchedule = typeof workSchedules.$inferSelect;
+
+// Relaciones para vacaciones y permisos
+export const timeOffRequestsRelations = relations(timeOffRequests, ({ one }) => ({
+  employee: one(employees, {
+    fields: [timeOffRequests.employeeId],
+    references: [employees.id]
+  }),
+  approver: one(users, {
+    fields: [timeOffRequests.approvedBy],
+    references: [users.id]
+  })
+}));
+
+export const vacationBalancesRelations = relations(vacationBalances, ({ one }) => ({
+  employee: one(employees, {
+    fields: [vacationBalances.employeeId],
+    references: [employees.id]
+  })
+}));
+
+// Relaciones para control de horas
+export const timeRecordsRelations = relations(timeRecords, ({ one }) => ({
+  employee: one(employees, {
+    fields: [timeRecords.employeeId],
+    references: [employees.id]
+  }),
+  registeredBy: one(users, {
+    fields: [timeRecords.registeredBy],
+    references: [users.id]
+  })
+}));
+
+export const dailyTimeSheetsRelations = relations(dailyTimeSheets, ({ one }) => ({
+  employee: one(employees, {
+    fields: [dailyTimeSheets.employeeId],
+    references: [employees.id]
+  }),
+  approver: one(users, {
+    fields: [dailyTimeSheets.approvedBy],
+    references: [users.id]
+  })
+}));
+
+export const workSchedulesRelations = relations(workSchedules, ({ one }) => ({
+  employee: one(employees, {
+    fields: [workSchedules.employeeId],
+    references: [employees.id]
+  }),
+  createdBy: one(users, {
+    fields: [workSchedules.createdBy],
+    references: [users.id]
+  })
+}));

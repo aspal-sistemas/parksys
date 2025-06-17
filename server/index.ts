@@ -448,6 +448,22 @@ import { initializeDatabase } from "./initialize-db";
     console.error("Error al registrar rutas HR:", error);
   }
 
+  // Registrar rutas de vacaciones y control de horas
+  try {
+    const { registerTimeOffRoutes } = await import("./time-off-routes");
+    const timeOffRouter = express.Router();
+    
+    // Aplicar middleware JSON al router de tiempo libre
+    timeOffRouter.use(express.json({ limit: '50mb' }));
+    timeOffRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    
+    registerTimeOffRoutes(app, timeOffRouter, (req: Request, res: Response, next: NextFunction) => next());
+    app.use("/api/time-off", timeOffRouter);
+    console.log("Rutas de vacaciones y control de horas registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de vacaciones y control de horas:", error);
+  }
+
   // Crear tablas de recibos de nómina
   try {
     const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
