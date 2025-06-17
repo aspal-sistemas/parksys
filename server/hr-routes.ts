@@ -197,6 +197,199 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
     }
   });
 
+  // Obtener resumen de nómina de un empleado
+  apiRouter.get("/employees/:id/payroll-summary", async (req: Request, res: Response) => {
+    try {
+      const employeeId = parseInt(req.params.id);
+      
+      if (isNaN(employeeId)) {
+        return res.status(400).json({ error: "ID de empleado inválido" });
+      }
+
+      // Obtener información del empleado
+      const [employee] = await db
+        .select()
+        .from(employees)
+        .where(eq(employees.id, employeeId));
+
+      if (!employee) {
+        return res.status(404).json({ error: "Empleado no encontrado" });
+      }
+
+      // Obtener historial de nómina del empleado
+      const payrollHistory = await db
+        .select({
+          id: payrollDetails.id,
+          periodId: payrollDetails.periodId,
+          conceptId: payrollDetails.conceptId,
+          amount: payrollDetails.amount,
+          quantity: payrollDetails.quantity,
+          description: payrollDetails.description,
+          createdAt: payrollDetails.createdAt,
+          period: payrollPeriods.period,
+          startDate: payrollPeriods.startDate,
+          endDate: payrollPeriods.endDate,
+          status: payrollPeriods.status,
+          conceptCode: payrollConcepts.code,
+          conceptName: payrollConcepts.name,
+          conceptType: payrollConcepts.type,
+          conceptCategory: payrollConcepts.category
+        })
+        .from(payrollDetails)
+        .leftJoin(payrollPeriods, eq(payrollDetails.periodId, payrollPeriods.id))
+        .leftJoin(payrollConcepts, eq(payrollDetails.conceptId, payrollConcepts.id))
+        .where(eq(payrollDetails.employeeId, employeeId))
+        .orderBy(desc(payrollPeriods.startDate));
+
+      // Calcular estadísticas
+      const totalPeriods = new Set(payrollHistory.map(h => h.periodId)).size;
+      const totalIncome = payrollHistory
+        .filter(h => h.conceptType === 'income')
+        .reduce((sum, h) => sum + parseFloat(h.amount || '0'), 0);
+      const totalDeductions = payrollHistory
+        .filter(h => h.conceptType === 'deduction')
+        .reduce((sum, h) => sum + Math.abs(parseFloat(h.amount || '0')), 0);
+      const netEarnings = totalIncome - totalDeductions;
+      const averageMonthlyPay = totalPeriods > 0 ? netEarnings / totalPeriods : 0;
+
+      // Agrupar por período para ganancias mensuales
+      const monthlyEarnings = payrollHistory.reduce((acc, detail) => {
+        if (!detail.period) return acc;
+        
+        const [year, month] = detail.period.split('-').map(Number);
+        const key = `${year}-${month}`;
+        
+        if (!acc[key]) {
+          acc[key] = {
+            year,
+            month,
+            totalIncome: 0,
+            totalDeductions: 0,
+            netPay: 0
+          };
+        }
+        
+        const amount = parseFloat(detail.amount || '0');
+        if (detail.conceptType === 'income') {
+          acc[key].totalIncome += amount;
+        } else if (detail.conceptType === 'deduction') {
+          acc[key].totalDeductions += Math.abs(amount);
+        }
+        
+        acc[key].netPay = acc[key].totalIncome - acc[key].totalDeductions;
+        
+        return acc;
+      }, {} as Record<string, any>);
+
+      const response = {
+        employee,
+        statistics: {
+          totalPeriods,
+          totalIncome,
+          totalDeductions,
+          netEarnings,
+          averageMonthlyPay
+        },
+        monthlyEarnings: Object.values(monthlyEarnings)
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Error al obtener resumen de nómina del empleado:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
+
+  // Obtener historial de nómina de un empleado con filtros
+  apiRouter.get("/employees/:id/payroll-history", async (req: Request, res: Response) => {
+    try {
+      const employeeId = parseInt(req.params.id);
+      const year = req.query.year as string;
+      const month = req.query.month as string;
+      
+      if (isNaN(employeeId)) {
+        return res.status(400).json({ error: "ID de empleado inválido" });
+      }
+
+      // Construir query base
+      let query = db
+        .select({
+          id: payrollDetails.id,
+          periodId: payrollDetails.periodId,
+          conceptId: payrollDetails.conceptId,
+          amount: payrollDetails.amount,
+          quantity: payrollDetails.quantity,
+          description: payrollDetails.description,
+          createdAt: payrollDetails.createdAt,
+          period: payrollPeriods.period,
+          startDate: payrollPeriods.startDate,
+          endDate: payrollPeriods.endDate,
+          status: payrollPeriods.status,
+          conceptCode: payrollConcepts.code,
+          conceptName: payrollConcepts.name,
+          conceptType: payrollConcepts.type,
+          conceptCategory: payrollConcepts.category
+        })
+        .from(payrollDetails)
+        .leftJoin(payrollPeriods, eq(payrollDetails.periodId, payrollPeriods.id))
+        .leftJoin(payrollConcepts, eq(payrollDetails.conceptId, payrollConcepts.id))
+        .where(eq(payrollDetails.employeeId, employeeId));
+
+      // Aplicar filtros adicionales
+      if (year && month) {
+        const filterPeriod = `${year}-${month.padStart(2, '0')}`;
+        query = query.where(and(
+          eq(payrollDetails.employeeId, employeeId),
+          eq(payrollPeriods.period, filterPeriod)
+        ));
+      } else if (year) {
+        query = query.where(and(
+          eq(payrollDetails.employeeId, employeeId),
+          sql`${payrollPeriods.period} LIKE ${year + '-%'}`
+        ));
+      }
+
+      const payrollHistory = await query.orderBy(desc(payrollPeriods.startDate));
+
+      // Agrupar por período
+      const groupedByPeriod = payrollHistory.reduce((acc, detail) => {
+        const periodKey = detail.period || 'sin-periodo';
+        
+        if (!acc[periodKey]) {
+          acc[periodKey] = {
+            period: detail.period,
+            startDate: detail.startDate,
+            endDate: detail.endDate,
+            status: detail.status,
+            details: [],
+            totalIncome: 0,
+            totalDeductions: 0,
+            netPay: 0
+          };
+        }
+        
+        acc[periodKey].details.push(detail);
+        
+        const amount = parseFloat(detail.amount || '0');
+        if (detail.conceptType === 'income') {
+          acc[periodKey].totalIncome += amount;
+        } else if (detail.conceptType === 'deduction') {
+          acc[periodKey].totalDeductions += Math.abs(amount);
+        }
+        
+        acc[periodKey].netPay = acc[periodKey].totalIncome - acc[periodKey].totalDeductions;
+        
+        return acc;
+      }, {} as Record<string, any>);
+
+      const response = Object.values(groupedByPeriod);
+      res.json(response);
+    } catch (error) {
+      console.error("Error al obtener historial de nómina del empleado:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
+
   // ========== CONCEPTOS DE NÓMINA ==========
   
   // Obtener conceptos de nómina
