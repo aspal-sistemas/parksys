@@ -103,10 +103,11 @@ const PayrollBenefits = () => {
     mutationFn: (payrollData: any) => 
       apiRequest('/api/payroll-periods/process', {
         method: 'POST',
-        body: JSON.stringify(payrollData)
+        data: payrollData
       }),
-    onSuccess: (result) => {
+    onSuccess: (result: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/payroll-periods'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/employees'] });
       setIsNewPayrollOpen(false);
       toast({
         title: "Nómina procesada exitosamente",
