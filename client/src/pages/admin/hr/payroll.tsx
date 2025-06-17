@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   Calculator, 
   Plus, 
@@ -78,6 +81,71 @@ const PayrollBenefits = () => {
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [isNewPayrollOpen, setIsNewPayrollOpen] = useState(false);
   const [isNewBenefitOpen, setIsNewBenefitOpen] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState("2025-06");
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Obtener empleados para nómina
+  const { data: employees = [], isLoading: loadingEmployees } = useQuery({
+    queryKey: ['/api/employees'],
+    queryFn: () => fetch('/api/employees').then(res => res.json())
+  });
+
+  // Obtener periodos de nómina
+  const { data: payrollPeriods = [] } = useQuery({
+    queryKey: ['/api/payroll-periods'],
+    queryFn: () => fetch('/api/payroll-periods').then(res => res.json())
+  });
+
+  // Mutación para procesar nómina
+  const processPayrollMutation = useMutation({
+    mutationFn: (payrollData: any) => 
+      apiRequest('/api/payroll-periods/process', {
+        method: 'POST',
+        body: JSON.stringify(payrollData)
+      }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/payroll-periods'] });
+      setIsNewPayrollOpen(false);
+      toast({
+        title: "Nómina procesada exitosamente",
+        description: `Se procesaron ${result.employeesProcessed} empleados y se integraron automáticamente ${result.financialRecords} registros financieros`,
+      });
+    },
+    onError: (error) => {
+      console.error('Error procesando nómina:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo procesar la nómina",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleProcessPayroll = () => {
+    if (!selectedPeriod) {
+      toast({
+        title: "Período requerido",
+        description: "Por favor seleccione un período para procesar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const payrollData = {
+      period: selectedPeriod,
+      employees: employees.filter(emp => emp.status === 'active').map(emp => ({
+        employeeId: emp.id,
+        employeeName: emp.fullName,
+        baseSalary: emp.salary,
+        department: emp.department,
+        position: emp.position
+      }))
+    };
+
+    processPayrollMutation.mutate(payrollData);
+  };
 
   // Datos de nómina
   const payrollRecords: PayrollRecord[] = [

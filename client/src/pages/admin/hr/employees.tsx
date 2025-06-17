@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   Users, 
   Plus, 
@@ -56,9 +59,91 @@ const EmployeesManagement = () => {
   const [isNewEmployeeOpen, setIsNewEmployeeOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isViewEmployeeOpen, setIsViewEmployeeOpen] = useState(false);
+  const [newEmployeeData, setNewEmployeeData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    position: "",
+    department: "",
+    salary: "",
+    hireDate: "",
+    education: "",
+    address: "",
+    emergencyContact: "",
+    emergencyPhone: ""
+  });
 
-  // Datos de empleados de muestra
-  const employees: Employee[] = [
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Obtener empleados de la base de datos
+  const { data: employees = [], isLoading, error } = useQuery({
+    queryKey: ['/api/employees'],
+    queryFn: () => fetch('/api/employees').then(res => res.json())
+  });
+
+  // Mutación para crear empleado
+  const createEmployeeMutation = useMutation({
+    mutationFn: (employeeData: any) => 
+      apiRequest('/api/employees', {
+        method: 'POST',
+        body: JSON.stringify(employeeData)
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/employees'] });
+      setIsNewEmployeeOpen(false);
+      setNewEmployeeData({
+        fullName: "",
+        email: "",
+        phone: "",
+        position: "",
+        department: "",
+        salary: "",
+        hireDate: "",
+        education: "",
+        address: "",
+        emergencyContact: "",
+        emergencyPhone: ""
+      });
+      toast({
+        title: "Empleado creado",
+        description: "El empleado ha sido registrado exitosamente",
+      });
+    },
+    onError: (error) => {
+      console.error('Error creando empleado:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo crear el empleado",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateEmployee = () => {
+    if (!newEmployeeData.fullName || !newEmployeeData.email || !newEmployeeData.salary) {
+      toast({
+        title: "Campos requeridos",
+        description: "Por favor complete todos los campos obligatorios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const employeePayload = {
+      ...newEmployeeData,
+      salary: parseFloat(newEmployeeData.salary),
+      status: 'active',
+      skills: [],
+      certifications: [],
+      workSchedule: "Lunes a Viernes 8:00-16:00"
+    };
+
+    createEmployeeMutation.mutate(employeePayload);
+  };
+
+  // Empleados de respaldo si no hay conexión a la BD
+  const fallbackEmployees: Employee[] = [
     {
       id: 1,
       fullName: "María Elena González",
@@ -244,24 +329,48 @@ const EmployeesManagement = () => {
               
               <div className="grid grid-cols-2 gap-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Nombre Completo</Label>
-                  <Input id="fullName" placeholder="Ej: María Elena González" />
+                  <Label htmlFor="fullName">Nombre Completo *</Label>
+                  <Input 
+                    id="fullName" 
+                    placeholder="Ej: María Elena González"
+                    value={newEmployeeData.fullName}
+                    onChange={(e) => setNewEmployeeData(prev => ({ ...prev, fullName: e.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Correo Electrónico</Label>
-                  <Input id="email" type="email" placeholder="maria@parques.mx" />
+                  <Label htmlFor="email">Correo Electrónico *</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="maria@parques.mx"
+                    value={newEmployeeData.email}
+                    onChange={(e) => setNewEmployeeData(prev => ({ ...prev, email: e.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Teléfono</Label>
-                  <Input id="phone" placeholder="+52 33 1234-5678" />
+                  <Input 
+                    id="phone" 
+                    placeholder="+52 33 1234-5678"
+                    value={newEmployeeData.phone}
+                    onChange={(e) => setNewEmployeeData(prev => ({ ...prev, phone: e.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="position">Puesto</Label>
-                  <Input id="position" placeholder="Coordinadora de Eventos" />
+                  <Input 
+                    id="position" 
+                    placeholder="Coordinadora de Eventos"
+                    value={newEmployeeData.position}
+                    onChange={(e) => setNewEmployeeData(prev => ({ ...prev, position: e.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="department">Departamento</Label>
-                  <Select>
+                  <Select 
+                    value={newEmployeeData.department} 
+                    onValueChange={(value) => setNewEmployeeData(prev => ({ ...prev, department: value }))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar departamento" />
                     </SelectTrigger>
@@ -273,16 +382,59 @@ const EmployeesManagement = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="salary">Salario Mensual</Label>
-                  <Input id="salary" type="number" placeholder="25000" />
+                  <Label htmlFor="salary">Salario Mensual *</Label>
+                  <Input 
+                    id="salary" 
+                    type="number" 
+                    placeholder="25000"
+                    value={newEmployeeData.salary}
+                    onChange={(e) => setNewEmployeeData(prev => ({ ...prev, salary: e.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="hireDate">Fecha de Contratación</Label>
-                  <Input id="hireDate" type="date" />
+                  <Input 
+                    id="hireDate" 
+                    type="date"
+                    value={newEmployeeData.hireDate}
+                    onChange={(e) => setNewEmployeeData(prev => ({ ...prev, hireDate: e.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="education">Educación</Label>
-                  <Input id="education" placeholder="Lic. en Administración" />
+                  <Input 
+                    id="education" 
+                    placeholder="Lic. en Administración"
+                    value={newEmployeeData.education}
+                    onChange={(e) => setNewEmployeeData(prev => ({ ...prev, education: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <Label htmlFor="address">Dirección</Label>
+                  <Input 
+                    id="address" 
+                    placeholder="Col. Americana, Guadalajara, Jal."
+                    value={newEmployeeData.address}
+                    onChange={(e) => setNewEmployeeData(prev => ({ ...prev, address: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="emergencyContact">Contacto de Emergencia</Label>
+                  <Input 
+                    id="emergencyContact" 
+                    placeholder="Pedro González"
+                    value={newEmployeeData.emergencyContact}
+                    onChange={(e) => setNewEmployeeData(prev => ({ ...prev, emergencyContact: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="emergencyPhone">Teléfono de Emergencia</Label>
+                  <Input 
+                    id="emergencyPhone" 
+                    placeholder="+52 33 8765-4321"
+                    value={newEmployeeData.emergencyPhone}
+                    onChange={(e) => setNewEmployeeData(prev => ({ ...prev, emergencyPhone: e.target.value }))}
+                  />
                 </div>
               </div>
               
@@ -290,8 +442,11 @@ const EmployeesManagement = () => {
                 <Button variant="outline" onClick={() => setIsNewEmployeeOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={() => setIsNewEmployeeOpen(false)}>
-                  Registrar Empleado
+                <Button 
+                  onClick={handleCreateEmployee}
+                  disabled={createEmployeeMutation.isPending}
+                >
+                  {createEmployeeMutation.isPending ? "Registrando..." : "Registrar Empleado"}
                 </Button>
               </div>
             </DialogContent>
