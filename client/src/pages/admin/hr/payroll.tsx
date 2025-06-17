@@ -195,8 +195,8 @@ export default function Payroll() {
     queryFn: async () => {
       if (!selectedEmployeeId) return [];
       const params = new URLSearchParams();
-      if (historyFilterYear) params.append('year', historyFilterYear);
-      if (historyFilterMonth) params.append('month', historyFilterMonth);
+      if (historyFilterYear && historyFilterYear !== 'all') params.append('year', historyFilterYear);
+      if (historyFilterMonth && historyFilterMonth !== 'all') params.append('month', historyFilterMonth);
       const queryString = params.toString();
       const url = `/api/hr/employees/${selectedEmployeeId}/payroll-history${queryString ? `?${queryString}` : ''}`;
       const response = await fetch(url);
@@ -1541,7 +1541,7 @@ export default function Payroll() {
                             <SelectValue placeholder="Todos los meses" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Todos los meses</SelectItem>
+                            <SelectItem value="all">Todos los meses</SelectItem>
                             <SelectItem value="01">Enero</SelectItem>
                             <SelectItem value="02">Febrero</SelectItem>
                             <SelectItem value="03">Marzo</SelectItem>
