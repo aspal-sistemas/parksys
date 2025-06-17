@@ -1684,9 +1684,11 @@ export default function Employees() {
 
           <TabsContent value="departments">
             <Card>
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-lg">
+              <CardHeader className="bg-gradient-to-r from-[#00a587]/10 to-[#bcd256]/10 rounded-t-lg">
                 <CardTitle className="text-2xl text-gray-900 flex items-center gap-3">
-                  <Building className="h-6 w-6 text-blue-600" />
+                  <div className="p-2 bg-gradient-to-br from-[#00a587] to-[#067f5f] rounded-lg">
+                    <Building className="h-6 w-6 text-white" />
+                  </div>
                   Departamentos Organizacionales
                 </CardTitle>
                 <CardDescription className="text-gray-700">
@@ -1698,14 +1700,14 @@ export default function Employees() {
                   {departmentsList.map((dept, index) => {
                     const deptEmployees = employees.filter(emp => emp.department === dept.name);
                     
-                    // Color palette based on hierarchy level
+                    // Color palette based on hierarchy level using Parques de México brand colors
                     const getHierarchyColors = (level: number) => {
                       const colorSchemes = {
-                        1: { bg: 'bg-gradient-to-br from-purple-100 to-purple-200', border: 'border-purple-300', badge: 'bg-purple-600 text-white', icon: 'text-purple-700' },
-                        2: { bg: 'bg-gradient-to-br from-blue-100 to-blue-200', border: 'border-blue-300', badge: 'bg-blue-600 text-white', icon: 'text-blue-700' },
-                        3: { bg: 'bg-gradient-to-br from-green-100 to-green-200', border: 'border-green-300', badge: 'bg-green-600 text-white', icon: 'text-green-700' },
-                        4: { bg: 'bg-gradient-to-br from-orange-100 to-orange-200', border: 'border-orange-300', badge: 'bg-orange-600 text-white', icon: 'text-orange-700' },
-                        5: { bg: 'bg-gradient-to-br from-teal-100 to-teal-200', border: 'border-teal-300', badge: 'bg-teal-600 text-white', icon: 'text-teal-700' }
+                        1: { bg: 'bg-gradient-to-br from-[#8498a5]/20 to-[#8498a5]/30', border: 'border-[#8498a5]', badge: 'bg-[#8498a5] text-white', icon: 'text-[#8498a5]' },
+                        2: { bg: 'bg-gradient-to-br from-[#5ba8c4]/20 to-[#5ba8c4]/30', border: 'border-[#5ba8c4]', badge: 'bg-[#5ba8c4] text-white', icon: 'text-[#5ba8c4]' },
+                        3: { bg: 'bg-gradient-to-br from-[#00a587]/20 to-[#00a587]/30', border: 'border-[#00a587]', badge: 'bg-[#00a587] text-white', icon: 'text-[#00a587]' },
+                        4: { bg: 'bg-gradient-to-br from-[#22c55e]/20 to-[#22c55e]/30', border: 'border-[#22c55e]', badge: 'bg-[#22c55e] text-white', icon: 'text-[#22c55e]' },
+                        5: { bg: 'bg-gradient-to-br from-[#bcd256]/20 to-[#bcd256]/30', border: 'border-[#bcd256]', badge: 'bg-[#bcd256] text-white', icon: 'text-[#bcd256]' }
                       };
                       return colorSchemes[level as keyof typeof colorSchemes] || colorSchemes[5];
                     };
@@ -1785,9 +1787,9 @@ export default function Employees() {
                 </div>
                 
                 {/* Resumen estadístico */}
-                <div className="mt-8 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-6 border border-blue-200">
+                <div className="mt-8 bg-gradient-to-r from-[#00a587]/10 to-[#bcd256]/10 rounded-lg p-6 border border-[#00a587]/30">
                   <h4 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                    <Award className="h-5 w-5 text-blue-600" />
+                    <Award className="h-5 w-5 text-[#00a587]" />
                     Resumen Organizacional
                   </h4>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -1799,11 +1801,11 @@ export default function Employees() {
                       });
                       
                       const levelColors = {
-                        1: 'bg-purple-100 border-purple-300 text-purple-800',
-                        2: 'bg-blue-100 border-blue-300 text-blue-800',
-                        3: 'bg-green-100 border-green-300 text-green-800',
-                        4: 'bg-orange-100 border-orange-300 text-orange-800',
-                        5: 'bg-teal-100 border-teal-300 text-teal-800'
+                        1: 'bg-[#8498a5]/20 border-[#8498a5] text-[#8498a5]',
+                        2: 'bg-[#5ba8c4]/20 border-[#5ba8c4] text-[#5ba8c4]',
+                        3: 'bg-[#00a587]/20 border-[#00a587] text-[#00a587]',
+                        4: 'bg-[#22c55e]/20 border-[#22c55e] text-[#22c55e]',
+                        5: 'bg-[#bcd256]/20 border-[#bcd256] text-[#bcd256]'
                       };
                       
                       const levelName = level === 1 ? 'Dirección' : level === 2 ? 'Asistencias' : level === 3 ? 'Coordinaciones' : level === 4 ? 'Áreas' : 'Operativo';
