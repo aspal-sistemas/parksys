@@ -1107,7 +1107,7 @@ export default function Employees() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {paginatedEmployees.map((employee) => (
+                  {filteredEmployees.map((employee) => (
                     <div key={employee.id} className="border rounded-lg p-4 space-y-2">
                       <h3 className="font-semibold text-lg">{employee.fullName}</h3>
                       <p className="text-sm text-gray-600">{employee.position}</p>
