@@ -90,7 +90,7 @@ const EmployeesManagement = () => {
     mutationFn: (employeeData: any) => 
       apiRequest('/api/employees', {
         method: 'POST',
-        body: JSON.stringify(employeeData)
+        data: employeeData
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/employees'] });
