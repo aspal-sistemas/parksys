@@ -472,14 +472,40 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
   // Crear período de nómina
   apiRouter.post("/payroll-periods", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      console.log("Datos recibidos para crear período:", req.body);
+      
+      // Extraer datos del nuevo formato
+      const { name, startDate, endDate, payDate, periodType, status } = req.body;
+      
+      // Generar el campo period requerido en formato YYYY-MM
+      const startDateObj = new Date(startDate);
+      const period = `${startDateObj.getFullYear()}-${(startDateObj.getMonth() + 1).toString().padStart(2, '0')}`;
+      
+      // Preparar datos para el esquema actual
+      const periodData = {
+        period, // Campo requerido en formato YYYY-MM
+        startDate,
+        endDate,
+        status: status || 'draft',
+        // Los demás campos opcionales se pueden agregar después
+        totalAmount: '0',
+        employeesCount: 0
+      };
+      
+      console.log("Datos adaptados para la base de datos:", periodData);
+      
       const [newPeriod] = await db
         .insert(payrollPeriods)
-        .values(req.body)
+        .values(periodData)
         .returning();
+        
       res.status(201).json(newPeriod);
     } catch (error) {
       console.error("Error al crear período de nómina:", error);
-      res.status(500).json({ error: "Error interno del servidor" });
+      res.status(500).json({ 
+        error: "Error interno del servidor",
+        details: error instanceof Error ? error.message : "Error desconocido"
+      });
     }
   });
 
