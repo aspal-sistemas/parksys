@@ -618,7 +618,7 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
             concept: `Nómina ${period}`,
             amount: totalPayroll,
             date: endDate,
-            categoryId: 7, // Categoría "Personal"
+            categoryId: 22, // Categoría "Personal"
             description: `Gasto de nómina generado automáticamente para el período ${period}`,
             invoiceNumber: `NOM-${period}`,
             isPaid: true,
