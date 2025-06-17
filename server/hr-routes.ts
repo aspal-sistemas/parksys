@@ -306,6 +306,7 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
       const employeeId = parseInt(req.params.id);
       const year = req.query.year as string;
       const month = req.query.month as string;
+      const period = req.query.period as string; // quincena: 1, 2, o todas
       
       if (isNaN(employeeId)) {
         return res.status(400).json({ error: "ID de empleado inválido" });
@@ -335,21 +336,27 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
         .leftJoin(payrollConcepts, eq(payrollDetails.conceptId, payrollConcepts.id))
         .where(eq(payrollDetails.employeeId, employeeId));
 
-      // Aplicar filtros adicionales
-      if (year && month) {
-        const filterPeriod = `${year}-${month.padStart(2, '0')}`;
-        query = query.where(and(
-          eq(payrollDetails.employeeId, employeeId),
-          eq(payrollPeriods.period, filterPeriod)
-        ));
-      } else if (year) {
-        query = query.where(and(
-          eq(payrollDetails.employeeId, employeeId),
-          sql`${payrollPeriods.period} LIKE ${year + '-%'}`
-        ));
-      }
+      let payrollHistory = await query.orderBy(desc(payrollPeriods.startDate));
 
-      const payrollHistory = await query.orderBy(desc(payrollPeriods.startDate));
+      // Filtrar por quincena si es necesario (basado en fechas)
+      if (period && period !== 'all') {
+        payrollHistory = payrollHistory.filter(record => {
+          if (!record.startDate) return false;
+          
+          const startDate = new Date(record.startDate);
+          const day = startDate.getDate();
+          
+          if (period === '1') {
+            // Primera quincena: días 1-15
+            return day >= 1 && day <= 15;
+          } else if (period === '2') {
+            // Segunda quincena: días 16-31
+            return day >= 16 && day <= 31;
+          }
+          
+          return false;
+        });
+      }
 
       // Agrupar por período
       const groupedByPeriod = payrollHistory.reduce((acc, detail) => {

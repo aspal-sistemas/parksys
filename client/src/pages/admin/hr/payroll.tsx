@@ -175,6 +175,7 @@ export default function Payroll() {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
   const [historyFilterYear, setHistoryFilterYear] = useState<string>('');
   const [historyFilterMonth, setHistoryFilterMonth] = useState<string>('');
+  const [historyFilterPeriod, setHistoryFilterPeriod] = useState<string>(''); // quincena: 1, 2, o todas
   const [isViewPeriodDialogOpen, setIsViewPeriodDialogOpen] = useState(false);
   const [viewingPeriod, setViewingPeriod] = useState<PayrollPeriod | null>(null);
   
@@ -191,12 +192,13 @@ export default function Payroll() {
 
   // Historial de pagos del empleado seleccionado
   const { data: employeePayrollHistory = [], isLoading: isLoadingHistory } = useQuery<PayrollHistoryPeriod[]>({
-    queryKey: ["/api/hr/employees", selectedEmployeeId, "payroll-history", historyFilterYear, historyFilterMonth],
+    queryKey: ["/api/hr/employees", selectedEmployeeId, "payroll-history", historyFilterYear, historyFilterMonth, historyFilterPeriod],
     queryFn: async () => {
       if (!selectedEmployeeId) return [];
       const params = new URLSearchParams();
       if (historyFilterYear && historyFilterYear !== 'all') params.append('year', historyFilterYear);
       if (historyFilterMonth && historyFilterMonth !== 'all') params.append('month', historyFilterMonth);
+      if (historyFilterPeriod && historyFilterPeriod !== 'all') params.append('period', historyFilterPeriod);
       const queryString = params.toString();
       const url = `/api/hr/employees/${selectedEmployeeId}/payroll-history${queryString ? `?${queryString}` : ''}`;
       const response = await fetch(url);
@@ -1554,6 +1556,19 @@ export default function Payroll() {
                             <SelectItem value="10">Octubre</SelectItem>
                             <SelectItem value="11">Noviembre</SelectItem>
                             <SelectItem value="12">Diciembre</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex-1">
+                        <Label htmlFor="filterPeriod">Quincena</Label>
+                        <Select value={historyFilterPeriod} onValueChange={setHistoryFilterPeriod}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Todas las quincenas" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Todas las quincenas</SelectItem>
+                            <SelectItem value="1">Primera quincena (1-15)</SelectItem>
+                            <SelectItem value="2">Segunda quincena (16-31)</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
