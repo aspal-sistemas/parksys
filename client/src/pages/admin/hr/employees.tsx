@@ -525,7 +525,7 @@ export default function Employees() {
     setIsNewEmployeeOpen(true);
   };
 
-  const handleDeleteEmployee = (employee: Employee) => {
+  const handleDeleteEmployee = async (employee: Employee) => {
     const confirmDelete = window.confirm(
       `⚠️ ADVERTENCIA: Esta acción no se puede deshacer.\n\n¿Estás seguro de que deseas eliminar permanentemente a ${employee.fullName}?\n\nEsta acción eliminará:\n- Todos los datos del empleado\n- Su historial laboral\n- Sus asignaciones actuales\n\nEscribe "ELIMINAR" para confirmar.`
     );
@@ -536,12 +536,40 @@ export default function Employees() {
       );
       
       if (confirmation === "ELIMINAR") {
-        toast({
-          title: "Empleado eliminado",
-          description: `${employee.fullName} ha sido eliminado permanentemente del sistema.`,
-          variant: "destructive"
-        });
-        console.log(`Empleado ${employee.id} - ${employee.fullName} eliminado`);
+        try {
+          const response = await fetch(`/api/employees/${employee.id}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            toast({
+              title: "Empleado eliminado",
+              description: `${employee.fullName} ha sido eliminado permanentemente del sistema.`,
+              variant: "destructive"
+            });
+            console.log(`Empleado ${employee.id} - ${employee.fullName} eliminado`);
+            
+            // Recargar la lista de empleados
+            loadEmployees();
+          } else {
+            const errorData = await response.json();
+            toast({
+              title: "Error al eliminar empleado",
+              description: errorData.error || "No se pudo eliminar el empleado",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error("Error eliminando empleado:", error);
+          toast({
+            title: "Error de conexión",
+            description: "No se pudo conectar con el servidor",
+            variant: "destructive"
+          });
+        }
       } else if (confirmation !== null) {
         toast({
           title: "Eliminación cancelada",
@@ -1226,34 +1254,48 @@ export default function Employees() {
                 try {
                   console.log('Datos del empleado a guardar:', employeeData);
                   
-                  // Verificar si el email ya existe
-                  const checkResponse = await fetch('/api/employees');
-                  if (checkResponse.ok) {
-                    const existingEmployees = await checkResponse.json();
-                    const emailExists = existingEmployees.some((emp: any) => emp.email === employeeData.email);
-                    
-                    if (emailExists) {
-                      toast({
-                        title: "Email ya registrado",
-                        description: `El email ${employeeData.email} ya está registrado. Usa un email diferente.`,
-                        variant: "destructive"
-                      });
-                      return;
-                    }
-                  }
+                  const isEditing = selectedEmployee && selectedEmployee.id;
                   
-                  // Crear empleado en el servidor
-                  const response = await fetch('/api/employees', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(employeeData)
-                  });
+                  let response;
+                  if (isEditing) {
+                    // Actualizar empleado existente
+                    response = await fetch(`/api/employees/${selectedEmployee.id}`, {
+                      method: 'PUT',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify(employeeData)
+                    });
+                  } else {
+                    // Verificar si el email ya existe para nuevos empleados
+                    const checkResponse = await fetch('/api/employees');
+                    if (checkResponse.ok) {
+                      const existingEmployees = await checkResponse.json();
+                      const emailExists = existingEmployees.some((emp: any) => emp.email === employeeData.email);
+                      
+                      if (emailExists) {
+                        toast({
+                          title: "Email ya registrado",
+                          description: `El email ${employeeData.email} ya está registrado. Usa un email diferente.`,
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+                    }
+                    
+                    // Crear nuevo empleado
+                    response = await fetch('/api/employees', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify(employeeData)
+                    });
+                  }
 
                   if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
-                    let errorMessage = 'Error al crear el empleado';
+                    let errorMessage = isEditing ? 'Error al actualizar el empleado' : 'Error al crear el empleado';
                     
                     if (errorData.error) {
                       errorMessage = errorData.error;
@@ -1264,11 +1306,11 @@ export default function Employees() {
                     throw new Error(errorMessage);
                   }
 
-                  const newEmployee = await response.json();
+                  const savedEmployee = await response.json();
                   
                   toast({
-                    title: "Empleado creado exitosamente",
-                    description: `${employeeData.firstName} ${employeeData.lastName} ha sido agregado al sistema.`,
+                    title: isEditing ? "Empleado actualizado exitosamente" : "Empleado creado exitosamente",
+                    description: `${employeeData.firstName} ${employeeData.lastName} ha sido ${isEditing ? 'actualizado' : 'agregado'} en el sistema.`,
                   });
                   
                   setIsNewEmployeeOpen(false);
@@ -1278,10 +1320,10 @@ export default function Employees() {
                   await loadEmployees();
                   
                 } catch (error) {
-                  console.error('Error al crear empleado:', error);
+                  console.error('Error al procesar empleado:', error);
                   toast({
                     title: "Error",
-                    description: "No se pudo crear el empleado. Intenta nuevamente.",
+                    description: error.message || "No se pudo procesar el empleado. Intenta nuevamente.",
                     variant: "destructive"
                   });
                 }

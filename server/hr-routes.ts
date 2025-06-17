@@ -126,6 +126,19 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
   apiRouter.put("/employees/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
+      
+      // Si se está actualizando el email, verificar que no exista en otro empleado
+      if (req.body.email) {
+        const existingEmployee = await db
+          .select()
+          .from(employees)
+          .where(and(eq(employees.email, req.body.email), sql`${employees.id} != ${id}`));
+        
+        if (existingEmployee.length > 0) {
+          return res.status(400).json({ error: "El correo electrónico ya está en uso por otro empleado" });
+        }
+      }
+      
       const [updatedEmployee] = await db
         .update(employees)
         .set({ ...req.body, updatedAt: new Date() })
@@ -139,6 +152,35 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
       res.json(updatedEmployee);
     } catch (error) {
       console.error("Error al actualizar empleado:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
+
+  // Eliminar empleado
+  apiRouter.delete("/employees/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Verificar que el empleado existe
+      const existingEmployee = await db
+        .select()
+        .from(employees)
+        .where(eq(employees.id, id));
+      
+      if (existingEmployee.length === 0) {
+        return res.status(404).json({ error: "Empleado no encontrado" });
+      }
+      
+      // Eliminar el empleado
+      const [deletedEmployee] = await db
+        .delete(employees)
+        .where(eq(employees.id, id))
+        .returning();
+      
+      console.log(`Empleado eliminado: ${deletedEmployee.fullName} (ID: ${deletedEmployee.id})`);
+      res.json({ message: "Empleado eliminado exitosamente", employee: deletedEmployee });
+    } catch (error) {
+      console.error("Error al eliminar empleado:", error);
       res.status(500).json({ error: "Error interno del servidor" });
     }
   });
