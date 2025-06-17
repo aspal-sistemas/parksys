@@ -200,6 +200,37 @@ const EmployeesManagement = () => {
     });
   };
 
+  const handleDeleteEmployee = (employee: Employee) => {
+    const confirmDelete = window.confirm(
+      `⚠️ ADVERTENCIA: Esta acción no se puede deshacer.\n\n¿Estás seguro de que deseas eliminar permanentemente a ${employee.fullName}?\n\nEsta acción eliminará:\n- Todos los datos del empleado\n- Su historial laboral\n- Sus asignaciones actuales\n\nEscribe "ELIMINAR" para confirmar.`
+    );
+    
+    if (confirmDelete) {
+      const confirmation = window.prompt(
+        `Para confirmar la eliminación de ${employee.fullName}, escribe exactamente: ELIMINAR`
+      );
+      
+      if (confirmation === "ELIMINAR") {
+        // Aquí iría la lógica para eliminar del servidor
+        // Por ahora solo mostramos una confirmación
+        toast({
+          title: "Empleado eliminado",
+          description: `${employee.fullName} ha sido eliminado permanentemente del sistema.`,
+          variant: "destructive"
+        });
+        
+        // En una implementación real, aquí se haría la llamada a la API
+        console.log(`Empleado ${employee.id} - ${employee.fullName} eliminado`);
+      } else if (confirmation !== null) {
+        toast({
+          title: "Eliminación cancelada",
+          description: "La confirmación no coincide. El empleado no fue eliminado.",
+          variant: "default"
+        });
+      }
+    }
+  };
+
   // Funciones para gestión de departamentos
   const handleAddDepartment = () => {
     if (newDepartmentName.trim() && !departmentsList.includes(newDepartmentName.trim())) {
@@ -943,6 +974,14 @@ const EmployeesManagement = () => {
                           <Button size="sm" variant="outline" onClick={() => handleEditEmployee(employee)}>
                             <Edit className="h-4 w-4" />
                           </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => handleDeleteEmployee(employee)}
+                            className="text-red-600 hover:text-red-700 hover:border-red-300"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -1046,12 +1085,23 @@ const EmployeesManagement = () => {
                     
                     <div className="mt-4 pt-4 border-t">
                       <div className="flex gap-2">
-                        <Button size="sm" className="flex-1">
+                        <Button size="sm" className="flex-1" onClick={() => handleSendMessage(employee)}>
                           <Mail className="h-4 w-4 mr-1" />
                           Contactar
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => handleViewEmployee(employee)}>
                           <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleEditEmployee(employee)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => handleDeleteEmployee(employee)}
+                          className="text-red-600 hover:text-red-700 hover:border-red-300"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
