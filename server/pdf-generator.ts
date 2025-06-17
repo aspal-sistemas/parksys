@@ -3,6 +3,19 @@ import fs from 'fs';
 import path from 'path';
 import Handlebars from 'handlebars';
 
+// Registrar helpers de Handlebars
+Handlebars.registerHelper('formatCurrency', function(amount: string | number) {
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  return new Intl.NumberFormat('es-MX', {
+    style: 'currency',
+    currency: 'MXN'
+  }).format(num || 0);
+});
+
+Handlebars.registerHelper('eq', function(a: any, b: any) {
+  return a === b;
+});
+
 // Crear directorio para PDFs si no existe
 const PDF_DIR = path.join(process.cwd(), 'public', 'receipts');
 if (!fs.existsSync(PDF_DIR)) {
@@ -334,7 +347,7 @@ const RECEIPT_TEMPLATE = `
                     </td>
                     <td>{{quantity}}</td>
                     <td class="amount {{#if (eq conceptType 'income')}}income{{else}}deduction{{/if}}">
-                        ${{amount}}
+                        {{formatCurrency amount}}
                     </td>
                 </tr>
                 {{/each}}
@@ -346,15 +359,15 @@ const RECEIPT_TEMPLATE = `
             <div class="totals-grid">
                 <div class="total-item total-gross">
                     <div class="total-label">TOTAL PERCEPCIONES</div>
-                    <div class="total-amount income">${{totalGross}}</div>
+                    <div class="total-amount income">{{formatCurrency totalGross}}</div>
                 </div>
                 <div class="total-item total-deductions">
                     <div class="total-label">TOTAL DEDUCCIONES</div>
-                    <div class="total-amount deduction">${{totalDeductions}}</div>
+                    <div class="total-amount deduction">{{formatCurrency totalDeductions}}</div>
                 </div>
                 <div class="total-item total-net">
                     <div class="total-label">NETO A PAGAR</div>
-                    <div class="total-amount net-amount">${{totalNet}}</div>
+                    <div class="total-amount net-amount">{{formatCurrency totalNet}}</div>
                 </div>
             </div>
         </div>
