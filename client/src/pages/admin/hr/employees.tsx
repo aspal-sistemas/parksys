@@ -581,6 +581,10 @@ export default function Employees() {
 
   // Función mejorada de filtrado y ordenamiento para el directorio
   const getFilteredAndSortedEmployees = () => {
+    console.log('=== DEBUG FILTRADO ===');
+    console.log('Total empleados recibidos:', employees.length);
+    console.log('Filtros activos:', { searchTerm, departmentFilter, statusFilter, hierarchyFilter });
+    
     let filtered = employees.filter(employee => {
       if (!employee) return false;
       
@@ -590,7 +594,7 @@ export default function Employees() {
       const department = employee.department || '';
       const status = employee.status || '';
       
-      const matchesSearch = fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const matchesSearch = searchTerm === '' || fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            position.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === "all" || department === departmentFilter;
@@ -602,9 +606,20 @@ export default function Employees() {
         return deptInfo ? deptInfo.hierarchy.toString() === hierarchyFilter : false;
       })();
       
-      return matchesSearch && matchesDepartment && matchesStatus && matchesHierarchy;
+      const passes = matchesSearch && matchesDepartment && matchesStatus && matchesHierarchy;
+      
+      if (!passes) {
+        console.log(`Empleado ${fullName} filtrado por:`, {
+          matchesSearch, matchesDepartment, matchesStatus, matchesHierarchy,
+          department, status
+        });
+      }
+      
+      return passes;
     });
-
+    
+    console.log('Empleados después de filtrado:', filtered.length);
+    
     // Aplicar ordenamiento
     filtered.sort((a, b) => {
       let compareValue = 0;
