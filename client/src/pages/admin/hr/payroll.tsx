@@ -113,6 +113,7 @@ export default function Payroll() {
   const [selectedPeriod, setSelectedPeriod] = useState<PayrollPeriod | null>(null);
   const [isNewPeriodDialogOpen, setIsNewPeriodDialogOpen] = useState(false);
   const [isProcessPayrollDialogOpen, setIsProcessPayrollDialogOpen] = useState(false);
+  const [isNewConceptDialogOpen, setIsNewConceptDialogOpen] = useState(false);
   
   // Datos de empleados
   const { data: employees = [], isLoading: employeesLoading } = useQuery({
@@ -175,6 +176,31 @@ export default function Payroll() {
       toast({
         title: "Error",
         description: "No se pudo procesar la nómina",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Mutación para crear concepto
+  const createConceptMutation = useMutation({
+    mutationFn: async (conceptData: any) => {
+      return apiRequest("/api/hr/payroll-concepts", {
+        method: "POST",
+        data: conceptData
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/payroll-concepts"] });
+      setIsNewConceptDialogOpen(false);
+      toast({
+        title: "Concepto creado",
+        description: "El concepto de nómina se ha creado exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "No se pudo crear el concepto de nómina",
         variant: "destructive",
       });
     }
@@ -243,6 +269,26 @@ export default function Payroll() {
       period: period.period,
       employees: selectedEmployees
     });
+  };
+
+  // Función para crear nuevo concepto
+  const handleCreateConcept = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const conceptData = {
+      code: formData.get('code') as string,
+      name: formData.get('name') as string,
+      type: formData.get('type') as string,
+      category: formData.get('category') as string,
+      isFixed: formData.get('isFixed') === 'true',
+      formula: formData.get('formula') as string || null,
+      isActive: true,
+      expenseCategoryId: 22, // ID de la categoría Personal
+      sortOrder: payrollConcepts.length + 1
+    };
+
+    createConceptMutation.mutate(conceptData);
   };
 
   return (
@@ -470,15 +516,26 @@ export default function Payroll() {
           <TabsContent value="concepts">
             <Card>
               <CardHeader className="bg-gradient-to-r from-[#00a587]/10 to-[#bcd256]/10 rounded-t-lg">
-                <CardTitle className="text-2xl text-gray-900 flex items-center gap-3">
-                  <div className="p-2 bg-gradient-to-br from-[#00a587] to-[#067f5f] rounded-lg">
-                    <Settings className="h-6 w-6 text-white" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl text-gray-900 flex items-center gap-3">
+                      <div className="p-2 bg-gradient-to-br from-[#00a587] to-[#067f5f] rounded-lg">
+                        <Settings className="h-6 w-6 text-white" />
+                      </div>
+                      Conceptos de Nómina
+                    </CardTitle>
+                    <CardDescription className="text-gray-700">
+                      Configuración de salarios, deducciones y prestaciones
+                    </CardDescription>
                   </div>
-                  Conceptos de Nómina
-                </CardTitle>
-                <CardDescription className="text-gray-700">
-                  Configuración de salarios, deducciones y prestaciones
-                </CardDescription>
+                  <Button 
+                    onClick={() => setIsNewConceptDialogOpen(true)}
+                    className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nuevo Concepto
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="p-6">
                 {conceptsLoading ? (
@@ -696,6 +753,122 @@ export default function Payroll() {
                 </Button>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog para Nuevo Concepto */}
+        <Dialog open={isNewConceptDialogOpen} onOpenChange={setIsNewConceptDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Crear Nuevo Concepto de Nómina</DialogTitle>
+              <DialogDescription>
+                Configura un nuevo concepto para usar en el procesamiento de nómina
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateConcept} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="code">Código *</Label>
+                  <Input
+                    id="code"
+                    name="code"
+                    placeholder="Ej: PRIMA_VAC"
+                    required
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500">Código único para identificar el concepto</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nombre *</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    placeholder="Ej: Prima Vacacional"
+                    required
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="type">Tipo *</Label>
+                  <Select name="type" required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona el tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="income">Ingreso</SelectItem>
+                      <SelectItem value="deduction">Deducción</SelectItem>
+                      <SelectItem value="benefit">Prestación</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="category">Categoría *</Label>
+                  <Select name="category" required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona la categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="salary">Salario</SelectItem>
+                      <SelectItem value="overtime">Tiempo Extra</SelectItem>
+                      <SelectItem value="bonus">Bonificación</SelectItem>
+                      <SelectItem value="tax">Impuesto</SelectItem>
+                      <SelectItem value="insurance">Seguro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="isFixed">Tipo de Cálculo</Label>
+                <Select name="isFixed" defaultValue="true">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Monto Fijo</SelectItem>
+                    <SelectItem value="false">Calculado por Fórmula</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="formula">Fórmula (opcional)</Label>
+                <Input
+                  id="formula"
+                  name="formula"
+                  placeholder="Ej: salary * 0.15 o 500"
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-500">
+                  Para conceptos calculados. Puedes usar: salary, hours, días_trabajados
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <h4 className="font-medium text-yellow-900 mb-2">Ejemplos de Conceptos</h4>
+                <div className="text-sm text-yellow-800 space-y-1">
+                  <p><strong>Aguinaldo:</strong> Tipo: Ingreso, Categoría: Bonificación, Fórmula: salary * 0.5</p>
+                  <p><strong>Prima Vacacional:</strong> Tipo: Ingreso, Categoría: Bonificación, Fórmula: salary * 0.25</p>
+                  <p><strong>Vales de Despensa:</strong> Tipo: Prestación, Monto Fijo: 1000</p>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button type="button" variant="outline" onClick={() => setIsNewConceptDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-[#00a587] hover:bg-[#067f5f]"
+                  disabled={createConceptMutation.isPending}
+                >
+                  {createConceptMutation.isPending ? "Creando..." : "Crear Concepto"}
+                </Button>
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
