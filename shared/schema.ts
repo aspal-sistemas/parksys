@@ -77,10 +77,17 @@ export const actualExpenses = pgTable("actual_expenses", {
   invoiceNumber: varchar("invoice_number", { length: 50 }),
   isPaid: boolean("is_paid").default(false),
   paymentDate: date("payment_date"),
-  // Campos adicionales para integración con nómina
-  payrollPeriodId: integer("payroll_period_id"),
+  // Campos para integraciones automáticas  
   isPayrollGenerated: boolean("is_payroll_generated").default(false),
+  payrollPeriodId: integer("payroll_period_id"),
+  isAssetsGenerated: boolean("is_assets_generated").default(false),
+  assetId: integer("asset_id"),
+  assetMaintenanceId: integer("asset_maintenance_id"),
+  isTreesGenerated: boolean("is_trees_generated").default(false), 
+  isVolunteersGenerated: boolean("is_volunteers_generated").default(false),
+  isIncidentsGenerated: boolean("is_incidents_generated").default(false),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Schemas de validación para finanzas
