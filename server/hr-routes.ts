@@ -557,7 +557,8 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
         if (employee.length === 0) continue;
 
         const emp = employee[0];
-        const baseSalary = emp.salary || 0;
+        const baseSalary = parseFloat(emp.salary) || 0;
+        console.log(`Empleado ${emp.fullName}: salario raw = ${emp.salary}, parsed = ${baseSalary}`);
 
         // Calcular deducciones básicas
         const imssDeduction = baseSalary * 0.02375; // 2.375% IMSS
@@ -565,6 +566,8 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
 
         const netPay = baseSalary - imssDeduction - isrTax;
         totalPayroll += netPay;
+        
+        console.log(`${emp.fullName}: base=${baseSalary}, imss=${imssDeduction}, isr=${isrTax}, neto=${netPay}, total acumulado=${totalPayroll}`);
 
         // Crear detalles de nómina
         if (salaryConcept) {
