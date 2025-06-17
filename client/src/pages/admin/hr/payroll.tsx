@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { 
@@ -16,842 +17,688 @@ import {
   Plus, 
   Search, 
   Download,
-  Upload,
   DollarSign,
   Calendar,
   Users,
-  Shield,
-  Heart,
-  PiggyBank,
   FileText,
   CheckCircle,
   AlertTriangle,
   Eye,
   Edit,
   TrendingUp,
-  Archive
+  CreditCard,
+  Settings,
+  Play,
+  Pause,
+  RotateCcw
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import AdminLayout from "@/components/AdminLayout";
 
-interface PayrollRecord {
-  id: number;
-  employeeId: number;
-  employeeName: string;
-  department: string;
-  period: string;
-  baseSalary: number;
-  overtime: number;
-  bonuses: number;
-  deductions: number;
-  taxes: number;
-  netPay: number;
-  status: 'draft' | 'calculated' | 'approved' | 'paid';
-  payDate: string;
-}
-
-interface Benefit {
-  id: number;
-  name: string;
-  type: 'health' | 'insurance' | 'vacation' | 'retirement' | 'other';
-  description: string;
-  coverage: string;
-  cost: number;
-  employeesEnrolled: number;
-  provider: string;
-  effectiveDate: string;
-  status: 'active' | 'inactive';
-}
-
+// Interfaces para el módulo de nómina
 interface Employee {
   id: number;
-  name: string;
-  department: string;
+  userId: number;
+  fullName: string;
+  email: string;
+  phone: string;
   position: string;
-  baseSalary: number;
+  department: string;
+  salary: string;
   hireDate: string;
-  benefits: string[];
-  status: 'active' | 'inactive';
+  status: string;
+  education: string;
+  address: string;
+  emergencyContact: string;
+  emergencyPhone: string;
+  skills: string[];
+  certifications: string[];
+  workSchedule: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-const PayrollBenefits = () => {
-  const [activeTab, setActiveTab] = useState("payroll");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [periodFilter, setPeriodFilter] = useState("current");
-  const [departmentFilter, setDepartmentFilter] = useState("all");
-  const [isNewPayrollOpen, setIsNewPayrollOpen] = useState(false);
-  const [isNewBenefitOpen, setIsNewBenefitOpen] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState("2025-06");
+interface PayrollConcept {
+  id: number;
+  code: string;
+  name: string;
+  type: 'income' | 'deduction' | 'benefit';
+  category: 'salary' | 'overtime' | 'bonus' | 'tax' | 'insurance';
+  isFixed: boolean;
+  formula: string;
+  isActive: boolean;
+  expenseCategoryId: number;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
+interface PayrollPeriod {
+  id: number;
+  period: string; // YYYY-MM format
+  startDate: string;
+  endDate: string;
+  status: 'draft' | 'processing' | 'calculated' | 'approved' | 'paid';
+  processedAt: string;
+  totalAmount: string;
+  employeesCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface PayrollDetail {
+  id: number;
+  periodId: number;
+  employeeId: number;
+  conceptId: number;
+  amount: string;
+  quantity: string;
+  description: string;
+  createdAt: string;
+}
+
+interface ProcessedEmployee {
+  employeeId: number;
+  employeeName: string;
+  baseSalary: number;
+  deductions: number;
+  netPay: number;
+}
+
+export default function Payroll() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  // Obtener empleados para nómina
-  const { data: employees = [], isLoading: loadingEmployees } = useQuery({
-    queryKey: ['/api/employees'],
-    queryFn: () => fetch('/api/employees').then(res => res.json())
+  const [activeTab, setActiveTab] = useState("periods");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState<PayrollPeriod | null>(null);
+  const [isNewPeriodDialogOpen, setIsNewPeriodDialogOpen] = useState(false);
+  const [isProcessPayrollDialogOpen, setIsProcessPayrollDialogOpen] = useState(false);
+  
+  // Datos de empleados
+  const { data: employees = [], isLoading: employeesLoading } = useQuery({
+    queryKey: ["/api/hr/employees"],
+    select: (data: Employee[]) => data.filter((emp: Employee) => emp.status === 'active')
   });
 
-  // Obtener periodos de nómina
-  const { data: payrollPeriods = [] } = useQuery({
-    queryKey: ['/api/payroll-periods'],
-    queryFn: () => fetch('/api/payroll-periods').then(res => res.json())
+  // Datos de conceptos de nómina
+  const { data: payrollConcepts = [], isLoading: conceptsLoading } = useQuery<PayrollConcept[]>({
+    queryKey: ["/api/hr/payroll-concepts"]
+  });
+
+  // Datos de períodos de nómina
+  const { data: payrollPeriods = [], isLoading: periodsLoading } = useQuery<PayrollPeriod[]>({
+    queryKey: ["/api/hr/payroll-periods"]
+  });
+
+  // Mutación para crear período
+  const createPeriodMutation = useMutation({
+    mutationFn: async (periodData: any) => {
+      return apiRequest("/api/hr/payroll-periods", {
+        method: "POST",
+        data: periodData
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/payroll-periods"] });
+      setIsNewPeriodDialogOpen(false);
+      toast({
+        title: "Período creado",
+        description: "El período de nómina se ha creado exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "No se pudo crear el período de nómina",
+        variant: "destructive",
+      });
+    }
   });
 
   // Mutación para procesar nómina
   const processPayrollMutation = useMutation({
-    mutationFn: (payrollData: any) => 
-      apiRequest('/api/payroll-periods/process', {
-        method: 'POST',
-        data: payrollData
-      }),
-    onSuccess: (result: any) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/payroll-periods'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/employees'] });
-      setIsNewPayrollOpen(false);
-      toast({
-        title: "Nómina procesada exitosamente",
-        description: `Se procesaron ${result.employeesProcessed} empleados y se integraron automáticamente ${result.financialRecords} registros financieros`,
+    mutationFn: async (processData: any) => {
+      return apiRequest("/api/hr/payroll-periods/process", {
+        method: "POST",
+        data: processData
       });
     },
-    onError: (error) => {
-      console.error('Error procesando nómina:', error);
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/payroll-periods"] });
+      setIsProcessPayrollDialogOpen(false);
+      toast({
+        title: "Nómina procesada",
+        description: `Se procesaron ${data?.processedEmployees?.length || 0} empleados exitosamente`,
+      });
+    },
+    onError: (error: any) => {
       toast({
         title: "Error",
         description: "No se pudo procesar la nómina",
         variant: "destructive",
       });
-    },
+    }
   });
 
-  const handleProcessPayroll = () => {
-    if (!selectedPeriod) {
-      toast({
-        title: "Período requerido",
-        description: "Por favor seleccione un período para procesar",
-        variant: "destructive",
-      });
-      return;
-    }
+  // Filtrar empleados por búsqueda
+  const filteredEmployees = employees.filter((emp: Employee) =>
+    emp.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emp.department.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-    const payrollData = {
-      period: selectedPeriod,
-      employees: employees.filter(emp => emp.status === 'active').map(emp => ({
-        employeeId: emp.id,
-        employeeName: emp.fullName,
-        baseSalary: emp.salary,
-        department: emp.department,
-        position: emp.position
-      }))
+  // Colores para gráficos
+  const CHART_COLORS = ['#00a587', '#067f5f', '#bcd256', '#8498a5', '#22c55e'];
+
+  // Datos para dashboard
+  const totalActiveEmployees = employees.length;
+  const currentMonthPeriod = payrollPeriods.find((period: PayrollPeriod) => {
+    const currentDate = new Date();
+    const currentPeriod = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+    return period.period === currentPeriod;
+  });
+
+  const totalMonthlyPayroll = currentMonthPeriod ? parseFloat(currentMonthPeriod.totalAmount || '0') : 0;
+
+  // Función para obtener el estado visual del período
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      draft: { color: 'bg-gray-100 text-gray-800', label: 'Borrador' },
+      processing: { color: 'bg-blue-100 text-blue-800', label: 'Procesando' },
+      calculated: { color: 'bg-yellow-100 text-yellow-800', label: 'Calculado' },
+      approved: { color: 'bg-green-100 text-green-800', label: 'Aprobado' },
+      paid: { color: 'bg-[#00a587]/20 text-[#00a587]', label: 'Pagado' }
     };
-
-    processPayrollMutation.mutate(payrollData);
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
+    return <Badge className={config.color}>{config.label}</Badge>;
   };
 
-  // Datos de nómina
-  const payrollRecords: PayrollRecord[] = [
-    {
-      id: 1,
-      employeeId: 1,
-      employeeName: "María Elena González",
-      department: "Eventos y Actividades",
-      period: "2025-05",
-      baseSalary: 35000,
-      overtime: 2800,
-      bonuses: 3500,
-      deductions: 1200,
-      taxes: 7200,
-      netPay: 32900,
-      status: "paid",
-      payDate: "2025-05-30"
-    },
-    {
-      id: 2,
-      employeeId: 2,
-      employeeName: "Carlos Alberto Martínez",
-      department: "Mantenimiento",
-      period: "2025-05",
-      baseSalary: 28000,
-      overtime: 4200,
-      bonuses: 2000,
-      deductions: 800,
-      taxes: 5800,
-      netPay: 27600,
-      status: "paid",
-      payDate: "2025-05-30"
-    },
-    {
-      id: 3,
-      employeeId: 3,
-      employeeName: "Ana Patricia Rodríguez",
-      department: "Administración",
-      period: "2025-05",
-      baseSalary: 32000,
-      overtime: 0,
-      bonuses: 1600,
-      deductions: 1000,
-      taxes: 6200,
-      netPay: 26400,
-      status: "approved",
-      payDate: "2025-05-30"
-    },
-    {
-      id: 4,
-      employeeId: 4,
-      employeeName: "Roberto Jiménez Silva",
-      department: "Seguridad",
-      period: "2025-05",
-      baseSalary: 26000,
-      overtime: 3900,
-      bonuses: 1300,
-      deductions: 650,
-      taxes: 5400,
-      netPay: 25150,
-      status: "calculated",
-      payDate: "2025-05-30"
-    },
-    {
-      id: 5,
-      employeeId: 5,
-      employeeName: "Sofía Mendoza López",
-      department: "Eventos y Actividades",
-      period: "2025-05",
-      baseSalary: 22000,
-      overtime: 1100,
-      bonuses: 1100,
-      deductions: 550,
-      taxes: 4200,
-      netPay: 19450,
-      status: "draft",
-      payDate: "2025-05-30"
-    }
-  ];
-
-  // Datos de beneficios
-  const benefits: Benefit[] = [
-    {
-      id: 1,
-      name: "Seguro de Gastos Médicos Mayores",
-      type: "health",
-      description: "Cobertura médica integral para empleados y familiares",
-      coverage: "Nacional e Internacional",
-      cost: 2500,
-      employeesEnrolled: 85,
-      provider: "GNP Seguros",
-      effectiveDate: "2025-01-01",
-      status: "active"
-    },
-    {
-      id: 2,
-      name: "Seguro de Vida",
-      type: "insurance",
-      description: "Póliza de vida con cobertura de 5x el salario anual",
-      coverage: "5x Salario Anual",
-      cost: 800,
-      employeesEnrolled: 92,
-      provider: "Seguros Monterrey",
-      effectiveDate: "2025-01-01",
-      status: "active"
-    },
-    {
-      id: 3,
-      name: "Fondo de Ahorro",
-      type: "retirement",
-      description: "Plan de ahorro con aportación patronal del 50%",
-      coverage: "Hasta 10% del salario",
-      cost: 1500,
-      employeesEnrolled: 78,
-      provider: "Banco Santander",
-      effectiveDate: "2025-01-01",
-      status: "active"
-    },
-    {
-      id: 4,
-      name: "Vacaciones Adicionales",
-      type: "vacation",
-      description: "Días de vacaciones adicionales por antigüedad",
-      coverage: "5-15 días extra",
-      cost: 0,
-      employeesEnrolled: 100,
-      provider: "Interno",
-      effectiveDate: "2025-01-01",
-      status: "active"
-    },
-    {
-      id: 5,
-      name: "Capacitación Especializada",
-      type: "other",
-      description: "Programa de desarrollo profesional continuo",
-      coverage: "Hasta $10,000 anuales",
-      cost: 3000,
-      employeesEnrolled: 65,
-      provider: "Universidad TecMilenio",
-      effectiveDate: "2025-01-01",
-      status: "active"
-    }
-  ];
-
-  const departments = ["Eventos y Actividades", "Mantenimiento", "Administración", "Seguridad", "Recursos Humanos"];
-
-  // Datos para gráficas
-  const payrollTrends = [
-    { month: 'Ene', total: 1250000, employees: 95 },
-    { month: 'Feb', total: 1280000, employees: 96 },
-    { month: 'Mar', total: 1320000, employees: 98 },
-    { month: 'Abr', total: 1350000, employees: 100 },
-    { month: 'May', total: 1390000, employees: 102 },
-    { month: 'Jun', total: 1420000, employees: 105 }
-  ];
-
-  const benefitDistribution = [
-    { name: 'Salud', value: 45, color: '#22c55e' },
-    { name: 'Seguros', value: 25, color: '#3b82f6' },
-    { name: 'Ahorro', value: 20, color: '#f59e0b' },
-    { name: 'Otros', value: 10, color: '#8b5cf6' }
-  ];
-
-  const departmentCosts = [
-    { department: 'Eventos', nomina: 420000, beneficios: 48000 },
-    { department: 'Mantenimiento', nomina: 380000, beneficios: 42000 },
-    { department: 'Administración', nomina: 350000, beneficios: 38000 },
-    { department: 'Seguridad', nomina: 310000, beneficios: 35000 },
-    { department: 'RH', nomina: 280000, beneficios: 32000 }
-  ];
-
-  const filteredPayroll = payrollRecords.filter(record => {
-    const matchesSearch = record.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         record.department.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDepartment = departmentFilter === "all" || record.department === departmentFilter;
-    const matchesPeriod = periodFilter === "all" || record.period === periodFilter;
+  // Función para crear nuevo período
+  const handleCreatePeriod = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const period = formData.get('period') as string;
     
-    return matchesSearch && matchesDepartment && matchesPeriod;
-  });
+    const [year, month] = period.split('-').map(Number);
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'calculated': return 'bg-blue-100 text-blue-800';
-      case 'approved': return 'bg-yellow-100 text-yellow-800';
-      case 'paid': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+    createPeriodMutation.mutate({
+      period,
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+      status: 'draft'
+    });
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'draft': return 'Borrador';
-      case 'calculated': return 'Calculado';
-      case 'approved': return 'Aprobado';
-      case 'paid': return 'Pagado';
-      default: return 'Desconocido';
-    }
-  };
+  // Función para procesar nómina
+  const handleProcessPayroll = (period: PayrollPeriod) => {
+    const selectedEmployees = employees.map((emp: Employee) => ({
+      id: emp.id,
+      fullName: emp.fullName,
+      salary: parseFloat(emp.salary),
+      department: emp.department
+    }));
 
-  const getBenefitTypeIcon = (type: string) => {
-    switch (type) {
-      case 'health': return <Heart className="h-4 w-4" />;
-      case 'insurance': return <Shield className="h-4 w-4" />;
-      case 'retirement': return <PiggyBank className="h-4 w-4" />;
-      case 'vacation': return <Calendar className="h-4 w-4" />;
-      default: return <FileText className="h-4 w-4" />;
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN'
-    }).format(amount);
-  };
-
-  // Estadísticas
-  const stats = {
-    totalPayroll: payrollRecords.reduce((sum, record) => sum + record.netPay, 0),
-    avgSalary: payrollRecords.reduce((sum, record) => sum + record.netPay, 0) / payrollRecords.length,
-    totalEmployees: payrollRecords.length,
-    totalBenefitsCost: benefits.reduce((sum, benefit) => sum + (benefit.cost * benefit.employeesEnrolled), 0),
-    pendingPayments: payrollRecords.filter(r => r.status !== 'paid').length,
-    benefitsEnrollment: benefits.reduce((sum, benefit) => sum + benefit.employeesEnrolled, 0) / (benefits.length * 100) * 100
+    processPayrollMutation.mutate({
+      period: period.period,
+      employees: selectedEmployees
+    });
   };
 
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Calculator className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Nómina y Beneficios
-              </h1>
-              <p className="text-gray-600">
-                Gestión integral de nómina, compensaciones y beneficios
-              </p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Gestión de Nómina</h1>
+            <p className="text-gray-600 mt-1">Sistema integral de nómina con integración automática a finanzas</p>
           </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
-              Exportar
-            </Button>
+          <div className="flex gap-3">
             <Button 
-              className="flex items-center gap-2"
-              onClick={handleProcessPayroll}
-              disabled={processPayrollMutation.isPending}
+              onClick={() => setIsNewPeriodDialogOpen(true)}
+              className="bg-[#00a587] hover:bg-[#067f5f] text-white"
             >
-              <Plus className="h-4 w-4" />
-              {processPayrollMutation.isPending ? "Procesando..." : "Procesar Nómina"}
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Período
             </Button>
           </div>
         </div>
 
-        {/* KPIs principales */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {/* Dashboard Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-green-600" />
-                <div>
-                  <div className="text-2xl font-bold">{formatCurrency(stats.totalPayroll)}</div>
-                  <div className="text-xs text-gray-600">Nómina Total</div>
-                </div>
-              </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Empleados Activos</CardTitle>
+              <Users className="h-4 w-4 text-[#00a587]" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-[#00a587]">{totalActiveEmployees}</div>
+              <p className="text-xs text-gray-600">Personal en nómina</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-blue-600" />
-                <div>
-                  <div className="text-2xl font-bold">{stats.totalEmployees}</div>
-                  <div className="text-xs text-gray-600">Empleados</div>
-                </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Nómina Mensual</CardTitle>
+              <DollarSign className="h-4 w-4 text-[#00a587]" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-[#00a587]">
+                ${totalMonthlyPayroll.toLocaleString('es-MX')}
               </div>
+              <p className="text-xs text-gray-600">Total mes actual</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-purple-600" />
-                <div>
-                  <div className="text-2xl font-bold">{formatCurrency(stats.avgSalary)}</div>
-                  <div className="text-xs text-gray-600">Salario Promedio</div>
-                </div>
-              </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Períodos</CardTitle>
+              <Calendar className="h-4 w-4 text-[#00a587]" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-[#00a587]">{payrollPeriods.length}</div>
+              <p className="text-xs text-gray-600">Períodos registrados</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Heart className="h-4 w-4 text-red-600" />
-                <div>
-                  <div className="text-2xl font-bold">{formatCurrency(stats.totalBenefitsCost)}</div>
-                  <div className="text-xs text-gray-600">Costo Beneficios</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                <div>
-                  <div className="text-2xl font-bold">{stats.pendingPayments}</div>
-                  <div className="text-xs text-gray-600">Pagos Pendientes</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <div>
-                  <div className="text-2xl font-bold">{Math.round(stats.benefitsEnrollment)}%</div>
-                  <div className="text-xs text-gray-600">Inscripción Beneficios</div>
-                </div>
-              </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Conceptos</CardTitle>
+              <FileText className="h-4 w-4 text-[#00a587]" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-[#00a587]">{payrollConcepts.length}</div>
+              <p className="text-xs text-gray-600">Conceptos configurados</p>
             </CardContent>
           </Card>
         </div>
 
+        {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="payroll">Nómina</TabsTrigger>
-            <TabsTrigger value="benefits">Beneficios</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="periods">Períodos</TabsTrigger>
+            <TabsTrigger value="employees">Empleados</TabsTrigger>
+            <TabsTrigger value="concepts">Conceptos</TabsTrigger>
             <TabsTrigger value="reports">Reportes</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="payroll">
-            {/* Filtros de nómina */}
+          {/* Períodos de Nómina */}
+          <TabsContent value="periods">
             <Card>
-              <CardHeader>
-                <CardTitle>Filtros de Nómina</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="search">Buscar</Label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="search"
-                        placeholder="Empleado o departamento..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9"
-                      />
-                    </div>
+              <CardHeader className="bg-gradient-to-r from-[#00a587]/10 to-[#bcd256]/10 rounded-t-lg">
+                <CardTitle className="text-2xl text-gray-900 flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-[#00a587] to-[#067f5f] rounded-lg">
+                    <Calendar className="h-6 w-6 text-white" />
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="period">Período</Label>
-                    <Select value={periodFilter} onValueChange={setPeriodFilter}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="current">Período Actual</SelectItem>
-                        <SelectItem value="2025-05">Mayo 2025</SelectItem>
-                        <SelectItem value="2025-04">Abril 2025</SelectItem>
-                        <SelectItem value="2025-03">Marzo 2025</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="department">Departamento</Label>
-                    <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos los departamentos</SelectItem>
-                        {departments.map(dept => (
-                          <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="flex items-end">
-                    <Button variant="outline" className="w-full">
-                      Limpiar Filtros
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Tabla de nómina */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Registros de Nómina ({filteredPayroll.length})</CardTitle>
-                <CardDescription>
-                  Detalle de cálculos de nómina por empleado
+                  Períodos de Nómina
+                </CardTitle>
+                <CardDescription className="text-gray-700">
+                  Gestión de períodos de pago y procesamiento de nómina
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {filteredPayroll.map((record) => (
-                    <div key={record.id} className="p-4 border rounded-lg hover:bg-gray-50">
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <h3 className="font-medium text-lg">{record.employeeName}</h3>
-                          <p className="text-sm text-gray-600">{record.department} • {record.period}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className={getStatusColor(record.status)}>
-                            {getStatusText(record.status)}
-                          </Badge>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-green-600">{formatCurrency(record.netPay)}</div>
-                            <div className="text-xs text-gray-500">Pago Neto</div>
-                          </div>
-                        </div>
+              <CardContent className="p-6">
+                {periodsLoading ? (
+                  <div className="text-center py-8">Cargando períodos...</div>
+                ) : (
+                  <div className="space-y-4">
+                    {payrollPeriods.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <h3 className="text-lg font-medium">No hay períodos registrados</h3>
+                        <p className="text-sm">Crea tu primer período de nómina para comenzar</p>
                       </div>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
-                        <div>
-                          <div className="text-gray-600">Salario Base</div>
-                          <div className="font-medium">{formatCurrency(record.baseSalary)}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600">Horas Extra</div>
-                          <div className="font-medium text-blue-600">{formatCurrency(record.overtime)}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600">Bonos</div>
-                          <div className="font-medium text-green-600">{formatCurrency(record.bonuses)}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600">Deducciones</div>
-                          <div className="font-medium text-red-600">-{formatCurrency(record.deductions)}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600">Impuestos</div>
-                          <div className="font-medium text-red-600">-{formatCurrency(record.taxes)}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600">Fecha de Pago</div>
-                          <div className="font-medium">{new Date(record.payDate).toLocaleDateString('es-MX')}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-end gap-2 mt-3">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Período</TableHead>
+                            <TableHead>Fechas</TableHead>
+                            <TableHead>Estado</TableHead>
+                            <TableHead>Empleados</TableHead>
+                            <TableHead>Total</TableHead>
+                            <TableHead>Acciones</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {payrollPeriods.map((period: PayrollPeriod) => (
+                            <TableRow key={period.id}>
+                              <TableCell className="font-medium">{period.period}</TableCell>
+                              <TableCell>
+                                {new Date(period.startDate).toLocaleDateString('es-MX')} - {new Date(period.endDate).toLocaleDateString('es-MX')}
+                              </TableCell>
+                              <TableCell>{getStatusBadge(period.status)}</TableCell>
+                              <TableCell>{period.employeesCount || 0}</TableCell>
+                              <TableCell>${parseFloat(period.totalAmount || '0').toLocaleString('es-MX')}</TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  {period.status === 'draft' && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setSelectedPeriod(period);
+                                        setIsProcessPayrollDialogOpen(true);
+                                      }}
+                                    >
+                                      <Play className="h-4 w-4 mr-1" />
+                                      Procesar
+                                    </Button>
+                                  )}
+                                  <Button size="sm" variant="outline">
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Ver
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="benefits">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    Catálogo de Beneficios
-                    <Dialog open={isNewBenefitOpen} onOpenChange={setIsNewBenefitOpen}>
-                      <DialogTrigger asChild>
-                        <Button size="sm">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Nuevo Beneficio
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Agregar Nuevo Beneficio</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid grid-cols-2 gap-4 py-4">
-                          <div className="space-y-2 col-span-2">
-                            <Label htmlFor="benefitName">Nombre del Beneficio</Label>
-                            <Input id="benefitName" placeholder="Ej: Seguro de Gastos Médicos" />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="benefitType">Tipo</Label>
-                            <Select>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Seleccionar tipo" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="health">Salud</SelectItem>
-                                <SelectItem value="insurance">Seguros</SelectItem>
-                                <SelectItem value="retirement">Retiro</SelectItem>
-                                <SelectItem value="vacation">Vacaciones</SelectItem>
-                                <SelectItem value="other">Otros</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="provider">Proveedor</Label>
-                            <Input id="provider" placeholder="Nombre del proveedor" />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="cost">Costo Mensual</Label>
-                            <Input id="cost" type="number" placeholder="2500" />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="effectiveDate">Fecha Efectiva</Label>
-                            <Input id="effectiveDate" type="date" />
-                          </div>
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" onClick={() => setIsNewBenefitOpen(false)}>
-                            Cancelar
-                          </Button>
-                          <Button onClick={() => setIsNewBenefitOpen(false)}>
-                            Crear Beneficio
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {benefits.map((benefit) => (
-                      <Card key={benefit.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              {getBenefitTypeIcon(benefit.type)}
-                              <Badge variant="outline" className={benefit.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                                {benefit.status === 'active' ? 'Activo' : 'Inactivo'}
-                              </Badge>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-bold text-green-600">{formatCurrency(benefit.cost)}</div>
-                              <div className="text-xs text-gray-500">por empleado</div>
-                            </div>
-                          </div>
-                          
-                          <h3 className="font-semibold mb-2">{benefit.name}</h3>
-                          <p className="text-sm text-gray-600 mb-3">{benefit.description}</p>
-                          
-                          <div className="space-y-2 text-sm">
-                            <div>
-                              <span className="text-gray-600">Cobertura:</span>
-                              <span className="ml-2 font-medium">{benefit.coverage}</span>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Proveedor:</span>
-                              <span className="ml-2 font-medium">{benefit.provider}</span>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Inscritos:</span>
-                              <span className="ml-2 font-medium">{benefit.employeesEnrolled} empleados</span>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-3 pt-3 border-t">
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>Adopción</span>
-                              <span>{Math.round((benefit.employeesEnrolled / 100) * 100)}%</span>
-                            </div>
-                            <Progress value={(benefit.employeesEnrolled / 100) * 100} className="h-2" />
-                          </div>
-                          
-                          <div className="flex gap-2 mt-3">
-                            <Button size="sm" variant="outline" className="flex-1">
-                              <Eye className="h-4 w-4 mr-1" />
-                              Ver
-                            </Button>
-                            <Button size="sm" variant="outline" className="flex-1">
-                              <Edit className="h-4 w-4 mr-1" />
-                              Editar
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+          {/* Empleados en Nómina */}
+          <TabsContent value="employees">
+            <Card>
+              <CardHeader className="bg-gradient-to-r from-[#00a587]/10 to-[#bcd256]/10 rounded-t-lg">
+                <CardTitle className="text-2xl text-gray-900 flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-[#00a587] to-[#067f5f] rounded-lg">
+                    <Users className="h-6 w-6 text-white" />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  Empleados en Nómina
+                </CardTitle>
+                <CardDescription className="text-gray-700">
+                  Personal activo incluido en el procesamiento de nómina
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Buscar empleados..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-64"
+                    />
+                  </div>
+                </div>
+
+                {employeesLoading ? (
+                  <div className="text-center py-8">Cargando empleados...</div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Empleado</TableHead>
+                        <TableHead>Departamento</TableHead>
+                        <TableHead>Posición</TableHead>
+                        <TableHead>Salario Base</TableHead>
+                        <TableHead>Estado</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredEmployees.map((employee: Employee) => (
+                        <TableRow key={employee.id}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{employee.fullName}</div>
+                              <div className="text-sm text-gray-500">{employee.email}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{employee.department}</TableCell>
+                          <TableCell>{employee.position}</TableCell>
+                          <TableCell>${parseFloat(employee.salary).toLocaleString('es-MX')}</TableCell>
+                          <TableCell>
+                            <Badge className="bg-green-100 text-green-800">Activo</Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          <TabsContent value="analytics">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Tendencia de Nómina</CardTitle>
-                  <CardDescription>Evolución mensual del gasto en nómina</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={payrollTrends}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'Nómina Total']} />
-                      <Line type="monotone" dataKey="total" stroke="#22c55e" strokeWidth={3} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Distribución de Beneficios</CardTitle>
-                  <CardDescription>Porcentaje de gasto por tipo de beneficio</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={benefitDistribution}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        dataKey="value"
-                        label={({ name, value }) => `${name}: ${value}%`}
-                      >
-                        {benefitDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Costos por Departamento</CardTitle>
-                  <CardDescription>Comparación de nómina y beneficios por departamento</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={departmentCosts}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="department" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                      <Bar dataKey="nomina" fill="#3b82f6" name="Nómina" />
-                      <Bar dataKey="beneficios" fill="#22c55e" name="Beneficios" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="reports">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                { title: "Resumen Quincenal", description: "Reporte detallado de nómina quincenal", icon: Calendar, color: "blue" },
-                { title: "Comprobantes Fiscales", description: "Recibos de nómina y constancias", icon: FileText, color: "green" },
-                { title: "Análisis de Costos", description: "Desglose de costos laborales", icon: TrendingUp, color: "purple" },
-                { title: "Reporte de Beneficios", description: "Utilización y costos de beneficios", icon: Heart, color: "red" },
-                { title: "Cumplimiento Fiscal", description: "Obligaciones y retenciones", icon: Shield, color: "yellow" },
-                { title: "Archivo Histórico", description: "Nóminas de períodos anteriores", icon: Archive, color: "gray" }
-              ].map((report, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className={`p-3 bg-${report.color}-100 rounded-lg`}>
-                        <report.icon className={`h-6 w-6 text-${report.color}-600`} />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{report.title}</h3>
-                        <p className="text-sm text-gray-600">{report.description}</p>
+          {/* Conceptos de Nómina */}
+          <TabsContent value="concepts">
+            <Card>
+              <CardHeader className="bg-gradient-to-r from-[#00a587]/10 to-[#bcd256]/10 rounded-t-lg">
+                <CardTitle className="text-2xl text-gray-900 flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-[#00a587] to-[#067f5f] rounded-lg">
+                    <Settings className="h-6 w-6 text-white" />
+                  </div>
+                  Conceptos de Nómina
+                </CardTitle>
+                <CardDescription className="text-gray-700">
+                  Configuración de salarios, deducciones y prestaciones
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                {conceptsLoading ? (
+                  <div className="text-center py-8">Cargando conceptos...</div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Conceptos de Ingresos */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 text-[#00a587]">Conceptos de Ingresos</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {payrollConcepts
+                          .filter((concept: PayrollConcept) => concept.type === 'income')
+                          .map((concept: PayrollConcept) => (
+                            <Card key={concept.id} className="border-l-4 border-l-green-500">
+                              <CardContent className="p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                  <Badge className="bg-green-100 text-green-800">{concept.code}</Badge>
+                                  <Badge variant="outline">{concept.category}</Badge>
+                                </div>
+                                <h4 className="font-medium">{concept.name}</h4>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {concept.isFixed ? 'Monto fijo' : 'Calculado'}
+                                </p>
+                              </CardContent>
+                            </Card>
+                          ))}
                       </div>
                     </div>
-                    <Button variant="outline" className="w-full">
-                      <Download className="h-4 w-4 mr-2" />
-                      Generar Reporte
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+
+                    {/* Conceptos de Deducciones */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 text-red-600">Conceptos de Deducciones</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {payrollConcepts
+                          .filter((concept: PayrollConcept) => concept.type === 'deduction')
+                          .map((concept: PayrollConcept) => (
+                            <Card key={concept.id} className="border-l-4 border-l-red-500">
+                              <CardContent className="p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                  <Badge className="bg-red-100 text-red-800">{concept.code}</Badge>
+                                  <Badge variant="outline">{concept.category}</Badge>
+                                </div>
+                                <h4 className="font-medium">{concept.name}</h4>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {concept.formula || 'Sin fórmula definida'}
+                                </p>
+                              </CardContent>
+                            </Card>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Reportes */}
+          <TabsContent value="reports">
+            <Card>
+              <CardHeader className="bg-gradient-to-r from-[#00a587]/10 to-[#bcd256]/10 rounded-t-lg">
+                <CardTitle className="text-2xl text-gray-900 flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-[#00a587] to-[#067f5f] rounded-lg">
+                    <TrendingUp className="h-6 w-6 text-white" />
+                  </div>
+                  Reportes y Análisis
+                </CardTitle>
+                <CardDescription className="text-gray-700">
+                  Análisis de costos de nómina y tendencias de personal
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Distribución por Departamento */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Distribución de Nómina por Departamento</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={Object.entries(
+                                employees.reduce((acc: any, emp: Employee) => {
+                                  acc[emp.department] = (acc[emp.department] || 0) + parseFloat(emp.salary);
+                                  return acc;
+                                }, {})
+                              ).map(([dept, total]) => ({ name: dept, value: total }))}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                            >
+                              {Object.entries(
+                                employees.reduce((acc: any, emp: Employee) => {
+                                  acc[emp.department] = (acc[emp.department] || 0) + parseFloat(emp.salary);
+                                  return acc;
+                                }, {})
+                              ).map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip formatter={(value) => `$${Number(value).toLocaleString('es-MX')}`} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Resumen de Empleados */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Resumen de Personal</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium">Total Empleados</span>
+                          <span className="text-lg font-bold text-[#00a587]">{totalActiveEmployees}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium">Nómina Total</span>
+                          <span className="text-lg font-bold text-[#00a587]">
+                            ${employees.reduce((sum: number, emp: Employee) => sum + parseFloat(emp.salary), 0).toLocaleString('es-MX')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium">Promedio Salarial</span>
+                          <span className="text-lg font-bold text-[#00a587]">
+                            ${totalActiveEmployees > 0 ? Math.round(employees.reduce((sum: number, emp: Employee) => sum + parseFloat(emp.salary), 0) / totalActiveEmployees).toLocaleString('es-MX') : 0}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Dialog para Nuevo Período */}
+        <Dialog open={isNewPeriodDialogOpen} onOpenChange={setIsNewPeriodDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Crear Nuevo Período de Nómina</DialogTitle>
+              <DialogDescription>
+                Configura un nuevo período de pago para procesar la nómina
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreatePeriod} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="period">Período (YYYY-MM)</Label>
+                <Input
+                  id="period"
+                  name="period"
+                  type="month"
+                  required
+                  className="w-full"
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button type="button" variant="outline" onClick={() => setIsNewPeriodDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-[#00a587] hover:bg-[#067f5f]"
+                  disabled={createPeriodMutation.isPending}
+                >
+                  {createPeriodMutation.isPending ? "Creando..." : "Crear Período"}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog para Procesar Nómina */}
+        <Dialog open={isProcessPayrollDialogOpen} onOpenChange={setIsProcessPayrollDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Procesar Nómina</DialogTitle>
+              <DialogDescription>
+                {selectedPeriod && `Se procesará la nómina para el período ${selectedPeriod.period} con ${totalActiveEmployees} empleados activos`}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">Resumen del Procesamiento</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Se calcularán automáticamente los salarios base</li>
+                  <li>• Se aplicarán las deducciones de IMSS (2.375%) e ISR</li>
+                  <li>• Se generará automáticamente el registro en Finanzas</li>
+                  <li>• El proceso no se puede deshacer una vez iniciado</li>
+                </ul>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsProcessPayrollDialogOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={() => selectedPeriod && handleProcessPayroll(selectedPeriod)}
+                  className="bg-[#00a587] hover:bg-[#067f5f]"
+                  disabled={processPayrollMutation.isPending}
+                >
+                  {processPayrollMutation.isPending ? "Procesando..." : "Procesar Nómina"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
-};
-
-export default PayrollBenefits;
+}

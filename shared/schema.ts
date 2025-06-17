@@ -74,7 +74,12 @@ export const actualExpenses = pgTable("actual_expenses", {
   supplier: varchar("supplier", { length: 200 }),
   description: text("description"),
   referenceNumber: varchar("reference_number", { length: 50 }),
+  invoiceNumber: varchar("invoice_number", { length: 50 }),
   isPaid: boolean("is_paid").default(false),
+  paymentDate: date("payment_date"),
+  // Campos adicionales para integración con nómina
+  payrollPeriodId: integer("payroll_period_id"),
+  isPayrollGenerated: boolean("is_payroll_generated").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
