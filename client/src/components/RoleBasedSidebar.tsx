@@ -501,6 +501,13 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         Nómina
       </NavItem>
       <NavItem 
+        href="/admin/hr/receipts" 
+        icon={<FileText className="h-5 w-5" />}
+        active={location.startsWith('/admin/hr/receipts')}
+      >
+        Recibos de Nómina
+      </NavItem>
+      <NavItem 
         href="/admin/hr/training" 
         icon={<GraduationCap className="h-5 w-5" />}
         active={location.startsWith('/admin/hr/training')}
