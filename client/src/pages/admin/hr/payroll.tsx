@@ -501,7 +501,11 @@ export default function Payroll() {
                                       Procesar
                                     </Button>
                                   )}
-                                  <Button size="sm" variant="outline">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => handleViewPeriod(period)}
+                                  >
                                     <Eye className="h-4 w-4 mr-1" />
                                     Ver
                                   </Button>
@@ -853,6 +857,113 @@ export default function Payroll() {
                 </Button>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog para Editar Concepto */}
+        <Dialog open={isEditConceptDialogOpen} onOpenChange={setIsEditConceptDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Editar Concepto de Nómina</DialogTitle>
+              <DialogDescription>
+                Modifica la configuración del concepto de nómina
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleUpdateConcept} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-code">Código *</Label>
+                  <Input
+                    id="edit-code"
+                    name="code"
+                    defaultValue={editingConcept?.code || ''}
+                    required
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Nombre *</Label>
+                  <Input
+                    id="edit-name"
+                    name="name"
+                    defaultValue={editingConcept?.name || ''}
+                    required
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-type">Tipo *</Label>
+                  <Select name="type" defaultValue={editingConcept?.type || ''} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona el tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="income">Ingreso</SelectItem>
+                      <SelectItem value="deduction">Deducción</SelectItem>
+                      <SelectItem value="benefit">Prestación</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category">Categoría *</Label>
+                  <Select name="category" defaultValue={editingConcept?.category || ''} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona la categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="salary">Salario</SelectItem>
+                      <SelectItem value="overtime">Tiempo Extra</SelectItem>
+                      <SelectItem value="bonus">Bonificación</SelectItem>
+                      <SelectItem value="tax">Impuesto</SelectItem>
+                      <SelectItem value="insurance">Seguro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-isFixed">Tipo de Cálculo</Label>
+                <Select name="isFixed" defaultValue={editingConcept?.isFixed ? 'true' : 'false'}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Monto Fijo</SelectItem>
+                    <SelectItem value="false">Calculado por Fórmula</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-formula">Fórmula (opcional)</Label>
+                <Input
+                  id="edit-formula"
+                  name="formula"
+                  defaultValue={editingConcept?.formula || ''}
+                  placeholder="Ej: salary * 0.15 o 500"
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-500">
+                  Para conceptos calculados. Puedes usar: salary, hours, días_trabajados
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button type="button" variant="outline" onClick={() => setIsEditConceptDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-[#00a587] hover:bg-[#067f5f]"
+                  disabled={editConceptMutation.isPending}
+                >
+                  {editConceptMutation.isPending ? "Actualizando..." : "Actualizar Concepto"}
+                </Button>
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
 

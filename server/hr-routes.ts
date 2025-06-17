@@ -224,6 +224,38 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
     }
   });
 
+  // Actualizar concepto de nómina
+  apiRouter.put("/payroll-concepts/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID de concepto inválido" });
+      }
+
+      // Actualizar el concepto con timestamp de actualización
+      const updateData = {
+        ...req.body,
+        updatedAt: new Date()
+      };
+
+      const [updatedConcept] = await db
+        .update(payrollConcepts)
+        .set(updateData)
+        .where(eq(payrollConcepts.id, id))
+        .returning();
+
+      if (!updatedConcept) {
+        return res.status(404).json({ error: "Concepto no encontrado" });
+      }
+
+      res.json(updatedConcept);
+    } catch (error) {
+      console.error("Error al actualizar concepto de nómina:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
+
   // ========== PERÍODOS DE NÓMINA ==========
   
   // Obtener períodos de nómina
