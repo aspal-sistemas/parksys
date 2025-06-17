@@ -488,10 +488,148 @@ import { initializeDatabase } from "./initialize-db";
     console.error("Error al registrar API de integraciones financieras:", error);
   }
 
-  // Rutas para servir archivos del recibo
-  app.get('/download-receipt.html', (req: Request, res: Response) => {
-    const filePath = path.join(process.cwd(), 'public', 'download-receipt.html');
-    res.sendFile(filePath);
+  // Rutas para servir archivos del recibo - ANTES de Vite
+  app.get('/api/recibo-nomina', (req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo de Nómina - Parques de México</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #00a587 0%, #067f5f 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(45deg, #00a587, #067f5f);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .content {
+            padding: 40px;
+        }
+        .feature-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .feature-list h3 {
+            color: #00a587;
+            margin-top: 0;
+        }
+        .feature-list ul {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .feature-list li:before {
+            content: "✓";
+            color: #00a587;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #00a587;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            border-top: 3px solid #00a587;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌳 Parques de México</h1>
+            <p>Recibo de Nómina Oficial</p>
+        </div>
+        
+        <div class="content">
+            <h2>Recibo de Nómina con Logo Oficial</h2>
+            <p>Descarga el recibo de nómina profesional con el branding oficial de Parques de México.</p>
+            
+            <div class="feature-list">
+                <h3>Características del Recibo:</h3>
+                <ul>
+                    <li>Logo oficial de Parques de México integrado</li>
+                    <li>Colores corporativos (#00a587, #067f5f, #bcd256)</li>
+                    <li>Información fiscal completa (RFC, CURP, NSS)</li>
+                    <li>Cumplimiento legal mexicano (Art. 99 LFT)</li>
+                    <li>Registro patronal y datos fiscales</li>
+                    <li>Sección de firmas profesional</li>
+                    <li>Footer con información legal</li>
+                    <li>Formato PDF de alta calidad</li>
+                </ul>
+            </div>
+            
+            <div class="buttons">
+                <a href="/sample-receipt-with-logo.pdf" class="btn btn-primary" download>
+                    📄 Descargar PDF
+                </a>
+                <a href="/sample-receipt-with-logo.pdf" class="btn btn-secondary" target="_blank">
+                    👁️ Ver en Nueva Ventana
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>ParkSys</strong> - Sistema de Gestión de Parques Municipales</p>
+            <p>© 2025 Parques de México. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>`;
+    res.send(htmlContent);
   });
 
   app.get('/sample-receipt-with-logo.pdf', (req: Request, res: Response) => {
