@@ -509,11 +509,28 @@ export default function Employees() {
     return matchesSearch && matchesDepartment && matchesStatus;
   });
 
+  console.log('Total employees:', employees.length);
+  console.log('Filtered employees:', filteredEmployees.length);
+  console.log('Search term:', searchTerm);
+  console.log('Department filter:', departmentFilter);
+  console.log('Status filter:', statusFilter);
+
   // Paginación
   const totalPages = Math.ceil(filteredEmployees.length / recordsPerPage);
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = startIndex + recordsPerPage;
   const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
+  
+  console.log('Pagination info:', {
+    totalPages,
+    currentPage,
+    recordsPerPage,
+    startIndex,
+    endIndex,
+    paginatedCount: paginatedEmployees.length
+  });
+  
+  console.log('Paginated employees:', paginatedEmployees.map(emp => ({ id: emp.id, name: emp.fullName })));
 
   const handleViewEmployee = (employee: Employee) => {
     setSelectedEmployee(employee);
@@ -990,46 +1007,96 @@ export default function Employees() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {paginatedEmployees.map((employee) => (
-                    <div key={employee.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                          {employee.fullName.split(' ').map((name: string) => name[0]).join('').substring(0, 2)}
-                        </div>
-                        
-                        <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">{employee.fullName}</h3>
-                          <p className="text-sm text-gray-600">{employee.position}</p>
-                          <p className="text-xs text-gray-500">{employee.department}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4">
-                        <Badge variant="outline" className={getStatusColor(employee.status)}>
-                          {getStatusText(employee.status)}
-                        </Badge>
-                        
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => handleViewEmployee(employee)}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => handleEditEmployee(employee)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            onClick={() => handleDeleteEmployee(employee)}
-                            className="text-red-600 hover:text-red-700 hover:border-red-300"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
+                  {isLoadingEmployees ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">Cargando empleados...</p>
                     </div>
-                  ))}
+                  ) : paginatedEmployees.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">No se encontraron empleados</p>
+                    </div>
+                  ) : (
+                    paginatedEmployees.map((employee) => (
+                        <div key={employee.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                              {employee.fullName.split(' ').map((name: string) => name[0]).join('').substring(0, 2)}
+                            </div>
+                            
+                            <div className="flex-1">
+                              <h3 className="font-medium text-gray-900">{employee.fullName}</h3>
+                              <p className="text-sm text-gray-600">{employee.position}</p>
+                              <p className="text-xs text-gray-500">{employee.department}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            <Badge variant="outline" className={getStatusColor(employee.status)}>
+                              {getStatusText(employee.status)}
+                            </Badge>
+                            
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" onClick={() => handleViewEmployee(employee)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => handleEditEmployee(employee)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => handleDeleteEmployee(employee)}
+                                className="text-red-600 hover:text-red-700 hover:border-red-300"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </CardContent>
+              
+              {/* Paginación */}
+              {totalPages > 1 && (
+                <div className="px-6 py-4 border-t">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-500">
+                      Mostrando {startIndex + 1}-{Math.min(endIndex, filteredEmployees.length)} de {filteredEmployees.length} empleados
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        Anterior
+                      </Button>
+                      {[...Array(totalPages)].map((_, i) => (
+                        <Button
+                          key={i}
+                          size="sm"
+                          variant={currentPage === i + 1 ? "default" : "outline"}
+                          onClick={() => setCurrentPage(i + 1)}
+                        >
+                          {i + 1}
+                        </Button>
+                      ))}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Siguiente
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </Card>
           </TabsContent>
 
