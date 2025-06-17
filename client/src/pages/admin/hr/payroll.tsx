@@ -1528,7 +1528,7 @@ export default function Payroll() {
                             <SelectValue placeholder="Todos los años" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Todos los años</SelectItem>
+                            <SelectItem value="all">Todos los años</SelectItem>
                             <SelectItem value="2024">2024</SelectItem>
                             <SelectItem value="2025">2025</SelectItem>
                           </SelectContent>
