@@ -1082,7 +1082,16 @@ export default function Employees() {
                   });
 
                   if (!response.ok) {
-                    throw new Error('Error al crear el empleado');
+                    const errorData = await response.json().catch(() => ({}));
+                    let errorMessage = 'Error al crear el empleado';
+                    
+                    if (response.status === 500 && errorData.error?.includes('duplicate key')) {
+                      errorMessage = `El email ${employeeData.email} ya está registrado. Usa un email diferente.`;
+                    } else if (errorData.error) {
+                      errorMessage = errorData.error;
+                    }
+                    
+                    throw new Error(errorMessage);
                   }
 
                   const newEmployee = await response.json();

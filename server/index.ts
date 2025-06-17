@@ -123,9 +123,20 @@ app.post("/api/employees", async (req: Request, res: Response) => {
       });
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error en endpoint directo empleados:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    
+    let errorMessage = "Error interno del servidor";
+    
+    if (error.code === '23505') {
+      if (error.constraint === 'employees_email_key') {
+        errorMessage = `El email ${req.body.email} ya está registrado. Usa un email diferente.`;
+      } else {
+        errorMessage = "Ya existe un registro con estos datos.";
+      }
+    }
+    
+    res.status(500).json({ error: errorMessage });
   }
 });
 
