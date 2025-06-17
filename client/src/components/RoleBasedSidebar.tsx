@@ -494,18 +494,18 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         Personal
       </NavItem>
       <NavItem 
-        href="/admin/hr/training" 
-        icon={<GraduationCap className="h-5 w-5" />}
-        active={location.startsWith('/admin/hr/training')}
-      >
-        Capacitación
-      </NavItem>
-      <NavItem 
         href="/admin/hr/payroll" 
         icon={<CreditCard className="h-5 w-5" />}
         active={location.startsWith('/admin/hr/payroll')}
       >
         Nómina
+      </NavItem>
+      <NavItem 
+        href="/admin/hr/training" 
+        icon={<GraduationCap className="h-5 w-5" />}
+        active={location.startsWith('/admin/hr/training')}
+      >
+        Capacitación
       </NavItem>
       <NavItem 
         href="/admin/hr/wellness" 
