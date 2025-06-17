@@ -22,7 +22,8 @@ import {
   CheckCircle,
   Clock,
   FileCheck,
-  Send
+  Send,
+  Printer
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -228,6 +229,50 @@ export default function PayrollReceipts() {
       toast({
         title: "Error",
         description: "No se pudo descargar el PDF",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePrintReceipt = async (receiptId: number) => {
+    try {
+      const response = await fetch(`/api/hr/payroll-receipts/${receiptId}/download`);
+      if (!response.ok) throw new Error('Error al obtener PDF para impresión');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Crear una nueva ventana para imprimir
+      const printWindow = window.open(url, '_blank');
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print();
+        };
+      } else {
+        // Fallback si el popup está bloqueado
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = url;
+        document.body.appendChild(iframe);
+        
+        iframe.onload = () => {
+          iframe.contentWindow?.print();
+          // Limpiar después de un tiempo
+          setTimeout(() => {
+            document.body.removeChild(iframe);
+            window.URL.revokeObjectURL(url);
+          }, 1000);
+        };
+      }
+      
+      toast({
+        title: "Éxito",
+        description: "Preparando recibo para impresión",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo preparar el recibo para impresión",
         variant: "destructive"
       });
     }
@@ -574,14 +619,25 @@ export default function PayrollReceipts() {
                       )}
                       
                       {receipt.pdfGenerated && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleDownloadPDF(receipt.id)}
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          Descargar
-                        </Button>
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDownloadPDF(receipt.id)}
+                          >
+                            <Download className="w-4 h-4 mr-1" />
+                            Descargar
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handlePrintReceipt(receipt.id)}
+                            className="bg-[#00a587] text-white hover:bg-[#067f5f]"
+                          >
+                            <Printer className="w-4 h-4 mr-1" />
+                            Imprimir
+                          </Button>
+                        </>
                       )}
                     </div>
                   </div>
