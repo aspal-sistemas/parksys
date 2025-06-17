@@ -25,6 +25,7 @@ import {
   AlertTriangle,
   Eye,
   Edit,
+  Trash2,
   TrendingUp,
   CreditCard,
   Settings,
@@ -116,6 +117,8 @@ export default function Payroll() {
   const [isNewConceptDialogOpen, setIsNewConceptDialogOpen] = useState(false);
   const [isEditConceptDialogOpen, setIsEditConceptDialogOpen] = useState(false);
   const [editingConcept, setEditingConcept] = useState<PayrollConcept | null>(null);
+  const [isDeleteConceptDialogOpen, setIsDeleteConceptDialogOpen] = useState(false);
+  const [deletingConcept, setDeletingConcept] = useState<PayrollConcept | null>(null);
   const [isViewPeriodDialogOpen, setIsViewPeriodDialogOpen] = useState(false);
   const [viewingPeriod, setViewingPeriod] = useState<PayrollPeriod | null>(null);
   
@@ -242,6 +245,31 @@ export default function Payroll() {
     }
   });
 
+  // Mutación para eliminar concepto
+  const deleteConceptMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest(`/api/hr/payroll-concepts/${id}`, {
+        method: "DELETE"
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/payroll-concepts"] });
+      setIsDeleteConceptDialogOpen(false);
+      setDeletingConcept(null);
+      toast({
+        title: "Concepto eliminado",
+        description: "El concepto de nómina se ha eliminado exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el concepto de nómina",
+        variant: "destructive",
+      });
+    }
+  });
+
   // Filtrar empleados por búsqueda
   const filteredEmployees = employees.filter((emp: Employee) =>
     emp.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -337,6 +365,18 @@ export default function Payroll() {
   const handleEditConcept = (concept: PayrollConcept) => {
     setEditingConcept(concept);
     setIsEditConceptDialogOpen(true);
+  };
+
+  // Función para eliminar concepto
+  const handleDeleteConcept = (concept: PayrollConcept) => {
+    setDeletingConcept(concept);
+    setIsDeleteConceptDialogOpen(true);
+  };
+
+  // Función para confirmar eliminación
+  const handleConfirmDelete = () => {
+    if (!deletingConcept) return;
+    deleteConceptMutation.mutate(deletingConcept.id);
   };
 
   // Función para actualizar concepto
@@ -629,14 +669,24 @@ export default function Payroll() {
                                   <Badge className="bg-green-100 text-green-800">{concept.code}</Badge>
                                   <div className="flex gap-2">
                                     <Badge variant="outline">{concept.category}</Badge>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => handleEditConcept(concept)}
-                                      className="h-6 w-6 p-0"
-                                    >
-                                      <Edit className="h-3 w-3" />
-                                    </Button>
+                                    <div className="flex gap-1">
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleEditConcept(concept)}
+                                        className="h-6 w-6 p-0"
+                                      >
+                                        <Edit className="h-3 w-3" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleDeleteConcept(concept)}
+                                        className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
                                 <h4 className="font-medium">{concept.name}</h4>
@@ -667,14 +717,24 @@ export default function Payroll() {
                                   <Badge className="bg-red-100 text-red-800">{concept.code}</Badge>
                                   <div className="flex gap-2">
                                     <Badge variant="outline">{concept.category}</Badge>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => handleEditConcept(concept)}
-                                      className="h-6 w-6 p-0"
-                                    >
-                                      <Edit className="h-3 w-3" />
-                                    </Button>
+                                    <div className="flex gap-1">
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleEditConcept(concept)}
+                                        className="h-6 w-6 p-0"
+                                      >
+                                        <Edit className="h-3 w-3" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleDeleteConcept(concept)}
+                                        className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
                                 <h4 className="font-medium">{concept.name}</h4>
@@ -1080,6 +1140,47 @@ export default function Payroll() {
                 </Button>
               </div>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog para Eliminar Concepto */}
+        <Dialog open={isDeleteConceptDialogOpen} onOpenChange={setIsDeleteConceptDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Eliminar Concepto de Nómina</DialogTitle>
+              <DialogDescription>
+                ¿Estás seguro de que deseas eliminar este concepto?
+              </DialogDescription>
+            </DialogHeader>
+            {deletingConcept && (
+              <div className="space-y-4">
+                <div className="bg-red-50 p-4 rounded-lg border-l-4 border-l-red-500">
+                  <h4 className="font-medium text-red-900">{deletingConcept.name}</h4>
+                  <p className="text-sm text-red-800">Código: {deletingConcept.code}</p>
+                  <p className="text-sm text-red-800">Tipo: {deletingConcept.type === 'income' ? 'Ingreso' : 'Deducción'}</p>
+                </div>
+                <div className="bg-yellow-50 p-3 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    ⚠️ Esta acción no se puede deshacer. El concepto será eliminado permanentemente.
+                  </p>
+                </div>
+                <div className="flex justify-end gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsDeleteConceptDialogOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    variant="destructive"
+                    onClick={handleConfirmDelete}
+                    disabled={deleteConceptMutation.isPending}
+                  >
+                    {deleteConceptMutation.isPending ? "Eliminando..." : "Eliminar"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
 
