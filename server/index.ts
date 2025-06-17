@@ -13,6 +13,9 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
+// Servir archivos estáticos del directorio public ANTES de otras rutas
+app.use(express.static(path.join(process.cwd(), 'public')));
+
 // ENDPOINT COMBINADO para la matriz de flujo de efectivo
 app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
   try {
@@ -485,6 +488,22 @@ import { initializeDatabase } from "./initialize-db";
     console.error("Error al registrar API de integraciones financieras:", error);
   }
 
+  // Rutas para servir archivos del recibo
+  app.get('/download-receipt.html', (req: Request, res: Response) => {
+    const filePath = path.join(process.cwd(), 'public', 'download-receipt.html');
+    res.sendFile(filePath);
+  });
+
+  app.get('/sample-receipt-with-logo.pdf', (req: Request, res: Response) => {
+    const filePath = path.join(process.cwd(), 'public', 'sample-receipt-with-logo.pdf');
+    res.sendFile(filePath);
+  });
+
+  app.get('/parques-mexico-logo.jpg', (req: Request, res: Response) => {
+    const filePath = path.join(process.cwd(), 'public', 'parques-mexico-logo.jpg');
+    res.sendFile(filePath);
+  });
+
   // Endpoint DIRECTO para Matriz de Flujo de Efectivo - ANTES de Vite
   app.get('/api/cash-flow-matrix', (req: Request, res: Response) => {
     try {
@@ -585,8 +604,7 @@ import { initializeDatabase } from "./initialize-db";
     throw err;
   });
 
-  // Servir archivos estáticos del directorio public
-  app.use(express.static(path.join(process.cwd(), 'public')));
+
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
