@@ -121,7 +121,9 @@ The system uses environment variables for database connection and supports both 
 - **Paginación**: Sistema completo con botones de eliminar empleado
 - **Importar CSV**: Carga masiva con plantilla, vista previa, mapeo automático/manual de columnas
 - **Exportar CSV**: Dos formatos (simple/completa), respeta filtros activos, descarga automática
-- **Estado**: Sistema jerárquico + CSV completamente funcional
+- **Formulario Completo**: Formulario integral con personal, laboral, emergencia, educación y habilidades
+- **Integración Backend**: Conexión completa frontend-backend para persistencia de datos
+- **Estado**: Sistema jerárquico + CSV + formulario completamente funcional
 
 ### Sistema de Internacionalización (i18n) - COMPLETADO TOTALMENTE  
 **Implementado**: Sistema completo de múltiples idiomas con traducción automática de todo el sitio

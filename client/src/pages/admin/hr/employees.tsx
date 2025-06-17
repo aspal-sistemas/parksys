@@ -1068,14 +1068,44 @@ export default function Employees() {
             <EmployeeForm 
               employee={selectedEmployee}
               departments={departmentsList}
-              onSave={(employeeData: any) => {
-                console.log('Datos del empleado a guardar:', employeeData);
-                toast({
-                  title: selectedEmployee ? "Empleado actualizado" : "Empleado creado",
-                  description: `${employeeData.firstName} ${employeeData.lastName} ha sido ${selectedEmployee ? 'actualizado' : 'creado'} exitosamente.`,
-                });
-                setIsNewEmployeeOpen(false);
-                setSelectedEmployee(null);
+              onSave={async (employeeData: any) => {
+                try {
+                  console.log('Datos del empleado a guardar:', employeeData);
+                  
+                  // Crear empleado en el servidor
+                  const response = await fetch('/api/employees', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(employeeData)
+                  });
+
+                  if (!response.ok) {
+                    throw new Error('Error al crear el empleado');
+                  }
+
+                  const newEmployee = await response.json();
+                  
+                  toast({
+                    title: "Empleado creado exitosamente",
+                    description: `${employeeData.firstName} ${employeeData.lastName} ha sido agregado al sistema.`,
+                  });
+                  
+                  setIsNewEmployeeOpen(false);
+                  setSelectedEmployee(null);
+                  
+                  // Recargar la lista de empleados
+                  window.location.reload();
+                  
+                } catch (error) {
+                  console.error('Error al crear empleado:', error);
+                  toast({
+                    title: "Error",
+                    description: "No se pudo crear el empleado. Intenta nuevamente.",
+                    variant: "destructive"
+                  });
+                }
               }}
               onCancel={() => {
                 setIsNewEmployeeOpen(false);
