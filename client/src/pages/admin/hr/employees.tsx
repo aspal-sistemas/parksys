@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,10 @@ import {
   Eye,
   Building,
   GraduationCap,
-  DollarSign
+  DollarSign,
+  ChevronLeft,
+  ChevronRight,
+  Settings
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -61,6 +64,17 @@ const EmployeesManagement = () => {
   const [isViewEmployeeOpen, setIsViewEmployeeOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 15;
+  const [isDepartmentDialogOpen, setIsDepartmentDialogOpen] = useState(false);
+  const [departmentsList, setDepartmentsList] = useState([
+    "Administración",
+    "Eventos y Actividades", 
+    "Mantenimiento",
+    "Seguridad",
+    "Recursos Humanos",
+    "Finanzas"
+  ]);
+  const [newDepartmentName, setNewDepartmentName] = useState("");
+  const [editingDepartment, setEditingDepartment] = useState<string | null>(null);
   const [newEmployeeData, setNewEmployeeData] = useState({
     fullName: "",
     email: "",
@@ -186,6 +200,38 @@ const EmployeesManagement = () => {
     });
   };
 
+  // Funciones para gestión de departamentos
+  const handleAddDepartment = () => {
+    if (newDepartmentName.trim() && !departmentsList.includes(newDepartmentName.trim())) {
+      setDepartmentsList([...departmentsList, newDepartmentName.trim()]);
+      setNewDepartmentName("");
+      toast({
+        title: "Departamento agregado",
+        description: `${newDepartmentName} ha sido agregado exitosamente.`,
+      });
+    }
+  };
+
+  const handleEditDepartment = (oldName: string, newName: string) => {
+    if (newName.trim() && !departmentsList.includes(newName.trim())) {
+      setDepartmentsList(departmentsList.map(dept => dept === oldName ? newName.trim() : dept));
+      setEditingDepartment(null);
+      toast({
+        title: "Departamento actualizado",
+        description: `Departamento actualizado a ${newName}.`,
+      });
+    }
+  };
+
+  const handleDeleteDepartment = (departmentName: string) => {
+    setDepartmentsList(departmentsList.filter(dept => dept !== departmentName));
+    toast({
+      title: "Departamento eliminado",
+      description: `${departmentName} ha sido eliminado.`,
+      variant: "destructive"
+    });
+  };
+
   // Empleados de respaldo si no hay conexión a la BD
   const fallbackEmployees: Employee[] = [
     {
@@ -280,14 +326,7 @@ const EmployeesManagement = () => {
     }
   ];
 
-  const departments = [
-    "Eventos y Actividades",
-    "Mantenimiento", 
-    "Administración",
-    "Seguridad",
-    "Recursos Humanos",
-    "Finanzas"
-  ];
+
 
   const filteredEmployees = employees.filter(employee => {
     const matchesSearch = employee.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
