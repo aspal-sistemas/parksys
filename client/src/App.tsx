@@ -605,6 +605,18 @@ function Router() {
           </Suspense>
         </Route>
         
+        <Route path="/admin/hr/vacaciones">
+          <Suspense fallback={<div className="p-8 text-center">Cargando módulo de vacaciones y permisos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/hr/vacaciones')))}
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin/hr/control-horas">
+          <Suspense fallback={<div className="p-8 text-center">Cargando control de horas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/hr/control-horas')))}
+          </Suspense>
+        </Route>
+        
         <Route path="/admin/hr/wellness">
           <Suspense fallback={<div className="p-8 text-center">Cargando módulo de bienestar...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/hr/wellness')))}
