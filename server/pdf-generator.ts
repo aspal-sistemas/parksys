@@ -493,6 +493,7 @@ export async function generateReceiptPDF(receiptData: any): Promise<{
     try {
       const logoBuffer = fs.readFileSync(logoPath);
       logoBase64 = logoBuffer.toString('base64');
+      console.log('Logo de Parques de México cargado exitosamente');
     } catch (error) {
       console.log('Logo no encontrado, usando fallback');
     }
