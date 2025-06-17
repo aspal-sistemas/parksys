@@ -420,6 +420,8 @@ export default function Employees() {
   const [importMapping, setImportMapping] = useState<{[key: string]: string}>({});
   const [isProcessingImport, setIsProcessingImport] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isLoadingEmployees, setIsLoadingEmployees] = useState(true);
   
   const [departmentsList, setDepartmentsList] = useState<Department[]>([
     { name: "Dirección General", hierarchy: 1 },
@@ -437,66 +439,33 @@ export default function Employees() {
     { name: "Personal Operativo", hierarchy: 5 }
   ]);
   
-  // Empleados de muestra
-  const employees: Employee[] = [
-    {
-      id: 1,
-      fullName: "Ana María González",
-      email: "ana.gonzalez@parques.mx",
-      phone: "555-0101",
-      position: "Director General",
-      department: "Dirección General",
-      hireDate: "2022-01-15",
-      salary: 85000,
-      status: "active",
-      profileImage: "",
-      address: "Av. Reforma 123, CDMX",
-      emergencyContact: "Carlos González",
-      emergencyPhone: "555-0102",
-      education: "Maestría en Administración Pública",
-      certifications: ["Gestión Pública", "Liderazgo"],
-      skills: ["Liderazgo", "Planificación estratégica", "Gestión pública"],
-      workSchedule: "Lunes a Viernes 8:00-17:00"
-    },
-    {
-      id: 2,
-      fullName: "Roberto Martínez Silva",
-      email: "roberto.martinez@parques.mx",
-      phone: "555-0103",
-      position: "Coordinador de Mantenimiento",
-      department: "Coordinación de Mantenimiento",
-      hireDate: "2022-03-10",
-      salary: 45000,
-      status: "active",
-      profileImage: "",
-      address: "Calle Norte 456, CDMX",
-      emergencyContact: "María Martínez",
-      emergencyPhone: "555-0104",
-      education: "Ingeniería Civil",
-      certifications: ["Project Management", "Seguridad Industrial"],
-      skills: ["Gestión de proyectos", "Supervisión", "Mantenimiento"],
-      workSchedule: "Lunes a Sábado 7:00-15:00"
-    },
-    {
-      id: 3,
-      fullName: "Carmen López Hernández",
-      email: "carmen.lopez@parques.mx",
-      phone: "555-0105",
-      position: "Especialista en Recursos Humanos",
-      department: "Coordinación de Recursos Humanos",
-      hireDate: "2022-06-20",
-      salary: 38000,
-      status: "active",
-      profileImage: "",
-      address: "Col. Centro 789, CDMX",
-      emergencyContact: "Luis López",
-      emergencyPhone: "555-0106",
-      education: "Licenciatura en Psicología",
-      certifications: ["Recursos Humanos", "Capacitación"],
-      skills: ["Reclutamiento", "Capacitación", "Relaciones laborales"],
-      workSchedule: "Lunes a Viernes 9:00-18:00"
+  // Función para cargar empleados desde la base de datos
+  const loadEmployees = async () => {
+    try {
+      setIsLoadingEmployees(true);
+      const response = await fetch('/api/employees');
+      if (response.ok) {
+        const employeesData = await response.json();
+        setEmployees(employeesData);
+      }
+    } catch (error) {
+      console.error('Error loading employees:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los empleados",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingEmployees(false);
     }
-  ];
+  };
+
+  // Cargar empleados al montar el componente
+  useEffect(() => {
+    loadEmployees();
+  }, []);
+
+
 
   const filteredEmployees = employees.filter(employee => {
     const matchesSearch = employee.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1121,7 +1090,7 @@ export default function Employees() {
                   setSelectedEmployee(null);
                   
                   // Recargar la lista de empleados
-                  window.location.reload();
+                  await loadEmployees();
                   
                 } catch (error) {
                   console.error('Error al crear empleado:', error);
