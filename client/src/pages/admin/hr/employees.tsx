@@ -28,6 +28,7 @@ import {
   Building,
   GraduationCap,
   DollarSign,
+  User,
   ChevronLeft,
   ChevronRight,
   Settings,
@@ -1411,7 +1412,7 @@ export default function Employees() {
                       </div>
                       <div className="flex items-center gap-3">
                         <DollarSign className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm">{formatCurrency(parseFloat(selectedEmployee.salary))}</span>
+                        <span className="text-sm">{formatCurrency(typeof selectedEmployee.salary === 'string' ? parseFloat(selectedEmployee.salary) : selectedEmployee.salary)}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <Calendar className="h-4 w-4 text-gray-500" />
