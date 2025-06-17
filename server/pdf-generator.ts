@@ -52,10 +52,27 @@ const RECEIPT_TEMPLATE = `
         }
         
         .header {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 30px;
             border-bottom: 3px solid #00a587;
             padding-bottom: 20px;
+        }
+        
+        .logo-section {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .company-logo {
+            max-height: 80px;
+            width: auto;
+        }
+        
+        .document-info {
+            flex: 2;
+            text-align: center;
         }
         
         .company-name {
@@ -268,11 +285,23 @@ const RECEIPT_TEMPLATE = `
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div class="company-name">Parques de México</div>
-            <div class="document-title">RECIBO DE NÓMINA</div>
-            <div class="receipt-info">
-                <span class="receipt-number">No. {{receiptNumber}}</span>
-                <span>Fecha de Generación: {{generatedDate}}</span>
+            <div class="logo-section">
+                <img src="data:image/jpeg;base64,{{logoBase64}}" alt="Parques de México" class="company-logo">
+            </div>
+            <div class="document-info">
+                <div class="document-title">RECIBO DE NÓMINA</div>
+                <div class="receipt-info">
+                    <div class="receipt-number">No. {{receiptNumber}}</div>
+                    <div>Fecha de Generación: {{generatedDate}}</div>
+                </div>
+            </div>
+            <div class="company-details">
+                <div style="font-size: 11px; color: #666; text-align: right;">
+                    <strong>Parques de México</strong><br>
+                    Consultora especializada en espacio público<br>
+                    RFC: PMX123456789<br>
+                    Registro Patronal: 12345678901
+                </div>
             </div>
         </div>
 
@@ -295,6 +324,14 @@ const RECEIPT_TEMPLATE = `
                 <div class="info-item">
                     <span class="info-label">RFC:</span>
                     <span class="info-value">{{employeeRFC}}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">CURP:</span>
+                    <span class="info-value">{{employeeCURP}}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">NSS:</span>
+                    <span class="info-value">{{employeeNSS}}</span>
                 </div>
             </div>
         </div>
@@ -376,21 +413,43 @@ const RECEIPT_TEMPLATE = `
         <div class="signature-section">
             <div class="signature-box">
                 <strong>RECIBÍ CONFORME</strong><br>
-                Empleado
+                <div style="margin-top: 10px; font-size: 11px;">
+                    {{employeeName}}<br>
+                    Fecha: ________________
+                </div>
             </div>
             <div class="signature-box">
                 <strong>AUTORIZÓ</strong><br>
-                Recursos Humanos
+                <div style="margin-top: 10px; font-size: 11px;">
+                    Recursos Humanos<br>
+                    {{generatedDate}}
+                </div>
             </div>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <div class="legal-notice">
-                Este documento constituye comprobante oficial del pago de nómina correspondiente al período indicado.
-                Para cualquier aclaración, dirigirse al Departamento de Recursos Humanos.
-                <br><br>
-                <strong>Parques de México</strong> - Sistema de Gestión de Parques Urbanos
+            <div style="background: linear-gradient(135deg, #00a587 0%, #067f5f 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+                <h4 style="margin: 0 0 8px 0; font-size: 14px;">INFORMACIÓN FISCAL</h4>
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <div style="text-align: left;">
+                        <strong>Parques de México, S.A. de C.V.</strong><br>
+                        RFC: PMX123456789<br>
+                        Reg. Patronal: 12345678901
+                    </div>
+                    <div style="text-align: right;">
+                        <strong>Comprobante Fiscal</strong><br>
+                        Art. 99 LFT<br>
+                        Válido 5 años fiscales
+                    </div>
+                </div>
+            </div>
+            
+            <div class="legal-notice" style="text-align: center; font-size: 11px; color: #666; line-height: 1.4;">
+                <p style="margin: 5px 0;"><strong>PARQUES DE MÉXICO</strong> - Consultora especializada en espacio público</p>
+                <p style="margin: 5px 0;">Este documento constituye comprobante oficial del pago de nómina correspondiente al período indicado según la legislación laboral vigente.</p>
+                <p style="margin: 5px 0;">Para cualquier aclaración, dirigirse al Departamento de Recursos Humanos.</p>
+                <p style="margin: 10px 0 0 0; font-size: 10px; color: #bcd256;"><strong>Documento generado electrónicamente el {{generatedDate}}</strong></p>
             </div>
         </div>
     </div>
@@ -427,18 +486,34 @@ export async function generateReceiptPDF(receiptData: any): Promise<{
   buffer: Buffer;
 }> {
   try {
+    // Leer y convertir logo a base64
+    const logoPath = path.join(process.cwd(), 'public', 'parques-mexico-logo.jpg');
+    let logoBase64 = '';
+    
+    try {
+      const logoBuffer = fs.readFileSync(logoPath);
+      logoBase64 = logoBuffer.toString('base64');
+    } catch (error) {
+      console.log('Logo no encontrado, usando fallback');
+    }
+    
     // Compilar template
     const template = Handlebars.compile(RECEIPT_TEMPLATE);
     
     // Preparar datos para el template
     const templateData = {
       ...receiptData.payroll_receipts,
+      logoBase64,
       periodName: receiptData.payroll_periods?.period || 'N/A',
       periodStartDate: formatDate(receiptData.payroll_periods?.startDate),
       periodEndDate: formatDate(receiptData.payroll_periods?.endDate),
       generatedDate: formatDate(receiptData.payroll_receipts?.generatedDate || new Date()),
       payDate: formatDate(receiptData.payroll_receipts?.payDate),
-      details: receiptData.details || []
+      details: receiptData.details || [],
+      // Campos adicionales para el empleado
+      employeeRFC: receiptData.payroll_receipts?.employeeRFC || 'N/A',
+      employeeCURP: receiptData.payroll_receipts?.employeeCURP || 'N/A',
+      employeeNSS: receiptData.payroll_receipts?.employeeNSS || 'N/A'
     };
     
     // Generar HTML
