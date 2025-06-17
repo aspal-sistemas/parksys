@@ -433,7 +433,7 @@ export default function PayrollReceipts() {
                 <SelectValue placeholder="Filtrar por estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos los estados</SelectItem>
+                <SelectItem value="all">Todos los estados</SelectItem>
                 <SelectItem value="draft">Borrador</SelectItem>
                 <SelectItem value="generated">Generado</SelectItem>
                 <SelectItem value="sent">Enviado</SelectItem>

@@ -334,7 +334,7 @@ const RECEIPT_TEMPLATE = `
                     </td>
                     <td>{{quantity}}</td>
                     <td class="amount {{#if (eq conceptType 'income')}}income{{else}}deduction{{/if}}">
-                        ${{formatCurrency this.amount}}
+                        ${{formatCurrency amount}}
                     </td>
                 </tr>
                 {{/each}}
@@ -346,15 +346,15 @@ const RECEIPT_TEMPLATE = `
             <div class="totals-grid">
                 <div class="total-item total-gross">
                     <div class="total-label">TOTAL PERCEPCIONES</div>
-                    <div class="total-amount income">${{formatCurrency this.totalGross}}</div>
+                    <div class="total-amount income">${{formatCurrency totalGross}}</div>
                 </div>
                 <div class="total-item total-deductions">
                     <div class="total-label">TOTAL DEDUCCIONES</div>
-                    <div class="total-amount deduction">${{formatCurrency this.totalDeductions}}</div>
+                    <div class="total-amount deduction">${{formatCurrency totalDeductions}}</div>
                 </div>
                 <div class="total-item total-net">
                     <div class="total-label">NETO A PAGAR</div>
-                    <div class="total-amount net-amount">${{formatCurrency this.totalNet}}</div>
+                    <div class="total-amount net-amount">${{formatCurrency totalNet}}</div>
                 </div>
             </div>
         </div>
