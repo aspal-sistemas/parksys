@@ -884,112 +884,114 @@ export default function Payroll() {
                 {employeesLoading ? (
                   <div className="text-center py-8">Cargando empleados...</div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Empleado</TableHead>
-                        <TableHead>Departamento</TableHead>
-                        <TableHead>Posición</TableHead>
-                        <TableHead>Salario Base</TableHead>
-                        <TableHead>Estado</TableHead>
-                        <TableHead>Acciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedEmployees.map((employee: Employee) => (
-                        <TableRow key={employee.id}>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{employee.fullName}</div>
-                              <div className="text-sm text-gray-500">{employee.email}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>{employee.department}</TableCell>
-                          <TableCell>{employee.position}</TableCell>
-                          <TableCell>${parseFloat(employee.salary).toLocaleString('es-MX')}</TableCell>
-                          <TableCell>
-                            <Badge 
-                              className={
-                                employee.status === 'active' ? 'bg-green-100 text-green-800' :
-                                employee.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
-                                'bg-yellow-100 text-yellow-800'
-                              }
-                            >
-                              {employee.status === 'active' ? 'Activo' :
-                               employee.status === 'inactive' ? 'Inactivo' : 'Suspendido'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleViewEmployeeHistory(employee.id)}
-                              className="flex items-center gap-2"
-                            >
-                              <History className="h-4 w-4" />
-                              Ver Ficha
-                            </Button>
-                          </TableCell>
+                  <div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Empleado</TableHead>
+                          <TableHead>Departamento</TableHead>
+                          <TableHead>Posición</TableHead>
+                          <TableHead>Salario Base</TableHead>
+                          <TableHead>Estado</TableHead>
+                          <TableHead>Acciones</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-
-                  {/* Controles de paginación */}
-                  {totalPages > 1 && (
-                    <div className="flex items-center justify-between mt-6">
-                      <div className="text-sm text-gray-600">
-                        Página {currentPage} de {totalPages}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setCurrentPage(currentPage - 1)}
-                          disabled={currentPage === 1}
-                        >
-                          Anterior
-                        </Button>
-                        
-                        {/* Números de página */}
-                        <div className="flex gap-1">
-                          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                            let pageNum;
-                            if (totalPages <= 5) {
-                              pageNum = i + 1;
-                            } else if (currentPage <= 3) {
-                              pageNum = i + 1;
-                            } else if (currentPage >= totalPages - 2) {
-                              pageNum = totalPages - 4 + i;
-                            } else {
-                              pageNum = currentPage - 2 + i;
-                            }
-                            
-                            return (
-                              <Button
-                                key={pageNum}
-                                variant={currentPage === pageNum ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setCurrentPage(pageNum)}
-                                className={currentPage === pageNum ? "bg-[#00a587] hover:bg-[#067f5f]" : ""}
+                      </TableHeader>
+                      <TableBody>
+                        {paginatedEmployees.map((employee: Employee) => (
+                          <TableRow key={employee.id}>
+                            <TableCell>
+                              <div>
+                                <div className="font-medium">{employee.fullName}</div>
+                                <div className="text-sm text-gray-500">{employee.email}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell>{employee.department}</TableCell>
+                            <TableCell>{employee.position}</TableCell>
+                            <TableCell>${parseFloat(employee.salary).toLocaleString('es-MX')}</TableCell>
+                            <TableCell>
+                              <Badge 
+                                className={
+                                  employee.status === 'active' ? 'bg-green-100 text-green-800' :
+                                  employee.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
+                                  'bg-yellow-100 text-yellow-800'
+                                }
                               >
-                                {pageNum}
+                                {employee.status === 'active' ? 'Activo' :
+                                 employee.status === 'inactive' ? 'Inactivo' : 'Suspendido'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleViewEmployeeHistory(employee.id)}
+                                className="flex items-center gap-2"
+                              >
+                                <History className="h-4 w-4" />
+                                Ver Ficha
                               </Button>
-                            );
-                          })}
-                        </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
 
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setCurrentPage(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                        >
-                          Siguiente
-                        </Button>
+                    {/* Controles de paginación */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-between mt-6">
+                        <div className="text-sm text-gray-600">
+                          Página {currentPage} de {totalPages}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                          >
+                            Anterior
+                          </Button>
+                          
+                          {/* Números de página */}
+                          <div className="flex gap-1">
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                              let pageNum;
+                              if (totalPages <= 5) {
+                                pageNum = i + 1;
+                              } else if (currentPage <= 3) {
+                                pageNum = i + 1;
+                              } else if (currentPage >= totalPages - 2) {
+                                pageNum = totalPages - 4 + i;
+                              } else {
+                                pageNum = currentPage - 2 + i;
+                              }
+                              
+                              return (
+                                <Button
+                                  key={pageNum}
+                                  variant={currentPage === pageNum ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => setCurrentPage(pageNum)}
+                                  className={currentPage === pageNum ? "bg-[#00a587] hover:bg-[#067f5f]" : ""}
+                                >
+                                  {pageNum}
+                                </Button>
+                              );
+                            })}
+                          </div>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                          >
+                            Siguiente
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 )}
               </CardContent>
             </Card>
