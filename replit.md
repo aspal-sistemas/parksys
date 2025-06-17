@@ -91,6 +91,7 @@ The system uses environment variables for database connection and supports both 
 - June 17, 2025. Logo oficial de Parques de México integrado al sistema de recibos de nómina - Template PDF profesional con branding corporativo, campos fiscales mexicanos (RFC, CURP, NSS) y cumplimiento legal completo
 - June 17, 2025. Sistema de recibos de nómina completamente funcional - Página de descarga operativa en /api/recibo-nomina, PDF con logo oficial generado (38KB), servidor configurado para archivos estáticos, integración completa con colores corporativos
 - June 17, 2025. Documentación completa de arquitectura empresarial generada - Prompt profesional para nuevos proyectos con módulos Configuration/Users/Permissions, Finance integral y HR completo. Sistema modular exportable para crear aplicaciones especializadas
+- June 17, 2025. Sistema CRUD completo para categorías financieras implementado - Funcionalidad completa de crear, leer, actualizar y eliminar categorías de ingresos y egresos. Protección de integridad que previene eliminación de categorías en uso. Interface con botones de edición y eliminación integrados
 
 ## Recent Features
 
