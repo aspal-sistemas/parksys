@@ -321,6 +321,11 @@ import { initializeDatabase } from "./initialize-db";
   try {
     const { registerHRRoutes } = await import("./hr-routes");
     const router = express.Router();
+    
+    // Aplicar middleware JSON específicamente al router HR
+    router.use(express.json({ limit: '50mb' }));
+    router.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    
     registerHRRoutes(app, router, (req: Request, res: Response, next: NextFunction) => next());
     app.use("/api", router);
     console.log("Rutas HR-Finanzas registradas correctamente");
