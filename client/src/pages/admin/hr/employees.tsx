@@ -1072,6 +1072,22 @@ export default function Employees() {
                 try {
                   console.log('Datos del empleado a guardar:', employeeData);
                   
+                  // Verificar si el email ya existe
+                  const checkResponse = await fetch('/api/employees');
+                  if (checkResponse.ok) {
+                    const existingEmployees = await checkResponse.json();
+                    const emailExists = existingEmployees.some((emp: any) => emp.email === employeeData.email);
+                    
+                    if (emailExists) {
+                      toast({
+                        title: "Email ya registrado",
+                        description: `El email ${employeeData.email} ya está registrado. Usa un email diferente.`,
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                  }
+                  
                   // Crear empleado en el servidor
                   const response = await fetch('/api/employees', {
                     method: 'POST',
@@ -1085,10 +1101,10 @@ export default function Employees() {
                     const errorData = await response.json().catch(() => ({}));
                     let errorMessage = 'Error al crear el empleado';
                     
-                    if (response.status === 500 && errorData.error?.includes('duplicate key')) {
-                      errorMessage = `El email ${employeeData.email} ya está registrado. Usa un email diferente.`;
-                    } else if (errorData.error) {
+                    if (errorData.error) {
                       errorMessage = errorData.error;
+                    } else if (response.status === 500) {
+                      errorMessage = `Error del servidor. Verifica que el email ${employeeData.email} no esté ya registrado.`;
                     }
                     
                     throw new Error(errorMessage);
