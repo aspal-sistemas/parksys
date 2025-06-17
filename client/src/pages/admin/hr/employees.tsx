@@ -1294,13 +1294,23 @@ export default function Employees() {
                   }
 
                   if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
                     let errorMessage = isEditing ? 'Error al actualizar el empleado' : 'Error al crear el empleado';
                     
-                    if (errorData.error) {
-                      errorMessage = errorData.error;
-                    } else if (response.status === 500) {
-                      errorMessage = `Error del servidor. Verifica que el email ${employeeData.email} no esté ya registrado.`;
+                    try {
+                      const errorData = await response.json();
+                      if (errorData.error) {
+                        errorMessage = errorData.error;
+                      }
+                    } catch (parseError) {
+                      // Si no se puede parsear como JSON, es probablemente HTML de error
+                      const responseText = await response.text();
+                      console.error('Error response (not JSON):', responseText);
+                      
+                      if (response.status === 500) {
+                        errorMessage = `Error del servidor. Verifica que los datos sean válidos.`;
+                      } else if (response.status === 400) {
+                        errorMessage = `Datos inválidos. Verifica que el email no esté duplicado.`;
+                      }
                     }
                     
                     throw new Error(errorMessage);
@@ -1319,7 +1329,7 @@ export default function Employees() {
                   // Recargar la lista de empleados
                   await loadEmployees();
                   
-                } catch (error) {
+                } catch (error: any) {
                   console.error('Error al procesar empleado:', error);
                   toast({
                     title: "Error",

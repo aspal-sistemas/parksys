@@ -126,6 +126,11 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
   apiRouter.put("/employees/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
+      console.log(`Actualizando empleado ${id} con datos:`, req.body);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID de empleado inválido" });
+      }
       
       // Si se está actualizando el email, verificar que no exista en otro empleado
       if (req.body.email) {
@@ -139,9 +144,15 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
         }
       }
       
+      // Preparar datos para actualización, excluyendo campos innecesarios
+      const updateData = { ...req.body };
+      delete updateData.id;
+      delete updateData.createdAt;
+      updateData.updatedAt = new Date();
+      
       const [updatedEmployee] = await db
         .update(employees)
-        .set({ ...req.body, updatedAt: new Date() })
+        .set(updateData)
         .where(eq(employees.id, id))
         .returning();
       
@@ -149,10 +160,11 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
         return res.status(404).json({ error: "Empleado no encontrado" });
       }
       
+      console.log(`Empleado ${id} actualizado exitosamente:`, updatedEmployee.fullName);
       res.json(updatedEmployee);
     } catch (error) {
       console.error("Error al actualizar empleado:", error);
-      res.status(500).json({ error: "Error interno del servidor" });
+      res.status(500).json({ error: "Error interno del servidor", details: error.message });
     }
   });
 
