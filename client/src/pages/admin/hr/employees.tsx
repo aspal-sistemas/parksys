@@ -411,7 +411,7 @@ export default function Employees() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isViewEmployeeOpen, setIsViewEmployeeOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 5;
+  const recordsPerPage = 10;
   const [isDepartmentDialogOpen, setIsDepartmentDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
@@ -509,28 +509,11 @@ export default function Employees() {
     return matchesSearch && matchesDepartment && matchesStatus;
   });
 
-  console.log('Total employees:', employees.length);
-  console.log('Filtered employees:', filteredEmployees.length);
-  console.log('Search term:', searchTerm);
-  console.log('Department filter:', departmentFilter);
-  console.log('Status filter:', statusFilter);
-
   // Paginación
   const totalPages = Math.ceil(filteredEmployees.length / recordsPerPage);
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = startIndex + recordsPerPage;
   const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
-  
-  console.log('Pagination info:', {
-    totalPages,
-    currentPage,
-    recordsPerPage,
-    startIndex,
-    endIndex,
-    paginatedCount: paginatedEmployees.length
-  });
-  
-  console.log('Paginated employees:', paginatedEmployees.map(emp => ({ id: emp.id, name: emp.fullName })));
 
   const handleViewEmployee = (employee: Employee) => {
     setSelectedEmployee(employee);
@@ -1179,16 +1162,40 @@ export default function Employees() {
                             return (
                               <div key={dept.name} className="border rounded-lg p-3 bg-gray-50">
                                 <h4 className="font-medium mb-2">{dept.name}</h4>
-                                {deptEmployees.map((employee) => (
-                                  <div key={employee.id} className="text-sm text-gray-700 mb-1">
-                                    <div className="font-medium">{employee.fullName}</div>
-                                    <div className="text-xs text-gray-500">{employee.position}</div>
-                                  </div>
-                                ))}
+                                <div className="text-xs text-blue-600 mb-2">({deptEmployees.length} empleados)</div>
+                                {deptEmployees.length === 0 ? (
+                                  <div className="text-xs text-gray-400 italic">Sin empleados asignados</div>
+                                ) : (
+                                  deptEmployees.map((employee) => (
+                                    <div key={employee.id} className="text-sm text-gray-700 mb-1">
+                                      <div className="font-medium">{employee.fullName}</div>
+                                      <div className="text-xs text-gray-500">{employee.position}</div>
+                                    </div>
+                                  ))
+                                )}
                               </div>
                             );
                           })}
                         </div>
+                        
+                        {/* Mostrar empleados sin departamento asignado o con departamentos no definidos */}
+                        {level === 5 && (
+                          <div className="mt-4">
+                            <h4 className="font-medium text-red-600 mb-2">Empleados sin departamento definido:</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {employees
+                                .filter(emp => !departmentsList.some(dept => dept.name === emp.department))
+                                .map((employee) => (
+                                  <div key={employee.id} className="border rounded-lg p-3 bg-red-50">
+                                    <div className="font-medium text-sm">{employee.fullName}</div>
+                                    <div className="text-xs text-gray-500">{employee.position}</div>
+                                    <div className="text-xs text-red-600 mt-1">Departamento: {employee.department}</div>
+                                  </div>
+                                ))
+                              }
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
