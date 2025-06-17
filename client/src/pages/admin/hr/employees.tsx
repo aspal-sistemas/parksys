@@ -424,6 +424,11 @@ export default function Employees() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(true);
   
+  // Estados adicionales para directorio con filtros avanzados
+  const [sortBy, setSortBy] = useState("name"); // name, department, alphabetical, seniority, hierarchy
+  const [sortOrder, setSortOrder] = useState("asc"); // asc, desc
+  const [hierarchyFilter, setHierarchyFilter] = useState("all");
+  
   const [departmentsList, setDepartmentsList] = useState<Department[]>([
     { name: "Dirección General", hierarchy: 1 },
     { name: "Asistencia de Dirección", hierarchy: 2 },
@@ -492,23 +497,67 @@ export default function Employees() {
 
 
 
-  const filteredEmployees = employees.filter(employee => {
-    if (!employee) return false;
-    
-    const fullName = employee.fullName || '';
-    const email = employee.email || '';
-    const position = employee.position || '';
-    const department = employee.department || '';
-    const status = employee.status || '';
-    
-    const matchesSearch = fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         position.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDepartment = departmentFilter === "all" || department === departmentFilter;
-    const matchesStatus = statusFilter === "all" || status === statusFilter;
-    
-    return matchesSearch && matchesDepartment && matchesStatus;
-  });
+  // Función mejorada de filtrado y ordenamiento para el directorio
+  const getFilteredAndSortedEmployees = () => {
+    let filtered = employees.filter(employee => {
+      if (!employee) return false;
+      
+      const fullName = employee.fullName || '';
+      const email = employee.email || '';
+      const position = employee.position || '';
+      const department = employee.department || '';
+      const status = employee.status || '';
+      
+      const matchesSearch = fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           position.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesDepartment = departmentFilter === "all" || department === departmentFilter;
+      const matchesStatus = statusFilter === "all" || status === statusFilter;
+      
+      // Filtro por jerarquía
+      const matchesHierarchy = hierarchyFilter === "all" || (() => {
+        const deptInfo = departmentsList.find(d => d.name === department);
+        return deptInfo ? deptInfo.hierarchy.toString() === hierarchyFilter : false;
+      })();
+      
+      return matchesSearch && matchesDepartment && matchesStatus && matchesHierarchy;
+    });
+
+    // Aplicar ordenamiento
+    filtered.sort((a, b) => {
+      let compareValue = 0;
+      
+      switch (sortBy) {
+        case "name":
+        case "alphabetical":
+          compareValue = (a.fullName || '').localeCompare(b.fullName || '');
+          break;
+        case "department":
+          compareValue = (a.department || '').localeCompare(b.department || '');
+          break;
+        case "seniority":
+          // Ordenar por fecha de contratación (más antiguo = mayor antigüedad)
+          const dateA = new Date(a.hireDate || '');
+          const dateB = new Date(b.hireDate || '');
+          compareValue = dateA.getTime() - dateB.getTime();
+          break;
+        case "hierarchy":
+          // Ordenar por jerarquía de departamento
+          const hierA = departmentsList.find(d => d.name === a.department)?.hierarchy || 999;
+          const hierB = departmentsList.find(d => d.name === b.department)?.hierarchy || 999;
+          compareValue = hierA - hierB;
+          break;
+        default:
+          compareValue = 0;
+      }
+      
+      return sortOrder === "asc" ? compareValue : -compareValue;
+    });
+
+    return filtered;
+  };
+
+  const filteredEmployees = getFilteredAndSortedEmployees();
 
   // Paginación
   const totalPages = Math.ceil(filteredEmployees.length / recordsPerPage);
@@ -1114,24 +1163,270 @@ export default function Employees() {
           <TabsContent value="directory">
             <Card>
               <CardHeader>
-                <CardTitle>Directorio de Empleados</CardTitle>
-                <CardDescription>Lista completa de empleados con información de contacto</CardDescription>
+                <CardTitle>Directorio de Empleados ({filteredEmployees.length})</CardTitle>
+                <CardDescription>Directorio completo con filtros avanzados y gestión de perfiles</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredEmployees.map((employee) => (
-                    <div key={employee.id} className="border rounded-lg p-4 space-y-2">
-                      <h3 className="font-semibold text-lg">{employee.fullName}</h3>
-                      <p className="text-sm text-gray-600">{employee.position}</p>
-                      <p className="text-sm text-gray-500">{employee.department}</p>
-                      <div className="text-sm space-y-1">
-                        <p><span className="font-medium">Email:</span> {employee.email}</p>
-                        <p><span className="font-medium">Teléfono:</span> {employee.phone}</p>
-                        {employee.address && <p><span className="font-medium">Dirección:</span> {employee.address}</p>}
+                {/* Panel de Filtros Avanzados */}
+                <div className="bg-gray-50 p-4 rounded-lg mb-6 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Búsqueda por nombre */}
+                    <div className="space-y-2">
+                      <Label htmlFor="directory-search">Buscar por nombre</Label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="directory-search"
+                          placeholder="Nombre del empleado..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10"
+                        />
                       </div>
                     </div>
-                  ))}
+
+                    {/* Filtro por departamento */}
+                    <div className="space-y-2">
+                      <Label>Departamento</Label>
+                      <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar departamento" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos los departamentos</SelectItem>
+                          {departmentsList.map((dept) => (
+                            <SelectItem key={dept.name} value={dept.name}>
+                              {dept.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Filtro por jerarquía */}
+                    <div className="space-y-2">
+                      <Label>Nivel jerárquico</Label>
+                      <Select value={hierarchyFilter} onValueChange={setHierarchyFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar nivel" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos los niveles</SelectItem>
+                          <SelectItem value="1">Nivel 1 - Dirección</SelectItem>
+                          <SelectItem value="2">Nivel 2 - Asistencias</SelectItem>
+                          <SelectItem value="3">Nivel 3 - Coordinaciones</SelectItem>
+                          <SelectItem value="4">Nivel 4 - Áreas</SelectItem>
+                          <SelectItem value="5">Nivel 5 - Operativo</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Ordenamiento */}
+                    <div className="space-y-2">
+                      <Label>Ordenar por</Label>
+                      <div className="flex gap-2">
+                        <Select value={sortBy} onValueChange={setSortBy}>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="name">Nombre</SelectItem>
+                            <SelectItem value="alphabetical">Alfabético</SelectItem>
+                            <SelectItem value="department">Departamento</SelectItem>
+                            <SelectItem value="seniority">Antigüedad</SelectItem>
+                            <SelectItem value="hierarchy">Jerarquía</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                          className="px-3"
+                        >
+                          {sortOrder === "asc" ? "↑" : "↓"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Grid de Empleados */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {isLoadingEmployees ? (
+                    <div className="col-span-full text-center py-8">
+                      <p className="text-gray-500">Cargando directorio...</p>
+                    </div>
+                  ) : filteredEmployees.length === 0 ? (
+                    <div className="col-span-full text-center py-8">
+                      <p className="text-gray-500">No se encontraron empleados con los filtros aplicados</p>
+                    </div>
+                  ) : (
+                    filteredEmployees.map((employee) => {
+                      const deptInfo = departmentsList.find(d => d.name === employee.department);
+                      const hierarchyLevel = deptInfo?.hierarchy || 5;
+                      const hireDate = new Date(employee.hireDate);
+                      const yearsOfService = new Date().getFullYear() - hireDate.getFullYear();
+
+                      return (
+                        <Card key={employee.id} className="hover:shadow-lg transition-shadow duration-200">
+                          <CardContent className="p-6">
+                            {/* Header con avatar y estado */}
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                  {employee.fullName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                                </div>
+                                <div>
+                                  <h3 className="font-bold text-lg text-gray-900">{employee.fullName}</h3>
+                                  <p className="text-sm font-medium text-gray-600">{employee.position}</p>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className={getStatusColor(employee.status)}>
+                                {getStatusText(employee.status)}
+                              </Badge>
+                            </div>
+
+                            {/* Información del departamento y jerarquía */}
+                            <div className="space-y-3 mb-4">
+                              <div className="flex items-center gap-2">
+                                <Building className="h-4 w-4 text-gray-500" />
+                                <span className="text-sm text-gray-700">{employee.department}</span>
+                                <Badge variant="secondary" className="text-xs">
+                                  Nivel {hierarchyLevel}
+                                </Badge>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-gray-500" />
+                                <span className="text-sm text-gray-700">
+                                  {yearsOfService} {yearsOfService === 1 ? 'año' : 'años'} de antigüedad
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Información de contacto */}
+                            <div className="space-y-2 mb-4 text-sm">
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4 text-gray-500" />
+                                <span className="text-gray-700 truncate">{employee.email}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4 text-gray-500" />
+                                <span className="text-gray-700">{employee.phone}</span>
+                              </div>
+                            </div>
+
+                            {/* Habilidades y certificaciones destacadas */}
+                            {(employee.skills?.length > 0 || employee.certifications?.length > 0) && (
+                              <div className="mb-4">
+                                {employee.skills?.length > 0 && (
+                                  <div className="mb-2">
+                                    <p className="text-xs font-medium text-gray-600 mb-1">Habilidades principales:</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {employee.skills.slice(0, 2).map((skill, index) => (
+                                        <Badge key={index} variant="secondary" className="text-xs bg-green-100 text-green-800">
+                                          {skill}
+                                        </Badge>
+                                      ))}
+                                      {employee.skills.length > 2 && (
+                                        <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
+                                          +{employee.skills.length - 2}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {employee.certifications?.length > 0 && (
+                                  <div>
+                                    <p className="text-xs font-medium text-gray-600 mb-1">Certificaciones:</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {employee.certifications.slice(0, 2).map((cert, index) => (
+                                        <Badge key={index} variant="secondary" className="text-xs bg-blue-100 text-blue-800">
+                                          {cert}
+                                        </Badge>
+                                      ))}
+                                      {employee.certifications.length > 2 && (
+                                        <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
+                                          +{employee.certifications.length - 2}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Botones de acción */}
+                            <div className="flex gap-2 pt-4 border-t">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleViewEmployee(employee)}
+                                className="flex-1"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                Ver Perfil
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEditEmployee(employee)}
+                                className="flex-1"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Paginación para directorio */}
+                {totalPages > 1 && (
+                  <div className="mt-6 flex items-center justify-between">
+                    <div className="text-sm text-gray-500">
+                      Mostrando {startIndex + 1}-{Math.min(endIndex, filteredEmployees.length)} de {filteredEmployees.length} empleados
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Anterior
+                      </Button>
+                      {[...Array(Math.min(5, totalPages))].map((_, i) => {
+                        const pageNum = currentPage <= 3 ? i + 1 : currentPage - 2 + i;
+                        if (pageNum > totalPages) return null;
+                        return (
+                          <Button
+                            key={pageNum}
+                            size="sm"
+                            variant={currentPage === pageNum ? "default" : "outline"}
+                            onClick={() => setCurrentPage(pageNum)}
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Siguiente
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
