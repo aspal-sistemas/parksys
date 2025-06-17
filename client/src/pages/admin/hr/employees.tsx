@@ -470,7 +470,7 @@ const EmployeesManagement = () => {
                       <SelectValue placeholder="Seleccionar departamento" />
                     </SelectTrigger>
                     <SelectContent>
-                      {departments.map(dept => (
+                      {departmentsList.map((dept: string) => (
                         <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                       ))}
                     </SelectContent>
@@ -664,7 +664,7 @@ const EmployeesManagement = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todos los departamentos</SelectItem>
-                        {departments.map(dept => (
+                        {departmentsList.map(dept => (
                           <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                         ))}
                       </SelectContent>
@@ -710,7 +710,7 @@ const EmployeesManagement = () => {
                     <div key={employee.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                          {employee.fullName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                          {employee.fullName.split(' ').map((name: string) => name[0]).join('').substring(0, 2)}
                         </div>
                         
                         <div className="flex-1">
@@ -755,7 +755,7 @@ const EmployeesManagement = () => {
                   <CardContent className="p-6">
                     <div className="text-center mb-4">
                       <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-3">
-                        {employee.fullName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                        {employee.fullName.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
                       </div>
                       <h3 className="font-medium text-gray-900">{employee.fullName}</h3>
                       <p className="text-sm text-gray-600">{employee.position}</p>
@@ -990,7 +990,7 @@ const EmployeesManagement = () => {
                         <div className="text-sm text-blue-800">Total Empleados</div>
                       </div>
                       <div className="bg-green-100 p-3 rounded-lg text-center">
-                        <div className="text-2xl font-bold text-green-600">{departments.length}</div>
+                        <div className="text-2xl font-bold text-green-600">{departmentsList.length}</div>
                         <div className="text-sm text-green-800">Departamentos</div>
                       </div>
                       <div className="bg-purple-100 p-3 rounded-lg text-center">
