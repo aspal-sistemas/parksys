@@ -628,9 +628,10 @@ const EmployeesManagement = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="list">Lista de Empleados</TabsTrigger>
             <TabsTrigger value="directory">Directorio</TabsTrigger>
+            <TabsTrigger value="departments">Departamentos</TabsTrigger>
             <TabsTrigger value="organigram">Organigrama</TabsTrigger>
           </TabsList>
 
@@ -744,6 +745,50 @@ const EmployeesManagement = () => {
                     </div>
                   ))}
                 </div>
+
+                {/* Pagination Controls */}
+                {filteredEmployees.length > recordsPerPage && (
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                    <div className="text-sm text-gray-600">
+                      Mostrando {((currentPage - 1) * recordsPerPage) + 1} a {Math.min(currentPage * recordsPerPage, filteredEmployees.length)} de {filteredEmployees.length} empleados
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Anterior
+                      </Button>
+                      
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className="w-8 h-8 p-0"
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                      >
+                        Siguiente
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -755,7 +800,7 @@ const EmployeesManagement = () => {
                   <CardContent className="p-6">
                     <div className="text-center mb-4">
                       <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-3">
-                        {employee.fullName.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
+                        {employee.fullName.split(' ').map((name: string) => name[0]).join('').substring(0, 2)}
                       </div>
                       <h3 className="font-medium text-gray-900">{employee.fullName}</h3>
                       <p className="text-sm text-gray-600">{employee.position}</p>
@@ -798,6 +843,123 @@ const EmployeesManagement = () => {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="departments">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building className="h-5 w-5" />
+                    Gestión de Departamentos
+                  </CardTitle>
+                  <CardDescription>
+                    Administra los departamentos de la organización
+                  </CardDescription>
+                </div>
+                <Dialog open={isDepartmentDialogOpen} onOpenChange={setIsDepartmentDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nuevo Departamento
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Agregar Nuevo Departamento</DialogTitle>
+                      <DialogDescription>
+                        Ingresa el nombre del nuevo departamento
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="departmentName">Nombre del Departamento</Label>
+                        <Input
+                          id="departmentName"
+                          value={newDepartmentName}
+                          onChange={(e) => setNewDepartmentName(e.target.value)}
+                          placeholder="Ejemplo: Marketing Digital"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => {
+                          setIsDepartmentDialogOpen(false);
+                          setNewDepartmentName("");
+                        }}>
+                          Cancelar
+                        </Button>
+                        <Button onClick={() => {
+                          handleAddDepartment();
+                          setIsDepartmentDialogOpen(false);
+                        }}>
+                          Agregar
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {departmentsList.map((department) => (
+                    <Card key={department} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <Building className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                              {editingDepartment === department ? (
+                                <Input
+                                  value={newDepartmentName}
+                                  onChange={(e) => setNewDepartmentName(e.target.value)}
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                      handleEditDepartment(department, newDepartmentName);
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    handleEditDepartment(department, newDepartmentName);
+                                  }}
+                                  className="h-6 text-sm"
+                                  autoFocus
+                                />
+                              ) : (
+                                <h3 className="font-medium text-gray-900">{department}</h3>
+                              )}
+                              <p className="text-xs text-gray-500">
+                                {employees.filter(emp => emp.department === department).length} empleados
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setEditingDepartment(department);
+                                setNewDepartmentName(department);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteDepartment(department)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="organigram">
