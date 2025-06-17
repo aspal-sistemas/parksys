@@ -822,6 +822,48 @@ export default function Employees() {
           </div>
 
           <div className="flex items-center gap-3">
+            <Dialog open={isDepartmentDialogOpen} onOpenChange={setIsDepartmentDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Gestionar Departamentos
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Gestión de Departamentos</DialogTitle>
+                  <DialogDescription>
+                    Administra los departamentos y sus niveles jerárquicos
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    {departmentsList.map((dept, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <div className="font-medium">{dept.name}</div>
+                          <div className="text-sm text-gray-600">Nivel {dept.hierarchy} - 
+                            {dept.hierarchy === 1 ? ' Dirección' : 
+                             dept.hierarchy === 2 ? ' Asistencias' :
+                             dept.hierarchy === 3 ? ' Coordinaciones' :
+                             dept.hierarchy === 4 ? ' Áreas' : ' Operativo'}
+                          </div>
+                        </div>
+                        <Badge variant="secondary">
+                          {employees.filter(emp => emp.department === dept.name).length} empleados
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="pt-4 border-t">
+                    <p className="text-sm text-gray-600">
+                      Los departamentos se gestionan según la estructura jerárquica organizacional de 5 niveles.
+                    </p>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="flex items-center gap-2">
