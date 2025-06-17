@@ -212,17 +212,23 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
 
       // 4. Crear registro financiero automático
       try {
+        // Extraer año y mes del período (ej: "2025-08" -> año: 2025, mes: 8)
+        const [yearStr, monthStr] = period.split('-');
+        const year = parseInt(yearStr);
+        const month = parseInt(monthStr);
+
         const [expenseRecord] = await db
           .insert(actualExpenses)
           .values({
             parkId: 4, // Parque por defecto para nómina administrativa
+            month: month, // Mes como número (ej: 8 para agosto)
+            year: year, // Año como número (ej: 2025)
             concept: `Nómina ${period}`,
             amount: totalPayroll,
             date: endDate,
             categoryId: 7, // Categoría "Personal"
             description: `Gasto de nómina generado automáticamente para el período ${period}`,
             invoiceNumber: `NOM-${period}`,
-            paymentMethod: 'transferencia',
             isPaid: true,
             paymentDate: endDate,
             // Campos de integración
