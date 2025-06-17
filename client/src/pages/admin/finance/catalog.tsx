@@ -129,6 +129,52 @@ export default function CatalogPage() {
     },
   });
 
+  // Mutación para eliminar categoría de ingresos
+  const deleteIncomeCategoryMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest(`/api/income-categories/${id}`, {
+        method: 'DELETE'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/finance/income-categories'] });
+      toast({
+        title: "Categoría eliminada",
+        description: "La categoría de ingresos se ha eliminado exitosamente.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error?.response?.data?.message || "No se pudo eliminar la categoría. Puede estar siendo usada en registros.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutación para eliminar categoría de egresos
+  const deleteExpenseCategoryMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest(`/api/expense-categories/${id}`, {
+        method: 'DELETE'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/finance/expense-categories'] });
+      toast({
+        title: "Categoría eliminada",
+        description: "La categoría de egresos se ha eliminado exitosamente.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error?.response?.data?.message || "No se pudo eliminar la categoría. Puede estar siendo usada en registros.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleCreateCategory = () => {
     if (!newCategory.name.trim()) {
       toast({
@@ -182,6 +228,16 @@ export default function CatalogPage() {
         id: editingCategory.id,
         categoryData,
       });
+    }
+  };
+
+  const handleDeleteCategory = (categoryId: number, type: "ingreso" | "egreso") => {
+    if (window.confirm(`¿Estás seguro de que quieres eliminar esta categoría? Esta acción no se puede deshacer.`)) {
+      if (type === "ingreso") {
+        deleteIncomeCategoryMutation.mutate(categoryId);
+      } else {
+        deleteExpenseCategoryMutation.mutate(categoryId);
+      }
     }
   };
 
@@ -306,6 +362,14 @@ export default function CatalogPage() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteCategory(category.id, "ingreso")}
+                            disabled={deleteIncomeCategoryMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     ))
@@ -423,6 +487,14 @@ export default function CatalogPage() {
                             onClick={() => handleEditCategory(category, "egreso")}
                           >
                             <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteCategory(category.id, "egreso")}
+                            disabled={deleteExpenseCategoryMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
