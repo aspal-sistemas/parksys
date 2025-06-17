@@ -1015,7 +1015,7 @@ export default function Employees() {
                     <div className="text-center py-8">
                       <p className="text-gray-500">No se encontraron empleados</p>
                     </div>
-                  ) : (
+                  ) : 
                     paginatedEmployees.map((employee) => (
                         <div key={employee.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                           <div className="flex items-center gap-4">
@@ -1053,9 +1053,8 @@ export default function Employees() {
                             </div>
                           </div>
                         </div>
-                      );
-                    })
-                  )}
+                    ))
+                  }
                 </div>
               </CardContent>
               
