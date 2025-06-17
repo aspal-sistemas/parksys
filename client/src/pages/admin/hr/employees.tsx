@@ -935,11 +935,11 @@ export default function Employees() {
                     {departmentsList.map((dept, index) => {
                       const employeeCount = employees.filter(emp => emp.department === dept.name).length;
                       const hierarchyColors = {
-                        1: "from-purple-500 to-pink-500 text-white",
-                        2: "from-blue-500 to-indigo-500 text-white", 
-                        3: "from-green-500 to-emerald-500 text-white",
-                        4: "from-orange-500 to-red-500 text-white",
-                        5: "from-teal-500 to-cyan-500 text-white"
+                        1: "from-[#8498a5] to-[#6b8394] text-white",
+                        2: "from-[#5ba8c4] to-[#4a96b2] text-white", 
+                        3: "from-[#00a587] to-[#067f5f] text-white",
+                        4: "from-[#22c55e] to-[#16a34a] text-white",
+                        5: "from-[#bcd256] to-[#a6c548] text-white"
                       };
                       
                       return (
@@ -992,25 +992,25 @@ export default function Employees() {
                   <div className="pt-4 border-t">
                     <h4 className="font-medium mb-3">Estructura Jerárquica Organizacional</h4>
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-3 text-sm">
-                      <div className="p-2 bg-purple-50 rounded border-l-4 border-purple-500">
-                        <div className="font-medium text-purple-800">Nivel 1</div>
-                        <div className="text-purple-600">Dirección</div>
+                      <div className="p-2 bg-[#8498a5]/10 rounded border-l-4 border-[#8498a5]">
+                        <div className="font-medium text-[#8498a5]">Nivel 1</div>
+                        <div className="text-[#6b8394]">Dirección</div>
                       </div>
-                      <div className="p-2 bg-blue-50 rounded border-l-4 border-blue-500">
-                        <div className="font-medium text-blue-800">Nivel 2</div>
-                        <div className="text-blue-600">Asistencias</div>
+                      <div className="p-2 bg-[#5ba8c4]/10 rounded border-l-4 border-[#5ba8c4]">
+                        <div className="font-medium text-[#5ba8c4]">Nivel 2</div>
+                        <div className="text-[#4a96b2]">Asistencias</div>
                       </div>
-                      <div className="p-2 bg-green-50 rounded border-l-4 border-green-500">
-                        <div className="font-medium text-green-800">Nivel 3</div>
-                        <div className="text-green-600">Coordinaciones</div>
+                      <div className="p-2 bg-[#00a587]/10 rounded border-l-4 border-[#00a587]">
+                        <div className="font-medium text-[#00a587]">Nivel 3</div>
+                        <div className="text-[#067f5f]">Coordinaciones</div>
                       </div>
-                      <div className="p-2 bg-orange-50 rounded border-l-4 border-orange-500">
-                        <div className="font-medium text-orange-800">Nivel 4</div>
-                        <div className="text-orange-600">Áreas</div>
+                      <div className="p-2 bg-[#22c55e]/10 rounded border-l-4 border-[#22c55e]">
+                        <div className="font-medium text-[#22c55e]">Nivel 4</div>
+                        <div className="text-[#16a34a]">Áreas</div>
                       </div>
-                      <div className="p-2 bg-teal-50 rounded border-l-4 border-teal-500">
-                        <div className="font-medium text-teal-800">Nivel 5</div>
-                        <div className="text-teal-600">Operativo</div>
+                      <div className="p-2 bg-[#bcd256]/10 rounded border-l-4 border-[#bcd256]">
+                        <div className="font-medium text-[#bcd256]">Nivel 5</div>
+                        <div className="text-[#a6c548]">Operativo</div>
                       </div>
                     </div>
                   </div>
@@ -1853,11 +1853,11 @@ export default function Employees() {
                       };
                       
                       const levelColors = {
-                        1: 'from-purple-500 to-purple-700 border-purple-400',
-                        2: 'from-blue-500 to-blue-700 border-blue-400',
-                        3: 'from-green-500 to-green-700 border-green-400', 
-                        4: 'from-orange-500 to-orange-700 border-orange-400',
-                        5: 'from-teal-500 to-teal-700 border-teal-400'
+                        1: 'from-[#8498a5] to-[#6b8394] border-[#8498a5]',
+                        2: 'from-[#5ba8c4] to-[#4a96b2] border-[#5ba8c4]',
+                        3: 'from-[#00a587] to-[#008f75] border-[#00a587]', 
+                        4: 'from-[#22c55e] to-[#16a34a] border-[#22c55e]',
+                        5: 'from-[#bcd256] to-[#a6c548] border-[#bcd256]'
                       };
                       
                       return (
@@ -1881,41 +1881,41 @@ export default function Employees() {
                     
                     const levelConfig = {
                       1: { 
-                        bg: 'bg-gradient-to-br from-purple-100 via-purple-50 to-white',
-                        border: 'border-purple-300',
-                        title: 'bg-gradient-to-r from-purple-600 to-purple-800',
+                        bg: 'bg-gradient-to-br from-[#8498a5]/20 via-[#8498a5]/10 to-white',
+                        border: 'border-[#8498a5]/30',
+                        title: 'bg-gradient-to-r from-[#8498a5] to-[#6b8394]',
                         icon: '🏛️',
                         name: 'Dirección General',
                         description: 'Máximo nivel ejecutivo y toma de decisiones estratégicas'
                       },
                       2: { 
-                        bg: 'bg-gradient-to-br from-blue-100 via-blue-50 to-white',
-                        border: 'border-blue-300',
-                        title: 'bg-gradient-to-r from-blue-600 to-blue-800',
+                        bg: 'bg-gradient-to-br from-[#5ba8c4]/20 via-[#5ba8c4]/10 to-white',
+                        border: 'border-[#5ba8c4]/30',
+                        title: 'bg-gradient-to-r from-[#5ba8c4] to-[#4a96b2]',
                         icon: '🎯',
                         name: 'Asistencias de Dirección',
                         description: 'Soporte directo y coordinación ejecutiva'
                       },
                       3: { 
-                        bg: 'bg-gradient-to-br from-green-100 via-green-50 to-white',
-                        border: 'border-green-300',
-                        title: 'bg-gradient-to-r from-green-600 to-green-800',
+                        bg: 'bg-gradient-to-br from-[#00a587]/20 via-[#00a587]/10 to-white',
+                        border: 'border-[#00a587]/30',
+                        title: 'bg-gradient-to-r from-[#00a587] to-[#067f5f]',
                         icon: '⚡',
                         name: 'Coordinaciones Operativas',
                         description: 'Gestión y coordinación de operaciones principales'
                       },
                       4: { 
-                        bg: 'bg-gradient-to-br from-orange-100 via-orange-50 to-white',
-                        border: 'border-orange-300',
-                        title: 'bg-gradient-to-r from-orange-600 to-orange-800',
+                        bg: 'bg-gradient-to-br from-[#22c55e]/20 via-[#22c55e]/10 to-white',
+                        border: 'border-[#22c55e]/30',
+                        title: 'bg-gradient-to-r from-[#22c55e] to-[#16a34a]',
                         icon: '🔧',
                         name: 'Áreas Especializadas',
                         description: 'Departamentos técnicos y especializados'
                       },
                       5: { 
-                        bg: 'bg-gradient-to-br from-teal-100 via-teal-50 to-white',
-                        border: 'border-teal-300',
-                        title: 'bg-gradient-to-r from-teal-600 to-teal-800',
+                        bg: 'bg-gradient-to-br from-[#bcd256]/20 via-[#bcd256]/10 to-white',
+                        border: 'border-[#bcd256]/30',
+                        title: 'bg-gradient-to-r from-[#bcd256] to-[#a6c548]',
                         icon: '👥',
                         name: 'Personal Operativo',
                         description: 'Ejecución directa y operaciones de campo'
