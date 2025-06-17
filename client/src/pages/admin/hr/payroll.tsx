@@ -179,6 +179,13 @@ export default function Payroll() {
   const [isViewPeriodDialogOpen, setIsViewPeriodDialogOpen] = useState(false);
   const [viewingPeriod, setViewingPeriod] = useState<PayrollPeriod | null>(null);
   
+  // Estados para paginación y filtros de empleados
+  const [currentPage, setCurrentPage] = useState(1);
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [positionFilter, setPositionFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const recordsPerPage = 10;
+  
   // Datos de empleados
   const { data: employees = [], isLoading: employeesLoading } = useQuery({
     queryKey: ["/api/hr/employees"],
@@ -355,11 +362,35 @@ export default function Payroll() {
     }
   });
 
-  // Filtrar empleados por búsqueda
-  const filteredEmployees = employees.filter((emp: Employee) =>
-    emp.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.department.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Obtener valores únicos para filtros
+  const uniqueDepartments = Array.from(new Set(employees.map((emp: Employee) => emp.department)));
+  const uniquePositions = Array.from(new Set(employees.map((emp: Employee) => emp.position)));
+
+  // Filtrar empleados por búsqueda y filtros
+  const filteredEmployees = employees.filter((employee: Employee) => {
+    const matchesSearch = employee.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.position.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesDepartment = !departmentFilter || employee.department === departmentFilter;
+    const matchesPosition = !positionFilter || employee.position === positionFilter;
+    const matchesStatus = !statusFilter || employee.status === statusFilter;
+    
+    return matchesSearch && matchesDepartment && matchesPosition && matchesStatus;
+  });
+
+  // Calcular paginación
+  const totalRecords = filteredEmployees.length;
+  const totalPages = Math.ceil(totalRecords / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
+  const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
+
+  // Resetear página cuando cambien los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, departmentFilter, positionFilter, statusFilter]);
 
   // Colores para gráficos
   const CHART_COLORS = ['#00a587', '#067f5f', '#bcd256', '#8498a5', '#22c55e'];
@@ -773,15 +804,80 @@ export default function Payroll() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Buscar empleados..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 w-64"
-                    />
+                {/* Controles de búsqueda y filtros */}
+                <div className="space-y-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        placeholder="Buscar empleados..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    
+                    <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Filtrar por departamento" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Todos los departamentos</SelectItem>
+                        {uniqueDepartments.map((dept) => (
+                          <SelectItem key={dept} value={dept}>
+                            {dept}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={positionFilter} onValueChange={setPositionFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Filtrar por posición" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Todas las posiciones</SelectItem>
+                        {uniquePositions.map((pos) => (
+                          <SelectItem key={pos} value={pos}>
+                            {pos}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Filtrar por estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Todos los estados</SelectItem>
+                        <SelectItem value="active">Activo</SelectItem>
+                        <SelectItem value="inactive">Inactivo</SelectItem>
+                        <SelectItem value="suspended">Suspendido</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Información de resultados */}
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <div>
+                      Mostrando {startIndex + 1}-{Math.min(endIndex, totalRecords)} de {totalRecords} empleados
+                    </div>
+                    {(searchTerm || departmentFilter || positionFilter || statusFilter) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSearchTerm("");
+                          setDepartmentFilter("");
+                          setPositionFilter("");
+                          setStatusFilter("");
+                        }}
+                      >
+                        <Filter className="h-4 w-4 mr-2" />
+                        Limpiar filtros
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -800,7 +896,7 @@ export default function Payroll() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredEmployees.map((employee: Employee) => (
+                      {paginatedEmployees.map((employee: Employee) => (
                         <TableRow key={employee.id}>
                           <TableCell>
                             <div>
@@ -812,7 +908,16 @@ export default function Payroll() {
                           <TableCell>{employee.position}</TableCell>
                           <TableCell>${parseFloat(employee.salary).toLocaleString('es-MX')}</TableCell>
                           <TableCell>
-                            <Badge className="bg-green-100 text-green-800">Activo</Badge>
+                            <Badge 
+                              className={
+                                employee.status === 'active' ? 'bg-green-100 text-green-800' :
+                                employee.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }
+                            >
+                              {employee.status === 'active' ? 'Activo' :
+                               employee.status === 'inactive' ? 'Inactivo' : 'Suspendido'}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             <Button
@@ -829,6 +934,62 @@ export default function Payroll() {
                       ))}
                     </TableBody>
                   </Table>
+
+                  {/* Controles de paginación */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between mt-6">
+                      <div className="text-sm text-gray-600">
+                        Página {currentPage} de {totalPages}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          Anterior
+                        </Button>
+                        
+                        {/* Números de página */}
+                        <div className="flex gap-1">
+                          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            let pageNum;
+                            if (totalPages <= 5) {
+                              pageNum = i + 1;
+                            } else if (currentPage <= 3) {
+                              pageNum = i + 1;
+                            } else if (currentPage >= totalPages - 2) {
+                              pageNum = totalPages - 4 + i;
+                            } else {
+                              pageNum = currentPage - 2 + i;
+                            }
+                            
+                            return (
+                              <Button
+                                key={pageNum}
+                                variant={currentPage === pageNum ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setCurrentPage(pageNum)}
+                                className={currentPage === pageNum ? "bg-[#00a587] hover:bg-[#067f5f]" : ""}
+                              >
+                                {pageNum}
+                              </Button>
+                            );
+                          })}
+                        </div>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        >
+                          Siguiente
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 )}
               </CardContent>
             </Card>
