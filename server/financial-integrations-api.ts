@@ -254,6 +254,10 @@ export function registerFinancialIntegrationsAPI(apiRouter: Router, isAuthentica
           // Simulate events synchronization
           result = { message: `Sincronización de eventos completada`, recordsProcessed: 8 };
           break;
+        case 'assets':
+          // Simulate assets synchronization
+          result = { message: `Sincronización de activos completada`, recordsProcessed: 15 };
+          break;
         default:
           return res.status(400).json({ message: "Módulo no válido para sincronización" });
       }

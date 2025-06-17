@@ -176,6 +176,8 @@ export const actualExpenses = pgTable("actual_expenses", {
   isPayrollGenerated: boolean("is_payroll_generated").default(false),
   payrollPeriodId: integer("payroll_period_id"),
   isAssetsGenerated: boolean("is_assets_generated").default(false),
+  assetId: integer("asset_id"),
+  assetMaintenanceId: integer("asset_maintenance_id"),
   isTreesGenerated: boolean("is_trees_generated").default(false), 
   isVolunteersGenerated: boolean("is_volunteers_generated").default(false),
   isIncidentsGenerated: boolean("is_incidents_generated").default(false),
