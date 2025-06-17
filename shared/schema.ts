@@ -1626,3 +1626,116 @@ export const assetAssignmentsRelations = relations(assetAssignments, ({ one }) =
     references: [activities.id]
   })
 }));
+
+// ========== MÓDULO DE RECIBOS DE NÓMINA ==========
+
+// Estados de recibos
+export const payrollReceiptStatusEnum = pgEnum("payroll_receipt_status", [
+  "draft",
+  "generated", 
+  "sent",
+  "confirmed"
+]);
+
+// Tabla de recibos de nómina
+export const payrollReceipts = pgTable("payroll_receipts", {
+  id: serial("id").primaryKey(),
+  periodId: integer("period_id").notNull().references(() => payrollPeriods.id),
+  employeeId: integer("employee_id").notNull().references(() => employees.id),
+  receiptNumber: varchar("receipt_number", { length: 50 }).notNull().unique(),
+  generatedDate: timestamp("generated_date").defaultNow(),
+  payDate: date("pay_date").notNull(),
+  
+  // Datos del empleado al momento de la generación
+  employeeName: varchar("employee_name", { length: 200 }).notNull(),
+  employeePosition: varchar("employee_position", { length: 100 }),
+  employeeDepartment: varchar("employee_department", { length: 100 }),
+  employeeRFC: varchar("employee_rfc", { length: 20 }),
+  
+  // Totales del recibo
+  totalGross: decimal("total_gross", { precision: 15, scale: 2 }).notNull(),
+  totalDeductions: decimal("total_deductions", { precision: 15, scale: 2 }).notNull(),
+  totalNet: decimal("total_net", { precision: 15, scale: 2 }).notNull(),
+  
+  // Archivo PDF
+  pdfFileName: varchar("pdf_file_name", { length: 255 }),
+  pdfPath: text("pdf_path"),
+  pdfGenerated: boolean("pdf_generated").default(false),
+  
+  // Estado y metadatos
+  status: payrollReceiptStatusEnum("status").default("draft"),
+  notes: text("notes"),
+  generatedById: integer("generated_by_id").references(() => users.id),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Detalles de conceptos en recibos
+export const payrollReceiptDetails = pgTable("payroll_receipt_details", {
+  id: serial("id").primaryKey(),
+  receiptId: integer("receipt_id").notNull().references(() => payrollReceipts.id),
+  conceptId: integer("concept_id").notNull().references(() => payrollConcepts.id),
+  
+  // Datos del concepto al momento de la generación
+  conceptCode: varchar("concept_code", { length: 20 }).notNull(),
+  conceptName: varchar("concept_name", { length: 100 }).notNull(),
+  conceptType: varchar("concept_type", { length: 20 }).notNull(), // income, deduction, benefit
+  conceptCategory: varchar("concept_category", { length: 50 }).notNull(),
+  
+  // Valores calculados
+  quantity: decimal("quantity", { precision: 10, scale: 2 }).default("1.00"),
+  rate: decimal("rate", { precision: 15, scale: 2 }),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  
+  // Metadatos
+  description: text("description"),
+  sortOrder: integer("sort_order").default(0),
+  
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+// Schemas de validación para recibos
+export const insertPayrollReceiptSchema = createInsertSchema(payrollReceipts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertPayrollReceiptDetailSchema = createInsertSchema(payrollReceiptDetails).omit({
+  id: true,
+  createdAt: true
+});
+
+export type InsertPayrollReceipt = z.infer<typeof insertPayrollReceiptSchema>;
+export type PayrollReceipt = typeof payrollReceipts.$inferSelect;
+export type InsertPayrollReceiptDetail = z.infer<typeof insertPayrollReceiptDetailSchema>;
+export type PayrollReceiptDetail = typeof payrollReceiptDetails.$inferSelect;
+
+// Relaciones para recibos de nómina
+export const payrollReceiptsRelations = relations(payrollReceipts, ({ one, many }) => ({
+  period: one(payrollPeriods, {
+    fields: [payrollReceipts.periodId],
+    references: [payrollPeriods.id]
+  }),
+  employee: one(employees, {
+    fields: [payrollReceipts.employeeId],
+    references: [employees.id]
+  }),
+  generatedBy: one(users, {
+    fields: [payrollReceipts.generatedById],
+    references: [users.id]
+  }),
+  details: many(payrollReceiptDetails)
+}));
+
+export const payrollReceiptDetailsRelations = relations(payrollReceiptDetails, ({ one }) => ({
+  receipt: one(payrollReceipts, {
+    fields: [payrollReceiptDetails.receiptId],
+    references: [payrollReceipts.id]
+  }),
+  concept: one(payrollConcepts, {
+    fields: [payrollReceiptDetails.conceptId],
+    references: [payrollConcepts.id]
+  })
+}));

@@ -445,6 +445,22 @@ import { initializeDatabase } from "./initialize-db";
     console.error("Error al registrar rutas HR:", error);
   }
 
+  // Registrar rutas de Recibos de Nómina
+  try {
+    const { registerPayrollReceiptsRoutes } = await import("./payroll-receipts-routes");
+    const receiptsRouter = express.Router();
+    
+    // Aplicar middleware JSON específicamente al router de recibos
+    receiptsRouter.use(express.json({ limit: '50mb' }));
+    receiptsRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    
+    registerPayrollReceiptsRoutes(app, receiptsRouter, (req: Request, res: Response, next: NextFunction) => next());
+    app.use("/api/hr", receiptsRouter); // Usar el mismo prefijo que HR
+    console.log("Rutas de Recibos de Nómina registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de Recibos de Nómina:", error);
+  }
+
   const server = await registerRoutes(app);
 
   // Registrar API de integraciones financieras múltiples
