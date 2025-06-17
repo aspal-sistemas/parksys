@@ -148,6 +148,42 @@ const EmployeesManagement = () => {
     createEmployeeMutation.mutate(employeePayload);
   };
 
+  const handleViewEmployee = (employee: any) => {
+    setSelectedEmployee(employee);
+    setIsViewEmployeeOpen(true);
+  };
+
+  const handleEditEmployee = (employee: any) => {
+    // Cerrar modal de visualización
+    setIsViewEmployeeOpen(false);
+    
+    // Llenar el formulario con los datos del empleado
+    setNewEmployeeData({
+      fullName: employee.fullName || '',
+      email: employee.email || '',
+      phone: employee.phone || '',
+      position: employee.position || '',
+      department: employee.department || '',
+      salary: employee.salary?.toString() || '',
+      hireDate: employee.hireDate || '',
+      education: employee.education || '',
+      address: employee.address || '',
+      emergencyContact: employee.emergencyContact || '',
+      emergencyPhone: employee.emergencyPhone || ''
+    });
+    
+    // Abrir modal de edición
+    setIsNewEmployeeOpen(true);
+  };
+
+  const handleSendMessage = (employee: any) => {
+    toast({
+      title: "Función en desarrollo",
+      description: `Funcionalidad de mensajería para ${employee.fullName} estará disponible pronto.`,
+      variant: "default"
+    });
+  };
+
   // Empleados de respaldo si no hay conexión a la BD
   const fallbackEmployees: Employee[] = [
     {
@@ -285,11 +321,6 @@ const EmployeesManagement = () => {
       style: 'currency',
       currency: 'MXN'
     }).format(amount);
-  };
-
-  const handleViewEmployee = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setIsViewEmployeeOpen(true);
   };
 
   // Estadísticas generales
@@ -1093,11 +1124,11 @@ const EmployeesManagement = () => {
 
                 {/* Acciones */}
                 <div className="flex justify-end gap-3 pt-4 border-t">
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={() => handleEditEmployee(selectedEmployee)}>
                     <Edit className="h-4 w-4 mr-2" />
                     Editar Información
                   </Button>
-                  <Button>
+                  <Button onClick={() => handleSendMessage(selectedEmployee)}>
                     <Mail className="h-4 w-4 mr-2" />
                     Enviar Mensaje
                   </Button>
