@@ -1849,7 +1849,7 @@ export default function Employees() {
                       });
                       
                       const levelIcons = {
-                        1: '👑', 2: '🎯', 3: '⚡', 4: '🔧', 5: '👥'
+                        1: '🏛️', 2: '🎯', 3: '⚡', 4: '🔧', 5: '👥'
                       };
                       
                       const levelColors = {
@@ -1884,7 +1884,7 @@ export default function Employees() {
                         bg: 'bg-gradient-to-br from-purple-100 via-purple-50 to-white',
                         border: 'border-purple-300',
                         title: 'bg-gradient-to-r from-purple-600 to-purple-800',
-                        icon: '👑',
+                        icon: '🏛️',
                         name: 'Dirección General',
                         description: 'Máximo nivel ejecutivo y toma de decisiones estratégicas'
                       },
