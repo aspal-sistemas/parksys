@@ -445,6 +445,14 @@ import { initializeDatabase } from "./initialize-db";
     console.error("Error al registrar rutas HR:", error);
   }
 
+  // Crear tablas de recibos de nómina
+  try {
+    const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
+    await createPayrollReceiptsTables();
+  } catch (error) {
+    console.error("Error al crear tablas de recibos de nómina:", error);
+  }
+
   // Registrar rutas de Recibos de Nómina
   try {
     const { registerPayrollReceiptsRoutes } = await import("./payroll-receipts-routes");
