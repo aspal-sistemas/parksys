@@ -450,7 +450,20 @@ export default function Employees() {
       if (response.ok) {
         const employeesData = await response.json();
         console.log('Empleados recibidos:', employeesData);
-        setEmployees(employeesData);
+        console.log('Cantidad de empleados:', employeesData.length);
+        
+        // Verificar que los datos sean válidos antes de actualizar el estado
+        if (Array.isArray(employeesData)) {
+          setEmployees(employeesData);
+          console.log('Estado de empleados actualizado exitosamente');
+        } else {
+          console.error('Datos de empleados no son un array:', employeesData);
+          toast({
+            title: "Error",
+            description: "Formato de datos incorrecto del servidor",
+            variant: "destructive"
+          });
+        }
       } else {
         console.error('Error en la respuesta:', response.status, response.statusText);
         toast({
@@ -479,11 +492,19 @@ export default function Employees() {
 
 
   const filteredEmployees = employees.filter(employee => {
-    const matchesSearch = employee.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         employee.position.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDepartment = departmentFilter === "all" || employee.department === departmentFilter;
-    const matchesStatus = statusFilter === "all" || employee.status === statusFilter;
+    if (!employee) return false;
+    
+    const fullName = employee.fullName || '';
+    const email = employee.email || '';
+    const position = employee.position || '';
+    const department = employee.department || '';
+    const status = employee.status || '';
+    
+    const matchesSearch = fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         position.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDepartment = departmentFilter === "all" || department === departmentFilter;
+    const matchesStatus = statusFilter === "all" || status === statusFilter;
     
     return matchesSearch && matchesDepartment && matchesStatus;
   });
@@ -1013,21 +1034,101 @@ export default function Employees() {
           </TabsContent>
 
           <TabsContent value="directory">
-            <div className="text-center py-8">
-              <p className="text-gray-500">Vista de directorio disponible</p>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Directorio de Empleados</CardTitle>
+                <CardDescription>Lista completa de empleados con información de contacto</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedEmployees.map((employee) => (
+                    <div key={employee.id} className="border rounded-lg p-4 space-y-2">
+                      <h3 className="font-semibold text-lg">{employee.fullName}</h3>
+                      <p className="text-sm text-gray-600">{employee.position}</p>
+                      <p className="text-sm text-gray-500">{employee.department}</p>
+                      <div className="text-sm space-y-1">
+                        <p><span className="font-medium">Email:</span> {employee.email}</p>
+                        <p><span className="font-medium">Teléfono:</span> {employee.phone}</p>
+                        {employee.address && <p><span className="font-medium">Dirección:</span> {employee.address}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="departments">
-            <div className="text-center py-8">
-              <p className="text-gray-500">Vista de departamentos disponible</p>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Departamentos</CardTitle>
+                <CardDescription>Organización por departamentos y empleados asignados</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {departmentsList.map((dept) => {
+                    const deptEmployees = employees.filter(emp => emp.department === dept.name);
+                    return (
+                      <div key={dept.name} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="font-semibold text-lg">{dept.name}</h3>
+                          <Badge variant="secondary">{deptEmployees.length} empleados</Badge>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {deptEmployees.map((employee) => (
+                            <div key={employee.id} className="flex items-center space-x-2 text-sm">
+                              <span className="font-medium">{employee.fullName}</span>
+                              <span className="text-gray-500">- {employee.position}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="organigram">
-            <div className="text-center py-8">
-              <p className="text-gray-500">Organigrama disponible</p>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Organigrama</CardTitle>
+                <CardDescription>Estructura organizacional jerárquica</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {[1, 2, 3, 4, 5].map((level) => {
+                    const levelDepts = departmentsList.filter(dept => dept.hierarchy === level);
+                    if (levelDepts.length === 0) return null;
+                    
+                    return (
+                      <div key={level} className="space-y-3">
+                        <h3 className="font-semibold text-lg border-b pb-2">
+                          Nivel {level} - {level === 1 ? 'Dirección' : level === 2 ? 'Asistencias' : level === 3 ? 'Coordinaciones' : level === 4 ? 'Áreas' : 'Operativo'}
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {levelDepts.map((dept) => {
+                            const deptEmployees = employees.filter(emp => emp.department === dept.name);
+                            return (
+                              <div key={dept.name} className="border rounded-lg p-3 bg-gray-50">
+                                <h4 className="font-medium mb-2">{dept.name}</h4>
+                                {deptEmployees.map((employee) => (
+                                  <div key={employee.id} className="text-sm text-gray-700 mb-1">
+                                    <div className="font-medium">{employee.fullName}</div>
+                                    <div className="text-xs text-gray-500">{employee.position}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
