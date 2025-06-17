@@ -110,6 +110,167 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
     }
   });
 
+  // Procesar nómina con integración automática a finanzas
+  apiRouter.post("/payroll-periods/process", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      console.log("=== PROCESANDO NÓMINA CON INTEGRACIÓN FINANCIERA ===");
+      const { period, employees: employeeList } = req.body;
+
+      // 1. Crear o obtener período de nómina
+      const startDate = new Date(period + '-01');
+      const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+
+      let [payrollPeriod] = await db
+        .select()
+        .from(payrollPeriods)
+        .where(eq(payrollPeriods.period, period));
+
+      if (!payrollPeriod) {
+        [payrollPeriod] = await db
+          .insert(payrollPeriods)
+          .values({
+            period,
+            startDate,
+            endDate,
+            status: 'processing'
+          })
+          .returning();
+      }
+
+      // 2. Obtener conceptos de nómina
+      const concepts = await db.select().from(payrollConcepts);
+      const salaryConcept = concepts.find(c => c.code === 'SALARY');
+      const imssConcept = concepts.find(c => c.code === 'IMSS');
+      const isrConcept = concepts.find(c => c.code === 'ISR');
+
+      let totalPayroll = 0;
+      let financialRecords = 0;
+      const processedEmployees = [];
+
+      // 3. Procesar cada empleado
+      for (const empData of employeeList) {
+        const employee = await db
+          .select()
+          .from(employees)
+          .where(eq(employees.id, empData.employeeId))
+          .limit(1);
+
+        if (employee.length === 0) continue;
+
+        const emp = employee[0];
+        const baseSalary = emp.salary || 0;
+
+        // Calcular deducciones básicas
+        const imssDeduction = baseSalary * 0.02375; // 2.375% IMSS
+        const isrTax = Math.max(0, (baseSalary - 6000) * 0.10); // ISR básico
+
+        const netPay = baseSalary - imssDeduction - isrTax;
+        totalPayroll += netPay;
+
+        // Crear detalles de nómina
+        if (salaryConcept) {
+          await db.insert(payrollDetails).values({
+            periodId: payrollPeriod.id,
+            employeeId: emp.id,
+            conceptId: salaryConcept.id,
+            amount: baseSalary,
+            quantity: 1,
+            description: `Salario base ${period}`
+          });
+        }
+
+        if (imssConcept) {
+          await db.insert(payrollDetails).values({
+            periodId: payrollPeriod.id,
+            employeeId: emp.id,
+            conceptId: imssConcept.id,
+            amount: -imssDeduction,
+            quantity: 1,
+            description: `IMSS ${period}`
+          });
+        }
+
+        if (isrConcept) {
+          await db.insert(payrollDetails).values({
+            periodId: payrollPeriod.id,
+            employeeId: emp.id,
+            conceptId: isrConcept.id,
+            amount: -isrTax,
+            quantity: 1,
+            description: `ISR ${period}`
+          });
+        }
+
+        processedEmployees.push({
+          employeeId: emp.id,
+          employeeName: emp.fullName,
+          baseSalary,
+          deductions: imssDeduction + isrTax,
+          netPay
+        });
+      }
+
+      // 4. Crear registro financiero automático
+      try {
+        const [expenseRecord] = await db
+          .insert(actualExpenses)
+          .values({
+            concept: `Nómina ${period}`,
+            amount: totalPayroll,
+            date: endDate,
+            categoryId: 7, // Categoría "Personal"
+            description: `Gasto de nómina generado automáticamente para el período ${period}`,
+            invoiceNumber: `NOM-${period}`,
+            paymentMethod: 'transferencia',
+            isPaid: true,
+            paymentDate: endDate,
+            // Campos de integración
+            isPayrollGenerated: true,
+            payrollPeriodId: payrollPeriod.id
+          })
+          .returning();
+
+        financialRecords = 1;
+        console.log(`Registro financiero creado: ${expenseRecord.id} por $${totalPayroll}`);
+      } catch (financeError) {
+        console.error("Error creando registro financiero:", financeError);
+      }
+
+      // 5. Actualizar estado del período
+      await db
+        .update(payrollPeriods)
+        .set({
+          status: 'processed',
+          processedAt: new Date(),
+          totalAmount: totalPayroll,
+          employeesCount: employeeList.length,
+          updatedAt: new Date()
+        })
+        .where(eq(payrollPeriods.id, payrollPeriod.id));
+
+      console.log(`Nómina procesada: ${employeeList.length} empleados, total: $${totalPayroll}`);
+
+      res.json({
+        success: true,
+        periodId: payrollPeriod.id,
+        period,
+        employeesProcessed: employeeList.length,
+        totalAmount: totalPayroll,
+        financialRecords,
+        processedEmployees,
+        message: "Nómina procesada exitosamente con integración automática a finanzas"
+      });
+
+    } catch (error) {
+      console.error("Error procesando nómina:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Error interno del servidor al procesar nómina",
+        message: error instanceof Error ? error.message : "Error desconocido"
+      });
+    }
+  });
+
   // ========== DETALLES DE NÓMINA ==========
   
   // Obtener detalles de nómina por período
