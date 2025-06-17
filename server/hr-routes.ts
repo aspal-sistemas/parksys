@@ -75,12 +75,12 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
           .insert(users)
           .values({
             username: username,
-            email: req.body.email,
+            email: employeeData.email, // Usar el email procesado del empleado
             password: temporaryPassword, // En producción debería estar hasheada
             role: 'employee',
             fullName: employeeData.fullName,
-            phone: req.body.phone,
-            profileImageUrl: req.body.profileImageUrl
+            phone: employeeData.phone,
+            profileImageUrl: employeeData.profileImageUrl
           })
           .returning();
 

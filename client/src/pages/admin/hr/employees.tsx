@@ -121,6 +121,8 @@ const EmployeesManagement = () => {
   });
 
   const handleCreateEmployee = () => {
+    console.log("Datos del formulario antes de validación:", newEmployeeData);
+    
     if (!newEmployeeData.fullName || !newEmployeeData.email || !newEmployeeData.salary) {
       toast({
         title: "Campos requeridos",
@@ -132,13 +134,14 @@ const EmployeesManagement = () => {
 
     const employeePayload = {
       ...newEmployeeData,
-      salary: parseFloat(newEmployeeData.salary),
+      salary: parseFloat(newEmployeeData.salary) || 0,
       status: 'active',
       skills: [],
       certifications: [],
       workSchedule: "Lunes a Viernes 8:00-16:00"
     };
 
+    console.log("Payload final a enviar:", employeePayload);
     createEmployeeMutation.mutate(employeePayload);
   };
 
