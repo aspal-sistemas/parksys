@@ -373,9 +373,9 @@ export default function Payroll() {
       employee.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.position.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesDepartment = !departmentFilter || employee.department === departmentFilter;
-    const matchesPosition = !positionFilter || employee.position === positionFilter;
-    const matchesStatus = !statusFilter || employee.status === statusFilter;
+    const matchesDepartment = !departmentFilter || departmentFilter === 'ALL_DEPARTMENTS' || employee.department === departmentFilter;
+    const matchesPosition = !positionFilter || positionFilter === 'ALL_POSITIONS' || employee.position === positionFilter;
+    const matchesStatus = !statusFilter || statusFilter === 'ALL_STATUS' || employee.status === statusFilter;
     
     return matchesSearch && matchesDepartment && matchesPosition && matchesStatus;
   });
@@ -822,7 +822,7 @@ export default function Payroll() {
                         <SelectValue placeholder="Filtrar por departamento" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Todos los departamentos</SelectItem>
+                        <SelectItem value="ALL_DEPARTMENTS">Todos los departamentos</SelectItem>
                         {uniqueDepartments.map((dept) => (
                           <SelectItem key={dept} value={dept}>
                             {dept}
@@ -836,7 +836,7 @@ export default function Payroll() {
                         <SelectValue placeholder="Filtrar por posición" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Todas las posiciones</SelectItem>
+                        <SelectItem value="ALL_POSITIONS">Todas las posiciones</SelectItem>
                         {uniquePositions.map((pos) => (
                           <SelectItem key={pos} value={pos}>
                             {pos}
@@ -850,7 +850,7 @@ export default function Payroll() {
                         <SelectValue placeholder="Filtrar por estado" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Todos los estados</SelectItem>
+                        <SelectItem value="ALL_STATUS">Todos los estados</SelectItem>
                         <SelectItem value="active">Activo</SelectItem>
                         <SelectItem value="inactive">Inactivo</SelectItem>
                         <SelectItem value="suspended">Suspendido</SelectItem>
@@ -863,15 +863,15 @@ export default function Payroll() {
                     <div>
                       Mostrando {startIndex + 1}-{Math.min(endIndex, totalRecords)} de {totalRecords} empleados
                     </div>
-                    {(searchTerm || departmentFilter || positionFilter || statusFilter) && (
+                    {(searchTerm || (departmentFilter && departmentFilter !== 'ALL_DEPARTMENTS') || (positionFilter && positionFilter !== 'ALL_POSITIONS') || (statusFilter && statusFilter !== 'ALL_STATUS')) && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
                           setSearchTerm("");
-                          setDepartmentFilter("");
-                          setPositionFilter("");
-                          setStatusFilter("");
+                          setDepartmentFilter("ALL_DEPARTMENTS");
+                          setPositionFilter("ALL_POSITIONS");
+                          setStatusFilter("ALL_STATUS");
                         }}
                       >
                         <Filter className="h-4 w-4 mr-2" />
