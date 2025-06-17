@@ -397,9 +397,13 @@ const PayrollBenefits = () => {
               <Download className="h-4 w-4" />
               Exportar
             </Button>
-            <Button className="flex items-center gap-2">
+            <Button 
+              className="flex items-center gap-2"
+              onClick={handleProcessPayroll}
+              disabled={processPayrollMutation.isPending}
+            >
               <Plus className="h-4 w-4" />
-              Procesar Nómina
+              {processPayrollMutation.isPending ? "Procesando..." : "Procesar Nómina"}
             </Button>
           </div>
         </div>

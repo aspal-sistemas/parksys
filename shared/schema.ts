@@ -96,31 +96,24 @@ export type InsertActualExpense = z.infer<typeof insertActualExpenseSchema>;
 
 // ========== MÓDULO DE RECURSOS HUMANOS ==========
 
-// Tabla de empleados
+// Tabla de empleados - Matching actual database structure
 export const employees = pgTable("employees", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  employeeCode: varchar("employee_code", { length: 20 }).notNull().unique(),
   fullName: varchar("full_name", { length: 100 }).notNull(),
   email: varchar("email", { length: 100 }).notNull(),
   phone: varchar("phone", { length: 20 }),
   position: varchar("position", { length: 100 }).notNull(),
   department: varchar("department", { length: 100 }).notNull(),
-  parkId: integer("park_id").references(() => parks.id),
+  salary: decimal("salary", { precision: 10, scale: 2 }).notNull(),
   hireDate: date("hire_date").notNull(),
-  baseSalary: decimal("base_salary", { precision: 10, scale: 2 }).notNull(),
-  salaryType: varchar("salary_type", { length: 20 }).default("monthly"),
   status: varchar("status", { length: 20 }).default("active"),
-  contractType: varchar("contract_type", { length: 20 }).default("permanent"),
-  workSchedule: varchar("work_schedule", { length: 50 }).default("full_time"),
+  education: text("education"),
   address: text("address"),
   emergencyContact: varchar("emergency_contact", { length: 100 }),
   emergencyPhone: varchar("emergency_phone", { length: 20 }),
-  education: text("education"),
-  certifications: text("certifications"),
-  skills: text("skills"),
-  profileImageUrl: text("profile_image_url"),
-  notes: text("notes"),
+  skills: text("skills").array(),
+  certifications: text("certifications").array(),
+  workSchedule: varchar("work_schedule", { length: 100 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -141,34 +134,29 @@ export const payrollConcepts = pgTable("payroll_concepts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Periodos de nómina
+// Periodos de nómina - Matching actual database structure
 export const payrollPeriods = pgTable("payroll_periods", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 100 }).notNull(),
-  periodType: varchar("period_type", { length: 20 }).notNull(),
+  period: varchar("period", { length: 7 }).notNull(), // Format: YYYY-MM
   startDate: date("start_date").notNull(),
   endDate: date("end_date").notNull(),
-  payDate: date("pay_date").notNull(),
   status: varchar("status", { length: 20 }).default("draft"),
-  totalGross: decimal("total_gross", { precision: 15, scale: 2 }).default("0"),
-  totalDeductions: decimal("total_deductions", { precision: 15, scale: 2 }).default("0"),
-  totalNet: decimal("total_net", { precision: 15, scale: 2 }).default("0"),
-  budgetId: integer("budget_id").references(() => budgets.id),
-  notes: text("notes"),
+  processedAt: timestamp("processed_at"),
+  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }),
+  employeesCount: integer("employees_count"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Detalle de nómina
+// Detalle de nómina - Matching actual database structure
 export const payrollDetails = pgTable("payroll_details", {
   id: serial("id").primaryKey(),
-  payrollPeriodId: integer("payroll_period_id").references(() => payrollPeriods.id),
+  periodId: integer("period_id").references(() => payrollPeriods.id),
   employeeId: integer("employee_id").references(() => employees.id),
   conceptId: integer("concept_id").references(() => payrollConcepts.id),
-  hours: decimal("hours", { precision: 8, scale: 2 }).default("0"),
-  rate: decimal("rate", { precision: 10, scale: 2 }).default("0"),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
-  notes: text("notes"),
+  quantity: decimal("quantity", { precision: 8, scale: 2 }).default("1"),
+  description: text("description"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -193,37 +181,21 @@ export const actualExpensesWithPayroll = pgTable("actual_expenses", {
 });
 
 // Relaciones HR
-export const employeesRelations = relations(employees, ({ one, many }) => ({
-  user: one(users, {
-    fields: [employees.userId],
-    references: [users.id],
-  }),
-  park: one(parks, {
-    fields: [employees.parkId],
-    references: [parks.id],
-  }),
+export const employeesRelations = relations(employees, ({ many }) => ({
   payrollDetails: many(payrollDetails),
 }));
 
-export const payrollConceptsRelations = relations(payrollConcepts, ({ one, many }) => ({
-  expenseCategory: one(expenseCategories, {
-    fields: [payrollConcepts.expenseCategoryId],
-    references: [expenseCategories.id],
-  }),
+export const payrollConceptsRelations = relations(payrollConcepts, ({ many }) => ({
   payrollDetails: many(payrollDetails),
 }));
 
-export const payrollPeriodsRelations = relations(payrollPeriods, ({ one, many }) => ({
-  budget: one(budgets, {
-    fields: [payrollPeriods.budgetId],
-    references: [budgets.id],
-  }),
+export const payrollPeriodsRelations = relations(payrollPeriods, ({ many }) => ({
   details: many(payrollDetails),
 }));
 
 export const payrollDetailsRelations = relations(payrollDetails, ({ one }) => ({
   period: one(payrollPeriods, {
-    fields: [payrollDetails.payrollPeriodId],
+    fields: [payrollDetails.periodId],
     references: [payrollPeriods.id],
   }),
   employee: one(employees, {
