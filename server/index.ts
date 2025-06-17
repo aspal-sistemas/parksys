@@ -317,9 +317,7 @@ import { initializeDatabase } from "./initialize-db";
     // Continuamos con la ejecución aunque haya un error
   }
   
-  const server = await registerRoutes(app);
-  
-  // Registrar rutas de Recursos Humanos integradas con Finanzas
+  // Registrar rutas de Recursos Humanos integradas con Finanzas ANTES de otras rutas
   try {
     const { registerHRRoutes } = await import("./hr-routes");
     const router = express.Router();
@@ -329,6 +327,8 @@ import { initializeDatabase } from "./initialize-db";
   } catch (error) {
     console.error("Error al registrar rutas HR:", error);
   }
+
+  const server = await registerRoutes(app);
 
   // Registrar API de integraciones financieras múltiples
   try {
