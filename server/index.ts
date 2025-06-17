@@ -585,6 +585,9 @@ import { initializeDatabase } from "./initialize-db";
     throw err;
   });
 
+  // Servir archivos estáticos del directorio public
+  app.use(express.static(path.join(process.cwd(), 'public')));
+
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
