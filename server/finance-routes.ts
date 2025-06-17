@@ -340,6 +340,39 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     }
   });
 
+  // Eliminar categoría de ingresos
+  apiRouter.delete("/income-categories/:id", async (req: Request, res: Response) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      
+      // Verificar si la categoría está siendo usada
+      const usageCheck = await db.select().from(actualIncomes).where(eq(actualIncomes.categoryId, categoryId)).limit(1);
+      
+      if (usageCheck.length > 0) {
+        return res.status(400).json({ 
+          message: "No se puede eliminar la categoría porque está siendo usada en registros de ingresos" 
+        });
+      }
+      
+      const [deletedCategory] = await db.delete(incomeCategories)
+        .where(eq(incomeCategories.id, categoryId))
+        .returning();
+      
+      if (!deletedCategory) {
+        return res.status(404).json({ message: "Categoría no encontrada" });
+      }
+      
+      res.json({ message: "Categoría eliminada exitosamente", category: deletedCategory });
+      
+    } catch (error) {
+      console.error("Error al eliminar categoría de ingresos:", error);
+      res.status(500).json({ 
+        message: "Error al eliminar categoría de ingresos", 
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      });
+    }
+  });
+
   // ============ CATEGORÍAS DE EGRESOS ============
   
   // Obtener todas las categorías de egresos (incluye activas e inactivas para el catálogo)
@@ -507,6 +540,39 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     } catch (error) {
       console.error("Error al actualizar estado de categoría de egresos:", error);
       res.status(500).json({ message: "Error al actualizar estado de categoría" });
+    }
+  });
+
+  // Eliminar categoría de egresos
+  apiRouter.delete("/expense-categories/:id", async (req: Request, res: Response) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      
+      // Verificar si la categoría está siendo usada
+      const usageCheck = await db.select().from(actualExpenses).where(eq(actualExpenses.categoryId, categoryId)).limit(1);
+      
+      if (usageCheck.length > 0) {
+        return res.status(400).json({ 
+          message: "No se puede eliminar la categoría porque está siendo usada en registros de egresos" 
+        });
+      }
+      
+      const [deletedCategory] = await db.delete(expenseCategories)
+        .where(eq(expenseCategories.id, categoryId))
+        .returning();
+      
+      if (!deletedCategory) {
+        return res.status(404).json({ message: "Categoría no encontrada" });
+      }
+      
+      res.json({ message: "Categoría eliminada exitosamente", category: deletedCategory });
+      
+    } catch (error) {
+      console.error("Error al eliminar categoría de egresos:", error);
+      res.status(500).json({ 
+        message: "Error al eliminar categoría de egresos", 
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      });
     }
   });
 
