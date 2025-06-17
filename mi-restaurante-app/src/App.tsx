@@ -42,6 +42,11 @@ function App() {
                 <DashboardPage />
               </Suspense>
             </Route>
+            <Route path="/ventas-diarias">
+              <Suspense fallback={<div className="text-center py-8">Cargando ventas diarias...</div>}>
+                <VentasDiariasPage />
+              </Suspense>
+            </Route>
             <Route path="/incomes">
               <Suspense fallback={<div className="text-center py-8">Cargando incomes...</div>}>
                 <IncomesPage />
