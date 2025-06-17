@@ -95,13 +95,16 @@ The system uses environment variables for database connection and supports both 
 **Implementado**: Módulo completo de nómina con procesamiento automático y integración financiera
 - **Interface Completa**: Dashboard con métricas, gestión de períodos, empleados activos, conceptos y reportes
 - **Conceptos Personalizables**: Sistema para crear conceptos de nómina personalizados (salarios, deducciones, bonos)
+- **Edición de Conceptos**: Funcionalidad completa para editar conceptos existentes con formulario dedicado
+- **Visualización de Períodos**: Dialog detallado para ver información completa de períodos de nómina
 - **Procesamiento Automático**: Cálculo automático de IMSS (2.375%), ISR e INFONAVIT
 - **Integración Financiera**: Generación automática de gastos en módulo de Finanzas
 - **Flujo Completo**: Personal → Nómina → Finanzas con trazabilidad total
 - **Conceptos Preconfigurados**: 6 conceptos básicos (Salario, Bonificaciones, Horas Extra, IMSS, ISR, INFONAVIT)
 - **Formulario Avanzado**: Creación de conceptos con tipos (ingreso/deducción/prestación), categorías y fórmulas
 - **Ejemplos Integrados**: Aguinaldo, Prima Vacacional, Vales de Despensa con fórmulas predefinidas
-- **Estado**: Sistema completamente funcional con procesamiento de nómina operativo
+- **CRUD Completo**: Crear, leer, actualizar conceptos de nómina con botones de edición integrados
+- **Estado**: Sistema completamente funcional con procesamiento de nómina operativo y edición completa
 
 ### Sistema de Gestión de Empleados HR - COMPLETADO TOTALMENTE
 **Implementado**: Sistema completo de gestión de empleados con todas las funcionalidades operativas y diseño mejorado

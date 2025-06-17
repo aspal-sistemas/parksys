@@ -1082,6 +1082,133 @@ export default function Payroll() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Dialog para Ver Detalles del Período */}
+        <Dialog open={isViewPeriodDialogOpen} onOpenChange={setIsViewPeriodDialogOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Detalles del Período de Nómina</DialogTitle>
+              <DialogDescription>
+                {viewingPeriod && `Información detallada del período ${viewingPeriod.period}`}
+              </DialogDescription>
+            </DialogHeader>
+            {viewingPeriod && (
+              <div className="space-y-6">
+                {/* Información General */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-blue-900">Período</h4>
+                    <p className="text-2xl font-bold text-blue-600">{viewingPeriod.period}</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-green-900">Estado</h4>
+                    <Badge className={
+                      viewingPeriod.status === 'paid' ? 'bg-green-100 text-green-800' :
+                      viewingPeriod.status === 'calculated' ? 'bg-blue-100 text-blue-800' :
+                      viewingPeriod.status === 'draft' ? 'bg-gray-100 text-gray-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }>
+                      {viewingPeriod.status === 'paid' ? 'Pagado' :
+                       viewingPeriod.status === 'calculated' ? 'Calculado' :
+                       viewingPeriod.status === 'draft' ? 'Borrador' :
+                       viewingPeriod.status}
+                    </Badge>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-purple-900">Empleados</h4>
+                    <p className="text-2xl font-bold text-purple-600">{viewingPeriod.employeesCount || 0}</p>
+                  </div>
+                  <div className="bg-orange-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-orange-900">Total</h4>
+                    <p className="text-2xl font-bold text-orange-600">
+                      ${viewingPeriod.totalAmount ? parseFloat(viewingPeriod.totalAmount).toLocaleString('es-MX') : '0'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Fechas */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label>Fecha de Inicio</Label>
+                    <p className="text-sm font-medium">
+                      {viewingPeriod.startDate ? new Date(viewingPeriod.startDate).toLocaleDateString('es-MX') : 'No definida'}
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Fecha de Fin</Label>
+                    <p className="text-sm font-medium">
+                      {viewingPeriod.endDate ? new Date(viewingPeriod.endDate).toLocaleDateString('es-MX') : 'No definida'}
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Procesado el</Label>
+                    <p className="text-sm font-medium">
+                      {viewingPeriod.processedAt ? new Date(viewingPeriod.processedAt).toLocaleDateString('es-MX') : 'No procesado'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Resumen de Conceptos */}
+                <div>
+                  <h4 className="font-semibold mb-3">Conceptos Aplicados</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h5 className="font-medium text-green-600 mb-2">Ingresos</h5>
+                        <div className="space-y-1 text-sm">
+                          {payrollConcepts
+                            .filter((concept: PayrollConcept) => concept.type === 'income')
+                            .map((concept: PayrollConcept) => (
+                              <div key={concept.id} className="flex justify-between">
+                                <span>{concept.name}</span>
+                                <span className="font-medium">{concept.code}</span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h5 className="font-medium text-red-600 mb-2">Deducciones</h5>
+                        <div className="space-y-1 text-sm">
+                          {payrollConcepts
+                            .filter((concept: PayrollConcept) => concept.type === 'deduction')
+                            .map((concept: PayrollConcept) => (
+                              <div key={concept.id} className="flex justify-between">
+                                <span>{concept.name}</span>
+                                <span className="font-medium">{concept.code}</span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Acciones */}
+                <div className="flex justify-end gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsViewPeriodDialogOpen(false)}
+                  >
+                    Cerrar
+                  </Button>
+                  {viewingPeriod.status === 'draft' && (
+                    <Button 
+                      onClick={() => {
+                        setSelectedPeriod(viewingPeriod);
+                        setIsViewPeriodDialogOpen(false);
+                        setIsProcessPayrollDialogOpen(true);
+                      }}
+                      className="bg-[#00a587] hover:bg-[#067f5f]"
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Procesar Nómina
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
