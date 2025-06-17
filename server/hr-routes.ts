@@ -548,18 +548,8 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
 
       // 3. Procesar cada empleado
       for (const empData of employeeList) {
-        const employee = await db
-          .select()
-          .from(employees)
-          .where(eq(employees.id, empData.employeeId))
-          .limit(1);
-
-        if (employee.length === 0) continue;
-
-        const emp = employee[0];
-        const baseSalary = parseFloat(emp.salary) || 0;
-        console.log(`Empleado ${emp.fullName}: salario raw = ${emp.salary}, parsed = ${baseSalary}`);
-
+        // Los datos vienen directamente desde el frontend, no necesitamos buscar en DB
+        const baseSalary = parseFloat(empData.salary) || 0;
         // Calcular deducciones básicas
         const imssDeduction = baseSalary * 0.02375; // 2.375% IMSS
         const isrTax = Math.max(0, (baseSalary - 6000) * 0.10); // ISR básico
@@ -567,16 +557,16 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
         const netPay = baseSalary - imssDeduction - isrTax;
         totalPayroll += netPay;
         
-        console.log(`${emp.fullName}: base=${baseSalary}, imss=${imssDeduction}, isr=${isrTax}, neto=${netPay}, total acumulado=${totalPayroll}`);
+        console.log(`${empData.fullName}: base=${baseSalary}, imss=${imssDeduction.toFixed(2)}, isr=${isrTax.toFixed(2)}, neto=${netPay.toFixed(2)}, total acumulado=${totalPayroll.toFixed(2)}`);
 
         // Crear detalles de nómina
         if (salaryConcept) {
           await db.insert(payrollDetails).values({
             periodId: payrollPeriod.id,
-            employeeId: emp.id,
+            employeeId: empData.id,
             conceptId: salaryConcept.id,
-            amount: baseSalary,
-            quantity: 1,
+            amount: baseSalary.toString(),
+            quantity: "1",
             description: `Salario base ${period}`
           });
         }
@@ -584,10 +574,10 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
         if (imssConcept) {
           await db.insert(payrollDetails).values({
             periodId: payrollPeriod.id,
-            employeeId: emp.id,
+            employeeId: empData.id,
             conceptId: imssConcept.id,
-            amount: -imssDeduction,
-            quantity: 1,
+            amount: (-imssDeduction).toString(),
+            quantity: "1",
             description: `IMSS ${period}`
           });
         }
@@ -595,17 +585,17 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
         if (isrConcept) {
           await db.insert(payrollDetails).values({
             periodId: payrollPeriod.id,
-            employeeId: emp.id,
+            employeeId: empData.id,
             conceptId: isrConcept.id,
-            amount: -isrTax,
-            quantity: 1,
+            amount: (-isrTax).toString(),
+            quantity: "1",
             description: `ISR ${period}`
           });
         }
 
         processedEmployees.push({
-          employeeId: emp.id,
-          employeeName: emp.fullName,
+          employeeId: empData.id,
+          employeeName: empData.fullName,
           baseSalary,
           deductions: imssDeduction + isrTax,
           netPay
