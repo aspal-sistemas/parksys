@@ -99,6 +99,7 @@ export type InsertActualExpense = z.infer<typeof insertActualExpenseSchema>;
 // Tabla de empleados - Matching actual database structure
 export const employees = pgTable("employees", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
   fullName: varchar("full_name", { length: 100 }).notNull(),
   email: varchar("email", { length: 100 }).notNull(),
   phone: varchar("phone", { length: 20 }),

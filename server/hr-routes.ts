@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { db } from "./db";
-import { employees, payrollConcepts, payrollPeriods, payrollDetails, actualExpenses } from "@shared/schema";
+import { employees, payrollConcepts, payrollPeriods, payrollDetails, actualExpenses, users } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
 
 /**
@@ -24,14 +24,41 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
   // Crear empleado con usuario automático
   apiRouter.post("/employees", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      console.log("Datos recibidos para crear empleado:", req.body);
+      
+      // Construir fullName de manera robusta
+      let fullName = req.body.fullName;
+      if (!fullName) {
+        const firstName = req.body.firstName || req.body.name || '';
+        const lastName = req.body.lastName || req.body.apellido || '';
+        fullName = `${firstName} ${lastName}`.trim();
+      }
+      
+      // Si aún no tenemos fullName, usar email como fallback
+      if (!fullName && req.body.email) {
+        fullName = req.body.email.split('@')[0];
+      }
+      
+      // Último fallback
+      if (!fullName) {
+        fullName = `Empleado ${Date.now()}`;
+      }
+
       const employeeData = {
         ...req.body,
-        // Asegurar que fullName esté presente
-        fullName: req.body.fullName || `${req.body.firstName || ''} ${req.body.lastName || ''}`.trim(),
+        fullName: fullName,
+        // Asegurar campos requeridos
+        email: req.body.email || `empleado${Date.now()}@temp.com`,
+        position: req.body.position || 'Sin especificar',
+        department: req.body.department || 'General',
+        salary: req.body.salary || req.body.baseSalary || 15000,
+        hireDate: req.body.hireDate || new Date().toISOString().split('T')[0],
         // Convertir arrays si vienen como string
         skills: Array.isArray(req.body.skills) ? req.body.skills : (req.body.skills ? [req.body.skills] : []),
         certifications: Array.isArray(req.body.certifications) ? req.body.certifications : (req.body.certifications ? [req.body.certifications] : [])
       };
+
+      console.log("Datos procesados para empleado:", employeeData);
 
       // 1. Crear empleado
       const [newEmployee] = await db
