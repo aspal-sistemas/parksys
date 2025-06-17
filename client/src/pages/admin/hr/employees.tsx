@@ -33,7 +33,6 @@ import {
   ChevronRight,
   Settings,
   Upload,
-  AlertTriangle,
   Download,
   FileText,
   AlertCircle
@@ -445,7 +444,89 @@ export default function Employees() {
     { name: "Área de Compras", hierarchy: 4 },
     { name: "Personal Operativo", hierarchy: 5 }
   ]);
+
+  // Estados para gestión de departamentos
+  const [isCreatingDepartment, setIsCreatingDepartment] = useState(false);
+  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
+  const [departmentForm, setDepartmentForm] = useState({
+    name: '',
+    hierarchy: 1
+  });
   
+  // Funciones para gestión de departamentos
+  const handleCreateDepartment = () => {
+    setDepartmentForm({ name: '', hierarchy: 1 });
+    setEditingDepartment(null);
+    setIsCreatingDepartment(true);
+  };
+
+  const handleEditDepartment = (department: Department) => {
+    setDepartmentForm({ name: department.name, hierarchy: department.hierarchy });
+    setEditingDepartment(department);
+    setIsCreatingDepartment(true);
+  };
+
+  const handleSaveDepartment = () => {
+    if (!departmentForm.name.trim()) {
+      toast({
+        title: "Error",
+        description: "El nombre del departamento es requerido",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (editingDepartment) {
+      // Editar departamento existente
+      setDepartmentsList(prev => prev.map(dept => 
+        dept.name === editingDepartment.name 
+          ? { name: departmentForm.name, hierarchy: departmentForm.hierarchy }
+          : dept
+      ));
+      toast({
+        title: "Departamento actualizado",
+        description: `Se actualizó el departamento "${departmentForm.name}"`
+      });
+    } else {
+      // Crear nuevo departamento
+      const newDepartment = { name: departmentForm.name, hierarchy: departmentForm.hierarchy };
+      setDepartmentsList(prev => [...prev, newDepartment]);
+      toast({
+        title: "Departamento creado",
+        description: `Se creó el departamento "${departmentForm.name}"`
+      });
+    }
+
+    setIsCreatingDepartment(false);
+    setEditingDepartment(null);
+    setDepartmentForm({ name: '', hierarchy: 1 });
+  };
+
+  const handleDeleteDepartment = (department: Department) => {
+    const employeesInDept = employees.filter(emp => emp.department === department.name);
+    
+    if (employeesInDept.length > 0) {
+      toast({
+        title: "No se puede eliminar",
+        description: `El departamento "${department.name}" tiene ${employeesInDept.length} empleados asignados`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que deseas eliminar el departamento "${department.name}"?`
+    );
+
+    if (confirmDelete) {
+      setDepartmentsList(prev => prev.filter(dept => dept.name !== department.name));
+      toast({
+        title: "Departamento eliminado",
+        description: `Se eliminó el departamento "${department.name}"`
+      });
+    }
+  };
+
   // Función para cargar empleados desde la base de datos
   const loadEmployees = async () => {
     try {
@@ -829,38 +910,165 @@ export default function Employees() {
                   Gestionar Departamentos
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Gestión de Departamentos</DialogTitle>
                   <DialogDescription>
-                    Administra los departamentos y sus niveles jerárquicos
+                    Administra los departamentos y sus niveles jerárquicos organizacionales
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                
+                <div className="space-y-6">
+                  {/* Botón para crear nuevo departamento */}
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-gray-600">
+                      Total: {departmentsList.length} departamentos
+                    </div>
+                    <Button onClick={handleCreateDepartment} className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Nuevo Departamento
+                    </Button>
+                  </div>
+
+                  {/* Lista de departamentos con acciones */}
                   <div className="grid grid-cols-1 gap-4">
-                    {departmentsList.map((dept, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <div className="font-medium">{dept.name}</div>
-                          <div className="text-sm text-gray-600">Nivel {dept.hierarchy} - 
-                            {dept.hierarchy === 1 ? ' Dirección' : 
-                             dept.hierarchy === 2 ? ' Asistencias' :
-                             dept.hierarchy === 3 ? ' Coordinaciones' :
-                             dept.hierarchy === 4 ? ' Áreas' : ' Operativo'}
+                    {departmentsList.map((dept, index) => {
+                      const employeeCount = employees.filter(emp => emp.department === dept.name).length;
+                      const hierarchyColors = {
+                        1: "from-purple-500 to-pink-500 text-white",
+                        2: "from-blue-500 to-indigo-500 text-white", 
+                        3: "from-green-500 to-emerald-500 text-white",
+                        4: "from-orange-500 to-red-500 text-white",
+                        5: "from-teal-500 to-cyan-500 text-white"
+                      };
+                      
+                      return (
+                        <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+                          <div className="flex items-center gap-4">
+                            <div className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${hierarchyColors[dept.hierarchy as keyof typeof hierarchyColors]}`}>
+                              Nivel {dept.hierarchy}
+                            </div>
+                            <div>
+                              <div className="font-medium text-lg">{dept.name}</div>
+                              <div className="text-sm text-gray-600">
+                                {dept.hierarchy === 1 ? 'Dirección' : 
+                                 dept.hierarchy === 2 ? 'Asistencias' :
+                                 dept.hierarchy === 3 ? 'Coordinaciones' :
+                                 dept.hierarchy === 4 ? 'Áreas' : 'Operativo'}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3">
+                            <Badge variant="secondary" className="px-3 py-1">
+                              {employeeCount} empleados
+                            </Badge>
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditDepartment(dept)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteDepartment(dept)}
+                                className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
+                                disabled={employeeCount > 0}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
-                        <Badge variant="secondary">
-                          {employees.filter(emp => emp.department === dept.name).length} empleados
-                        </Badge>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
+
+                  {/* Información sobre niveles jerárquicos */}
                   <div className="pt-4 border-t">
-                    <p className="text-sm text-gray-600">
-                      Los departamentos se gestionan según la estructura jerárquica organizacional de 5 niveles.
-                    </p>
+                    <h4 className="font-medium mb-3">Estructura Jerárquica Organizacional</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3 text-sm">
+                      <div className="p-2 bg-purple-50 rounded border-l-4 border-purple-500">
+                        <div className="font-medium text-purple-800">Nivel 1</div>
+                        <div className="text-purple-600">Dirección</div>
+                      </div>
+                      <div className="p-2 bg-blue-50 rounded border-l-4 border-blue-500">
+                        <div className="font-medium text-blue-800">Nivel 2</div>
+                        <div className="text-blue-600">Asistencias</div>
+                      </div>
+                      <div className="p-2 bg-green-50 rounded border-l-4 border-green-500">
+                        <div className="font-medium text-green-800">Nivel 3</div>
+                        <div className="text-green-600">Coordinaciones</div>
+                      </div>
+                      <div className="p-2 bg-orange-50 rounded border-l-4 border-orange-500">
+                        <div className="font-medium text-orange-800">Nivel 4</div>
+                        <div className="text-orange-600">Áreas</div>
+                      </div>
+                      <div className="p-2 bg-teal-50 rounded border-l-4 border-teal-500">
+                        <div className="font-medium text-teal-800">Nivel 5</div>
+                        <div className="text-teal-600">Operativo</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
+
+                {/* Dialog para crear/editar departamento */}
+                <Dialog open={isCreatingDepartment} onOpenChange={setIsCreatingDepartment}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingDepartment ? 'Editar Departamento' : 'Nuevo Departamento'}
+                      </DialogTitle>
+                      <DialogDescription>
+                        {editingDepartment ? 'Modifica la información del departamento' : 'Crea un nuevo departamento organizacional'}
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="deptName">Nombre del Departamento *</Label>
+                        <Input
+                          id="deptName"
+                          value={departmentForm.name}
+                          onChange={(e) => setDepartmentForm(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Ej: Coordinación de Marketing"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="deptHierarchy">Nivel Jerárquico *</Label>
+                        <Select
+                          value={departmentForm.hierarchy.toString()}
+                          onValueChange={(value) => setDepartmentForm(prev => ({ ...prev, hierarchy: parseInt(value) }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">Nivel 1 - Dirección</SelectItem>
+                            <SelectItem value="2">Nivel 2 - Asistencias</SelectItem>
+                            <SelectItem value="3">Nivel 3 - Coordinaciones</SelectItem>
+                            <SelectItem value="4">Nivel 4 - Áreas</SelectItem>
+                            <SelectItem value="5">Nivel 5 - Operativo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-4">
+                      <Button variant="outline" onClick={() => setIsCreatingDepartment(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleSaveDepartment}>
+                        {editingDepartment ? 'Actualizar' : 'Crear'} Departamento
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </DialogContent>
             </Dialog>
 
