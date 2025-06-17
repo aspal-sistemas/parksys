@@ -189,6 +189,18 @@ export default function Payroll() {
     queryKey: ["/api/hr/payroll-concepts"]
   });
 
+  // Historial de pagos del empleado seleccionado
+  const { data: employeePayrollHistory = [], isLoading: isLoadingHistory } = useQuery<PayrollHistoryPeriod[]>({
+    queryKey: ["/api/hr/employees", selectedEmployeeId, "payroll-history", { year: historyFilterYear, month: historyFilterMonth }],
+    enabled: !!selectedEmployeeId
+  });
+
+  // Resumen de pagos del empleado seleccionado
+  const { data: employeePayrollSummary, isLoading: isLoadingSummary } = useQuery<PayrollSummary>({
+    queryKey: ["/api/hr/employees", selectedEmployeeId, "payroll-summary"],
+    enabled: !!selectedEmployeeId
+  });
+
   // Datos de períodos de nómina
   const { data: payrollPeriods = [], isLoading: periodsLoading } = useQuery<PayrollPeriod[]>({
     queryKey: ["/api/hr/payroll-periods"]
@@ -435,6 +447,14 @@ export default function Payroll() {
     deleteConceptMutation.mutate(deletingConcept.id);
   };
 
+  // Función para ver historial de empleado
+  const handleViewEmployeeHistory = (employeeId: number) => {
+    setSelectedEmployeeId(employeeId);
+    setHistoryFilterYear('');
+    setHistoryFilterMonth('');
+    setIsEmployeeHistoryDialogOpen(true);
+  };
+
   // Función para actualizar concepto
   const handleUpdateConcept = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -656,6 +676,7 @@ export default function Payroll() {
                         <TableHead>Posición</TableHead>
                         <TableHead>Salario Base</TableHead>
                         <TableHead>Estado</TableHead>
+                        <TableHead>Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -672,6 +693,17 @@ export default function Payroll() {
                           <TableCell>${parseFloat(employee.salary).toLocaleString('es-MX')}</TableCell>
                           <TableCell>
                             <Badge className="bg-green-100 text-green-800">Activo</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleViewEmployeeHistory(employee.id)}
+                              className="flex items-center gap-2"
+                            >
+                              <History className="h-4 w-4" />
+                              Ver Ficha
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -1362,6 +1394,231 @@ export default function Payroll() {
                     </Button>
                   )}
                 </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog para historial de empleado */}
+        <Dialog open={isEmployeeHistoryDialogOpen} onOpenChange={setIsEmployeeHistoryDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl text-gray-900 flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-[#00a587] to-[#067f5f] rounded-lg">
+                  <History className="h-6 w-6 text-white" />
+                </div>
+                Ficha de Empleado - Historial de Pagos
+              </DialogTitle>
+            </DialogHeader>
+            
+            {selectedEmployeeId && employeePayrollSummary && (
+              <div className="space-y-6">
+                {/* Información del empleado */}
+                <Card>
+                  <CardHeader className="bg-gradient-to-r from-[#00a587]/10 to-[#bcd256]/10 rounded-t-lg">
+                    <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+                      <User className="h-5 w-5" />
+                      Información Personal
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Nombre Completo</p>
+                        <p className="text-lg font-semibold text-gray-900">{employeePayrollSummary.employee.fullName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Email</p>
+                        <p className="text-gray-900">{employeePayrollSummary.employee.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Departamento</p>
+                        <p className="text-gray-900">{employeePayrollSummary.employee.department}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Posición</p>
+                        <p className="text-gray-900">{employeePayrollSummary.employee.position}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Salario Base</p>
+                        <p className="text-lg font-semibold text-green-600">
+                          ${parseFloat(employeePayrollSummary.employee.salary).toLocaleString('es-MX')}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Fecha de Contratación</p>
+                        <p className="text-gray-900">
+                          {new Date(employeePayrollSummary.employee.hireDate).toLocaleDateString('es-MX')}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Estadísticas de nómina */}
+                <Card>
+                  <CardHeader className="bg-gradient-to-r from-[#bcd256]/10 to-[#8498a5]/10 rounded-t-lg">
+                    <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Resumen Estadístico
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    <div className="grid grid-cols-4 gap-4">
+                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                        <p className="text-sm text-blue-600 font-medium">Períodos Totales</p>
+                        <p className="text-2xl font-bold text-blue-700">
+                          {employeePayrollSummary.statistics.totalPeriods}
+                        </p>
+                      </div>
+                      <div className="text-center p-4 bg-green-50 rounded-lg">
+                        <p className="text-sm text-green-600 font-medium">Ingresos Totales</p>
+                        <p className="text-2xl font-bold text-green-700">
+                          ${employeePayrollSummary.statistics.totalIncome.toLocaleString('es-MX')}
+                        </p>
+                      </div>
+                      <div className="text-center p-4 bg-red-50 rounded-lg">
+                        <p className="text-sm text-red-600 font-medium">Deducciones Totales</p>
+                        <p className="text-2xl font-bold text-red-700">
+                          ${employeePayrollSummary.statistics.totalDeductions.toLocaleString('es-MX')}
+                        </p>
+                      </div>
+                      <div className="text-center p-4 bg-purple-50 rounded-lg">
+                        <p className="text-sm text-purple-600 font-medium">Pago Neto Promedio</p>
+                        <p className="text-2xl font-bold text-purple-700">
+                          ${employeePayrollSummary.statistics.averageMonthlyPay.toLocaleString('es-MX')}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Filtros para historial */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+                      <Filter className="h-5 w-5" />
+                      Filtrar Historial
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    <div className="flex gap-4">
+                      <div className="flex-1">
+                        <Label htmlFor="filterYear">Año</Label>
+                        <Select value={historyFilterYear} onValueChange={setHistoryFilterYear}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Todos los años" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Todos los años</SelectItem>
+                            <SelectItem value="2024">2024</SelectItem>
+                            <SelectItem value="2025">2025</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex-1">
+                        <Label htmlFor="filterMonth">Mes</Label>
+                        <Select value={historyFilterMonth} onValueChange={setHistoryFilterMonth}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Todos los meses" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Todos los meses</SelectItem>
+                            <SelectItem value="01">Enero</SelectItem>
+                            <SelectItem value="02">Febrero</SelectItem>
+                            <SelectItem value="03">Marzo</SelectItem>
+                            <SelectItem value="04">Abril</SelectItem>
+                            <SelectItem value="05">Mayo</SelectItem>
+                            <SelectItem value="06">Junio</SelectItem>
+                            <SelectItem value="07">Julio</SelectItem>
+                            <SelectItem value="08">Agosto</SelectItem>
+                            <SelectItem value="09">Septiembre</SelectItem>
+                            <SelectItem value="10">Octubre</SelectItem>
+                            <SelectItem value="11">Noviembre</SelectItem>
+                            <SelectItem value="12">Diciembre</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Historial de pagos */}
+                <Card>
+                  <CardHeader className="bg-gradient-to-r from-[#067f5f]/10 to-[#00a587]/10 rounded-t-lg">
+                    <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      Historial de Pagos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    {isLoadingHistory ? (
+                      <div className="text-center py-8">Cargando historial...</div>
+                    ) : employeePayrollHistory.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        No hay registros de pagos para los filtros seleccionados
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {employeePayrollHistory.map((period) => (
+                          <div key={period.period} className="border rounded-lg p-4">
+                            <div className="flex justify-between items-center mb-3">
+                              <h4 className="font-semibold text-gray-900">
+                                Período: {period.period}
+                              </h4>
+                              <Badge variant="outline" className={
+                                period.status === 'paid' ? 'bg-green-50 text-green-700' :
+                                period.status === 'approved' ? 'bg-blue-50 text-blue-700' :
+                                'bg-yellow-50 text-yellow-700'
+                              }>
+                                {period.status === 'paid' ? 'Pagado' :
+                                 period.status === 'approved' ? 'Aprobado' : 'Procesando'}
+                              </Badge>
+                            </div>
+                            
+                            <div className="grid grid-cols-3 gap-4 mb-3">
+                              <div className="text-center p-3 bg-green-50 rounded">
+                                <p className="text-sm text-green-600">Ingresos</p>
+                                <p className="font-semibold text-green-700">
+                                  ${period.totalIncome.toLocaleString('es-MX')}
+                                </p>
+                              </div>
+                              <div className="text-center p-3 bg-red-50 rounded">
+                                <p className="text-sm text-red-600">Deducciones</p>
+                                <p className="font-semibold text-red-700">
+                                  ${period.totalDeductions.toLocaleString('es-MX')}
+                                </p>
+                              </div>
+                              <div className="text-center p-3 bg-blue-50 rounded">
+                                <p className="text-sm text-blue-600">Neto</p>
+                                <p className="font-semibold text-blue-700">
+                                  ${period.netPay.toLocaleString('es-MX')}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Detalles del período */}
+                            <div className="border-t pt-3">
+                              <h5 className="font-medium text-gray-800 mb-2">Detalles:</h5>
+                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                {period.details.map((detail) => (
+                                  <div key={detail.id} className="flex justify-between">
+                                    <span className={detail.conceptType === 'income' ? 'text-green-600' : 'text-red-600'}>
+                                      {detail.conceptName}
+                                    </span>
+                                    <span className={detail.conceptType === 'income' ? 'text-green-700 font-medium' : 'text-red-700 font-medium'}>
+                                      ${parseFloat(detail.amount).toLocaleString('es-MX')}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             )}
           </DialogContent>
