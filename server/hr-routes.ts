@@ -8,6 +8,14 @@ import { eq, and, sql } from "drizzle-orm";
  */
 export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
   
+  // Middleware JSON específico para las rutas HR
+  apiRouter.use((req: Request, res: Response, next: any) => {
+    console.log(`HR Route: ${req.method} ${req.path}`);
+    console.log("HR Headers:", req.headers['content-type']);
+    console.log("HR Body Raw:", req.body);
+    next();
+  });
+  
   // ========== EMPLEADOS ==========
   
   // Obtener todos los empleados
