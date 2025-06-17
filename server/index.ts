@@ -42,6 +42,105 @@ app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// ENDPOINT DIRECTO EMPLEADOS - REGISTRADO PRIMERO para evitar conflictos
+app.post("/api/employees", async (req: Request, res: Response) => {
+  try {
+    console.log("=== ENDPOINT DIRECTO EMPLEADOS ===");
+    console.log("Headers Content-Type:", req.headers['content-type']);
+    console.log("Body recibido:", req.body);
+    
+    const employeeData = {
+      fullName: req.body.fullName || `Empleado ${Date.now()}`,
+      email: req.body.email || `empleado${Date.now()}@temp.com`,
+      phone: req.body.phone || '',
+      position: req.body.position || 'Sin especificar',
+      department: req.body.department || 'General',
+      salary: req.body.salary || 15000,
+      hireDate: req.body.hireDate || new Date().toISOString().split('T')[0],
+      education: req.body.education || '',
+      address: req.body.address || '',
+      emergencyContact: req.body.emergencyContact || '',
+      emergencyPhone: req.body.emergencyPhone || '',
+      status: 'active',
+      skills: req.body.skills || [],
+      certifications: req.body.certifications || [],
+      workSchedule: req.body.workSchedule || "Lunes a Viernes 8:00-16:00"
+    };
+
+    console.log("Datos procesados para empleado:", employeeData);
+
+    // Verificar acceso a la base de datos
+    const { db } = await import("./db");
+    const { employees, users } = await import("../shared/schema");
+    const { eq } = await import("drizzle-orm");
+
+    // Insertar empleado
+    const [newEmployee] = await db
+      .insert(employees)
+      .values(employeeData)
+      .returning();
+
+    console.log("Empleado creado:", newEmployee);
+
+    // Crear usuario automáticamente
+    try {
+      const userData = {
+        username: employeeData.email.split('@')[0],
+        email: employeeData.email,
+        password: "temp123", // Contraseña temporal
+        fullName: employeeData.fullName,
+        role: "employee" as const,
+        phone: employeeData.phone
+      };
+
+      const [newUser] = await db
+        .insert(users)
+        .values(userData)
+        .returning();
+
+      // Actualizar empleado con user_id
+      await db
+        .update(employees)
+        .set({ userId: newUser.id })
+        .where(eq(employees.id, newEmployee.id));
+
+      console.log("Usuario creado automáticamente:", newUser);
+
+      res.json({
+        success: true,
+        employee: newEmployee,
+        user: newUser,
+        message: "Empleado y usuario creados exitosamente"
+      });
+
+    } catch (userError) {
+      console.error("Error creando usuario:", userError);
+      // Continuar aunque falle la creación del usuario
+      res.json({
+        success: true,
+        employee: newEmployee,
+        message: "Empleado creado exitosamente (usuario no pudo crearse)"
+      });
+    }
+
+  } catch (error) {
+    console.error("Error en endpoint directo empleados:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+app.get("/api/employees", async (req: Request, res: Response) => {
+  try {
+    const { db } = await import("./db");
+    const { employees } = await import("../shared/schema");
+    const allEmployees = await db.select().from(employees);
+    res.json(allEmployees);
+  } catch (error) {
+    console.error("Error obteniendo empleados:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
 // Importar rutas simplificadas de activos - COMENTADO para evitar conflictos
 // import { simpleAssetRouter } from "./simple-asset-routes";
 
@@ -317,98 +416,7 @@ import { initializeDatabase } from "./initialize-db";
     // Continuamos con la ejecución aunque haya un error
   }
   
-  // Registrar endpoint directo para empleados (bypass de router conflictos)
-  app.post("/api/employees", async (req: Request, res: Response) => {
-    try {
-      console.log("=== ENDPOINT DIRECTO EMPLEADOS ===");
-      console.log("Headers Content-Type:", req.headers['content-type']);
-      console.log("Body recibido:", req.body);
-      
-      const employeeData = {
-        fullName: req.body.fullName || `Empleado ${Date.now()}`,
-        email: req.body.email || `empleado${Date.now()}@temp.com`,
-        phone: req.body.phone || '',
-        position: req.body.position || 'Sin especificar',
-        department: req.body.department || 'General',
-        salary: req.body.salary || 15000,
-        hireDate: req.body.hireDate || new Date().toISOString().split('T')[0],
-        education: req.body.education || '',
-        address: req.body.address || '',
-        emergencyContact: req.body.emergencyContact || '',
-        emergencyPhone: req.body.emergencyPhone || '',
-        status: 'active',
-        skills: req.body.skills || [],
-        certifications: req.body.certifications || [],
-        workSchedule: req.body.workSchedule || "Lunes a Viernes 8:00-16:00"
-      };
 
-      console.log("Datos procesados para empleado:", employeeData);
-
-      // Insertar empleado
-      const [newEmployee] = await db
-        .insert(employees)
-        .values(employeeData)
-        .returning();
-
-      console.log("Empleado creado:", newEmployee);
-
-      // Crear usuario automáticamente
-      try {
-        const userData = {
-          username: employeeData.email.split('@')[0],
-          email: employeeData.email,
-          password: "temp123", // Contraseña temporal
-          fullName: employeeData.fullName,
-          role: "employee",
-          phone: employeeData.phone
-        };
-
-        const [newUser] = await db
-          .insert(users)
-          .values(userData)
-          .returning();
-
-        // Actualizar empleado con user_id
-        await db
-          .update(employees)
-          .set({ userId: newUser.id })
-          .where(eq(employees.id, newEmployee.id));
-
-        console.log("Usuario creado automáticamente:", newUser);
-
-        res.json({
-          success: true,
-          employee: newEmployee,
-          user: newUser,
-          message: "Empleado y usuario creados exitosamente"
-        });
-
-      } catch (userError) {
-        console.error("Error creando usuario:", userError);
-        // Continuar aunque falle la creación del usuario
-        res.json({
-          success: true,
-          employee: newEmployee,
-          message: "Empleado creado exitosamente (usuario no pudo crearse)"
-        });
-      }
-
-    } catch (error) {
-      console.error("Error creando empleado:", error);
-      res.status(500).json({ error: "Error interno del servidor" });
-    }
-  });
-
-  // Obtener empleados - endpoint directo
-  app.get("/api/employees", async (req: Request, res: Response) => {
-    try {
-      const allEmployees = await db.select().from(employees);
-      res.json(allEmployees);
-    } catch (error) {
-      console.error("Error obteniendo empleados:", error);
-      res.status(500).json({ error: "Error interno del servidor" });
-    }
-  });
 
   // Registrar rutas de Recursos Humanos integradas con Finanzas DESPUÉS de endpoints directos
   try {
