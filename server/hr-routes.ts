@@ -215,6 +215,7 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
         const [expenseRecord] = await db
           .insert(actualExpenses)
           .values({
+            parkId: 4, // Parque por defecto para nómina administrativa
             concept: `Nómina ${period}`,
             amount: totalPayroll,
             date: endDate,
