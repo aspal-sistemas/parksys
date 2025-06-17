@@ -114,6 +114,10 @@ export default function Payroll() {
   const [isNewPeriodDialogOpen, setIsNewPeriodDialogOpen] = useState(false);
   const [isProcessPayrollDialogOpen, setIsProcessPayrollDialogOpen] = useState(false);
   const [isNewConceptDialogOpen, setIsNewConceptDialogOpen] = useState(false);
+  const [isEditConceptDialogOpen, setIsEditConceptDialogOpen] = useState(false);
+  const [editingConcept, setEditingConcept] = useState<PayrollConcept | null>(null);
+  const [isViewPeriodDialogOpen, setIsViewPeriodDialogOpen] = useState(false);
+  const [viewingPeriod, setViewingPeriod] = useState<PayrollPeriod | null>(null);
   
   // Datos de empleados
   const { data: employees = [], isLoading: employeesLoading } = useQuery({
@@ -129,6 +133,12 @@ export default function Payroll() {
   // Datos de períodos de nómina
   const { data: payrollPeriods = [], isLoading: periodsLoading } = useQuery<PayrollPeriod[]>({
     queryKey: ["/api/hr/payroll-periods"]
+  });
+
+  // Datos de detalles de nómina para el período seleccionado
+  const { data: payrollDetails = [], isLoading: detailsLoading } = useQuery<PayrollDetail[]>({
+    queryKey: ["/api/hr/payroll-details", viewingPeriod?.id],
+    enabled: !!viewingPeriod?.id
   });
 
   // Mutación para crear período
@@ -201,6 +211,32 @@ export default function Payroll() {
       toast({
         title: "Error",
         description: "No se pudo crear el concepto de nómina",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Mutación para editar concepto
+  const editConceptMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      return apiRequest(`/api/hr/payroll-concepts/${id}`, {
+        method: "PUT",
+        data
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hr/payroll-concepts"] });
+      setIsEditConceptDialogOpen(false);
+      setEditingConcept(null);
+      toast({
+        title: "Concepto actualizado",
+        description: "El concepto de nómina se ha actualizado exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el concepto de nómina",
         variant: "destructive",
       });
     }
@@ -289,6 +325,40 @@ export default function Payroll() {
     };
 
     createConceptMutation.mutate(conceptData);
+  };
+
+  // Función para ver detalles del período
+  const handleViewPeriod = (period: PayrollPeriod) => {
+    setViewingPeriod(period);
+    setIsViewPeriodDialogOpen(true);
+  };
+
+  // Función para editar concepto
+  const handleEditConcept = (concept: PayrollConcept) => {
+    setEditingConcept(concept);
+    setIsEditConceptDialogOpen(true);
+  };
+
+  // Función para actualizar concepto
+  const handleUpdateConcept = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingConcept) return;
+    
+    const formData = new FormData(e.currentTarget);
+    
+    const conceptData = {
+      code: formData.get('code') as string,
+      name: formData.get('name') as string,
+      type: formData.get('type') as string,
+      category: formData.get('category') as string,
+      isFixed: formData.get('isFixed') === 'true',
+      formula: formData.get('formula') as string || null,
+      isActive: true,
+      expenseCategoryId: editingConcept.expenseCategoryId,
+      sortOrder: editingConcept.sortOrder
+    };
+
+    editConceptMutation.mutate({ id: editingConcept.id, data: conceptData });
   };
 
   return (
@@ -553,12 +623,27 @@ export default function Payroll() {
                               <CardContent className="p-4">
                                 <div className="flex items-center justify-between mb-2">
                                   <Badge className="bg-green-100 text-green-800">{concept.code}</Badge>
-                                  <Badge variant="outline">{concept.category}</Badge>
+                                  <div className="flex gap-2">
+                                    <Badge variant="outline">{concept.category}</Badge>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleEditConcept(concept)}
+                                      className="h-6 w-6 p-0"
+                                    >
+                                      <Edit className="h-3 w-3" />
+                                    </Button>
+                                  </div>
                                 </div>
                                 <h4 className="font-medium">{concept.name}</h4>
                                 <p className="text-sm text-gray-600 mt-1">
                                   {concept.isFixed ? 'Monto fijo' : 'Calculado'}
                                 </p>
+                                {concept.formula && (
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    Fórmula: {concept.formula}
+                                  </p>
+                                )}
                               </CardContent>
                             </Card>
                           ))}
@@ -576,12 +661,27 @@ export default function Payroll() {
                               <CardContent className="p-4">
                                 <div className="flex items-center justify-between mb-2">
                                   <Badge className="bg-red-100 text-red-800">{concept.code}</Badge>
-                                  <Badge variant="outline">{concept.category}</Badge>
+                                  <div className="flex gap-2">
+                                    <Badge variant="outline">{concept.category}</Badge>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleEditConcept(concept)}
+                                      className="h-6 w-6 p-0"
+                                    >
+                                      <Edit className="h-3 w-3" />
+                                    </Button>
+                                  </div>
                                 </div>
                                 <h4 className="font-medium">{concept.name}</h4>
                                 <p className="text-sm text-gray-600 mt-1">
-                                  {concept.formula || 'Sin fórmula definida'}
+                                  {concept.isFixed ? 'Monto fijo' : 'Calculado'}
                                 </p>
+                                {concept.formula && (
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    Fórmula: {concept.formula}
+                                  </p>
+                                )}
                               </CardContent>
                             </Card>
                           ))}
