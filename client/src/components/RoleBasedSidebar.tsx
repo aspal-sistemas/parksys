@@ -80,7 +80,8 @@ import {
   Briefcase,
   UserCog,
   Zap,
-  Book
+  Book,
+  Clock
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -506,6 +507,20 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
         active={location.startsWith('/admin/hr/receipts')}
       >
         Recibos de Nómina
+      </NavItem>
+      <NavItem 
+        href="/admin/hr/vacaciones" 
+        icon={<Calendar className="h-5 w-5" />}
+        active={location.startsWith('/admin/hr/vacaciones')}
+      >
+        Vacaciones y Permisos
+      </NavItem>
+      <NavItem 
+        href="/admin/hr/control-horas" 
+        icon={<Clock className="h-5 w-5" />}
+        active={location.startsWith('/admin/hr/control-horas')}
+      >
+        Control de Horas
       </NavItem>
       <NavItem 
         href="/admin/hr/training" 

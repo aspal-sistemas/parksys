@@ -50,7 +50,8 @@ import {
   Scissors,
   AlertTriangle,
   Leaf,
-  Trophy
+  Trophy,
+  Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -673,6 +674,20 @@ const AdminSidebar: React.FC = () => {
               active={location.startsWith('/admin/hr/payroll')}
             >
               Nómina
+            </NavItem>
+            <NavItem 
+              href="/admin/hr/vacaciones" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/hr/vacaciones')}
+            >
+              Vacaciones y Permisos
+            </NavItem>
+            <NavItem 
+              href="/admin/hr/control-horas" 
+              icon={<Clock className="h-5 w-5" />}
+              active={location.startsWith('/admin/hr/control-horas')}
+            >
+              Control de Horas
             </NavItem>
             <NavItem 
               href="/admin/hr/training" 
