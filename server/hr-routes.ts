@@ -24,9 +24,18 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
   // Crear empleado
   apiRouter.post("/employees", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      const employeeData = {
+        ...req.body,
+        // Asegurar que fullName esté presente
+        fullName: req.body.fullName || `${req.body.firstName || ''} ${req.body.lastName || ''}`.trim(),
+        // Convertir arrays si vienen como string
+        skills: Array.isArray(req.body.skills) ? req.body.skills : (req.body.skills ? [req.body.skills] : []),
+        certifications: Array.isArray(req.body.certifications) ? req.body.certifications : (req.body.certifications ? [req.body.certifications] : [])
+      };
+
       const [newEmployee] = await db
         .insert(employees)
-        .values(req.body)
+        .values(employeeData)
         .returning();
       res.status(201).json(newEmployee);
     } catch (error) {
