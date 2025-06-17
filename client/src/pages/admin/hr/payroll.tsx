@@ -391,18 +391,121 @@ export default function Payroll() {
   const handleCreatePeriod = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const period = formData.get('period') as string;
-    
-    const [year, month] = period.split('-').map(Number);
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
+    const periodType = formData.get('periodType') as string;
+    const year = parseInt(formData.get('year') as string);
+    const month = parseInt(formData.get('month') as string);
+    const quincena = formData.get('quincena') as string;
 
-    createPeriodMutation.mutate({
-      period,
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0],
-      status: 'draft'
-    });
+    const periodsToCreate = [];
+    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+    if (periodType === 'quincenal') {
+      if (quincena === 'both' || quincena === '1') {
+        // Primera quincena (1-15)
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month - 1, 15);
+        const payDate = new Date(year, month - 1, 15);
+        
+        periodsToCreate.push({
+          name: `${monthNames[month - 1]} ${year} - 1ra Quincena`,
+          startDate: startDate.toISOString().split('T')[0],
+          endDate: endDate.toISOString().split('T')[0],
+          payDate: payDate.toISOString().split('T')[0],
+          periodType: 'quincenal',
+          status: 'draft'
+        });
+      }
+      
+      if (quincena === 'both' || quincena === '2') {
+        // Segunda quincena (16-fin de mes)
+        const startDate = new Date(year, month - 1, 16);
+        const endDate = new Date(year, month, 0); // Último día del mes
+        const payDate = new Date(year, month, 0);
+        
+        periodsToCreate.push({
+          name: `${monthNames[month - 1]} ${year} - 2da Quincena`,
+          startDate: startDate.toISOString().split('T')[0],
+          endDate: endDate.toISOString().split('T')[0],
+          payDate: payDate.toISOString().split('T')[0],
+          periodType: 'quincenal',
+          status: 'draft'
+        });
+      }
+    } else if (periodType === 'mensual') {
+      // Período mensual completo
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0);
+      const payDate = new Date(year, month, 0);
+      
+      periodsToCreate.push({
+        name: `${monthNames[month - 1]} ${year} - Mensual`,
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+        payDate: payDate.toISOString().split('T')[0],
+        periodType: 'mensual',
+        status: 'draft'
+      });
+    } else if (periodType === 'semanal') {
+      // Para períodos semanales, crear las 4-5 semanas del mes
+      const firstDay = new Date(year, month - 1, 1);
+      const lastDay = new Date(year, month, 0);
+      
+      let weekStart = new Date(firstDay);
+      let weekNum = 1;
+      
+      while (weekStart <= lastDay) {
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        
+        // Ajustar si se pasa del mes
+        if (weekEnd > lastDay) {
+          weekEnd.setTime(lastDay.getTime());
+        }
+        
+        periodsToCreate.push({
+          name: `${monthNames[month - 1]} ${year} - Semana ${weekNum}`,
+          startDate: weekStart.toISOString().split('T')[0],
+          endDate: weekEnd.toISOString().split('T')[0],
+          payDate: weekEnd.toISOString().split('T')[0],
+          periodType: 'semanal',
+          status: 'draft'
+        });
+        
+        weekStart = new Date(weekEnd);
+        weekStart.setDate(weekEnd.getDate() + 1);
+        weekNum++;
+      }
+    }
+
+    // Crear todos los períodos secuencialmente
+    let createdCount = 0;
+    
+    const createPeriodRecursive = (index: number) => {
+      if (index >= periodsToCreate.length) {
+        toast({
+          title: "Períodos creados exitosamente",
+          description: `Se crearon ${createdCount} período(s) de nómina`,
+        });
+        setIsNewPeriodDialogOpen(false);
+        return;
+      }
+      
+      createPeriodMutation.mutate(periodsToCreate[index], {
+        onSuccess: () => {
+          createdCount++;
+          createPeriodRecursive(index + 1);
+        },
+        onError: () => {
+          toast({
+            title: "Error",
+            description: `Error al crear el período ${periodsToCreate[index].name}`,
+            variant: "destructive",
+          });
+        }
+      });
+    };
+    
+    createPeriodRecursive(0);
   };
 
   // Función para procesar nómina
@@ -952,24 +1055,89 @@ export default function Payroll() {
 
         {/* Dialog para Nuevo Período */}
         <Dialog open={isNewPeriodDialogOpen} onOpenChange={setIsNewPeriodDialogOpen}>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Crear Nuevo Período de Nómina</DialogTitle>
               <DialogDescription>
-                Configura un nuevo período de pago para procesar la nómina
+                Genera automáticamente períodos de nómina quincenales o mensuales
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreatePeriod} className="space-y-4">
+            <form onSubmit={handleCreatePeriod} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="period">Período (YYYY-MM)</Label>
-                <Input
-                  id="period"
-                  name="period"
-                  type="month"
-                  required
-                  className="w-full"
-                />
+                <Label htmlFor="periodType">Tipo de Período</Label>
+                <Select name="periodType" defaultValue="quincenal" required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona el tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="quincenal">Quincenal (1ra y 2da quincena)</SelectItem>
+                    <SelectItem value="mensual">Mensual</SelectItem>
+                    <SelectItem value="semanal">Semanal</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="year">Año</Label>
+                <Select name="year" defaultValue={new Date().getFullYear().toString()} required>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={(new Date().getFullYear() - 1).toString()}>{new Date().getFullYear() - 1}</SelectItem>
+                    <SelectItem value={new Date().getFullYear().toString()}>{new Date().getFullYear()}</SelectItem>
+                    <SelectItem value={(new Date().getFullYear() + 1).toString()}>{new Date().getFullYear() + 1}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="month">Mes</Label>
+                <Select name="month" defaultValue={(new Date().getMonth() + 1).toString().padStart(2, '0')} required>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="01">Enero</SelectItem>
+                    <SelectItem value="02">Febrero</SelectItem>
+                    <SelectItem value="03">Marzo</SelectItem>
+                    <SelectItem value="04">Abril</SelectItem>
+                    <SelectItem value="05">Mayo</SelectItem>
+                    <SelectItem value="06">Junio</SelectItem>
+                    <SelectItem value="07">Julio</SelectItem>
+                    <SelectItem value="08">Agosto</SelectItem>
+                    <SelectItem value="09">Septiembre</SelectItem>
+                    <SelectItem value="10">Octubre</SelectItem>
+                    <SelectItem value="11">Noviembre</SelectItem>
+                    <SelectItem value="12">Diciembre</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div id="quincenaOptions" className="space-y-2">
+                <Label htmlFor="quincena">Quincena (solo para períodos quincenales)</Label>
+                <Select name="quincena" defaultValue="both">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="both">Ambas quincenas (1ra y 2da)</SelectItem>
+                    <SelectItem value="1">Primera quincena (1-15)</SelectItem>
+                    <SelectItem value="2">Segunda quincena (16-fin de mes)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">Períodos que se crearán:</h4>
+                <div className="text-sm text-blue-800 space-y-1">
+                  <div>• Los períodos se generan automáticamente con fechas correctas</div>
+                  <div>• Quincenal: 1-15 y 16-último día del mes</div>
+                  <div>• Mensual: Todo el mes completo</div>
+                  <div>• Fechas de pago: Último día laboral del período</div>
+                </div>
+              </div>
+
               <div className="flex justify-end gap-3">
                 <Button type="button" variant="outline" onClick={() => setIsNewPeriodDialogOpen(false)}>
                   Cancelar
@@ -979,7 +1147,7 @@ export default function Payroll() {
                   className="bg-[#00a587] hover:bg-[#067f5f]"
                   disabled={createPeriodMutation.isPending}
                 >
-                  {createPeriodMutation.isPending ? "Creando..." : "Crear Período"}
+                  {createPeriodMutation.isPending ? "Creando..." : "Crear Período(s)"}
                 </Button>
               </div>
             </form>
