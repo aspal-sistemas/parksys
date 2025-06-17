@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import AdminLayout from "@/components/AdminLayout";
 import { 
   FileText, 
   Download, 
@@ -249,15 +250,14 @@ export default function PayrollReceipts() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Recibos de Nómina</h1>
-          <p className="text-gray-600 mt-2">
-            Gestión completa de recibos de pago para empleados
-          </p>
-        </div>
+    <AdminLayout 
+      title="Recibos de Nómina" 
+      subtitle="Gestión completa de recibos de pago para empleados"
+    >
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div></div>
         <Dialog open={generateDialogOpen} onOpenChange={setGenerateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-[#00a587] hover:bg-[#067f5f]">
@@ -591,6 +591,7 @@ export default function PayrollReceipts() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
