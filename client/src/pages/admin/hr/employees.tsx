@@ -63,7 +63,7 @@ const EmployeesManagement = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isViewEmployeeOpen, setIsViewEmployeeOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 15;
+  const recordsPerPage = 5; // Reducido para mostrar paginación con menos datos
   const [isDepartmentDialogOpen, setIsDepartmentDialogOpen] = useState(false);
   const [departmentsList, setDepartmentsList] = useState([
     "Administración",
@@ -323,6 +323,120 @@ const EmployeesManagement = () => {
       certifications: ["Yoga", "Aqua Aeróbicos", "Primeros Auxilios"],
       skills: ["Enseñanza", "Motivación", "Deportes Acuáticos"],
       workSchedule: "Lunes a Domingo Variable"
+    },
+    {
+      id: 7,
+      fullName: "Ana García López",
+      email: "ana.garcia@parques.mx",
+      phone: "555-0107",
+      position: "Coordinadora de Eventos",
+      department: "Eventos y Actividades",
+      hireDate: "2023-08-15",
+      salary: 28000,
+      status: "active" as const,
+      profileImage: "",
+      address: "Calle 123, Col. Centro",
+      emergencyContact: "María García",
+      emergencyPhone: "555-0108",
+      education: "Licenciatura en Comunicación",
+      certifications: ["Organización de Eventos", "Protocolo"],
+      skills: ["Coordinación", "Comunicación", "Logística"],
+      workSchedule: "Lunes a Viernes 9:00-17:00"
+    },
+    {
+      id: 8,
+      fullName: "Roberto Martínez",
+      email: "roberto.martinez@parques.mx",
+      phone: "555-0109",
+      position: "Técnico de Mantenimiento",
+      department: "Mantenimiento",
+      hireDate: "2023-09-01",
+      salary: 22000,
+      status: "active" as const,
+      profileImage: "",
+      address: "Av. Principal 456",
+      emergencyContact: "Carmen Martínez",
+      emergencyPhone: "555-0110",
+      education: "Técnico en Mantenimiento",
+      certifications: ["Electricidad", "Plomería"],
+      skills: ["Reparaciones", "Mantenimiento preventivo"],
+      workSchedule: "Lunes a Sábado 8:00-16:00"
+    },
+    {
+      id: 9,
+      fullName: "Patricia Hernández",
+      email: "patricia.hernandez@parques.mx",
+      phone: "555-0111",
+      position: "Analista Financiera",
+      department: "Finanzas",
+      hireDate: "2023-10-10",
+      salary: 32000,
+      status: "active" as const,
+      profileImage: "",
+      address: "Col. Residencial 789",
+      emergencyContact: "José Hernández",
+      emergencyPhone: "555-0112",
+      education: "Licenciatura en Contaduría",
+      certifications: ["CPA", "Auditoría"],
+      skills: ["Análisis financiero", "Presupuestos", "Excel avanzado"],
+      workSchedule: "Lunes a Viernes 9:00-18:00"
+    },
+    {
+      id: 10,
+      fullName: "David Ruiz Santos",
+      email: "david.ruiz@parques.mx",
+      phone: "555-0113",
+      position: "Jefe de Seguridad",
+      department: "Seguridad",
+      hireDate: "2023-11-05",
+      salary: 30000,
+      status: "active" as const,
+      profileImage: "",
+      address: "Fraccionamiento Norte 321",
+      emergencyContact: "Elena Ruiz",
+      emergencyPhone: "555-0114",
+      education: "Licenciatura en Criminología",
+      certifications: ["Seguridad Privada", "Primeros Auxilios"],
+      skills: ["Liderazgo", "Seguridad", "Manejo de crisis"],
+      workSchedule: "Turnos rotativos 24/7"
+    },
+    {
+      id: 11,
+      fullName: "Mónica Torres Valle",
+      email: "monica.torres@parques.mx",
+      phone: "555-0115",
+      position: "Especialista en RH",
+      department: "Recursos Humanos",
+      hireDate: "2023-12-01",
+      salary: 29000,
+      status: "vacation" as const,
+      profileImage: "",
+      address: "Zona Sur 654",
+      emergencyContact: "Alberto Torres",
+      emergencyPhone: "555-0116",
+      education: "Licenciatura en Psicología",
+      certifications: ["Gestión del Talento", "Nómina"],
+      skills: ["Reclutamiento", "Capacitación", "Relaciones laborales"],
+      workSchedule: "Lunes a Viernes 8:30-17:30"
+    },
+    {
+      id: 12,
+      fullName: "Fernando Castro Díaz",
+      email: "fernando.castro@parques.mx",
+      phone: "555-0117",
+      position: "Operador de Equipos",
+      department: "Mantenimiento",
+      hireDate: "2024-01-15",
+      salary: 20000,
+      status: "active" as const,
+      profileImage: "",
+      address: "Barrio Antiguo 987",
+      emergencyContact: "Silvia Castro",
+      emergencyPhone: "555-0118",
+      education: "Secundaria",
+      certifications: ["Operación de Maquinaria"],
+      skills: ["Manejo de equipos", "Mecánica básica"],
+      workSchedule: "Lunes a Viernes 7:00-15:00"
     }
   ];
 
@@ -407,20 +521,109 @@ const EmployeesManagement = () => {
             </div>
           </div>
 
-          <Dialog open={isNewEmployeeOpen} onOpenChange={setIsNewEmployeeOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <UserPlus className="h-4 w-4" />
-                Nuevo Empleado
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Registrar Nuevo Empleado</DialogTitle>
-                <DialogDescription>
-                  Complete la información básica del nuevo empleado
-                </DialogDescription>
-              </DialogHeader>
+          <div className="flex items-center gap-3">
+            <Dialog open={isDepartmentDialogOpen} onOpenChange={setIsDepartmentDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Gestionar Departamentos
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Gestión de Departamentos</DialogTitle>
+                  <DialogDescription>
+                    Administra los departamentos de la organización
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="departmentName">Nuevo Departamento</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="departmentName"
+                        value={newDepartmentName}
+                        onChange={(e) => setNewDepartmentName(e.target.value)}
+                        placeholder="Ejemplo: Marketing Digital"
+                      />
+                      <Button onClick={handleAddDepartment}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Departamentos Existentes</Label>
+                    <div className="max-h-60 overflow-y-auto space-y-2">
+                      {departmentsList.map((department) => (
+                        <div key={department} className="flex items-center justify-between p-2 border rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <Building className="h-4 w-4 text-gray-500" />
+                            {editingDepartment === department ? (
+                              <Input
+                                value={newDepartmentName}
+                                onChange={(e) => setNewDepartmentName(e.target.value)}
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') {
+                                    handleEditDepartment(department, newDepartmentName);
+                                  }
+                                }}
+                                onBlur={() => {
+                                  handleEditDepartment(department, newDepartmentName);
+                                }}
+                                className="h-6 text-sm"
+                                autoFocus
+                              />
+                            ) : (
+                              <span className="text-sm font-medium">{department}</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setEditingDepartment(department);
+                                setNewDepartmentName(department);
+                              }}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteDepartment(department)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={isNewEmployeeOpen} onOpenChange={setIsNewEmployeeOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Nuevo Empleado
+                </Button>
+              </DialogTrigger>
+            </Dialog>
+          </div>
+
+        <Dialog open={isNewEmployeeOpen} onOpenChange={setIsNewEmployeeOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Registrar Nuevo Empleado</DialogTitle>
+              <DialogDescription>
+                Complete la información básica del nuevo empleado
+              </DialogDescription>
+            </DialogHeader>
               
               <div className="grid grid-cols-2 gap-4 py-4">
                 <div className="space-y-2">
@@ -747,46 +950,59 @@ const EmployeesManagement = () => {
                 </div>
 
                 {/* Pagination Controls */}
-                {filteredEmployees.length > recordsPerPage && (
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t">
-                    <div className="text-sm text-gray-600">
+                {filteredEmployees.length > 0 && (
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t bg-gray-50 p-4 rounded-lg">
+                    <div className="text-sm text-gray-700 font-medium">
                       Mostrando {((currentPage - 1) * recordsPerPage) + 1} a {Math.min(currentPage * recordsPerPage, filteredEmployees.length)} de {filteredEmployees.length} empleados
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                        Anterior
-                      </Button>
-                      
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                          <Button
-                            key={page}
-                            variant={currentPage === page ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            className="w-8 h-8 p-0"
-                          >
-                            {page}
-                          </Button>
-                        ))}
+                    {totalPages > 1 && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          disabled={currentPage === 1}
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                          Anterior
+                        </Button>
+                        
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                            let page = i + 1;
+                            if (totalPages > 5) {
+                              if (currentPage > 3) {
+                                page = currentPage - 2 + i;
+                              }
+                              if (currentPage > totalPages - 2) {
+                                page = totalPages - 4 + i;
+                              }
+                            }
+                            return (
+                              <Button
+                                key={page}
+                                variant={currentPage === page ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setCurrentPage(page)}
+                                className="w-8 h-8 p-0"
+                              >
+                                {page}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                        >
+                          Siguiente
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
                       </div>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                      >
-                        Siguiente
-                        <ChevronRight className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    )}
                   </div>
                 )}
               </CardContent>
