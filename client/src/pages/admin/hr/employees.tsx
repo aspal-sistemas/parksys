@@ -444,7 +444,7 @@ export default function Employees() {
     try {
       setIsLoadingEmployees(true);
       console.log('Cargando empleados desde la base de datos...');
-      const response = await fetch('/api/employees');
+      const response = await fetch('/api/hr/employees');
       console.log('Respuesta del servidor para empleados:', response.status);
       
       if (response.ok) {
@@ -537,7 +537,7 @@ export default function Employees() {
       
       if (confirmation === "ELIMINAR") {
         try {
-          const response = await fetch(`/api/employees/${employee.id}`, {
+          const response = await fetch(`/api/hr/employees/${employee.id}`, {
             method: 'DELETE',
             headers: {
               'Content-Type': 'application/json',
@@ -1259,7 +1259,7 @@ export default function Employees() {
                   let response;
                   if (isEditing) {
                     // Actualizar empleado existente
-                    response = await fetch(`/api/employees/${selectedEmployee.id}`, {
+                    response = await fetch(`/api/hr/employees/${selectedEmployee.id}`, {
                       method: 'PUT',
                       headers: {
                         'Content-Type': 'application/json',
@@ -1268,7 +1268,7 @@ export default function Employees() {
                     });
                   } else {
                     // Verificar si el email ya existe para nuevos empleados
-                    const checkResponse = await fetch('/api/employees');
+                    const checkResponse = await fetch('/api/hr/employees');
                     if (checkResponse.ok) {
                       const existingEmployees = await checkResponse.json();
                       const emailExists = existingEmployees.some((emp: any) => emp.email === employeeData.email);
@@ -1284,7 +1284,7 @@ export default function Employees() {
                     }
                     
                     // Crear nuevo empleado
-                    response = await fetch('/api/employees', {
+                    response = await fetch('/api/hr/employees', {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
