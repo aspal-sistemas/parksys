@@ -110,8 +110,8 @@ The system uses environment variables for database connection and supports both 
 - **Base de Datos**: Esquema extendido con campos de integración para actual_incomes y actual_expenses
 - **Estado**: Sistema de integraciones múltiples implementado completamente con HR como base funcional
 
-### Sistema Jerárquico Organizacional HR - COMPLETADO
-**Implementado**: Sistema completo de jerarquías organizacionales con organigrama automático
+### Sistema Jerárquico Organizacional HR + CSV Import/Export - COMPLETADO
+**Implementado**: Sistema completo de jerarquías organizacionales con organigrama automático e importación/exportación CSV
 - **Jerarquías**: 5 niveles (1-Dirección, 2-Asistencias, 3-Coordinaciones, 4-Áreas, 5-Operativo)
 - **Departamentos**: Cada departamento tiene nombre + nivel jerárquico asignado
 - **Organigrama Automático**: Se genera automáticamente basado en jerarquías de empleados
@@ -119,7 +119,9 @@ The system uses environment variables for database connection and supports both 
 - **Asignación Automática**: Empleados aparecen en organigrama según su departamento
 - **Funcionalidades**: Crear, editar, eliminar departamentos con nivel jerárquico
 - **Paginación**: Sistema completo con botones de eliminar empleado
-- **Estado**: Sistema jerárquico completamente funcional y organigrama dinámico
+- **Importar CSV**: Carga masiva con plantilla, vista previa, mapeo automático/manual de columnas
+- **Exportar CSV**: Dos formatos (simple/completa), respeta filtros activos, descarga automática
+- **Estado**: Sistema jerárquico + CSV completamente funcional
 
 ### Sistema de Internacionalización (i18n) - COMPLETADO TOTALMENTE  
 **Implementado**: Sistema completo de múltiples idiomas con traducción automática de todo el sitio

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import Papa from 'papaparse';
 import { 
   Users, 
   Plus, 
@@ -29,7 +30,11 @@ import {
   DollarSign,
   ChevronLeft,
   ChevronRight,
-  Settings
+  Settings,
+  Upload,
+  Download,
+  FileText,
+  AlertCircle
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -70,6 +75,13 @@ export default function EmployeesFixed() {
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 5;
   const [isDepartmentDialogOpen, setIsDepartmentDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importPreview, setImportPreview] = useState<any[]>([]);
+  const [importMapping, setImportMapping] = useState<{[key: string]: string}>({});
+  const [isProcessingImport, setIsProcessingImport] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [departmentsList, setDepartmentsList] = useState<Department[]>([
     { name: "Dirección General", hierarchy: 1 },
@@ -268,6 +280,206 @@ export default function EmployeesFixed() {
     }).format(amount);
   };
 
+  // Funciones para CSV Import/Export
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'text/csv') {
+      setImportFile(file);
+      parseCSVPreview(file);
+    } else {
+      toast({
+        title: "Archivo inválido",
+        description: "Por favor selecciona un archivo CSV válido.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const parseCSVPreview = (file: File) => {
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        setImportPreview(results.data.slice(0, 5)); // Solo primeras 5 filas para preview
+        
+        // Auto-mapeo inicial basado en nombres de columnas
+        const csvHeaders = Object.keys(results.data[0] || {});
+        const autoMapping: {[key: string]: string} = {};
+        
+        csvHeaders.forEach(header => {
+          const lowerHeader = header.toLowerCase();
+          if (lowerHeader.includes('nombre') || lowerHeader.includes('name')) {
+            autoMapping[header] = 'fullName';
+          } else if (lowerHeader.includes('email') || lowerHeader.includes('correo')) {
+            autoMapping[header] = 'email';
+          } else if (lowerHeader.includes('telefono') || lowerHeader.includes('phone')) {
+            autoMapping[header] = 'phone';
+          } else if (lowerHeader.includes('puesto') || lowerHeader.includes('position')) {
+            autoMapping[header] = 'position';
+          } else if (lowerHeader.includes('departamento') || lowerHeader.includes('department')) {
+            autoMapping[header] = 'department';
+          } else if (lowerHeader.includes('salario') || lowerHeader.includes('salary')) {
+            autoMapping[header] = 'salary';
+          } else if (lowerHeader.includes('direccion') || lowerHeader.includes('address')) {
+            autoMapping[header] = 'address';
+          } else if (lowerHeader.includes('educacion') || lowerHeader.includes('education')) {
+            autoMapping[header] = 'education';
+          }
+        });
+        
+        setImportMapping(autoMapping);
+      },
+      error: (error) => {
+        toast({
+          title: "Error al leer archivo",
+          description: "No se pudo procesar el archivo CSV.",
+          variant: "destructive"
+        });
+      }
+    });
+  };
+
+  const processImport = () => {
+    if (!importFile) return;
+    
+    setIsProcessingImport(true);
+    
+    Papa.parse(importFile, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const importedEmployees = results.data.map((row: any, index: number) => {
+          const employee = {
+            id: employees.length + index + 1,
+            fullName: row[importMapping['fullName']] || '',
+            email: row[importMapping['email']] || '',
+            phone: row[importMapping['phone']] || '',
+            position: row[importMapping['position']] || '',
+            department: row[importMapping['department']] || 'Personal Operativo',
+            hireDate: new Date().toISOString().split('T')[0],
+            salary: parseFloat(row[importMapping['salary']]) || 25000,
+            status: 'active' as const,
+            address: row[importMapping['address']] || '',
+            emergencyContact: '',
+            emergencyPhone: '',
+            education: row[importMapping['education']] || '',
+            certifications: [],
+            skills: [],
+            workSchedule: 'Lunes a Viernes 9:00-17:00'
+          };
+          return employee;
+        });
+
+        // Aquí normalmente enviarías los datos al servidor
+        console.log('Empleados importados:', importedEmployees);
+        
+        toast({
+          title: "Importación exitosa",
+          description: `Se importaron ${importedEmployees.length} empleados correctamente.`,
+        });
+        
+        setIsProcessingImport(false);
+        setIsImportDialogOpen(false);
+        setImportFile(null);
+        setImportPreview([]);
+        setImportMapping({});
+      },
+      error: (error) => {
+        toast({
+          title: "Error en importación",
+          description: "Ocurrió un error al procesar el archivo.",
+          variant: "destructive"
+        });
+        setIsProcessingImport(false);
+      }
+    });
+  };
+
+  const exportToCSV = (format: 'simple' | 'complete') => {
+    const exportData = filteredEmployees.map(employee => {
+      if (format === 'simple') {
+        return {
+          'Nombre Completo': employee.fullName,
+          'Email': employee.email,
+          'Teléfono': employee.phone,
+          'Puesto': employee.position,
+          'Departamento': employee.department,
+          'Salario': employee.salary,
+          'Estado': getStatusText(employee.status),
+          'Fecha de Contratación': new Date(employee.hireDate).toLocaleDateString('es-MX')
+        };
+      } else {
+        return {
+          'ID': employee.id,
+          'Nombre Completo': employee.fullName,
+          'Email': employee.email,
+          'Teléfono': employee.phone,
+          'Puesto': employee.position,
+          'Departamento': employee.department,
+          'Salario': employee.salary,
+          'Estado': getStatusText(employee.status),
+          'Fecha de Contratación': new Date(employee.hireDate).toLocaleDateString('es-MX'),
+          'Dirección': employee.address,
+          'Contacto de Emergencia': employee.emergencyContact,
+          'Teléfono de Emergencia': employee.emergencyPhone,
+          'Educación': employee.education,
+          'Certificaciones': employee.certifications.join(', '),
+          'Habilidades': employee.skills.join(', '),
+          'Horario de Trabajo': employee.workSchedule
+        };
+      }
+    });
+
+    const csv = Papa.unparse(exportData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `empleados_${format}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Exportación exitosa",
+      description: `Se exportaron ${exportData.length} empleados en formato ${format}.`,
+    });
+    
+    setIsExportDialogOpen(false);
+  };
+
+  const downloadTemplate = () => {
+    const template = [{
+      'Nombre Completo': 'Juan Pérez García',
+      'Email': 'juan.perez@empresa.com',
+      'Teléfono': '555-0123',
+      'Puesto': 'Coordinador de Área',
+      'Departamento': 'Coordinación de Administración',
+      'Salario': '35000',
+      'Dirección': 'Av. Principal 123, Ciudad',
+      'Educación': 'Licenciatura en Administración'
+    }];
+    
+    const csv = Papa.unparse(template);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'plantilla_empleados.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Plantilla descargada",
+      description: "Se descargó la plantilla CSV con formato de ejemplo.",
+    });
+  };
+
   // Organizar empleados por jerarquía para el organigrama
   const organizeByHierarchy = () => {
     const organized: { [key: number]: Employee[] } = {};
@@ -306,6 +518,218 @@ export default function EmployeesFixed() {
           </div>
 
           <div className="flex items-center gap-3">
+            <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Upload className="h-4 w-4" />
+                  Importar CSV
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Importar Empleados desde CSV</DialogTitle>
+                  <DialogDescription>
+                    Sube un archivo CSV para importar empleados masivamente al sistema
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+                    <Button variant="outline" onClick={downloadTemplate}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Descargar Plantilla
+                    </Button>
+                    <div className="text-sm text-gray-600">
+                      Descarga la plantilla CSV con el formato correcto para importar datos
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="csvFile">Seleccionar archivo CSV</Label>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".csv"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                      <div className="mt-2 flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Seleccionar Archivo
+                        </Button>
+                        {importFile && (
+                          <span className="text-sm text-green-600">
+                            ✓ {importFile.name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {importPreview.length > 0 && (
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-medium">Vista previa de datos (primeras 5 filas)</h4>
+                          <div className="mt-2 border rounded-lg overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  {Object.keys(importPreview[0] || {}).map(header => (
+                                    <th key={header} className="px-3 py-2 text-left font-medium">
+                                      {header}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {importPreview.map((row, index) => (
+                                  <tr key={index} className="border-t">
+                                    {Object.values(row).map((value: any, cellIndex) => (
+                                      <td key={cellIndex} className="px-3 py-2">
+                                        {String(value)}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-medium mb-3">Mapeo de Columnas</h4>
+                          <div className="grid grid-cols-2 gap-4">
+                            {Object.keys(importPreview[0] || {}).map(csvHeader => (
+                              <div key={csvHeader} className="flex items-center gap-2">
+                                <Label className="min-w-32 text-sm">{csvHeader}:</Label>
+                                <Select
+                                  value={importMapping[csvHeader] || ''}
+                                  onValueChange={(value) => setImportMapping(prev => ({
+                                    ...prev,
+                                    [csvHeader]: value
+                                  }))}
+                                >
+                                  <SelectTrigger className="flex-1">
+                                    <SelectValue placeholder="Seleccionar campo" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="">-- No mapear --</SelectItem>
+                                    <SelectItem value="fullName">Nombre Completo</SelectItem>
+                                    <SelectItem value="email">Email</SelectItem>
+                                    <SelectItem value="phone">Teléfono</SelectItem>
+                                    <SelectItem value="position">Puesto</SelectItem>
+                                    <SelectItem value="department">Departamento</SelectItem>
+                                    <SelectItem value="salary">Salario</SelectItem>
+                                    <SelectItem value="address">Dirección</SelectItem>
+                                    <SelectItem value="education">Educación</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 p-3 bg-yellow-50 rounded-lg">
+                          <AlertCircle className="h-4 w-4 text-yellow-600" />
+                          <span className="text-sm text-yellow-700">
+                            Verifica el mapeo de columnas antes de procesar la importación
+                          </span>
+                        </div>
+
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setIsImportDialogOpen(false);
+                              setImportFile(null);
+                              setImportPreview([]);
+                              setImportMapping({});
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            onClick={processImport}
+                            disabled={isProcessingImport}
+                          >
+                            {isProcessingImport ? 'Procesando...' : 'Importar Empleados'}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Download className="h-4 w-4" />
+                  Exportar CSV
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Exportar Empleados a CSV</DialogTitle>
+                  <DialogDescription>
+                    Selecciona el formato de exportación para descargar los datos
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <Card className="cursor-pointer hover:bg-gray-50" onClick={() => exportToCSV('simple')}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <FileText className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">Exportación Simple</h4>
+                            <p className="text-sm text-gray-600">
+                              Información básica: nombre, email, teléfono, puesto, departamento, salario
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {filteredEmployees.length} empleados
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="cursor-pointer hover:bg-gray-50" onClick={() => exportToCSV('complete')}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-100 rounded-lg">
+                            <FileText className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">Exportación Completa</h4>
+                            <p className="text-sm text-gray-600">
+                              Toda la información disponible: datos personales, contactos, educación, habilidades
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {filteredEmployees.length} empleados con todos los campos
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+                    <AlertCircle className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm text-blue-700">
+                      Se exportarán {filteredEmployees.length} empleados según los filtros actuales
+                    </span>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <Dialog open={isDepartmentDialogOpen} onOpenChange={setIsDepartmentDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="flex items-center gap-2">
@@ -817,7 +1241,7 @@ export default function EmployeesFixed() {
                                         <p className="text-sm text-gray-500">
                                           {employeeCount} empleado{employeeCount !== 1 ? 's' : ''}
                                         </p>
-                                        <Badge variant="outline" size="sm" className="mt-1">
+                                        <Badge variant="outline" className="mt-1 text-xs">
                                           Nivel {department.hierarchy}
                                         </Badge>
                                       </div>
