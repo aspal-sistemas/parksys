@@ -77,10 +77,13 @@ const EmployeesManagement = () => {
   const queryClient = useQueryClient();
 
   // Obtener empleados de la base de datos
-  const { data: employees = [], isLoading, error } = useQuery({
+  const { data: employeesData = [], isLoading, error } = useQuery({
     queryKey: ['/api/employees'],
     queryFn: () => fetch('/api/employees').then(res => res.json())
   });
+
+  // Asegurar que employees sea siempre un array
+  const employees = Array.isArray(employeesData) ? employeesData : [];
 
   // Mutación para crear empleado
   const createEmployeeMutation = useMutation({
