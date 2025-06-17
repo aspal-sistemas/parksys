@@ -443,10 +443,21 @@ export default function Employees() {
   const loadEmployees = async () => {
     try {
       setIsLoadingEmployees(true);
+      console.log('Cargando empleados desde la base de datos...');
       const response = await fetch('/api/employees');
+      console.log('Respuesta del servidor para empleados:', response.status);
+      
       if (response.ok) {
         const employeesData = await response.json();
+        console.log('Empleados recibidos:', employeesData);
         setEmployees(employeesData);
+      } else {
+        console.error('Error en la respuesta:', response.status, response.statusText);
+        toast({
+          title: "Error",
+          description: `Error al cargar empleados: ${response.status}`,
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Error loading employees:', error);
