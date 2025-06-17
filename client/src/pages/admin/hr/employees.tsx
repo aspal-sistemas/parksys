@@ -59,6 +59,8 @@ const EmployeesManagement = () => {
   const [isNewEmployeeOpen, setIsNewEmployeeOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isViewEmployeeOpen, setIsViewEmployeeOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 15;
   const [newEmployeeData, setNewEmployeeData] = useState({
     fullName: "",
     email: "",
@@ -297,6 +299,23 @@ const EmployeesManagement = () => {
     
     return matchesSearch && matchesDepartment && matchesStatus;
   });
+
+  // Cálculos de paginación
+  const totalPages = Math.ceil(filteredEmployees.length / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
+  const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
+
+  // Reiniciar página actual si no hay registros en la página actual
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [filteredEmployees.length, currentPage, totalPages]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -648,7 +667,7 @@ const EmployeesManagement = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {filteredEmployees.map((employee) => (
+                  {paginatedEmployees.map((employee) => (
                     <div key={employee.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
@@ -678,7 +697,7 @@ const EmployeesManagement = () => {
                           <Button size="sm" variant="outline" onClick={() => handleViewEmployee(employee)}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" onClick={() => handleEditEmployee(employee)}>
                             <Edit className="h-4 w-4" />
                           </Button>
                         </div>
