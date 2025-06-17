@@ -21,7 +21,7 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
     }
   });
 
-  // Crear empleado
+  // Crear empleado con usuario automático
   apiRouter.post("/employees", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const employeeData = {
@@ -33,11 +33,54 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
         certifications: Array.isArray(req.body.certifications) ? req.body.certifications : (req.body.certifications ? [req.body.certifications] : [])
       };
 
+      // 1. Crear empleado
       const [newEmployee] = await db
         .insert(employees)
         .values(employeeData)
         .returning();
-      res.status(201).json(newEmployee);
+
+      // 2. Generar usuario automáticamente
+      const username = req.body.email?.split('@')[0] || `emp${newEmployee.id}`;
+      const temporaryPassword = `temp${Math.random().toString(36).slice(-8)}`;
+      
+      try {
+        const [newUser] = await db
+          .insert(users)
+          .values({
+            username: username,
+            email: req.body.email,
+            password: temporaryPassword, // En producción debería estar hasheada
+            role: 'employee',
+            fullName: employeeData.fullName,
+            phone: req.body.phone,
+            profileImageUrl: req.body.profileImageUrl
+          })
+          .returning();
+
+        // 3. Actualizar empleado con userId
+        await db
+          .update(employees)
+          .set({ userId: newUser.id })
+          .where(eq(employees.id, newEmployee.id));
+
+        res.status(201).json({
+          employee: newEmployee,
+          user: {
+            id: newUser.id,
+            username: newUser.username,
+            email: newUser.email,
+            temporaryPassword: temporaryPassword
+          },
+          message: "Empleado y usuario creados exitosamente"
+        });
+      } catch (userError) {
+        console.warn("Error creando usuario, pero empleado fue creado:", userError);
+        res.status(201).json({
+          employee: newEmployee,
+          message: "Empleado creado. Usuario debe crearse manualmente.",
+          warning: "No se pudo crear usuario automáticamente"
+        });
+      }
     } catch (error) {
       console.error("Error al crear empleado:", error);
       res.status(500).json({ error: "Error interno del servidor" });

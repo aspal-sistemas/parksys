@@ -91,6 +91,14 @@ The system uses environment variables for database connection and supports both 
 
 ## Recent Features
 
+### Creación Automática de Usuarios para Empleados - COMPLETADO
+**Implementado**: Flujo integrado HR → Usuarios que automatiza la gestión de accesos del personal
+- **Funcionalidad**: Al crear empleado en HR se genera automáticamente su usuario del sistema
+- **Características**: Asignación automática de rol 'employee', generación de contraseñas temporales, vinculación empleado-usuario
+- **Beneficios**: Reducción de trabajo manual, garantiza acceso para todo el personal, datos consistentes
+- **Flujo**: Empleado → Usuario automático → Credenciales temporales → Primer acceso obliga cambio
+- **Estado**: Sistema de creación automática implementado y funcional
+
 ### Sistema de Integraciones Financieras Múltiples - COMPLETADO
 **Implementado**: Sistema completo de integración automática entre múltiples módulos y el sistema financiero
 - **Módulos de Ingresos**: Concesiones, Eventos, Marketing (automatizados)
