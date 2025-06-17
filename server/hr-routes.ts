@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { db } from "./db";
 import { employees, payrollConcepts, payrollPeriods, payrollDetails, actualExpenses, users } from "@shared/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, desc } from "drizzle-orm";
 
 /**
  * Registra las rutas del módulo de Recursos Humanos integrado con Finanzas
@@ -677,6 +677,194 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
       });
     } catch (error) {
       console.error("Error al obtener resumen de nómina:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
+
+  // Ruta para obtener historial de pagos de un empleado
+  apiRouter.get("/hr/employees/:id/payroll-history", async (req: Request, res: Response) => {
+    try {
+      const employeeId = parseInt(req.params.id);
+      const { period, year, month } = req.query;
+
+      let whereConditions = [eq(payrollDetails.employeeId, employeeId)];
+
+      // Filtros opcionales
+      if (year) {
+        const targetYear = parseInt(year as string);
+        const periods = await db
+          .select()
+          .from(payrollPeriods)
+          .where(sql`EXTRACT(YEAR FROM ${payrollPeriods.startDate}) = ${targetYear}`);
+        
+        if (periods.length > 0) {
+          const periodIds = periods.map(p => p.id);
+          whereConditions.push(sql`${payrollDetails.periodId} IN (${sql.join(periodIds.map(id => sql`${id}`), sql`, `)})`);
+        }
+      }
+
+      if (month && year) {
+        const targetYear = parseInt(year as string);
+        const targetMonth = parseInt(month as string);
+        const periods = await db
+          .select()
+          .from(payrollPeriods)
+          .where(
+            and(
+              sql`EXTRACT(YEAR FROM ${payrollPeriods.startDate}) = ${targetYear}`,
+              sql`EXTRACT(MONTH FROM ${payrollPeriods.startDate}) = ${targetMonth}`
+            )
+          );
+        
+        if (periods.length > 0) {
+          const periodIds = periods.map(p => p.id);
+          whereConditions.push(sql`${payrollDetails.periodId} IN (${sql.join(periodIds.map(id => sql`${id}`), sql`, `)})`);
+        }
+      }
+
+      // Obtener detalles de nómina con información del período y concepto
+      const payrollHistory = await db
+        .select({
+          id: payrollDetails.id,
+          periodId: payrollDetails.periodId,
+          conceptId: payrollDetails.conceptId,
+          amount: payrollDetails.amount,
+          quantity: payrollDetails.quantity,
+          description: payrollDetails.description,
+          createdAt: payrollDetails.createdAt,
+          period: payrollPeriods.period,
+          startDate: payrollPeriods.startDate,
+          endDate: payrollPeriods.endDate,
+          status: payrollPeriods.status,
+          conceptCode: payrollConcepts.code,
+          conceptName: payrollConcepts.name,
+          conceptType: payrollConcepts.type,
+          conceptCategory: payrollConcepts.category,
+        })
+        .from(payrollDetails)
+        .innerJoin(payrollPeriods, eq(payrollDetails.periodId, payrollPeriods.id))
+        .innerJoin(payrollConcepts, eq(payrollDetails.conceptId, payrollConcepts.id))
+        .where(and(...whereConditions))
+        .orderBy(desc(payrollPeriods.startDate), payrollConcepts.sortOrder);
+
+      // Agrupar por período
+      const groupedHistory = payrollHistory.reduce((acc, record) => {
+        const periodKey = record.period;
+        if (!acc[periodKey]) {
+          acc[periodKey] = {
+            period: record.period,
+            startDate: record.startDate,
+            endDate: record.endDate,
+            status: record.status,
+            details: [],
+            totalIncome: 0,
+            totalDeductions: 0,
+            netPay: 0
+          };
+        }
+        
+        acc[periodKey].details.push(record);
+        
+        const amount = parseFloat(record.amount);
+        if (record.conceptType === 'income') {
+          acc[periodKey].totalIncome += amount;
+        } else if (record.conceptType === 'deduction') {
+          acc[periodKey].totalDeductions += amount;
+        }
+        
+        return acc;
+      }, {} as any);
+
+      // Calcular pago neto para cada período
+      Object.values(groupedHistory).forEach((period: any) => {
+        period.netPay = period.totalIncome - period.totalDeductions;
+      });
+
+      res.json(Object.values(groupedHistory));
+    } catch (error) {
+      console.error("Error al obtener historial de pagos del empleado:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
+
+  // Ruta para obtener resumen de historial de pagos (estadísticas)
+  apiRouter.get("/hr/employees/:id/payroll-summary", async (req: Request, res: Response) => {
+    try {
+      const employeeId = parseInt(req.params.id);
+
+      // Obtener empleado
+      const employee = await db
+        .select()
+        .from(employees)
+        .where(eq(employees.id, employeeId))
+        .limit(1);
+
+      if (employee.length === 0) {
+        return res.status(404).json({ error: "Empleado no encontrado" });
+      }
+
+      // Estadísticas generales
+      const totalPeriods = await db
+        .select({
+          count: sql<number>`count(distinct ${payrollDetails.periodId})`
+        })
+        .from(payrollDetails)
+        .where(eq(payrollDetails.employeeId, employeeId));
+
+      const totalEarnings = await db
+        .select({
+          totalIncome: sql<number>`sum(case when ${payrollConcepts.type} = 'income' then ${payrollDetails.amount} else 0 end)`,
+          totalDeductions: sql<number>`sum(case when ${payrollConcepts.type} = 'deduction' then ${payrollDetails.amount} else 0 end)`,
+        })
+        .from(payrollDetails)
+        .innerJoin(payrollConcepts, eq(payrollDetails.conceptId, payrollConcepts.id))
+        .where(eq(payrollDetails.employeeId, employeeId));
+
+      const earnings = totalEarnings[0] || { totalIncome: 0, totalDeductions: 0 };
+      const netEarnings = (earnings.totalIncome || 0) - (earnings.totalDeductions || 0);
+
+      // Últimos 12 meses
+      const monthlyEarnings = await db
+        .select({
+          year: sql<number>`EXTRACT(YEAR FROM ${payrollPeriods.startDate})`,
+          month: sql<number>`EXTRACT(MONTH FROM ${payrollPeriods.startDate})`,
+          totalIncome: sql<number>`sum(case when ${payrollConcepts.type} = 'income' then ${payrollDetails.amount} else 0 end)`,
+          totalDeductions: sql<number>`sum(case when ${payrollConcepts.type} = 'deduction' then ${payrollDetails.amount} else 0 end)`,
+        })
+        .from(payrollDetails)
+        .innerJoin(payrollPeriods, eq(payrollDetails.periodId, payrollPeriods.id))
+        .innerJoin(payrollConcepts, eq(payrollDetails.conceptId, payrollConcepts.id))
+        .where(
+          and(
+            eq(payrollDetails.employeeId, employeeId),
+            sql`${payrollPeriods.startDate} >= NOW() - INTERVAL '12 months'`
+          )
+        )
+        .groupBy(
+          sql`EXTRACT(YEAR FROM ${payrollPeriods.startDate})`,
+          sql`EXTRACT(MONTH FROM ${payrollPeriods.startDate})`
+        )
+        .orderBy(
+          sql`EXTRACT(YEAR FROM ${payrollPeriods.startDate}) DESC`,
+          sql`EXTRACT(MONTH FROM ${payrollPeriods.startDate}) DESC`
+        );
+
+      res.json({
+        employee: employee[0],
+        statistics: {
+          totalPeriods: totalPeriods[0]?.count || 0,
+          totalIncome: earnings.totalIncome || 0,
+          totalDeductions: earnings.totalDeductions || 0,
+          netEarnings: netEarnings,
+          averageMonthlyPay: totalPeriods[0]?.count > 0 ? netEarnings / totalPeriods[0].count : 0
+        },
+        monthlyEarnings: monthlyEarnings.map(m => ({
+          ...m,
+          netPay: (m.totalIncome || 0) - (m.totalDeductions || 0)
+        }))
+      });
+    } catch (error) {
+      console.error("Error al obtener resumen de historial de pagos:", error);
       res.status(500).json({ error: "Error interno del servidor" });
     }
   });

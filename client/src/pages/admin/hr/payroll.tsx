@@ -31,7 +31,10 @@ import {
   Settings,
   Play,
   Pause,
-  RotateCcw
+  RotateCcw,
+  User,
+  History,
+  Filter
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import AdminLayout from "@/components/AdminLayout";
@@ -106,6 +109,55 @@ interface ProcessedEmployee {
   netPay: number;
 }
 
+interface PayrollHistoryDetail {
+  id: number;
+  periodId: number;
+  conceptId: number;
+  amount: string;
+  quantity: string;
+  description: string;
+  createdAt: string;
+  period: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  conceptCode: string;
+  conceptName: string;
+  conceptType: 'income' | 'deduction';
+  conceptCategory: string;
+}
+
+interface PayrollHistoryPeriod {
+  period: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  details: PayrollHistoryDetail[];
+  totalIncome: number;
+  totalDeductions: number;
+  netPay: number;
+}
+
+interface PayrollSummaryStats {
+  totalPeriods: number;
+  totalIncome: number;
+  totalDeductions: number;
+  netEarnings: number;
+  averageMonthlyPay: number;
+}
+
+interface PayrollSummary {
+  employee: Employee;
+  statistics: PayrollSummaryStats;
+  monthlyEarnings: Array<{
+    year: number;
+    month: number;
+    totalIncome: number;
+    totalDeductions: number;
+    netPay: number;
+  }>;
+}
+
 export default function Payroll() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -119,6 +171,10 @@ export default function Payroll() {
   const [editingConcept, setEditingConcept] = useState<PayrollConcept | null>(null);
   const [isDeleteConceptDialogOpen, setIsDeleteConceptDialogOpen] = useState(false);
   const [deletingConcept, setDeletingConcept] = useState<PayrollConcept | null>(null);
+  const [isEmployeeHistoryDialogOpen, setIsEmployeeHistoryDialogOpen] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
+  const [historyFilterYear, setHistoryFilterYear] = useState<string>('');
+  const [historyFilterMonth, setHistoryFilterMonth] = useState<string>('');
   const [isViewPeriodDialogOpen, setIsViewPeriodDialogOpen] = useState(false);
   const [viewingPeriod, setViewingPeriod] = useState<PayrollPeriod | null>(null);
   
