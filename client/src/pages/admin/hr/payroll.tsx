@@ -191,13 +191,28 @@ export default function Payroll() {
 
   // Historial de pagos del empleado seleccionado
   const { data: employeePayrollHistory = [], isLoading: isLoadingHistory } = useQuery<PayrollHistoryPeriod[]>({
-    queryKey: ["/api/hr/employees", selectedEmployeeId, "payroll-history", { year: historyFilterYear, month: historyFilterMonth }],
+    queryKey: ["/api/hr/employees", selectedEmployeeId, "payroll-history", historyFilterYear, historyFilterMonth],
+    queryFn: async () => {
+      if (!selectedEmployeeId) return [];
+      const params = new URLSearchParams();
+      if (historyFilterYear) params.append('year', historyFilterYear);
+      if (historyFilterMonth) params.append('month', historyFilterMonth);
+      const queryString = params.toString();
+      const url = `/api/hr/employees/${selectedEmployeeId}/payroll-history${queryString ? `?${queryString}` : ''}`;
+      const response = await fetch(url);
+      return response.json();
+    },
     enabled: !!selectedEmployeeId
   });
 
   // Resumen de pagos del empleado seleccionado
   const { data: employeePayrollSummary, isLoading: isLoadingSummary } = useQuery<PayrollSummary>({
     queryKey: ["/api/hr/employees", selectedEmployeeId, "payroll-summary"],
+    queryFn: async () => {
+      if (!selectedEmployeeId) return null;
+      const response = await fetch(`/api/hr/employees/${selectedEmployeeId}/payroll-summary`);
+      return response.json();
+    },
     enabled: !!selectedEmployeeId
   });
 
@@ -1409,9 +1424,12 @@ export default function Payroll() {
                 </div>
                 Ficha de Empleado - Historial de Pagos
               </DialogTitle>
+              <DialogDescription>
+                Consulta información personal, estadísticas de nómina y historial detallado de pagos del empleado.
+              </DialogDescription>
             </DialogHeader>
             
-            {selectedEmployeeId && employeePayrollSummary && (
+            {selectedEmployeeId && employeePayrollSummary && employeePayrollSummary.employee && (
               <div className="space-y-6">
                 {/* Información del empleado */}
                 <Card>
