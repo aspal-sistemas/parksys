@@ -672,6 +672,191 @@ export default function EmployeesFixed() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="directory">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredEmployees.map((employee) => (
+                <Card key={employee.id} className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="text-center mb-4">
+                      <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-3">
+                        {employee.fullName.split(' ').map((name: string) => name[0]).join('').substring(0, 2)}
+                      </div>
+                      <h3 className="font-medium text-gray-900">{employee.fullName}</h3>
+                      <p className="text-sm text-gray-600">{employee.position}</p>
+                      <Badge variant="outline" className={`${getStatusColor(employee.status)} mt-2`}>
+                        {getStatusText(employee.status)}
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Building className="h-4 w-4 text-gray-400" />
+                        <span>{employee.department}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Mail className="h-4 w-4 text-gray-400" />
+                        <span className="truncate">{employee.email}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone className="h-4 w-4 text-gray-400" />
+                        <span>{employee.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <DollarSign className="h-4 w-4 text-gray-400" />
+                        <span>{formatCurrency(employee.salary)}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="h-4 w-4 text-gray-400" />
+                        <span>Desde {new Date(employee.hireDate).toLocaleDateString('es-MX')}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <GraduationCap className="h-4 w-4 text-gray-400" />
+                        <span className="truncate">{employee.education}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="flex gap-2">
+                        <Button size="sm" className="flex-1" onClick={() => {
+                          toast({
+                            title: "Función en desarrollo",
+                            description: `Funcionalidad de mensajería para ${employee.fullName} estará disponible pronto.`,
+                            variant: "default"
+                          });
+                        }}>
+                          <Mail className="h-4 w-4 mr-1" />
+                          Contactar
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleViewEmployee(employee)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleEditEmployee(employee)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => handleDeleteEmployee(employee)}
+                          className="text-red-600 hover:text-red-700 hover:border-red-300"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="departments">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building className="h-5 w-5" />
+                  Vista de Departamentos por Jerarquía
+                </CardTitle>
+                <CardDescription>
+                  Visualización organizada de todos los departamentos según su nivel jerárquico
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {[1, 2, 3, 4, 5].map(level => {
+                    const levelDepartments = departmentsList.filter(dept => dept.hierarchy === level);
+                    const levelName = level === 1 ? "Dirección General" : 
+                                    level === 2 ? "Asistencias/Secretarías" : 
+                                    level === 3 ? "Coordinaciones" : 
+                                    level === 4 ? "Áreas/Departamentos" : 
+                                    "Personal Operativo";
+                    
+                    if (levelDepartments.length === 0) return null;
+                    
+                    return (
+                      <div key={level} className="space-y-3">
+                        <div className="flex items-center gap-3 pb-2 border-b">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+                            level === 1 ? 'bg-purple-600' : 
+                            level === 2 ? 'bg-blue-600' : 
+                            level === 3 ? 'bg-green-600' : 
+                            level === 4 ? 'bg-orange-600' : 'bg-gray-600'
+                          }`}>
+                            {level}
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            Nivel {level} - {levelName}
+                          </h3>
+                          <Badge variant="secondary" className="ml-auto">
+                            {levelDepartments.length} departamento{levelDepartments.length !== 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {levelDepartments.map((department) => {
+                            const employeeCount = employees.filter(emp => emp.department === department.name).length;
+                            return (
+                              <Card key={department.name} className="hover:shadow-md transition-shadow">
+                                <CardContent className="p-4">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                                        level === 1 ? 'bg-purple-100' : 
+                                        level === 2 ? 'bg-blue-100' : 
+                                        level === 3 ? 'bg-green-100' : 
+                                        level === 4 ? 'bg-orange-100' : 'bg-gray-100'
+                                      }`}>
+                                        <Building className={`h-6 w-6 ${
+                                          level === 1 ? 'text-purple-600' : 
+                                          level === 2 ? 'text-blue-600' : 
+                                          level === 3 ? 'text-green-600' : 
+                                          level === 4 ? 'text-orange-600' : 'text-gray-600'
+                                        }`} />
+                                      </div>
+                                      <div>
+                                        <h4 className="font-medium text-gray-900">{department.name}</h4>
+                                        <p className="text-sm text-gray-500">
+                                          {employeeCount} empleado{employeeCount !== 1 ? 's' : ''}
+                                        </p>
+                                        <Badge variant="outline" size="sm" className="mt-1">
+                                          Nivel {department.hierarchy}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {employeeCount > 0 && (
+                                    <div className="mt-3 pt-3 border-t">
+                                      <p className="text-xs text-gray-600 mb-2">Personal asignado:</p>
+                                      <div className="flex flex-wrap gap-1">
+                                        {employees
+                                          .filter(emp => emp.department === department.name)
+                                          .slice(0, 3)
+                                          .map((emp, idx) => (
+                                            <div key={idx} className="text-xs bg-gray-100 px-2 py-1 rounded">
+                                              {emp.fullName.split(' ')[0]} {emp.fullName.split(' ')[1]?.[0]}.
+                                            </div>
+                                          ))}
+                                        {employeeCount > 3 && (
+                                          <div className="text-xs bg-gray-100 px-2 py-1 rounded">
+                                            +{employeeCount - 3} más
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="organigram">
             <Card>
               <CardHeader>
