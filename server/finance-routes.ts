@@ -907,15 +907,18 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
     try {
       const incomeId = parseInt(req.params.id);
       
-      const [deletedIncome] = await db
-        .delete(actualIncomes)
-        .where(eq(actualIncomes.id, incomeId))
-        .returning();
+      // Usar SQL directo para evitar problemas con el esquema
+      const result = await db.execute(sql`
+        DELETE FROM actual_incomes 
+        WHERE id = ${incomeId}
+        RETURNING id, concept, amount
+      `);
         
-      if (!deletedIncome) {
+      if (result.rows.length === 0) {
         return res.status(404).json({ message: "Ingreso no encontrado" });
       }
       
+      const deletedIncome = result.rows[0];
       res.json({ message: "Ingreso eliminado correctamente", income: deletedIncome });
     } catch (error) {
       console.error("Error al eliminar ingreso:", error);
