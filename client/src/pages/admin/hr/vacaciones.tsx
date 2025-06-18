@@ -65,12 +65,37 @@ export default function VacacionesPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [activeTab, setActiveTab] = useState("balances");
+  
+  // Estados para filtros
+  const [searchName, setSearchName] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [hireDateFrom, setHireDateFrom] = useState("");
+  const [hireDateTo, setHireDateTo] = useState("");
+  
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
   // Generar opciones de años (últimos 3 años + próximos 2)
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 6 }, (_, i) => currentYear - 3 + i);
+
+  // Opciones de meses
+  const monthOptions = [
+    { value: "", label: "Todos los meses" },
+    { value: "1", label: "Enero" },
+    { value: "2", label: "Febrero" },
+    { value: "3", label: "Marzo" },
+    { value: "4", label: "Abril" },
+    { value: "5", label: "Mayo" },
+    { value: "6", label: "Junio" },
+    { value: "7", label: "Julio" },
+    { value: "8", label: "Agosto" },
+    { value: "9", label: "Septiembre" },
+    { value: "10", label: "Octubre" },
+    { value: "11", label: "Noviembre" },
+    { value: "12", label: "Diciembre" }
+  ];
 
   const form = useForm<RequestFormData>({
     resolver: zodResolver(requestFormSchema),
@@ -84,11 +109,23 @@ export default function VacacionesPage() {
     }
   });
 
-  // Consultar solicitudes de tiempo libre filtradas por año
+  // Construir parámetros de filtro
+  const buildFilterParams = () => {
+    const params = new URLSearchParams();
+    params.append('year', selectedYear.toString());
+    if (selectedMonth) params.append('month', selectedMonth);
+    if (searchName) params.append('name', searchName);
+    if (selectedDepartment) params.append('department', selectedDepartment);
+    if (hireDateFrom) params.append('hireDateFrom', hireDateFrom);
+    if (hireDateTo) params.append('hireDateTo', hireDateTo);
+    return params.toString();
+  };
+
+  // Consultar solicitudes de tiempo libre con filtros
   const { data: requests = [], isLoading: requestsLoading } = useQuery({
-    queryKey: ["/api/time-off/time-off-requests", selectedYear],
+    queryKey: ["/api/time-off/time-off-requests", selectedYear, selectedMonth, searchName, selectedDepartment, hireDateFrom, hireDateTo],
     queryFn: async () => {
-      const response = await fetch(`/api/time-off/time-off-requests?year=${selectedYear}`);
+      const response = await fetch(`/api/time-off/time-off-requests?${buildFilterParams()}`);
       if (!response.ok) throw new Error("Error al cargar solicitudes");
       return response.json();
     }
@@ -104,15 +141,18 @@ export default function VacacionesPage() {
     }
   });
 
-  // Consultar balances de vacaciones filtrados por año
+  // Consultar balances de vacaciones con filtros
   const { data: balances = [], isLoading: balancesLoading } = useQuery({
-    queryKey: ["/api/time-off/vacation-balances", selectedYear],
+    queryKey: ["/api/time-off/vacation-balances", selectedYear, selectedMonth, searchName, selectedDepartment, hireDateFrom, hireDateTo],
     queryFn: async () => {
-      const response = await fetch(`/api/time-off/vacation-balances?year=${selectedYear}`);
+      const response = await fetch(`/api/time-off/vacation-balances?${buildFilterParams()}`);
       if (!response.ok) throw new Error("Error al cargar balances");
       return response.json();
     }
   });
+
+  // Obtener departamentos únicos para el filtro
+  const departments = [...new Set(employees.map((emp: any) => emp.department).filter(Boolean))].sort();
 
   // Mutación para crear solicitud
   const createRequestMutation = useMutation({
@@ -212,6 +252,100 @@ export default function VacacionesPage() {
             </div>
           </div>
         </div>
+
+        {/* Filtros Avanzados */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filtros de Búsqueda
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="month-filter">Mes</Label>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los meses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {monthOptions.map(month => (
+                      <SelectItem key={month.value} value={month.value}>
+                        {month.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="search-name">Nombre del Empleado</Label>
+                <Input
+                  id="search-name"
+                  placeholder="Buscar por nombre..."
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="department-filter">Departamento</Label>
+                <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los departamentos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todos los departamentos</SelectItem>
+                    {departments.map(dept => (
+                      <SelectItem key={dept} value={dept}>
+                        {dept}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hire-date-from">Contratación Desde</Label>
+                <Input
+                  id="hire-date-from"
+                  type="date"
+                  value={hireDateFrom}
+                  onChange={(e) => setHireDateFrom(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hire-date-to">Contratación Hasta</Label>
+                <Input
+                  id="hire-date-to"
+                  type="date"
+                  value={hireDateTo}
+                  onChange={(e) => setHireDateTo(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 mt-4">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setSearchName("");
+                  setSelectedDepartment("");
+                  setSelectedMonth("");
+                  setHireDateFrom("");
+                  setHireDateTo("");
+                }}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Limpiar Filtros
+              </Button>
+              <div className="text-sm text-muted-foreground">
+                {activeTab === "balances" 
+                  ? `${balances.length} balances encontrados`
+                  : `${requests.length} solicitudes encontradas`
+                }
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Tabs Container */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
