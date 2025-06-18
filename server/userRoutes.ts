@@ -148,6 +148,53 @@ async function syncUserWithVolunteerTable(user: any) {
   }
 }
 
+// Función para sincronizar usuario con tabla de concesionarios
+async function syncUserWithConcessionaireTable(user: any, userData: any) {
+  try {
+    console.log(`🏢 Sincronizando usuario ${user.id} con tabla de concesionarios...`);
+    
+    // Verificar si ya existe un concesionario para este usuario
+    const concessionaireResult = await db.execute(
+      sql`SELECT * FROM concessionaire_profiles WHERE user_id = ${user.id}`
+    );
+    
+    const concessionaireExists = concessionaireResult.rows && concessionaireResult.rows.length > 0;
+    
+    if (!concessionaireExists) {
+      // Crear nuevo perfil de concesionario con datos básicos
+      const concessionaireData = {
+        user_id: user.id,
+        type: userData.tipo || 'persona_fisica', // Tipo por defecto
+        rfc: userData.rfc || '', // RFC será requerido posteriormente
+        tax_address: userData.domicilioFiscal || '',
+        legal_representative: userData.representanteLegal || '',
+        status: 'pendiente', // Estado inicial pendiente hasta completar perfil
+        registration_date: new Date(),
+        created_at: new Date(),
+        updated_at: new Date()
+      };
+      
+      // Insertar en concessionaire_profiles
+      await db.execute(
+        sql`INSERT INTO concessionaire_profiles 
+            (user_id, type, rfc, tax_address, legal_representative, status, registration_date, created_at, updated_at)
+            VALUES (${concessionaireData.user_id}, ${concessionaireData.type}, ${concessionaireData.rfc}, 
+                    ${concessionaireData.tax_address}, ${concessionaireData.legal_representative}, 
+                    ${concessionaireData.status}, ${concessionaireData.registration_date}, 
+                    ${concessionaireData.created_at}, ${concessionaireData.updated_at})`
+      );
+      
+      console.log(`✅ Perfil de concesionario creado para usuario ${user.id}`);
+    } else {
+      console.log(`ℹ️ Perfil de concesionario ya existe para usuario ${user.id}`);
+    }
+    
+  } catch (error) {
+    console.error('Error al sincronizar usuario con tabla de concesionarios:', error);
+    // No interrumpimos el flujo principal, solo registramos el error
+  }
+}
+
 export function registerUserRoutes(app: any, apiRouter: Router) {
   // Middleware para verificar si el usuario es administrador
   const isAdmin = (req: Request, res: Response, next: Function) => {
@@ -340,6 +387,11 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
           // Si el usuario tiene rol de voluntario, sincronizar con la tabla de voluntarios
           if (newUser.role === 'voluntario') {
             await syncUserWithVolunteerTable(newUser);
+          }
+          
+          // Si el usuario tiene rol de concesionario, crear automáticamente el perfil de concesionario
+          if (newUser.role === 'concesionario') {
+            await syncUserWithConcessionaireTable(newUser, req.body);
           }
           
           // No enviamos la contraseña en la respuesta
