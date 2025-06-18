@@ -1,20 +1,32 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, User, CheckCircle, XCircle, AlertCircle, Plus } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "@/hooks/use-toast";
-import AdminLayout from "@/components/AdminLayout";
+import {
+  Calendar,
+  Clock,
+  User,
+  Plus,
+  CheckCircle,
+  XCircle,
+  Filter,
+  BarChart3
+} from "lucide-react";
 
+import { AdminLayout } from "@/components/AdminLayout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+
+// Esquema de validación para solicitudes
 const requestFormSchema = z.object({
   employeeId: z.string().min(1, "Selecciona un empleado"),
   requestType: z.string().min(1, "Selecciona el tipo de solicitud"),
@@ -26,29 +38,39 @@ const requestFormSchema = z.object({
 
 type RequestFormData = z.infer<typeof requestFormSchema>;
 
+// Tipos de solicitudes
 const REQUEST_TYPES = [
   { value: "vacation", label: "Vacaciones", color: "bg-blue-500" },
-  { value: "permission", label: "Permiso", color: "bg-green-500" },
-  { value: "sick_leave", label: "Incapacidad médica", color: "bg-red-500" },
-  { value: "maternity_leave", label: "Licencia de maternidad", color: "bg-pink-500" },
-  { value: "paternity_leave", label: "Licencia de paternidad", color: "bg-purple-500" },
-  { value: "personal_leave", label: "Licencia personal", color: "bg-orange-500" },
-  { value: "bereavement", label: "Luto", color: "bg-gray-500" },
-  { value: "study_leave", label: "Licencia de estudios", color: "bg-indigo-500" },
-  { value: "unpaid_leave", label: "Licencia sin goce", color: "bg-yellow-500" }
+  { value: "personal", label: "Permiso Personal", color: "bg-green-500" },
+  { value: "sick", label: "Incapacidad Médica", color: "bg-red-500" },
+  { value: "maternity", label: "Licencia de Maternidad", color: "bg-purple-500" },
+  { value: "emergency", label: "Emergencia Familiar", color: "bg-orange-500" }
 ];
 
+// Configuración de estados
 const STATUS_CONFIG = {
-  pending: { label: "Pendiente", color: "bg-yellow-500", icon: AlertCircle },
+  pending: { label: "Pendiente", color: "bg-yellow-500", icon: Clock },
   approved: { label: "Aprobada", color: "bg-green-500", icon: CheckCircle },
   rejected: { label: "Rechazada", color: "bg-red-500", icon: XCircle },
   cancelled: { label: "Cancelada", color: "bg-gray-500", icon: XCircle }
 };
 
+// Función auxiliar para obtener configuración del tipo de solicitud
+const getRequestTypeConfig = (type: string) => {
+  return REQUEST_TYPES.find(t => t.value === type) || REQUEST_TYPES[0];
+};
+
 export default function VacacionesPage() {
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [activeTab, setActiveTab] = useState("balances");
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  // Generar opciones de años (últimos 3 años + próximos 2)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 6 }, (_, i) => currentYear - 3 + i);
 
   const form = useForm<RequestFormData>({
     resolver: zodResolver(requestFormSchema),
@@ -62,11 +84,11 @@ export default function VacacionesPage() {
     }
   });
 
-  // Consultar solicitudes de tiempo libre
-  const { data: requests = [], isLoading } = useQuery({
-    queryKey: ["/api/time-off/time-off-requests"],
+  // Consultar solicitudes de tiempo libre filtradas por año
+  const { data: requests = [], isLoading: requestsLoading } = useQuery({
+    queryKey: ["/api/time-off/time-off-requests", selectedYear],
     queryFn: async () => {
-      const response = await fetch("/api/time-off/time-off-requests");
+      const response = await fetch(`/api/time-off/time-off-requests?year=${selectedYear}`);
       if (!response.ok) throw new Error("Error al cargar solicitudes");
       return response.json();
     }
@@ -82,11 +104,11 @@ export default function VacacionesPage() {
     }
   });
 
-  // Consultar balances de vacaciones
-  const { data: balances = [] } = useQuery({
-    queryKey: ["/api/time-off/vacation-balances"],
+  // Consultar balances de vacaciones filtrados por año
+  const { data: balances = [], isLoading: balancesLoading } = useQuery({
+    queryKey: ["/api/time-off/vacation-balances", selectedYear],
     queryFn: async () => {
-      const response = await fetch("/api/time-off/vacation-balances");
+      const response = await fetch(`/api/time-off/vacation-balances?year=${selectedYear}`);
       if (!response.ok) throw new Error("Error al cargar balances");
       return response.json();
     }
@@ -105,11 +127,12 @@ export default function VacacionesPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/time-off/time-off-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/time-off/vacation-balances"] });
       setIsCreateDialogOpen(false);
       form.reset();
       toast({
         title: "Solicitud creada",
-        description: "La solicitud ha sido enviada para aprobación",
+        description: "La solicitud de tiempo libre ha sido creada exitosamente"
       });
     },
     onError: () => {
@@ -121,9 +144,9 @@ export default function VacacionesPage() {
     }
   });
 
-  // Mutación para aprobar/rechazar solicitud
+  // Mutación para aprobar/rechazar solicitudes
   const approveRequestMutation = useMutation({
-    mutationFn: async ({ id, action, rejectionReason }: { id: number, action: 'approve' | 'reject', rejectionReason?: string }) => {
+    mutationFn: async ({ id, action, rejectionReason }: { id: number; action: string; rejectionReason?: string }) => {
       const response = await fetch(`/api/time-off/time-off-requests/${id}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -135,10 +158,16 @@ export default function VacacionesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/time-off/time-off-requests"] });
       queryClient.invalidateQueries({ queryKey: ["/api/time-off/vacation-balances"] });
-      setSelectedRequest(null);
       toast({
         title: "Solicitud procesada",
-        description: "El estado de la solicitud ha sido actualizado",
+        description: "La solicitud ha sido procesada exitosamente"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo procesar la solicitud",
+        variant: "destructive"
       });
     }
   });
@@ -147,10 +176,7 @@ export default function VacacionesPage() {
     createRequestMutation.mutate(data);
   };
 
-  const getRequestTypeConfig = (type: string) => {
-    return REQUEST_TYPES.find(t => t.value === type) || REQUEST_TYPES[0];
-  };
-
+  // Función para formatear fechas
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
       year: 'numeric',
@@ -159,311 +185,365 @@ export default function VacacionesPage() {
     });
   };
 
-  if (isLoading) {
-    return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-        </div>
-      </AdminLayout>
-    );
-  }
-
   return (
     <AdminLayout>
       <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestión de Vacaciones y Permisos</h1>
-          <p className="text-gray-600">Administra solicitudes de tiempo libre y balances de vacaciones</p>
-        </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Solicitud
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Crear Solicitud de Tiempo Libre</DialogTitle>
-              <DialogDescription>
-                Completa los datos para crear una nueva solicitud
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="employeeId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Empleado</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar empleado" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {employees.map((employee: any) => (
-                            <SelectItem key={employee.id} value={employee.id.toString()}>
-                              {employee.fullName} - {employee.position}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="requestType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tipo de Solicitud</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar tipo" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {REQUEST_TYPES.map((type) => (
-                            <SelectItem key={type.value} value={type.value}>
-                              {type.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="startDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fecha de Inicio</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="endDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fecha de Fin</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="reason"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Motivo</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Describe el motivo de la solicitud" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Descripción (Opcional)</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Detalles adicionales" rows={3} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit" disabled={createRequestMutation.isPending}>
-                    {createRequestMutation.isPending ? "Creando..." : "Crear Solicitud"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Balances de Vacaciones */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Balances de Vacaciones 2025
-          </CardTitle>
-          <CardDescription>
-            Días de vacaciones disponibles por empleado
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {balances.map((balance: any) => (
-              <div key={balance.id} className="border rounded-lg p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium">{balance.employeeName}</h4>
-                  <Badge variant="outline">{balance.employeePosition}</Badge>
-                </div>
-                <div className="grid grid-cols-3 gap-2 text-sm">
-                  <div className="text-center">
-                    <p className="text-blue-600 font-semibold">{balance.totalDays}</p>
-                    <p className="text-gray-500">Total</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-red-600 font-semibold">{balance.usedDays}</p>
-                    <p className="text-gray-500">Usados</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-green-600 font-semibold">{balance.availableDays}</p>
-                    <p className="text-gray-500">Disponibles</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+        {/* Header with Year Selector */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Gestión de Vacaciones y Permisos</h1>
+            <p className="text-gray-600">Administra solicitudes de tiempo libre y balances de vacaciones</p>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
 
-      {/* Solicitudes de Tiempo Libre */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Solicitudes de Tiempo Libre
-          </CardTitle>
-          <CardDescription>
-            Gestiona todas las solicitudes de vacaciones, permisos e incapacidades
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {requests.map((request: any) => {
-              const typeConfig = getRequestTypeConfig(request.requestType);
-              const statusConfig = STATUS_CONFIG[request.status as keyof typeof STATUS_CONFIG];
-              const StatusIcon = statusConfig.icon;
+        {/* Tabs Container */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="balances" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Balances de Vacaciones
+            </TabsTrigger>
+            <TabsTrigger value="requests" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Solicitudes de Tiempo Libre
+            </TabsTrigger>
+          </TabsList>
 
-              return (
-                <div key={request.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4 text-gray-500" />
-                        <span className="font-medium">{request.employeeName}</span>
-                        <Badge variant="outline">{request.employeePosition}</Badge>
+          {/* Balances Tab */}
+          <TabsContent value="balances" className="space-y-6">
+            {balancesLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Balances de Vacaciones {selectedYear}
+                  </CardTitle>
+                  <CardDescription>
+                    Días de vacaciones disponibles por empleado para el año {selectedYear}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {balances.map((balance: any) => (
+                      <div key={balance.id} className="border rounded-lg p-4 space-y-3 hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-lg">{balance.employeeName}</h4>
+                          <Badge variant="outline" className="text-xs">{balance.employeePosition}</Badge>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3 text-sm">
+                          <div className="text-center p-2 bg-blue-50 rounded">
+                            <p className="text-blue-600 font-bold text-xl">{balance.totalDays}</p>
+                            <p className="text-gray-600 text-xs">Total Asignados</p>
+                          </div>
+                          <div className="text-center p-2 bg-red-50 rounded">
+                            <p className="text-red-600 font-bold text-xl">{balance.usedDays}</p>
+                            <p className="text-gray-600 text-xs">Días Usados</p>
+                          </div>
+                          <div className="text-center p-2 bg-green-50 rounded">
+                            <p className="text-green-600 font-bold text-xl">{balance.availableDays}</p>
+                            <p className="text-gray-600 text-xs">Disponibles</p>
+                          </div>
+                        </div>
+                        {balance.availableDays <= 5 && balance.availableDays > 0 && (
+                          <div className="text-center">
+                            <Badge variant="outline" className="text-orange-600 border-orange-600">
+                              Días limitados
+                            </Badge>
+                          </div>
+                        )}
+                        {balance.availableDays === 0 && (
+                          <div className="text-center">
+                            <Badge variant="destructive">Sin días disponibles</Badge>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge className={`${typeConfig.color} text-white`}>
-                        {typeConfig.label}
-                      </Badge>
-                      <Badge className={`${statusConfig.color} text-white`}>
-                        <StatusIcon className="h-3 w-3 mr-1" />
-                        {statusConfig.label}
-                      </Badge>
-                    </div>
+                    ))}
                   </div>
-                  
-                  <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500">Período</p>
-                      <p className="font-medium">
-                        {formatDate(request.startDate)} - {formatDate(request.endDate)}
-                      </p>
-                      <p className="text-gray-500">({request.requestedDays} días)</p>
+                  {balances.length === 0 && (
+                    <div className="text-center py-12 text-gray-500">
+                      <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p>No hay balances de vacaciones registrados para {selectedYear}</p>
                     </div>
-                    <div>
-                      <p className="text-gray-500">Motivo</p>
-                      <p className="font-medium">{request.reason}</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Requests Tab */}
+          <TabsContent value="requests" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold">Solicitudes de Tiempo Libre {selectedYear}</h3>
+                <p className="text-sm text-gray-600">Gestiona todas las solicitudes de vacaciones, permisos e incapacidades</p>
+              </div>
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nueva Solicitud
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Crear Solicitud de Tiempo Libre</DialogTitle>
+                    <DialogDescription>
+                      Completa los datos para crear una nueva solicitud
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="employeeId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Empleado</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccionar empleado" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {employees.map((employee: any) => (
+                                  <SelectItem key={employee.id} value={employee.id.toString()}>
+                                    {employee.fullName} - {employee.position}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="requestType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Tipo de Solicitud</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccionar tipo" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {REQUEST_TYPES.map((type) => (
+                                  <SelectItem key={type.value} value={type.value}>
+                                    {type.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="startDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Fecha Inicio</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="endDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Fecha Fin</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="reason"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Motivo</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Motivo de la solicitud" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Descripción (Opcional)</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Detalles adicionales..." 
+                                className="min-h-[80px]"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="flex justify-end space-x-2 pt-4">
+                        <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button type="submit" disabled={createRequestMutation.isPending}>
+                          {createRequestMutation.isPending ? "Creando..." : "Crear Solicitud"}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {requestsLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {requests.map((request: any) => {
+                  const typeConfig = getRequestTypeConfig(request.requestType);
+                  const statusConfig = STATUS_CONFIG[request.status as keyof typeof STATUS_CONFIG];
+                  const StatusIcon = statusConfig.icon;
+
+                  return (
+                    <div key={request.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2">
+                            <User className="h-4 w-4 text-gray-500" />
+                            <span className="font-medium">{request.employeeName}</span>
+                            <Badge variant="outline">{request.employeePosition}</Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge className={`${typeConfig.color} text-white`}>
+                            {typeConfig.label}
+                          </Badge>
+                          <Badge className={`${statusConfig.color} text-white`}>
+                            <StatusIcon className="h-3 w-3 mr-1" />
+                            {statusConfig.label}
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-500">Período</p>
+                          <p className="font-medium">
+                            {formatDate(request.startDate)} - {formatDate(request.endDate)}
+                          </p>
+                          <p className="text-gray-500">({request.requestedDays} días)</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500">Motivo</p>
+                          <p className="font-medium">{request.reason}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500">Enviada</p>
+                          <p className="font-medium">{formatDate(request.submittedAt)}</p>
+                        </div>
+                      </div>
+
+                      {request.description && (
+                        <div className="mt-3">
+                          <p className="text-gray-500 text-sm">Descripción</p>
+                          <p className="text-sm">{request.description}</p>
+                        </div>
+                      )}
+
+                      {request.status === 'pending' && (
+                        <div className="mt-4 flex space-x-2">
+                          <Button
+                            size="sm"
+                            onClick={() => approveRequestMutation.mutate({ id: request.id, action: 'approve' })}
+                            disabled={approveRequestMutation.isPending}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Aprobar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => approveRequestMutation.mutate({ id: request.id, action: 'reject', rejectionReason: 'Rechazada por administrador' })}
+                            disabled={approveRequestMutation.isPending}
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Rechazar
+                          </Button>
+                        </div>
+                      )}
+
+                      {request.status === 'approved' && request.approvedAt && (
+                        <div className="mt-3 text-sm text-green-600">
+                          Aprobada el {formatDate(request.approvedAt)} por {request.approverName}
+                        </div>
+                      )}
+
+                      {request.status === 'rejected' && request.rejectionReason && (
+                        <div className="mt-3 text-sm text-red-600">
+                          Rechazada: {request.rejectionReason}
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-gray-500">Enviada</p>
-                      <p className="font-medium">{formatDate(request.submittedAt)}</p>
-                    </div>
+                  );
+                })}
+
+                {requests.length === 0 && (
+                  <div className="text-center py-12 text-gray-500">
+                    <Clock className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>No hay solicitudes de tiempo libre registradas para {selectedYear}</p>
                   </div>
-
-                  {request.description && (
-                    <div className="mt-3">
-                      <p className="text-gray-500 text-sm">Descripción</p>
-                      <p className="text-sm">{request.description}</p>
-                    </div>
-                  )}
-
-                  {request.status === 'pending' && (
-                    <div className="mt-4 flex space-x-2">
-                      <Button
-                        size="sm"
-                        onClick={() => approveRequestMutation.mutate({ id: request.id, action: 'approve' })}
-                        disabled={approveRequestMutation.isPending}
-                      >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Aprobar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => approveRequestMutation.mutate({ id: request.id, action: 'reject', rejectionReason: 'Rechazada por administrador' })}
-                        disabled={approveRequestMutation.isPending}
-                      >
-                        <XCircle className="h-4 w-4 mr-1" />
-                        Rechazar
-                      </Button>
-                    </div>
-                  )}
-
-                  {request.status === 'approved' && request.approvedAt && (
-                    <div className="mt-3 text-sm text-green-600">
-                      Aprobada el {formatDate(request.approvedAt)} por {request.approverName}
-                    </div>
-                  )}
-
-                  {request.status === 'rejected' && request.rejectionReason && (
-                    <div className="mt-3 text-sm text-red-600">
-                      Rechazada: {request.rejectionReason}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {requests.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                No hay solicitudes de tiempo libre registradas
+                )}
               </div>
             )}
-          </div>
-        </CardContent>
-      </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </AdminLayout>
   );
