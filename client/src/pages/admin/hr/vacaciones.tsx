@@ -151,7 +151,11 @@ export default function VacacionesPage() {
   });
 
   // Obtener departamentos únicos para el filtro
-  const departments = [...new Set(employees.map((emp: any) => emp.department).filter(Boolean))].sort();
+  const departments = employees
+    .map((emp: any) => emp.department)
+    .filter((dept: any) => dept && dept.toString().trim() !== '')
+    .filter((dept: any, index: number, arr: any[]) => arr.indexOf(dept) === index)
+    .sort();
 
   // Mutación para crear solicitud
   const createRequestMutation = useMutation({
@@ -408,9 +412,9 @@ export default function VacacionesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos los departamentos</SelectItem>
-                    {departments.map(dept => (
-                      <SelectItem key={dept} value={dept}>
-                        {dept}
+                    {departments.map((dept: string) => (
+                      <SelectItem key={dept} value={dept || 'unknown'}>
+                        {dept || 'Sin departamento'}
                       </SelectItem>
                     ))}
                   </SelectContent>
