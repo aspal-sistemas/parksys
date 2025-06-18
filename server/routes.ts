@@ -31,6 +31,7 @@ import directRouter from "./directRoutes";
 import { registerConcessionRoutes } from "./concession-routes";
 import { registerConcessionContractsRoutes } from "./concession-contracts-routes";
 import { registerUsersConcessionairesRoutes } from "./users-concessionaires-routes";
+import { registerConcessionairesRoutes } from "./concessionaires-routes";
 import { registerConcessionLocationsRoutes } from "./concession-locations-routes";
 import { registerConcessionPaymentsRoutes } from "./concession-payments-routes";
 import { registerConcessionEvaluationRoutes } from "./concession-evaluations-routes";
@@ -223,6 +224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerConcessionRoutes(app, apiRouter, isAuthenticated);
   registerConcessionContractsRoutes(app, apiRouter, isAuthenticated);
   registerUsersConcessionairesRoutes(app, apiRouter, isAuthenticated);
+  registerConcessionairesRoutes(app, apiRouter, isAuthenticated);
   registerConcessionLocationsRoutes(app, apiRouter, isAuthenticated);
   registerConcessionPaymentsRoutes(app, apiRouter, isAuthenticated);
   registerConcessionEvaluationRoutes(app, apiRouter, isAuthenticated);
