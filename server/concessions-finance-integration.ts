@@ -246,6 +246,156 @@ export async function deleteFinanceIncomeFromConcessionPayment(paymentId: number
 }
 
 /**
+ * Integración automática: Crear ingreso en Finanzas cuando se crea un contrato de concesión
+ */
+export async function createFinanceIncomeFromConcessionContract(contractData: any) {
+  try {
+    console.log("🏪 Iniciando integración Contrato → Finanzas:", contractData.id);
+    
+    // Obtener información completa del contrato
+    const contractDetails = await db.execute(sql`
+      SELECT 
+        cc.*,
+        p.name as park_name,
+        cp.user_id as concessionaire_user_id,
+        u.full_name as concessionaire_name,
+        ct.name as concession_type_name
+      FROM concession_contracts cc
+      LEFT JOIN parks p ON cc.park_id = p.id
+      LEFT JOIN concessionaire_profiles cp ON cc.concessionaire_id = cp.id
+      LEFT JOIN users u ON cp.user_id = u.id
+      LEFT JOIN concession_types ct ON cc.concession_type_id = ct.id
+      WHERE cc.id = ${contractData.id}
+    `);
+
+    if (contractDetails.rows.length === 0) {
+      throw new Error("Contrato de concesión no encontrado");
+    }
+
+    const contract = contractDetails.rows[0];
+
+    // Solo crear ingreso si el contrato está activo o pendiente
+    if (contract.status !== 'active' && contract.status !== 'pending') {
+      console.log("⏳ Contrato no activo, no se creará ingreso financiero");
+      return;
+    }
+
+    // Determinar categoría de ingreso según tipo de concesión
+    let categoryCode = 'ING-CONC-001'; // Código por defecto
+    let categoryName = 'Ingresos por Concesiones';
+    
+    if (contract.concession_type_name) {
+      switch (contract.concession_type_name.toLowerCase()) {
+        case 'restaurante':
+        case 'cafetería':
+          categoryCode = 'ING-CONC-REST';
+          categoryName = 'Ingresos por Concesiones - Restaurantes';
+          break;
+        case 'tienda':
+        case 'comercio':
+          categoryCode = 'ING-CONC-COM';
+          categoryName = 'Ingresos por Concesiones - Comercio';
+          break;
+        case 'deportivo':
+        case 'recreativo':
+          categoryCode = 'ING-CONC-DEP';
+          categoryName = 'Ingresos por Concesiones - Deportivas';
+          break;
+        default:
+          categoryCode = 'ING-CONC-001';
+          categoryName = 'Ingresos por Concesiones - General';
+      }
+    }
+
+    // Verificar/crear categoría de ingreso
+    const categoryResult = await db.execute(sql`
+      SELECT id FROM income_categories 
+      WHERE code = ${categoryCode}
+    `);
+
+    let categoryId;
+    if (categoryResult.rows.length === 0) {
+      // Crear nueva categoría
+      const newCategory = await db.execute(sql`
+        INSERT INTO income_categories (code, name, description, is_active, level)
+        VALUES (${categoryCode}, ${categoryName}, 'Ingresos generados por concesiones en parques', true, 2)
+        RETURNING id
+      `);
+      categoryId = newCategory.rows[0].id;
+      console.log("📊 Nueva categoría de ingreso creada:", categoryName);
+    } else {
+      categoryId = categoryResult.rows[0].id;
+    }
+
+    // Crear el ingreso en actual_incomes
+    const incomeResult = await db.execute(sql`
+      INSERT INTO actual_incomes (
+        category_id,
+        amount,
+        date,
+        concept,
+        description,
+        park_id,
+        municipality_id,
+        payment_method,
+        notes,
+        
+        -- Campos de integración
+        source_module,
+        source_id,
+        source_table,
+        integration_status,
+        
+        created_at,
+        updated_at
+      )
+      VALUES (
+        ${categoryId},
+        ${contract.fee},
+        ${contract.start_date},
+        ${'Concesión - ' + (contract.concessionaire_name || 'Concesionario')},
+        ${`Ingreso por contrato de concesión - ${contract.concessionaire_name || 'Concesionario'} (${contract.concession_type_name || 'General'})`},
+        ${contract.park_id},
+        1, -- Municipality ID por defecto
+        'transferencia',
+        ${`Integración automática desde concesiones. Contrato ID: ${contract.id}`},
+        
+        -- Integración
+        'concessions',
+        ${contract.id},
+        'concession_contracts',
+        'synchronized',
+        
+        NOW(),
+        NOW()
+      )
+      RETURNING *
+    `);
+
+    const createdIncome = incomeResult.rows[0];
+    
+    console.log("💰 Ingreso financiero creado automáticamente:", {
+      financeId: createdIncome.id,
+      amount: contract.fee,
+      category: categoryName,
+      park: contract.park_name,
+      concessionaire: contract.concessionaire_name
+    });
+
+    return {
+      success: true,
+      financeIncomeId: createdIncome.id,
+      amount: contract.fee,
+      category: categoryName
+    };
+
+  } catch (error) {
+    console.error("❌ Error en integración Contrato → Finanzas:", error);
+    throw error;
+  }
+}
+
+/**
  * Registrar rutas para gestión de integraciones financieras de concesiones
  */
 export function registerConcessionFinanceIntegrationRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
@@ -315,6 +465,47 @@ export function registerConcessionFinanceIntegrationRoutes(app: any, apiRouter: 
     } catch (error) {
       console.error("Error obteniendo dashboard de integración:", error);
       res.status(500).json({ message: "Error obteniendo dashboard de integración" });
+    }
+  });
+
+  // Sincronización manual de contratos existentes
+  apiRouter.post("/concessions-finance/sync", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      console.log("🔄 Iniciando sincronización de contratos de concesión...");
+
+      // Obtener todos los contratos activos/pendientes sin ingreso financiero asociado
+      const contractsResult = await db.execute(sql`
+        SELECT cc.* FROM concession_contracts cc
+        LEFT JOIN actual_incomes ai ON ai.source_module = 'concessions' 
+          AND ai.source_id = cc.id 
+          AND ai.source_table = 'concession_contracts'
+        WHERE cc.status IN ('active', 'pending')
+        AND ai.id IS NULL
+      `);
+
+      let synchronized = 0;
+      let errors = 0;
+
+      for (const contract of contractsResult.rows) {
+        try {
+          await createFinanceIncomeFromConcessionContract(contract);
+          synchronized++;
+        } catch (error) {
+          console.error(`Error sincronizando contrato ${contract.id}:`, error);
+          errors++;
+        }
+      }
+
+      res.json({
+        message: "Sincronización de contratos completada",
+        synchronized,
+        errors,
+        total: contractsResult.rows.length
+      });
+
+    } catch (error) {
+      console.error("Error en sincronización de contratos:", error);
+      res.status(500).json({ message: "Error en sincronización de contratos" });
     }
   });
 
