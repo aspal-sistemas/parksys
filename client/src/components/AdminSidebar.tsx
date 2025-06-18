@@ -627,18 +627,18 @@ const AdminSidebar: React.FC = () => {
               Catálogo
             </NavItem>
             <NavItem 
-              href="/admin/concessions/contracts" 
-              icon={<FileText className="h-5 w-5" />}
-              active={location.startsWith('/admin/concessions/contracts')}
-            >
-              Contratos
-            </NavItem>
-            <NavItem 
               href="/admin/concessions/concessionaires" 
               icon={<Building className="h-5 w-5" />}
               active={location.startsWith('/admin/concessions/concessionaires')}
             >
               Gestión
+            </NavItem>
+            <NavItem 
+              href="/admin/concessions/contracts" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/contracts')}
+            >
+              Contratos
             </NavItem>
 
             <NavItem 

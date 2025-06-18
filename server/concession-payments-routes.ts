@@ -7,6 +7,11 @@ import { db } from "./db";
 import { sql } from "drizzle-orm";
 import path from "path";
 import fs from "fs";
+import { 
+  createFinanceIncomeFromConcessionPayment, 
+  updateFinanceIncomeFromConcessionPayment, 
+  deleteFinanceIncomeFromConcessionPayment 
+} from "./concessions-finance-integration";
 
 /**
  * Registra las rutas para el módulo de gestión financiera de concesiones
@@ -138,7 +143,20 @@ export function registerConcessionPaymentsRoutes(app: any, apiRouter: Router, is
         RETURNING *
       `);
 
-      res.status(201).json(result.rows[0]);
+      const createdPayment = result.rows[0];
+
+      // Integración automática con finanzas si el pago está confirmado
+      try {
+        if (status === 'paid') {
+          await createFinanceIncomeFromConcessionPayment(createdPayment);
+          console.log("✅ Integración financiera completada para pago:", createdPayment.id);
+        }
+      } catch (integrationError) {
+        console.error("⚠️ Error en integración financiera:", integrationError);
+        // No fallar la creación del pago por error de integración
+      }
+
+      res.status(201).json(createdPayment);
     } catch (error) {
       console.error("Error al crear pago de concesión:", error);
       res.status(500).json({ message: "Error al crear pago de concesión" });
@@ -192,7 +210,22 @@ export function registerConcessionPaymentsRoutes(app: any, apiRouter: Router, is
         RETURNING *
       `);
 
-      res.json(result.rows[0]);
+      const updatedPayment = result.rows[0];
+
+      // Integración automática con finanzas - actualizar ingreso existente
+      try {
+        await updateFinanceIncomeFromConcessionPayment(parseInt(id), {
+          amount,
+          payment_date: paymentDate,
+          payment_type: paymentType,
+          invoice_number: invoiceNumber
+        });
+        console.log("✅ Integración financiera actualizada para pago:", id);
+      } catch (integrationError) {
+        console.error("⚠️ Error actualizando integración financiera:", integrationError);
+      }
+
+      res.json(updatedPayment);
     } catch (error) {
       console.error("Error al actualizar pago de concesión:", error);
       res.status(500).json({ message: "Error al actualizar pago de concesión" });
@@ -220,6 +253,14 @@ export function registerConcessionPaymentsRoutes(app: any, apiRouter: Router, is
         if (fs.existsSync(invoicePath)) {
           fs.unlinkSync(invoicePath);
         }
+      }
+
+      // Integración automática con finanzas - eliminar ingreso asociado
+      try {
+        await deleteFinanceIncomeFromConcessionPayment(parseInt(id));
+        console.log("✅ Integración financiera eliminada para pago:", id);
+      } catch (integrationError) {
+        console.error("⚠️ Error eliminando integración financiera:", integrationError);
       }
 
       // Eliminar el pago
