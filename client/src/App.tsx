@@ -518,6 +518,12 @@ function Router() {
           </Suspense>
         </Route>
 
+        <Route path="/admin/concessions/hybrid-payments">
+          <Suspense fallback={<div className="p-8 text-center">Cargando sistema de cobro híbrido...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/concessions/hybrid-payments')))}
+          </Suspense>
+        </Route>
+
         {/* Rutas para el módulo financiero reestructurado */}
         <Route path="/admin/finance/dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard financiero...</div>}>
