@@ -32,8 +32,8 @@ export function registerTimeOffRoutes(app: any, apiRouter: Router, isAuthenticat
       
       let whereConditions: any[] = [];
       
-      if (status) {
-        whereConditions.push(sql`${timeOffRequests.status} = ${status}`);
+      if (status && status !== 'all') {
+        whereConditions.push(sql`${timeOffRequests.status}::text = ${status}`);
       }
       
       if (employeeId) {
