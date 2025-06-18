@@ -25,10 +25,10 @@ export function registerTimeOffRoutes(app: any, apiRouter: Router, isAuthenticat
   
   // ========== RUTAS DE SOLICITUDES DE TIEMPO LIBRE ==========
   
-  // Obtener todas las solicitudes
+  // Obtener todas las solicitudes con filtro por año
   apiRouter.get("/time-off-requests", async (req: Request, res: Response) => {
     try {
-      const { status, employeeId, type, limit = "50", offset = "0" } = req.query;
+      const { status, employeeId, type, year, limit = "50", offset = "0" } = req.query;
       
       let whereConditions: any[] = [];
       
@@ -42,6 +42,19 @@ export function registerTimeOffRoutes(app: any, apiRouter: Router, isAuthenticat
       
       if (type) {
         whereConditions.push(eq(timeOffRequests.requestType, type as any));
+      }
+      
+      // Filtro por año
+      if (year) {
+        const selectedYear = parseInt(year as string);
+        const startOfYear = new Date(selectedYear, 0, 1).toISOString().split('T')[0];
+        const endOfYear = new Date(selectedYear, 11, 31).toISOString().split('T')[0];
+        whereConditions.push(
+          and(
+            gte(timeOffRequests.startDate, startOfYear),
+            lte(timeOffRequests.startDate, endOfYear)
+          )
+        );
       }
       
       const requests = await db
