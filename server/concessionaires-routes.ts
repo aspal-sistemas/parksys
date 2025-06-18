@@ -15,7 +15,7 @@ export function registerConcessionairesRoutes(app: any, apiRouter: Router, isAut
   apiRouter.get("/concessionaires", async (req: Request, res: Response) => {
     try {
       const users = await db.query.users.findMany({
-        where: eq(schema.users.role, "concessionaire"),
+        where: eq(schema.users.role, "concesionario"),
         with: {
           concessionaireProfile: true
         }
