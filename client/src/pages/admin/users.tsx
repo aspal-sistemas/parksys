@@ -24,7 +24,11 @@ import {
   ArrowUp,
   ArrowDown,
   Filter,
-  RotateCcw
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 import UserAvatar from '@/components/UserAvatar';
 import UserProfileImage from '@/components/UserProfileImage';
@@ -1198,7 +1202,12 @@ const AdminUsers = () => {
   const [sortField, setSortField] = useState<keyof User>('id');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage] = useState(10);
 
   // Fetch users
   const {
@@ -1432,8 +1441,10 @@ const AdminUsers = () => {
   const clearFilters = () => {
     setSearchQuery('');
     setRoleFilter('all');
+    setStatusFilter('all');
     setSortField('id');
     setSortDirection('asc');
+    setCurrentPage(1);
   };
 
   // Filter and sort users
@@ -1448,7 +1459,31 @@ const AdminUsers = () => {
       
       const matchesRole = roleFilter === 'all' || !roleFilter || user.role === roleFilter;
       
-      return matchesSearch && matchesRole;
+      // Filtro por estado/tipo de usuario
+      let matchesStatus = true;
+      if (statusFilter !== 'all') {
+        switch (statusFilter) {
+          case 'admin':
+            matchesStatus = ['admin', 'director'].includes(user.role);
+            break;
+          case 'staff':
+            matchesStatus = ['manager', 'supervisor', 'guardaparques', 'guardia'].includes(user.role);
+            break;
+          case 'community':
+            matchesStatus = ['voluntario', 'instructor', 'ciudadano'].includes(user.role);
+            break;
+          case 'business':
+            matchesStatus = user.role === 'concesionario';
+            break;
+          case 'active':
+            matchesStatus = user.createdAt ? new Date(user.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) : false;
+            break;
+          default:
+            matchesStatus = true;
+        }
+      }
+      
+      return matchesSearch && matchesRole && matchesStatus;
     })
     .sort((a: User, b: User) => {
       const aValue = a[sortField];
@@ -1463,6 +1498,38 @@ const AdminUsers = () => {
       
       return sortDirection === 'asc' ? comparison : -comparison;
     });
+
+  // Paginación
+  const totalUsers = filteredAndSortedUsers.length;
+  const totalPages = Math.ceil(totalUsers / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
+  const currentUsers = filteredAndSortedUsers.slice(startIndex, endIndex);
+
+  // Funciones de paginación
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handleFirstPage = () => {
+    setCurrentPage(1);
+  };
+
+  const handleLastPage = () => {
+    setCurrentPage(totalPages);
+  };
 
   // Format date
   const formatDate = (date: Date | string | null) => {
