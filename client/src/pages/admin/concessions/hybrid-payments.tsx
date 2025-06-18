@@ -117,7 +117,7 @@ export default function HybridPaymentsPage() {
   });
 
   // Payment calculation
-  const { data: paymentCalculation, refetch: refetchCalculation } = useQuery({
+  const { data: paymentCalculation, refetch: refetchCalculation } = useQuery<any>({
     queryKey: ["/api/hybrid-payments/calculate", selectedContract, selectedConfig],
     enabled: !!selectedContract && !!selectedConfig,
   });
