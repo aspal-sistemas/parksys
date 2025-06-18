@@ -336,18 +336,8 @@ export async function createFinanceIncomeFromConcessionContract(contractData: an
         concept,
         description,
         park_id,
-        municipality_id,
-        payment_method,
-        notes,
-        
-        -- Campos de integración
-        source_module,
-        source_id,
-        source_table,
-        integration_status,
-        
-        created_at,
-        updated_at
+        month,
+        year
       )
       VALUES (
         ${categoryId},
@@ -356,18 +346,8 @@ export async function createFinanceIncomeFromConcessionContract(contractData: an
         ${'Concesión - ' + (contract.concessionaire_name || 'Concesionario')},
         ${`Ingreso por contrato de concesión - ${contract.concessionaire_name || 'Concesionario'} (${contract.concession_type_name || 'General'})`},
         ${contract.park_id},
-        1, -- Municipality ID por defecto
-        'transferencia',
-        ${`Integración automática desde concesiones. Contrato ID: ${contract.id}`},
-        
-        -- Integración
-        'concessions',
-        ${contract.id},
-        'concession_contracts',
-        'synchronized',
-        
-        NOW(),
-        NOW()
+        ${new Date(contract.start_date).getMonth() + 1},
+        ${new Date(contract.start_date).getFullYear()}
       )
       RETURNING *
     `);
