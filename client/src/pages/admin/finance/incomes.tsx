@@ -57,8 +57,9 @@ const IncomesPage = () => {
   const itemsPerPage = 10;
   const { toast } = useToast();
 
-  const { data: incomes, isLoading: incomesLoading } = useQuery({
+  const { data: incomes, isLoading: incomesLoading, refetch: refetchIncomes } = useQuery({
     queryKey: ["/api/actual-incomes"],
+    staleTime: 0, // Always refetch to ensure fresh data
   });
 
   const { data: incomeCategories, isLoading: categoriesLoading } = useQuery({
@@ -309,14 +310,24 @@ const IncomesPage = () => {
             </div>
           </div>
           
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Nuevo Ingreso
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => refetchIncomes()}
+              className="flex items-center gap-2"
+            >
+              <Loader2 className={`h-4 w-4 ${incomesLoading ? 'animate-spin' : ''}`} />
+              Actualizar
+            </Button>
+            
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Nuevo Ingreso
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>Registrar Nuevo Ingreso</DialogTitle>
                 <DialogDescription>
