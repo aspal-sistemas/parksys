@@ -28,12 +28,12 @@ export function registerTimeOffRoutes(app: any, apiRouter: Router, isAuthenticat
   // Obtener todas las solicitudes con filtro por año
   apiRouter.get("/time-off-requests", async (req: Request, res: Response) => {
     try {
-      const { status, employeeId, type, year, limit = "50", offset = "0" } = req.query;
+      const { status, employeeId, type, year, month, name, department, limit = "50", offset = "0" } = req.query;
       
       let whereConditions: any[] = [];
       
       if (status) {
-        whereConditions.push(eq(timeOffRequests.status, status as string));
+        whereConditions.push(sql`${timeOffRequests.status} = ${status}`);
       }
       
       if (employeeId) {
@@ -69,6 +69,18 @@ export function registerTimeOffRoutes(app: any, apiRouter: Router, isAuthenticat
             )
           );
         }
+      }
+      
+      // Filtro por nombre del empleado
+      if (name) {
+        whereConditions.push(
+          sql`LOWER(${employees.fullName}) LIKE LOWER(${'%' + name + '%'})`
+        );
+      }
+      
+      // Filtro por departamento
+      if (department) {
+        whereConditions.push(eq(employees.department, department as string));
       }
       
       const requests = await db
@@ -257,7 +269,7 @@ export function registerTimeOffRoutes(app: any, apiRouter: Router, isAuthenticat
   // Obtener balances de vacaciones
   apiRouter.get("/vacation-balances", async (req: Request, res: Response) => {
     try {
-      const { employeeId, year } = req.query;
+      const { employeeId, year, month, name, department } = req.query;
       
       let whereConditions: any[] = [];
       
@@ -267,6 +279,18 @@ export function registerTimeOffRoutes(app: any, apiRouter: Router, isAuthenticat
       
       if (year) {
         whereConditions.push(eq(vacationBalances.year, parseInt(year as string)));
+      }
+      
+      // Filtro por nombre del empleado
+      if (name) {
+        whereConditions.push(
+          sql`LOWER(${employees.fullName}) LIKE LOWER(${'%' + name + '%'})`
+        );
+      }
+      
+      // Filtro por departamento
+      if (department) {
+        whereConditions.push(eq(employees.department, department as string));
       }
       
       const balances = await db
