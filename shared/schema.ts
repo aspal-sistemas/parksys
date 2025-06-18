@@ -2314,17 +2314,103 @@ export const insertContractAuthorizedServiceSchema = createInsertSchema(contract
 
 export const insertContractIncomeReportSchema = createInsertSchema(contractIncomeReports).omit({
   id: true,
-  submittedAt: true,
   createdAt: true,
-  updatedAt: true
+  updatedAt: true,
+  submittedAt: true
 });
 
 export const insertContractMonthlyPaymentSchema = createInsertSchema(contractMonthlyPayments).omit({
   id: true,
-  calculatedAt: true,
   createdAt: true,
-  updatedAt: true
+  updatedAt: true,
+  calculatedAt: true
 });
+
+// Tipos TypeScript para el sistema de cobro híbrido
+export type ContractPaymentConfig = typeof contractPaymentConfigs.$inferSelect;
+export type InsertContractPaymentConfig = z.infer<typeof insertContractPaymentConfigSchema>;
+
+export type ContractCharge = typeof contractCharges.$inferSelect;
+export type InsertContractCharge = z.infer<typeof insertContractChargeSchema>;
+
+export type ContractInvestment = typeof contractInvestments.$inferSelect;
+export type InsertContractInvestment = z.infer<typeof insertContractInvestmentSchema>;
+
+export type ContractBonus = typeof contractBonuses.$inferSelect;
+export type InsertContractBonus = z.infer<typeof insertContractBonusSchema>;
+
+export type ContractAuthorizedService = typeof contractAuthorizedServices.$inferSelect;
+export type InsertContractAuthorizedService = z.infer<typeof insertContractAuthorizedServiceSchema>;
+
+export type ContractIncomeReport = typeof contractIncomeReports.$inferSelect;
+export type InsertContractIncomeReport = z.infer<typeof insertContractIncomeReportSchema>;
+
+export type ContractMonthlyPayment = typeof contractMonthlyPayments.$inferSelect;
+export type InsertContractMonthlyPayment = z.infer<typeof insertContractMonthlyPaymentSchema>;
+
+// Relaciones para el sistema de cobro híbrido
+export const contractPaymentConfigsRelations = relations(contractPaymentConfigs, ({ one, many }) => ({
+  contract: one(concessionContracts, {
+    fields: [contractPaymentConfigs.contractId],
+    references: [concessionContracts.id]
+  }),
+  charges: many(contractCharges)
+}));
+
+export const contractChargesRelations = relations(contractCharges, ({ one }) => ({
+  paymentConfig: one(contractPaymentConfigs, {
+    fields: [contractCharges.paymentConfigId],
+    references: [contractPaymentConfigs.id]
+  })
+}));
+
+export const contractInvestmentsRelations = relations(contractInvestments, ({ one }) => ({
+  contract: one(concessionContracts, {
+    fields: [contractInvestments.contractId],
+    references: [concessionContracts.id]
+  })
+}));
+
+export const contractBonusesRelations = relations(contractBonuses, ({ one }) => ({
+  contract: one(concessionContracts, {
+    fields: [contractBonuses.contractId],
+    references: [concessionContracts.id]
+  })
+}));
+
+export const contractAuthorizedServicesRelations = relations(contractAuthorizedServices, ({ one }) => ({
+  contract: one(concessionContracts, {
+    fields: [contractAuthorizedServices.contractId],
+    references: [concessionContracts.id]
+  })
+}));
+
+export const contractIncomeReportsRelations = relations(contractIncomeReports, ({ one, many }) => ({
+  contract: one(concessionContracts, {
+    fields: [contractIncomeReports.contractId],
+    references: [concessionContracts.id]
+  }),
+  verifiedByUser: one(users, {
+    fields: [contractIncomeReports.verifiedBy],
+    references: [users.id]
+  }),
+  monthlyPayments: many(contractMonthlyPayments)
+}));
+
+export const contractMonthlyPaymentsRelations = relations(contractMonthlyPayments, ({ one }) => ({
+  contract: one(concessionContracts, {
+    fields: [contractMonthlyPayments.contractId],
+    references: [concessionContracts.id]
+  }),
+  incomeReport: one(contractIncomeReports, {
+    fields: [contractMonthlyPayments.incomeReportId],
+    references: [contractIncomeReports.id]
+  }),
+  calculatedByUser: one(users, {
+    fields: [contractMonthlyPayments.calculatedBy],
+    references: [users.id]
+  })
+}));
 
 // Tipos TypeScript para el sistema de cobro híbrido
 export type ContractPaymentConfig = typeof contractPaymentConfigs.$inferSelect;

@@ -358,7 +358,17 @@ export function registerHybridPaymentRoutes(app: any, apiRouter: Router, isAuthe
       const contractId = parseInt(req.params.contractId);
       const { year, month } = req.query;
       
-      let query = db
+      let whereConditions = [eq(contractIncomeReports.contractId, contractId)];
+      
+      if (year) {
+        whereConditions.push(eq(contractIncomeReports.reportYear, parseInt(year as string)));
+      }
+      
+      if (month) {
+        whereConditions.push(eq(contractIncomeReports.reportMonth, parseInt(month as string)));
+      }
+
+      const query = db
         .select({
           report: contractIncomeReports,
           verifiedByUser: {
@@ -369,15 +379,7 @@ export function registerHybridPaymentRoutes(app: any, apiRouter: Router, isAuthe
         })
         .from(contractIncomeReports)
         .leftJoin(users, eq(contractIncomeReports.verifiedBy, users.id))
-        .where(eq(contractIncomeReports.contractId, contractId));
-      
-      if (year) {
-        query = query.where(eq(contractIncomeReports.reportYear, parseInt(year as string)));
-      }
-      
-      if (month) {
-        query = query.where(eq(contractIncomeReports.reportMonth, parseInt(month as string)));
-      }
+        .where(and(...whereConditions))
       
       const reports = await query.orderBy(
         desc(contractIncomeReports.reportYear),
@@ -476,23 +478,23 @@ export function registerHybridPaymentRoutes(app: any, apiRouter: Router, isAuthe
         switch (charge.chargeType) {
           case 'fixed':
             if (charge.fixedAmount) {
-              fixedAmount += parseFloat(charge.fixedAmount);
+              fixedAmount += parseFloat(charge.fixedAmount.toString());
             }
             break;
           case 'percentage':
             if (charge.percentage && incomeReport) {
-              percentageAmount += (parseFloat(incomeReport.grossIncome) * parseFloat(charge.percentage)) / 100;
+              percentageAmount += (parseFloat(incomeReport.grossIncome.toString()) * parseFloat(charge.percentage.toString())) / 100;
             }
             break;
           case 'per_unit':
-            if (charge.perUnitAmount && incomeReport?.unitsSold) {
+            if (charge.perUnitAmount && incomeReport?.unitsSold && charge.unitType) {
               const units = (incomeReport.unitsSold as any)[charge.unitType] || 0;
-              perUnitAmount += units * parseFloat(charge.perUnitAmount);
+              perUnitAmount += units * parseFloat(charge.perUnitAmount.toString());
             }
             break;
           case 'per_m2':
             if (charge.perM2Amount && charge.spaceM2) {
-              spaceAmount += parseFloat(charge.spaceM2) * parseFloat(charge.perM2Amount);
+              spaceAmount += parseFloat(charge.spaceM2.toString()) * parseFloat(charge.perM2Amount.toString());
             }
             break;
         }
@@ -506,7 +508,7 @@ export function registerHybridPaymentRoutes(app: any, apiRouter: Router, isAuthe
       let finalAmount = subtotal;
 
       if (config.hasMinimumGuarantee && config.minimumGuaranteeAmount) {
-        const minimumAmount = parseFloat(config.minimumGuaranteeAmount);
+        const minimumAmount = parseFloat(config.minimumGuaranteeAmount.toString());
         if (subtotal < minimumAmount) {
           minimumGuaranteeApplied = true;
           minimumGuaranteeAdjustment = minimumAmount - subtotal;
@@ -565,7 +567,13 @@ export function registerHybridPaymentRoutes(app: any, apiRouter: Router, isAuthe
       const contractId = parseInt(req.params.contractId);
       const { year } = req.query;
       
-      let query = db
+      let whereConditions = [eq(contractMonthlyPayments.contractId, contractId)];
+      
+      if (year) {
+        whereConditions.push(eq(contractMonthlyPayments.paymentYear, parseInt(year as string)));
+      }
+
+      const query = db
         .select({
           payment: contractMonthlyPayments,
           incomeReport: contractIncomeReports,
@@ -578,11 +586,7 @@ export function registerHybridPaymentRoutes(app: any, apiRouter: Router, isAuthe
         .from(contractMonthlyPayments)
         .leftJoin(contractIncomeReports, eq(contractMonthlyPayments.incomeReportId, contractIncomeReports.id))
         .leftJoin(users, eq(contractMonthlyPayments.calculatedBy, users.id))
-        .where(eq(contractMonthlyPayments.contractId, contractId));
-      
-      if (year) {
-        query = query.where(eq(contractMonthlyPayments.paymentYear, parseInt(year as string)));
-      }
+        .where(and(...whereConditions))
       
       const payments = await query.orderBy(
         desc(contractMonthlyPayments.paymentYear),

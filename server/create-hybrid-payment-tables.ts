@@ -228,7 +228,7 @@ export async function createHybridPaymentTables() {
 }
 
 // Ejecutar el script si se ejecuta directamente
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   createHybridPaymentTables()
     .then(() => {
       console.log("Script de creación de tablas de cobro híbrido completado");
