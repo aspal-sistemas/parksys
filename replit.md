@@ -95,6 +95,7 @@ The system uses environment variables for database connection and supports both 
 - June 18, 2025. Sistema completo de integración Concesiones → Finanzas implementado - Patrón idéntico al exitoso HR/Nómina aplicado a ingresos por concesiones. Automatización completa de sincronización entre módulos con categorización inteligente y trazabilidad total
 - June 18, 2025. Integración Users ↔ Concesionarios completada y funcional - Usuarios con rol "concesionario" aparecen automáticamente en /admin/concessions/concessionaires. Endpoint /api/concessionaires operativo con formateo correcto de datos (name/fullName). Relaciones Drizzle corregidas en shared/schema.ts. Sistema totalmente integrado entre módulos
 - June 18, 2025. Sistema automático Concesiones → Finanzas implementado y funcional - Contratos de concesión generan automáticamente ingresos en actual_incomes. Hook automático en creación de contratos activo. Categorización inteligente por tipo de concesión. Trazabilidad completa con campos de integración. Flujo completo: Contrato → Ingreso Automático → Flujo de Efectivo
+- June 18, 2025. Integración Concesiones → Finanzas completamente operativa - Hook automático corregido para nuevos contratos. Sistema probado con 5 contratos ($10K, $30K, $15K, $25K, $20K) y sus correspondientes ingresos financieros (IDs 37-41). Paginación implementada en página de ingresos (10 registros por página). Sistema robusto que mantiene la creación de contratos aún si falla la integración financiera
 
 ## Recent Features
 
