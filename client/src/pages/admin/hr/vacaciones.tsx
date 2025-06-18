@@ -11,7 +11,8 @@ import {
   CheckCircle,
   XCircle,
   Filter,
-  BarChart3
+  BarChart3,
+  X
 } from "lucide-react";
 
 import { AdminLayout } from "@/components/AdminLayout";
@@ -21,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -69,7 +71,7 @@ export default function VacacionesPage() {
   // Estados para filtros
   const [searchName, setSearchName] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("all");
   const [hireDateFrom, setHireDateFrom] = useState("");
   const [hireDateTo, setHireDateTo] = useState("");
   
@@ -82,7 +84,7 @@ export default function VacacionesPage() {
 
   // Opciones de meses
   const monthOptions = [
-    { value: "", label: "Todos los meses" },
+    { value: "all", label: "Todos los meses" },
     { value: "1", label: "Enero" },
     { value: "2", label: "Febrero" },
     { value: "3", label: "Marzo" },
@@ -294,7 +296,7 @@ export default function VacacionesPage() {
                     <SelectValue placeholder="Todos los departamentos" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos los departamentos</SelectItem>
+                    <SelectItem value="all">Todos los departamentos</SelectItem>
                     {departments.map(dept => (
                       <SelectItem key={dept} value={dept}>
                         {dept}

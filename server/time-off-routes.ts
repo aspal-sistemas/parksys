@@ -44,17 +44,31 @@ export function registerTimeOffRoutes(app: any, apiRouter: Router, isAuthenticat
         whereConditions.push(eq(timeOffRequests.requestType, type as any));
       }
       
-      // Filtro por año
+      // Filtro por año y mes
       if (year) {
         const selectedYear = parseInt(year as string);
-        const startOfYear = new Date(selectedYear, 0, 1).toISOString().split('T')[0];
-        const endOfYear = new Date(selectedYear, 11, 31).toISOString().split('T')[0];
-        whereConditions.push(
-          and(
-            gte(timeOffRequests.startDate, startOfYear),
-            lte(timeOffRequests.startDate, endOfYear)
-          )
-        );
+        if (month) {
+          // Filtro específico por mes
+          const selectedMonth = parseInt(month as string);
+          const startOfMonth = new Date(selectedYear, selectedMonth - 1, 1).toISOString().split('T')[0];
+          const endOfMonth = new Date(selectedYear, selectedMonth, 0).toISOString().split('T')[0];
+          whereConditions.push(
+            and(
+              gte(timeOffRequests.startDate, startOfMonth),
+              lte(timeOffRequests.startDate, endOfMonth)
+            )
+          );
+        } else {
+          // Solo filtro por año
+          const startOfYear = new Date(selectedYear, 0, 1).toISOString().split('T')[0];
+          const endOfYear = new Date(selectedYear, 11, 31).toISOString().split('T')[0];
+          whereConditions.push(
+            and(
+              gte(timeOffRequests.startDate, startOfYear),
+              lte(timeOffRequests.startDate, endOfYear)
+            )
+          );
+        }
       }
       
       const requests = await db
