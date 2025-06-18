@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
+import { AdminLayout } from "@/components/AdminLayout";
 
 const timeRecordFormSchema = z.object({
   employeeId: z.string().min(1, "Selecciona un empleado"),
@@ -191,20 +192,21 @@ export default function ControlHorasPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Control de Horas Trabajadas</h1>
-          <p className="text-gray-600">Gestiona registros de entrada, salida y control de asistencias</p>
-        </div>
-        <Dialog open={isRecordDialogOpen} onOpenChange={setIsRecordDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nuevo Registro
-            </Button>
-          </DialogTrigger>
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Control de Horas Trabajadas</h1>
+            <p className="text-gray-600">Gestiona registros de entrada, salida y control de asistencias</p>
+          </div>
+          <Dialog open={isRecordDialogOpen} onOpenChange={setIsRecordDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Nuevo Registro
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Registrar Tiempo</DialogTitle>
@@ -600,6 +602,7 @@ export default function ControlHorasPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
