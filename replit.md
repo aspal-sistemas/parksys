@@ -94,6 +94,7 @@ The system uses environment variables for database connection and supports both 
 - June 17, 2025. Sistema CRUD completo para categorías financieras implementado - Funcionalidad completa de crear, leer, actualizar y eliminar categorías de ingresos y egresos. Protección de integridad que previene eliminación de categorías en uso. Interface con botones de edición y eliminación integrados
 - June 18, 2025. Sistema completo de integración Concesiones → Finanzas implementado - Patrón idéntico al exitoso HR/Nómina aplicado a ingresos por concesiones. Automatización completa de sincronización entre módulos con categorización inteligente y trazabilidad total
 - June 18, 2025. Integración Users ↔ Concesionarios completada y funcional - Usuarios con rol "concesionario" aparecen automáticamente en /admin/concessions/concessionaires. Endpoint /api/concessionaires operativo con formateo correcto de datos (name/fullName). Relaciones Drizzle corregidas en shared/schema.ts. Sistema totalmente integrado entre módulos
+- June 18, 2025. Sistema automático Concesiones → Finanzas implementado y funcional - Contratos de concesión generan automáticamente ingresos en actual_incomes. Hook automático en creación de contratos activo. Categorización inteligente por tipo de concesión. Trazabilidad completa con campos de integración. Flujo completo: Contrato → Ingreso Automático → Flujo de Efectivo
 
 ## Recent Features
 

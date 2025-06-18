@@ -193,6 +193,16 @@ export function registerConcessionContractsRoutes(app: any, apiRouter: Router, i
         })
         .returning();
 
+      // Integración automática con el sistema financiero
+      try {
+        const { createFinanceIncomeFromConcessionContract } = await import('./concessions-finance-integration');
+        await createFinanceIncomeFromConcessionContract(newContract);
+        console.log(`💰 Ingreso financiero creado automáticamente para contrato ${newContract.id}`);
+      } catch (integrationError) {
+        console.error("Error en integración automática Concesiones → Finanzas:", integrationError);
+        // No fallar la creación del contrato por error de integración
+      }
+
       res.status(201).json(newContract);
     } catch (error) {
       console.error("Error al crear contrato de concesión:", error);
