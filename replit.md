@@ -93,7 +93,7 @@ The system uses environment variables for database connection and supports both 
 - June 17, 2025. Documentación completa de arquitectura empresarial generada - Prompt profesional para nuevos proyectos con módulos Configuration/Users/Permissions, Finance integral y HR completo. Sistema modular exportable para crear aplicaciones especializadas
 - June 17, 2025. Sistema CRUD completo para categorías financieras implementado - Funcionalidad completa de crear, leer, actualizar y eliminar categorías de ingresos y egresos. Protección de integridad que previene eliminación de categorías en uso. Interface con botones de edición y eliminación integrados
 - June 18, 2025. Sistema completo de integración Concesiones → Finanzas implementado - Patrón idéntico al exitoso HR/Nómina aplicado a ingresos por concesiones. Automatización completa de sincronización entre módulos con categorización inteligente y trazabilidad total
-- June 18, 2025. Integración Users ↔ Concesionarios completada - Usuarios con rol "concesionario" crean automáticamente perfiles en tabla de concesionarios. Columna finance_income_id agregada para integración financiera. Sistema completamente funcional entre módulos de usuarios y concesiones
+- June 18, 2025. Integración Users ↔ Concesionarios completada y funcional - Usuarios con rol "concesionario" aparecen automáticamente en /admin/concessions/concessionaires. Endpoint /api/concessionaires operativo con formateo correcto de datos (name/fullName). Relaciones Drizzle corregidas en shared/schema.ts. Sistema totalmente integrado entre módulos
 
 ## Recent Features
 
