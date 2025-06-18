@@ -21,7 +21,26 @@ export function registerConcessionairesRoutes(app: any, apiRouter: Router, isAut
         }
       });
       
-      res.json(users);
+      // Formatear la respuesta para que coincida con lo que espera el frontend
+      const formattedConcessionaires = users.map(user => ({
+        id: user.id,
+        name: user.fullName, // El frontend espera 'name' pero tenemos 'fullName'
+        fullName: user.fullName,
+        username: user.username,
+        email: user.email,
+        phone: user.phone,
+        type: user.concessionaireProfile?.type || 'persona_fisica',
+        rfc: user.concessionaireProfile?.rfc || '',
+        tax_address: user.concessionaireProfile?.taxAddress || '',
+        legal_representative: user.concessionaireProfile?.legalRepresentative || '',
+        status: user.concessionaireProfile?.status || 'pendiente',
+        registration_date: user.concessionaireProfile?.registrationDate || user.createdAt,
+        notes: user.concessionaireProfile?.notes || '',
+        created_at: user.createdAt,
+        updated_at: user.updatedAt
+      }));
+      
+      res.json(formattedConcessionaires);
     } catch (error) {
       console.error("Error al obtener concesionarios:", error);
       res.status(500).json({ message: "Error al obtener los concesionarios" });
@@ -36,7 +55,7 @@ export function registerConcessionairesRoutes(app: any, apiRouter: Router, isAut
       const user = await db.query.users.findFirst({
         where: and(
           eq(schema.users.id, parseInt(id)),
-          eq(schema.users.role, "concessionaire")
+          eq(schema.users.role, "concesionario")
         ),
         with: {
           concessionaireProfile: true
