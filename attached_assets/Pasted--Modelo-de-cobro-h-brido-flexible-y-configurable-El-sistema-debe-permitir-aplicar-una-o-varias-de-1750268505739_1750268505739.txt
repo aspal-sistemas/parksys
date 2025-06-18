@@ -1,0 +1,66 @@
+. Modelo de cobro híbrido (flexible y configurable)
+El sistema debe permitir aplicar una o varias de las siguientes formas de cobro combinadas:
+
+a. Pago fijo periódico (canon fijo)
+Debe permitir establecer un monto que se cobre cada mes, trimestre o año, independientemente del ingreso del concesionario.
+
+b. Porcentaje de ingresos (canon variable)
+Debe poder configurarse un porcentaje sobre las ventas brutas (o netas) del concesionario. El sistema debe permitir ingresar manualmente los ingresos reportados por el concesionario y, en base a ello, calcular el monto a pagar.
+
+c. Garantía mínima de pago
+Debe poder establecerse un monto mínimo garantizado mensual. Si el total del pago fijo + variable no llega a este mínimo, el sistema debe ajustarlo automáticamente.
+
+d. Cobro por servicio prestado al público
+Debe haber opción de configurar cobros por cada unidad de servicio vendido al público, por ejemplo:
+
+Un monto por cada boleto vendido
+
+Un monto por cada bicicleta rentada
+
+Un porcentaje de ingresos por venta de alimentos
+
+e. Tarifa por uso de espacio
+El sistema debe permitir calcular un cobro mensual en función de los metros cuadrados ocupados por el concesionario, con una tarifa fija por m².
+
+2. Registro de inversión inicial
+El módulo debe permitir registrar si el concesionario hará una inversión directa en infraestructura (por ejemplo, construir una cafetería, instalar juegos infantiles, mejorar senderos). Esto debe incluir:
+
+Descripción de la obra o mejora
+
+Valor estimado de la inversión
+
+Fecha límite para ejecutarla
+
+Opción de registrar si esta inversión se considerará como parte del pago del contrato (por ejemplo, amortización mensual durante cierto periodo)
+
+3. Bonificaciones y penalizaciones por desempeño
+El contrato debe incluir condiciones especiales que generen beneficios o sanciones, como por ejemplo:
+
+Bonificación por cumplir metas de mantenimiento, limpieza o actividades comunitarias
+
+Penalización por no cumplir con estándares de servicio, seguridad o reportes mensuales
+
+Estas condiciones deben poder configurarse con:
+
+Descripción
+
+Monto fijo a bonificar o penalizar
+
+Frecuencia (una sola vez, mensual o anual)
+
+4. Servicios autorizados
+Debe registrarse qué servicios puede ofrecer el concesionario (venta de comida, tours, renta de equipos, etc.) y establecer si:
+
+Se le permite cobrar directamente al público
+
+Hay un límite máximo de tarifa al público para evitar abusos
+
+5. Cálculo automático del pago mensual
+El sistema debe poder calcular el pago mensual del concesionario tomando en cuenta todos los factores anteriores:
+
+Suma de monto fijo, variable, por servicio y por espacio
+
+Aplicación automática del mínimo garantizado, si el total es menor
+
+Aplicación de bonificaciones o penalizaciones según corresponda
+

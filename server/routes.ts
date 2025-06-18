@@ -238,6 +238,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.error("Error al registrar rutas de integración Concesiones-Finanzas:", error);
   }
   
+  // Crear tablas del sistema de cobro híbrido
+  try {
+    const { createHybridPaymentTables } = await import("./create-hybrid-payment-tables");
+    await createHybridPaymentTables();
+    console.log("Tablas del sistema de cobro híbrido creadas correctamente");
+  } catch (error) {
+    console.error("Error al crear tablas del sistema de cobro híbrido:", error);
+  }
+  
+  // Registramos las rutas del sistema de cobro híbrido
+  try {
+    const { registerHybridPaymentRoutes } = await import("./hybrid-payment-routes");
+    registerHybridPaymentRoutes(app, apiRouter, isAuthenticated);
+    console.log("Rutas del sistema de cobro híbrido registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas del sistema de cobro híbrido:", error);
+  }
+  
   // Endpoints para imágenes de perfil
   // Obtener la imagen de perfil de un usuario
   apiRouter.get('/users/:id/profile-image', async (req: Request, res: Response) => {

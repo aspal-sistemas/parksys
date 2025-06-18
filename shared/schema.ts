@@ -2033,3 +2033,375 @@ export const workSchedulesRelations = relations(workSchedules, ({ one }) => ({
     references: [users.id]
   })
 }));
+
+// ========== MÓDULO DE COBRO HÍBRIDO PARA CONCESIONES ==========
+
+// Enums para el sistema de cobro híbrido
+export const paymentFrequencyEnum = pgEnum("payment_frequency", [
+  "monthly",    // Mensual
+  "quarterly",  // Trimestral
+  "biannual",   // Semestral
+  "annual"      // Anual
+]);
+
+export const chargeTypeEnum = pgEnum("charge_type", [
+  "fixed",         // Pago fijo periódico
+  "percentage",    // Porcentaje de ingresos
+  "per_unit",      // Por unidad de servicio
+  "per_m2",        // Por metro cuadrado
+  "minimum_guarantee" // Garantía mínima
+]);
+
+export const bonusTypeEnum = pgEnum("bonus_type", [
+  "bonus",    // Bonificación
+  "penalty"   // Penalización
+]);
+
+export const bonusFrequencyEnum = pgEnum("bonus_frequency", [
+  "once",     // Una sola vez
+  "monthly",  // Mensual
+  "annual"    // Anual
+]);
+
+// Tabla principal de configuración de cobro para contratos
+export const contractPaymentConfigs = pgTable("contract_payment_configs", {
+  id: serial("id").primaryKey(),
+  contractId: integer("contract_id").notNull().references(() => concessionContracts.id),
+  
+  // Configuraciones generales
+  hasFixedPayment: boolean("has_fixed_payment").default(false),
+  hasPercentagePayment: boolean("has_percentage_payment").default(false),
+  hasPerUnitPayment: boolean("has_per_unit_payment").default(false),
+  hasSpacePayment: boolean("has_space_payment").default(false),
+  hasMinimumGuarantee: boolean("has_minimum_guarantee").default(false),
+  
+  // Garantía mínima mensual
+  minimumGuaranteeAmount: decimal("minimum_guarantee_amount", { precision: 10, scale: 2 }),
+  
+  // Metadatos
+  isActive: boolean("is_active").default(true),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de cargos específicos (pago fijo, porcentaje, etc.)
+export const contractCharges = pgTable("contract_charges", {
+  id: serial("id").primaryKey(),
+  paymentConfigId: integer("payment_config_id").notNull().references(() => contractPaymentConfigs.id),
+  
+  // Tipo de cargo
+  chargeType: chargeTypeEnum("charge_type").notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  
+  // Configuración del cargo
+  fixedAmount: decimal("fixed_amount", { precision: 10, scale: 2 }),
+  percentage: decimal("percentage", { precision: 5, scale: 2 }), // Para porcentajes (ej: 15.50%)
+  perUnitAmount: decimal("per_unit_amount", { precision: 10, scale: 2 }),
+  perM2Amount: decimal("per_m2_amount", { precision: 10, scale: 2 }),
+  
+  // Frecuencia de cobro
+  frequency: paymentFrequencyEnum("frequency").notNull(),
+  
+  // Configuraciones adicionales
+  unitType: varchar("unit_type", { length: 50 }), // "boleto", "bicicleta", "alimento", etc.
+  spaceM2: decimal("space_m2", { precision: 8, scale: 2 }), // Metros cuadrados ocupados
+  
+  // Estado
+  isActive: boolean("is_active").default(true),
+  startDate: date("start_date"),
+  endDate: date("end_date"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de registro de inversión inicial
+export const contractInvestments = pgTable("contract_investments", {
+  id: serial("id").primaryKey(),
+  contractId: integer("contract_id").notNull().references(() => concessionContracts.id),
+  
+  // Detalles de la inversión
+  description: text("description").notNull(),
+  estimatedValue: decimal("estimated_value", { precision: 12, scale: 2 }).notNull(),
+  actualValue: decimal("actual_value", { precision: 12, scale: 2 }),
+  
+  // Fechas
+  deadlineDate: date("deadline_date").notNull(),
+  completedDate: date("completed_date"),
+  
+  // Amortización
+  isAmortizable: boolean("is_amortizable").default(false),
+  amortizationMonths: integer("amortization_months"),
+  monthlyAmortization: decimal("monthly_amortization", { precision: 10, scale: 2 }),
+  
+  // Estado
+  status: varchar("status", { length: 20 }).default("pending"), // pending, in_progress, completed, overdue
+  
+  // Documentación
+  documentation: text("documentation"),
+  attachments: jsonb("attachments"), // URLs de archivos adjuntos
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de bonificaciones y penalizaciones por desempeño
+export const contractBonuses = pgTable("contract_bonuses", {
+  id: serial("id").primaryKey(),
+  contractId: integer("contract_id").notNull().references(() => concessionContracts.id),
+  
+  // Tipo y descripción
+  bonusType: bonusTypeEnum("bonus_type").notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description").notNull(),
+  
+  // Configuración financiera
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  frequency: bonusFrequencyEnum("frequency").notNull(),
+  
+  // Condiciones de aplicación
+  conditions: text("conditions"), // Condiciones específicas para aplicar
+  evaluationCriteria: jsonb("evaluation_criteria"), // Criterios de evaluación
+  
+  // Estado
+  isActive: boolean("is_active").default(true),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de servicios autorizados para el concesionario
+export const contractAuthorizedServices = pgTable("contract_authorized_services", {
+  id: serial("id").primaryKey(),
+  contractId: integer("contract_id").notNull().references(() => concessionContracts.id),
+  
+  // Servicio
+  serviceName: varchar("service_name", { length: 100 }).notNull(),
+  serviceDescription: text("service_description"),
+  serviceCategory: varchar("service_category", { length: 50 }), // "comida", "tours", "renta", etc.
+  
+  // Configuración de precios
+  canChargePublic: boolean("can_charge_public").default(true),
+  maxPublicRate: decimal("max_public_rate", { precision: 10, scale: 2 }),
+  rateDescription: text("rate_description"), // Descripción de la tarifa
+  
+  // Restricciones
+  restrictions: text("restrictions"),
+  requiredPermits: text("required_permits"),
+  
+  // Estado
+  isActive: boolean("is_active").default(true),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de reportes mensuales de ingresos del concesionario
+export const contractIncomeReports = pgTable("contract_income_reports", {
+  id: serial("id").primaryKey(),
+  contractId: integer("contract_id").notNull().references(() => concessionContracts.id),
+  
+  // Período del reporte
+  reportMonth: integer("report_month").notNull(), // 1-12
+  reportYear: integer("report_year").notNull(),
+  
+  // Ingresos reportados
+  grossIncome: decimal("gross_income", { precision: 12, scale: 2 }).notNull(),
+  netIncome: decimal("net_income", { precision: 12, scale: 2 }),
+  
+  // Detalles por servicio
+  serviceBreakdown: jsonb("service_breakdown"), // Desglose por tipo de servicio
+  unitsSold: jsonb("units_sold"), // Unidades vendidas por tipo
+  
+  // Documentación de soporte
+  supportingDocuments: jsonb("supporting_documents"), // URLs de facturas, reportes, etc.
+  notes: text("notes"),
+  
+  // Control de calidad
+  isVerified: boolean("is_verified").default(false),
+  verifiedBy: integer("verified_by").references(() => users.id),
+  verifiedAt: timestamp("verified_at"),
+  
+  // Estado
+  status: varchar("status", { length: 20 }).default("submitted"), // submitted, under_review, approved, rejected
+  
+  submittedAt: timestamp("submitted_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de cálculo de pagos mensuales
+export const contractMonthlyPayments = pgTable("contract_monthly_payments", {
+  id: serial("id").primaryKey(),
+  contractId: integer("contract_id").notNull().references(() => concessionContracts.id),
+  incomeReportId: integer("income_report_id").references(() => contractIncomeReports.id),
+  
+  // Período
+  paymentMonth: integer("payment_month").notNull(),
+  paymentYear: integer("payment_year").notNull(),
+  
+  // Cálculos de pago
+  fixedAmount: decimal("fixed_amount", { precision: 10, scale: 2 }).default("0.00"),
+  percentageAmount: decimal("percentage_amount", { precision: 10, scale: 2 }).default("0.00"),
+  perUnitAmount: decimal("per_unit_amount", { precision: 10, scale: 2 }).default("0.00"),
+  spaceAmount: decimal("space_amount", { precision: 10, scale: 2 }).default("0.00"),
+  
+  // Subtotal antes de ajustes
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
+  
+  // Aplicación de garantía mínima
+  minimumGuaranteeApplied: boolean("minimum_guarantee_applied").default(false),
+  minimumGuaranteeAdjustment: decimal("minimum_guarantee_adjustment", { precision: 10, scale: 2 }).default("0.00"),
+  
+  // Bonificaciones y penalizaciones
+  bonusAmount: decimal("bonus_amount", { precision: 10, scale: 2 }).default("0.00"),
+  penaltyAmount: decimal("penalty_amount", { precision: 10, scale: 2 }).default("0.00"),
+  
+  // Amortización de inversión
+  investmentAmortization: decimal("investment_amortization", { precision: 10, scale: 2 }).default("0.00"),
+  
+  // Total final
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  
+  // Estado del pago
+  paymentStatus: varchar("payment_status", { length: 20 }).default("pending"), // pending, paid, overdue, partial
+  paidAmount: decimal("paid_amount", { precision: 10, scale: 2 }).default("0.00"),
+  paidDate: date("paid_date"),
+  
+  // Detalles del cálculo
+  calculationDetails: jsonb("calculation_details"), // JSON con el desglose completo
+  notes: text("notes"),
+  
+  // Metadatos
+  calculatedBy: integer("calculated_by").references(() => users.id),
+  calculatedAt: timestamp("calculated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Schemas de validación para el sistema de cobro híbrido
+export const insertContractPaymentConfigSchema = createInsertSchema(contractPaymentConfigs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertContractChargeSchema = createInsertSchema(contractCharges).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertContractInvestmentSchema = createInsertSchema(contractInvestments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertContractBonusSchema = createInsertSchema(contractBonuses).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertContractAuthorizedServiceSchema = createInsertSchema(contractAuthorizedServices).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertContractIncomeReportSchema = createInsertSchema(contractIncomeReports).omit({
+  id: true,
+  submittedAt: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertContractMonthlyPaymentSchema = createInsertSchema(contractMonthlyPayments).omit({
+  id: true,
+  calculatedAt: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Tipos TypeScript para el sistema de cobro híbrido
+export type ContractPaymentConfig = typeof contractPaymentConfigs.$inferSelect;
+export type InsertContractPaymentConfig = z.infer<typeof insertContractPaymentConfigSchema>;
+export type ContractCharge = typeof contractCharges.$inferSelect;
+export type InsertContractCharge = z.infer<typeof insertContractChargeSchema>;
+export type ContractInvestment = typeof contractInvestments.$inferSelect;
+export type InsertContractInvestment = z.infer<typeof insertContractInvestmentSchema>;
+export type ContractBonus = typeof contractBonuses.$inferSelect;
+export type InsertContractBonus = z.infer<typeof insertContractBonusSchema>;
+export type ContractAuthorizedService = typeof contractAuthorizedServices.$inferSelect;
+export type InsertContractAuthorizedService = z.infer<typeof insertContractAuthorizedServiceSchema>;
+export type ContractIncomeReport = typeof contractIncomeReports.$inferSelect;
+export type InsertContractIncomeReport = z.infer<typeof insertContractIncomeReportSchema>;
+export type ContractMonthlyPayment = typeof contractMonthlyPayments.$inferSelect;
+export type InsertContractMonthlyPayment = z.infer<typeof insertContractMonthlyPaymentSchema>;
+
+// Relaciones para el sistema de cobro híbrido
+export const contractPaymentConfigsRelations = relations(contractPaymentConfigs, ({ one, many }) => ({
+  contract: one(concessionContracts, {
+    fields: [contractPaymentConfigs.contractId],
+    references: [concessionContracts.id]
+  }),
+  charges: many(contractCharges)
+}));
+
+export const contractChargesRelations = relations(contractCharges, ({ one }) => ({
+  paymentConfig: one(contractPaymentConfigs, {
+    fields: [contractCharges.paymentConfigId],
+    references: [contractPaymentConfigs.id]
+  })
+}));
+
+export const contractInvestmentsRelations = relations(contractInvestments, ({ one }) => ({
+  contract: one(concessionContracts, {
+    fields: [contractInvestments.contractId],
+    references: [concessionContracts.id]
+  })
+}));
+
+export const contractBonusesRelations = relations(contractBonuses, ({ one }) => ({
+  contract: one(concessionContracts, {
+    fields: [contractBonuses.contractId],
+    references: [concessionContracts.id]
+  })
+}));
+
+export const contractAuthorizedServicesRelations = relations(contractAuthorizedServices, ({ one }) => ({
+  contract: one(concessionContracts, {
+    fields: [contractAuthorizedServices.contractId],
+    references: [concessionContracts.id]
+  })
+}));
+
+export const contractIncomeReportsRelations = relations(contractIncomeReports, ({ one, many }) => ({
+  contract: one(concessionContracts, {
+    fields: [contractIncomeReports.contractId],
+    references: [concessionContracts.id]
+  }),
+  verifiedBy: one(users, {
+    fields: [contractIncomeReports.verifiedBy],
+    references: [users.id]
+  }),
+  monthlyPayments: many(contractMonthlyPayments)
+}));
+
+export const contractMonthlyPaymentsRelations = relations(contractMonthlyPayments, ({ one }) => ({
+  contract: one(concessionContracts, {
+    fields: [contractMonthlyPayments.contractId],
+    references: [concessionContracts.id]
+  }),
+  incomeReport: one(contractIncomeReports, {
+    fields: [contractMonthlyPayments.incomeReportId],
+    references: [contractIncomeReports.id]
+  }),
+  calculatedBy: one(users, {
+    fields: [contractMonthlyPayments.calculatedBy],
+    references: [users.id]
+  })
+}));
