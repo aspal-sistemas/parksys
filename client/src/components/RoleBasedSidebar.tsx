@@ -466,13 +466,7 @@ const AdminSidebarContent: React.FC<{ location: string; defaultAccordion: string
       >
         Concesionarios
       </NavItem>
-      <NavItem 
-        href="/admin/concessions/control" 
-        icon={<Shield className="h-5 w-5" />}
-        active={location.startsWith('/admin/concessions/control')}
-      >
-        Control
-      </NavItem>
+
       <NavItem 
         href="/admin/concessions/reports" 
         icon={<BarChart className="h-5 w-5" />}

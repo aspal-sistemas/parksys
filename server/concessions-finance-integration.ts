@@ -57,7 +57,7 @@ export async function createFinanceIncomeFromConcessionPayment(paymentData: any)
     let categoryCode = 'ING-CONC-001'; // Código por defecto
     let categoryName = 'Ingresos por Concesiones';
     
-    if (payment.concession_type_name) {
+    if (payment.concession_type_name && typeof payment.concession_type_name === 'string') {
       switch (payment.concession_type_name.toLowerCase()) {
         case 'restaurante':
         case 'cafetería':
