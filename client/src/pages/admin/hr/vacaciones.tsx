@@ -70,7 +70,7 @@ export default function VacacionesPage() {
   
   // Estados para filtros
   const [searchName, setSearchName] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [selectedMonth, setSelectedMonth] = useState("all");
   const [hireDateFrom, setHireDateFrom] = useState("");
   const [hireDateTo, setHireDateTo] = useState("");
@@ -330,8 +330,8 @@ export default function VacacionesPage() {
                 size="sm"
                 onClick={() => {
                   setSearchName("");
-                  setSelectedDepartment("");
-                  setSelectedMonth("");
+                  setSelectedDepartment("all");
+                  setSelectedMonth("all");
                   setHireDateFrom("");
                   setHireDateTo("");
                 }}
