@@ -114,17 +114,15 @@ export default function VacacionesPage() {
   const buildFilterParams = () => {
     const params = new URLSearchParams();
     params.append('year', selectedYear.toString());
-    if (selectedMonth) params.append('month', selectedMonth);
+    if (selectedMonth && selectedMonth !== 'all') params.append('month', selectedMonth);
     if (searchName) params.append('name', searchName);
-    if (selectedDepartment) params.append('department', selectedDepartment);
-    if (hireDateFrom) params.append('hireDateFrom', hireDateFrom);
-    if (hireDateTo) params.append('hireDateTo', hireDateTo);
+    if (selectedDepartment && selectedDepartment !== 'all') params.append('department', selectedDepartment);
     return params.toString();
   };
 
   // Consultar solicitudes de tiempo libre con filtros
   const { data: requests = [], isLoading: requestsLoading } = useQuery({
-    queryKey: ["/api/time-off/time-off-requests", selectedYear, selectedMonth, searchName, selectedDepartment, hireDateFrom, hireDateTo],
+    queryKey: ["/api/time-off/time-off-requests", selectedYear, selectedMonth, searchName, selectedDepartment],
     queryFn: async () => {
       const response = await fetch(`/api/time-off/time-off-requests?${buildFilterParams()}`);
       if (!response.ok) throw new Error("Error al cargar solicitudes");
@@ -428,8 +426,6 @@ export default function VacacionesPage() {
                   setSearchName("");
                   setSelectedDepartment("all");
                   setSelectedMonth("all");
-                  setHireDateFrom("");
-                  setHireDateTo("");
                 }}
               >
                 <X className="h-4 w-4 mr-2" />
