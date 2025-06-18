@@ -248,9 +248,9 @@ export async function deleteFinanceIncomeFromConcessionPayment(paymentId: number
 /**
  * Integración automática: Crear ingreso en Finanzas cuando se crea un contrato de concesión
  */
-export async function createFinanceIncomeFromConcessionContract(contractData: any) {
+export async function createFinanceIncomeFromConcessionContract(contractId: number) {
   try {
-    console.log("🏪 Iniciando integración Contrato → Finanzas:", contractData.id);
+    console.log("🏪 Iniciando integración Contrato → Finanzas:", contractId);
     
     // Obtener información completa del contrato
     const contractDetails = await db.execute(sql`
@@ -265,7 +265,7 @@ export async function createFinanceIncomeFromConcessionContract(contractData: an
       LEFT JOIN concessionaire_profiles cp ON cc.concessionaire_id = cp.id
       LEFT JOIN users u ON cp.user_id = u.id
       LEFT JOIN concession_types ct ON cc.concession_type_id = ct.id
-      WHERE cc.id = ${contractData.id}
+      WHERE cc.id = ${contractId}
     `);
 
     if (contractDetails.rows.length === 0) {
@@ -328,6 +328,10 @@ export async function createFinanceIncomeFromConcessionContract(contractData: an
     }
 
     // Crear el ingreso en actual_incomes
+    const contractDate = new Date(contract.start_date as string);
+    const concept = `Concesión - ${contract.concessionaire_name || 'Concesionario'}`;
+    const description = `Ingreso por contrato de concesión - ${contract.concessionaire_name || 'Concesionario'} (${contract.concession_type_name || 'General'})`;
+    
     const incomeResult = await db.execute(sql`
       INSERT INTO actual_incomes (
         category_id,
@@ -343,11 +347,11 @@ export async function createFinanceIncomeFromConcessionContract(contractData: an
         ${categoryId},
         ${contract.fee},
         ${contract.start_date},
-        ${'Concesión - ' + (contract.concessionaire_name || 'Concesionario')},
-        ${`Ingreso por contrato de concesión - ${contract.concessionaire_name || 'Concesionario'} (${contract.concession_type_name || 'General'})`},
+        ${concept},
+        ${description},
         ${contract.park_id},
-        ${new Date(contract.start_date).getMonth() + 1},
-        ${new Date(contract.start_date).getFullYear()}
+        ${contractDate.getMonth() + 1},
+        ${contractDate.getFullYear()}
       )
       RETURNING *
     `);
