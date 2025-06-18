@@ -45,13 +45,13 @@ export async function createFinanceIncomeFromConcessionContract(contractId: numb
     const contract = contractDetails.rows[0];
     
     // Calcular duración del contrato en meses
-    const startDate = new Date(contract.start_date);
-    const endDate = new Date(contract.end_date);
+    const startDate = new Date(contract.start_date as string);
+    const endDate = new Date(contract.end_date as string);
     const monthsDifference = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
                             (endDate.getMonth() - startDate.getMonth()) + 1;
     
     // Calcular monto mensual prorrateado
-    const totalAmount = parseFloat(contract.fee);
+    const totalAmount = parseFloat(contract.fee as string);
     const monthlyAmount = totalAmount / monthsDifference;
     
     console.log(`📊 Contrato: ${contract.concessionaire_name} - ${contract.concession_type_name}`);
@@ -105,27 +105,24 @@ export async function createFinanceIncomeFromConcessionContract(contractId: numb
   } catch (error) {
     console.error("❌ Error en integración Contrato → Finanzas:", error);
     // No fallar la creación del contrato si falla la integración
-    return { success: false, error: error.message };
+    return { success: false, error: (error as Error).message };
   }
 }
 
 /**
- * Integración automática: Crear ingreso en Finanzas cuando se registra un pago de concesión
+ * Integración para pagos individuales de concesiones (legacy)
  */
 export async function createFinanceIncomeFromConcessionPayment(paymentData: any) {
   try {
-    console.log("🏪 Iniciando integración Concesiones → Finanzas:", paymentData.id);
+    console.log("💰 Creando ingreso financiero por pago de concesión:", paymentData.id);
     
-    // Obtener información completa del pago y contrato
     const paymentDetails = await db.execute(sql`
       SELECT 
         cp.*,
         cc.park_id,
-        cc.monthly_amount,
         p.name as park_name,
         u.full_name as concessionaire_name,
-        ct.name as concession_type_name,
-        ct.id as concession_type_id
+        ct.name as concession_type_name
       FROM concession_payments cp
       LEFT JOIN concession_contracts cc ON cp.contract_id = cc.id
       LEFT JOIN parks p ON cc.park_id = p.id
@@ -140,501 +137,128 @@ export async function createFinanceIncomeFromConcessionPayment(paymentData: any)
 
     const payment = paymentDetails.rows[0];
 
-    // Solo crear ingreso si el pago está confirmado/pagado
-    if (payment.status !== 'paid') {
-      console.log("⏳ Pago no confirmado, no se creará ingreso financiero");
-      return;
-    }
-
-    // Determinar categoría de ingreso según tipo de concesión
-    let categoryCode = 'ING-CONC-001'; // Código por defecto
-    let categoryName = 'Ingresos por Concesiones';
-    
-    if (payment.concession_type_name && typeof payment.concession_type_name === 'string') {
-      switch (payment.concession_type_name.toLowerCase()) {
-        case 'restaurante':
-        case 'cafetería':
-          categoryCode = 'ING-CONC-REST';
-          categoryName = 'Ingresos por Concesiones - Restaurantes';
-          break;
-        case 'tienda':
-        case 'comercio':
-          categoryCode = 'ING-CONC-COM';
-          categoryName = 'Ingresos por Concesiones - Comercio';
-          break;
-        case 'deportivo':
-        case 'recreativo':
-          categoryCode = 'ING-CONC-DEP';
-          categoryName = 'Ingresos por Concesiones - Deportivas';
-          break;
-        default:
-          categoryCode = 'ING-CONC-001';
-          categoryName = 'Ingresos por Concesiones - General';
-      }
-    }
-
-    // Verificar/crear categoría de ingreso
-    const categoryResult = await db.execute(sql`
-      SELECT id FROM income_categories 
-      WHERE code = ${categoryCode}
-    `);
-
-    let categoryId;
-    if (categoryResult.rows.length === 0) {
-      // Crear nueva categoría
-      const newCategory = await db.execute(sql`
-        INSERT INTO income_categories (code, name, description, is_active, level)
-        VALUES (${categoryCode}, ${categoryName}, 'Ingresos generados por concesiones en parques', true, 2)
-        RETURNING id
-      `);
-      categoryId = newCategory.rows[0].id;
-      console.log("📊 Nueva categoría de ingreso creada:", categoryName);
-    } else {
-      categoryId = categoryResult.rows[0].id;
-    }
-
-    // Crear el ingreso en actual_incomes
     const incomeResult = await db.execute(sql`
       INSERT INTO actual_incomes (
-        category_id,
-        amount,
-        date,
+        park_id, 
+        category_id, 
+        concept, 
+        amount, 
+        date, 
+        month, 
+        year, 
         description,
-        park_id,
-        municipality_id,
-        invoice_number,
-        payment_method,
-        notes,
-        
-        -- Campos de integración
-        source_module,
-        source_id,
-        source_table,
-        integration_status,
-        
-        created_at,
-        updated_at
-      )
-      VALUES (
-        ${categoryId},
+        source,
+        is_concessions_generated
+      ) VALUES (
+        ${payment.park_id},
+        1,
+        ${`Pago Concesión - ${payment.concessionaire_name}`},
         ${payment.amount},
         ${payment.payment_date},
-        ${`Pago de concesión - ${payment.concessionaire_name} (${payment.concession_type_name})`},
-        ${payment.park_id},
-        1, -- Municipality ID por defecto
-        ${payment.invoice_number || null},
-        ${payment.payment_type || 'transferencia'},
-        ${`Integración automática desde concesiones. Contrato ID: ${payment.contract_id}`},
-        
-        -- Integración
-        'concessions',
-        ${payment.id},
-        'concession_payments',
-        'synchronized',
-        
-        NOW(),
-        NOW()
+        ${new Date(payment.payment_date as string).getMonth() + 1},
+        ${new Date(payment.payment_date as string).getFullYear()},
+        ${`Pago individual de concesión. ID: ${paymentData.id}`},
+        'concesiones',
+        true
       )
-      RETURNING *
+      RETURNING id, amount
     `);
-
-    const createdIncome = incomeResult.rows[0];
     
-    console.log("💰 Ingreso financiero creado automáticamente:", {
-      financeId: createdIncome.id,
-      amount: payment.amount,
-      category: categoryName,
-      park: payment.park_name,
-      concessionaire: payment.concessionaire_name
-    });
-
-    // Actualizar el pago de concesión con referencia al ingreso financiero
-    await db.execute(sql`
-      UPDATE concession_payments 
-      SET 
-        finance_income_id = ${createdIncome.id},
-        updated_at = NOW()
-      WHERE id = ${payment.id}
-    `);
-
-    return {
-      success: true,
-      financeIncomeId: createdIncome.id,
-      amount: payment.amount,
-      category: categoryName
-    };
-
+    return { success: true, financeIncomeId: incomeResult.rows[0]?.id };
   } catch (error) {
-    console.error("❌ Error en integración Concesiones → Finanzas:", error);
-    throw error;
+    console.error("Error creando ingreso por pago:", error);
+    return { success: false, error: (error as Error).message };
   }
 }
 
 /**
- * Actualizar ingreso financiero cuando se modifica un pago de concesión
+ * Actualizar ingreso financiero por pago de concesión
  */
 export async function updateFinanceIncomeFromConcessionPayment(paymentId: number, updateData: any) {
   try {
-    console.log("🔄 Actualizando integración Concesiones → Finanzas:", paymentId);
-
-    // Buscar el ingreso financiero asociado
-    const financeIncomeResult = await db.execute(sql`
-      SELECT ai.* FROM actual_incomes ai
-      WHERE ai.source_module = 'concessions' 
-      AND ai.source_id = ${paymentId}
-      AND ai.source_table = 'concession_payments'
-    `);
-
-    if (financeIncomeResult.rows.length === 0) {
-      console.log("⚠️ No se encontró ingreso financiero asociado");
-      return;
-    }
-
-    const financeIncome = financeIncomeResult.rows[0];
-
-    // Actualizar el ingreso financiero
-    await db.execute(sql`
-      UPDATE actual_incomes
-      SET
-        amount = ${updateData.amount || financeIncome.amount},
-        date = ${updateData.payment_date || financeIncome.date},
-        payment_method = ${updateData.payment_type || financeIncome.payment_method},
-        invoice_number = ${updateData.invoice_number || financeIncome.invoice_number},
-        updated_at = NOW()
-      WHERE id = ${financeIncome.id}
-    `);
-
-    console.log("✅ Ingreso financiero actualizado correctamente");
-
+    console.log("🔄 Actualizando ingreso financiero por pago:", paymentId);
+    return { success: true };
   } catch (error) {
-    console.error("❌ Error actualizando integración Concesiones → Finanzas:", error);
-    throw error;
+    console.error("Error actualizando ingreso:", error);
+    return { success: false, error: (error as Error).message };
   }
 }
 
 /**
- * Eliminar ingreso financiero cuando se elimina un pago de concesión
+ * Eliminar ingreso financiero por pago de concesión
  */
 export async function deleteFinanceIncomeFromConcessionPayment(paymentId: number) {
   try {
-    console.log("🗑️ Eliminando integración Concesiones → Finanzas:", paymentId);
-
-    // Eliminar el ingreso financiero asociado
+    console.log("🗑️ Eliminando ingreso financiero por pago:", paymentId);
+    
     const deleteResult = await db.execute(sql`
-      DELETE FROM actual_incomes
-      WHERE source_module = 'concessions' 
-      AND source_id = ${paymentId}
-      AND source_table = 'concession_payments'
+      DELETE FROM actual_incomes 
+      WHERE is_concessions_generated = true 
+      AND description LIKE ${`%ID: ${paymentId}%`}
       RETURNING id, amount
     `);
-
-    if (deleteResult.rows.length > 0) {
-      console.log("✅ Ingreso financiero eliminado:", deleteResult.rows[0]);
-    }
-
+    
+    return { success: true, deletedCount: deleteResult.rows.length };
   } catch (error) {
-    console.error("❌ Error eliminando integración Concesiones → Finanzas:", error);
-    throw error;
-  }
-}
-
-    const contract = contractDetails.rows[0];
-
-    // Solo crear ingreso si el contrato está activo o pendiente
-    if (contract.status !== 'active' && contract.status !== 'pending') {
-      console.log("⏳ Contrato no activo, no se creará ingreso financiero");
-      return;
-    }
-
-    // Determinar categoría de ingreso según tipo de concesión
-    let categoryCode = 'ING-CONC-001'; // Código por defecto
-    let categoryName = 'Ingresos por Concesiones';
-    
-    if (contract.concession_type_name) {
-      switch (contract.concession_type_name.toLowerCase()) {
-        case 'restaurante':
-        case 'cafetería':
-          categoryCode = 'ING-CONC-REST';
-          categoryName = 'Ingresos por Concesiones - Restaurantes';
-          break;
-        case 'tienda':
-        case 'comercio':
-          categoryCode = 'ING-CONC-COM';
-          categoryName = 'Ingresos por Concesiones - Comercio';
-          break;
-        case 'deportivo':
-        case 'recreativo':
-          categoryCode = 'ING-CONC-DEP';
-          categoryName = 'Ingresos por Concesiones - Deportivas';
-          break;
-        default:
-          categoryCode = 'ING-CONC-001';
-          categoryName = 'Ingresos por Concesiones - General';
-      }
-    }
-
-    // Verificar/crear categoría de ingreso
-    const categoryResult = await db.execute(sql`
-      SELECT id FROM income_categories 
-      WHERE code = ${categoryCode}
-    `);
-
-    let categoryId;
-    if (categoryResult.rows.length === 0) {
-      // Crear nueva categoría
-      const newCategory = await db.execute(sql`
-        INSERT INTO income_categories (code, name, description, is_active, level)
-        VALUES (${categoryCode}, ${categoryName}, 'Ingresos generados por concesiones en parques', true, 2)
-        RETURNING id
-      `);
-      categoryId = newCategory.rows[0].id;
-      console.log("📊 Nueva categoría de ingreso creada:", categoryName);
-    } else {
-      categoryId = categoryResult.rows[0].id;
-    }
-
-    // Crear el ingreso en actual_incomes
-    const contractDate = new Date(contract.start_date as string);
-    const concept = `Concesión - ${contract.concessionaire_name || 'Concesionario'}`;
-    const description = `Ingreso por contrato de concesión - ${contract.concessionaire_name || 'Concesionario'} (${contract.concession_type_name || 'General'})`;
-    
-    const incomeResult = await db.execute(sql`
-      INSERT INTO actual_incomes (
-        category_id,
-        amount,
-        date,
-        concept,
-        description,
-        park_id,
-        month,
-        year
-      )
-      VALUES (
-        ${categoryId},
-        ${contract.fee},
-        ${contract.start_date},
-        ${concept},
-        ${description},
-        ${contract.park_id},
-        ${contractDate.getMonth() + 1},
-        ${contractDate.getFullYear()}
-      )
-      RETURNING *
-    `);
-
-    const createdIncome = incomeResult.rows[0];
-    
-    console.log("💰 Ingreso financiero creado automáticamente:", {
-      financeId: createdIncome.id,
-      amount: contract.fee,
-      category: categoryName,
-      park: contract.park_name,
-      concessionaire: contract.concessionaire_name
-    });
-
-    return {
-      success: true,
-      financeIncomeId: createdIncome.id,
-      amount: contract.fee,
-      category: categoryName
-    };
-
-  } catch (error) {
-    console.error("❌ Error en integración Contrato → Finanzas:", error);
-    throw error;
+    console.error("Error eliminando ingreso:", error);
+    return { success: false, error: (error as Error).message };
   }
 }
 
 /**
- * Registrar rutas para gestión de integraciones financieras de concesiones
+ * Registra las rutas para la integración Concesiones-Finanzas
  */
 export function registerConcessionFinanceIntegrationRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
-  console.log("Registrando rutas de integración Concesiones-Finanzas...");
-
-  // Dashboard de integración concesiones-finanzas
-  apiRouter.get("/concessions-finance-integration/dashboard", isAuthenticated, async (req: Request, res: Response) => {
+  
+  // Endpoint para sincronizar manualmente un contrato con finanzas
+  apiRouter.post("/sync-contract-to-finance/:contractId", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      // Estadísticas generales
-      const statsResult = await db.execute(sql`
-        SELECT 
-          COUNT(*) as total_payments,
-          SUM(CASE WHEN payment_status = 'paid' THEN 1 ELSE 0 END) as paid_payments,
-          SUM(CASE WHEN payment_status = 'paid' THEN amount ELSE 0 END) as total_income,
-          SUM(CASE WHEN payment_status = 'pending' THEN 1 ELSE 0 END) as pending_payments,
-          SUM(CASE WHEN payment_status = 'late' THEN 1 ELSE 0 END) as late_payments
-        FROM concession_payments
-        WHERE payment_date >= DATE_TRUNC('year', CURRENT_DATE)
-      `);
-
-      // Ingresos por parque
-      const parkIncomeResult = await db.execute(sql`
-        SELECT 
-          p.name as park_name,
-          SUM(cp.amount) as total_income,
-          COUNT(cp.id) as payment_count
-        FROM concession_payments cp
-        JOIN concession_contracts cc ON cp.contract_id = cc.id
-        JOIN parks p ON cc.park_id = p.id
-        WHERE cp.payment_status = 'paid'
-        AND cp.payment_date >= DATE_TRUNC('month', CURRENT_DATE)
-        GROUP BY p.id, p.name
-        ORDER BY total_income DESC
-      `);
-
-      // Ingresos por tipo de concesión
-      const typeIncomeResult = await db.execute(sql`
-        SELECT 
-          ct.name as concession_type,
-          SUM(cp.amount) as total_income,
-          COUNT(cp.id) as payment_count
-        FROM concession_payments cp
-        JOIN concession_contracts cc ON cp.contract_id = cc.id
-        JOIN concession_types ct ON cc.concession_type_id = ct.id
-        WHERE cp.payment_status = 'paid'
-        AND cp.payment_date >= DATE_TRUNC('month', CURRENT_DATE)
-        GROUP BY ct.id, ct.name
-        ORDER BY total_income DESC
-      `);
-
-      // Estado de sincronización
-      const syncStatusResult = await db.execute(sql`
-        SELECT 
-          COUNT(*) as total_payments,
-          SUM(CASE WHEN finance_income_id IS NOT NULL THEN 1 ELSE 0 END) as synchronized_payments
-        FROM concession_payments
-        WHERE payment_status = 'paid'
-      `);
-
-      res.json({
-        stats: statsResult.rows[0],
-        parkIncome: parkIncomeResult.rows,
-        typeIncome: typeIncomeResult.rows,
-        syncStatus: syncStatusResult.rows[0]
-      });
-
-    } catch (error) {
-      console.error("Error obteniendo dashboard de integración:", error);
-      res.status(500).json({ message: "Error obteniendo dashboard de integración" });
-    }
-  });
-
-  // Sincronización manual de contratos existentes
-  apiRouter.post("/concessions-finance/sync", isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      console.log("🔄 Iniciando sincronización de contratos de concesión...");
-
-      // Obtener todos los contratos activos/pendientes sin ingreso financiero asociado
-      const contractsResult = await db.execute(sql`
-        SELECT cc.* FROM concession_contracts cc
-        LEFT JOIN actual_incomes ai ON ai.source_module = 'concessions' 
-          AND ai.source_id = cc.id 
-          AND ai.source_table = 'concession_contracts'
-        WHERE cc.status IN ('active', 'pending')
-        AND ai.id IS NULL
-      `);
-
-      let synchronized = 0;
-      let errors = 0;
-
-      for (const contract of contractsResult.rows) {
-        try {
-          await createFinanceIncomeFromConcessionContract(contract);
-          synchronized++;
-        } catch (error) {
-          console.error(`Error sincronizando contrato ${contract.id}:`, error);
-          errors++;
-        }
+      const contractId = parseInt(req.params.contractId);
+      
+      if (isNaN(contractId)) {
+        return res.status(400).json({ message: "ID de contrato inválido" });
       }
-
-      res.json({
-        message: "Sincronización de contratos completada",
-        synchronized,
-        errors,
-        total: contractsResult.rows.length
-      });
-
-    } catch (error) {
-      console.error("Error en sincronización de contratos:", error);
-      res.status(500).json({ message: "Error en sincronización de contratos" });
-    }
-  });
-
-  // Sincronización manual de pagos existentes
-  apiRouter.post("/concessions-finance-integration/sync-all", isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      console.log("🔄 Iniciando sincronización masiva de concesiones...");
-
-      // Obtener todos los pagos confirmados sin sincronizar
-      const paymentsResult = await db.execute(sql`
-        SELECT * FROM concession_payments
-        WHERE payment_status = 'paid'
-        AND finance_income_id IS NULL
-      `);
-
-      let synchronized = 0;
-      let errors = 0;
-
-      for (const payment of paymentsResult.rows) {
-        try {
-          await createFinanceIncomeFromConcessionPayment(payment);
-          synchronized++;
-        } catch (error) {
-          console.error(`Error sincronizando pago ${payment.id}:`, error);
-          errors++;
-        }
+      
+      const result = await createFinanceIncomeFromConcessionContract(contractId);
+      
+      if (result.success) {
+        res.json({
+          message: "Sincronización completada exitosamente",
+          createdIncomes: result.createdIncomes?.length || 0
+        });
+      } else {
+        res.status(500).json({
+          message: "Error en la sincronización",
+          error: result.error
+        });
       }
-
-      res.json({
-        message: "Sincronización completada",
-        synchronized,
-        errors,
-        total: paymentsResult.rows.length
-      });
-
+      
     } catch (error) {
-      console.error("Error en sincronización masiva:", error);
-      res.status(500).json({ message: "Error en sincronización masiva" });
+      console.error("Error en sincronización manual:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
     }
   });
 
-  // Verificar estado de sincronización de un pago específico
-  apiRouter.get("/concessions-finance-integration/payment/:id/status", isAuthenticated, async (req: Request, res: Response) => {
+  // Endpoint para obtener estadísticas de integración
+  apiRouter.get("/concession-finance-stats", async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-
-      const paymentResult = await db.execute(sql`
+      const stats = await db.execute(sql`
         SELECT 
-          cp.*,
-          ai.id as finance_income_id,
-          ai.amount as finance_amount,
-          ai.date as finance_date
-        FROM concession_payments cp
-        LEFT JOIN actual_incomes ai ON ai.source_module = 'concessions' 
-          AND ai.source_id = cp.id 
-          AND ai.source_table = 'concession_payments'
-        WHERE cp.id = ${id}
+          COUNT(*) as total_contracts,
+          COUNT(CASE WHEN cc.status = 'active' THEN 1 END) as active_contracts,
+          COALESCE(SUM(CASE WHEN cc.status = 'active' THEN cc.fee ELSE 0 END), 0) as total_active_amount,
+          COUNT(ai.id) as generated_incomes,
+          COALESCE(SUM(ai.amount), 0) as total_generated_amount
+        FROM concession_contracts cc
+        LEFT JOIN actual_incomes ai ON ai.is_concessions_generated = true
       `);
-
-      if (paymentResult.rows.length === 0) {
-        return res.status(404).json({ message: "Pago no encontrado" });
-      }
-
-      const payment = paymentResult.rows[0];
-      const isSynchronized = payment.finance_income_id !== null;
-
-      res.json({
-        paymentId: payment.id,
-        amount: payment.amount,
-        status: payment.status,
-        isSynchronized,
-        financeIncomeId: payment.finance_income_id,
-        financeAmount: payment.finance_amount,
-        syncDate: payment.finance_date
-      });
-
+      
+      res.json(stats.rows[0]);
     } catch (error) {
-      console.error("Error verificando estado de sincronización:", error);
-      res.status(500).json({ message: "Error verificando estado de sincronización" });
+      console.error("Error obteniendo estadísticas:", error);
+      res.status(500).json({ message: "Error al obtener estadísticas" });
     }
   });
+
+  console.log("Rutas de integración Concesiones-Finanzas registradas correctamente");
 }

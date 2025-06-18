@@ -193,11 +193,13 @@ export function registerConcessionContractsRoutes(app: any, apiRouter: Router, i
         })
         .returning();
 
-      // Integración automática con el sistema financiero
+      // Integración automática con el sistema financiero - Prorrateo mensual
       try {
         const { createFinanceIncomeFromConcessionContract } = await import('./concessions-finance-integration');
-        await createFinanceIncomeFromConcessionContract(newContract.id);
-        console.log(`💰 Ingreso financiero creado automáticamente para contrato ${newContract.id}`);
+        const result = await createFinanceIncomeFromConcessionContract(newContract.id);
+        if (result.success) {
+          console.log(`💰 ${result.createdIncomes.length} ingresos mensuales creados automáticamente para contrato ${newContract.id}`);
+        }
       } catch (integrationError) {
         console.error("Error en integración automática Concesiones → Finanzas:", integrationError);
         // No fallar la creación del contrato por error de integración
