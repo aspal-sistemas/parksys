@@ -689,6 +689,14 @@ export const concessionaireDocumentsRelations = relations(concessionaireDocument
   })
 }));
 
+// Relaciones de usuarios - incluyendo perfiles de concesionarios
+export const usersRelations = relations(users, ({ one, many }) => ({
+  concessionaireProfile: one(concessionaireProfiles, {
+    fields: [users.id],
+    references: [concessionaireProfiles.userId]
+  })
+}));
+
 // Definición de tablas de instructores
 export const instructors = pgTable("instructors", {
   id: serial("id").primaryKey(),
