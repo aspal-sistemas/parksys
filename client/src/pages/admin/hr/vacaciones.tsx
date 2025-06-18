@@ -72,8 +72,7 @@ export default function VacacionesPage() {
   const [searchName, setSearchName] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [selectedMonth, setSelectedMonth] = useState("all");
-  const [hireDateFrom, setHireDateFrom] = useState("");
-  const [hireDateTo, setHireDateTo] = useState("");
+
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -145,7 +144,7 @@ export default function VacacionesPage() {
 
   // Consultar balances de vacaciones con filtros
   const { data: balances = [], isLoading: balancesLoading } = useQuery({
-    queryKey: ["/api/time-off/vacation-balances", selectedYear, selectedMonth, searchName, selectedDepartment, hireDateFrom, hireDateTo],
+    queryKey: ["/api/time-off/vacation-balances", selectedYear, selectedMonth, searchName, selectedDepartment],
     queryFn: async () => {
       const response = await fetch(`/api/time-off/vacation-balances?${buildFilterParams()}`);
       if (!response.ok) throw new Error("Error al cargar balances");
@@ -343,8 +342,8 @@ export default function VacacionesPage() {
                       )}
                     />
                     <div className="flex justify-end gap-2">
-                      <Button type="submit" disabled={createMutation.isPending}>
-                        {createMutation.isPending ? "Creando..." : "Crear Solicitud"}
+                      <Button type="submit" disabled={createRequestMutation.isPending}>
+                        {createRequestMutation.isPending ? "Creando..." : "Crear Solicitud"}
                       </Button>
                     </div>
                   </form>
@@ -419,24 +418,7 @@ export default function VacacionesPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="hire-date-from">Contratación Desde</Label>
-                <Input
-                  id="hire-date-from"
-                  type="date"
-                  value={hireDateFrom}
-                  onChange={(e) => setHireDateFrom(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="hire-date-to">Contratación Hasta</Label>
-                <Input
-                  id="hire-date-to"
-                  type="date"
-                  value={hireDateTo}
-                  onChange={(e) => setHireDateTo(e.target.value)}
-                />
-              </div>
+
             </div>
             <div className="flex items-center gap-2 mt-4">
               <Button 
