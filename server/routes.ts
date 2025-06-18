@@ -227,6 +227,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerConcessionPaymentsRoutes(app, apiRouter, isAuthenticated);
   registerConcessionEvaluationRoutes(app, apiRouter, isAuthenticated);
   
+  // Registramos las rutas de integración financiera de concesiones
+  try {
+    const { registerConcessionFinanceIntegrationRoutes } = await import("./concessions-finance-integration");
+    registerConcessionFinanceIntegrationRoutes(app, apiRouter, isAuthenticated);
+    console.log("Rutas de integración Concesiones-Finanzas registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de integración Concesiones-Finanzas:", error);
+  }
+  
   // Endpoints para imágenes de perfil
   // Obtener la imagen de perfil de un usuario
   apiRouter.get('/users/:id/profile-image', async (req: Request, res: Response) => {

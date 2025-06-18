@@ -244,6 +244,13 @@ function Router() {
           </Suspense>
         </Route>
 
+        {/* Demostración Integración Concesiones-Finanzas */}
+        <Route path="/admin/concessions-finance-demo">
+          <Suspense fallback={<div className="p-8 text-center">Cargando demostración Concesiones-Finanzas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/concessions-finance-demo')))}
+          </Suspense>
+        </Route>
+
         {/* Demostración Integraciones Múltiples */}
         <Route path="/admin/multi-finance-demo">
           <Suspense fallback={<div className="p-8 text-center">Cargando demostración de integraciones múltiples...</div>}>
