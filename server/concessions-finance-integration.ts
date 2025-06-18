@@ -258,10 +258,10 @@ export function registerConcessionFinanceIntegrationRoutes(app: any, apiRouter: 
       const statsResult = await db.execute(sql`
         SELECT 
           COUNT(*) as total_payments,
-          SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid_payments,
-          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) as total_income,
-          SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_payments,
-          SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late_payments
+          SUM(CASE WHEN payment_status = 'paid' THEN 1 ELSE 0 END) as paid_payments,
+          SUM(CASE WHEN payment_status = 'paid' THEN amount ELSE 0 END) as total_income,
+          SUM(CASE WHEN payment_status = 'pending' THEN 1 ELSE 0 END) as pending_payments,
+          SUM(CASE WHEN payment_status = 'late' THEN 1 ELSE 0 END) as late_payments
         FROM concession_payments
         WHERE payment_date >= DATE_TRUNC('year', CURRENT_DATE)
       `);
@@ -275,7 +275,7 @@ export function registerConcessionFinanceIntegrationRoutes(app: any, apiRouter: 
         FROM concession_payments cp
         JOIN concession_contracts cc ON cp.contract_id = cc.id
         JOIN parks p ON cc.park_id = p.id
-        WHERE cp.status = 'paid'
+        WHERE cp.payment_status = 'paid'
         AND cp.payment_date >= DATE_TRUNC('month', CURRENT_DATE)
         GROUP BY p.id, p.name
         ORDER BY total_income DESC
@@ -290,7 +290,7 @@ export function registerConcessionFinanceIntegrationRoutes(app: any, apiRouter: 
         FROM concession_payments cp
         JOIN concession_contracts cc ON cp.contract_id = cc.id
         JOIN concession_types ct ON cc.concession_type_id = ct.id
-        WHERE cp.status = 'paid'
+        WHERE cp.payment_status = 'paid'
         AND cp.payment_date >= DATE_TRUNC('month', CURRENT_DATE)
         GROUP BY ct.id, ct.name
         ORDER BY total_income DESC
@@ -302,7 +302,7 @@ export function registerConcessionFinanceIntegrationRoutes(app: any, apiRouter: 
           COUNT(*) as total_payments,
           SUM(CASE WHEN finance_income_id IS NOT NULL THEN 1 ELSE 0 END) as synchronized_payments
         FROM concession_payments
-        WHERE status = 'paid'
+        WHERE payment_status = 'paid'
       `);
 
       res.json({
@@ -326,7 +326,7 @@ export function registerConcessionFinanceIntegrationRoutes(app: any, apiRouter: 
       // Obtener todos los pagos confirmados sin sincronizar
       const paymentsResult = await db.execute(sql`
         SELECT * FROM concession_payments
-        WHERE status = 'paid'
+        WHERE payment_status = 'paid'
         AND finance_income_id IS NULL
       `);
 
