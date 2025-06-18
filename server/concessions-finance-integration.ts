@@ -2,19 +2,112 @@
  * INTEGRACIÓN FINANCIERA: CONCESIONES → FINANZAS
  * ===============================================
  * 
- * Sistema de integración automática que sincroniza los pagos de concesiones
- * con el módulo de finanzas, siguiendo el mismo patrón que HR/Nómina.
+ * Sistema de integración automática que sincroniza los contratos de concesiones
+ * con el módulo de finanzas, creando ingresos con prorrateo mensual.
  * 
  * Flujo:
- * 1. Concesionario realiza pago → se registra en concession_payments
- * 2. Sistema automáticamente crea ingreso en actual_incomes
- * 3. Categorización automática según tipo de concesión
- * 4. Trazabilidad completa y badges visuales
+ * 1. Contrato de concesión creado → se registra en concession_contracts
+ * 2. Sistema automáticamente crea ingresos mensuales en actual_incomes
+ * 3. Categorización automática con categoría "Concesiones" (ING001)
+ * 4. Prorrateo mensual para contratos anuales
+ * 5. Aparece en matriz de flujo de efectivo mensual
  */
 
 import { Request, Response, Router } from "express";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
+
+/**
+ * Integración automática: Crear ingresos mensuales en Finanzas cuando se crea un contrato de concesión
+ */
+export async function createFinanceIncomeFromConcessionContract(contractId: number) {
+  try {
+    console.log("🏪 Iniciando integración Contrato → Finanzas:", contractId);
+    
+    // Obtener información completa del contrato
+    const contractDetails = await db.execute(sql`
+      SELECT 
+        cc.*,
+        p.name as park_name,
+        u.full_name as concessionaire_name,
+        ct.name as concession_type_name
+      FROM concession_contracts cc
+      LEFT JOIN parks p ON cc.park_id = p.id
+      LEFT JOIN users u ON cc.concessionaire_id = u.id
+      LEFT JOIN concession_types ct ON cc.concession_type_id = ct.id
+      WHERE cc.id = ${contractId}
+    `);
+
+    if (contractDetails.rows.length === 0) {
+      throw new Error("Contrato de concesión no encontrado");
+    }
+
+    const contract = contractDetails.rows[0];
+    
+    // Calcular duración del contrato en meses
+    const startDate = new Date(contract.start_date);
+    const endDate = new Date(contract.end_date);
+    const monthsDifference = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                            (endDate.getMonth() - startDate.getMonth()) + 1;
+    
+    // Calcular monto mensual prorrateado
+    const totalAmount = parseFloat(contract.fee);
+    const monthlyAmount = totalAmount / monthsDifference;
+    
+    console.log(`📊 Contrato: ${contract.concessionaire_name} - ${contract.concession_type_name}`);
+    console.log(`💰 Monto total: $${totalAmount}, Duración: ${monthsDifference} meses, Mensual: $${monthlyAmount.toFixed(2)}`);
+    
+    // Crear ingresos mensuales
+    const createdIncomes = [];
+    const currentDate = new Date(startDate);
+    
+    for (let i = 0; i < monthsDifference; i++) {
+      const incomeDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + i, 1);
+      const formattedDate = incomeDate.toISOString().split('T')[0];
+      
+      // Crear ingreso mensual en actual_incomes
+      const incomeResult = await db.execute(sql`
+        INSERT INTO actual_incomes (
+          park_id, 
+          category_id, 
+          concept, 
+          amount, 
+          date, 
+          month, 
+          year, 
+          description,
+          source,
+          is_concessions_generated
+        ) VALUES (
+          ${contract.park_id},
+          1, -- ID de categoría "Concesiones" (ING001)
+          ${`Concesión ${contract.concession_type_name} - ${contract.concessionaire_name}`},
+          ${monthlyAmount.toFixed(2)},
+          ${formattedDate},
+          ${incomeDate.getMonth() + 1},
+          ${incomeDate.getFullYear()},
+          ${`Ingreso mensual por concesión. Contrato ID: ${contractId}`},
+          'concesiones',
+          true
+        )
+        RETURNING id, amount, date
+      `);
+      
+      if (incomeResult.rows.length > 0) {
+        createdIncomes.push(incomeResult.rows[0]);
+        console.log(`✅ Ingreso mensual creado: ${formattedDate} - $${monthlyAmount.toFixed(2)}`);
+      }
+    }
+    
+    console.log(`🎉 Integración completada: ${createdIncomes.length} ingresos mensuales creados`);
+    return { success: true, createdIncomes };
+    
+  } catch (error) {
+    console.error("❌ Error en integración Contrato → Finanzas:", error);
+    // No fallar la creación del contrato si falla la integración
+    return { success: false, error: error.message };
+  }
+}
 
 /**
  * Integración automática: Crear ingreso en Finanzas cuando se registra un pago de concesión
@@ -244,33 +337,6 @@ export async function deleteFinanceIncomeFromConcessionPayment(paymentId: number
     throw error;
   }
 }
-
-/**
- * Integración automática: Crear ingreso en Finanzas cuando se crea un contrato de concesión
- */
-export async function createFinanceIncomeFromConcessionContract(contractId: number) {
-  try {
-    console.log("🏪 Iniciando integración Contrato → Finanzas:", contractId);
-    
-    // Obtener información completa del contrato
-    const contractDetails = await db.execute(sql`
-      SELECT 
-        cc.*,
-        p.name as park_name,
-        cp.user_id as concessionaire_user_id,
-        u.full_name as concessionaire_name,
-        ct.name as concession_type_name
-      FROM concession_contracts cc
-      LEFT JOIN parks p ON cc.park_id = p.id
-      LEFT JOIN concessionaire_profiles cp ON cc.concessionaire_id = cp.id
-      LEFT JOIN users u ON cp.user_id = u.id
-      LEFT JOIN concession_types ct ON cc.concession_type_id = ct.id
-      WHERE cc.id = ${contractId}
-    `);
-
-    if (contractDetails.rows.length === 0) {
-      throw new Error("Contrato de concesión no encontrado");
-    }
 
     const contract = contractDetails.rows[0];
 
