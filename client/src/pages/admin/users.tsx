@@ -1209,6 +1209,11 @@ const AdminUsers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage] = useState(10);
 
+  // Reset página cuando cambian los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, roleFilter, statusFilter]);
+
   // Fetch users
   const {
     data: users = [],
@@ -1611,10 +1616,10 @@ const AdminUsers = () => {
         {/* Filtros expandibles */}
         {showFilters && (
           <div className="bg-gray-50 p-4 rounded-lg border space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4 items-end">
-              <div className="flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Filtrar por rol
+                  Filtrar por rol específico
                 </label>
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
                   <SelectTrigger>
@@ -1636,19 +1641,41 @@ const AdminUsers = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex gap-2">
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Filtrar por tipo de usuario
+                </label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los tipos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los tipos</SelectItem>
+                    <SelectItem value="admin">Administración</SelectItem>
+                    <SelectItem value="staff">Personal</SelectItem>
+                    <SelectItem value="community">Comunidad</SelectItem>
+                    <SelectItem value="business">Negocios</SelectItem>
+                    <SelectItem value="active">Usuarios activos (últimos 30 días)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex items-end">
                 <Button 
                   variant="outline" 
                   onClick={clearFilters}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 w-full"
                 >
                   <RotateCcw className="h-4 w-4" />
                   Limpiar filtros
                 </Button>
               </div>
             </div>
-            <div className="text-sm text-gray-600">
-              Mostrando {filteredAndSortedUsers.length} de {users.length} usuarios
+            
+            <div className="flex justify-between items-center text-sm text-gray-600 pt-2 border-t">
+              <span>Mostrando {totalUsers} de {users.length} usuarios</span>
+              <span>Página {currentPage} de {totalPages}</span>
             </div>
           </div>
         )}
@@ -1665,7 +1692,7 @@ const AdminUsers = () => {
             <X className="h-8 w-8 mr-2" />
             <span>Error al cargar los usuarios. Inténtalo de nuevo.</span>
           </div>
-        ) : filteredAndSortedUsers.length === 0 ? (
+        ) : currentUsers.length === 0 ? (
           <div className="flex flex-col justify-center items-center p-8 text-gray-500">
             <UserRound className="h-12 w-12 mb-2" />
             <h3 className="text-lg font-medium">No se encontraron usuarios</h3>
@@ -1737,7 +1764,7 @@ const AdminUsers = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAndSortedUsers.map((user: User) => (
+              {currentUsers.map((user: User) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.id}</TableCell>
                   <TableCell>
@@ -1782,6 +1809,90 @@ const AdminUsers = () => {
           </Table>
         )}
       </div>
+
+      {/* Paginación */}
+      {totalUsers > 0 && (
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
+          <div className="text-sm text-gray-600">
+            Mostrando {startIndex + 1} a {Math.min(endIndex, totalUsers)} de {totalUsers} usuarios
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleFirstPage}
+              disabled={currentPage === 1}
+              title="Primera página"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+              title="Página anterior"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNumber;
+                if (totalPages <= 5) {
+                  pageNumber = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNumber = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNumber = totalPages - 4 + i;
+                } else {
+                  pageNumber = currentPage - 2 + i;
+                }
+                
+                const isActive = pageNumber === currentPage;
+                
+                return (
+                  <Button
+                    key={pageNumber}
+                    variant={isActive ? "default" : "outline"}
+                    size="icon"
+                    onClick={() => handlePageChange(pageNumber)}
+                    className={isActive ? "bg-primary text-primary-foreground" : ""}
+                  >
+                    {pageNumber}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              title="Página siguiente"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleLastPage}
+              disabled={currentPage === totalPages}
+              title="Última página"
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="text-sm text-gray-600">
+            Página {currentPage} de {totalPages}
+          </div>
+        </div>
+      )}
 
       {/* User detail/edit dialog */}
       {(selectedUser !== null || isNewUser) && (
