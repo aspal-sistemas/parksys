@@ -19,7 +19,9 @@ import {
   Calendar,
   CheckCircle,
   Trash2,
-  Loader2
+  Loader2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import AdminLayout from "@/components/AdminLayout";
@@ -51,6 +53,8 @@ const IncomesPage = () => {
     date: "",
     category: ""
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const { toast } = useToast();
 
   const { data: incomes, isLoading: incomesLoading } = useQuery({
@@ -271,6 +275,18 @@ const IncomesPage = () => {
       return true;
     });
   }, [incomes, filters]);
+
+  // Lógica de paginación
+  const totalItems = filteredIncomes.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedIncomes = filteredIncomes.slice(startIndex, endIndex);
+
+  // Reiniciar página cuando cambian los filtros
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
@@ -586,8 +602,8 @@ const IncomesPage = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {Array.isArray(filteredIncomes) && filteredIncomes.length > 0 ? (
-                  filteredIncomes.map((income: any) => (
+                {Array.isArray(paginatedIncomes) && paginatedIncomes.length > 0 ? (
+                  paginatedIncomes.map((income: any) => (
                     <div
                       key={income.id}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
@@ -649,6 +665,64 @@ const IncomesPage = () => {
                     <p className="text-sm text-gray-500">
                       Comienza registrando tu primer ingreso
                     </p>
+                  </div>
+                )}
+
+                {/* Controles de paginación */}
+                {!incomesLoading && filteredIncomes.length > 0 && (
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                    <div className="text-sm text-gray-600">
+                      Mostrando {startIndex + 1} a {Math.min(endIndex, totalItems)} de {totalItems} registros
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="h-8 w-8 p-0"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNumber;
+                          if (totalPages <= 5) {
+                            pageNumber = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNumber = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNumber = totalPages - 4 + i;
+                          } else {
+                            pageNumber = currentPage - 2 + i;
+                          }
+                          
+                          return (
+                            <Button
+                              key={pageNumber}
+                              variant={currentPage === pageNumber ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(pageNumber)}
+                              className="h-8 w-8 p-0"
+                            >
+                              {pageNumber}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="h-8 w-8 p-0"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
