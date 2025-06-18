@@ -37,7 +37,7 @@ const RECORD_TYPES = [
 
 export default function ControlHorasPage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedEmployee, setSelectedEmployee] = useState<string>("");
+  const [selectedEmployee, setSelectedEmployee] = useState<string>("all");
   const [isRecordDialogOpen, setIsRecordDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -76,7 +76,7 @@ export default function ControlHorasPage() {
       const params = new URLSearchParams();
       if (selectedDate) params.append('dateFrom', selectedDate);
       if (selectedDate) params.append('dateTo', selectedDate);
-      if (selectedEmployee) params.append('employeeId', selectedEmployee);
+      if (selectedEmployee && selectedEmployee !== 'all') params.append('employeeId', selectedEmployee);
       
       const response = await fetch(`/api/time-off/daily-time-sheets?${params}`);
       if (!response.ok) throw new Error("Error al cargar hojas de tiempo");
@@ -363,7 +363,7 @@ export default function ControlHorasPage() {
                   <SelectValue placeholder="Todos los empleados" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos los empleados</SelectItem>
+                  <SelectItem value="all">Todos los empleados</SelectItem>
                   {employees.map((employee: any) => (
                     <SelectItem key={employee.id} value={employee.id.toString()}>
                       {employee.fullName}
