@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Helmet } from "react-helmet";
+import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -217,17 +219,23 @@ export default function HybridPaymentsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Sistema de Cobro Híbrido</h1>
-          <p className="text-muted-foreground">
-            Configure métodos de cobro flexibles y combinables para contratos de concesión
-          </p>
-        </div>
-      </div>
+    <AdminLayout>
+      <Helmet>
+        <title>Sistema de Cobro Híbrido - ParkSys</title>
+        <meta name="description" content="Configure métodos de cobro flexibles y combinables para contratos de concesión" />
+      </Helmet>
 
-      {/* Contract Selection */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Sistema de Cobro Híbrido</h1>
+            <p className="text-muted-foreground">
+              Configure métodos de cobro flexibles y combinables para contratos de concesión
+            </p>
+          </div>
+        </div>
+
+        {/* Contract Selection */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -864,6 +872,7 @@ export default function HybridPaymentsPage() {
           </TabsContent>
         </Tabs>
       )}
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
