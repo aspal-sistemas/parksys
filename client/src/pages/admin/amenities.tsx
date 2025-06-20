@@ -880,7 +880,7 @@ const AdminAmenitiesPage = () => {
                   <AmenityIcon 
                     name={amenity.icon || 'park'} 
                     size={24} 
-                    iconType={amenity.iconType || 'system'}
+                    iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
                     customIconUrl={amenity.customIconUrl}
                   />
                 </TableCell>

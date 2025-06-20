@@ -35,7 +35,7 @@ interface AmenityIconProps {
 
 const AmenityIcon: React.FC<AmenityIconProps> = ({ 
   name, 
-  size = 24, 
+  size = 32, 
   className = "",
   iconType = 'system',
   customIconUrl = null

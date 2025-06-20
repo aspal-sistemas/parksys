@@ -256,7 +256,9 @@ const ModernFilterSidebar: React.FC<ModernFilterSidebarProps> = ({ onApplyFilter
                       `}>
                         <AmenityIcon 
                           name={amenity.icon} 
-                          size={24}
+                          customIconUrl={amenity.customIconUrl || null}
+                          iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
+                          size={28}
                           className={isSelected ? config?.text : 'text-gray-600'}
                         />
                       </div>
