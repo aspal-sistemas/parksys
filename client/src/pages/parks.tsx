@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ExtendedPark } from '@shared/schema';
-import FilterSidebar from '@/components/FilterSidebar';
+import ModernFilterSidebar from '@/components/ModernFilterSidebar';
 import ParksMap from '@/components/ParksMap';
 import ParksList from '@/components/ParksList';
 import ParkDetail from '@/components/ParkDetail';
@@ -68,40 +68,33 @@ const Parks: React.FC = () => {
   };
 
   return (
-    <main className="flex-1 flex flex-col">
-      {/* Cabecera simplificada sin controles de mapa */}
-      <div className="bg-white border-b p-4 flex justify-between items-center">
-        <h1 className="text-xl font-semibold text-gray-800">Parques y Espacios Públicos</h1>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-500">{parks.length} parques encontrados</span>
-        </div>
+    <main className="flex-1 flex h-screen overflow-hidden">
+      {/* Sidebar de filtros moderno */}
+      <div className="w-80 flex-shrink-0 h-full">
+        <ModernFilterSidebar onApplyFilters={handleApplyFilters} />
       </div>
 
-      {/* Contenedor principal con diseño simplificado */}
-      <div className="flex flex-col flex-1">
-        {/* Temporalmente oculto el mapa para evaluar el diseño */}
-        {false && (
-          <div className={`${mapExpanded ? 'w-full h-[70vh]' : 'md:w-1/3 lg:w-1/3 h-[250px]'} transition-all duration-300 ${mapExpanded ? 'order-first' : 'md:order-last md:flex md:h-auto'}`}>
-            <div className="w-full h-full">
-              <ParksMap 
-                parks={parks}
-                selectedParkId={selectedParkId || undefined}
-                onSelectPark={handleSelectPark}
-                isLoading={isLoading}
-              />
+      {/* Contenido principal */}
+      <div className="flex-1 flex flex-col h-full">
+        {/* Header mejorado */}
+        <div className="bg-gradient-to-r from-white to-gray-50 border-b border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Parques y Espacios Públicos</h1>
+              <p className="text-gray-600 mt-1">Descubre los mejores espacios verdes de la ciudad</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-2xl font-bold text-primary-600">{parks.length}</div>
+                <div className="text-sm text-gray-500">parques disponibles</div>
+              </div>
             </div>
           </div>
-        )}
-        
-        {/* Área de búsqueda y resultados - ahora a pantalla completa */}
-        <div className="w-full flex flex-col transition-all duration-300">
-          {/* Sección de filtros - ahora más visible y amplio */}
-          <div className="border-b md:border-r">
-            <FilterSidebar onApplyFilters={handleApplyFilters} />
-          </div>
-          
-          {/* Lista de resultados */}
-          <div className="flex-1 overflow-auto">
+        </div>
+
+        {/* Contenedor de resultados */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6">
             <ParksList 
               parks={parks}
               isLoading={isLoading}
@@ -111,7 +104,7 @@ const Parks: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Modal de detalle del parque */}
       {selectedPark && (
         <ParkDetail 

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Search, X, Info } from 'lucide-react';
+import { Search, X, Info, Filter, MapPin, TreePine, Sparkles } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Amenity, PARK_TYPES, AMENITY_CATEGORIES } from '@shared/schema';
 import AmenityIcon from './AmenityIcon';
 
