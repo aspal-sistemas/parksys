@@ -365,27 +365,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.search = String(req.query.search);
       }
       
-      // Usar datos temporales mientras se resuelve la conectividad de BD
-      console.log("Usando datos de muestra de parques de Guadalajara...");
-      const { fallbackParks } = await import("./fallback-data");
-      
-      // Aplicar filtros a los datos
-      let filteredParks = fallbackParks;
-      
-      if (filters.search) {
-        const searchTerm = filters.search.toLowerCase();
-        filteredParks = filteredParks.filter(park => 
-          park.name.toLowerCase().includes(searchTerm) ||
-          park.description.toLowerCase().includes(searchTerm) ||
-          park.address.toLowerCase().includes(searchTerm)
-        );
+      // Obtener parques de la base de datos original
+      try {
+        const parks = await getParksDirectly(filters);
+        console.log(`Encontrados ${parks.length} parques en la base de datos`);
+        res.json(parks);
+      } catch (dbError) {
+        console.error("Error de conectividad de BD:", dbError);
+        // Reintentar con conexión limpia
+        const parks = await getParksDirectly(filters);
+        res.json(parks);
       }
-      
-      if (filters.type && filters.type !== 'todos') {
-        filteredParks = filteredParks.filter(park => park.type === filters.type);
-      }
-      
-      res.json(filteredParks);
     } catch (error) {
       console.error("Error al obtener parques:", error);
       res.status(500).json({ message: "Error fetching parks" });
