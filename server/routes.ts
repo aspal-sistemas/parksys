@@ -1573,6 +1573,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add amenity to park
+  apiRouter.post("/parks/:parkId/amenities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const { amenityId, moduleName, surfaceArea, status, description } = req.body;
+      
+      if (!amenityId) {
+        return res.status(400).json({ message: "amenityId es requerido" });
+      }
+      
+      // Check if amenity already exists for this park
+      const existingCheck = await pool.query(`
+        SELECT id FROM park_amenities 
+        WHERE park_id = $1 AND amenity_id = $2
+      `, [parkId, amenityId]);
+      
+      if (existingCheck.rows.length > 0) {
+        return res.status(400).json({ message: "Esta amenidad ya está asignada a este parque" });
+      }
+      
+      // Insert new park amenity
+      const result = await pool.query(`
+        INSERT INTO park_amenities (
+          park_id, amenity_id, module_name, surface_area, status, description
+        ) VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *
+      `, [parkId, amenityId, moduleName || null, surfaceArea || null, status || 'activo', description || null]);
+      
+      res.json({
+        message: "Amenidad asignada correctamente",
+        parkAmenity: result.rows[0]
+      });
+    } catch (error) {
+      console.error("Error asignando amenidad al parque:", error);
+      res.status(500).json({ message: "Error al asignar amenidad al parque" });
+    }
+  });
+
   // Get amenities for a specific park (for activity location selection)
   apiRouter.get("/parks/:parkId/amenities", async (req: Request, res: Response) => {
     try {
