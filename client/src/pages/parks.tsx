@@ -88,8 +88,7 @@ const Parks: React.FC = () => {
       {/* Header compacto */}
       <div className="bg-gradient-to-r from-[#00a587] to-[#067f5f] text-white shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold">Encuentra Parques y Espacios Recreativos</h1>
-          <p className="text-white/80 mt-1">Busca y descubre parques por instalaciones y ubicación</p>
+          <h1 className="text-2xl font-bold">Agencia Metropolitana de Bosques Urbanos de Guadalajara</h1>
         </div>
       </div>
 
