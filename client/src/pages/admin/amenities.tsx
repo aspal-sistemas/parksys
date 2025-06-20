@@ -270,8 +270,13 @@ const AdminAmenitiesPage = () => {
       toast({ title: "Amenidad eliminada exitosamente" });
       setIsDeleteDialogOpen(false);
     },
-    onError: () => {
-      toast({ title: "Error al eliminar amenidad", variant: "destructive" });
+    onError: (error: any) => {
+      const errorMessage = error?.message || "Error al eliminar amenidad";
+      toast({ 
+        title: "No se puede eliminar", 
+        description: errorMessage,
+        variant: "destructive" 
+      });
     },
   });
 
