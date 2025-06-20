@@ -423,7 +423,7 @@ export default function ParkAmenitiesPage() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleRemoveAmenity(amenity.amenityId)}
+                            onClick={() => handleRemoveAmenity(amenity.id)}
                             className="text-red-600 hover:text-red-700"
                             disabled={removeAmenityMutation.isPending}
                           >
