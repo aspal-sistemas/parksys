@@ -211,7 +211,7 @@ const ParkDetail: React.FC<ParkDetailProps> = ({
                                   name={amenity.icon || ''} 
                                   customIconUrl={amenity.customIconUrl || null} 
                                   iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
-                                  className="h-5 w-5" 
+                                  size={36}
                                 />
                               </div>
                               <span>{amenity.name}</span>
