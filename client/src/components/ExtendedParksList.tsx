@@ -115,15 +115,14 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                   <h4 className="text-sm font-medium text-gray-900 mb-2">Instalaciones Disponibles:</h4>
                   <div className="flex flex-wrap gap-2">
                     {park.amenities && park.amenities.length > 0 ? (
-                      park.amenities.slice(0, 8).map((amenity) => (
+                      park.amenities.slice(0, 8).map((amenity, index) => (
                         <div
-                          key={amenity.id}
+                          key={`${park.id}-${amenity.id}-${index}`}
                           className="flex items-center gap-1 bg-primary-50 text-primary-700 px-2 py-1 rounded-md text-xs"
                         >
                           <AmenityIcon 
                             name={amenity.icon || 'default'} 
-                            iconType={amenity.customIconUrl ? 'custom' : 'system'}
-                            customIconUrl={amenity.customIconUrl}
+                            iconType="system"
                             size={12} 
                             className="text-primary-600" 
                           />
