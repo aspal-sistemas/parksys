@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Search, MapPin, Tag, Filter } from 'lucide-react';
 import { Amenity, PARK_TYPES } from '@shared/schema';
 import AmenityIcon from './AmenityIcon';
+import parkIllustration from '@assets/park-0-people_1750438283360.png';
 
 interface SimpleFilterSidebarProps {
   onApplyFilters: (filters: {
@@ -98,34 +99,51 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
           </div>
         </div>
 
-        {/* Tipo de Parque - Segunda columna */}
-        <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
-          <div className="bg-[#8498a5] text-white p-3 rounded-t-lg">
+        {/* Ilustración de Parque - Segunda columna */}
+        <div className="bg-white rounded-lg border border-gray-300 shadow-sm overflow-hidden">
+          <div className="bg-[#bcd256] text-gray-800 p-3 rounded-t-lg">
             <h3 className="text-base font-semibold flex items-center gap-2">
               <Tag className="h-4 w-4" />
-              Tipo de Parque
+              Descubre tu Parque Ideal
             </h3>
           </div>
           <div className="p-4">
-            <div className="space-y-2">
-              {PARK_TYPES.map((type) => (
-                <label key={type} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                  <input
-                    type="radio"
-                    name="parkType"
-                    checked={parkType === type}
-                    onChange={() => setParkType(type)}
-                    className="w-4 h-4 text-[#00a587] border-gray-300 focus:ring-[#00a587]"
-                  />
-                  <span className="text-sm text-gray-800">
-                    {type === 'neighborhood' ? 'Vecinal' :
-                     type === 'regional' ? 'Regional' :
-                     type === 'linear' ? 'Lineal' :
-                     type === 'pocket' ? 'Bolsillo' :
-                     type.replace('_', ' ')}
-                  </span>
-                </label>
-              ))}
+            <div className="relative">
+              <img
+                src={parkIllustration}
+                alt="Ilustración de parque con lagos, senderos, áreas verdes y espacios recreativos"
+                className="w-full h-40 object-cover rounded-lg"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg"></div>
+              <div className="absolute bottom-2 left-2 right-2">
+                <p className="text-white text-sm font-medium bg-black/50 backdrop-blur-sm rounded px-2 py-1">
+                  Espacios verdes para toda la familia
+                </p>
+              </div>
+            </div>
+            {/* Filtros de tipo de parque integrados discretamente */}
+            <div className="mt-3 space-y-1">
+              <p className="text-xs text-gray-500 mb-2">Tipos disponibles:</p>
+              <div className="grid grid-cols-2 gap-1 text-xs">
+                {PARK_TYPES.map((type) => (
+                  <label key={type} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                    <input
+                      type="radio"
+                      name="parkType"
+                      checked={parkType === type}
+                      onChange={() => setParkType(type)}
+                      className="w-3 h-3 text-[#00a587] border-gray-300 focus:ring-[#00a587]"
+                    />
+                    <span className="text-gray-700">
+                      {type === 'neighborhood' ? 'Vecinal' :
+                       type === 'regional' ? 'Regional' :
+                       type === 'linear' ? 'Lineal' :
+                       type === 'pocket' ? 'Bolsillo' :
+                       type.replace('_', ' ')}
+                    </span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
         </div>
