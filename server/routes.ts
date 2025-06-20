@@ -365,82 +365,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.search = String(req.query.search);
       }
       
-      // Query simplificada para obtener parques básicos
-      let queryStr = `
-        SELECT 
-          p.id, p.name, p.description, p.address, p.postal_code as "postalCode",
-          p.park_type as "parkType", p.latitude, p.longitude, p.area,
-          p.created_at as "createdAt", p.is_deleted as "isDeleted",
-          COALESCE(
-            JSON_AGG(
-              DISTINCT JSONB_BUILD_OBJECT(
-                'id', a.id,
-                'name', a.name,
-                'icon', a.icon
-              )
-            ) FILTER (WHERE a.id IS NOT NULL), 
-            '[]'::json
-          ) as amenities
-        FROM parks p
-        LEFT JOIN park_amenities pa ON p.id = pa.park_id
-        LEFT JOIN amenities a ON pa.amenity_id = a.id
-        WHERE p.is_deleted = FALSE
-      `;
+      // Obtenemos los parques con sus imágenes y amenidades
+      const parks = await getParksDirectly(filters);
       
-      const queryParams = [];
-      let paramCount = 1;
-      
-      if (filters.search) {
-        queryStr += ` AND (LOWER(p.name) LIKE $${paramCount} OR LOWER(p.description) LIKE $${paramCount})`;
-        queryParams.push(`%${filters.search.toLowerCase()}%`);
-        paramCount++;
-      }
-      
-      if (filters.parkType) {
-        queryStr += ` AND p.park_type = $${paramCount}`;
-        queryParams.push(filters.parkType);
-        paramCount++;
-      }
-      
-      if (filters.postalCode) {
-        queryStr += ` AND p.postal_code = $${paramCount}`;
-        queryParams.push(filters.postalCode);
-        paramCount++;
-      }
-      
-      queryStr += ` 
-        GROUP BY p.id, p.name, p.description, p.address, p.postal_code, 
-                 p.park_type, p.latitude, p.longitude, p.area, p.created_at, p.is_deleted
-        ORDER BY p.name
-      `;
-      
-      const result = await pool.query(queryStr, queryParams);
-      
-      // Add image data for each park
-      const parksWithImages = await Promise.all(result.rows.map(async (park) => {
-        try {
-          const imageQuery = `
-            SELECT image_url as "imageUrl"
-            FROM park_images
-            WHERE park_id = $1 AND is_primary = true
-            LIMIT 1
-          `;
-          const imageResult = await pool.query(imageQuery, [park.id]);
-          
-          return {
-            ...park,
-            imageUrl: imageResult.rows[0]?.imageUrl || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cGFya3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60'
-          };
-        } catch (error) {
-          console.error(`Error loading image for park ${park.id}:`, error);
-          return {
-            ...park,
-            imageUrl: 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cGFya3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60'
-          };
-        }
-      }));
-      
-      res.json(parksWithImages);
+      // Respondemos con los parques completos
+      res.json(parks);
     } catch (error) {
       console.error("Error al obtener parques:", error);
       res.status(500).json({ message: "Error fetching parks" });

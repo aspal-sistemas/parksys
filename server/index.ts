@@ -1,6 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { createSimpleRoutes } from "./simple-routes";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
 import { activityRouter } from "./activityRoutes";
@@ -492,11 +491,6 @@ import { initializeDatabase } from "./initialize-db";
   } catch (error) {
     console.error("Error al registrar rutas de Recibos de Nómina:", error);
   }
-
-  // Add simple working routes for parks before complex routes
-  const simpleRouter = createSimpleRoutes();
-  app.use("/api", simpleRouter);
-  console.log("Simple routes registered for parks");
 
   const server = await registerRoutes(app);
 
