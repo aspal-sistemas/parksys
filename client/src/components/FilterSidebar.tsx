@@ -239,7 +239,12 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
                               ? 'bg-gray-100 text-gray-600'
                               : 'bg-gray-50 text-gray-400'
                         }`}>
-                          <AmenityIcon name={amenity.icon} size={24} />
+                          <AmenityIcon 
+                            name={amenity.icon || ''} 
+                            customIconUrl={amenity.customIconUrl || null}
+                            iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
+                            size={24} 
+                          />
                         </div>
                         <span className={`text-xs text-center mt-1 font-medium ${
                           !isInActiveCategory(amenity) && !selectedAmenities.includes(amenity.id) 
