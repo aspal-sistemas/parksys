@@ -240,8 +240,9 @@ const AdminAmenitiesPage = () => {
         customIconUrl: null
       });
     },
-    onError: () => {
-      toast({ title: "Error al crear amenidad", variant: "destructive" });
+    onError: (error: any) => {
+      const errorMessage = error?.message || "Error al crear amenidad";
+      toast({ title: errorMessage, variant: "destructive" });
     },
   });
 
