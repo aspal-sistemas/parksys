@@ -11,7 +11,7 @@ import { db, pool } from "./db";
 import { sql, eq } from "drizzle-orm";
 import { deleteAllVolunteers, deleteVolunteer } from "./delete-all-volunteers";
 import * as schema from "@shared/schema";
-const { parkAmenities } = schema;
+const { parkAmenities, amenities } = schema;
 import { videoRouter } from "./video_routes";
 import { registerVolunteerRoutes } from "./volunteerRoutes";
 import { registerInstructorRoutes } from "./instructorRoutes";
@@ -1394,7 +1394,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
 
           if (amenityData.name) {
-            await storage.createAmenity(amenityData);
+            await db.insert(amenities).values({
+              name: amenityData.name,
+              icon: amenityData.icon,
+              category: amenityData.category,
+              iconType: amenityData.iconType,
+              customIconUrl: amenityData.customIconUrl
+            });
             importedCount++;
           }
         } catch (error) {
@@ -1494,7 +1500,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             customIconUrl: iconUrl
           };
 
-          await storage.createAmenity(amenityData);
+          await db.insert(amenities).values({
+            name: amenityData.name,
+            icon: amenityData.icon,
+            category: amenityData.category,
+            iconType: amenityData.iconType,
+            customIconUrl: amenityData.customIconUrl
+          });
           
           results.push({
             filename: file.originalname,
