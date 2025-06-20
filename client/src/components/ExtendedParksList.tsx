@@ -53,8 +53,8 @@ export default function ExtendedParksList({ parks, isLoading, onParkSelect }: Ex
   if (parks.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-        <div className="text-gray-500 text-lg mb-2">No parks found</div>
-        <div className="text-gray-400">Try adjusting your search criteria</div>
+        <div className="text-gray-500 text-lg mb-2">No se encontraron parques</div>
+        <div className="text-gray-400">Intenta ajustar tus criterios de búsqueda</div>
       </div>
     );
   }
@@ -102,13 +102,12 @@ export default function ExtendedParksList({ parks, isLoading, onParkSelect }: Ex
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-xs">
-                      {park.parkType?.replace('_', ' ') || 'Park'}
+                      {park.parkType === 'urbano' ? 'Urbano' :
+                       park.parkType === 'lineal' ? 'Lineal' :
+                       park.parkType === 'metropolitano' ? 'Metropolitano' :
+                       park.parkType === 'vecinal' ? 'Vecinal' :
+                       park.parkType?.replace('_', ' ') || 'Parque'}
                     </Badge>
-                    {park.area && (
-                      <Badge variant="secondary" className="text-xs">
-                        {park.area}
-                      </Badge>
-                    )}
                   </div>
                 </div>
 
@@ -121,10 +120,10 @@ export default function ExtendedParksList({ parks, isLoading, onParkSelect }: Ex
 
                 {/* Amenidades del parque */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Available Facilities:</h4>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Instalaciones Disponibles:</h4>
                   <div className="flex flex-wrap gap-2">
                     {park.amenities && park.amenities.length > 0 ? (
-                      park.amenities.slice(0, 8).map((amenity) => (
+                      park.amenities.map((amenity) => (
                         <div
                           key={amenity.id}
                           className="flex items-center gap-1 bg-primary-50 text-primary-700 px-2 py-1 rounded-md text-xs"
@@ -138,12 +137,7 @@ export default function ExtendedParksList({ parks, isLoading, onParkSelect }: Ex
                         </div>
                       ))
                     ) : (
-                      <span className="text-gray-400 text-sm italic">No facilities listed</span>
-                    )}
-                    {park.amenities && park.amenities.length > 8 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{park.amenities.length - 8} more
-                      </Badge>
+                      <span className="text-gray-400 text-sm italic">No hay instalaciones listadas</span>
                     )}
                   </div>
                 </div>
@@ -153,16 +147,16 @@ export default function ExtendedParksList({ parks, isLoading, onParkSelect }: Ex
                   {park.postalCode && (
                     <div className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" />
-                      <span>Zip: {park.postalCode}</span>
+                      <span>CP: {park.postalCode}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    <span>Open Daily</span>
+                    <span>Abierto Diario</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Star className="h-3 w-3" />
-                    <span>Public Park</span>
+                    <span>Parque Público</span>
                   </div>
                 </div>
               </div>
@@ -170,13 +164,13 @@ export default function ExtendedParksList({ parks, isLoading, onParkSelect }: Ex
               {/* Botón de acción */}
               <div className="flex-shrink-0 flex flex-col justify-center">
                 <button 
-                  className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                  className="bg-[#00a587] hover:bg-[#067f5f] text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                   onClick={(e) => {
                     e.stopPropagation();
                     onParkSelect(park);
                   }}
                 >
-                  View Details
+                  Ver Detalles
                 </button>
               </div>
             </div>
