@@ -83,6 +83,14 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                 </p>
               </div>
             </div>
+            
+            {/* Descripción de Guadalajara */}
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Descubre todo lo que Guadalajara tiene para ofrecerte a través de sus Bosques y Parques Urbanos. 
+                Puedes buscarlos por nombre, código postal, tipo de parque e instalaciones y servicios que cada uno ofrece.
+              </p>
+            </div>
           </div>
         </div>
 
