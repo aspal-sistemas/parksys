@@ -1394,13 +1394,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
 
           if (amenityData.name) {
-            await db.insert(amenities).values({
-              name: amenityData.name,
-              icon: amenityData.icon,
-              category: amenityData.category,
-              iconType: amenityData.iconType,
-              customIconUrl: amenityData.customIconUrl
-            });
+            await pool.query(`
+              INSERT INTO amenities (name, icon, category, icon_type, custom_icon_url)
+              VALUES ($1, $2, $3, $4, $5)
+            `, [amenityData.name, amenityData.icon, amenityData.category, amenityData.iconType, amenityData.customIconUrl]);
             importedCount++;
           }
         } catch (error) {
@@ -1500,13 +1497,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             customIconUrl: iconUrl
           };
 
-          await db.insert(amenities).values({
-            name: amenityData.name,
-            icon: amenityData.icon,
-            category: amenityData.category,
-            iconType: amenityData.iconType,
-            customIconUrl: amenityData.customIconUrl
-          });
+          await pool.query(`
+            INSERT INTO amenities (name, icon, category, icon_type, custom_icon_url)
+            VALUES ($1, $2, $3, $4, $5)
+          `, [amenityData.name, amenityData.icon, amenityData.category, amenityData.iconType, amenityData.customIconUrl]);
           
           results.push({
             filename: file.originalname,
