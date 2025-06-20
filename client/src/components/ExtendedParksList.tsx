@@ -176,7 +176,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                     onParkSelect(park);
                   }}
                 >
-                  View Details
+                  Ver Detalles
                 </button>
               </div>
             </div>

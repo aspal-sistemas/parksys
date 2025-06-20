@@ -204,7 +204,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                 <div key={i} className="h-6 bg-gray-200 rounded animate-pulse"></div>
               ))}
             </div>
-          ) : (
+          ) : amenities.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-60 overflow-y-auto">
               {amenities.map((amenity) => (
                 <label 
@@ -229,6 +229,11 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                   </div>
                 </label>
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p className="text-sm">No se pudieron cargar las instalaciones</p>
+              <p className="text-xs mt-1">Intenta recargar la página</p>
             </div>
           )}
           
