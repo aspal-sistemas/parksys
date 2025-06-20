@@ -985,14 +985,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           a.name,
           a.icon,
           a.category,
-          a.created_at as "createdAt",
           a.icon_type as "iconType",
           a.custom_icon_url as "customIconUrl",
           COUNT(DISTINCT pa.park_id) as "parksCount",
           COUNT(pa.park_id) as "totalModules"
         FROM amenities a
         LEFT JOIN park_amenities pa ON a.id = pa.amenity_id
-        GROUP BY a.id, a.name, a.icon, a.category, a.created_at, a.icon_type, a.custom_icon_url
+        GROUP BY a.id, a.name, a.icon, a.category, a.icon_type, a.custom_icon_url
         ORDER BY a.name
       `);
       res.json(result.rows);
