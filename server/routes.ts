@@ -1497,16 +1497,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
             customIconUrl: iconUrl
           };
 
-          await pool.query(`
-            INSERT INTO amenities (name, icon, category, icon_type, custom_icon_url)
-            VALUES ($1, $2, $3, $4, $5)
-          `, [amenityData.name, amenityData.icon, amenityData.category, amenityData.iconType, amenityData.customIconUrl]);
+          // Verificar si ya existe
+          const existingCheck = await pool.query(`
+            SELECT id FROM amenities WHERE name = $1
+          `, [amenityData.name]);
+          
+          if (existingCheck.rows.length > 0) {
+            // Ya existe, actualizar el ícono
+            await pool.query(`
+              UPDATE amenities 
+              SET icon = $1, icon_type = $2, custom_icon_url = $3, category = $4
+              WHERE name = $5
+            `, [amenityData.icon, amenityData.iconType, amenityData.customIconUrl, amenityData.category, amenityData.name]);
+          } else {
+            // No existe, crear nuevo
+            await pool.query(`
+              INSERT INTO amenities (name, icon, category, icon_type, custom_icon_url)
+              VALUES ($1, $2, $3, $4, $5)
+            `, [amenityData.name, amenityData.icon, amenityData.category, amenityData.iconType, amenityData.customIconUrl]);
+          }
           
           results.push({
             filename: file.originalname,
             amenityName: amenityName,
             success: true,
-            iconUrl: iconUrl
+            iconUrl: iconUrl,
+            action: existingCheck.rows.length > 0 ? 'updated' : 'created'
           });
 
         } catch (error) {
@@ -1521,12 +1537,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const successCount = results.filter(r => r.success).length;
       const failedCount = results.filter(r => !r.success).length;
+      const createdCount = results.filter(r => r.success && r.action === 'created').length;
+      const updatedCount = results.filter(r => r.success && r.action === 'updated').length;
 
       res.json({
         success: true,
-        message: `${successCount} amenidades creadas exitosamente`,
+        message: `${createdCount} amenidades creadas, ${updatedCount} actualizadas`,
         successCount,
         failedCount,
+        createdCount,
+        updatedCount,
         results
       });
       
