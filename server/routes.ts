@@ -361,6 +361,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.postalCode = String(req.query.postalCode);
       }
       
+      if (req.query.municipality) {
+        filters.municipality = String(req.query.municipality);
+      }
+      
       if (req.query.search) {
         filters.search = String(req.query.search);
       }

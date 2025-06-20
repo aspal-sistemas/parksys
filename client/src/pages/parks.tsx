@@ -31,6 +31,7 @@ const Parks: React.FC = () => {
     if (filters.search) params.append('search', filters.search);
     if (filters.parkType) params.append('parkType', filters.parkType);
     if (filters.postalCode) params.append('postalCode', filters.postalCode);
+    if (filters.municipality) params.append('municipality', filters.municipality);
     if (filters.amenityIds && filters.amenityIds.length > 0) {
       params.append('amenities', filters.amenityIds.join(','));
     }
