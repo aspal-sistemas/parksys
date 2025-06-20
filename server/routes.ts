@@ -365,16 +365,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.search = String(req.query.search);
       }
       
-      // Obtener parques de la base de datos original
+      // Recuperar parques usando el sistema robusto de recuperación
       try {
-        const parks = await getParksDirectly(filters);
-        console.log(`Encontrados ${parks.length} parques en la base de datos`);
-        res.json(parks);
+        const { databaseRecovery } = await import("./database-recovery");
+        const allParks = await databaseRecovery.recoverAllParks();
+        
+        // Aplicar filtros a los parques recuperados
+        let filteredParks = allParks;
+        
+        if (filters.search) {
+          const searchTerm = filters.search.toLowerCase();
+          filteredParks = filteredParks.filter(park => 
+            park.name.toLowerCase().includes(searchTerm) ||
+            park.description?.toLowerCase().includes(searchTerm) ||
+            park.address?.toLowerCase().includes(searchTerm)
+          );
+        }
+        
+        if (filters.type && filters.type !== 'todos') {
+          filteredParks = filteredParks.filter(park => park.parkType === filters.type);
+        }
+        
+        console.log(`✓ Sistema robusto: ${allParks.length} parques totales, ${filteredParks.length} filtrados`);
+        res.json(filteredParks);
       } catch (dbError) {
-        console.error("Error de conectividad de BD:", dbError);
-        // Reintentar con conexión limpia
-        const parks = await getParksDirectly(filters);
-        res.json(parks);
+        console.error("Error en sistema de recuperación:", dbError);
+        res.status(503).json({ 
+          message: "Base de datos temporalmente no disponible",
+          error: "DATABASE_CONNECTIVITY_ISSUE"
+        });
       }
     } catch (error) {
       console.error("Error al obtener parques:", error);
