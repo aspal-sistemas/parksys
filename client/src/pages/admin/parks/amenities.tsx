@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
+import AmenityIcon from "@/components/AmenityIcon";
 import { apiRequest } from "@/lib/queryClient";
 import { Plus, Edit, Trash2, ArrowLeft, MapPin, Package } from "lucide-react";
 
@@ -195,23 +196,7 @@ export default function ParkAmenitiesPage() {
     }
   };
 
-  function AmenityIcon({ name, customIconUrl }: { name: string | null; customIconUrl: string | null }) {
-    if (customIconUrl) {
-      return (
-        <img 
-          src={customIconUrl} 
-          alt="Icono amenidad"
-          className="w-6 h-6 object-contain"
-        />
-      );
-    }
-    
-    return (
-      <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center">
-        <Package className="w-4 h-4 text-gray-500" />
-      </div>
-    );
-  }
+
 
   if (isLoadingParkAmenities) {
     return (
@@ -277,7 +262,12 @@ export default function ParkAmenitiesPage() {
                       {availableAmenities.map((amenity: Amenity) => (
                         <SelectItem key={amenity.id} value={amenity.id.toString()}>
                           <div className="flex items-center space-x-2">
-                            <AmenityIcon name={amenity.icon} customIconUrl={amenity.customIconUrl} />
+                            <AmenityIcon 
+                              name={amenity.icon || 'default'} 
+                              iconType={amenity.customIconUrl ? 'custom' : 'system'}
+                              customIconUrl={amenity.customIconUrl}
+                              size={20}
+                            />
                             <span>{amenity.name}</span>
                           </div>
                         </SelectItem>
@@ -389,7 +379,11 @@ export default function ParkAmenitiesPage() {
                     <TableRow key={amenity.id}>
                       <TableCell>
                         <div className="flex items-center space-x-3">
-                          <AmenityIcon name={amenity.amenityIcon} customIconUrl={null} />
+                          <AmenityIcon 
+                            name={amenity.amenityIcon || 'default'} 
+                            iconType="system"
+                            size={20}
+                          />
                           <span className="font-medium">{amenity.amenityName}</span>
                         </div>
                       </TableCell>
