@@ -83,7 +83,7 @@ export class DatabaseRecovery {
         // Enriquecer con amenidades
         const enrichedParks = parksData.map(park => ({
           ...park,
-          amenities: []
+          amenities: [] as any[]
         }));
         
         for (const park of enrichedParks) {
@@ -103,7 +103,7 @@ export class DatabaseRecovery {
           }
         }
         
-        return parksData;
+        return enrichedParks;
       });
 
       // Actualizar caché
@@ -125,16 +125,16 @@ export class DatabaseRecovery {
       }
       
       return allParks;
-    } catch (error) {
-      console.error("Error en recuperación de base de datos:", error.message);
+    } catch (error: any) {
+      console.error("Error en recuperación de base de datos:", error?.message || 'Error desconocido');
       
       // Si tenemos caché, usarlo aunque sea viejo
-      if (this.cachedParks) {
+      if (this.cachedParks && this.cachedParks.length > 0) {
         console.log(`Usando caché expirado (${this.cachedParks.length} parques)`);
         return this.cachedParks;
       }
       
-      throw new Error(`No se pudo recuperar datos de la base de datos: ${error.message}`);
+      throw new Error(`No se pudo recuperar datos de la base de datos: ${error?.message || 'Error desconocido'}`);
     }
   }
 

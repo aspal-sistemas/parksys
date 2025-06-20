@@ -1,29 +1,33 @@
-// Datos temporales mientras se resuelve la conectividad de la base de datos
-export const fallbackParks = [
+// Datos de respaldo para continuidad de servicio durante problemas de conectividad
+export function getFallbackParks() {
+  return [
   {
     id: 1,
     name: "Parque Agua Azul",
+    municipalityId: 1,
+    parkType: "metropolitano",
     description: "Parque histórico en el corazón de Guadalajara con jardines botánicos, lago artificial y áreas recreativas familiares.",
     address: "Calzada Independencia Sur 973, Guadalajara, Jalisco",
-    latitude: 20.6736,
-    longitude: -103.3370,
-    type: "urbano",
-    size: 168000,
-    municipalityId: 1,
+    postalCode: "44100",
+    latitude: "20.6736",
+    longitude: "-103.3370",
+    area: "168000",
+    capacity: "5000",
+    openingHours: "06:00-20:00",
+    accessibilityFeatures: "Rampas de acceso, senderos pavimentados",
+    maintenanceSchedule: "Diario",
+    contactInfo: "parque.aguaazul@guadalajara.gob.mx",
+    emergencyContact: "911",
+    isPetFriendly: true,
+    hasParking: true,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
-    isActive: true,
-    primaryImageUrl: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop",
-    images: [
-      { id: 1, url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop", isPrimary: true }
-    ],
     amenities: [
-      { id: 1, name: "Lago artificial", icon: "🏊" },
-      { id: 2, name: "Jardín botánico", icon: "🌸" },
-      { id: 3, name: "Área de juegos", icon: "🎠" },
-      { id: 4, name: "Senderos", icon: "🚶" }
-    ],
-    activities: []
+      { id: 1, name: "Lago artificial", icon: "🏊", createdAt: new Date() },
+      { id: 2, name: "Jardín botánico", icon: "🌸", createdAt: new Date() },
+      { id: 3, name: "Área de juegos", icon: "🎠", createdAt: new Date() },
+      { id: 4, name: "Senderos", icon: "🚶", createdAt: new Date() }
+    ]
   },
   {
     id: 2,
@@ -149,3 +153,5 @@ export const fallbackAmenities = [
   { id: 19, name: "Área de lectura", icon: "📚", createdAt: new Date() },
   { id: 20, name: "WiFi gratuito", icon: "📶", createdAt: new Date() }
 ];
+  ];
+}

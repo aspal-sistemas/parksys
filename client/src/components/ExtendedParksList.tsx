@@ -1,181 +1,201 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { ExtendedPark, Amenity } from '@shared/schema';
-import { MapPin, Clock, Star } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import AmenityIcon from './AmenityIcon';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { MapPin, Clock, Users, Car, Heart, Info } from "lucide-react";
 
-interface ExtendedParksListProps {
-  parks: ExtendedPark[];
-  isLoading: boolean;
-  onParkSelect: (park: ExtendedPark) => void;
+interface Park {
+  id: number;
+  name: string;
+  parkType: string;
+  description: string | null;
+  address: string;
+  area: string | null;
+  capacity: string | null;
+  openingHours: string | null;
+  isPetFriendly: boolean | null;
+  hasParking: boolean | null;
+  amenities?: Array<{
+    id: number;
+    name: string;
+    icon: string | null;
+  }>;
 }
 
-export default function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksListProps) {
-  // Obtenemos las amenidades para mostrar los iconos
-  const { data: amenities = [] } = useQuery<Amenity[]>({
-    queryKey: ['/api/amenities']
-  });
+interface ExtendedParksListProps {
+  parks: Park[];
+}
 
-  const getAmenityName = (amenityId: number) => {
-    const amenity = amenities.find(a => a.id === amenityId);
-    return amenity ? amenity.name : 'Amenidad';
+const parkTypeTranslations = {
+  'metropolitano': 'Metropolitano',
+  'vecinal': 'Vecinal',
+  'regional': 'Regional',
+  'lineal': 'Lineal',
+  'bolsillo': 'De Bolsillo'
+};
+
+const parkTypeColors = {
+  'metropolitano': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  'vecinal': 'bg-blue-100 text-blue-800 border-blue-200',
+  'regional': 'bg-purple-100 text-purple-800 border-purple-200',
+  'lineal': 'bg-orange-100 text-orange-800 border-orange-200',
+  'bolsillo': 'bg-pink-100 text-pink-800 border-pink-200'
+};
+
+export default function ExtendedParksList({ parks }: ExtendedParksListProps) {
+  const [expandedPark, setExpandedPark] = useState<number | null>(null);
+
+  const toggleExpanded = (parkId: number) => {
+    setExpandedPark(expandedPark === parkId ? null : parkId);
   };
-
-  const getAmenityIcon = (amenityId: number) => {
-    const amenity = amenities.find(a => a.id === amenityId);
-    return amenity ? amenity.icon : 'default';
-  };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
-            <div className="flex gap-6">
-              <div className="w-48 h-32 bg-gray-200 rounded-lg flex-shrink-0"></div>
-              <div className="flex-1 space-y-3">
-                <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                <div className="flex gap-2">
-                  {[...Array(4)].map((_, j) => (
-                    <div key={j} className="h-6 w-20 bg-gray-200 rounded"></div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   if (parks.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-        <div className="text-gray-500 text-lg mb-2">No se encontraron parques</div>
-        <div className="text-gray-400">Intenta ajustar tus criterios de búsqueda</div>
+      <div className="text-center py-12">
+        <div className="max-w-md mx-auto">
+          <div className="mb-4">
+            <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
+              <MapPin className="w-8 h-8 text-gray-400" />
+            </div>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            No se encontraron parques
+          </h3>
+          <p className="text-gray-600">
+            Intenta ajustar los filtros de búsqueda para encontrar parques que coincidan con tus criterios.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {parks.map((park) => (
-        <div 
-          key={park.id}
-          className="bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all duration-200 cursor-pointer"
-          onClick={() => onParkSelect(park)}
-        >
-          <div className="p-6">
-            <div className="flex gap-6">
-              {/* Imagen del parque */}
-              <div className="w-48 h-32 flex-shrink-0">
-                {park.primaryImage ? (
-                  <img
-                    src={park.primaryImage}
-                    alt={park.name}
-                    className="w-full h-full object-cover rounded-lg"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60';
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-primary-100 to-secondary-100 rounded-lg flex items-center justify-center">
-                    <MapPin className="h-8 w-8 text-primary-600" />
+        <Card key={park.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-4">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <CardTitle className="text-xl text-gray-900 mb-2">
+                  {park.name}
+                </CardTitle>
+                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    {park.address}
                   </div>
-                )}
-              </div>
-
-              {/* Información del parque */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 hover:text-primary-600 transition-colors">
-                      {park.name}
-                    </h3>
-                    <div className="flex items-center text-gray-600 mt-1">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{park.address}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {park.parkType === 'urbano' ? 'Urbano' :
-                       park.parkType === 'lineal' ? 'Lineal' :
-                       park.parkType === 'metropolitano' ? 'Metropolitano' :
-                       park.parkType === 'vecinal' ? 'Vecinal' :
-                       park.parkType?.replace('_', ' ') || 'Parque'}
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge 
+                    variant="outline" 
+                    className={parkTypeColors[park.parkType as keyof typeof parkTypeColors] || 'bg-gray-100 text-gray-800'}
+                  >
+                    {parkTypeTranslations[park.parkType as keyof typeof parkTypeTranslations] || park.parkType}
+                  </Badge>
+                  
+                  {park.area && (
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      {parseInt(park.area).toLocaleString()} m²
                     </Badge>
-                  </div>
-                </div>
-
-                {/* Descripción */}
-                {park.description && (
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {park.description}
-                  </p>
-                )}
-
-                {/* Amenidades del parque */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Instalaciones Disponibles:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {park.amenities && park.amenities.length > 0 ? (
-                      park.amenities.map((amenity) => (
-                        <div
-                          key={amenity.id}
-                          className="flex items-center gap-1 bg-primary-50 text-primary-700 px-2 py-1 rounded-md text-xs"
-                        >
-                          <AmenityIcon 
-                            name={amenity.icon || 'default'} 
-                            size={12} 
-                            className="text-primary-600" 
-                          />
-                          <span>{amenity.name}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <span className="text-gray-400 text-sm italic">No hay instalaciones listadas</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Información adicional */}
-                <div className="flex items-center gap-6 text-sm text-gray-500">
-                  {park.postalCode && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      <span>CP: {park.postalCode}</span>
-                    </div>
                   )}
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    <span>Abierto Diario</span>
+                  
+                  {park.isPetFriendly && (
+                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                      <Heart className="w-3 h-3 mr-1" />
+                      Pet Friendly
+                    </Badge>
+                  )}
+                  
+                  {park.hasParking && (
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      <Car className="w-3 h-3 mr-1" />
+                      Estacionamiento
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => toggleExpanded(park.id)}
+                className="ml-4"
+              >
+                <Info className="w-4 h-4 mr-1" />
+                {expandedPark === park.id ? 'Menos' : 'Más'} info
+              </Button>
+            </div>
+          </CardHeader>
+
+          <CardContent className="pt-0">
+            {park.description && (
+              <p className="text-gray-700 mb-4 leading-relaxed">
+                {park.description}
+              </p>
+            )}
+
+            {/* Información básica siempre visible */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {park.openingHours && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Clock className="w-4 h-4 text-gray-400" />
+                  <span>Horario: {park.openingHours}</span>
+                </div>
+              )}
+              
+              {park.capacity && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Users className="w-4 h-4 text-gray-400" />
+                  <span>Capacidad: {park.capacity} personas</span>
+                </div>
+              )}
+            </div>
+
+            {/* Amenidades */}
+            {park.amenities && park.amenities.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Amenidades disponibles:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {park.amenities.slice(0, expandedPark === park.id ? undefined : 6).map((amenity) => (
+                    <Badge key={amenity.id} variant="secondary" className="text-xs">
+                      {amenity.name}
+                    </Badge>
+                  ))}
+                  {park.amenities.length > 6 && expandedPark !== park.id && (
+                    <Badge variant="outline" className="text-xs text-gray-500">
+                      +{park.amenities.length - 6} más
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Información extendida - solo visible cuando está expandido */}
+            {expandedPark === park.id && (
+              <div className="border-t pt-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <h5 className="font-medium text-gray-900 mb-2">Detalles del parque</h5>
+                    <div className="space-y-1 text-gray-600">
+                      <p>Tipo: {parkTypeTranslations[park.parkType as keyof typeof parkTypeTranslations] || park.parkType}</p>
+                      {park.area && <p>Área total: {parseInt(park.area).toLocaleString()} m²</p>}
+                      {park.capacity && <p>Capacidad máxima: {park.capacity} personas</p>}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3 w-3" />
-                    <span>Parque Público</span>
+                  
+                  <div>
+                    <h5 className="font-medium text-gray-900 mb-2">Servicios</h5>
+                    <div className="space-y-1 text-gray-600">
+                      {park.openingHours && <p>Horarios: {park.openingHours}</p>}
+                      <p>Mascotas: {park.isPetFriendly ? 'Permitidas' : 'No permitidas'}</p>
+                      <p>Estacionamiento: {park.hasParking ? 'Disponible' : 'No disponible'}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Botón de acción */}
-              <div className="flex-shrink-0 flex flex-col justify-center">
-                <button 
-                  className="bg-[#00a587] hover:bg-[#067f5f] text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onParkSelect(park);
-                  }}
-                >
-                  Ver Detalles
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+            )}
+          </CardContent>
+        </Card>
       ))}
     </div>
   );
