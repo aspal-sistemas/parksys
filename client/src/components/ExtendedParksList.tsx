@@ -53,8 +53,8 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
   if (parks.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-        <div className="text-gray-500 text-lg mb-2">No parks found</div>
-        <div className="text-gray-400">Try adjusting your search criteria</div>
+        <div className="text-gray-500 text-lg mb-2">No se encontraron parques</div>
+        <div className="text-gray-400">Intenta ajustar los criterios de búsqueda</div>
       </div>
     );
   }
@@ -121,7 +121,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
 
                 {/* Amenidades del parque */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Available Facilities:</h4>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Instalaciones Disponibles:</h4>
                   <div className="flex flex-wrap gap-2">
                     {park.amenities && park.amenities.length > 0 ? (
                       park.amenities.slice(0, 8).map((amenity) => (
@@ -138,7 +138,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                         </div>
                       ))
                     ) : (
-                      <span className="text-gray-400 text-sm italic">No facilities listed</span>
+                      <span className="text-gray-400 text-sm italic">Sin instalaciones registradas</span>
                     )}
                     {park.amenities && park.amenities.length > 8 && (
                       <Badge variant="secondary" className="text-xs">
@@ -153,16 +153,16 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                   {park.postalCode && (
                     <div className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" />
-                      <span>Zip: {park.postalCode}</span>
+                      <span>CP: {park.postalCode}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    <span>Open Daily</span>
+                    <span>Abierto Diariamente</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Star className="h-3 w-3" />
-                    <span>Public Park</span>
+                    <span>Parque Público</span>
                   </div>
                 </div>
               </div>
