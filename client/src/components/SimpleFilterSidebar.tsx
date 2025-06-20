@@ -16,6 +16,7 @@ interface SimpleFilterSidebarProps {
     search?: string;
     parkType?: string;
     postalCode?: string;
+    municipality?: string;
     amenityIds?: number[];
   }) => void;
 }
@@ -24,6 +25,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
   const [search, setSearch] = useState('');
   const [parkType, setParkType] = useState('');
   const [postalCode, setPostalCode] = useState('');
+  const [municipality, setMunicipality] = useState('');
   const [selectedAmenities, setSelectedAmenities] = useState<number[]>([]);
 
   // Obtenemos las amenidades disponibles
@@ -44,6 +46,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
       search: search || undefined,
       parkType: parkType || undefined,
       postalCode: postalCode || undefined,
+      municipality: municipality || undefined,
       amenityIds: selectedAmenities.length > 0 ? selectedAmenities : undefined
     });
   };
@@ -52,16 +55,42 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
     setSearch('');
     setParkType('');
     setPostalCode('');
+    setMunicipality('');
     setSelectedAmenities([]);
     onApplyFilters({});
   };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-      {/* Nuevo layout: Columna izquierda con búsqueda y tipos, columna derecha con ilustración */}
+      {/* Nuevo layout intercambiado: Columna izquierda con ilustración, columna derecha con búsqueda y tipos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
         
-        {/* Columna Izquierda: Búsqueda + Tipos de Parque */}
+        {/* Columna Izquierda: Ilustración Parques de México */}
+        <div className="bg-white rounded-lg border border-gray-300 shadow-sm overflow-hidden">
+          <div className="bg-[#bcd256] text-gray-800 p-3 rounded-t-lg">
+            <h3 className="text-base font-semibold flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Parques de México
+            </h3>
+          </div>
+          <div className="p-4">
+            <div className="relative">
+              <img
+                src={parkIllustration}
+                alt="Ilustración de parque con lagos, senderos, áreas verdes y espacios recreativos"
+                className="w-full h-64 object-cover rounded-lg"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg"></div>
+              <div className="absolute bottom-3 left-3 right-3">
+                <p className="text-white text-sm font-medium bg-black/60 backdrop-blur-sm rounded px-3 py-2 text-center">
+                  Espacios verdes para toda la familia
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Columna Derecha: Búsqueda + Tipos de Parque */}
         <div className="space-y-4">
           {/* Búsqueda de Parques */}
           <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
@@ -98,10 +127,23 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                   className="w-full border-gray-300 focus:border-[#00a587] focus:ring-1 focus:ring-[#00a587]"
                 />
               </div>
+              <div>
+                <label htmlFor="municipality" className="block text-sm font-medium text-gray-700 mb-1">
+                  Por Municipio
+                </label>
+                <Input
+                  id="municipality"
+                  type="text"
+                  placeholder="ej. Guadalajara"
+                  value={municipality}
+                  onChange={(e) => setMunicipality(e.target.value)}
+                  className="w-full border-gray-300 focus:border-[#00a587] focus:ring-1 focus:ring-[#00a587]"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Descubre tu Parque Ideal - Tipos */}
+          {/* Descubre tu Parque Ideal - Tipos (sin vecinal, de bolsillo, temático) */}
           <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
             <div className="bg-[#8498a5] text-white p-3 rounded-t-lg">
               <h3 className="text-base font-semibold flex items-center gap-2">
@@ -112,7 +154,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
             <div className="p-4">
               <p className="text-sm text-gray-600 mb-3">Tipos disponibles:</p>
               <div className="grid grid-cols-2 gap-2">
-                {['urbano', 'natural', 'lineal', 'metropolitano', 'vecinal', 'bolsillo', 'tematico'].map((type) => (
+                {['urbano', 'natural', 'lineal', 'metropolitano'].map((type) => (
                   <label key={type} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded text-sm">
                     <input
                       type="radio"
@@ -126,38 +168,10 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                        type === 'natural' ? 'Natural' :
                        type === 'lineal' ? 'Lineal' :
                        type === 'metropolitano' ? 'Metropolitano' :
-                       type === 'vecinal' ? 'Vecinal' :
-                       type === 'bolsillo' ? 'De Bolsillo' :
-                       type === 'tematico' ? 'Temático' :
                        type}
                     </span>
                   </label>
                 ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Columna Derecha: Solo Ilustración */}
-        <div className="bg-white rounded-lg border border-gray-300 shadow-sm overflow-hidden">
-          <div className="bg-[#bcd256] text-gray-800 p-3 rounded-t-lg">
-            <h3 className="text-base font-semibold flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Parques de México
-            </h3>
-          </div>
-          <div className="p-4">
-            <div className="relative">
-              <img
-                src={parkIllustration}
-                alt="Ilustración de parque con lagos, senderos, áreas verdes y espacios recreativos"
-                className="w-full h-64 object-cover rounded-lg"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg"></div>
-              <div className="absolute bottom-3 left-3 right-3">
-                <p className="text-white text-sm font-medium bg-black/60 backdrop-blur-sm rounded px-3 py-2 text-center">
-                  Espacios verdes para toda la familia
-                </p>
               </div>
             </div>
           </div>
@@ -250,7 +264,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
         </div>
         
         {/* Resumen de Resultados */}
-        {(search || parkType || postalCode || selectedAmenities.length > 0) && (
+        {(search || parkType || postalCode || municipality || selectedAmenities.length > 0) && (
           <div className="mt-4 text-center text-sm text-gray-600">
             <div className="inline-flex items-center gap-2 bg-[#bcd256]/20 px-4 py-2 rounded-full">
               <span className="font-medium">Filtros Activos:</span>
@@ -259,6 +273,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                   search && '1',
                   parkType && '1', 
                   postalCode && '1',
+                  municipality && '1',
                   selectedAmenities.length > 0 && '1'
                 ].filter(Boolean).length} aplicados
               </span>
