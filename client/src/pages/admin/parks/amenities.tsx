@@ -474,7 +474,12 @@ export default function ParkAmenitiesPage() {
                       setIsAssignDialogOpen(true);
                     }}
                   >
-                    <AmenityIcon name={amenity.icon} customIconUrl={amenity.customIconUrl} />
+                    <AmenityIcon 
+                      name={amenity.icon || 'default'} 
+                      iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
+                      customIconUrl={amenity.customIconUrl || null}
+                      size={24}
+                    />
                     <span className="text-sm font-medium truncate">{amenity.name}</span>
                   </div>
                 ))}
