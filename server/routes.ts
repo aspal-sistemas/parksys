@@ -204,9 +204,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Inicializamos tablas de categorías de incidentes
   try {
-    const { createIncidentCategoriesTables } = await import("./create_incident_categories_tables");
-    await createIncidentCategoriesTables();
-    console.log("Tablas de categorías de incidentes inicializadas correctamente");
+    // const { createIncidentCategoriesTables } = await import("./create_incident_categories_tables");
+    // await createIncidentCategoriesTables();
+    console.log("Saltando inicialización de tablas de categorías de incidentes...");
   } catch (error) {
     console.error("Error al inicializar tablas de categorías de incidentes:", error);
   }
