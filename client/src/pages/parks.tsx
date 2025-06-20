@@ -6,6 +6,8 @@ import ParksMap from '@/components/ParksMap';
 import ParksList from '@/components/ParksList';
 import ParkDetail from '@/components/ParkDetail';
 import ExtendedParksList from '@/components/ExtendedParksList';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Parks: React.FC = () => {
   const [filters, setFilters] = useState<{
@@ -17,6 +19,10 @@ const Parks: React.FC = () => {
   
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const parksPerPage = 10;
   
   // Build query string from filters
   const buildQueryString = () => {
@@ -38,9 +44,21 @@ const Parks: React.FC = () => {
   });
   
   // Filtrar parques sin nombre o marcados como eliminados
-  const parks = allParks.filter(park => 
+  const filteredParks = allParks.filter(park => 
     park.name.trim() !== '' && !park.isDeleted
   );
+
+  // Calculate pagination
+  const totalParks = filteredParks.length;
+  const totalPages = Math.ceil(totalParks / parksPerPage);
+  const startIndex = (currentPage - 1) * parksPerPage;
+  const endIndex = startIndex + parksPerPage;
+  const parks = filteredParks.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
   
   // Fetch detailed park data when selected
   const { data: selectedPark, isLoading: isLoadingPark } = useQuery<ExtendedPark>({
@@ -87,8 +105,11 @@ const Parks: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 pb-8">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-[#067f5f]">
-            Resultados de Búsqueda ({parks.length} parques encontrados)
+            Resultados de Búsqueda ({totalParks} parques encontrados)
           </h2>
+          <div className="text-sm text-gray-600">
+            Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalParks)} de {totalParks} parques
+          </div>
         </div>
         
         <ExtendedParksList 
@@ -99,6 +120,64 @@ const Parks: React.FC = () => {
             setModalOpen(true);
           }}
         />
+
+        {/* Paginación */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </Button>
+            
+            <div className="flex items-center space-x-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNumber;
+                if (totalPages <= 5) {
+                  pageNumber = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNumber = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNumber = totalPages - 4 + i;
+                } else {
+                  pageNumber = currentPage - 2 + i;
+                }
+                
+                return (
+                  <Button
+                    key={pageNumber}
+                    variant={currentPage === pageNumber ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNumber)}
+                    className={`w-10 h-10 ${
+                      currentPage === pageNumber 
+                        ? "bg-[#00a587] hover:bg-[#067f5f] text-white" 
+                        : "hover:bg-gray-50"
+                    }`}
+                  >
+                    {pageNumber}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1"
+            >
+              Siguiente
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Modal de detalle del parque */}
