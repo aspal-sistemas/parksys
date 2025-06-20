@@ -207,7 +207,12 @@ const ParkDetail: React.FC<ParkDetailProps> = ({
                           {park.amenities.map(amenity => (
                             <div key={amenity.id} className="flex items-center">
                               <div className="text-primary-500 mr-2">
-                                <AmenityIcon name={amenity.icon} className="h-5 w-5" />
+                                <AmenityIcon 
+                                  name={amenity.icon || ''} 
+                                  customIconUrl={amenity.customIconUrl || null} 
+                                  iconType={amenity.customIconUrl ? 'custom' : 'system'}
+                                  className="h-5 w-5" 
+                                />
                               </div>
                               <span>{amenity.name}</span>
                             </div>
