@@ -72,197 +72,175 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
       {/* Contenido de filtros */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         
-        {/* AMENIDADES - Sección principal y más destacada */}
-        <div className="bg-gradient-to-br from-primary-50 via-secondary-50 to-accent-50 rounded-xl p-1 shadow-lg">
-          <Card className="border-0 shadow-none bg-white/80 backdrop-blur-sm">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-bold text-gray-900 flex items-center gap-3">
-                  <div className="p-2 bg-primary-100 rounded-lg">
-                    <Tag className="h-5 w-5 text-primary-600" />
-                  </div>
-                  ¿Qué buscas en tu parque?
-                </CardTitle>
-                {selectedAmenities.length > 0 && (
-                  <Badge className="bg-primary-600 text-white px-3 py-1">
-                    {selectedAmenities.length} seleccionadas
-                  </Badge>
-                )}
-              </div>
-              <p className="text-sm text-gray-600 mt-2">Selecciona las amenidades que más te interesan</p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 gap-2 max-h-80 overflow-y-auto pr-2">
+        {/* AMENIDADES - Estilo NYC Parks */}
+        <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
+          <div className="bg-primary-600 text-white p-4 rounded-t-lg">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Tag className="h-5 w-5" />
+              Facilities & Amenities
+              {selectedAmenities.length > 0 && (
+                <span className="bg-white text-primary-600 px-2 py-1 rounded-full text-xs font-bold ml-2">
+                  {selectedAmenities.length}
+                </span>
+              )}
+            </h3>
+          </div>
+          
+          <div className="p-4">
+            <div className="max-h-80 overflow-y-auto">
+              <div className="grid grid-cols-1 gap-2">
                 {amenities.map((amenity) => (
-                  <div 
-                    key={amenity.id} 
-                    className={`
-                      group relative flex items-center space-x-4 p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer
-                      ${selectedAmenities.includes(amenity.id) 
-                        ? 'border-primary-300 bg-primary-50 shadow-md transform scale-[1.02]' 
-                        : 'border-gray-200 bg-white hover:border-primary-200 hover:bg-primary-25 hover:shadow-sm'
-                      }
-                    `}
-                    onClick={() => handleAmenityToggle(amenity.id)}
+                  <label 
+                    key={amenity.id}
+                    className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer group"
                   >
-                    {/* Checkbox personalizado */}
-                    <div className={`
-                      flex items-center justify-center w-5 h-5 rounded-md border-2 transition-all duration-200
-                      ${selectedAmenities.includes(amenity.id)
-                        ? 'bg-primary-600 border-primary-600'
-                        : 'border-gray-300 group-hover:border-primary-400'
-                      }
-                    `}>
-                      {selectedAmenities.includes(amenity.id) && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-
-                    {/* Icono de amenidad */}
-                    <div className={`
-                      flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200
-                      ${selectedAmenities.includes(amenity.id)
-                        ? 'bg-primary-100'
-                        : 'bg-gray-100 group-hover:bg-primary-100'
-                      }
-                    `}>
+                    <input
+                      type="checkbox"
+                      checked={selectedAmenities.includes(amenity.id)}
+                      onChange={() => handleAmenityToggle(amenity.id)}
+                      className="w-4 h-4 text-primary-600 border-2 border-gray-300 rounded focus:ring-primary-500 focus:ring-2"
+                    />
+                    <div className="flex items-center gap-2 flex-1">
                       <AmenityIcon 
                         name={amenity.icon || 'default'} 
-                        size={20} 
-                        className={`
-                          transition-colors duration-200
-                          ${selectedAmenities.includes(amenity.id)
-                            ? 'text-primary-600'
-                            : 'text-gray-600 group-hover:text-primary-600'
-                          }
-                        `} 
+                        size={16} 
+                        className="text-gray-600 group-hover:text-primary-600 transition-colors" 
                       />
-                    </div>
-
-                    {/* Nombre de amenidad */}
-                    <div className="flex-1">
-                      <Label 
-                        htmlFor={`amenity-${amenity.id}`} 
-                        className={`
-                          text-sm font-medium cursor-pointer transition-colors duration-200
-                          ${selectedAmenities.includes(amenity.id)
-                            ? 'text-primary-900'
-                            : 'text-gray-700 group-hover:text-primary-800'
-                          }
-                        `}
-                      >
+                      <span className="text-sm text-gray-800 group-hover:text-primary-800 transition-colors">
                         {amenity.name}
-                      </Label>
+                      </span>
                     </div>
-
-                    {/* Indicador visual de selección */}
-                    {selectedAmenities.includes(amenity.id) && (
-                      <div className="absolute top-2 right-2">
-                        <div className="w-2 h-2 bg-primary-600 rounded-full animate-pulse"></div>
-                      </div>
-                    )}
-                  </div>
+                  </label>
                 ))}
               </div>
+            </div>
 
-              {/* Mensaje motivacional cuando hay amenidades seleccionadas */}
-              {selectedAmenities.length > 0 && (
-                <div className="mt-4 p-3 bg-primary-100 rounded-lg border border-primary-200">
-                  <p className="text-sm text-primary-800 font-medium">
-                    ¡Perfecto! Buscaremos parques con {selectedAmenities.length} {selectedAmenities.length === 1 ? 'amenidad' : 'amenidades'} específicas.
-                  </p>
+            {/* Contador y acción rápida */}
+            {selectedAmenities.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">
+                    {selectedAmenities.length} amenidad{selectedAmenities.length !== 1 ? 'es' : ''} seleccionada{selectedAmenities.length !== 1 ? 's' : ''}
+                  </span>
+                  <button
+                    onClick={() => setSelectedAmenities([])}
+                    className="text-primary-600 hover:text-primary-800 font-medium"
+                  >
+                    Clear All
+                  </button>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Filtros adicionales compactos */}
-        <div className="grid grid-cols-1 gap-3">
-          {/* Búsqueda rápida */}
-          <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <Search className="h-4 w-4 text-gray-500" />
-              <Label htmlFor="search" className="text-sm text-gray-700">Buscar por nombre</Label>
-            </div>
-            <Input
-              id="search"
-              type="text"
-              placeholder="Nombre del parque..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-8 text-sm"
-            />
+        {/* Park Search - Estilo NYC Parks */}
+        <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
+          <div className="bg-secondary-600 text-white p-3 rounded-t-lg">
+            <h3 className="text-base font-semibold flex items-center gap-2">
+              <Search className="h-4 w-4" />
+              Park Search
+            </h3>
           </div>
-
-          {/* Ubicación */}
-          <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="h-4 w-4 text-gray-500" />
-              <Label htmlFor="postal-code" className="text-sm text-gray-700">Código postal</Label>
+          <div className="p-4 space-y-3">
+            <div>
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                Park Name
+              </label>
+              <Input
+                id="search"
+                type="text"
+                placeholder="Enter park name..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+              />
             </div>
-            <Input
-              id="postal-code"
-              type="text"
-              placeholder="Ej: 06100"
-              value={postalCode}
-              onChange={(e) => setPostalCode(e.target.value)}
-              className="w-full h-8 text-sm"
-            />
+            <div>
+              <label htmlFor="postal-code" className="block text-sm font-medium text-gray-700 mb-1">
+                Zip Code
+              </label>
+              <Input
+                id="postal-code"
+                type="text"
+                placeholder="e.g. 06100"
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+                className="w-full border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Park Type - Estilo NYC Parks */}
+        <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
+          <div className="bg-accent-600 text-white p-3 rounded-t-lg">
+            <h3 className="text-base font-semibold flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Park Type
+            </h3>
+          </div>
+          <div className="p-4">
+            <div className="space-y-2">
+              <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                <input
+                  type="radio"
+                  name="parkType"
+                  checked={parkType === ''}
+                  onChange={() => setParkType('')}
+                  className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                />
+                <span className="text-sm text-gray-800">All Types</span>
+              </label>
+              {PARK_TYPES.map((type) => (
+                <label key={type} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                  <input
+                    type="radio"
+                    name="parkType"
+                    checked={parkType === type}
+                    onChange={() => setParkType(type)}
+                    className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                  />
+                  <span className="text-sm text-gray-800 capitalize">
+                    {type.replace('_', ' ')}
+                  </span>
+                </label>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Botones de acción destacados */}
-      <div className="p-4 border-t border-gray-200 bg-white">
-        <div className="space-y-3">
-          {/* Botón principal */}
-          <Button 
+      {/* Action Buttons - Estilo NYC Parks */}
+      <div className="p-4 border-t-2 border-gray-300 bg-gray-50">
+        <div className="flex gap-3">
+          <button
             onClick={handleApplyFilters}
-            className="w-full h-12 bg-primary-600 hover:bg-primary-700 text-white font-medium text-base shadow-lg hover:shadow-xl transition-all duration-200"
+            className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded border-2 border-primary-600 transition-colors duration-200"
           >
-            <Search className="h-5 w-5 mr-2" />
-            Buscar Parques
-          </Button>
-          
-          {/* Botón secundario */}
-          <Button 
+            Find Parks
+          </button>
+          <button
             onClick={handleClearFilters}
-            variant="outline"
-            className="w-full h-10 border-gray-300 text-gray-600 hover:bg-gray-50"
-            size="sm"
+            className="px-4 py-3 bg-white hover:bg-gray-100 text-gray-700 font-semibold rounded border-2 border-gray-300 transition-colors duration-200"
           >
-            Limpiar filtros
-          </Button>
+            Clear
+          </button>
         </div>
         
-        {/* Resumen visual de filtros activos */}
+        {/* Results Summary */}
         {(search || parkType || postalCode || selectedAmenities.length > 0) && (
-          <div className="mt-4 p-3 bg-primary-50 rounded-lg border border-primary-200">
-            <div className="text-xs font-medium text-primary-800 mb-2">Filtros activos:</div>
-            <div className="flex flex-wrap gap-1">
-              {search && (
-                <Badge variant="secondary" className="text-xs">
-                  Búsqueda: {search}
-                </Badge>
-              )}
-              {parkType && (
-                <Badge variant="secondary" className="text-xs">
-                  Tipo: {parkType}
-                </Badge>
-              )}
-              {postalCode && (
-                <Badge variant="secondary" className="text-xs">
-                  CP: {postalCode}
-                </Badge>
-              )}
-              {selectedAmenities.length > 0 && (
-                <Badge className="bg-primary-600 text-white text-xs">
-                  {selectedAmenities.length} amenidades
-                </Badge>
-              )}
+          <div className="mt-3 text-sm text-gray-600">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">Active Filters:</span>
+              <span className="text-primary-600 font-semibold">
+                {[
+                  search && '1',
+                  parkType && '1', 
+                  postalCode && '1',
+                  selectedAmenities.length > 0 && '1'
+                ].filter(Boolean).length} applied
+              </span>
             </div>
           </div>
         )}
