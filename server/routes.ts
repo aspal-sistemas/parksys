@@ -68,6 +68,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Configure multer for file uploads
   const upload = multer({ storage: multer.memoryStorage() });
   
+  // Configure multer specifically for icon uploads with disk storage
+  const iconUpload = multer({
+    storage: multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, 'public/uploads/');
+      },
+      filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = file.originalname.split('.').pop();
+        cb(null, `amenity-icon-${uniqueSuffix}.${extension}`);
+      }
+    }),
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Formato de archivo no válido. Solo se permiten PNG, JPG, JPEG y SVG'));
+      }
+    },
+    limits: {
+      fileSize: 2 * 1024 * 1024 // 2MB
+    }
+  });
+  
   // Template download routes (must be defined before conflicting routes)
   app.get('/api/template/parks-import', generateImportTemplate);
   
@@ -1433,23 +1458,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload amenity icon
-  apiRouter.post("/amenities/upload-icon", upload.single('icon'), async (req: Request, res: Response) => {
+  apiRouter.post("/amenities/upload-icon", iconUpload.single('icon'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No se ha seleccionado ningún archivo" });
       }
 
-      // Validate file type
-      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
-      if (!allowedTypes.includes(req.file.mimetype)) {
-        return res.status(400).json({ error: "Formato de archivo no válido. Solo se permiten PNG, JPG, JPEG y SVG" });
-      }
-
-      // Validate file size (max 2MB)
-      if (req.file.size > 2 * 1024 * 1024) {
-        return res.status(400).json({ error: "El archivo es demasiado grande. Tamaño máximo: 2MB" });
-      }
-
+      console.log("Archivo subido:", req.file);
       const iconUrl = `/uploads/${req.file.filename}`;
       
       res.json({ 
@@ -1464,7 +1479,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Bulk upload amenity icons and create amenities
-  apiRouter.post("/amenities/bulk-upload", upload.array('icons', 50), async (req: Request, res: Response) => {
+  apiRouter.post("/amenities/bulk-upload", iconUpload.array('icons', 50), async (req: Request, res: Response) => {
     try {
       const files = req.files as Express.Multer.File[];
       if (!files || files.length === 0) {
