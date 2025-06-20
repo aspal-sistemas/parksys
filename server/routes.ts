@@ -1641,16 +1641,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parkId = Number(req.params.parkId);
       const amenityId = Number(req.params.amenityId);
       
-      const result = await storage.removeAmenityFromPark(parkId, amenityId);
+      // Delete the park amenity relationship
+      const result = await pool.query(`
+        DELETE FROM park_amenities 
+        WHERE park_id = $1 AND amenity_id = $2
+        RETURNING *
+      `, [parkId, amenityId]);
       
-      if (!result) {
-        return res.status(404).json({ message: "Amenity not found for this park" });
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Amenidad no encontrada en este parque" });
       }
       
-      res.status(204).send();
+      res.json({ message: "Amenidad removida correctamente del parque" });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Error removing amenity from park" });
+      console.error("Error removiendo amenidad del parque:", error);
+      res.status(500).json({ message: "Error al remover amenidad del parque" });
     }
   });
 
