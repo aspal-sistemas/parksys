@@ -417,6 +417,67 @@ const AdminAmenitiesPage = () => {
     createAmenity.mutate(formData);
   };
 
+  const handleBulkIconUpload = async () => {
+    if (!importFile || !Array.isArray(importFile) || importFile.length === 0) return;
+    
+    const category = newCategoryName || "servicios";
+    setIsUploading(true);
+    
+    try {
+      // Create FormData for bulk upload
+      const formData = new FormData();
+      importFile.forEach((file: File) => {
+        formData.append('icons', file);
+      });
+      formData.append('category', category);
+      
+      // Use bulk upload endpoint
+      const response = await fetch('/api/amenities/bulk-upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error en la carga masiva');
+      }
+      
+      const result = await response.json();
+      
+      // Show detailed results
+      if (result.successCount > 0) {
+        toast({ 
+          title: `${result.successCount} amenidades creadas exitosamente`,
+          description: result.failedCount > 0 ? `${result.failedCount} archivos fallaron` : undefined
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/amenities/dashboard"] });
+      }
+      
+      if (result.failedCount > 0 && result.successCount === 0) {
+        toast({ 
+          title: "Error en la carga masiva", 
+          description: `${result.failedCount} archivos fallaron`,
+          variant: "destructive" 
+        });
+      }
+      
+      // Close dialog and reset
+      setIsImportDialogOpen(false);
+      setImportFile(null);
+      setNewCategoryName("");
+      
+    } catch (error) {
+      console.error('Bulk upload error:', error);
+      toast({ 
+        title: "Error en la carga masiva", 
+        description: error instanceof Error ? error.message : "Ocurrió un error durante el proceso",
+        variant: "destructive" 
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleUpdateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (currentAmenity) {
@@ -460,35 +521,85 @@ const AdminAmenitiesPage = () => {
             <DialogTrigger asChild>
               <Button variant="outline">
                 <FileUp className="mr-2 h-4 w-4" />
-                Importar Amenidades
+                Carga Masiva de Íconos
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Importar Amenidades</DialogTitle>
+                <DialogTitle>Carga Masiva de Íconos PNG</DialogTitle>
                 <DialogDescription>
-                  Sube un archivo Excel (.xlsx) o CSV con las columnas: Nombre, Categoría, Icono
+                  Sube múltiples archivos PNG para crear amenidades automáticamente. Los nombres de archivo se usarán como nombres de amenidades.
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="import-file">Archivo</Label>
+                  <Label htmlFor="bulk-icons">Seleccionar Múltiples Íconos PNG</Label>
                   <Input
-                    id="import-file"
+                    id="bulk-icons"
                     type="file"
-                    accept=".xlsx,.csv"
+                    accept=".png,.jpg,.jpeg,.svg"
+                    multiple
                     onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setImportFile(file);
-                      }
+                      const files = Array.from(e.target.files || []);
+                      setImportFile(files as any);
                     }}
+                    className="cursor-pointer"
                   />
-                  {importFile && (
-                    <p className="text-sm text-muted-foreground">
-                      Archivo seleccionado: {importFile.name}
-                    </p>
+                  {importFile && Array.isArray(importFile) && (
+                    <div className="mt-3 space-y-2">
+                      <p className="text-sm font-medium">
+                        {importFile.length} archivos seleccionados:
+                      </p>
+                      <div className="max-h-32 overflow-y-auto space-y-1">
+                        {importFile.map((file: File, index: number) => (
+                          <div key={index} className="flex items-center gap-2 text-xs bg-gray-50 p-2 rounded">
+                            <div className="w-6 h-6 bg-white rounded border flex items-center justify-center">
+                              <img 
+                                src={URL.createObjectURL(file)} 
+                                alt="Preview" 
+                                className="w-4 h-4 object-contain"
+                              />
+                            </div>
+                            <span className="flex-1">{file.name.replace(/\.[^/.]+$/, "")}</span>
+                            <span className="text-gray-500">
+                              {(file.size / 1024).toFixed(1)} KB
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="bulk-category">Categoría para todas las amenidades</Label>
+                  <Select 
+                    value={newCategoryName || "servicios"} 
+                    onValueChange={(value) => setNewCategoryName(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recreacion">Recreación</SelectItem>
+                      <SelectItem value="deportes">Deportes</SelectItem>
+                      <SelectItem value="servicios">Servicios</SelectItem>
+                      <SelectItem value="naturaleza">Naturaleza</SelectItem>
+                      <SelectItem value="cultura">Cultura</SelectItem>
+                      <SelectItem value="accesibilidad">Accesibilidad</SelectItem>
+                      <SelectItem value="infraestructura">Infraestructura</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <h4 className="text-sm font-medium text-blue-800 mb-1">Instrucciones:</h4>
+                  <ul className="text-xs text-blue-700 space-y-1">
+                    <li>• Los nombres de archivo se usarán como nombres de amenidades</li>
+                    <li>• Ejemplo: "juegos-infantiles.png" → "Juegos infantiles"</li>
+                    <li>• Formatos: PNG, JPG, JPEG, SVG (máximo 2MB cada uno)</li>
+                    <li>• Se crearán automáticamente con la categoría seleccionada</li>
+                  </ul>
                 </div>
               </div>
               <DialogFooter>
@@ -496,10 +607,10 @@ const AdminAmenitiesPage = () => {
                   Cancelar
                 </Button>
                 <Button 
-                  onClick={handleImport}
-                  disabled={!importFile || importMutation.isPending}
+                  onClick={handleBulkIconUpload}
+                  disabled={!importFile || !Array.isArray(importFile) || importFile.length === 0 || importMutation.isPending}
                 >
-                  {importMutation.isPending ? "Importando..." : "Importar"}
+                  {importMutation.isPending ? "Procesando..." : `Crear ${Array.isArray(importFile) ? importFile.length : 0} Amenidades`}
                 </Button>
               </DialogFooter>
             </DialogContent>

@@ -1443,6 +1443,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk upload amenity icons and create amenities
+  apiRouter.post("/amenities/bulk-upload", upload.array('icons', 50), async (req: Request, res: Response) => {
+    try {
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ error: "No se han seleccionado archivos" });
+      }
+
+      const { category = 'servicios' } = req.body;
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+      const results = [];
+      
+      for (const file of files) {
+        try {
+          // Validate file type
+          if (!allowedTypes.includes(file.mimetype)) {
+            results.push({
+              filename: file.originalname,
+              success: false,
+              error: "Formato de archivo no válido"
+            });
+            continue;
+          }
+
+          // Validate file size (max 2MB)
+          if (file.size > 2 * 1024 * 1024) {
+            results.push({
+              filename: file.originalname,
+              success: false,
+              error: "Archivo demasiado grande (máximo 2MB)"
+            });
+            continue;
+          }
+
+          // Create amenity name from filename
+          const amenityName = file.originalname
+            .replace(/\.[^/.]+$/, "") // Remove extension
+            .replace(/[-_]/g, " ") // Replace dashes and underscores with spaces
+            .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize first letter of each word
+
+          const iconUrl = `/uploads/${file.filename}`;
+
+          // Create amenity in database
+          const amenityData = {
+            name: amenityName,
+            category: category,
+            icon: 'custom',
+            iconType: 'custom',
+            customIconUrl: iconUrl
+          };
+
+          await storage.createAmenity(amenityData);
+          
+          results.push({
+            filename: file.originalname,
+            amenityName: amenityName,
+            success: true,
+            iconUrl: iconUrl
+          });
+
+        } catch (error) {
+          console.error(`Error processing file ${file.originalname}:`, error);
+          results.push({
+            filename: file.originalname,
+            success: false,
+            error: "Error al procesar el archivo"
+          });
+        }
+      }
+
+      const successCount = results.filter(r => r.success).length;
+      const failedCount = results.filter(r => !r.success).length;
+
+      res.json({
+        success: true,
+        message: `${successCount} amenidades creadas exitosamente`,
+        successCount,
+        failedCount,
+        results
+      });
+      
+    } catch (error) {
+      console.error("Error in bulk upload:", error);
+      res.status(500).json({ error: "Error en la carga masiva" });
+    }
+  });
+
   // Get amenities for a specific park (for activity location selection)
   apiRouter.get("/parks/:parkId/amenities", async (req: Request, res: Response) => {
     try {
