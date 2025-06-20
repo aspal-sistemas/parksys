@@ -100,6 +100,20 @@ The system uses environment variables for database connection and supports both 
 
 ## Recent Features
 
+### Sistema de Iconos Personalizados con Tamaños Optimizados - COMPLETADO TOTALMENTE
+**Implementado**: Sistema completo de iconos personalizados con tamaños aumentados 50% en toda la aplicación
+- **Tamaño Base**: 96px por defecto (era 64px) para máxima visibilidad
+- **Tamaños Específicos Optimizados**: 
+  - Fichas de parques (ExtendedParksList): 24px (era 12px) - duplicado para mejor legibilidad
+  - Detalles de parque (ParkDetail): 36px para información clara
+  - Tarjetas de parque: 30px para balance visual
+  - Filtros simples: 36px para facilidad de selección
+  - Filtros avanzados: 48px para mejor identificación
+  - Filtros modernos: 60px para experiencia premium
+- **Soporte Completo**: Iconos personalizados y del sistema con detección automática (`amenity.icon === 'custom'`)
+- **Consistencia Visual**: Todos los componentes actualizados para mantener proporción y legibilidad
+- **Estado**: Sistema completamente funcional con iconos visibles en todas las secciones incluyendo fichas de parques
+
 ### Sistema de Paginación de Parques - COMPLETADO
 **Implementado**: Sistema completo de paginación con 10 registros por página en /parks
 - **Paginación Inteligente**: Muestra 10 parques por página con navegación fluida
