@@ -270,10 +270,46 @@ const AdminAmenitiesPage = () => {
     new Set(amenities.map((amenity: Amenity) => amenity.category).filter(Boolean))
   ).sort();
 
+  // File upload mutation
+  const uploadIconMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('icon', file);
+      
+      const response = await fetch('/api/amenities/upload-icon', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al subir el icono');
+      }
+      
+      return response.json();
+    },
+  });
+
   // Create amenity mutation
   const createAmenity = useMutation({
     mutationFn: async (data: AmenityFormData) => {
-      return apiRequest("/api/amenities", { method: "POST", data });
+      // If custom icon, upload it first
+      let finalData = { ...data };
+      
+      if (data.iconType === 'custom' && uploadedFile) {
+        setIsUploading(true);
+        try {
+          const uploadResult = await uploadIconMutation.mutateAsync(uploadedFile);
+          finalData.customIconUrl = uploadResult.iconUrl;
+          finalData.icon = 'custom';
+        } catch (error) {
+          throw new Error('Error al subir el icono personalizado');
+        } finally {
+          setIsUploading(false);
+        }
+      }
+      
+      return apiRequest("/api/amenities", { method: "POST", data: finalData });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/amenities/dashboard"] });
@@ -691,8 +727,8 @@ const AdminAmenitiesPage = () => {
                   <Button variant="outline" type="button" onClick={() => setIsCreateDialogOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button type="submit" disabled={createAmenity.isPending}>
-                    {createAmenity.isPending ? "Creando..." : "Crear Amenidad"}
+                  <Button type="submit" disabled={createAmenity.isPending || isUploading}>
+                    {isUploading ? "Subiendo icono..." : createAmenity.isPending ? "Creando..." : "Crear Amenidad"}
                   </Button>
                 </DialogFooter>
               </form>
