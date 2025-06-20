@@ -1209,7 +1209,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           pa.status,
           pa.description,
           a.name as "amenityName",
-          a.icon as "amenityIcon"
+          a.icon as "amenityIcon",
+          a.custom_icon_url as "customIconUrl"
         FROM park_amenities pa
         INNER JOIN amenities a ON pa.amenity_id = a.id
         WHERE pa.park_id = $1

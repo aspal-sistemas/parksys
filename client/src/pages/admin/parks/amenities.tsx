@@ -42,6 +42,7 @@ interface ParkAmenity {
   amenityId: number;
   amenityName: string;
   amenityIcon: string | null;
+  customIconUrl?: string | null;
   moduleName?: string;
   surfaceArea?: number;
   status?: string;
@@ -381,8 +382,9 @@ export default function ParkAmenitiesPage() {
                         <div className="flex items-center space-x-3">
                           <AmenityIcon 
                             name={amenity.amenityIcon || 'default'} 
-                            iconType="system"
-                            size={20}
+                            iconType={amenity.amenityIcon === 'custom' ? 'custom' : 'system'}
+                            customIconUrl={amenity.customIconUrl || null}
+                            size={30}
                           />
                           <span className="font-medium">{amenity.amenityName}</span>
                         </div>
