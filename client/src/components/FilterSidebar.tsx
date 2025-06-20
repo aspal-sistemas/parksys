@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Amenity, PARK_TYPES, AMENITY_CATEGORIES } from '@shared/schema';
+import { Amenity, PARK_TYPES } from '@shared/schema';
 import AmenityIcon from './AmenityIcon';
 
 interface FilterSidebarProps {
@@ -57,46 +57,8 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
     );
   };
 
-  // Agrupamos amenidades por categoría
-  const amenitiesByCategory = amenities.reduce((acc, amenity) => {
-    if (!acc[amenity.category]) {
-      acc[amenity.category] = [];
-    }
-    acc[amenity.category].push(amenity);
-    return acc;
-  }, {} as Record<string, Amenity[]>);
-
-  // Ordenamos las categorías según el orden predefinido
-  const categoryOrder = { 
-    "recreación": 1, 
-    "servicios": 2,
-    "deportes": 3,
-    "accesibilidad": 4,
-    "infraestructura": 5,
-    "naturaleza": 6
-  };
-
-  const sortedCategories = Object.keys(amenitiesByCategory).sort(
-    (a, b) => (categoryOrder[a as keyof typeof categoryOrder] || 99) - 
-              (categoryOrder[b as keyof typeof categoryOrder] || 99)
-  );
-
-  // Traducción de categorías para la interfaz
-  const categoryTranslation: Record<string, string> = {
-    "recreación": "Recreación",
-    "servicios": "Servicios",
-    "deportes": "Deportes",
-    "accesibilidad": "Accesibilidad",
-    "infraestructura": "Infraestructura",
-    "naturaleza": "Naturaleza"
-  };
-
-  // Si no hay categoría activa y hay categorías disponibles, establecemos la primera por defecto
-  React.useEffect(() => {
-    if (!activeCategory && sortedCategories.length > 0) {
-      setActiveCategory(sortedCategories[0]);
-    }
-  }, [sortedCategories, activeCategory]);
+  // Simplificamos el manejo de amenidades para mostrar todas
+  const amenitiesList = amenities || [];
 
   // Renderiza un ítem de amenidad individual
   const renderAmenityItem = (amenity: Amenity) => (
