@@ -26,7 +26,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
   const [selectedAmenities, setSelectedAmenities] = useState<number[]>([]);
 
   // Obtenemos las amenidades disponibles
-  const { data: amenities = [] } = useQuery<Amenity[]>({
+  const { data: amenities = [], isLoading } = useQuery<Amenity[]>({
     queryKey: ['/api/amenities']
   });
 
@@ -57,129 +57,57 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-      {/* Filtros en formato extendido */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* Filtros reorganizados: 2 columnas arriba, amenidades abajo */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         
-        {/* AMENIDADES - Estilo NYC Parks */}
+        {/* Búsqueda de Parques - Primera columna */}
         <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
-          <div className="bg-primary-600 text-white p-4 rounded-t-lg">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Tag className="h-5 w-5" />
-              Facilities & Amenities
-              {selectedAmenities.length > 0 && (
-                <span className="bg-white text-primary-600 px-2 py-1 rounded-full text-xs font-bold ml-2">
-                  {selectedAmenities.length}
-                </span>
-              )}
-            </h3>
-          </div>
-          
-          <div className="p-4">
-            <div className="max-h-80 overflow-y-auto">
-              <div className="grid grid-cols-1 gap-2">
-                {amenities.map((amenity) => (
-                  <label 
-                    key={amenity.id}
-                    className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer group"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedAmenities.includes(amenity.id)}
-                      onChange={() => handleAmenityToggle(amenity.id)}
-                      className="w-4 h-4 text-primary-600 border-2 border-gray-300 rounded focus:ring-primary-500 focus:ring-2"
-                    />
-                    <div className="flex items-center gap-2 flex-1">
-                      <AmenityIcon 
-                        name={amenity.icon || 'default'} 
-                        size={16} 
-                        className="text-gray-600 group-hover:text-primary-600 transition-colors" 
-                      />
-                      <span className="text-sm text-gray-800 group-hover:text-primary-800 transition-colors">
-                        {amenity.name}
-                      </span>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Contador y acción rápida */}
-            {selectedAmenities.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-200">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">
-                    {selectedAmenities.length} amenidad{selectedAmenities.length !== 1 ? 'es' : ''} seleccionada{selectedAmenities.length !== 1 ? 's' : ''}
-                  </span>
-                  <button
-                    onClick={() => setSelectedAmenities([])}
-                    className="text-primary-600 hover:text-primary-800 font-medium"
-                  >
-                    Clear All
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Park Search - Segunda columna */}
-        <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
-          <div className="bg-secondary-600 text-white p-3 rounded-t-lg">
+          <div className="bg-[#067f5f] text-white p-3 rounded-t-lg">
             <h3 className="text-base font-semibold flex items-center gap-2">
               <Search className="h-4 w-4" />
-              Park Search
+              Búsqueda de Parques
             </h3>
           </div>
           <div className="p-4 space-y-3">
             <div>
               <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-                Park Name
+                Nombre del Parque
               </label>
               <Input
                 id="search"
                 type="text"
-                placeholder="Enter park name..."
+                placeholder="Ingrese nombre del parque..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className="w-full border-gray-300 focus:border-[#00a587] focus:ring-1 focus:ring-[#00a587]"
               />
             </div>
             <div>
               <label htmlFor="postal-code" className="block text-sm font-medium text-gray-700 mb-1">
-                Zip Code
+                Código Postal
               </label>
               <Input
                 id="postal-code"
                 type="text"
-                placeholder="e.g. 06100"
+                placeholder="ej. 06100"
                 value={postalCode}
                 onChange={(e) => setPostalCode(e.target.value)}
-                className="w-full border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className="w-full border-gray-300 focus:border-[#00a587] focus:ring-1 focus:ring-[#00a587]"
               />
             </div>
           </div>
         </div>
 
-        {/* Park Type - Tercera columna */}
+        {/* Tipo de Parque - Segunda columna */}
         <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
-          <div className="bg-accent-600 text-white p-3 rounded-t-lg">
+          <div className="bg-[#8498a5] text-white p-3 rounded-t-lg">
             <h3 className="text-base font-semibold flex items-center gap-2">
               <Tag className="h-4 w-4" />
-              Park Type
+              Tipo de Parque
             </h3>
           </div>
           <div className="p-4">
             <div className="space-y-2">
-              <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                <input
-                  type="radio"
-                  name="parkType"
-                  checked={parkType === ''}
-                  onChange={() => setParkType('')}
-                  className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
-                />
-                <span className="text-sm text-gray-800">All Types</span>
-              </label>
               {PARK_TYPES.map((type) => (
                 <label key={type} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
                   <input
@@ -187,10 +115,14 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                     name="parkType"
                     checked={parkType === type}
                     onChange={() => setParkType(type)}
-                    className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                    className="w-4 h-4 text-[#00a587] border-gray-300 focus:ring-[#00a587]"
                   />
-                  <span className="text-sm text-gray-800 capitalize">
-                    {type.replace('_', ' ')}
+                  <span className="text-sm text-gray-800">
+                    {type === 'neighborhood' ? 'Vecinal' :
+                     type === 'regional' ? 'Regional' :
+                     type === 'linear' ? 'Lineal' :
+                     type === 'pocket' ? 'Bolsillo' :
+                     type.replace('_', ' ')}
                   </span>
                 </label>
               ))}
@@ -199,35 +131,103 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
         </div>
       </div>
 
-      {/* Action Buttons - Parte inferior */}
+      {/* INSTALACIONES Y SERVICIOS - Sección completa abajo */}
+      <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
+        <div className="bg-[#bcd256] text-gray-800 p-4 rounded-t-lg">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Instalaciones y Servicios
+            {selectedAmenities.length > 0 && (
+              <span className="bg-[#00a587] text-white px-2 py-1 rounded-full text-xs font-bold ml-2">
+                {selectedAmenities.length}
+              </span>
+            )}
+          </h3>
+        </div>
+        
+        <div className="p-4">
+          {isLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-6 bg-gray-200 rounded animate-pulse"></div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-60 overflow-y-auto">
+              {amenities.map((amenity) => (
+                <label 
+                  key={amenity.id}
+                  className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded text-sm group"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedAmenities.includes(amenity.id)}
+                    onChange={() => handleAmenityToggle(amenity.id)}
+                    className="w-4 h-4 text-[#00a587] border-gray-300 rounded focus:ring-[#00a587]"
+                  />
+                  <div className="flex items-center gap-2 min-w-0">
+                    <AmenityIcon 
+                      name={amenity.icon || 'default'} 
+                      size={14} 
+                      className="text-gray-600 group-hover:text-[#00a587] transition-colors flex-shrink-0" 
+                    />
+                    <span className="text-gray-800 truncate group-hover:text-[#067f5f] transition-colors">
+                      {amenity.name}
+                    </span>
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
+          
+          {/* Contador y acción de limpiar */}
+          {selectedAmenities.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">
+                  {selectedAmenities.length} servicio{selectedAmenities.length !== 1 ? 's' : ''} seleccionado{selectedAmenities.length !== 1 ? 's' : ''}
+                </span>
+                <button
+                  onClick={() => setSelectedAmenities([])}
+                  className="text-[#00a587] hover:text-[#067f5f] font-medium"
+                >
+                  Limpiar Todo
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Botones de Acción - Parte inferior */}
       <div className="p-6 border-t-2 border-gray-300 bg-gray-50">
         <div className="flex justify-center gap-4">
           <button
             onClick={handleApplyFilters}
-            className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded border-2 border-primary-600 transition-colors duration-200"
+            className="bg-[#00a587] hover:bg-[#067f5f] text-white font-semibold py-3 px-8 rounded border-2 border-[#00a587] transition-colors duration-200"
           >
-            Find Parks
+            Buscar Parques
           </button>
           <button
             onClick={handleClearFilters}
             className="px-6 py-3 bg-white hover:bg-gray-100 text-gray-700 font-semibold rounded border-2 border-gray-300 transition-colors duration-200"
           >
-            Clear All Filters
+            Limpiar Filtros
           </button>
         </div>
         
-        {/* Results Summary */}
+        {/* Resumen de Resultados */}
         {(search || parkType || postalCode || selectedAmenities.length > 0) && (
           <div className="mt-4 text-center text-sm text-gray-600">
-            <div className="inline-flex items-center gap-2 bg-primary-50 px-4 py-2 rounded-full">
-              <span className="font-medium">Active Filters:</span>
-              <span className="text-primary-600 font-semibold">
+            <div className="inline-flex items-center gap-2 bg-[#bcd256]/20 px-4 py-2 rounded-full">
+              <span className="font-medium">Filtros Activos:</span>
+              <span className="text-[#067f5f] font-semibold">
                 {[
                   search && '1',
                   parkType && '1', 
                   postalCode && '1',
                   selectedAmenities.length > 0 && '1'
-                ].filter(Boolean).length} applied
+                ].filter(Boolean).length} aplicados
               </span>
             </div>
           </div>

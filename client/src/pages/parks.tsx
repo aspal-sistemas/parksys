@@ -71,10 +71,10 @@ const Parks: React.FC = () => {
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Header compacto */}
-      <div className="bg-primary-600 text-white shadow-sm">
+      <div className="bg-gradient-to-r from-[#00a587] to-[#067f5f] text-white shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold">Find Parks & Recreation Facilities</h1>
-          <p className="text-primary-100 mt-1">Search and discover parks by amenities and location</p>
+          <h1 className="text-2xl font-bold">Encuentra Parques y Espacios Recreativos</h1>
+          <p className="text-white/80 mt-1">Busca y descubre parques por instalaciones y ubicación</p>
         </div>
       </div>
 
@@ -86,8 +86,8 @@ const Parks: React.FC = () => {
       {/* Lista de parques extendida */}
       <div className="max-w-7xl mx-auto px-6 pb-8">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Search Results ({parks.length} parks found)
+          <h2 className="text-xl font-semibold text-[#067f5f]">
+            Resultados de Búsqueda ({parks.length} parques encontrados)
           </h2>
         </div>
         
