@@ -189,15 +189,24 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Filter className="h-5 w-5" />
             Instalaciones y Servicios
+            <span className="bg-gray-700 text-white px-2 py-1 rounded-full text-xs font-bold ml-2">
+              {amenities.length} total
+            </span>
             {selectedAmenities.length > 0 && (
-              <span className="bg-[#00a587] text-white px-2 py-1 rounded-full text-xs font-bold ml-2">
-                {selectedAmenities.length}
+              <span className="bg-[#00a587] text-white px-2 py-1 rounded-full text-xs font-bold">
+                {selectedAmenities.length} seleccionados
               </span>
             )}
           </h3>
         </div>
         
         <div className="p-4">
+          {amenities.length > 20 && (
+            <div className="mb-3 text-sm text-gray-600 bg-blue-50 p-2 rounded border border-blue-200">
+              💡 <strong>Desplázate hacia abajo</strong> para ver todas las {amenities.length} amenidades disponibles
+            </div>
+          )}
+          
           {isLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
               {[...Array(8)].map((_, i) => (
@@ -205,7 +214,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
               ))}
             </div>
           ) : amenities.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-80 overflow-y-auto">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-2 shadow-inner bg-gray-50">
               {amenities.map((amenity) => (
                 <label 
                   key={amenity.id}
