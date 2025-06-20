@@ -1415,6 +1415,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get available custom icons
+  apiRouter.get("/amenities/custom-icons", async (req: Request, res: Response) => {
+    try {
+      const result = await pool.query(`
+        SELECT DISTINCT name, custom_icon_url, category
+        FROM amenities 
+        WHERE icon_type = 'custom' AND custom_icon_url IS NOT NULL
+        ORDER BY name
+      `);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error fetching custom icons:', error);
+      res.status(500).json({ error: "Error al obtener íconos personalizados" });
+    }
+  });
+
   // Upload amenity icon
   apiRouter.post("/amenities/upload-icon", upload.single('icon'), async (req: Request, res: Response) => {
     try {

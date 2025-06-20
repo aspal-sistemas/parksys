@@ -229,6 +229,12 @@ const AdminAmenitiesPage = () => {
     queryKey: ["/api/amenities/dashboard"],
   });
 
+  // Query para obtener íconos custom disponibles
+  const { data: customIcons } = useQuery({
+    queryKey: ["/api/amenities/custom-icons"],
+    queryFn: () => apiRequest("/api/amenities/custom-icons"),
+  });
+
   const amenities = amenitiesData?.allAmenities || [];
 
   // Filtrado y ordenamiento
@@ -787,49 +793,83 @@ const AdminAmenitiesPage = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="grid gap-2">
-                    <Label htmlFor="custom-icon">Subir Icono Personalizado (PNG)</Label>
-                    <div className="space-y-3">
-                      <Input
-                        id="custom-icon"
-                        type="file"
-                        accept=".png,.jpg,.jpeg,.svg"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setUploadedFile(file);
-                            const url = URL.createObjectURL(file);
-                            setFormData({ ...formData, customIconUrl: url, icon: 'custom' });
-                          }
-                        }}
-                        className="cursor-pointer"
-                      />
-                      {uploadedFile && (
-                        <div className="p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white rounded border flex items-center justify-center">
-                              {formData.customIconUrl ? (
+                  <div className="grid gap-4">
+                    <div>
+                      <Label>Íconos Personalizados Disponibles</Label>
+                      {customIcons && customIcons.length > 0 ? (
+                        <div className="grid grid-cols-4 gap-3 p-3 bg-gray-50 rounded-lg mt-2 max-h-48 overflow-y-auto">
+                          {customIcons.map((customIcon: any) => (
+                            <div 
+                              key={customIcon.name}
+                              className={`p-2 border rounded cursor-pointer hover:bg-blue-50 ${
+                                formData.customIconUrl === customIcon.custom_icon_url ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                              }`}
+                              onClick={() => setFormData({ 
+                                ...formData, 
+                                customIconUrl: customIcon.custom_icon_url, 
+                                icon: 'custom' 
+                              })}
+                            >
+                              <div className="flex flex-col items-center gap-1">
                                 <img 
-                                  src={formData.customIconUrl} 
-                                  alt="Vista previa" 
+                                  src={customIcon.custom_icon_url} 
+                                  alt={customIcon.name}
                                   className="w-8 h-8 object-contain"
                                 />
-                              ) : (
-                                <div className="w-8 h-8 bg-gray-200 rounded"></div>
-                              )}
+                                <span className="text-xs text-center truncate w-full">{customIcon.name}</span>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-sm font-medium">{uploadedFile.name}</p>
-                              <p className="text-xs text-gray-500">
-                                {(uploadedFile.size / 1024).toFixed(1)} KB
-                              </p>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500 mt-2">No hay íconos personalizados disponibles</p>
+                      )}
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="custom-icon">O Subir Nuevo Icono Personalizado</Label>
+                      <div className="space-y-3">
+                        <Input
+                          id="custom-icon"
+                          type="file"
+                          accept=".png,.jpg,.jpeg,.svg"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setUploadedFile(file);
+                              const url = URL.createObjectURL(file);
+                              setFormData({ ...formData, customIconUrl: url, icon: 'custom' });
+                            }
+                          }}
+                          className="cursor-pointer"
+                        />
+                        {uploadedFile && (
+                          <div className="p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-white rounded border flex items-center justify-center">
+                                {formData.customIconUrl ? (
+                                  <img 
+                                    src={formData.customIconUrl} 
+                                    alt="Vista previa" 
+                                    className="w-8 h-8 object-contain"
+                                  />
+                                ) : (
+                                  <div className="w-8 h-8 bg-gray-200 rounded"></div>
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium">{uploadedFile.name}</p>
+                                <p className="text-xs text-gray-500">
+                                  {(uploadedFile.size / 1024).toFixed(1)} KB
+                                </p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
-                      <p className="text-xs text-gray-500">
-                        Formatos soportados: PNG, JPG, JPEG, SVG. Tamaño recomendado: 24x24 píxeles
-                      </p>
+                        )}
+                        <p className="text-xs text-gray-500">
+                          Formatos soportados: PNG, JPG, JPEG, SVG. Tamaño recomendado: 24x24 píxeles
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
