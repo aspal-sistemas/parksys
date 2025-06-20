@@ -188,7 +188,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
         <div className="bg-[#bcd256] text-gray-800 p-4 rounded-t-lg">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Filter className="h-5 w-5" />
-            Instalaciones y Servicios
+            Amenidades, Instalaciones y Servicios
             <span className="bg-gray-700 text-white px-2 py-1 rounded-full text-xs font-bold ml-2">
               {amenities.length} total
             </span>
