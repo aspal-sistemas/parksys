@@ -83,7 +83,8 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
                 name={amenity.icon || 'default'} 
                 customIconUrl={amenity.customIconUrl || null}
                 iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
-                className="h-3 w-3 mr-1" 
+                size={20}
+                className="mr-1" 
               />
               {amenity.name}
             </span>

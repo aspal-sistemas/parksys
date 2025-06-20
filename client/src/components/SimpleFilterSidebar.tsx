@@ -222,7 +222,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                       name={amenity.icon || 'default'} 
                       customIconUrl={amenity.customIconUrl || null}
                       iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
-                      size={14} 
+                      size={24} 
                       className="text-gray-600 group-hover:text-[#00a587] transition-colors flex-shrink-0" 
                     />
                     <span className="text-gray-800 truncate group-hover:text-[#067f5f] transition-colors">
