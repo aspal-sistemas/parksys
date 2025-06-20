@@ -11,7 +11,7 @@ interface ExtendedParksListProps {
   onParkSelect: (park: ExtendedPark) => void;
 }
 
-export default function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksListProps) {
+function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksListProps) {
   // Obtenemos las amenidades para mostrar los iconos
   const { data: amenities = [] } = useQuery<Amenity[]>({
     queryKey: ['/api/amenities']
@@ -186,3 +186,5 @@ export default function ExtendedParksList({ parks, isLoading, onParkSelect }: Ex
     </div>
   );
 }
+
+export default ExtendedParksList;

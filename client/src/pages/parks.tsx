@@ -95,7 +95,7 @@ const Parks: React.FC = () => {
           parks={parks}
           isLoading={isLoading}
           onParkSelect={(park: ExtendedPark) => {
-            setSelectedPark(park);
+            setSelectedParkId(park.id);
             setModalOpen(true);
           }}
         />
