@@ -177,7 +177,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                     onCheckedChange={() => handleAmenityToggle(amenity.id)}
                   />
                   <div className="flex items-center gap-2 flex-1">
-                    <AmenityIcon icon={amenity.icon || 'default'} className="h-4 w-4" />
+                    <AmenityIcon name={amenity.icon || 'default'} size={16} className="text-primary-600" />
                     <Label htmlFor={`amenity-${amenity.id}`} className="text-sm font-medium cursor-pointer">
                       {amenity.name}
                     </Label>
