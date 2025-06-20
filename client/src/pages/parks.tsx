@@ -37,14 +37,21 @@ const Parks: React.FC = () => {
   };
   
   // Fetch parks with filters
-  const { data: allParks = [], isLoading } = useQuery<ExtendedPark[]>({
+  const { data: allParks = [], isLoading, error } = useQuery<ExtendedPark[]>({
     queryKey: [`/api/parks${buildQueryString()}`],
   });
   
+  // Debug logging
+  console.log('Loading state:', isLoading);
+  console.log('All parks data:', allParks);
+  console.log('Error:', error);
+  
   // Filtrar parques sin nombre o marcados como eliminados
-  const parks = allParks.filter(park => 
-    park.name.trim() !== '' && !park.isDeleted
-  );
+  const parks = Array.isArray(allParks) ? allParks.filter((park: any) => 
+    park.name && park.name.trim() !== '' && !park.isDeleted
+  ) : [];
+  
+  console.log('Filtered parks:', parks.length);
 
   // Calcular paginación
   const totalPages = Math.ceil(parks.length / parksPerPage);
