@@ -205,7 +205,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
               ))}
             </div>
           ) : amenities.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-60 overflow-y-auto">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-80 overflow-y-auto">
               {amenities.map((amenity) => (
                 <label 
                   key={amenity.id}
