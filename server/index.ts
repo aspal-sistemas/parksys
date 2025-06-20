@@ -390,14 +390,12 @@ import { initializeDatabase } from "./initialize-db";
 
 (async () => {
   try {
-    // Comentar temporalmente la inicialización para resolver el problema de arranque
-    console.log("Iniciando servidor sin inicialización de BD...");
-    // await initializeDatabase();
+    // Inicializar la estructura de la base de datos
+    await initializeDatabase();
     
     // Intentar inicializar los datos predeterminados
     try {
-      // await seedDatabase();
-      console.log("Saltando seed inicial...");
+      await seedDatabase();
     } catch (error) {
       console.error("Error al cargar datos iniciales:", error);
       // Continuamos con la ejecución aunque haya un error en la carga de datos
@@ -405,8 +403,7 @@ import { initializeDatabase } from "./initialize-db";
     
     // Crear tablas del módulo de arbolado
     try {
-      // await createTreeTables();
-      console.log("Saltando creación de tablas de árboles...");
+      await createTreeTables();
     } catch (error) {
       console.error("Error al crear tablas de arbolado:", error);
       // Continuamos con la ejecución aunque haya un error
@@ -414,8 +411,7 @@ import { initializeDatabase } from "./initialize-db";
     
     // Cargar especies de árboles de muestra
     try {
-      // await seedTreeSpecies();
-      console.log("Saltando seed de especies...");
+      await seedTreeSpecies();
     } catch (error) {
       console.error("Error al cargar especies de árboles:", error);
       // Continuamos con la ejecución aunque haya un error
@@ -423,9 +419,8 @@ import { initializeDatabase } from "./initialize-db";
     
     // Inicializar integración HR-Finanzas
     try {
-      // const { seedHRFinanceIntegration } = await import("./seed-hr-finance-integration");
-      // await seedHRFinanceIntegration();
-      console.log("Saltando integración HR-Finanzas...");
+      const { seedHRFinanceIntegration } = await import("./seed-hr-finance-integration");
+      await seedHRFinanceIntegration();
     } catch (error) {
       console.error("Error al inicializar integración HR-Finanzas:", error);
       // Continuamos con la ejecución aunque haya un error
@@ -471,13 +466,12 @@ import { initializeDatabase } from "./initialize-db";
 
   // Crear tablas de recibos de nómina
   try {
-    // const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
-    // await createPayrollReceiptsTables();
+    const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
+    await createPayrollReceiptsTables();
     
     // Crear datos de muestra para recibos
-    // const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
-    // await seedPayrollReceipts();
-    console.log("Saltando tablas de recibos de nómina...");
+    const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
+    await seedPayrollReceipts();
   } catch (error) {
     console.error("Error al crear tablas de recibos de nómina:", error);
   }

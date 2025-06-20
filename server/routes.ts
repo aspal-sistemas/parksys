@@ -204,9 +204,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Inicializamos tablas de categorías de incidentes
   try {
-    // const { createIncidentCategoriesTables } = await import("./create_incident_categories_tables");
-    // await createIncidentCategoriesTables();
-    console.log("Saltando inicialización de tablas de categorías de incidentes...");
+    const { createIncidentCategoriesTables } = await import("./create_incident_categories_tables");
+    await createIncidentCategoriesTables();
+    console.log("Tablas de categorías de incidentes inicializadas correctamente");
   } catch (error) {
     console.error("Error al inicializar tablas de categorías de incidentes:", error);
   }
@@ -240,9 +240,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Crear tablas del sistema de cobro híbrido
   try {
-    // const { createHybridPaymentTables } = await import("./create-hybrid-payment-tables");
-    // await createHybridPaymentTables();
-    console.log("Saltando creación de tablas del sistema de cobro híbrido...");
+    const { createHybridPaymentTables } = await import("./create-hybrid-payment-tables");
+    await createHybridPaymentTables();
+    console.log("Tablas del sistema de cobro híbrido creadas correctamente");
   } catch (error) {
     console.error("Error al crear tablas del sistema de cobro híbrido:", error);
   }
@@ -365,63 +365,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.search = String(req.query.search);
       }
       
-      // Recuperar parques usando el sistema robusto de recuperación
-      try {
-        const { databaseRecovery } = await import("./database-recovery");
-        const allParks = await databaseRecovery.recoverAllParks();
-        
-        // Aplicar filtros a los parques recuperados
-        let filteredParks = allParks;
-        
-        if (filters.search) {
-          const searchTerm = filters.search.toLowerCase();
-          filteredParks = filteredParks.filter(park => 
-            park.name.toLowerCase().includes(searchTerm) ||
-            park.description?.toLowerCase().includes(searchTerm) ||
-            park.address?.toLowerCase().includes(searchTerm)
-          );
-        }
-        
-        if (filters.type && filters.type !== 'todos') {
-          filteredParks = filteredParks.filter(park => park.parkType === filters.type);
-        }
-        
-        console.log(`✓ Sistema robusto: ${allParks.length} parques totales, ${filteredParks.length} filtrados`);
-        res.json(filteredParks);
-      } catch (dbError: any) {
-        console.error("Error en sistema de recuperación:", dbError?.message || 'Error desconocido');
-        
-        // Como último recurso, intentar cargar datos desde fallback
-        try {
-          const { getFallbackParks } = await import("./fallback-data");
-          const fallbackParks = getFallbackParks();
-          
-          // Aplicar filtros también a datos de respaldo
-          let filteredParks = fallbackParks;
-          
-          if (filters.search) {
-            const searchTerm = filters.search.toLowerCase();
-            filteredParks = filteredParks.filter(park => 
-              park.name.toLowerCase().includes(searchTerm) ||
-              park.description?.toLowerCase().includes(searchTerm) ||
-              park.address?.toLowerCase().includes(searchTerm)
-            );
-          }
-          
-          if (filters.type && filters.type !== 'todos') {
-            filteredParks = filteredParks.filter(park => park.parkType === filters.type);
-          }
-          
-          console.log(`✓ Usando datos de respaldo: ${fallbackParks.length} parques totales, ${filteredParks.length} filtrados`);
-          res.json(filteredParks);
-        } catch (fallbackError) {
-          console.error("Error en datos de respaldo:", fallbackError);
-          res.status(503).json({ 
-            message: "Sistema temporalmente no disponible",
-            error: "SERVICE_UNAVAILABLE"
-          });
-        }
-      }
+      // Obtenemos los parques con sus imágenes y amenidades
+      const parks = await getParksDirectly(filters);
+      
+      // Respondemos con los parques completos
+      res.json(parks);
     } catch (error) {
       console.error("Error al obtener parques:", error);
       res.status(500).json({ message: "Error fetching parks" });
@@ -1005,9 +953,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const amenities = await storage.getAmenities();
       res.json(amenities);
     } catch (error) {
-      console.log("Usando datos temporales de amenidades...");
-      const { fallbackAmenities } = await import("./fallback-data");
-      res.json(fallbackAmenities);
+      console.error(error);
+      res.status(500).json({ message: "Error fetching amenities" });
     }
   });
 
