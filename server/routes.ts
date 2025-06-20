@@ -1412,6 +1412,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload amenity icon
+  apiRouter.post("/amenities/upload-icon", upload.single('icon'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No se ha seleccionado ningún archivo" });
+      }
+
+      // Validate file type
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+      if (!allowedTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ error: "Formato de archivo no válido. Solo se permiten PNG, JPG, JPEG y SVG" });
+      }
+
+      // Validate file size (max 2MB)
+      if (req.file.size > 2 * 1024 * 1024) {
+        return res.status(400).json({ error: "El archivo es demasiado grande. Tamaño máximo: 2MB" });
+      }
+
+      const iconUrl = `/uploads/${req.file.filename}`;
+      
+      res.json({ 
+        success: true, 
+        iconUrl,
+        message: "Icono subido exitosamente" 
+      });
+    } catch (error) {
+      console.error("Error uploading amenity icon:", error);
+      res.status(500).json({ error: "Error al subir el icono" });
+    }
+  });
+
   // Get amenities for a specific park (for activity location selection)
   apiRouter.get("/parks/:parkId/amenities", async (req: Request, res: Response) => {
     try {

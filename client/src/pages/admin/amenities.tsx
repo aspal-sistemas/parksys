@@ -583,29 +583,109 @@ const AdminAmenitiesPage = () => {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="icon">Icono</Label>
-                  <Select 
-                    value={formData.icon} 
-                    onValueChange={(value) => setFormData({ ...formData, icon: value })}
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un icono" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {AVAILABLE_ICONS.map((icon) => (
-                        <SelectItem key={icon.name} value={icon.name}>
-                          <div className="flex items-center">
-                            <div className="mr-2">
-                              <AmenityIcon name={icon.name} size={16} />
-                            </div>
-                            {icon.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Tipo de Icono</Label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="iconType"
+                        value="system"
+                        checked={formData.iconType === 'system'}
+                        onChange={(e) => setFormData({ ...formData, iconType: e.target.value as 'system' | 'custom' })}
+                        className="w-4 h-4 text-primary-600"
+                      />
+                      <span>Iconos del Sistema</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="iconType"
+                        value="custom"
+                        checked={formData.iconType === 'custom'}
+                        onChange={(e) => setFormData({ ...formData, iconType: e.target.value as 'system' | 'custom' })}
+                        className="w-4 h-4 text-primary-600"
+                      />
+                      <span>Icono Personalizado (PNG)</span>
+                    </label>
+                  </div>
                 </div>
+
+                {formData.iconType === 'system' ? (
+                  <div className="grid gap-2">
+                    <Label htmlFor="icon">Icono del Sistema</Label>
+                    <Select 
+                      value={formData.icon} 
+                      onValueChange={(value) => setFormData({ ...formData, icon: value })}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un icono" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AVAILABLE_ICONS.map((icon) => (
+                          <SelectItem key={icon.name} value={icon.name}>
+                            <div className="flex items-center">
+                              <div className="mr-2">
+                                <AmenityIcon name={icon.name} size={16} />
+                              </div>
+                              {icon.label}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="mt-2 p-3 bg-gray-50 rounded-lg flex items-center gap-2">
+                      <AmenityIcon name={formData.icon} size={20} />
+                      <span className="text-sm text-gray-600">Vista previa del icono seleccionado</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid gap-2">
+                    <Label htmlFor="custom-icon">Subir Icono Personalizado (PNG)</Label>
+                    <div className="space-y-3">
+                      <Input
+                        id="custom-icon"
+                        type="file"
+                        accept=".png,.jpg,.jpeg,.svg"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setUploadedFile(file);
+                            const url = URL.createObjectURL(file);
+                            setFormData({ ...formData, customIconUrl: url, icon: 'custom' });
+                          }
+                        }}
+                        className="cursor-pointer"
+                      />
+                      {uploadedFile && (
+                        <div className="p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white rounded border flex items-center justify-center">
+                              {formData.customIconUrl ? (
+                                <img 
+                                  src={formData.customIconUrl} 
+                                  alt="Vista previa" 
+                                  className="w-8 h-8 object-contain"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 bg-gray-200 rounded"></div>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{uploadedFile.name}</p>
+                              <p className="text-xs text-gray-500">
+                                {(uploadedFile.size / 1024).toFixed(1)} KB
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-500">
+                        Formatos soportados: PNG, JPG, JPEG, SVG. Tamaño recomendado: 24x24 píxeles
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <DialogFooter>
                   <Button variant="outline" type="button" onClick={() => setIsCreateDialogOpen(false)}>
