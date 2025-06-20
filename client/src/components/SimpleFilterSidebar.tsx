@@ -58,10 +58,35 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-      {/* Nuevo layout: Columna izquierda con búsqueda y tipos, columna derecha con ilustración */}
+      {/* Nuevo layout: Columna izquierda con ilustración, columna derecha con búsqueda y tipos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
         
-        {/* Columna Izquierda: Búsqueda + Tipos de Parque */}
+        {/* Columna Izquierda: Solo Ilustración */}
+        <div className="bg-white rounded-lg border border-gray-300 shadow-sm overflow-hidden">
+          <div className="bg-[#bcd256] text-gray-800 p-3 rounded-t-lg">
+            <h3 className="text-base font-semibold flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Parques de Guadalajara
+            </h3>
+          </div>
+          <div className="p-4">
+            <div className="relative">
+              <img
+                src={parkIllustration}
+                alt="Ilustración de parque con lagos, senderos, áreas verdes y espacios recreativos"
+                className="w-full h-64 object-cover rounded-lg"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg"></div>
+              <div className="absolute bottom-3 left-3 right-3">
+                <p className="text-white text-sm font-medium bg-black/60 backdrop-blur-sm rounded px-3 py-2 text-center">
+                  Espacios verdes para toda la familia
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Columna Derecha: Búsqueda + Tipos de Parque */}
         <div className="space-y-4">
           {/* Búsqueda de Parques */}
           <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
@@ -130,31 +155,6 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                     </span>
                   </label>
                 ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Columna Derecha: Solo Ilustración */}
-        <div className="bg-white rounded-lg border border-gray-300 shadow-sm overflow-hidden">
-          <div className="bg-[#bcd256] text-gray-800 p-3 rounded-t-lg">
-            <h3 className="text-base font-semibold flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Parques de México
-            </h3>
-          </div>
-          <div className="p-4">
-            <div className="relative">
-              <img
-                src={parkIllustration}
-                alt="Ilustración de parque con lagos, senderos, áreas verdes y espacios recreativos"
-                className="w-full h-64 object-cover rounded-lg"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg"></div>
-              <div className="absolute bottom-3 left-3 right-3">
-                <p className="text-white text-sm font-medium bg-black/60 backdrop-blur-sm rounded px-3 py-2 text-center">
-                  Espacios verdes para toda la familia
-                </p>
               </div>
             </div>
           </div>
