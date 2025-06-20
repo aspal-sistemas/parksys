@@ -1084,9 +1084,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `, [data.name, data.icon, data.category, data.iconType, data.customIconUrl]);
       
       res.status(201).json(result.rows[0]);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      res.status(500).json({ message: "Error creating amenity" });
+      if (error.code === '23505' && error.constraint === 'amenities_name_unique') {
+        res.status(400).json({ message: `Ya existe una amenidad con el nombre "${req.body.name}". Por favor, usa un nombre diferente.` });
+      } else {
+        res.status(500).json({ message: "Error al crear la amenidad" });
+      }
     }
   });
   
