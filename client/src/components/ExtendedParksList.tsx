@@ -100,16 +100,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                       <span className="text-sm">{park.address}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {park.parkType?.replace('_', ' ') || 'Park'}
-                    </Badge>
-                    {park.area && (
-                      <Badge variant="secondary" className="text-xs">
-                        {park.area}
-                      </Badge>
-                    )}
-                  </div>
+
                 </div>
 
                 {/* Descripción */}
