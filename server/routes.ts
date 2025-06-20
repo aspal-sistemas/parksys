@@ -240,9 +240,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Crear tablas del sistema de cobro híbrido
   try {
-    const { createHybridPaymentTables } = await import("./create-hybrid-payment-tables");
-    await createHybridPaymentTables();
-    console.log("Tablas del sistema de cobro híbrido creadas correctamente");
+    // const { createHybridPaymentTables } = await import("./create-hybrid-payment-tables");
+    // await createHybridPaymentTables();
+    console.log("Saltando creación de tablas del sistema de cobro híbrido...");
   } catch (error) {
     console.error("Error al crear tablas del sistema de cobro híbrido:", error);
   }
@@ -365,31 +365,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.search = String(req.query.search);
       }
       
-      // Usar datos temporales mientras se resuelve la conectividad
-      try {
-        const parks = await getParksDirectly(filters);
-        res.json(parks);
-      } catch (dbError) {
-        console.log("Usando datos temporales de parques...");
-        const { fallbackParks } = await import("./fallback-data");
-        
-        // Aplicar filtros básicos a los datos temporales
-        let filteredParks = fallbackParks;
-        
-        if (filters.search) {
-          const searchTerm = filters.search.toLowerCase();
-          filteredParks = filteredParks.filter(park => 
-            park.name.toLowerCase().includes(searchTerm) ||
-            park.description.toLowerCase().includes(searchTerm)
-          );
-        }
-        
-        if (filters.type && filters.type !== 'todos') {
-          filteredParks = filteredParks.filter(park => park.type === filters.type);
-        }
-        
-        res.json(filteredParks);
+      // Usar datos temporales mientras se resuelve la conectividad de BD
+      console.log("Usando datos de muestra de parques de Guadalajara...");
+      const { fallbackParks } = await import("./fallback-data");
+      
+      // Aplicar filtros a los datos
+      let filteredParks = fallbackParks;
+      
+      if (filters.search) {
+        const searchTerm = filters.search.toLowerCase();
+        filteredParks = filteredParks.filter(park => 
+          park.name.toLowerCase().includes(searchTerm) ||
+          park.description.toLowerCase().includes(searchTerm) ||
+          park.address.toLowerCase().includes(searchTerm)
+        );
       }
+      
+      if (filters.type && filters.type !== 'todos') {
+        filteredParks = filteredParks.filter(park => park.type === filters.type);
+      }
+      
+      res.json(filteredParks);
     } catch (error) {
       console.error("Error al obtener parques:", error);
       res.status(500).json({ message: "Error fetching parks" });
