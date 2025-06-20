@@ -112,7 +112,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
             <div className="p-4">
               <p className="text-sm text-gray-600 mb-3">Tipos disponibles:</p>
               <div className="grid grid-cols-2 gap-2">
-                {['urbano', 'natural', 'lineal', 'metropolitano', 'vecinal', 'bolsillo', 'tematico'].map((type) => (
+                {['urbano', 'lineal', 'metropolitano', 'vecinal'].map((type) => (
                   <label key={type} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded text-sm">
                     <input
                       type="radio"
@@ -123,12 +123,9 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                     />
                     <span className="text-gray-700">
                       {type === 'urbano' ? 'Urbano' :
-                       type === 'natural' ? 'Natural' :
                        type === 'lineal' ? 'Lineal' :
                        type === 'metropolitano' ? 'Metropolitano' :
                        type === 'vecinal' ? 'Vecinal' :
-                       type === 'bolsillo' ? 'De Bolsillo' :
-                       type === 'tematico' ? 'Temático' :
                        type}
                     </span>
                   </label>
