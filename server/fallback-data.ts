@@ -1,135 +1,148 @@
 // Datos de respaldo para continuidad de servicio durante problemas de conectividad
 export function getFallbackParks() {
   return [
-  {
-    id: 1,
-    name: "Parque Agua Azul",
-    municipalityId: 1,
-    parkType: "metropolitano",
-    description: "Parque histórico en el corazón de Guadalajara con jardines botánicos, lago artificial y áreas recreativas familiares.",
-    address: "Calzada Independencia Sur 973, Guadalajara, Jalisco",
-    postalCode: "44100",
-    latitude: "20.6736",
-    longitude: "-103.3370",
-    area: "168000",
-    capacity: "5000",
-    openingHours: "06:00-20:00",
-    accessibilityFeatures: "Rampas de acceso, senderos pavimentados",
-    maintenanceSchedule: "Diario",
-    contactInfo: "parque.aguaazul@guadalajara.gob.mx",
-    emergencyContact: "911",
-    isPetFriendly: true,
-    hasParking: true,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-    amenities: [
-      { id: 1, name: "Lago artificial", icon: "🏊", createdAt: new Date() },
-      { id: 2, name: "Jardín botánico", icon: "🌸", createdAt: new Date() },
-      { id: 3, name: "Área de juegos", icon: "🎠", createdAt: new Date() },
-      { id: 4, name: "Senderos", icon: "🚶", createdAt: new Date() }
-    ]
-  },
-  {
-    id: 2,
-    name: "Parque Metropolitano",
-    description: "Amplio parque metropolitano con instalaciones deportivas, teatro al aire libre y espacios para eventos masivos.",
-    address: "Av. Patria 1891, Zapopan, Jalisco",
-    latitude: 20.7114,
-    longitude: -103.4203,
-    type: "metropolitano",
-    size: 320000,
-    municipalityId: 1,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-    isActive: true,
-    primaryImageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
-    images: [
-      { id: 2, url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop", isPrimary: true }
-    ],
-    amenities: [
-      { id: 5, name: "Teatro al aire libre", icon: "🎭" },
-      { id: 6, name: "Canchas deportivas", icon: "⚽" },
-      { id: 7, name: "Ciclovía", icon: "🚴" },
-      { id: 8, name: "Estacionamiento", icon: "🚗" }
-    ],
-    activities: []
-  },
-  {
-    id: 3,
-    name: "Parque Lineal Río Santiago",
-    description: "Parque lineal a lo largo del río con senderos ecológicos, miradores y áreas de contemplación de la naturaleza.",
-    address: "Río Santiago, Tonalá, Jalisco",
-    latitude: 20.6211,
-    longitude: -103.2441,
-    type: "lineal",
-    size: 45000,
-    municipalityId: 1,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-    isActive: true,
-    primaryImageUrl: "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=800&h=600&fit=crop",
-    images: [
-      { id: 3, url: "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=800&h=600&fit=crop", isPrimary: true }
-    ],
-    amenities: [
-      { id: 9, name: "Senderos ecológicos", icon: "🌿" },
-      { id: 10, name: "Miradores", icon: "👁️" },
-      { id: 11, name: "Puentes peatonales", icon: "🌉" },
-      { id: 12, name: "Áreas de descanso", icon: "🪑" }
-    ],
-    activities: []
-  },
-  {
-    id: 4,
-    name: "Parque Vecinal Las Flores",
-    description: "Parque comunitario con juegos infantiles, canchas de básquetbol y espacios verdes para la convivencia familiar.",
-    address: "Calle Las Flores 234, Tlaquepaque, Jalisco",
-    latitude: 20.6401,
-    longitude: -103.3158,
-    type: "vecinal",
-    size: 8500,
-    municipalityId: 1,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-    isActive: true,
-    primaryImageUrl: "https://images.unsplash.com/photo-1520637836862-4d197d17c17a?w=800&h=600&fit=crop",
-    images: [
-      { id: 4, url: "https://images.unsplash.com/photo-1520637836862-4d197d17c17a?w=800&h=600&fit=crop", isPrimary: true }
-    ],
-    amenities: [
-      { id: 13, name: "Juegos infantiles", icon: "🎈" },
-      { id: 14, name: "Cancha de básquetbol", icon: "🏀" },
-      { id: 15, name: "Áreas verdes", icon: "🌱" },
-      { id: 16, name: "Bancas", icon: "🪑" }
-    ],
-    activities: []
-  },
-  {
-    id: 5,
-    name: "Parque de Bolsillo Centro",
-    description: "Pequeño oasis verde en el centro histórico con fuentes, jardines temáticos y espacios de lectura al aire libre.",
-    address: "Calle Morelos 145, Centro, Guadalajara, Jalisco",
-    latitude: 20.6736,
-    longitude: -103.3448,
-    type: "bolsillo",
-    size: 1200,
-    municipalityId: 1,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-    isActive: true,
-    primaryImageUrl: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800&h=600&fit=crop",
-    images: [
-      { id: 5, url: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800&h=600&fit=crop", isPrimary: true }
-    ],
-    amenities: [
-      { id: 17, name: "Fuentes", icon: "⛲" },
-      { id: 18, name: "Jardines temáticos", icon: "🌺" },
-      { id: 19, name: "Área de lectura", icon: "📚" },
-      { id: 20, name: "WiFi gratuito", icon: "📶" }
-    ],
-    activities: []
-  }
-];
+    {
+      id: 1,
+      name: "Parque Agua Azul",
+      municipalityId: 1,
+      parkType: "metropolitano",
+      description: "Parque histórico en el corazón de Guadalajara con jardines botánicos, lago artificial y áreas recreativas familiares.",
+      address: "Calzada Independencia Sur 973, Guadalajara, Jalisco",
+      postalCode: "44100",
+      latitude: "20.6736",
+      longitude: "-103.3370",
+      area: "168000",
+      capacity: "5000",
+      openingHours: "06:00-20:00",
+      accessibilityFeatures: "Rampas de acceso, senderos pavimentados",
+      maintenanceSchedule: "Diario",
+      contactInfo: "parque.aguaazul@guadalajara.gob.mx",
+      emergencyContact: "911",
+      isPetFriendly: true,
+      hasParking: true,
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      amenities: [
+        { id: 1, name: "Lago artificial", icon: "🏊", createdAt: new Date() },
+        { id: 2, name: "Jardín botánico", icon: "🌸", createdAt: new Date() },
+        { id: 3, name: "Área de juegos", icon: "🎠", createdAt: new Date() },
+        { id: 4, name: "Senderos", icon: "🚶", createdAt: new Date() }
+      ]
+    },
+    {
+      id: 2,
+      name: "Parque Metropolitano",
+      municipalityId: 1,
+      parkType: "metropolitano",
+      description: "Amplio parque metropolitano con instalaciones deportivas, teatro al aire libre y espacios para eventos masivos.",
+      address: "Av. Patria 1891, Zapopan, Jalisco",
+      postalCode: "45116",
+      latitude: "20.7114",
+      longitude: "-103.4203",
+      area: "320000",
+      capacity: "10000",
+      openingHours: "05:00-22:00",
+      accessibilityFeatures: "Acceso universal, estacionamiento para discapacitados",
+      maintenanceSchedule: "Semanal",
+      contactInfo: "parque.metropolitano@zapopan.gob.mx",
+      emergencyContact: "911",
+      isPetFriendly: true,
+      hasParking: true,
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      amenities: [
+        { id: 5, name: "Teatro al aire libre", icon: "🎭", createdAt: new Date() },
+        { id: 6, name: "Canchas deportivas", icon: "⚽", createdAt: new Date() },
+        { id: 7, name: "Ciclovía", icon: "🚴", createdAt: new Date() },
+        { id: 8, name: "Estacionamiento", icon: "🚗", createdAt: new Date() }
+      ]
+    },
+    {
+      id: 3,
+      name: "Parque Lineal Río Santiago",
+      municipalityId: 1,
+      parkType: "lineal",
+      description: "Parque lineal a lo largo del río con senderos ecológicos, miradores y áreas de contemplación de la naturaleza.",
+      address: "Río Santiago, Tonalá, Jalisco",
+      postalCode: "45400",
+      latitude: "20.6211",
+      longitude: "-103.2441",
+      area: "45000",
+      capacity: "2000",
+      openingHours: "06:00-19:00",
+      accessibilityFeatures: "Senderos accesibles, miradores con rampas",
+      maintenanceSchedule: "Quincenal",
+      contactInfo: "parque.riosantiago@tonala.gob.mx",
+      emergencyContact: "911",
+      isPetFriendly: true,
+      hasParking: false,
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      amenities: [
+        { id: 9, name: "Senderos ecológicos", icon: "🌿", createdAt: new Date() },
+        { id: 10, name: "Miradores", icon: "👁️", createdAt: new Date() },
+        { id: 11, name: "Puentes peatonales", icon: "🌉", createdAt: new Date() },
+        { id: 12, name: "Áreas de descanso", icon: "🪑", createdAt: new Date() }
+      ]
+    },
+    {
+      id: 4,
+      name: "Parque Vecinal Las Flores",
+      municipalityId: 1,
+      parkType: "vecinal",
+      description: "Parque comunitario con juegos infantiles, canchas de básquetbol y espacios verdes para la convivencia familiar.",
+      address: "Calle Las Flores 234, Tlaquepaque, Jalisco",
+      postalCode: "45500",
+      latitude: "20.6401",
+      longitude: "-103.3158",
+      area: "8500",
+      capacity: "500",
+      openingHours: "06:00-21:00",
+      accessibilityFeatures: "Juegos inclusivos, senderos pavimentados",
+      maintenanceSchedule: "Semanal",
+      contactInfo: "parque.lasflores@tlaquepaque.gob.mx",
+      emergencyContact: "911",
+      isPetFriendly: true,
+      hasParking: true,
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      amenities: [
+        { id: 13, name: "Juegos infantiles", icon: "🎈", createdAt: new Date() },
+        { id: 14, name: "Cancha de básquetbol", icon: "🏀", createdAt: new Date() },
+        { id: 15, name: "Áreas verdes", icon: "🌱", createdAt: new Date() },
+        { id: 16, name: "Bancas", icon: "🪑", createdAt: new Date() }
+      ]
+    },
+    {
+      id: 5,
+      name: "Parque de Bolsillo San José",
+      municipalityId: 1,
+      parkType: "bolsillo",
+      description: "Pequeño parque urbano con espacios de lectura, fuentes y jardines temáticos para el disfrute vecinal.",
+      address: "Av. San José 156, Guadalajara, Jalisco",
+      postalCode: "44200",
+      latitude: "20.6890",
+      longitude: "-103.3445",
+      area: "2800",
+      capacity: "200",
+      openingHours: "07:00-20:00",
+      accessibilityFeatures: "Senderos táctiles, señalización braille",
+      maintenanceSchedule: "Diario",
+      contactInfo: "parque.sanjose@guadalajara.gob.mx",
+      emergencyContact: "911",
+      isPetFriendly: false,
+      hasParking: false,
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      amenities: [
+        { id: 17, name: "Fuentes", icon: "⛲", createdAt: new Date() },
+        { id: 18, name: "Jardines temáticos", icon: "🌺", createdAt: new Date() },
+        { id: 19, name: "Área de lectura", icon: "📚", createdAt: new Date() },
+        { id: 20, name: "WiFi gratuito", icon: "📶", createdAt: new Date() }
+      ]
+    }
+  ];
+}
 
 export const fallbackAmenities = [
   { id: 1, name: "Lago artificial", icon: "🏊", createdAt: new Date() },
@@ -153,5 +166,3 @@ export const fallbackAmenities = [
   { id: 19, name: "Área de lectura", icon: "📚", createdAt: new Date() },
   { id: 20, name: "WiFi gratuito", icon: "📶", createdAt: new Date() }
 ];
-  ];
-}
