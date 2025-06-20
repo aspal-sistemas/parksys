@@ -58,53 +58,92 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-      {/* Filtros reorganizados: 2 columnas arriba, amenidades abajo */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+      {/* Nuevo layout: Columna izquierda con búsqueda y tipos, columna derecha con ilustración */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
         
-        {/* Búsqueda de Parques - Primera columna */}
-        <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
-          <div className="bg-[#067f5f] text-white p-3 rounded-t-lg">
-            <h3 className="text-base font-semibold flex items-center gap-2">
-              <Search className="h-4 w-4" />
-              Búsqueda de Parques
-            </h3>
-          </div>
-          <div className="p-4 space-y-3">
-            <div>
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre del Parque
-              </label>
-              <Input
-                id="search"
-                type="text"
-                placeholder="Ingrese nombre del parque..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full border-gray-300 focus:border-[#00a587] focus:ring-1 focus:ring-[#00a587]"
-              />
+        {/* Columna Izquierda: Búsqueda + Tipos de Parque */}
+        <div className="space-y-4">
+          {/* Búsqueda de Parques */}
+          <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
+            <div className="bg-[#067f5f] text-white p-3 rounded-t-lg">
+              <h3 className="text-base font-semibold flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                Búsqueda de Parques
+              </h3>
             </div>
-            <div>
-              <label htmlFor="postal-code" className="block text-sm font-medium text-gray-700 mb-1">
-                Código Postal
-              </label>
-              <Input
-                id="postal-code"
-                type="text"
-                placeholder="ej. 06100"
-                value={postalCode}
-                onChange={(e) => setPostalCode(e.target.value)}
-                className="w-full border-gray-300 focus:border-[#00a587] focus:ring-1 focus:ring-[#00a587]"
-              />
+            <div className="p-4 space-y-3">
+              <div>
+                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre del Parque
+                </label>
+                <Input
+                  id="search"
+                  type="text"
+                  placeholder="Ingrese nombre del parque..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full border-gray-300 focus:border-[#00a587] focus:ring-1 focus:ring-[#00a587]"
+                />
+              </div>
+              <div>
+                <label htmlFor="postal-code" className="block text-sm font-medium text-gray-700 mb-1">
+                  Código Postal
+                </label>
+                <Input
+                  id="postal-code"
+                  type="text"
+                  placeholder="ej. 06100"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  className="w-full border-gray-300 focus:border-[#00a587] focus:ring-1 focus:ring-[#00a587]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Descubre tu Parque Ideal - Tipos */}
+          <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
+            <div className="bg-[#8498a5] text-white p-3 rounded-t-lg">
+              <h3 className="text-base font-semibold flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                Descubre tu Parque Ideal
+              </h3>
+            </div>
+            <div className="p-4">
+              <p className="text-sm text-gray-600 mb-3">Tipos disponibles:</p>
+              <div className="grid grid-cols-2 gap-2">
+                {['urbano', 'natural', 'lineal', 'metropolitano', 'vecinal', 'bolsillo', 'tematico'].map((type) => (
+                  <label key={type} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded text-sm">
+                    <input
+                      type="radio"
+                      name="parkType"
+                      checked={parkType === type}
+                      onChange={() => setParkType(type)}
+                      className="w-4 h-4 text-[#00a587] border-gray-300 focus:ring-[#00a587]"
+                    />
+                    <span className="text-gray-700">
+                      {type === 'urbano' ? 'Urbano' :
+                       type === 'natural' ? 'Natural' :
+                       type === 'lineal' ? 'Lineal' :
+                       type === 'metropolitano' ? 'Metropolitano' :
+                       type === 'vecinal' ? 'Vecinal' :
+                       type === 'bolsillo' ? 'De Bolsillo' :
+                       type === 'tematico' ? 'Temático' :
+                       type}
+                    </span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Ilustración de Parque - Segunda columna */}
+        {/* Columna Derecha: Solo Ilustración */}
         <div className="bg-white rounded-lg border border-gray-300 shadow-sm overflow-hidden">
           <div className="bg-[#bcd256] text-gray-800 p-3 rounded-t-lg">
             <h3 className="text-base font-semibold flex items-center gap-2">
-              <Tag className="h-4 w-4" />
-              Descubre tu Parque Ideal
+              <MapPin className="h-4 w-4" />
+              Parques de México
             </h3>
           </div>
           <div className="p-4">
@@ -112,37 +151,13 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
               <img
                 src={parkIllustration}
                 alt="Ilustración de parque con lagos, senderos, áreas verdes y espacios recreativos"
-                className="w-full h-40 object-cover rounded-lg"
+                className="w-full h-64 object-cover rounded-lg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg"></div>
-              <div className="absolute bottom-2 left-2 right-2">
-                <p className="text-white text-sm font-medium bg-black/50 backdrop-blur-sm rounded px-2 py-1">
+              <div className="absolute bottom-3 left-3 right-3">
+                <p className="text-white text-sm font-medium bg-black/60 backdrop-blur-sm rounded px-3 py-2 text-center">
                   Espacios verdes para toda la familia
                 </p>
-              </div>
-            </div>
-            {/* Filtros de tipo de parque integrados discretamente */}
-            <div className="mt-3 space-y-1">
-              <p className="text-xs text-gray-500 mb-2">Tipos disponibles:</p>
-              <div className="grid grid-cols-2 gap-1 text-xs">
-                {PARK_TYPES.map((type) => (
-                  <label key={type} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                    <input
-                      type="radio"
-                      name="parkType"
-                      checked={parkType === type}
-                      onChange={() => setParkType(type)}
-                      className="w-3 h-3 text-[#00a587] border-gray-300 focus:ring-[#00a587]"
-                    />
-                    <span className="text-gray-700">
-                      {type === 'neighborhood' ? 'Vecinal' :
-                       type === 'regional' ? 'Regional' :
-                       type === 'linear' ? 'Lineal' :
-                       type === 'pocket' ? 'Bolsillo' :
-                       type.replace('_', ' ')}
-                    </span>
-                  </label>
-                ))}
               </div>
             </div>
           </div>
