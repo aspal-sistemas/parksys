@@ -18,6 +18,7 @@ import { z } from "zod";
 import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus, Filter, SortAsc, Map as MapIcon } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
+import { ParkImageManager } from "@/components/ParkImageManager";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -549,7 +550,7 @@ export default function AdminParkView() {
           <TabsTrigger value="incidents">Incidencias</TabsTrigger>
           <TabsTrigger value="volunteers">Voluntarios</TabsTrigger>
           <TabsTrigger value="documents">Documentos</TabsTrigger>
-          <TabsTrigger value="images">Imágenes</TabsTrigger>
+          <TabsTrigger value="multimedia">Multimedia</TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic-info" className="space-y-6">
@@ -1269,34 +1270,8 @@ export default function AdminParkView() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="images" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Galería de Imágenes ({park.images?.length || 0})</CardTitle>
-              <CardDescription>Fotos del parque</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {park.images?.map((image) => (
-                  <div key={image.id} className="relative">
-                    <img 
-                      src={image.imageUrl} 
-                      alt={image.caption || 'Imagen del parque'}
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
-                    {image.isPrimary && (
-                      <Badge className="absolute top-2 left-2">
-                        Principal
-                      </Badge>
-                    )}
-                    {image.caption && (
-                      <p className="text-sm text-gray-600 mt-2">{image.caption}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="multimedia" className="space-y-4">
+          <ParkImageManager parkId={parseInt(id!)} />
         </TabsContent>
       </Tabs>
 
