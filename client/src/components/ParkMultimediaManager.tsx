@@ -57,6 +57,7 @@ interface ParkMultimediaManagerProps {
 }
 
 export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
+  console.log(`🚀 COMPONENTE MULTIMEDIA INICIADO - Park ID: ${parkId}`);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
