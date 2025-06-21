@@ -24,11 +24,11 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
       id: 1,
       username: 'admin',
       email: 'admin@parquesmx.com',
-      role: 'admin',
+      role: 'super_admin',
       fullName: 'Admin System',
-      municipalityId: null
+      municipalityId: 2
     };
-    console.log('✅ Usuario admin asignado para desarrollo');
+    console.log('✅ Usuario super_admin asignado para desarrollo');
   }
   
   console.log('👤 Usuario autenticado:', req.user);
