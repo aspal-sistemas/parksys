@@ -77,6 +77,20 @@ export default function ParkAmenitiesPage() {
   
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedAmenity, setSelectedAmenity] = useState<ParkAmenity | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("todas");
+  
+  // Categorías de amenidades
+  const amenityCategories = {
+    todas: "Todas",
+    deportivas: "Deportivas",
+    recreativas: "Recreativas", 
+    culturales: "Culturales",
+    servicios: "Servicios",
+    naturaleza: "Naturaleza",
+    infantiles: "Infantiles",
+    accesibilidad: "Accesibilidad"
+  };
+
   const [formData, setFormData] = useState<AssignAmenityFormData>({
     amenityId: 0,
     moduleName: "",
@@ -100,10 +114,59 @@ export default function ParkAmenitiesPage() {
     queryKey: ["/api/amenities/dashboard"],
   });
 
+  // Función para categorizar amenidades por nombre
+  const categorizeAmenity = (amenityName: string): string => {
+    const name = amenityName.toLowerCase();
+    
+    if (name.includes('cancha') || name.includes('campo') || name.includes('pista') || 
+        name.includes('deportivo') || name.includes('futbol') || name.includes('basquet') || 
+        name.includes('tenis') || name.includes('voley') || name.includes('gimnasio') ||
+        name.includes('atletismo') || name.includes('ciclismo')) {
+      return 'deportivas';
+    }
+    
+    if (name.includes('juego') || name.includes('infantil') || name.includes('niños') ||
+        name.includes('columpios') || name.includes('resbaladilla') || name.includes('sube y baja')) {
+      return 'infantiles';
+    }
+    
+    if (name.includes('teatro') || name.includes('auditorio') || name.includes('biblioteca') ||
+        name.includes('museo') || name.includes('cultural') || name.includes('exposicion')) {
+      return 'culturales';
+    }
+    
+    if (name.includes('baño') || name.includes('sanitario') || name.includes('estacionamiento') ||
+        name.includes('seguridad') || name.includes('informacion') || name.includes('wifi') ||
+        name.includes('agua') || name.includes('bebedero') || name.includes('basura')) {
+      return 'servicios';
+    }
+    
+    if (name.includes('jardin') || name.includes('arbol') || name.includes('flores') ||
+        name.includes('sendero') || name.includes('bosque') || name.includes('lago') ||
+        name.includes('naturaleza') || name.includes('ecologico')) {
+      return 'naturaleza';
+    }
+    
+    if (name.includes('accesible') || name.includes('discapacidad') || name.includes('rampa') ||
+        name.includes('braille') || name.includes('inclus')) {
+      return 'accesibilidad';
+    }
+    
+    // Por defecto, recreativas
+    return 'recreativas';
+  };
+
   // Available amenities (not yet assigned to this park)
   const availableAmenities = allAmenities?.allAmenities?.filter((amenity: Amenity) => 
     !parkAmenities?.find((pa: ParkAmenity) => pa.amenityId === amenity.id)
   ) || [];
+
+  // Filtrar amenidades por categoría
+  const filteredParkAmenities = selectedCategory === 'todas' 
+    ? parkAmenities || []
+    : (parkAmenities || []).filter((amenity: ParkAmenity) => 
+        categorizeAmenity(amenity.amenityName) === selectedCategory
+      );
 
   // Mutations
   const assignAmenityMutation = useMutation({
