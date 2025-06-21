@@ -135,7 +135,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                     )}
                     {park.amenities && park.amenities.length > 8 && (
                       <Badge variant="secondary" className="text-xs">
-                        +{park.amenities.length - 8} more
+                        +{park.amenities.length - 8} más
                       </Badge>
                     )}
                   </div>
