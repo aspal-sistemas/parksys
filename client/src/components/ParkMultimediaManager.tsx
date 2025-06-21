@@ -56,30 +56,45 @@ interface ParkMultimediaManagerProps {
   parkId: number;
 }
 
-export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
-  console.log(`🚀 COMPONENTE MULTIMEDIA INICIADO - Park ID: ${parkId}`);
+export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Estados para formularios
+  // Estados para modales
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [isDocumentDialogOpen, setIsDocumentDialogOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<ParkImage | null>(null);
-  const [selectedDocument, setSelectedDocument] = useState<ParkDocument | null>(null);
 
-  // Estados para nuevos elementos
+  // Estados para nuevas imágenes
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [newImageCaption, setNewImageCaption] = useState('');
-  const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [isPrimaryImage, setIsPrimaryImage] = useState(false);
 
+  // Estados para nuevos documentos
+  const [newDocumentFile, setNewDocumentFile] = useState<File | null>(null);
+  const [newDocumentUrl, setNewDocumentUrl] = useState('');
   const [newDocumentTitle, setNewDocumentTitle] = useState('');
   const [newDocumentDescription, setNewDocumentDescription] = useState('');
   const [newDocumentCategory, setNewDocumentCategory] = useState('general');
-  const [newDocumentUrl, setNewDocumentUrl] = useState('');
-  const [newDocumentFile, setNewDocumentFile] = useState<File | null>(null);
 
-  // Consultas
+  // Función para limpiar formulario de imagen
+  const resetImageForm = () => {
+    setNewImageFile(null);
+    setNewImageUrl('');
+    setNewImageCaption('');
+    setIsPrimaryImage(false);
+  };
+
+  // Función para limpiar formulario de documento
+  const resetDocumentForm = () => {
+    setNewDocumentFile(null);
+    setNewDocumentUrl('');
+    setNewDocumentTitle('');
+    setNewDocumentDescription('');
+    setNewDocumentCategory('general');
+  };
+
+  // Consultas para obtener datos
   const { data: images = [], isLoading: imagesLoading, error: imagesError } = useQuery<ParkImage[]>({
     queryKey: [`/api/parks/${parkId}/images`],
     queryFn: async () => {
@@ -201,7 +216,6 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
       });
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/images`] });
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}`] });
-      setSelectedImage(null);
     },
     onError: () => {
       toast({
@@ -241,10 +255,11 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
         description: "El documento se ha agregado exitosamente al parque.",
       });
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/documents`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}`] });
       resetDocumentForm();
       setIsDocumentDialogOpen(false);
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Error",
         description: "No se pudo subir el documento. Intente nuevamente.",
@@ -266,7 +281,7 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
         description: "El documento se ha eliminado correctamente.",
       });
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/documents`] });
-      setSelectedDocument(null);
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}`] });
     },
     onError: () => {
       toast({
@@ -277,32 +292,15 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
     },
   });
 
-  // Funciones auxiliares
-  const resetImageForm = () => {
-    setNewImageUrl('');
-    setNewImageCaption('');
-    setNewImageFile(null);
-    setIsPrimaryImage(false);
-  };
-
-  const resetDocumentForm = () => {
-    setNewDocumentTitle('');
-    setNewDocumentDescription('');
-    setNewDocumentCategory('general');
-    setNewDocumentUrl('');
-    setNewDocumentFile(null);
-  };
-
-  const handleImageSubmit = async () => {
+  // Funciones de manejo
+  const handleImageSubmit = () => {
     if (newImageFile) {
-      // Subir archivo
       const formData = new FormData();
       formData.append('image', newImageFile);
       formData.append('caption', newImageCaption);
       formData.append('isPrimary', isPrimaryImage.toString());
       uploadImageMutation.mutate(formData);
     } else if (newImageUrl) {
-      // Usar URL externa
       uploadImageMutation.mutate({
         imageUrl: newImageUrl,
         caption: newImageCaption,
@@ -311,9 +309,8 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
     }
   };
 
-  const handleDocumentSubmit = async () => {
+  const handleDocumentSubmit = () => {
     if (newDocumentFile) {
-      // Subir archivo
       const formData = new FormData();
       formData.append('document', newDocumentFile);
       formData.append('title', newDocumentTitle);
@@ -321,7 +318,6 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
       formData.append('category', newDocumentCategory);
       uploadDocumentMutation.mutate(formData);
     } else if (newDocumentUrl) {
-      // Usar URL externa
       uploadDocumentMutation.mutate({
         title: newDocumentTitle,
         description: newDocumentDescription,
@@ -339,7 +335,6 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Debug: Verificar datos
   console.log('🔍 MULTIMEDIA MANAGER - Renderizando con:', {
     parkId,
     images: images.length,
@@ -393,66 +388,67 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
                     ➕ Agregar Imagen
                   </Button>
                 </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Agregar Nueva Imagen</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Subir archivo</label>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setNewImageFile(file);
-                          setNewImageUrl(''); // Limpiar URL si se selecciona archivo
-                        }
-                      }}
-                    />
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Agregar Nueva Imagen</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Subir archivo</label>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setNewImageFile(file);
+                            setNewImageUrl('');
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="text-center text-sm text-gray-500">- O -</div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">URL de imagen</label>
+                      <Input
+                        value={newImageUrl}
+                        onChange={(e) => {
+                          setNewImageUrl(e.target.value);
+                          if (e.target.value) setNewImageFile(null);
+                        }}
+                        placeholder="https://ejemplo.com/imagen.jpg"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Descripción</label>
+                      <Textarea
+                        value={newImageCaption}
+                        onChange={(e) => setNewImageCaption(e.target.value)}
+                        placeholder="Descripción de la imagen..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="isPrimary"
+                        checked={isPrimaryImage}
+                        onChange={(e) => setIsPrimaryImage(e.target.checked)}
+                      />
+                      <label htmlFor="isPrimary" className="text-sm">Establecer como imagen principal</label>
+                    </div>
                   </div>
-                  <div className="text-center text-sm text-gray-500">- O -</div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">URL de imagen</label>
-                    <Input
-                      value={newImageUrl}
-                      onChange={(e) => {
-                        setNewImageUrl(e.target.value);
-                        if (e.target.value) setNewImageFile(null); // Limpiar archivo si se ingresa URL
-                      }}
-                      placeholder="https://ejemplo.com/imagen.jpg"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Descripción</label>
-                    <Textarea
-                      value={newImageCaption}
-                      onChange={(e) => setNewImageCaption(e.target.value)}
-                      placeholder="Descripción de la imagen..."
-                      rows={3}
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="isPrimary"
-                      checked={isPrimaryImage}
-                      onChange={(e) => setIsPrimaryImage(e.target.checked)}
-                    />
-                    <label htmlFor="isPrimary" className="text-sm">Establecer como imagen principal</label>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button 
-                    onClick={handleImageSubmit}
-                    disabled={(!newImageFile && !newImageUrl) || uploadImageMutation.isPending}
-                  >
-                    {uploadImageMutation.isPending ? 'Subiendo...' : 'Agregar Imagen'}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                  <DialogFooter>
+                    <Button 
+                      onClick={handleImageSubmit}
+                      disabled={(!newImageFile && !newImageUrl) || uploadImageMutation.isPending}
+                    >
+                      {uploadImageMutation.isPending ? 'Subiendo...' : 'Agregar Imagen'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
 
           {imagesLoading ? (
@@ -547,7 +543,7 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
                         const file = e.target.files?.[0];
                         if (file) {
                           setNewDocumentFile(file);
-                          setNewDocumentUrl(''); // Limpiar URL si se selecciona archivo
+                          setNewDocumentUrl('');
                         }
                       }}
                     />
@@ -559,7 +555,7 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
                       value={newDocumentUrl}
                       onChange={(e) => {
                         setNewDocumentUrl(e.target.value);
-                        if (e.target.value) setNewDocumentFile(null); // Limpiar archivo si se ingresa URL
+                        if (e.target.value) setNewDocumentFile(null);
                       }}
                       placeholder="https://ejemplo.com/documento.pdf"
                     />
@@ -591,7 +587,7 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
                 <DialogFooter>
                   <Button 
                     onClick={handleDocumentSubmit}
-                    disabled={(!newDocumentFile && !newDocumentUrl) || !newDocumentTitle || uploadDocumentMutation.isPending}
+                    disabled={(!newDocumentFile && !newDocumentUrl) || !newDocumentTitle.trim() || uploadDocumentMutation.isPending}
                   >
                     {uploadDocumentMutation.isPending ? 'Subiendo...' : 'Agregar Documento'}
                   </Button>
@@ -607,45 +603,42 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
               No hay documentos para este parque
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {documents.map((document) => (
                 <Card key={document.id}>
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-5 w-5 text-blue-500" />
-                          <div>
-                            <h4 className="font-medium">{document.title}</h4>
-                            <p className="text-sm text-gray-600">{document.description}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="outline">{document.category}</Badge>
-                              {document.fileSize > 0 && (
-                                <span className="text-xs text-gray-500">
-                                  {formatFileSize(document.fileSize)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-blue-500" />
+                        <div>
+                          <h4 className="font-medium">{document.title}</h4>
+                          <p className="text-xs text-gray-500 capitalize">{document.category}</p>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => window.open(document.fileUrl, '_blank')}
-                        >
-                          <Download className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => deleteDocumentMutation.mutate(document.id)}
-                          disabled={deleteDocumentMutation.isPending}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
+                      <Badge variant="outline">{formatFileSize(document.fileSize)}</Badge>
+                    </div>
+                    
+                    {document.description && (
+                      <p className="text-sm text-gray-600 mb-3">{document.description}</p>
+                    )}
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.open(document.fileUrl, '_blank')}
+                      >
+                        <Download className="h-3 w-3 mr-1" />
+                        Ver
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => deleteDocumentMutation.mutate(document.id)}
+                        disabled={deleteDocumentMutation.isPending}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
