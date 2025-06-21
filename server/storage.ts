@@ -393,7 +393,7 @@ export class DatabaseStorage implements IStorage {
 
   async getParkImages(parkId: number): Promise<any[]> {
     try {
-      const result = await db.execute(`
+      const result = await pool.query(`
         SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption, created_at as "createdAt"
         FROM park_images
         WHERE park_id = $1
@@ -423,7 +423,7 @@ export class DatabaseStorage implements IStorage {
 
   async createParkImage(imageData: any): Promise<any> {
     try {
-      const result = await db.execute(`
+      const result = await pool.query(`
         INSERT INTO park_images (park_id, image_url, caption, is_primary, created_at)
         VALUES ($1, $2, $3, $4, NOW())
         RETURNING id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption, created_at as "createdAt"
@@ -466,7 +466,7 @@ export class DatabaseStorage implements IStorage {
 
       values.push(id); // Add ID at the end
       
-      const result = await db.execute(`
+      const result = await pool.query(`
         UPDATE park_images 
         SET ${updateFields.join(', ')}
         WHERE id = $${paramIndex}
@@ -482,7 +482,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteParkImage(id: number): Promise<boolean> {
     try {
-      const result = await db.execute(`
+      const result = await pool.query(`
         DELETE FROM park_images WHERE id = $1
       `, [id]);
       return (result.rowCount || 0) > 0;
@@ -494,8 +494,8 @@ export class DatabaseStorage implements IStorage {
 
   async getParkImage(id: number): Promise<any> {
     try {
-      const result = await db.execute(`
-        SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption
+      const result = await pool.query(`
+        SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption, created_at as "createdAt"
         FROM park_images
         WHERE id = $1
       `, [id]);
