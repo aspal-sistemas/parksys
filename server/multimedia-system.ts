@@ -268,12 +268,30 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
         finalFileUrl = `/uploads/park-documents/${req.file.filename}`;
         fileSize = req.file.size;
         fileType = req.file.mimetype;
+      } else if (fileUrl) {
+        // URL externa - detectar tipo de archivo por extensión
+        const getFileTypeFromUrl = (url: string) => {
+          const extension = url.split('.').pop()?.toLowerCase();
+          switch (extension) {
+            case 'pdf': return 'application/pdf';
+            case 'doc': return 'application/msword';
+            case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+            case 'txt': return 'text/plain';
+            case 'jpg':
+            case 'jpeg': return 'image/jpeg';
+            case 'png': return 'image/png';
+            default: return 'application/octet-stream';
+          }
+        };
+        
+        fileType = getFileTypeFromUrl(fileUrl);
+        fileSize = 0; // No podemos determinar el tamaño de URLs externas
       }
       
       const insertQuery = `
         INSERT INTO park_documents (park_id, title, file_path, file_url, file_size, file_type, description, category)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING id, park_id as "parkId", title, file_url as "fileUrl", description, category
+        RETURNING id, park_id as "parkId", title, file_url as "fileUrl", file_size as "fileSize", file_type as "fileType", description, category, created_at as "createdAt"
       `;
       
       const result = await db.execute(insertQuery, [

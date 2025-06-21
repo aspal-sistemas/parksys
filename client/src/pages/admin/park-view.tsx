@@ -1271,7 +1271,7 @@ export default function AdminParkView() {
         </TabsContent>
 
         <TabsContent value="multimedia" className="space-y-4">
-          <ParkImageManager parkId={parseInt(id!)} />
+          <ParkMultimediaManager parkId={parseInt(id!)} />
         </TabsContent>
       </Tabs>
 
