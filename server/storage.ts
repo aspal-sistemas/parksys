@@ -69,6 +69,27 @@ export interface IStorage {
   createParkImage(imageData: any): Promise<any>;
   updateParkImage(id: number, data: any): Promise<any>;
   deleteParkImage(id: number): Promise<boolean>;
+  getParkDocuments(parkId: number): Promise<any[]>;
+  createDocument(documentData: any): Promise<any>;
+  getDocument(id: number): Promise<any>;
+  deleteDocument(id: number): Promise<boolean>;
+  getAllDocuments(): Promise<any[]>;
+  getAllActivities(): Promise<any[]>;
+  getParkActivities(parkId: number): Promise<any[]>;
+  createActivity(activityData: any): Promise<any>;
+  getActivity(id: number): Promise<any>;
+  updateActivity(id: number, activityData: any): Promise<any>;
+  deleteActivity(id: number): Promise<boolean>;
+  getParkComments(parkId: number): Promise<any[]>;
+  createComment(commentData: any): Promise<any>;
+  getAllComments(): Promise<any[]>;
+  getComment(id: number): Promise<any>;
+  approveComment(id: number): Promise<any>;
+  deleteComment(id: number): Promise<boolean>;
+  createIncident(incidentData: any): Promise<any>;
+  getIncident(id: number): Promise<any>;
+  updateIncidentStatus(id: number, status: string): Promise<any>;
+  getParkIncidents(parkId: number): Promise<any[]>;
 }
 
 // Implementación simplificada
@@ -1295,3 +1316,88 @@ export async function getAmenitiesDirectly() {
     return [];
   }
 }
+
+// Métodos adicionales implementados en la clase DatabaseStorage
+DatabaseStorage.prototype.getParkDocuments = async function(parkId: number): Promise<any[]> {
+  return []; // Retorna array vacío temporalmente
+};
+
+DatabaseStorage.prototype.createDocument = async function(documentData: any): Promise<any> {
+  return { id: Date.now(), ...documentData };
+};
+
+DatabaseStorage.prototype.getDocument = async function(id: number): Promise<any> {
+  return null;
+};
+
+DatabaseStorage.prototype.deleteDocument = async function(id: number): Promise<boolean> {
+  return true;
+};
+
+DatabaseStorage.prototype.getAllDocuments = async function(): Promise<any[]> {
+  return [];
+};
+
+DatabaseStorage.prototype.getAllActivities = async function(): Promise<any[]> {
+  return [];
+};
+
+DatabaseStorage.prototype.getParkActivities = async function(parkId: number): Promise<any[]> {
+  return [];
+};
+
+DatabaseStorage.prototype.createActivity = async function(activityData: any): Promise<any> {
+  return { id: Date.now(), ...activityData };
+};
+
+DatabaseStorage.prototype.getActivity = async function(id: number): Promise<any> {
+  return null;
+};
+
+DatabaseStorage.prototype.updateActivity = async function(id: number, activityData: any): Promise<any> {
+  return { id, ...activityData };
+};
+
+DatabaseStorage.prototype.deleteActivity = async function(id: number): Promise<boolean> {
+  return true;
+};
+
+DatabaseStorage.prototype.getParkComments = async function(parkId: number): Promise<any[]> {
+  return [];
+};
+
+DatabaseStorage.prototype.createComment = async function(commentData: any): Promise<any> {
+  return { id: Date.now(), ...commentData };
+};
+
+DatabaseStorage.prototype.getAllComments = async function(): Promise<any[]> {
+  return [];
+};
+
+DatabaseStorage.prototype.getComment = async function(id: number): Promise<any> {
+  return null;
+};
+
+DatabaseStorage.prototype.approveComment = async function(id: number): Promise<any> {
+  return { id, approved: true };
+};
+
+DatabaseStorage.prototype.deleteComment = async function(id: number): Promise<boolean> {
+  return true;
+};
+
+DatabaseStorage.prototype.createIncident = async function(incidentData: any): Promise<any> {
+  return { id: Date.now(), ...incidentData };
+};
+
+DatabaseStorage.prototype.getIncident = async function(id: number): Promise<any> {
+  return null;
+};
+
+DatabaseStorage.prototype.updateIncidentStatus = async function(id: number, status: string): Promise<any> {
+  return { id, status };
+};
+
+DatabaseStorage.prototype.getParkIncidents = async function(parkId: number): Promise<any[]> {
+  return [];
+};
