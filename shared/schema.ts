@@ -559,6 +559,8 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
   id: true,
   createdAt: true,
   updatedAt: true
+}).extend({
+  fileType: z.string().optional() // Hacer fileType opcional para URLs externas
 });
 
 export type Activity = typeof activities.$inferSelect;
