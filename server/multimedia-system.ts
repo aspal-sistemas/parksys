@@ -84,7 +84,6 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
           id, 
           park_id as "parkId", 
           image_url as "imageUrl", 
-          file_path as "filePath",
           caption, 
           is_primary as "isPrimary", 
           created_at as "createdAt"
@@ -127,15 +126,14 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
       }
       
       const insertQuery = `
-        INSERT INTO park_images (park_id, image_url, file_path, caption, is_primary)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO park_images (park_id, image_url, caption, is_primary)
+        VALUES ($1, $2, $3, $4)
         RETURNING id, park_id as "parkId", image_url as "imageUrl", caption, is_primary as "isPrimary"
       `;
       
       const result = await db.execute(insertQuery, [
         parkId,
         finalImageUrl,
-        filePath,
         caption || '',
         isPrimary === 'true' || isPrimary === true
       ]);
@@ -191,21 +189,14 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
     try {
       const imageId = parseInt(req.params.id);
       
-      // Obtener información de la imagen antes de eliminar
+      // Verificar que la imagen existe
       const imageResult = await db.execute(
-        'SELECT file_path FROM park_images WHERE id = $1',
+        'SELECT id FROM park_images WHERE id = $1',
         [imageId]
       );
       
       if (imageResult.length === 0) {
         return res.status(404).json({ error: 'Imagen no encontrada' });
-      }
-      
-      const filePath = imageResult[0].file_path;
-      
-      // Eliminar archivo físico si existe
-      if (filePath && fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
       }
       
       // Eliminar registro de base de datos
