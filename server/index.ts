@@ -176,6 +176,42 @@ app.use('/api', skillsRouter);
 
 
 
+// ENDPOINT DIRECTO PARA DOCUMENTOS - ANTES DE VITE
+app.get("/test-documents/:parkId", async (req: Request, res: Response) => {
+  try {
+    const parkId = parseInt(req.params.parkId);
+    console.log(`🔧 DIRECT TEST: Consultando documentos para parque ${parkId}`);
+    
+    const { pool } = await import("./direct-park-queries");
+    const query = `
+      SELECT 
+        id, 
+        park_id as "parkId", 
+        title, 
+        file_path as "filePath",
+        file_url as "fileUrl",
+        file_size as "fileSize",
+        file_type as "fileType",
+        description,
+        category,
+        created_at as "createdAt"
+      FROM park_documents 
+      WHERE park_id = $1 
+      ORDER BY created_at DESC
+    `;
+    
+    const result = await pool.query(query, [parkId]);
+    console.log(`✅ DIRECT TEST: Documentos encontrados: ${result.rows.length}`);
+    console.log(`📋 DIRECT TEST: Datos:`, result.rows);
+    
+    res.setHeader('Content-Type', 'application/json');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ DIRECT TEST: Error:', error);
+    res.status(500).json({ error: 'Error de prueba directa' });
+  }
+});
+
 // Endpoint directo para Cash Flow Matrix - antes de cualquier middleware de Vite
 app.get("/cash-flow-data/:year", async (req: Request, res: Response) => {
   try {

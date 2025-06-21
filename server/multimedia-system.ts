@@ -15,11 +15,8 @@ import { eq, and, desc } from 'drizzle-orm';
 import pkg from 'pg';
 const { Pool } = pkg;
 
-// Create a pool for raw SQL queries
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+// Importar pool de configuración existente
+import { pool } from './db';
 
 // Configuración de multer para subida de archivos
 const storage = multer.diskStorage({
