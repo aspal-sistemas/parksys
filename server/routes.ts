@@ -1698,7 +1698,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const parkId = Number(req.params.id);
       const images = await storage.getParkImages(parkId);
-      res.json(images);
+      
+      // Mapear las columnas de la base de datos a los nombres esperados por el frontend
+      const mappedImages = images.map(img => ({
+        id: img.id,
+        parkId: img.parkId,
+        imageUrl: img.url, // Mapear 'url' a 'imageUrl'
+        caption: img.caption,
+        isPrimary: img.isPrimary,
+        createdAt: img.createdAt
+      }));
+      
+      res.json(mappedImages);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error fetching park images" });
@@ -1740,7 +1751,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const newImage = await storage.createParkImage(imageData);
-      res.status(201).json(newImage);
+      
+      // Mapear la respuesta para el frontend
+      const mappedImage = {
+        id: newImage.id,
+        parkId: newImage.parkId,
+        imageUrl: newImage.url, // Mapear 'url' a 'imageUrl'
+        caption: newImage.caption,
+        isPrimary: newImage.isPrimary,
+        createdAt: newImage.createdAt
+      };
+      
+      res.status(201).json(mappedImage);
     } catch (error) {
       console.error("Error uploading park image:", error);
       res.status(500).json({ message: "Error al subir la imagen" });
