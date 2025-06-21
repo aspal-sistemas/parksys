@@ -176,19 +176,20 @@ app.use('/api', skillsRouter);
 
 // ENDPOINT DIRECTO PARA SUBIDA DE IMÁGENES - PRIORITY ROUTING
 import multer from 'multer';
+import fs from 'fs';
 
 const imageStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = 'public/uploads/park-images';
-    if (!require('fs').existsSync(uploadPath)) {
-      require('fs').mkdirSync(uploadPath, { recursive: true });
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
     }
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     const timestamp = Date.now();
     const randomId = Math.floor(Math.random() * 1000000);
-    const extension = require('path').extname(file.originalname);
+    const extension = path.extname(file.originalname);
     cb(null, `park-img-${timestamp}-${randomId}${extension}`);
   }
 });
