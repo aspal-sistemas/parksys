@@ -79,9 +79,10 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
   const [newDocumentFile, setNewDocumentFile] = useState<File | null>(null);
 
   // Consultas
-  const { data: images = [], isLoading: imagesLoading } = useQuery<ParkImage[]>({
+  const { data: images = [], isLoading: imagesLoading, error: imagesError } = useQuery<ParkImage[]>({
     queryKey: [`/api/parks/${parkId}/images`],
     queryFn: async () => {
+      console.log(`🔍 FRONTEND: Cargando imágenes para parque ${parkId}`);
       const response = await fetch(`/api/parks/${parkId}/images`, {
         headers: {
           'Authorization': 'Bearer direct-token-1750522117022',
@@ -90,13 +91,18 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
         }
       });
       if (!response.ok) throw new Error('Error cargando imágenes');
-      return response.json();
-    }
+      const data = await response.json();
+      console.log(`✅ FRONTEND: Imágenes cargadas:`, data);
+      return data;
+    },
+    staleTime: 0,
+    gcTime: 0
   });
 
-  const { data: documents = [], isLoading: documentsLoading } = useQuery<ParkDocument[]>({
+  const { data: documents = [], isLoading: documentsLoading, error: documentsError } = useQuery<ParkDocument[]>({
     queryKey: [`/api/parks/${parkId}/documents`],
     queryFn: async () => {
+      console.log(`🔍 FRONTEND: Cargando documentos para parque ${parkId}`);
       const response = await fetch(`/api/parks/${parkId}/documents`, {
         headers: {
           'Authorization': 'Bearer direct-token-1750522117022',
@@ -105,8 +111,12 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
         }
       });
       if (!response.ok) throw new Error('Error cargando documentos');
-      return response.json();
-    }
+      const data = await response.json();
+      console.log(`✅ FRONTEND: Documentos cargados:`, data);
+      return data;
+    },
+    staleTime: 0,
+    gcTime: 0
   });
 
   // Mutaciones para imágenes
