@@ -470,9 +470,9 @@ export default function AdminParkView() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Link href={`/admin/parks/${id}/edit`}>
-            <Button>Editar Parque</Button>
-          </Link>
+          <Badge variant="outline" className="text-blue-600 border-blue-600">
+            Modo Editor
+          </Badge>
         </div>
       </div>
 
