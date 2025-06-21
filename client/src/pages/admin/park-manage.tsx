@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Images, MapPin, Calendar, Users, TreePine, Wrench, AlertTriangle, FileText } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import ParkMultimediaManager from "@/components/ParkMultimediaManager";
+import ParkAmenitiesManager from "@/components/ParkAmenitiesManager";
 
 export default function ParkManage() {
   const { id } = useParams();
@@ -133,20 +134,20 @@ export default function ParkManage() {
               </Card>
             </TabsContent>
 
-            {/* OTRAS PESTAÑAS - PLACEHOLDERS */}
+            {/* PESTAÑA DE AMENIDADES - MODO EDICIÓN COMPLETO */}
             <TabsContent value="amenidades" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Gestión de Amenidades</CardTitle>
+                  <CardTitle className="text-2xl text-green-600 flex items-center gap-2">
+                    <MapPin className="h-6 w-6" />
+                    Gestión de Amenidades del Parque
+                  </CardTitle>
                   <CardDescription>
-                    Administra las amenidades y servicios del parque.
+                    Administra las amenidades y servicios disponibles en el parque. Puedes agregar nuevas amenidades o editar las existentes.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8 text-gray-500">
-                    <MapPin className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p>Funcionalidad de gestión de amenidades próximamente</p>
-                  </div>
+                  <ParkAmenitiesManager parkId={parseInt(id!)} />
                 </CardContent>
               </Card>
             </TabsContent>
