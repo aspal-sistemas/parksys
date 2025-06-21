@@ -18,7 +18,7 @@ import { z } from "zod";
 import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus, Filter, SortAsc, Map as MapIcon, Eye, Download } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
-import ParkMultimediaViewer from "@/components/ParkMultimediaViewer";
+import ParkMultimediaManager from "@/components/ParkMultimediaManager";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -542,14 +542,14 @@ export default function AdminParkView() {
       {/* Detailed Tabs */}
       <Tabs defaultValue="basic-info" className="space-y-6">
         <TabsList className="grid w-full grid-cols-9">
-          <TabsTrigger value="basic-info">Información</TabsTrigger>
+          <TabsTrigger value="basic-info">Información Básica</TabsTrigger>
+          <TabsTrigger value="location">Ubicación y Contacto</TabsTrigger>
+          <TabsTrigger value="characteristics">Características</TabsTrigger>
           <TabsTrigger value="amenities">Amenidades</TabsTrigger>
           <TabsTrigger value="activities">Actividades</TabsTrigger>
           <TabsTrigger value="trees">Árboles</TabsTrigger>
-          <TabsTrigger value="assets">Activos</TabsTrigger>
           <TabsTrigger value="incidents">Incidencias</TabsTrigger>
           <TabsTrigger value="volunteers">Voluntarios</TabsTrigger>
-          <TabsTrigger value="documents">Documentos</TabsTrigger>
           <TabsTrigger value="multimedia">Multimedia</TabsTrigger>
         </TabsList>
 
@@ -1273,16 +1273,16 @@ export default function AdminParkView() {
         <TabsContent value="multimedia" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl text-green-600 flex items-center gap-2">
+              <CardTitle className="text-2xl text-blue-600 flex items-center gap-2">
                 <Images className="h-6 w-6" />
-                Multimedia del Parque
+                Gestión de Multimedia del Parque
               </CardTitle>
               <CardDescription>
-                Visualiza las imágenes y documentos del parque.
+                Administra imágenes y documentos del parque. Puedes subir archivos o usar URLs externas.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ParkMultimediaViewer parkId={parseInt(id)} />
+              <ParkMultimediaManager parkId={parseInt(id)} />
             </CardContent>
           </Card>
         </TabsContent>
