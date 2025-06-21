@@ -103,18 +103,41 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
   });
 
   // Subir nueva imagen (archivo o URL)
-  apiRouter.post('/parks/:parkId/images', isAuthenticated, upload.single('image'), async (req: Request, res: Response) => {
+  apiRouter.post('/parks/:parkId/images', isAuthenticated, (req: Request, res: Response, next: any) => {
+    upload.single('image')(req, res, (err: any) => {
+      if (err) {
+        console.error('❌ Error de multer:', err);
+        return res.status(400).json({ error: 'Error procesando archivo: ' + err.message });
+      }
+      next();
+    });
+  }, async (req: Request, res: Response) => {
     try {
+      console.log('🔧 POST /parks/:parkId/images - Datos recibidos:', {
+        params: req.params,
+        body: req.body,
+        file: req.file ? { filename: req.file.filename, size: req.file.size } : null
+      });
+      
       const parkId = parseInt(req.params.parkId);
       const { imageUrl, caption, isPrimary } = req.body;
       
       let finalImageUrl = imageUrl;
       let filePath = null;
       
+      // Validar que se proporcionó una imagen (archivo o URL)
+      if (!req.file && !imageUrl) {
+        console.log('❌ Error: No se proporcionó archivo ni URL de imagen');
+        return res.status(400).json({ error: 'Debe proporcionar un archivo de imagen o una URL' });
+      }
+      
       // Si se subió un archivo
       if (req.file) {
         filePath = req.file.path;
         finalImageUrl = `/uploads/park-images/${req.file.filename}`;
+        console.log('📁 Archivo subido:', finalImageUrl);
+      } else {
+        console.log('🔗 URL proporcionada:', finalImageUrl);
       }
       
       // Si es imagen principal, desmarcar otras
@@ -123,6 +146,7 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
           'UPDATE park_images SET is_primary = false WHERE park_id = $1',
           [parkId]
         );
+        console.log('⭐ Desmarcando otras imágenes principales');
       }
       
       const insertQuery = `
@@ -138,12 +162,12 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
         isPrimary === 'true' || isPrimary === true
       ]);
       
-      console.log(`Nueva imagen creada para parque ${parkId}:`, result.rows[0]);
+      console.log(`✅ Nueva imagen creada para parque ${parkId}:`, result.rows[0]);
       res.status(201).json(result.rows[0]);
       
     } catch (error) {
-      console.error('Error subiendo imagen:', error);
-      res.status(500).json({ error: 'Error al subir la imagen' });
+      console.error('❌ Error subiendo imagen:', error);
+      res.status(400).json({ error: 'Error al subir la imagen: ' + error.message });
     }
   });
 
