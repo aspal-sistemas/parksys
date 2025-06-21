@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, MapPin, Tag, Filter } from 'lucide-react';
 import { Amenity, PARK_TYPES } from '@shared/schema';
 import AmenityIcon from './AmenityIcon';
@@ -27,11 +28,73 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
   const [postalCode, setPostalCode] = useState('');
   const [municipality, setMunicipality] = useState('');
   const [selectedAmenities, setSelectedAmenities] = useState<number[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("todas");
+
+  // Categorías de amenidades
+  const amenityCategories = {
+    todas: "Todas",
+    deportivas: "Deportivas",
+    recreativas: "Recreativas", 
+    culturales: "Culturales",
+    servicios: "Servicios",
+    naturaleza: "Naturaleza",
+    infantiles: "Infantiles",
+    accesibilidad: "Accesibilidad"
+  };
 
   // Obtenemos las amenidades disponibles
   const { data: amenities = [], isLoading } = useQuery<Amenity[]>({
     queryKey: ['/api/amenities']
   });
+
+  // Función para categorizar amenidades por nombre
+  const categorizeAmenity = (amenityName: string): string => {
+    const name = amenityName.toLowerCase();
+    
+    if (name.includes('cancha') || name.includes('campo') || name.includes('pista') || 
+        name.includes('deportivo') || name.includes('futbol') || name.includes('basquet') || 
+        name.includes('tenis') || name.includes('voley') || name.includes('gimnasio') ||
+        name.includes('atletismo') || name.includes('ciclismo')) {
+      return 'deportivas';
+    }
+    
+    if (name.includes('juego') || name.includes('infantil') || name.includes('niños') ||
+        name.includes('columpios') || name.includes('resbaladilla') || name.includes('sube y baja')) {
+      return 'infantiles';
+    }
+    
+    if (name.includes('teatro') || name.includes('auditorio') || name.includes('biblioteca') ||
+        name.includes('museo') || name.includes('cultural') || name.includes('exposicion')) {
+      return 'culturales';
+    }
+    
+    if (name.includes('baño') || name.includes('sanitario') || name.includes('estacionamiento') ||
+        name.includes('seguridad') || name.includes('informacion') || name.includes('wifi') ||
+        name.includes('agua') || name.includes('bebedero') || name.includes('basura')) {
+      return 'servicios';
+    }
+    
+    if (name.includes('jardin') || name.includes('arbol') || name.includes('flores') ||
+        name.includes('sendero') || name.includes('bosque') || name.includes('lago') ||
+        name.includes('naturaleza') || name.includes('ecologico')) {
+      return 'naturaleza';
+    }
+    
+    if (name.includes('accesible') || name.includes('discapacidad') || name.includes('rampa') ||
+        name.includes('braille') || name.includes('inclus')) {
+      return 'accesibilidad';
+    }
+    
+    // Por defecto, recreativas
+    return 'recreativas';
+  };
+
+  // Filtrar amenidades por categoría seleccionada
+  const filteredAmenities = selectedCategory === 'todas' 
+    ? amenities 
+    : amenities.filter((amenity: Amenity) => 
+        categorizeAmenity(amenity.name) === selectedCategory
+      );
 
   const handleAmenityToggle = (amenityId: number) => {
     setSelectedAmenities(prev => 
