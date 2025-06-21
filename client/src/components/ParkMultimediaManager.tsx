@@ -339,8 +339,30 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  // Debug: Verificar datos
+  console.log('🔍 MULTIMEDIA MANAGER - Renderizando con:', {
+    parkId,
+    images: images.length,
+    documents: documents.length,
+    imagesLoading,
+    documentsLoading,
+    imagesError,
+    documentsError
+  });
+
   return (
     <div className="space-y-6">
+      {/* Header de Debug */}
+      <div className="bg-blue-50 p-4 rounded-lg border">
+        <h4 className="font-semibold text-blue-800">Estado del Componente Multimedia</h4>
+        <p className="text-sm text-blue-600">
+          Parque ID: {parkId} | Imágenes: {images.length} | Documentos: {documents.length}
+        </p>
+        <p className="text-sm text-blue-600">
+          Cargando imágenes: {imagesLoading ? 'Sí' : 'No'} | Error: {imagesError ? 'Sí' : 'No'}
+        </p>
+      </div>
+
       <Tabs defaultValue="images" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="images" className="flex items-center gap-2">
@@ -357,13 +379,20 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
         <TabsContent value="images" className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Galería de Imágenes</h3>
-            <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Agregar Imagen
-                </Button>
-              </DialogTrigger>
+            <div className="flex gap-2">
+              <Button 
+                className="bg-red-500 hover:bg-red-600 text-white"
+                onClick={() => alert('¡Botón de prueba funcionando!')}
+              >
+                🔴 PRUEBA - ¿Me ves?
+              </Button>
+              <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    ➕ Agregar Imagen
+                  </Button>
+                </DialogTrigger>
               <DialogContent className="max-w-md">
                 <DialogHeader>
                   <DialogTitle>Agregar Nueva Imagen</DialogTitle>
