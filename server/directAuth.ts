@@ -8,56 +8,51 @@ export async function authenticateUser(username: string, password: string) {
   try {
     console.log(`Intentando autenticar al usuario: ${username}`);
     
-    // Verificar si es uno de los usuarios de prueba preconfigurados
-    const testUsers = [
-      {
-        id: 1,
-        username: 'admin',
-        password: 'admin123',
-        email: 'admin@parquesmx.com',
-        fullName: 'Administrador',
-        role: 'admin',
-        municipalityId: null
-      },
-      {
-        id: 2,
-        username: 'guadalajara',
-        password: 'parks123',
-        email: 'parques@guadalajara.gob.mx',
-        fullName: 'Municipio de Guadalajara',
-        role: 'municipality',
-        municipalityId: 1
-      }
-    ];
-
-    // Primero buscar en usuarios de prueba
-    let user = testUsers.find(u => u.username === username && u.password === password);
+    // Buscar directamente en la base de datos para obtener datos actualizados
+    console.log("Buscando usuario en la base de datos...");
     
-    // Si no se encuentra en los usuarios de prueba, buscar en la base de datos
-    if (!user) {
-      console.log("Usuario no encontrado en la lista de prueba, buscando en la base de datos...");
-      
-      // Intentar buscar por nombre de usuario
-      let dbUser = await storage.getUserByUsername(username);
-      
-      // Si no se encuentra por nombre de usuario, intentar buscar por email
-      if (!dbUser) {
-        console.log("Usuario no encontrado por username, intentando con email...");
-        dbUser = await storage.getUserByEmail(username);
-      }
-      
-      if (dbUser) {
-        console.log("Usuario encontrado en la base de datos:", dbUser.username);
+    // Intentar buscar por nombre de usuario
+    let dbUser = await storage.getUserByUsername(username);
+    
+    // Si no se encuentra por nombre de usuario, intentar buscar por email
+    if (!dbUser) {
+      console.log("Usuario no encontrado por username, intentando con email...");
+      dbUser = await storage.getUserByEmail(username);
+    }
+    
+    let user = null;
+    
+    if (dbUser) {
+      console.log("Usuario encontrado en la base de datos:", dbUser.username);
         
-        // Verificar si la contraseña coincide
-        if (dbUser.password === password) {
-          console.log("Contraseña correcta, autenticación exitosa");
-          user = dbUser;
-        } else {
-          console.log("La contraseña no coincide");
-        }
+      // Verificar si la contraseña coincide
+      if (dbUser.password === password) {
+        console.log("Contraseña correcta, autenticación exitosa");
+        user = dbUser;
       } else {
-        console.log("Usuario no encontrado en la base de datos");
+        console.log("La contraseña no coincide");
+      }
+    } else {
+      console.log("Usuario no encontrado en la base de datos");
+      
+      // Como fallback para desarrollo, permitir usuarios básicos
+      if (username === 'admin' && password === 'admin123') {
+        user = {
+          id: 1,
+          username: 'admin',
+          password: 'admin123',
+          email: 'admin@parquesmx.com',
+          fullName: 'Admin System',
+          role: 'super_admin',
+          municipalityId: 2,
+          phone: null,
+          gender: null,
+          birthDate: null,
+          bio: null,
+          profileImageUrl: null,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
       }
     }
 
