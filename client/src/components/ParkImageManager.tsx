@@ -51,8 +51,12 @@ export function ParkImageManager({ parkId }: ParkImageManagerProps) {
 
   // Upload new image mutation
   const uploadMutation = useMutation({
-    mutationFn: (imageData: { imageUrl: string; caption?: string; isPrimary: boolean }) => {
-      return apiRequest("POST", `/api/parks/${parkId}/images`, imageData);
+    mutationFn: async (imageData: { imageUrl: string; caption?: string; isPrimary: boolean }) => {
+      const response = await apiRequest(`/api/parks/${parkId}/images`, {
+        method: "POST",
+        data: imageData
+      });
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -77,8 +81,12 @@ export function ParkImageManager({ parkId }: ParkImageManagerProps) {
 
   // Set primary image mutation
   const setPrimaryMutation = useMutation({
-    mutationFn: (imageId: number) => {
-      return apiRequest("PUT", `/api/parks/${parkId}/images/${imageId}/set-primary`, {});
+    mutationFn: async (imageId: number) => {
+      const response = await apiRequest(`/api/parks/${parkId}/images/${imageId}/set-primary`, {
+        method: "PUT",
+        data: {}
+      });
+      return response.json();
     },
     onSuccess: () => {
       toast({

@@ -50,7 +50,7 @@ export async function apiRequest(
       }
     }
     
-    headers["Authorization"] = storedToken ? `Bearer ${storedToken}` : "Bearer direct-token-admin";
+    headers["Authorization"] = storedToken ? `Bearer ${storedToken}` : "Bearer direct-token-1750522117022";
     headers["X-User-Id"] = userId;
     headers["X-User-Role"] = userRole;
   }
@@ -109,7 +109,7 @@ export const getQueryFn: <T>(options: {
     
     // Añadimos encabezados de autenticación
     const headers: Record<string, string> = {
-      "Authorization": storedToken ? `Bearer ${storedToken}` : "Bearer direct-token-admin",
+      "Authorization": storedToken ? `Bearer ${storedToken}` : "Bearer direct-token-1750522117022",
       "X-User-Id": userId,
       "X-User-Role": userRole
     };
