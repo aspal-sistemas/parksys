@@ -1271,6 +1271,11 @@ export default function AdminParkView() {
         </TabsContent>
 
         <TabsContent value="multimedia" className="space-y-4">
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="text-lg font-semibold mb-2">🚀 Test de Componente Multimedia</h3>
+            <p>Park ID: {id}</p>
+            <p>Parque: {park?.name}</p>
+          </div>
           <ParkMultimediaManager parkId={parseInt(id!)} />
         </TabsContent>
       </Tabs>
