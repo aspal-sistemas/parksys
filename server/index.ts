@@ -174,9 +174,7 @@ app.use('/api/volunteer-fields', volunteerFieldRouter);
 // Registrar la ruta especializada para habilidades de voluntarios
 app.use('/api', skillsRouter);
 
-
-
-// ENDPOINT DIRECTO FUNCIONAL PARA DOCUMENTOS DE PARQUE
+// ENDPOINT DIRECTO PARA DOCUMENTOS - PRIORITY ROUTING
 app.get("/api/parks/:parkId/documents", async (req: Request, res: Response) => {
   try {
     const parkId = parseInt(req.params.parkId);
@@ -212,6 +210,10 @@ app.get("/api/parks/:parkId/documents", async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Error al obtener documentos del parque' });
   }
 });
+
+
+
+
 
 // Endpoint directo para Cash Flow Matrix - antes de cualquier middleware de Vite
 app.get("/cash-flow-data/:year", async (req: Request, res: Response) => {

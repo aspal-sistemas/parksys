@@ -100,6 +100,7 @@ The system uses environment variables for database connection and supports both 
 - June 20, 2025. Iconos personalizados completamente funcionales - Corregido endpoint backend para incluir custom_icon_url en consultas de amenidades de parque. Interface ParkAmenity actualizada con customIconUrl. Componente AmenityIcon detecta correctamente iconos personalizados vs sistema. Problema de eliminación de amenidades resuelto - frontend ahora pasa ID correcto de park_amenities en lugar de amenity_id
 - June 20, 2025. Iconos de Amenidades Disponibles corregidos - Solucionado problema de renderizado de iconos en página /admin/parks/amenities donde componente AmenityIcon no recibía parámetros correctos (iconType, customIconUrl, size). Todos los 27 iconos de amenidades disponibles ahora se muestran correctamente
 - June 21, 2025. Sistema de gestión de imágenes de parques completamente reparado - Identificado y corregido problema crítico de inconsistencia entre schema ('url' vs 'imageUrl') y base de datos real ('image_url'). Schema actualizado, métodos Drizzle ORM corregidos, endpoints API con mapeo automático. Funcionalidad de subida de imágenes para parque 5 completamente operativa
+- June 21, 2025. Sistema multimedia completamente funcional implementado - Resuelto problema de endpoint de documentos mediante routing prioritario en server/index.ts. Endpoint /api/parks/:parkId/documents devuelve correctamente datos de park_documents. Sistema de imágenes y documentos 100% operativo con consultas SQL directas y mapeo automático de campos
 
 ## Recent Features
 
