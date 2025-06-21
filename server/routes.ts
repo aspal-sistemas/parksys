@@ -929,11 +929,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parkId = Number(req.params.id);
       console.log(`Solicitud de eliminación para parque ${parkId}`);
       
-      // Eliminar directamente usando SQL
+      // Eliminar todas las tablas relacionadas en el orden correcto
+      console.log('Eliminando mantenimientos de árboles...');
+      await db.execute(sql`DELETE FROM tree_maintenances WHERE tree_id IN (SELECT id FROM trees WHERE park_id = ${parkId})`);
+      
+      console.log('Eliminando árboles...');
+      await db.execute(sql`DELETE FROM trees WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando asignaciones de instructores...');
+      await db.execute(sql`DELETE FROM instructor_assignments WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando activos...');
+      await db.execute(sql`DELETE FROM assets WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando concesiones...');
+      await db.execute(sql`DELETE FROM concessions WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando historial de concesionarios...');
+      await db.execute(sql`DELETE FROM concessionaire_history WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando evaluaciones de concesionarios...');
+      await db.execute(sql`DELETE FROM concessionaire_evaluations WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando amenidades del parque...');
       await db.execute(sql`DELETE FROM park_amenities WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando imágenes del parque...');
       await db.execute(sql`DELETE FROM park_images WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando actividades...');
       await db.execute(sql`DELETE FROM activities WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando incidentes...');
       await db.execute(sql`DELETE FROM incidents WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando comentarios...');
+      await db.execute(sql`DELETE FROM comments WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando parque...');
       await db.execute(sql`DELETE FROM parks WHERE id = ${parkId}`);
       
       console.log(`Parque ${parkId} eliminado exitosamente`);
