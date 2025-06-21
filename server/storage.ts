@@ -1,5 +1,5 @@
 import { db, pool } from './db';
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 import * as schema from "@shared/schema";
 
 const {
@@ -393,13 +393,20 @@ export class DatabaseStorage implements IStorage {
 
   async getParkImages(parkId: number): Promise<any[]> {
     try {
-      const result = await db.execute(`
-        SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption
-        FROM park_images
-        WHERE park_id = $1
-        ORDER BY is_primary DESC, id ASC
-      `, [parkId]);
-      return result.rows || [];
+      const result = await db
+        .select({
+          id: parkImages.id,
+          parkId: parkImages.parkId,
+          imageUrl: parkImages.imageUrl,
+          isPrimary: parkImages.isPrimary,
+          caption: parkImages.caption,
+          createdAt: parkImages.createdAt
+        })
+        .from(parkImages)
+        .where(eq(parkImages.parkId, parkId))
+        .orderBy(desc(parkImages.isPrimary), parkImages.id);
+      
+      return result || [];
     } catch (error) {
       console.error("Error al obtener imágenes del parque:", error);
       return [];
@@ -408,18 +415,18 @@ export class DatabaseStorage implements IStorage {
 
   async createParkImage(imageData: any): Promise<any> {
     try {
-      const result = await db.execute(`
-        INSERT INTO park_images (park_id, image_url, caption, is_primary, created_at)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption, created_at as "createdAt"
-      `, [
-        imageData.parkId,
-        imageData.imageUrl,
-        imageData.caption,
-        imageData.isPrimary,
-        new Date()
-      ]);
-      return result.rows[0];
+      const result = await db
+        .insert(parkImages)
+        .values({
+          parkId: imageData.parkId,
+          imageUrl: imageData.imageUrl,
+          caption: imageData.caption || null,
+          isPrimary: imageData.isPrimary || false,
+          createdAt: new Date()
+        })
+        .returning();
+      
+      return result[0];
     } catch (error) {
       console.error("Error al crear imagen del parque:", error);
       throw error;
@@ -428,33 +435,26 @@ export class DatabaseStorage implements IStorage {
 
   async updateParkImage(id: number, data: any): Promise<any> {
     try {
-      const updates = [];
-      const values = [];
-      let paramIndex = 1;
-
+      const updateData: any = {};
+      
       if (data.caption !== undefined) {
-        updates.push(`caption = $${paramIndex++}`);
-        values.push(data.caption);
+        updateData.caption = data.caption;
       }
       if (data.isPrimary !== undefined) {
-        updates.push(`is_primary = $${paramIndex++}`);
-        values.push(data.isPrimary);
+        updateData.isPrimary = data.isPrimary;
       }
 
-      if (updates.length === 0) {
+      if (Object.keys(updateData).length === 0) {
         throw new Error("No hay campos para actualizar");
       }
 
-      values.push(id);
+      const result = await db
+        .update(parkImages)
+        .set(updateData)
+        .where(eq(parkImages.id, id))
+        .returning();
 
-      const result = await db.execute(`
-        UPDATE park_images 
-        SET ${updates.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption
-      `, values);
-
-      return result.rows[0];
+      return result[0];
     } catch (error) {
       console.error("Error al actualizar imagen del parque:", error);
       throw error;
