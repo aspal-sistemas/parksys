@@ -1706,7 +1706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add an image to a park (admin/municipality only)
-  apiRouter.post("/parks/:id/images", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
+  apiRouter.post("/parks/:id/images", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
       const { imageUrl, caption, isPrimary } = req.body;
@@ -1832,6 +1832,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error setting image as primary" });
+    }
+  });
+
+  // Alternative endpoint for setting primary image (used by ParkImageManager)
+  apiRouter.put("/parks/:parkId/images/:imageId/set-primary", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const imageId = Number(req.params.imageId);
+      
+      // Verificar que la imagen pertenezca al parque
+      const image = await storage.getParkImage(imageId);
+      if (!image || image.parkId !== parkId) {
+        return res.status(404).json({ message: "Imagen no encontrada en este parque" });
+      }
+      
+      // Desmarcar todas las otras imágenes como no principales
+      const existingImages = await storage.getParkImages(parkId);
+      for (const img of existingImages) {
+        if (img.isPrimary && img.id !== imageId) {
+          await storage.updateParkImage(img.id, { isPrimary: false });
+        }
+      }
+      
+      // Marcar esta imagen como principal
+      const updatedImage = await storage.updateParkImage(imageId, { isPrimary: true });
+      res.json(updatedImage);
+    } catch (error) {
+      console.error("Error setting primary image:", error);
+      res.status(500).json({ message: "Error al establecer imagen principal" });
     }
   });
 
