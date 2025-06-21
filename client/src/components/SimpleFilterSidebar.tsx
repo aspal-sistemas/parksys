@@ -249,11 +249,11 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
       {/* INSTALACIONES Y SERVICIOS - Sección completa abajo */}
       <div className="bg-white rounded-lg border border-gray-300 shadow-sm">
         <div className="bg-[#bcd256] text-gray-800 p-4 rounded-t-lg">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
+          <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
             <Filter className="h-5 w-5" />
             Amenidades, Instalaciones y Servicios
             <span className="bg-gray-700 text-white px-2 py-1 rounded-full text-xs font-bold ml-2">
-              {amenities.length} total
+              {filteredAmenities.length} de {amenities.length} total
             </span>
             {selectedAmenities.length > 0 && (
               <span className="bg-[#00a587] text-white px-2 py-1 rounded-full text-xs font-bold">
@@ -261,12 +261,31 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
               </span>
             )}
           </h3>
+          
+          {/* Filtro por categorías */}
+          <div className="flex items-center gap-2">
+            <Label htmlFor="category-filter" className="text-sm font-medium whitespace-nowrap">
+              Filtrar por categoría:
+            </Label>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger id="category-filter" className="w-48 bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(amenityCategories).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         
         <div className="p-4">
-          {amenities.length > 20 && (
+          {filteredAmenities.length > 20 && (
             <div className="mb-3 text-sm text-gray-600 bg-blue-50 p-2 rounded border border-blue-200">
-              💡 <strong>Desplázate hacia abajo</strong> para ver todas las {amenities.length} amenidades disponibles
+              💡 <strong>Desplázate hacia abajo</strong> para ver todas las {filteredAmenities.length} amenidades disponibles
             </div>
           )}
           
@@ -276,9 +295,9 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                 <div key={i} className="h-6 bg-gray-200 rounded animate-pulse"></div>
               ))}
             </div>
-          ) : amenities.length > 0 ? (
+          ) : filteredAmenities.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-2 shadow-inner bg-gray-50">
-              {amenities.map((amenity) => (
+              {filteredAmenities.map((amenity) => (
                 <label 
                   key={amenity.id}
                   className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded text-sm group"
@@ -292,7 +311,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                   <div className="flex items-center gap-2 min-w-0">
                     <AmenityIcon 
                       name={amenity.icon || 'default'} 
-                      customIconUrl={amenity.customIconUrl || null}
+                      customIconUrl={null}
                       iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
                       size={29} 
                       className="text-gray-600 group-hover:text-[#00a587] transition-colors flex-shrink-0" 
@@ -303,6 +322,11 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                   </div>
                 </label>
               ))}
+            </div>
+          ) : selectedCategory !== 'todas' && filteredAmenities.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p className="text-sm">No hay amenidades en la categoría "{amenityCategories[selectedCategory]}"</p>
+              <p className="text-xs mt-1">Prueba con otra categoría o selecciona "Todas"</p>
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
