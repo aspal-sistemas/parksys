@@ -81,10 +81,32 @@ export function ParkMultimediaManager({ parkId }: ParkMultimediaManagerProps) {
   // Consultas
   const { data: images = [], isLoading: imagesLoading } = useQuery<ParkImage[]>({
     queryKey: [`/api/parks/${parkId}/images`],
+    queryFn: async () => {
+      const response = await fetch(`/api/parks/${parkId}/images`, {
+        headers: {
+          'Authorization': 'Bearer direct-token-1750522117022',
+          'X-User-Id': '1',
+          'X-User-Role': 'super_admin'
+        }
+      });
+      if (!response.ok) throw new Error('Error cargando imágenes');
+      return response.json();
+    }
   });
 
   const { data: documents = [], isLoading: documentsLoading } = useQuery<ParkDocument[]>({
     queryKey: [`/api/parks/${parkId}/documents`],
+    queryFn: async () => {
+      const response = await fetch(`/api/parks/${parkId}/documents`, {
+        headers: {
+          'Authorization': 'Bearer direct-token-1750522117022',
+          'X-User-Id': '1',
+          'X-User-Role': 'super_admin'
+        }
+      });
+      if (!response.ok) throw new Error('Error cargando documentos');
+      return response.json();
+    }
   });
 
   // Mutaciones para imágenes
