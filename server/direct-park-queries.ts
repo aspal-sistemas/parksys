@@ -251,7 +251,7 @@ export async function getParkByIdDirectly(parkId: number) {
       mainImageUrl: null,
       amenities: [],
       images: [],
-      documents: [],
+      documents: documents,
       activities: [],
       trees: {
         total: 0,
@@ -340,8 +340,29 @@ export async function getParkByIdDirectly(parkId: number) {
       // Si hay error, dejamos el array vacío que ya se inicializó
     }
     
-    // Documentos - la tabla no existe, así que dejamos el array vacío
-    console.log("Omitiendo consulta de documentos porque la tabla no existe");
+    // Documentos - usar la tabla park_documents que existe
+    let documents = [];
+    try {
+      const documentsResult = await pool.query(`
+        SELECT 
+          id, 
+          park_id as "parkId", 
+          title, 
+          file_url as "fileUrl",
+          file_type as "fileType",
+          description,
+          category,
+          created_at as "createdAt"
+        FROM park_documents 
+        WHERE park_id = $1 
+        ORDER BY created_at DESC
+      `, [parkId]);
+      
+      documents = documentsResult.rows;
+      console.log(`Documentos encontrados para parque ${parkId}:`, documents.length);
+    } catch (e) {
+      console.log("Error consultando documentos:", e);
+    }
     
     // Verificamos las columnas disponibles en la tabla activities
     try {

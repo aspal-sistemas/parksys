@@ -2685,11 +2685,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Volunteers table might not exist yet
       }
       
+      // Get multimedia data (images and documents)
+      let images = [];
+      let documents = [];
+      try {
+        const imagesResult = await db.execute(
+          'SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption FROM park_images WHERE park_id = $1 ORDER BY is_primary DESC',
+          [parkId]
+        );
+        images = Array.isArray(imagesResult) ? imagesResult : (imagesResult.rows || []);
+        
+        const documentsResult = await db.execute(
+          'SELECT id, park_id as "parkId", title, file_url as "fileUrl", file_type as "fileType", description, category, created_at as "createdAt" FROM park_documents WHERE park_id = $1 ORDER BY created_at DESC',
+          [parkId]
+        );
+        documents = Array.isArray(documentsResult) ? documentsResult : (documentsResult.rows || []);
+      } catch (e) {
+        console.log('Error fetching multimedia data:', e);
+      }
+      
       // Placeholder arrays for other data types
       const amenities = [];
       const incidents = [];
-      const documents = [];
-      const images = [];
       const evaluations = [];
       
       // Calculate stats
