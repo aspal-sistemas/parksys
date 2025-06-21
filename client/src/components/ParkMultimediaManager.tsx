@@ -375,12 +375,6 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Galería de Imágenes</h3>
             <div className="flex gap-2">
-              <Button 
-                className="bg-red-500 hover:bg-red-600 text-white"
-                onClick={() => alert('¡Botón de prueba funcionando!')}
-              >
-                🔴 PRUEBA - ¿Me ves?
-              </Button>
               <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2">
