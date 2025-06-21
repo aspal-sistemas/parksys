@@ -8,7 +8,18 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, MapPin, Tag, Filter } from 'lucide-react';
-import { Amenity, PARK_TYPES } from '@shared/schema';
+import { PARK_TYPES } from '@shared/schema';
+
+// Extendemos la interfaz de Amenity para incluir propiedades adicionales del API
+interface ExtendedAmenity {
+  id: number;
+  name: string;
+  icon: string | null;
+  category?: string;
+  iconType?: string;
+  customIconUrl?: string;
+  createdAt: Date;
+}
 import AmenityIcon from './AmenityIcon';
 import parkIllustration from '@assets/park-0-people_1750438283360.png';
 
@@ -43,7 +54,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
   };
 
   // Obtenemos las amenidades disponibles
-  const { data: amenities = [], isLoading } = useQuery<Amenity[]>({
+  const { data: amenities = [], isLoading } = useQuery<ExtendedAmenity[]>({
     queryKey: ['/api/amenities']
   });
 
@@ -310,8 +321,9 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                   />
                   <div className="flex items-center gap-2 min-w-0">
                     <AmenityIcon 
-                      name={amenity.icon || amenity.name} 
-                      iconType="system"
+                      name={amenity.name} 
+                      iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
+                      customIconUrl={amenity.icon === 'custom' ? (amenity as any).customIconUrl : null}
                       size={29} 
                       className="text-gray-600 group-hover:text-[#00a587] transition-colors flex-shrink-0" 
                     />
