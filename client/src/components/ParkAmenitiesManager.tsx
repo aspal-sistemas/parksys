@@ -279,7 +279,7 @@ export default function ParkAmenitiesManager({ parkId }: ParkAmenitiesManagerPro
             </p>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-2 max-h-[600px] overflow-y-auto">
               {availableAmenities
                 .filter(amenity => !parkAmenities.some(pa => pa.amenityId === amenity.id))
                 .map((amenity) => (
@@ -323,7 +323,7 @@ export default function ParkAmenitiesManager({ parkId }: ParkAmenitiesManagerPro
             </p>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-2 max-h-[600px] overflow-y-auto">
               {parkAmenities.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <MapPin className="h-8 w-8 mx-auto mb-2 text-gray-400" />
