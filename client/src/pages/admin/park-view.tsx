@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus, Filter, SortAsc, Map as MapIcon } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus, Filter, SortAsc, Map as MapIcon, Eye, Download } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
 import { ParkMultimediaManager } from "@/components/ParkMultimediaManager";
@@ -1299,7 +1299,7 @@ export default function AdminParkView() {
                 {/* Sección de Imágenes */}
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <ImageIcon className="h-6 w-6 text-blue-500" />
+                    <Images className="h-6 w-6 text-blue-500" />
                     Imágenes del Parque (2 disponibles)
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
