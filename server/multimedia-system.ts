@@ -374,12 +374,12 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
       const parkId = parseInt(req.params.parkId);
       
       const imagesResult = await db.execute(
-        'SELECT COUNT(*) as count FROM park_images WHERE park_id = $1',
+        `SELECT COUNT(*) as count FROM park_images WHERE park_id = $1`,
         [parkId]
       );
       
       const documentsResult = await db.execute(
-        'SELECT COUNT(*) as count FROM park_documents WHERE park_id = $1',
+        `SELECT COUNT(*) as count FROM park_documents WHERE park_id = $1`,
         [parkId]
       );
       
