@@ -310,9 +310,8 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                   />
                   <div className="flex items-center gap-2 min-w-0">
                     <AmenityIcon 
-                      name={amenity.icon || 'default'} 
-                      customIconUrl={null}
-                      iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
+                      name={amenity.icon || amenity.name} 
+                      iconType="system"
                       size={29} 
                       className="text-gray-600 group-hover:text-[#00a587] transition-colors flex-shrink-0" 
                     />
@@ -325,7 +324,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
             </div>
           ) : selectedCategory !== 'todas' && filteredAmenities.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <p className="text-sm">No hay amenidades en la categoría "{amenityCategories[selectedCategory]}"</p>
+              <p className="text-sm">No hay amenidades en la categoría "{amenityCategories[selectedCategory as keyof typeof amenityCategories]}"</p>
               <p className="text-xs mt-1">Prueba con otra categoría o selecciona "Todas"</p>
             </div>
           ) : (
