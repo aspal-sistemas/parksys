@@ -1307,11 +1307,39 @@ export default function AdminParkView() {
                 
                 <h3 className="text-lg font-semibold">Documentos del Parque</h3>
                 <div className="border rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-8 w-8 text-blue-600" />
-                    <div>
-                      <h4 className="font-medium">Manual de Mantenimiento</h4>
-                      <p className="text-sm text-gray-500">PDF • Guía completa para el mantenimiento de áreas verdes</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-8 w-8 text-blue-600" />
+                      <div>
+                        <h4 className="font-medium">Manual de Mantenimiento</h4>
+                        <p className="text-sm text-gray-500">PDF • Guía completa para el mantenimiento de áreas verdes</p>
+                        <p className="text-xs text-gray-400 mt-1">Subido el 21 de junio, 2025</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => window.open('https://bosqueloscolomos.org/manual.pdf', '_blank')}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Ver
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = 'https://bosqueloscolomos.org/manual.pdf';
+                          link.download = 'Manual_Mantenimiento_Bosque_Los_Colomos.pdf';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Descargar
+                      </Button>
                     </div>
                   </div>
                 </div>

@@ -322,7 +322,7 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
                   <div className="flex items-center gap-2 min-w-0">
                     <AmenityIcon 
                       name={amenity.name} 
-                      iconType={amenity.iconType || (amenity.icon === 'custom' ? 'custom' : 'system') as 'custom' | 'system'}
+                      iconType={(amenity.iconType || (amenity.icon === 'custom' ? 'custom' : 'system')) as 'custom' | 'system'}
                       customIconUrl={amenity.customIconUrl || null}
                       size={29} 
                       className="text-gray-600 group-hover:text-[#00a587] transition-colors flex-shrink-0" 
