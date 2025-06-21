@@ -394,14 +394,7 @@ export class DatabaseStorage implements IStorage {
   async getParkImages(parkId: number): Promise<any[]> {
     try {
       const result = await db
-        .select({
-          id: parkImages.id,
-          parkId: parkImages.parkId,
-          imageUrl: parkImages.imageUrl,
-          isPrimary: parkImages.isPrimary,
-          caption: parkImages.caption,
-          createdAt: parkImages.createdAt
-        })
+        .select()
         .from(parkImages)
         .where(eq(parkImages.parkId, parkId))
         .orderBy(desc(parkImages.isPrimary), parkImages.id);
@@ -410,6 +403,21 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error al obtener imágenes del parque:", error);
       return [];
+    }
+  }
+
+  async getParkImage(id: number): Promise<any> {
+    try {
+      const result = await db
+        .select()
+        .from(parkImages)
+        .where(eq(parkImages.id, id))
+        .limit(1);
+      
+      return result[0] || null;
+    } catch (error) {
+      console.error("Error al obtener imagen individual:", error);
+      return null;
     }
   }
 
