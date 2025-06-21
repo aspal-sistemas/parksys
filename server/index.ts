@@ -176,13 +176,13 @@ app.use('/api', skillsRouter);
 
 
 
-// ENDPOINT DIRECTO PARA DOCUMENTOS - ANTES DE VITE
-app.get("/test-documents/:parkId", async (req: Request, res: Response) => {
+// ENDPOINT DIRECTO FUNCIONAL PARA DOCUMENTOS DE PARQUE
+app.get("/api/parks/:parkId/documents", async (req: Request, res: Response) => {
   try {
     const parkId = parseInt(req.params.parkId);
-    console.log(`🔧 DIRECT TEST: Consultando documentos para parque ${parkId}`);
+    console.log(`🔧 DIRECT DOCUMENTS API: Consultando documentos para parque ${parkId}`);
     
-    const { pool } = await import("./direct-park-queries");
+    const { pool } = await import("./db");
     const query = `
       SELECT 
         id, 
@@ -201,14 +201,15 @@ app.get("/test-documents/:parkId", async (req: Request, res: Response) => {
     `;
     
     const result = await pool.query(query, [parkId]);
-    console.log(`✅ DIRECT TEST: Documentos encontrados: ${result.rows.length}`);
-    console.log(`📋 DIRECT TEST: Datos:`, result.rows);
+    console.log(`✅ DIRECT DOCUMENTS API: Documentos encontrados: ${result.rows.length}`);
+    console.log(`📋 DIRECT DOCUMENTS API: Datos:`, result.rows);
     
     res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.json(result.rows);
   } catch (error) {
-    console.error('❌ DIRECT TEST: Error:', error);
-    res.status(500).json({ error: 'Error de prueba directa' });
+    console.error('❌ DIRECT DOCUMENTS API: Error:', error);
+    res.status(500).json({ error: 'Error al obtener documentos del parque' });
   }
 });
 

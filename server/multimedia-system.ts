@@ -225,7 +225,7 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
   // =============================================
 
   // Obtener todos los documentos de un parque
-  apiRouter.get('/parks/:parkId/documents', async (req: Request, res: Response) => {
+  apiRouter.get('/parks/:parkId/documents', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const parkId = parseInt(req.params.parkId);
       console.log(`🔍 MULTIMEDIA SYSTEM: Consultando documentos para parque ${parkId}`);
