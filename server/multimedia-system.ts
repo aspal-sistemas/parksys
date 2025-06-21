@@ -231,6 +231,7 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
   apiRouter.get('/parks/:parkId/documents', async (req: Request, res: Response) => {
     try {
       const parkId = parseInt(req.params.parkId);
+      console.log(`🔍 MULTIMEDIA SYSTEM: Consultando documentos para parque ${parkId}`);
       
       const query = `
         SELECT 
@@ -249,12 +250,16 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
         ORDER BY created_at DESC
       `;
       
+      console.log(`🔍 MULTIMEDIA SYSTEM: Ejecutando query:`, query);
+      console.log(`🔍 MULTIMEDIA SYSTEM: Con parámetros:`, [parkId]);
+      
       const result = await pool.query(query, [parkId]);
-      console.log(`Documentos encontrados para parque ${parkId}:`, result.rows.length);
+      console.log(`✅ MULTIMEDIA SYSTEM: Documentos encontrados para parque ${parkId}:`, result.rows.length);
+      console.log(`📋 MULTIMEDIA SYSTEM: Datos de documentos:`, result.rows);
       
       res.json(result.rows);
     } catch (error) {
-      console.error('Error obteniendo documentos del parque:', error);
+      console.error('❌ MULTIMEDIA SYSTEM: Error obteniendo documentos del parque:', error);
       res.status(500).json({ error: 'Error al obtener los documentos del parque' });
     }
   });
