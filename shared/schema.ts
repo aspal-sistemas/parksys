@@ -348,7 +348,7 @@ export const users = pgTable("users", {
 export const parkImages = pgTable("park_images", {
   id: serial("id").primaryKey(),
   parkId: integer("park_id").notNull(),
-  url: text("url").notNull(),
+  imageUrl: text("image_url").notNull(),
   caption: text("caption"),
   isPrimary: boolean("is_primary").default(false),
   createdAt: timestamp("created_at").notNull().defaultNow()

@@ -427,7 +427,7 @@ export class DatabaseStorage implements IStorage {
         .insert(parkImages)
         .values({
           parkId: imageData.parkId,
-          url: imageData.imageUrl,
+          imageUrl: imageData.imageUrl,
           caption: imageData.caption || null,
           isPrimary: imageData.isPrimary || false,
           createdAt: new Date()
@@ -452,7 +452,7 @@ export class DatabaseStorage implements IStorage {
         updateData.isPrimary = data.isPrimary;
       }
       if (data.imageUrl !== undefined) {
-        updateData.url = data.imageUrl;
+        updateData.imageUrl = data.imageUrl;
       }
 
       if (Object.keys(updateData).length === 0) {

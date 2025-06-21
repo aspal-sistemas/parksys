@@ -1703,7 +1703,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const mappedImages = images.map(img => ({
         id: img.id,
         parkId: img.parkId,
-        imageUrl: img.url, // Mapear 'url' a 'imageUrl'
+        imageUrl: img.imageUrl, // Usar directamente 'imageUrl'
         caption: img.caption,
         isPrimary: img.isPrimary,
         createdAt: img.createdAt
@@ -1756,7 +1756,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const mappedImage = {
         id: newImage.id,
         parkId: newImage.parkId,
-        imageUrl: newImage.url, // Mapear 'url' a 'imageUrl'
+        imageUrl: newImage.imageUrl, // Usar directamente 'imageUrl'
         caption: newImage.caption,
         isPrimary: newImage.isPrimary,
         createdAt: newImage.createdAt
