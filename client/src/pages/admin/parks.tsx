@@ -385,8 +385,8 @@ const AdminParks = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.location.href = `/admin/parks/${park.id}/view`}
-                      title="Gestión completa del parque"
+                      onClick={() => window.location.href = `/admin/parks/${park.id}/edit`}
+                      title="Editar parque"
                       className="text-blue-600 hover:text-blue-700"
                     >
                       <Edit className="h-4 w-4" />
