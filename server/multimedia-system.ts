@@ -92,10 +92,10 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
         ORDER BY is_primary DESC, created_at DESC
       `;
       
-      const result = await db.execute(query, [parkId]);
-      console.log(`Imágenes encontradas para parque ${parkId}:`, result.length);
+      const result = await pool.query(query, [parkId]);
+      console.log(`Imágenes encontradas para parque ${parkId}:`, result.rows.length);
       
-      res.json(result);
+      res.json(result.rows);
     } catch (error) {
       console.error('Error obteniendo imágenes del parque:', error);
       res.status(500).json({ error: 'Error al obtener las imágenes del parque' });
@@ -119,7 +119,7 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
       
       // Si es imagen principal, desmarcar otras
       if (isPrimary === 'true' || isPrimary === true) {
-        await db.execute(
+        await pool.query(
           'UPDATE park_images SET is_primary = false WHERE park_id = $1',
           [parkId]
         );
@@ -131,15 +131,15 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
         RETURNING id, park_id as "parkId", image_url as "imageUrl", caption, is_primary as "isPrimary"
       `;
       
-      const result = await db.execute(insertQuery, [
+      const result = await pool.query(insertQuery, [
         parkId,
         finalImageUrl,
         caption || '',
         isPrimary === 'true' || isPrimary === true
       ]);
       
-      console.log(`Nueva imagen creada para parque ${parkId}:`, result[0]);
-      res.status(201).json(result[0]);
+      console.log(`Nueva imagen creada para parque ${parkId}:`, result.rows[0]);
+      res.status(201).json(result.rows[0]);
       
     } catch (error) {
       console.error('Error subiendo imagen:', error);
@@ -188,20 +188,12 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
   apiRouter.delete('/park-images/:id', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const imageId = parseInt(req.params.id);
+      console.log('Eliminando imagen con ID:', imageId);
       
-      // Verificar que la imagen existe
-      const imageResult = await db.execute(
-        'SELECT id FROM park_images WHERE id = $1',
-        [imageId]
-      );
+      // Eliminar registro de base de datos usando pool
+      const result = await pool.query('DELETE FROM park_images WHERE id = $1', [imageId]);
       
-      if (imageResult.length === 0) {
-        return res.status(404).json({ error: 'Imagen no encontrada' });
-      }
-      
-      // Eliminar registro de base de datos
-      await db.execute('DELETE FROM park_images WHERE id = $1', [imageId]);
-      
+      console.log('Resultado de eliminación:', result);
       console.log(`Imagen ${imageId} eliminada exitosamente`);
       res.status(204).send();
       
