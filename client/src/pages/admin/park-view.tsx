@@ -18,7 +18,7 @@ import { z } from "zod";
 import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus, Filter, SortAsc, Map as MapIcon } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
-import { ParkImageManager } from "@/components/ParkImageManager";
+import { ParkMultimediaManager } from "@/components/ParkMultimediaManager";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
