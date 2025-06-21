@@ -1706,22 +1706,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add an image to a park (admin/municipality only)
-  apiRouter.post("/parks/:id/images", isAuthenticated, hasParkAccess, (req: Request, res: Response, next: Function) => {
-    // Importar los módulos necesarios usando import dinámico
-    import('./api/imageUpload').then(({ uploadParkImage, handleImageUploadErrors, uploadParkImageHandler }) => {
-      // Aplicar manejo de errores
-      uploadParkImage(req, res, (err: any) => {
-        if (err) {
-          return handleImageUploadErrors(err, req, res, next);
+  apiRouter.post("/parks/:id/images", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const { imageUrl, caption, isPrimary } = req.body;
+
+      if (!imageUrl) {
+        return res.status(400).json({ message: "URL de imagen es requerida" });
+      }
+
+      // Verificar que el parque existe
+      const park = await storage.getPark(parkId);
+      if (!park) {
+        return res.status(404).json({ message: "Parque no encontrado" });
+      }
+
+      // Si isPrimary es true, primero debemos desmarcar todas las otras imágenes como no principales
+      if (isPrimary) {
+        const existingImages = await storage.getParkImages(parkId);
+        for (const image of existingImages) {
+          if (image.isPrimary) {
+            await storage.updateParkImage(image.id, { isPrimary: false });
+          }
         }
-        
-        // Si no hay errores, procesar la imagen
-        return uploadParkImageHandler(req, res);
-      });
-    }).catch(error => {
-      console.error("Error al cargar módulo de carga de imágenes:", error);
-      res.status(500).json({ error: "Error interno al procesar la solicitud de carga de imágenes" });
-    });
+      }
+
+      // Crear la nueva imagen
+      const imageData = {
+        parkId,
+        imageUrl,
+        caption: caption || null,
+        isPrimary: Boolean(isPrimary)
+      };
+
+      const newImage = await storage.createParkImage(imageData);
+      res.status(201).json(newImage);
+    } catch (error) {
+      console.error("Error uploading park image:", error);
+      res.status(500).json({ message: "Error al subir la imagen" });
+    }
   });
 
   // Delete an image from a park (admin/municipality only)

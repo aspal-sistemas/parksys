@@ -65,6 +65,10 @@ export interface IStorage {
   removeAmenityFromPark(parkId: number, amenityId: number): Promise<boolean>;
   isAmenityInUse(amenityId: number): Promise<boolean>;
   deleteAmenity(amenityId: number): Promise<boolean>;
+  getParkImages(parkId: number): Promise<any[]>;
+  createParkImage(imageData: any): Promise<any>;
+  updateParkImage(id: number, data: any): Promise<any>;
+  deleteParkImage(id: number): Promise<boolean>;
 }
 
 // Implementación simplificada
@@ -378,6 +382,87 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error al obtener imágenes del parque:", error);
       return [];
+    }
+  }
+
+  async createParkImage(imageData: any): Promise<any> {
+    try {
+      const result = await db.execute(`
+        INSERT INTO park_images (park_id, image_url, caption, is_primary, created_at)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption, created_at as "createdAt"
+      `, [
+        imageData.parkId,
+        imageData.imageUrl,
+        imageData.caption,
+        imageData.isPrimary,
+        new Date()
+      ]);
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error al crear imagen del parque:", error);
+      throw error;
+    }
+  }
+
+  async updateParkImage(id: number, data: any): Promise<any> {
+    try {
+      const updates = [];
+      const values = [];
+      let paramIndex = 1;
+
+      if (data.caption !== undefined) {
+        updates.push(`caption = $${paramIndex++}`);
+        values.push(data.caption);
+      }
+      if (data.isPrimary !== undefined) {
+        updates.push(`is_primary = $${paramIndex++}`);
+        values.push(data.isPrimary);
+      }
+
+      if (updates.length === 0) {
+        throw new Error("No hay campos para actualizar");
+      }
+
+      values.push(id);
+
+      const result = await db.execute(`
+        UPDATE park_images 
+        SET ${updates.join(', ')}
+        WHERE id = $${paramIndex}
+        RETURNING id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption
+      `, values);
+
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error al actualizar imagen del parque:", error);
+      throw error;
+    }
+  }
+
+  async deleteParkImage(id: number): Promise<boolean> {
+    try {
+      const result = await db.execute(`
+        DELETE FROM park_images WHERE id = $1
+      `, [id]);
+      return (result.rowCount || 0) > 0;
+    } catch (error) {
+      console.error("Error al eliminar imagen del parque:", error);
+      return false;
+    }
+  }
+
+  async getParkImage(id: number): Promise<any> {
+    try {
+      const result = await db.execute(`
+        SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption
+        FROM park_images
+        WHERE id = $1
+      `, [id]);
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error("Error al obtener imagen del parque:", error);
+      return null;
     }
   }
 
