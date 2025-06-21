@@ -249,13 +249,10 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
         ORDER BY created_at DESC
       `;
       
-      const result = await db.execute(query, [parkId]);
-      console.log(`Documentos encontrados para parque ${parkId}:`, result.length);
-      console.log('Documentos raw result:', result);
+      const result = await pool.query(query, [parkId]);
+      console.log(`Documentos encontrados para parque ${parkId}:`, result.rows.length);
       
-      // Ensure we return the rows array, not the entire result object
-      const documents = Array.isArray(result) ? result : (result.rows || []);
-      res.json(documents);
+      res.json(result.rows);
     } catch (error) {
       console.error('Error obteniendo documentos del parque:', error);
       res.status(500).json({ error: 'Error al obtener los documentos del parque' });
