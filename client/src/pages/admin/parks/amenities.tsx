@@ -422,13 +422,34 @@ export default function ParkAmenitiesPage() {
         {/* Amenities Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Amenidades Instaladas ({parkAmenities?.length || 0})</CardTitle>
-            <CardDescription>
-              Lista de todas las amenidades instaladas en este parque
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Amenidades, Instalaciones y Servicios</CardTitle>
+                <CardDescription>
+                  {filteredParkAmenities.length} de {parkAmenities?.length || 0} total
+                </CardDescription>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="category-filter" className="text-sm font-medium">
+                  Filtrar por:
+                </Label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger id="category-filter" className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(amenityCategories).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            {parkAmenities && parkAmenities.length > 0 ? (
+            {filteredParkAmenities && filteredParkAmenities.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -440,7 +461,7 @@ export default function ParkAmenitiesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {parkAmenities.map((amenity: ParkAmenity) => (
+                  {filteredParkAmenities.map((amenity: ParkAmenity) => (
                     <TableRow key={amenity.id}>
                       <TableCell>
                         <div className="flex items-center space-x-3">
@@ -502,9 +523,14 @@ export default function ParkAmenitiesPage() {
             ) : (
               <div className="text-center py-12">
                 <Package className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Sin amenidades</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  {selectedCategory === 'todas' ? 'Sin amenidades' : `Sin amenidades ${amenityCategories[selectedCategory].toLowerCase()}`}
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Este parque no tiene amenidades asignadas aún.
+                  {selectedCategory === 'todas' 
+                    ? 'Este parque no tiene amenidades asignadas aún.'
+                    : `No hay amenidades de la categoría "${amenityCategories[selectedCategory]}" en este parque.`
+                  }
                 </p>
                 <div className="mt-6">
                   <Button onClick={() => setIsAssignDialogOpen(true)}>
