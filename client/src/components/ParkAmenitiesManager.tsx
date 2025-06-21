@@ -52,7 +52,8 @@ interface ParkAmenitiesManagerProps {
   parkId: number;
 }
 
-const categoryTranslations = {
+const categoryTranslations: Record<string, string> = {
+  'general': 'General',
   'servicios': 'Servicios',
   'infraestructura': 'Infraestructura', 
   'naturaleza': 'Naturaleza',
@@ -61,7 +62,7 @@ const categoryTranslations = {
   'educacion': 'Educación'
 };
 
-const statusTranslations = {
+const statusTranslations: Record<string, string> = {
   'activo': 'Activo',
   'inactivo': 'Inactivo',
   'mantenimiento': 'En Mantenimiento'
@@ -260,7 +261,7 @@ export default function ParkAmenitiesManager({ parkId }: ParkAmenitiesManagerPro
     };
 
     updateAmenityMutation.mutate({
-      parkAmenityId: editingAmenity.parkAmenityId,
+      parkAmenityId: editingAmenity.id,
       data: updateData
     });
   };
@@ -401,19 +402,20 @@ export default function ParkAmenitiesManager({ parkId }: ParkAmenitiesManagerPro
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {amenities.map((amenity) => (
-                  <Card key={amenity.parkAmenityId} className="hover:shadow-md transition-shadow">
+                  <Card key={amenity.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <AmenityIcon 
-                            iconType={amenity.iconType}
+                            name={amenity.amenityName}
+                            iconType={amenity.amenityIcon === 'custom' ? 'custom' : 'system'}
                             customIconUrl={amenity.customIconUrl}
                             size={40}
                           />
                           <div>
-                            <h5 className="font-medium">{amenity.name}</h5>
+                            <h5 className="font-medium">{amenity.amenityName}</h5>
                             <Badge variant="outline" className="text-xs">
-                              {statusTranslations[amenity.status] || amenity.status}
+                              {statusTranslations[amenity.status as keyof typeof statusTranslations] || amenity.status}
                             </Badge>
                           </div>
                         </div>
@@ -428,7 +430,7 @@ export default function ParkAmenitiesManager({ parkId }: ParkAmenitiesManagerPro
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleRemoveAmenity(amenity.parkAmenityId)}
+                            onClick={() => handleRemoveAmenity(amenity.id)}
                             disabled={removeAmenityMutation.isPending}
                           >
                             <Trash2 className="h-3 w-3" />
@@ -475,14 +477,15 @@ export default function ParkAmenitiesManager({ parkId }: ParkAmenitiesManagerPro
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <AmenityIcon 
-                  iconType={editingAmenity.iconType}
+                  name={editingAmenity.amenityName}
+                  iconType={editingAmenity.amenityIcon === 'custom' ? 'custom' : 'system'}
                   customIconUrl={editingAmenity.customIconUrl}
                   size={32}
                 />
                 <div>
-                  <h5 className="font-medium">{editingAmenity.name}</h5>
+                  <h5 className="font-medium">{editingAmenity.amenityName}</h5>
                   <p className="text-sm text-gray-600 capitalize">
-                    {categoryTranslations[editingAmenity.category] || editingAmenity.category}
+                    General
                   </p>
                 </div>
               </div>
