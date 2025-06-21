@@ -294,6 +294,17 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
         RETURNING id, park_id as "parkId", title, file_url as "fileUrl", file_size as "fileSize", file_type as "fileType", description, category, created_at as "createdAt"
       `;
       
+      console.log('Insertando documento con datos:', {
+        parkId,
+        title,
+        filePath,
+        finalFileUrl,
+        fileSize,
+        fileType,
+        description: description || '',
+        category: category || 'general'
+      });
+      
       const result = await db.execute(insertQuery, [
         parkId,
         title,
@@ -304,6 +315,8 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
         description || '',
         category || 'general'
       ]);
+      
+      console.log('Resultado de inserción:', result);
       
       console.log(`Nuevo documento creado para parque ${parkId}:`, result[0]);
       res.status(201).json(result[0]);
