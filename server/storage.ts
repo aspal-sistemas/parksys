@@ -393,13 +393,13 @@ export class DatabaseStorage implements IStorage {
 
   async getParkImages(parkId: number): Promise<any[]> {
     try {
-      const result = await db
-        .select()
-        .from(parkImages)
-        .where(eq(parkImages.parkId, parkId))
-        .orderBy(desc(parkImages.isPrimary), parkImages.id);
-      
-      return result || [];
+      const result = await db.execute(`
+        SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption
+        FROM park_images
+        WHERE park_id = $1
+        ORDER BY is_primary DESC, id ASC
+      `, [parkId]);
+      return result.rows || [];
     } catch (error) {
       console.error("Error al obtener imágenes del parque:", error);
       return [];
@@ -408,13 +408,13 @@ export class DatabaseStorage implements IStorage {
 
   async getParkImage(id: number): Promise<any> {
     try {
-      const result = await db
-        .select()
-        .from(parkImages)
-        .where(eq(parkImages.id, id))
-        .limit(1);
+      const result = await db.execute(`
+        SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption
+        FROM park_images
+        WHERE id = $1
+      `, [id]);
       
-      return result[0] || null;
+      return result.rows[0] || null;
     } catch (error) {
       console.error("Error al obtener imagen individual:", error);
       return null;
@@ -423,18 +423,19 @@ export class DatabaseStorage implements IStorage {
 
   async createParkImage(imageData: any): Promise<any> {
     try {
-      const result = await db
-        .insert(parkImages)
-        .values({
-          parkId: imageData.parkId,
-          imageUrl: imageData.imageUrl,
-          caption: imageData.caption || null,
-          isPrimary: imageData.isPrimary || false,
-          createdAt: new Date()
-        })
-        .returning();
+      const result = await db.execute(`
+        INSERT INTO park_images (park_id, image_url, caption, is_primary, created_at)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption
+      `, [
+        imageData.parkId,
+        imageData.imageUrl,
+        imageData.caption || null,
+        imageData.isPrimary || false,
+        new Date()
+      ]);
       
-      return result[0];
+      return result.rows[0];
     } catch (error) {
       console.error("Error al crear imagen del parque:", error);
       throw error;
@@ -443,26 +444,37 @@ export class DatabaseStorage implements IStorage {
 
   async updateParkImage(id: number, data: any): Promise<any> {
     try {
-      const updateData: any = {};
-      
+      const setParts = [];
+      const values = [];
+      let paramIndex = 1;
+
       if (data.caption !== undefined) {
-        updateData.caption = data.caption;
+        setParts.push(`caption = $${paramIndex++}`);
+        values.push(data.caption);
       }
       if (data.isPrimary !== undefined) {
-        updateData.isPrimary = data.isPrimary;
+        setParts.push(`is_primary = $${paramIndex++}`);
+        values.push(data.isPrimary);
+      }
+      if (data.imageUrl !== undefined) {
+        setParts.push(`image_url = $${paramIndex++}`);
+        values.push(data.imageUrl);
       }
 
-      if (Object.keys(updateData).length === 0) {
+      if (setParts.length === 0) {
         throw new Error("No hay campos para actualizar");
       }
 
-      const result = await db
-        .update(parkImages)
-        .set(updateData)
-        .where(eq(parkImages.id, id))
-        .returning();
+      values.push(id);
 
-      return result[0];
+      const result = await db.execute(`
+        UPDATE park_images 
+        SET ${setParts.join(', ')}
+        WHERE id = $${paramIndex}
+        RETURNING id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption
+      `, values);
+      
+      return result.rows[0];
     } catch (error) {
       console.error("Error al actualizar imagen del parque:", error);
       throw error;
