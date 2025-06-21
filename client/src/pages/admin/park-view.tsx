@@ -1271,7 +1271,20 @@ export default function AdminParkView() {
         </TabsContent>
 
         <TabsContent value="multimedia" className="space-y-4">
-          <ParkMultimediaManager parkId={parseInt(id)} />
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl text-green-600 flex items-center gap-2">
+                <Images className="h-6 w-6" />
+                Gestión de Multimedia del Parque
+              </CardTitle>
+              <CardDescription>
+                Administra imágenes y documentos del parque. Puedes subir archivos o usar URLs externas.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ParkMultimediaManager parkId={parseInt(id)} />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
