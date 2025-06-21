@@ -174,6 +174,87 @@ app.use('/api/volunteer-fields', volunteerFieldRouter);
 // Registrar la ruta especializada para habilidades de voluntarios
 app.use('/api', skillsRouter);
 
+// ENDPOINT DIRECTO PARA SUBIDA DE IMÁGENES - PRIORITY ROUTING
+import multer from 'multer';
+
+const imageStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = 'public/uploads/park-images';
+    if (!require('fs').existsSync(uploadPath)) {
+      require('fs').mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const timestamp = Date.now();
+    const randomId = Math.floor(Math.random() * 1000000);
+    const extension = require('path').extname(file.originalname);
+    cb(null, `park-img-${timestamp}-${randomId}${extension}`);
+  }
+});
+
+const imageUpload = multer({ 
+  storage: imageStorage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req: any, file: any, cb: any) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos de imagen'), false);
+    }
+  }
+});
+
+app.post("/api/parks/:parkId/images", imageUpload.single('image'), async (req: Request, res: Response) => {
+  try {
+    console.log('🚀 DIRECT IMAGE UPLOAD ENDPOINT REACHED');
+    console.log('📝 Params:', req.params);
+    console.log('📝 Body:', req.body);
+    console.log('📝 File:', req.file ? { filename: req.file.filename, size: req.file.size } : 'No file');
+    
+    const parkId = parseInt(req.params.parkId);
+    const { imageUrl, caption, isPrimary } = req.body;
+    
+    let finalImageUrl = imageUrl;
+    
+    if (req.file) {
+      finalImageUrl = `/uploads/park-images/${req.file.filename}`;
+      console.log('📁 File uploaded:', finalImageUrl);
+    }
+    
+    if (!req.file && !imageUrl) {
+      return res.status(400).json({ error: 'Debe proporcionar un archivo de imagen o una URL' });
+    }
+    
+    const { pool } = await import("./db");
+    
+    // Si es imagen principal, desmarcar otras
+    if (isPrimary === 'true' || isPrimary === true) {
+      await pool.query('UPDATE park_images SET is_primary = false WHERE park_id = $1', [parkId]);
+    }
+    
+    const insertQuery = `
+      INSERT INTO park_images (park_id, image_url, caption, is_primary)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, park_id as "parkId", image_url as "imageUrl", caption, is_primary as "isPrimary"
+    `;
+    
+    const result = await pool.query(insertQuery, [
+      parkId,
+      finalImageUrl,
+      caption || '',
+      isPrimary === 'true' || isPrimary === true
+    ]);
+    
+    console.log('✅ Image created successfully:', result.rows[0]);
+    res.status(201).json(result.rows[0]);
+    
+  } catch (error) {
+    console.error('❌ Error in direct image upload:', error);
+    res.status(500).json({ error: 'Error al subir la imagen: ' + error.message });
+  }
+});
+
 // ENDPOINT DIRECTO PARA DOCUMENTOS - PRIORITY ROUTING
 app.get("/api/parks/:parkId/documents", async (req: Request, res: Response) => {
   try {

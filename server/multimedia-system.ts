@@ -71,6 +71,15 @@ const upload = multer({
 export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
 
   // =============================================
+  // ENDPOINT DE PRUEBA PARA VERIFICAR ROUTING
+  // =============================================
+  
+  apiRouter.post('/test-upload', (req: Request, res: Response) => {
+    console.log('🧪 TEST ENDPOINT REACHED - /test-upload');
+    res.json({ message: 'Test endpoint working', timestamp: new Date().toISOString() });
+  });
+
+  // =============================================
   // GESTIÓN DE IMÁGENES DE PARQUES
   // =============================================
 
@@ -103,12 +112,24 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
   });
 
   // Subir nueva imagen (archivo o URL)
-  apiRouter.post('/parks/:parkId/images', isAuthenticated, (req: Request, res: Response, next: any) => {
+  apiRouter.post('/parks/:parkId/images', (req: Request, res: Response, next: any) => {
+    console.log('🚀 MULTIMEDIA ENDPOINT REACHED - POST /parks/:parkId/images');
+    console.log('📝 Request details:', {
+      method: req.method,
+      url: req.url,
+      params: req.params,
+      headers: Object.keys(req.headers),
+      contentType: req.headers['content-type']
+    });
+    next();
+  }, isAuthenticated, (req: Request, res: Response, next: any) => {
+    console.log('🔐 Authentication passed, processing file upload...');
     upload.single('image')(req, res, (err: any) => {
       if (err) {
         console.error('❌ Error de multer:', err);
         return res.status(400).json({ error: 'Error procesando archivo: ' + err.message });
       }
+      console.log('📁 Multer processing completed successfully');
       next();
     });
   }, async (req: Request, res: Response) => {
