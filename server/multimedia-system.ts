@@ -12,6 +12,14 @@ import path from 'path';
 import fs from 'fs';
 import { db } from './db';
 import { eq, and, desc } from 'drizzle-orm';
+import pkg from 'pg';
+const { Pool } = pkg;
+
+// Create a pool for raw SQL queries
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
 
 // Configuración de multer para subida de archivos
 const storage = multer.diskStorage({
@@ -373,19 +381,19 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
     try {
       const parkId = parseInt(req.params.parkId);
       
-      const imagesResult = await db.execute(
-        `SELECT COUNT(*) as count FROM park_images WHERE park_id = $1`,
+      const imagesResult = await pool.query(
+        'SELECT COUNT(*) as count FROM park_images WHERE park_id = $1',
         [parkId]
       );
       
-      const documentsResult = await db.execute(
-        `SELECT COUNT(*) as count FROM park_documents WHERE park_id = $1`,
+      const documentsResult = await pool.query(
+        'SELECT COUNT(*) as count FROM park_documents WHERE park_id = $1',
         [parkId]
       );
       
       const stats = {
-        totalImages: parseInt(imagesResult[0]?.count || '0'),
-        totalDocuments: parseInt(documentsResult[0]?.count || '0')
+        totalImages: parseInt(imagesResult.rows[0]?.count || '0'),
+        totalDocuments: parseInt(documentsResult.rows[0]?.count || '0')
       };
       
       res.json(stats);
