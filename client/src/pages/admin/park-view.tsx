@@ -18,7 +18,7 @@ import { z } from "zod";
 import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus, Filter, SortAsc, Map as MapIcon, Eye, Download } from "lucide-react";
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
-import ParkMultimediaManager from "@/components/ParkMultimediaManager";
+import ParkMultimediaViewer from "@/components/ParkMultimediaViewer";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -1275,14 +1275,14 @@ export default function AdminParkView() {
             <CardHeader>
               <CardTitle className="text-2xl text-green-600 flex items-center gap-2">
                 <Images className="h-6 w-6" />
-                Gestión de Multimedia del Parque
+                Multimedia del Parque
               </CardTitle>
               <CardDescription>
-                Administra imágenes y documentos del parque. Puedes subir archivos o usar URLs externas.
+                Visualiza las imágenes y documentos del parque.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ParkMultimediaManager parkId={parseInt(id)} />
+              <ParkMultimediaViewer parkId={parseInt(id)} />
             </CardContent>
           </Card>
         </TabsContent>
