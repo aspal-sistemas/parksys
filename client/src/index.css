@@ -24,6 +24,67 @@
   [data-radix-popper-content-wrapper] {
     z-index: 60 !important;
   }
+  
+  /* SOLUCIÓN DEFINITIVA PARA ÁREA BLANCA EXTRA EN PÁGINAS DE EDICIÓN */
+  body, html, #root {
+    min-height: 100vh !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Eliminar altura mínima problemática en AdminLayout */
+  .flex.bg-gray-50,
+  .flex.h-screen.overflow-hidden,
+  .flex-1.flex.flex-col.overflow-hidden,
+  main.flex-1.overflow-y-auto {
+    min-height: auto !important;
+    height: auto !important;
+    flex: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Control específico para contenedores de edición */
+  div[style*="minHeight: 'auto'"],
+  div[style*="height: 'auto'"] {
+    min-height: auto !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  /* Anular cualquier espacio extra después del contenido */
+  .space-y-6::after,
+  .max-w-6xl::after,
+  .mx-auto::after {
+    display: none !important;
+  }
+  
+  /* Solución específica para páginas de edición de parques */
+  .park-edit-page {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+  }
+  
+  /* Control específico para el contenedor principal de edición */
+  .park-edit-content {
+    height: fit-content !important;
+    min-height: auto !important;
+    max-height: calc(100vh - 200px) !important;
+    overflow-y: auto !important;
+    padding-bottom: 2rem !important;
+  }
+  
+  /* Eliminar espacio extra en formularios de parques */
+  .park-form-container {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  .park-form-container::after {
+    display: none !important;
+    content: none !important;
+  }
 }
 
 @layer base {

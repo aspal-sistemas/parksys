@@ -258,14 +258,14 @@ const AdminParkEdit: React.FC = () => {
   }
   
   return (
-    <div className="flex bg-gray-50" style={{ minHeight: 'auto', height: 'auto' }}>
+    <div className="park-edit-page flex bg-gray-50">
       {/* Sidebar fijo */}
       <div className="w-64 fixed inset-y-0 left-0 z-50">
         <AdminSidebarComplete />
       </div>
       
       {/* Contenido principal con margen izquierdo para el sidebar */}
-      <div className="ml-64 flex-1" style={{ minHeight: 'auto', height: 'auto' }}>
+      <div className="ml-64 flex-1">
         {/* Header */}
         <header className="bg-white shadow-sm">
           <div className="px-6 py-4">
@@ -279,8 +279,8 @@ const AdminParkEdit: React.FC = () => {
         </header>
         
         {/* Contenido de la página */}
-        <div className="p-6" style={{ minHeight: 'auto', height: 'auto' }}>
-          <div className="max-w-6xl mx-auto" style={{ minHeight: 'auto', height: 'auto' }}>
+        <div className="park-edit-content p-6">
+          <div className="max-w-6xl mx-auto park-form-container">
         <div className="mb-6">
           <Button
             variant="ghost"
