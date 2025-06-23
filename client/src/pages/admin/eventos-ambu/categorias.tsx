@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import AdminLayout from '@/components/AdminLayout';
 
 interface CategoriaAmbu {
   id: number;
@@ -176,15 +177,18 @@ export default function CategoriasEventosAmbu() {
 
   if (error) {
     return (
-      <Alert className="max-w-md mx-auto mt-8">
-        <AlertDescription>
-          Error al cargar las categorías. Por favor, intenta nuevamente.
-        </AlertDescription>
-      </Alert>
+      <AdminLayout>
+        <Alert className="max-w-md mx-auto mt-8">
+          <AlertDescription>
+            Error al cargar las categorías. Por favor, intenta nuevamente.
+          </AlertDescription>
+        </Alert>
+      </AdminLayout>
     );
   }
 
   return (
+    <AdminLayout>
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>

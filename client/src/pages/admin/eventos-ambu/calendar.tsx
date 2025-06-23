@@ -4,6 +4,7 @@ import { Calendar, ChevronLeft, ChevronRight, Clock, Users, MapPin, DollarSign }
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import AdminLayout from "@/components/AdminLayout";
 
 interface EventoAmbu {
   id: number;
@@ -122,16 +123,19 @@ export default function CalendarioEventosAmbu() {
 
   if (isLoading) {
     return (
+      <AdminLayout>
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           <p className="mt-2 text-gray-600">Cargando calendario...</p>
         </div>
       </div>
+      </AdminLayout>
     );
   }
 
   return (
+    <AdminLayout>
     <div className="container mx-auto py-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
@@ -344,5 +348,6 @@ export default function CalendarioEventosAmbu() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   );
 }
