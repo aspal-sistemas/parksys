@@ -116,6 +116,7 @@ The system uses environment variables for database connection and supports both 
 - June 23, 2025. Problema crítico de eliminación de amenidades en gestión de parques resuelto - Corregido endpoint de eliminación en ParkAmenitiesManager de `/api/park-amenities/` a `/api/parks/${parkId}/amenities/` para coincidir con implementación del servidor. Eliminación de amenidades ahora funciona correctamente con actualización inmediata de la lista
 - June 23, 2025. Sistema de edición de parques completamente operativo - Página /admin/parks/7/edit funcionando correctamente con guardado exitoso de cambios. Mutación de actualización ejecutándose sin errores y persistiendo datos en base de datos
 - June 23, 2025. Problema de área blanca extra en páginas de edición completamente resuelto - Estructura CSS optimizada, contenedores simplificados, sintaxis JSX corregida, layout limpio que termina apropiadamente después de botones Cancelar/Guardar. Todas las páginas de edición ahora presentan diseño profesional sin espacios innecesarios
+- June 23, 2025. Sidebar completamente fijo implementado globalmente - Sidebar permanece inmóvil durante scroll en todas las páginas administrativas. Footer del usuario visible junto con todo el sidebar. AdminLayout modificado con margen izquierdo ml-64 para contenido principal. Página de login corregida con layout de pantalla completa (h-screen w-screen fixed) y z-index superior para evitar conflictos con sidebar fijo
 
 ## Recent Features
 
