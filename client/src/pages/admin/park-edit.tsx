@@ -258,12 +258,34 @@ const AdminParkEdit: React.FC = () => {
   }
   
   return (
-    <div style={{ height: 'auto', overflow: 'hidden' }}>
-      <AdminLayout 
-        title={isEdit ? `Editar parque: ${park?.name || ''}` : 'Nuevo parque'} 
-        subtitle={isEdit ? "Actualiza la información del parque" : "Ingresa la información para crear un nuevo parque"}
-      >
-        <div className="max-w-6xl mx-auto" style={{ paddingBottom: '2rem', height: 'auto' }}>
+    <AdminLayout 
+      title={isEdit ? `Editar parque: ${park?.name || ''}` : 'Nuevo parque'} 
+      subtitle={isEdit ? "Actualiza la información del parque" : "Ingresa la información para crear un nuevo parque"}
+    >
+      <div className="max-w-6xl mx-auto">
+        <style>{`
+          .park-edit-container {
+            min-height: unset !important;
+            height: fit-content !important;
+            max-height: fit-content !important;
+            overflow: hidden !important;
+          }
+          .park-edit-container * {
+            min-height: unset !important;
+          }
+          .park-edit-container::after {
+            display: none !important;
+          }
+          [data-radix-scroll-area-viewport] {
+            height: auto !important;
+            max-height: none !important;
+          }
+          .admin-layout-content {
+            height: auto !important;
+            min-height: auto !important;
+            padding-bottom: 2rem !important;
+          }
+        `}</style>
         <div className="mb-6">
           <Button
             variant="ghost"
@@ -277,7 +299,7 @@ const AdminParkEdit: React.FC = () => {
         </div>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 park-edit-container">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="basic">Información Básica</TabsTrigger>
@@ -829,9 +851,8 @@ const AdminParkEdit: React.FC = () => {
           </Tabs>
           </form>
         </Form>
-        </div>
-      </AdminLayout>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
