@@ -558,10 +558,11 @@ async function initializeDatabaseAsync() {
       console.error("Error al inicializar integración HR-Finanzas (continuando):", error);
     }
     
-    // Inicializar recibos de nómina con protección contra duplicados
+    // Inicializar recibos de nómina con protección contra duplicados - TEMPORALMENTE DESHABILITADO PARA DESPLIEGUE
     try {
-      const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
-      await seedPayrollReceipts();
+      console.log("Payroll receipts seeding temporarily disabled for deployment stability");
+      // const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
+      // await seedPayrollReceipts();
     } catch (error) {
       console.error("Error al inicializar recibos de nómina (continuando):", error);
     }
