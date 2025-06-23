@@ -748,6 +748,14 @@ export async function seedDatabase() {
   console.log("Inicializando datos en la base de datos...");
   
   try {
+    // Check if database is already seeded to prevent duplicates
+    const existingUsers = await db.select().from(users).limit(1);
+    const existingMunicipalities = await db.select().from(municipalities).limit(1);
+    
+    if (existingUsers.length > 0 && existingMunicipalities.length > 0) {
+      console.log("La base de datos ya contiene datos. Saltando inicialización para evitar duplicados.");
+      return { success: true, message: "Base de datos ya inicializada" };
+    }
     // Verificar si la tabla amenities existe
     const tableExists = await db.execute(`
       SELECT EXISTS (

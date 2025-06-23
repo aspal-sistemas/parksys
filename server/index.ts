@@ -16,6 +16,15 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
+// Health check endpoint for deployment
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'ParkSys API is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Servir archivos estáticos del directorio public ANTES de otras rutas
 app.use(express.static(path.join(process.cwd(), 'public')));
 
@@ -41,7 +50,10 @@ app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
     return res.json(result);
   } catch (error) {
     console.error("Error al obtener datos para matriz:", error);
-    res.status(500).json({ message: "Error al obtener datos para matriz" });
+    res.status(503).json({ 
+      message: "Servicio temporalmente no disponible - inicializando base de datos",
+      status: "initializing"
+    });
   }
 });
 
@@ -510,9 +522,10 @@ import { seedTreeSpecies } from "./seed-tree-species";
 
 import { initializeDatabase } from "./initialize-db";
 
-(async () => {
+// Database initialization function that runs after server starts
+async function initializeDatabaseAsync() {
   try {
-    // Inicializar la estructura de la base de datos
+    console.log("Inicializando estructura de la base de datos de forma asíncrona...");
     await initializeDatabase();
     
     // Intentar inicializar los datos predeterminados
@@ -547,10 +560,15 @@ import { initializeDatabase } from "./initialize-db";
       console.error("Error al inicializar integración HR-Finanzas:", error);
       // Continuamos con la ejecución aunque haya un error
     }
+    
+    console.log("Inicialización de base de datos completada");
   } catch (error) {
     console.error("Error crítico al inicializar la base de datos:", error);
     // Continuamos con la ejecución aunque haya un error
   }
+}
+
+(async () => {
   
 
 
@@ -900,11 +918,14 @@ import { initializeDatabase } from "./initialize-db";
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
-  server.listen({
+  const serverInstance = server.listen({
     port,
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    
+    // Initialize database after server is running
+    initializeDatabaseAsync().catch(console.error);
   });
 })();
