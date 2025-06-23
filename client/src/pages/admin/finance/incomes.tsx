@@ -934,7 +934,7 @@ const IncomesPage = () => {
         </Dialog>
       </div>
     </div>
-    </AdminLayout>
+  </AdminLayout>
   );
 };
 
