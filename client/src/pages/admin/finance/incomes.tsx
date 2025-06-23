@@ -490,7 +490,7 @@ const IncomesPage = () => {
                   <SelectValue placeholder="Año" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos los años</SelectItem>
+                  <SelectItem value="all">Todos los años</SelectItem>
                   <SelectItem value="2025">2025</SelectItem>
                   <SelectItem value="2024">2024</SelectItem>
                   <SelectItem value="2023">2023</SelectItem>
@@ -508,7 +508,7 @@ const IncomesPage = () => {
                   <SelectValue placeholder="Mes" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos los meses</SelectItem>
+                  <SelectItem value="all">Todos los meses</SelectItem>
                   <SelectItem value="01">Enero</SelectItem>
                   <SelectItem value="02">Febrero</SelectItem>
                   <SelectItem value="03">Marzo</SelectItem>
@@ -544,7 +544,7 @@ const IncomesPage = () => {
                   <SelectValue placeholder="Categoría" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas las categorías</SelectItem>
+                  <SelectItem value="all">Todas las categorías</SelectItem>
                   {Array.isArray(categories) && categories.map((category: any) => (
                     <SelectItem key={category.id} value={category.id.toString()}>
                       {category.name}

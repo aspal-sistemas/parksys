@@ -642,7 +642,7 @@ const MaintenanceCalendarStaticPage = () => {
                             <SelectValue placeholder="Seleccione un técnico" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Sin asignar</SelectItem>
+                            <SelectItem value="unassigned">Sin asignar</SelectItem>
                             {sampleTechnicians.map((technician) => (
                               <SelectItem key={technician.id} value={technician.id.toString()}>
                                 {technician.fullName}
