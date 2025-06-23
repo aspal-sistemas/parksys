@@ -262,21 +262,22 @@ const AdminParkEdit: React.FC = () => {
       title={isEdit ? `Editar parque: ${park?.name || ''}` : 'Nuevo parque'} 
       subtitle={isEdit ? "Actualiza la información del parque" : "Ingresa la información para crear un nuevo parque"}
     >
-      <div className="mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setLocation('/admin/parks')}
-          className="mb-2"
-        >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Volver a la lista
-        </Button>
-      </div>
-      
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLocation('/admin/parks')}
+            className="mb-2"
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Volver a la lista
+          </Button>
+        </div>
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="basic">Información Básica</TabsTrigger>
               <TabsTrigger value="media">Multimedia</TabsTrigger>
@@ -827,6 +828,7 @@ const AdminParkEdit: React.FC = () => {
           </Tabs>
         </form>
       </Form>
+      </div>
     </AdminLayout>
   );
 };
