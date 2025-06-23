@@ -2,6 +2,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
+import fs from "fs";
+import multer from 'multer';
 import { activityRouter } from "./activityRoutes";
 import { testRouter } from "./testRoutes";
 import volunteerFieldRouter from "./volunteerFieldRoutes";
@@ -175,8 +177,6 @@ app.use('/api/volunteer-fields', volunteerFieldRouter);
 app.use('/api', skillsRouter);
 
 // ENDPOINT DIRECTO PARA SUBIDA DE IMÁGENES - PRIORITY ROUTING
-import multer from 'multer';
-import fs from 'fs';
 
 const imageStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -252,7 +252,7 @@ app.post("/api/parks/:parkId/images", imageUpload.single('image'), async (req: R
     
   } catch (error) {
     console.error('❌ Error in direct image upload:', error);
-    res.status(500).json({ error: 'Error al subir la imagen: ' + error.message });
+    res.status(500).json({ error: 'Error al subir la imagen: ' + (error as Error).message });
   }
 });
 

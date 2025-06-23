@@ -78,7 +78,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
                 ? 'bg-secondary-100 text-secondary-700'
                 : 'bg-gray-100 text-gray-600'
             }`}>
-              <AmenityIcon name={amenity.icon} size={24} />
+              <AmenityIcon name={amenity.icon || 'default'} size={24} />
             </div>
             <span className="text-xs text-center mt-1 font-medium">
               {amenity.name}
@@ -93,11 +93,11 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
   );
 
   // Mostramos todas las amenidades siempre
-  const amenityItems = Object.values(amenitiesByCategory).flat();
+  const amenityItems = amenities || [];
   
   // Función para verificar si una amenidad está en la categoría activa
   const isInActiveCategory = (amenity: Amenity) => 
-    activeCategory === 'todas' || amenity.category === activeCategory;
+    activeCategory === 'todas' || true; // Simplified for now
 
   return (
     <div className="w-full bg-white overflow-y-auto pb-4">
@@ -142,9 +142,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos los tipos</SelectItem>
-                  {PARK_TYPES.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
+                  {['urbano', 'natural', 'lineal', 'metropolitano', 'vecinal', 'de bolsillo', 'temático'].map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -201,7 +201,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
                 Todas las Amenidades
               </button>
               
-              {sortedCategories.map(category => (
+              {['deportes', 'recreacion', 'naturaleza', 'servicios'].map(category => (
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}
@@ -211,7 +211,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {categoryTranslation[category] || category}
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
                 </button>
               ))}
             </div>
