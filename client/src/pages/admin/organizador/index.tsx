@@ -14,16 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Plus, Tag, Users, MapPin, Clock, Edit, Eye } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 
-// Mapeo de categorías
-const CATEGORIAS_MAP = {
-  'artecultura': 'Arte y Cultura',
-  'recreacionbienestar': 'Recreación y Bienestar',
-  'temporada': 'Eventos de Temporada',
-  'naturalezaciencia': 'Naturaleza y Ciencia',
-  'deportivo': 'Deportivo',
-  'comunidad': 'Comunidad'
-};
-
 // Página principal del módulo de Organizador
 const OrganizadorPage: React.FC = () => {
   // Obtener actividades
