@@ -416,20 +416,14 @@ export const activityCategories = pgTable("activity_categories", {
 export const activities = pgTable("activities", {
   id: serial("id").primaryKey(),
   parkId: integer("park_id").notNull(),
-  categoryId: integer("category_id").references(() => activityCategories.id),
   title: text("title").notNull(),
   description: text("description"),
-  category: text("category"), // Campo de texto para categoría legacy
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date"),
-  location: text("location"),
-  capacity: integer("capacity"),
-  registrationRequired: boolean("registration_required").default(false),
-  status: text("status").default("active"),
-  imageUrl: text("image_url"),
-  createdById: integer("created_by_id"),
+  category: text("category"), // Campo de texto para categoría legacy
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow()
+  location: text("location"),
+  categoryId: integer("category_id").references(() => activityCategories.id)
 });
 
 export const comments = pgTable("comments", {
