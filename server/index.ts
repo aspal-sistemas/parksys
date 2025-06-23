@@ -937,39 +937,57 @@ async function initializeDatabaseAsync() {
 
 
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    // For development, we need a server reference for Vite setup
-    // Since routeServer is not a server instance, we'll handle this differently
-    const { setupVite } = await import("./vite");
-    await setupVite(app, appServer);
-  } else {
-    serveStatic(app);
-  }
-
   // Use environment port for deployment compatibility
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
   const HOST = '0.0.0.0';
   
-  const appServer = app.listen(PORT, HOST, () => {
-    console.log(`Server successfully listening on port ${PORT} host ${HOST}`);
+  let appServer;
+
+  // Setup Vite in development mode
+  if (app.get("env") === "development") {
+    const { setupVite } = await import("./vite");
+    console.log("Configurando servidor de desarrollo Vite...");
     
-    // Initialize database after server is confirmed running
-    setTimeout(() => {
-      initializeDatabaseAsync().catch(error => {
-        console.error("Database initialization error (non-blocking):", error);
-      });
-    }, 1000);
-  });
+    appServer = app.listen(PORT, HOST, async () => {
+      console.log(`Servidor ejecutándose en puerto ${PORT}`);
+      
+      try {
+        await setupVite(app, appServer);
+        console.log("✅ Servidor de desarrollo Vite listo - Aplicación web accesible");
+      } catch (error) {
+        console.error("Error configurando Vite:", error);
+      }
+      
+      // Inicializar base de datos después de que todo esté listo
+      setTimeout(() => {
+        initializeDatabaseAsync().catch(error => {
+          console.error("Error inicializando base de datos (no crítico):", error);
+        });
+      }, 2000);
+    });
+  } else {
+    // Modo producción
+    serveStatic(app);
+    
+    appServer = app.listen(PORT, HOST, () => {
+      console.log(`Servidor en producción ejecutándose en puerto ${PORT}`);
+      
+      setTimeout(() => {
+        initializeDatabaseAsync().catch(error => {
+          console.error("Error inicializando base de datos (no crítico):", error);
+        });
+      }, 1000);
+    });
+  }
 
   // Ensure graceful shutdown
   process.on('SIGTERM', () => {
     console.log('SIGTERM received, shutting down gracefully');
-    appServer.close(() => {
-      console.log('Process terminated');
-      process.exit(0);
-    });
+    if (appServer) {
+      appServer.close(() => {
+        console.log('Process terminated');
+        process.exit(0);
+      });
+    }
   });
 })();
