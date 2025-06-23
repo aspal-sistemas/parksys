@@ -410,30 +410,44 @@ const AdminSidebarComplete: React.FC = () => {
           </ModuleNav>
 
           <ModuleNav 
-            title={t('navigation.events')} 
+            title="Eventos AMBU" 
             icon={<CalendarDays className="h-5 w-5" />}
             value="events"
           >
             <NavItem 
-              href="/admin/events" 
+              href="/admin/eventos-ambu" 
               icon={<ListFilter className="h-5 w-5" />}
-              active={location.startsWith('/admin/events') && !location.startsWith('/admin/events/new')}
+              active={location === '/admin/eventos-ambu'}
             >
-              {t('navigation.listing')}
+              Gestión de Eventos
             </NavItem>
             <NavItem 
-              href="/admin/events/new" 
-              icon={<Upload className="h-5 w-5" />}
-              active={location.startsWith('/admin/events/new')}
+              href="/admin/eventos-ambu/solicitud-bajo-impacto" 
+              icon={<Plus className="h-5 w-5 text-emerald-600" />}
+              active={location.startsWith('/admin/eventos-ambu/solicitud-bajo-impacto')}
             >
-              Nuevo Evento
+              Evento Bajo Impacto
             </NavItem>
             <NavItem 
-              href="/admin/events/calendar" 
+              href="/admin/eventos-ambu/solicitud-alto-impacto" 
+              icon={<Plus className="h-5 w-5 text-orange-600" />}
+              active={location.startsWith('/admin/eventos-ambu/solicitud-alto-impacto')}
+            >
+              Evento Alto Impacto
+            </NavItem>
+            <NavItem 
+              href="/admin/eventos-ambu/calendar" 
               icon={<Calendar className="h-5 w-5" />}
-              active={location.startsWith('/admin/events/calendar')}
+              active={location.startsWith('/admin/eventos-ambu/calendar')}
             >
               Calendario
+            </NavItem>
+            <NavItem 
+              href="/admin/eventos-ambu/tabulador" 
+              icon={<DollarSign className="h-5 w-5" />}
+              active={location.startsWith('/admin/eventos-ambu/tabulador')}
+            >
+              Tabulador de Costos
             </NavItem>
           </ModuleNav>
 
