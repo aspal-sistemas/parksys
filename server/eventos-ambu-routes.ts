@@ -3,18 +3,17 @@ import { eq, desc, and, gte, lte, like } from "drizzle-orm";
 import { db } from "./db";
 import {
   eventosAmbu,
-  solicitudEvento,
-  documentosEvento,
-  costosEvento,
-  seguimientoEvento,
-  reunionesLogistica,
+  solicitudesAmbu,
+  documentosAmbu,
+  costosAmbu,
+  seguimientoAmbu,
+  reunionesAmbu,
   insertEventoAmbuSchema,
-  insertSolicitudEventoSchema,
-  insertDocumentoEventoSchema,
-  insertCostoEventoSchema,
-  insertSeguimientoEventoSchema,
-  insertReunionLogisticaSchema,
-  tabuladorCostos,
+  insertSolicitudAmbuSchema,
+  insertDocumentoAmbuSchema,
+  insertCostoAmbuSchema,
+  insertSeguimientoAmbuSchema,
+  insertReunionAmbuSchema,
   EventoAmbu,
   InsertEventoAmbu
 } from "@shared/events-ambu-schema";
