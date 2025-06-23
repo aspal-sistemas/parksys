@@ -168,11 +168,18 @@ export async function removeParticipant(req: Request, res: Response) {
     const eventId = parseInt(req.params.id);
     const participantId = parseInt(req.params.participantId);
     
+    // Validar que los IDs son números válidos
+    if (isNaN(eventId) || isNaN(participantId)) {
+      return res.status(400).json({ message: "IDs inválidos" });
+    }
+    
     // Verificar que el participante existe
     const participantExists = await db.select()
       .from(eventRegistrations)
-      .where(eq(eventRegistrations.id, participantId))
-      .where(eq(eventRegistrations.eventId, eventId));
+      .where(and(
+        eq(eventRegistrations.id, participantId),
+        eq(eventRegistrations.eventId, eventId)
+      ));
     
     if (!participantExists.length) {
       return res.status(404).json({ message: "El participante no existe en este evento" });
