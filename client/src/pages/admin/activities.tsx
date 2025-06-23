@@ -24,8 +24,8 @@ import {
 
 const AdminActivities = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterPark, setFilterPark] = useState('');
-  const [filterCategory, setFilterCategory] = useState('');
+  const [filterPark, setFilterPark] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   
   const activitiesPerPage = 10;
@@ -65,10 +65,10 @@ const AdminActivities = () => {
       if (searchQuery && !activity.title.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
-      if (filterPark && activity.parkId.toString() !== filterPark) {
+      if (filterPark && filterPark !== "all" && activity.parkId.toString() !== filterPark) {
         return false;
       }
-      if (filterCategory && activity.activityType !== filterCategory) {
+      if (filterCategory && filterCategory !== "all" && activity.activityType !== filterCategory) {
         return false;
       }
       return true;
@@ -87,8 +87,8 @@ const AdminActivities = () => {
 
   const handleClearFilters = () => {
     setSearchQuery('');
-    setFilterPark('');
-    setFilterCategory('');
+    setFilterPark('all');
+    setFilterCategory('all');
   };
 
   if (isLoading) {
@@ -151,7 +151,7 @@ const AdminActivities = () => {
                 <SelectValue placeholder="Filtrar por parque" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos los parques</SelectItem>
+                <SelectItem value="all">Todos los parques</SelectItem>
                 {Array.isArray(parksData) && parksData.map((park: any) => (
                   <SelectItem key={park.id} value={park.id.toString()}>
                     {park.name}
@@ -165,7 +165,7 @@ const AdminActivities = () => {
                 <SelectValue placeholder="Filtrar por categoría" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas las categorías</SelectItem>
+                <SelectItem value="all">Todas las categorías</SelectItem>
                 {uniqueCategories.map((category: any) => (
                   <SelectItem key={category} value={category}>
                     {category}

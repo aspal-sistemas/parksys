@@ -19,7 +19,7 @@ import AdminDocuments from "@/pages/admin/documents";
 import AdminComments from "@/pages/admin/comments";
 import AdminIncidents from "@/pages/admin/incidents";
 import AdminUsers from "@/pages/admin/users";
-import AdminActivities from "@/pages/admin/activities-simple";
+import AdminActivities from "@/pages/admin/activities";
 import AdminAmenities from "@/pages/admin/amenities";
 import AdminSettings from "@/pages/admin/settings";
 import AdminLogin from "@/pages/admin/login";
