@@ -647,9 +647,13 @@ const AdminParkEdit: React.FC = () => {
                 </CardContent>
                 <CardFooter className="flex justify-between">
                   <Button 
-                    type="submit"
+                    type="button"
                     variant="outline"
                     disabled={mutation.isPending}
+                    onClick={() => {
+                      console.log('Botón de guardar clickeado');
+                      form.handleSubmit(onSubmit)();
+                    }}
                   >
                     {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
                     {isEdit ? 'Guardar Cambios' : 'Crear Parque'}
@@ -742,9 +746,13 @@ const AdminParkEdit: React.FC = () => {
                   </Button>
                   <div className="flex gap-2">
                     <Button 
-                      type="submit"
+                      type="button"
                       variant="outline"
                       disabled={mutation.isPending}
+                      onClick={() => {
+                        console.log('Botón de guardar clickeado (multimedia)');
+                        form.handleSubmit(onSubmit)();
+                      }}
                     >
                       {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
                       {isEdit ? 'Guardar Cambios' : 'Crear Parque'}
@@ -803,8 +811,12 @@ const AdminParkEdit: React.FC = () => {
                     Anterior
                   </Button>
                   <Button 
-                    type="submit"
+                    type="button"
                     disabled={mutation.isPending}
+                    onClick={() => {
+                      console.log('Botón de guardar clickeado (amenidades)');
+                      form.handleSubmit(onSubmit)();
+                    }}
                   >
                     {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
                     {isEdit ? 'Actualizar Parque' : 'Crear Parque'}
