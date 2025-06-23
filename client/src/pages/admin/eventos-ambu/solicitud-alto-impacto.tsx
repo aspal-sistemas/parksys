@@ -13,6 +13,7 @@ import { CalendarIcon, FileTextIcon, AlertTriangle, DollarSign, Clock } from "lu
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import AdminLayout from "@/components/AdminLayout";
 
 // Schema de validación para eventos de alto impacto
 const altoImpactoSchema = z.object({
@@ -271,8 +272,9 @@ export default function SolicitudAltoImpacto() {
   }, [tipoEvento, numeroAsistentes]);
 
   return (
-    <div className="container mx-auto py-6 max-w-4xl">
-      <div className="mb-6">
+    <AdminLayout>
+      <div className="container mx-auto py-6 max-w-4xl">
+        <div className="mb-6">
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 text-orange-800">
             <AlertTriangle className="h-5 w-5" />
@@ -879,6 +881,7 @@ export default function SolicitudAltoImpacto() {
           </Button>
         </div>
       </form>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

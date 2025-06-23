@@ -687,7 +687,7 @@ export default function SolicitudBajoImpacto() {
           </Button>
         </div>
       </form>
-    </div>
+      </div>
     </AdminLayout>
   );
 }
