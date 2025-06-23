@@ -217,7 +217,7 @@ const AdminSidebar: React.FC = () => {
             icon={<Calendar className="h-5 w-5" />}
             value="activities"
           >
-            {/* Sección de Reportes (Organizado) - Movido arriba */}
+            {/* Organizador - Primera posición */}
             <NavItem 
               href="/admin/organizador" 
               icon={<FileText className="h-5 w-5" />}
@@ -225,10 +225,10 @@ const AdminSidebar: React.FC = () => {
                       !location.startsWith('/admin/organizador/nueva-actividad') && 
                       !location.startsWith('/admin/organizador/catalogo')}
             >
-              Organizado
+              Organizador
             </NavItem>
             
-            {/* Sección de Gestión de Actividades */}
+            {/* Listado - Segunda posición */}
             <NavItem 
               href="/admin/activities" 
               icon={<ListFilter className="h-5 w-5" />}
