@@ -258,34 +258,29 @@ const AdminParkEdit: React.FC = () => {
   }
   
   return (
-    <AdminLayout 
-      title={isEdit ? `Editar parque: ${park?.name || ''}` : 'Nuevo parque'} 
-      subtitle={isEdit ? "Actualiza la información del parque" : "Ingresa la información para crear un nuevo parque"}
-    >
-      <div className="max-w-6xl mx-auto">
-        <style>{`
-          .park-edit-container {
-            min-height: unset !important;
-            height: fit-content !important;
-            max-height: fit-content !important;
-            overflow: hidden !important;
-          }
-          .park-edit-container * {
-            min-height: unset !important;
-          }
-          .park-edit-container::after {
-            display: none !important;
-          }
-          [data-radix-scroll-area-viewport] {
-            height: auto !important;
-            max-height: none !important;
-          }
-          .admin-layout-content {
-            height: auto !important;
-            min-height: auto !important;
-            padding-bottom: 2rem !important;
-          }
-        `}</style>
+    <div className="flex bg-gray-50" style={{ minHeight: 'auto', height: 'auto' }}>
+      {/* Sidebar fijo */}
+      <div className="w-64 fixed inset-y-0 left-0 z-50">
+        <AdminSidebarComplete />
+      </div>
+      
+      {/* Contenido principal con margen izquierdo para el sidebar */}
+      <div className="ml-64 flex-1" style={{ minHeight: 'auto', height: 'auto' }}>
+        {/* Header */}
+        <header className="bg-white shadow-sm">
+          <div className="px-6 py-4">
+            <h1 className="text-2xl font-semibold text-gray-900">
+              {isEdit ? `Editar parque: ${park?.name || ''}` : 'Nuevo parque'}
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {isEdit ? "Actualiza la información del parque" : "Ingresa la información para crear un nuevo parque"}
+            </p>
+          </div>
+        </header>
+        
+        {/* Contenido de la página */}
+        <div className="p-6" style={{ minHeight: 'auto', height: 'auto' }}>
+          <div className="max-w-6xl mx-auto" style={{ minHeight: 'auto', height: 'auto' }}>
         <div className="mb-6">
           <Button
             variant="ghost"
@@ -851,8 +846,10 @@ const AdminParkEdit: React.FC = () => {
           </Tabs>
           </form>
         </Form>
+          </div>
+        </div>
       </div>
-    </AdminLayout>
+    </div>
   );
 };
 
