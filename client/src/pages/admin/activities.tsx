@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Plus, Pencil, Trash, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { Plus, Pencil, Trash, Search, ChevronLeft, ChevronRight, Calendar, X } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 const AdminActivities = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,7 +47,22 @@ const AdminActivities = () => {
   const [filterCategory, setFilterCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   
+  // States for edit/delete functionality
+  const [selectedActivity, setSelectedActivity] = useState<any>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    activityType: '',
+    startDate: '',
+    endDate: '',
+    location: '',
+    capacity: ''
+  });
+  
   const activitiesPerPage = 10;
+  const { toast } = useToast();
 
   // Fetch data
   const { data: activitiesData, isLoading, error, refetch } = useQuery({
@@ -37,6 +71,56 @@ const AdminActivities = () => {
 
   const { data: parksData } = useQuery({
     queryKey: ['/api/parks'],
+  });
+
+  // Mutations for edit and delete
+  const editMutation = useMutation({
+    mutationFn: async (data: { id: number; updates: any }) => {
+      return await apiRequest(`/api/activities/${data.id}`, {
+        method: 'PUT',
+        data: data.updates,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Actividad actualizada",
+        description: "La actividad se ha actualizado correctamente.",
+      });
+      setShowEditDialog(false);
+      setSelectedActivity(null);
+      refetch();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar la actividad.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest(`/api/activities/${id}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Actividad eliminada",
+        description: "La actividad se ha eliminado correctamente.",
+      });
+      setShowDeleteDialog(false);
+      setSelectedActivity(null);
+      refetch();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la actividad.",
+        variant: "destructive",
+      });
+    },
   });
 
   const formatDate = (dateString: string) => {
@@ -89,6 +173,58 @@ const AdminActivities = () => {
     setSearchQuery('');
     setFilterPark('all');
     setFilterCategory('all');
+  };
+
+  // Handle edit functionality
+  const handleEdit = (activity: any) => {
+    setSelectedActivity(activity);
+    setEditFormData({
+      title: activity.title || '',
+      description: activity.description || '',
+      activityType: activity.activityType || '',
+      startDate: activity.startDate ? new Date(activity.startDate).toISOString().slice(0, 16) : '',
+      endDate: activity.endDate ? new Date(activity.endDate).toISOString().slice(0, 16) : '',
+      location: activity.location || '',
+      capacity: activity.capacity ? activity.capacity.toString() : ''
+    });
+    setShowEditDialog(true);
+  };
+
+  // Handle delete functionality
+  const handleDelete = (activity: any) => {
+    setSelectedActivity(activity);
+    setShowDeleteDialog(true);
+  };
+
+  // Handle form input changes
+  const handleInputChange = (field: string, value: string) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Handle save edit
+  const handleSaveEdit = () => {
+    if (!selectedActivity) return;
+    
+    const updates = {
+      title: editFormData.title,
+      description: editFormData.description,
+      activityType: editFormData.activityType,
+      startDate: editFormData.startDate,
+      endDate: editFormData.endDate || null,
+      location: editFormData.location || null,
+      capacity: editFormData.capacity ? parseInt(editFormData.capacity) : null
+    };
+
+    editMutation.mutate({ id: selectedActivity.id, updates });
+  };
+
+  // Handle confirm delete
+  const handleConfirmDelete = () => {
+    if (!selectedActivity) return;
+    deleteMutation.mutate(selectedActivity.id);
   };
 
   if (isLoading) {
