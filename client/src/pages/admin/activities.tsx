@@ -141,16 +141,19 @@ const AdminActivities = () => {
   const currentActivities = filteredActivities.slice(startIndex, endIndex);
   
   // Debug: Log pagination values
-  console.log('Pagination Debug:', {
-    totalActivities,
-    totalPages,
-    activitiesPerPage,
-    currentPage,
-    startIndex,
-    endIndex,
-    currentActivitiesLength: currentActivities.length,
-    shouldShowPagination: filteredActivities.length > activitiesPerPage
-  });
+  React.useEffect(() => {
+    if (activitiesData && Array.isArray(activitiesData)) {
+      console.log('🔍 ACTIVITIES PAGINATION DEBUG:', {
+        totalRawActivities: activitiesData.length,
+        totalFilteredActivities: filteredActivities.length,
+        totalPages,
+        activitiesPerPage,
+        currentPage,
+        shouldShowPagination: filteredActivities.length > activitiesPerPage,
+        currentActivitiesShowing: currentActivities.length
+      });
+    }
+  }, [activitiesData, filteredActivities, totalPages, currentPage]);
   
   // Reset page when filters change
   React.useEffect(() => {
@@ -415,7 +418,7 @@ const AdminActivities = () => {
           )}
           
           {/* Controles de paginación */}
-          {filteredActivities.length > activitiesPerPage && (
+          {totalActivities > activitiesPerPage && (
             <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50">
               <div className="text-sm text-gray-600">
                 Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalActivities)} de {totalActivities} actividades
