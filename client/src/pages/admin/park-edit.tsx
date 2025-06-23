@@ -183,7 +183,23 @@ const AdminParkEdit: React.FC = () => {
     console.log('Formulario enviado con valores:', values);
     console.log('Estado del formulario:', form.formState);
     console.log('Errores del formulario:', form.formState.errors);
-    mutation.mutate(values);
+    
+    // Limpiar valores nulos/vacíos para el backend
+    const cleanedValues = {
+      ...values,
+      latitude: values.latitude || undefined,
+      longitude: values.longitude || undefined,
+      area: values.area || undefined,
+      foundationYear: values.foundationYear || undefined,
+      administrator: values.administrator || undefined,
+      contactPhone: values.contactPhone || undefined,
+      contactEmail: values.contactEmail || undefined,
+      videoUrl: values.videoUrl || undefined,
+      openingHours: values.openingHours || undefined
+    };
+    
+    console.log('Valores limpiados para enviar:', cleanedValues);
+    mutation.mutate(cleanedValues);
   };
   
   // Mutación para crear o actualizar el parque
@@ -192,12 +208,28 @@ const AdminParkEdit: React.FC = () => {
       const endpoint = isEdit ? `/api/parks/${id}` : '/api/parks';
       const method = isEdit ? 'PUT' : 'POST';
       
-      return await apiRequest(endpoint, {
-        method: method,
-        data: values,
-      });
+      console.log('Iniciando mutación:', { endpoint, method, values });
+      
+      try {
+        const response = await apiRequest(endpoint, {
+          method: method,
+          data: values,
+        });
+        
+        console.log('Respuesta de la API:', response);
+        
+        // Parseamos la respuesta JSON
+        const result = await response.json();
+        console.log('Datos parseados:', result);
+        
+        return result;
+      } catch (error) {
+        console.error('Error en la mutación:', error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
+      console.log('Mutación exitosa:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/parks'] });
       toast({
         title: isEdit ? 'Parque actualizado' : 'Parque creado',
@@ -206,6 +238,7 @@ const AdminParkEdit: React.FC = () => {
       setLocation('/admin/parks');
     },
     onError: (error: any) => {
+      console.error('Error en onError:', error);
       toast({
         title: 'Error',
         description: `Ocurrió un error al ${isEdit ? 'actualizar' : 'crear'} el parque: ${error.message}`,
