@@ -217,11 +217,22 @@ const AdminSidebar: React.FC = () => {
             icon={<Calendar className="h-5 w-5" />}
             value="activities"
           >
+            {/* Sección de Reportes (Organizado) - Movido arriba */}
+            <NavItem 
+              href="/admin/organizador" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/organizador') && 
+                      !location.startsWith('/admin/organizador/nueva-actividad') && 
+                      !location.startsWith('/admin/organizador/catalogo')}
+            >
+              Organizado
+            </NavItem>
+            
             {/* Sección de Gestión de Actividades */}
             <NavItem 
-              href="/admin/organizador/catalogo/ver" 
+              href="/admin/activities" 
               icon={<ListFilter className="h-5 w-5" />}
-              active={location.startsWith('/admin/organizador/catalogo/ver')}
+              active={location.startsWith('/admin/activities')}
             >
               Listado
             </NavItem>
@@ -247,17 +258,6 @@ const AdminSidebar: React.FC = () => {
               active={location === '/admin/instructors'}
             >
               Instructores
-            </NavItem>
-            
-            {/* Sección de Reportes */}
-            <NavItem 
-              href="/admin/organizador" 
-              icon={<FileText className="h-5 w-5" />}
-              active={location.startsWith('/admin/organizador') && 
-                      !location.startsWith('/admin/organizador/nueva-actividad') && 
-                      !location.startsWith('/admin/organizador/catalogo')}
-            >
-              Reportes
             </NavItem>
           </ModuleNav>
           
