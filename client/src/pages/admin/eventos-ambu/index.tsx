@@ -377,10 +377,10 @@ export default function EventosAmbuIndex() {
                           <Users className="h-4 w-4 text-gray-400" />
                           <span>{evento.numeroAsistentes} asistentes</span>
                         </div>
-                        {evento.costoTotal > 0 && (
+                        {parseFloat(String(evento.costoTotal) || '0') > 0 && (
                           <div className="flex items-center gap-2">
                             <DollarSign className="h-4 w-4 text-gray-400" />
-                            <span>${evento.costoTotal.toFixed(2)}</span>
+                            <span>${parseFloat(String(evento.costoTotal) || '0').toFixed(2)}</span>
                           </div>
                         )}
                       </div>

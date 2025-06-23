@@ -103,8 +103,14 @@ export function registerEventosAmbuRoutes(app: any, apiRouter: Router, isAuthent
     try {
       const { id } = req.params;
       
+      // Validar que el ID sea un número válido
+      const eventoId = parseInt(id);
+      if (isNaN(eventoId)) {
+        return res.status(400).json({ error: "ID de evento inválido" });
+      }
+      
       const evento = await db.select().from(eventosAmbu)
-        .where(eq(eventosAmbu.id, parseInt(id)))
+        .where(eq(eventosAmbu.id, eventoId))
         .limit(1);
       
       if (evento.length === 0) {
@@ -112,23 +118,23 @@ export function registerEventosAmbuRoutes(app: any, apiRouter: Router, isAuthent
       }
       
       // Obtener datos relacionados
-      const solicitud = await db.select().from(solicitudEvento)
-        .where(eq(solicitudEvento.eventoId, parseInt(id)))
+      const solicitud = await db.select().from(solicitudesAmbu)
+        .where(eq(solicitudesAmbu.eventoId, eventoId))
         .limit(1);
       
-      const documentos = await db.select().from(documentosEvento)
-        .where(eq(documentosEvento.eventoId, parseInt(id)));
+      const documentos = await db.select().from(documentosAmbu)
+        .where(eq(documentosAmbu.eventoId, eventoId));
       
-      const costos = await db.select().from(costosEvento)
-        .where(eq(costosEvento.eventoId, parseInt(id)));
+      const costos = await db.select().from(costosAmbu)
+        .where(eq(costosAmbu.eventoId, eventoId));
       
-      const seguimiento = await db.select().from(seguimientoEvento)
-        .where(eq(seguimientoEvento.eventoId, parseInt(id)))
-        .orderBy(desc(seguimientoEvento.fechaAccion));
+      const seguimiento = await db.select().from(seguimientoAmbu)
+        .where(eq(seguimientoAmbu.eventoId, eventoId))
+        .orderBy(desc(seguimientoAmbu.fechaAccion));
       
-      const reuniones = await db.select().from(reunionesLogistica)
-        .where(eq(reunionesLogistica.eventoId, parseInt(id)))
-        .orderBy(desc(reunionesLogistica.fechaReunion));
+      const reuniones = await db.select().from(reunionesAmbu)
+        .where(eq(reunionesAmbu.eventoId, eventoId))
+        .orderBy(desc(reunionesAmbu.fechaReunion));
       
       res.json({
         evento: evento[0],
