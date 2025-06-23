@@ -154,7 +154,26 @@ const AdminSidebarComplete: React.FC = () => {
   const { user, logout } = useAuth();
   const { t } = useTranslation('common');
   
-  const defaultAccordion = ["activities"];
+  // Determinar qué módulo debe estar abierto basado en la ruta actual
+  const getActiveModule = () => {
+    if (location.startsWith('/admin/parks')) return ['parks'];
+    if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions')) return ['users'];
+    if (location.startsWith('/admin/amenities')) return ['amenities'];
+    if (location.startsWith('/admin/incidents')) return ['incidents'];
+    if (location.startsWith('/admin/assets')) return ['assets'];
+    if (location.startsWith('/admin/finance')) return ['finance'];
+    if (location.startsWith('/admin/events')) return ['events'];
+    if (location.startsWith('/admin/activities') || location.startsWith('/admin/organizador') || location.startsWith('/admin/instructors')) return ['activities'];
+    if (location.startsWith('/admin/marketing')) return ['marketing'];
+    if (location.startsWith('/admin/concessions')) return ['concessions'];
+    if (location.startsWith('/admin/hr')) return ['hr'];
+    if (location.startsWith('/admin/volunteers')) return ['volunteers'];
+    if (location.startsWith('/admin/trees')) return ['trees'];
+    if (location.startsWith('/admin/settings') || location.startsWith('/admin/analytics') || location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
+    return []; // Sin módulos abiertos por defecto
+  };
+  
+  const defaultAccordion = getActiveModule();
 
   const handleLogout = async () => {
     try {
@@ -423,7 +442,6 @@ const AdminSidebarComplete: React.FC = () => {
             title={t('navigation.activities')} 
             icon={<Calendar className="h-5 w-5" />}
             value="activities"
-            defaultOpen={true}
           >
             {/* 1. ORGANIZADOR PRIMERO */}
             <NavItem 
