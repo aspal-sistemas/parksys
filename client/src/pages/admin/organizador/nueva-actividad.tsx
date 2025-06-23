@@ -37,13 +37,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import LocationSelector from '@/components/LocationSelector';
 
-// Categorías de actividades
-const CATEGORIAS_ACTIVIDADES = [
-  { value: "artecultura", label: "Arte y Cultura" },
-  { value: "recreacionbienestar", label: "Recreación y Bienestar" },
-  { value: "temporada", label: "Eventos de Temporada" },
-  { value: "naturalezaciencia", label: "Naturaleza, Ciencia y Conservación" }
-];
+// Las categorías se cargan dinámicamente desde la API
 
 // Esquema de validación para nueva actividad
 const nuevaActividadSchema = z.object({
@@ -79,6 +73,11 @@ const NuevaActividadPage = () => {
   // Obtener la lista de parques
   const { data: parques = [] } = useQuery<{ id: number, name: string }[]>({
     queryKey: ['/api/parks'],
+  });
+
+  // Obtener las categorías de actividades desde la API
+  const { data: categorias = [] } = useQuery<{ id: number, name: string }[]>({
+    queryKey: ['/api/activity-categories'],
   });
 
   // Configuración del formulario
@@ -237,9 +236,9 @@ const NuevaActividadPage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {CATEGORIAS_ACTIVIDADES.map((categoria) => (
-                            <SelectItem key={categoria.value} value={categoria.value}>
-                              {categoria.label}
+                          {categorias.map((categoria) => (
+                            <SelectItem key={categoria.id} value={categoria.id.toString()}>
+                              {categoria.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
