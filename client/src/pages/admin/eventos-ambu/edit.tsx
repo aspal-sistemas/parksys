@@ -174,7 +174,7 @@ export default function EditarEventoAmbu() {
       <div className="container mx-auto py-6 max-w-4xl">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-        <Button
+          <Button
           variant="outline"
           size="sm"
           onClick={() => setLocation(`/admin/eventos-ambu/${eventoId}`)}
