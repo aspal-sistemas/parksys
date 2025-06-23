@@ -47,6 +47,7 @@ import {
 import { registerUserRoutes } from "./userRoutes";
 import { updateSkillsRouter } from "./updateSkills";
 import { registerEventRoutes } from "./events-routes";
+import { registerActivityRoutes } from "./activitiesRoutes";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
   insertActivitySchema, insertDocumentSchema, insertParkImageSchema,
@@ -144,6 +145,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerMaintenanceRoutes(app, apiRouter, isAuthenticated);
   registerAssetAssignmentRoutes(app, apiRouter, isAuthenticated);
   registerAssetImageRoutes(app, apiRouter, isAuthenticated);
+  
+  // Registramos las rutas del módulo de actividades
+  registerActivityRoutes(app, apiRouter, isAuthenticated, hasParkAccess);
   
   // Registramos las rutas del módulo de arbolado
   registerTreeRoutes(app, apiRouter, isAuthenticated);
