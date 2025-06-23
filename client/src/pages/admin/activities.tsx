@@ -365,10 +365,20 @@ const AdminActivities = () => {
                       <TableCell>{formatDate(activity.startDate)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end space-x-2">
-                          <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-700">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-blue-600 hover:text-blue-700"
+                            onClick={() => handleEdit(activity)}
+                          >
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-red-600 hover:text-red-700"
+                            onClick={() => handleDelete(activity)}
+                          >
                             <Trash className="h-4 w-4" />
                           </Button>
                         </div>
@@ -424,6 +434,118 @@ const AdminActivities = () => {
             </div>
           </div>
         </div>
+
+        {/* Edit Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Editar Actividad</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="title" className="text-right">Título</label>
+                <Input
+                  id="title"
+                  value={editFormData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="description" className="text-right">Descripción</label>
+                <textarea
+                  id="description"
+                  value={editFormData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  className="col-span-3 min-h-[80px] px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="activityType" className="text-right">Categoría</label>
+                <Input
+                  id="activityType"
+                  value={editFormData.activityType}
+                  onChange={(e) => handleInputChange('activityType', e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="startDate" className="text-right">Fecha Inicio</label>
+                <Input
+                  id="startDate"
+                  type="datetime-local"
+                  value={editFormData.startDate}
+                  onChange={(e) => handleInputChange('startDate', e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="endDate" className="text-right">Fecha Fin</label>
+                <Input
+                  id="endDate"
+                  type="datetime-local"
+                  value={editFormData.endDate}
+                  onChange={(e) => handleInputChange('endDate', e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="location" className="text-right">Ubicación</label>
+                <Input
+                  id="location"
+                  value={editFormData.location}
+                  onChange={(e) => handleInputChange('location', e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="capacity" className="text-right">Capacidad</label>
+                <Input
+                  id="capacity"
+                  type="number"
+                  value={editFormData.capacity}
+                  onChange={(e) => handleInputChange('capacity', e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleSaveEdit}
+                disabled={editMutation.isPending}
+                className="bg-[#00a587] hover:bg-[#067f5f]"
+              >
+                {editMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Eliminar actividad?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer. Se eliminará permanentemente la actividad
+                "{selectedActivity?.title}" y todos sus datos asociados.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmDelete}
+                disabled={deleteMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );
