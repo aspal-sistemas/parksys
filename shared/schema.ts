@@ -400,9 +400,23 @@ export const documents = pgTable("documents", {
   updatedAt: timestamp("updated_at").notNull().defaultNow()
 });
 
+// Categorías de actividades
+export const activityCategories = pgTable("activity_categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  color: varchar("color", { length: 7 }).default("#00a587"),
+  icon: varchar("icon", { length: 50 }).default("calendar"),
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const activities = pgTable("activities", {
   id: serial("id").primaryKey(),
   parkId: integer("park_id").notNull(),
+  categoryId: integer("category_id").references(() => activityCategories.id),
   title: text("title").notNull(),
   description: text("description"),
   activityType: text("activity_type").notNull(),
@@ -575,6 +589,15 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
   updatedAt: true
 }).extend({
   fileType: z.string().optional() // Hacer fileType opcional para URLs externas
+});
+
+export type ActivityCategory = typeof activityCategories.$inferSelect;
+export type InsertActivityCategory = typeof activityCategories.$inferInsert;
+
+export const insertActivityCategorySchema = createInsertSchema(activityCategories).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
 });
 
 export type Activity = typeof activities.$inferSelect;
