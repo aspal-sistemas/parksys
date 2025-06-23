@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit, Trash2, FileUp, Filter, ArrowUpDown, Search } from "lucide-react";
 import { useLocation } from "wouter";
@@ -201,9 +201,11 @@ const AdminAmenitiesPage = () => {
   };
 
   // useEffect para resetear página cuando cambien filtros
-  React.useEffect(() => {
-    resetPage();
-  }, [searchTerm, filterCategory, sortBy, sortOrder]);
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [searchTerm, filterCategory, sortBy, sortOrder, currentPage, totalPages]);
 
   // Obtener categorías únicas para el filtro
   const uniqueCategories = Array.from(
@@ -886,7 +888,7 @@ const AdminAmenitiesPage = () => {
 
       {/* Estadísticas */}
       <div className="mb-4 text-sm text-muted-foreground">
-        Mostrando {filteredAndSortedAmenities.length} de {amenities.length} amenidades
+        Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalItems)} de {totalItems} amenidades
       </div>
 
       {/* Amenities Table with Parks Column */}
@@ -903,7 +905,7 @@ const AdminAmenitiesPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAndSortedAmenities?.map((amenity: Amenity) => (
+            {paginatedAmenities?.map((amenity: Amenity) => (
               <TableRow key={amenity.id}>
                 <TableCell>
                   <AmenityIcon 
@@ -960,6 +962,66 @@ const AdminAmenitiesPage = () => {
           </TableBody>
         </Table>
       </div>
+
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-2 py-4">
+          <div className="text-sm text-muted-foreground">
+            Mostrando {startIndex + 1} a {Math.min(endIndex, totalItems)} de {totalItems} amenidades
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Anterior
+            </Button>
+            
+            <div className="flex items-center space-x-1">
+              {/* Páginas */}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNumber;
+                if (totalPages <= 5) {
+                  pageNumber = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNumber = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNumber = totalPages - 4 + i;
+                } else {
+                  pageNumber = currentPage - 2 + i;
+                }
+
+                return (
+                  <Button
+                    key={pageNumber}
+                    variant={currentPage === pageNumber ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNumber)}
+                    className={`w-8 h-8 p-0 ${
+                      currentPage === pageNumber 
+                        ? "bg-[#00a587] hover:bg-[#067f5f] text-white" 
+                        : "hover:bg-gray-100"
+                    }`}
+                  >
+                    {pageNumber}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+            >
+              Siguiente
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
