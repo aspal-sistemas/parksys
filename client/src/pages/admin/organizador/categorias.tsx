@@ -267,10 +267,17 @@ const CategoriasActividades: React.FC = () => {
 
   const { data: categoriesResponse, isLoading, error } = useQuery({
     queryKey: ['/api/activity-categories'],
-    queryFn: () => apiRequest('/api/activity-categories'),
+    queryFn: async () => {
+      const response = await apiRequest('/api/activity-categories');
+      // Si la respuesta es un objeto Response, convertir a JSON
+      if (response && typeof response.json === 'function') {
+        return await response.json();
+      }
+      return response;
+    },
   });
 
-  console.log('Categorías response:', categoriesResponse);
+  console.log('Categorías response procesada:', categoriesResponse);
   console.log('Is loading:', isLoading);
   console.log('Error:', error);
 
