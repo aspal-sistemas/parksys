@@ -1,0 +1,666 @@
+import React, { useState } from 'react';
+import { Link, useLocation } from 'wouter';
+import { useAuth } from '@/hooks/useAuth';
+import UserProfileImage from '@/components/UserProfileImage';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import { useTranslation } from 'react-i18next';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import { 
+  Home, 
+  Map, 
+  Calendar, 
+  FileText, 
+  MessageSquare, 
+  Bell, 
+  Users, 
+  Settings, 
+  LogOut,
+  Tag,
+  BarChart3,
+  BarChart,
+  Package,
+  Shield,
+  User,
+  ListFilter,
+  Workflow,
+  Building,
+  CreditCard,
+  ClipboardCheck,
+  Upload,
+  Boxes,
+  Box,
+  CalendarDays,
+  CircleDollarSign,
+  MapPin,
+  GraduationCap,
+  Award,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Target,
+  ArrowRightLeft,
+  Calculator,
+  Megaphone,
+  Handshake,
+  Store,
+  ListChecks,
+  Clipboard,
+  BadgeCheck,
+  LayoutGrid,
+  Flower2,
+  Scissors,
+  TreePine,
+  HardHat,
+  Camera,
+  Heart,
+  AlertCircle,
+  AlertTriangle,
+  Database,
+  Lock,
+  Leaf,
+  HeartHandshake,
+  Star,
+  ClipboardList,
+  PersonStanding,
+  UserCheck,
+  Activity,
+  Banknote,
+  PieChart,
+  Receipt,
+  Wallet,
+  ChevronsUpDown,
+  ChevronDown,
+  Wrench,
+  Archive,
+  FileEdit,
+  Briefcase,
+  UserCog,
+  Zap,
+  Book,
+  Clock,
+  Plus
+} from 'lucide-react';
+
+interface NavItemProps {
+  href: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  active?: boolean;
+}
+
+interface ModuleNavProps {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  value: string;
+  defaultOpen?: boolean;
+}
+
+const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active }) => {
+  const iconWithClass = React.cloneElement(icon as React.ReactElement, {
+    className: cn((icon as React.ReactElement).props.className, 'menu-icon')
+  });
+
+  return (
+    <Link href={href}>
+      <Button
+        variant={active ? "secondary" : "ghost"}
+        className={cn(
+          "w-full justify-start text-sm font-normal h-9",
+          active && "bg-primary/10 text-primary font-medium"
+        )}
+      >
+        {iconWithClass}
+        <span className="ml-2">{children}</span>
+      </Button>
+    </Link>
+  );
+};
+
+const ModuleNav: React.FC<ModuleNavProps> = ({ 
+  title,
+  icon,
+  children,
+  value,
+  defaultOpen
+}) => {
+  const iconWithClass = React.cloneElement(icon as React.ReactElement, {
+    className: cn((icon as React.ReactElement).props.className, 'menu-icon')
+  });
+
+  return (
+    <AccordionItem value={value} className="border-0">
+      <AccordionTrigger className="py-2 hover:no-underline">
+        <div className="flex items-center text-sm font-medium">
+          <div className="mr-2">{iconWithClass}</div>
+          {title}
+        </div>
+      </AccordionTrigger>
+      <AccordionContent className="pl-2 pb-0">
+        <div className="flex flex-col gap-1 pt-1">
+          {children}
+        </div>
+      </AccordionContent>
+    </AccordionItem>
+  );
+};
+
+const AdminSidebarComplete: React.FC = () => {
+  const [location] = useLocation();
+  const { user, logout } = useAuth();
+  const { t } = useTranslation('common');
+  
+  const defaultAccordion = ["activities"];
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
+
+  return (
+    <div className="flex h-full flex-col bg-white shadow-lg">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <Map className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-sm font-semibold text-gray-900">ParkSys</h1>
+            <p className="text-xs text-gray-500">Sistema de Parques</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <ScrollArea className="flex-1 px-3 py-2 w-full">
+        <Accordion
+          type="multiple"
+          defaultValue={defaultAccordion}
+          className="space-y-1"
+        >
+          <NavItem 
+            href="/admin" 
+            icon={<Home className="h-5 w-5" />}
+            active={location === '/admin'}
+          >
+            {t('navigation.dashboard')}
+          </NavItem>
+
+          <ModuleNav 
+            title={t('navigation.settings')} 
+            icon={<Settings className="h-5 w-5" />}
+            value="system"
+          >
+            <NavItem 
+              href="/admin/settings" 
+              icon={<Settings className="h-5 w-5" />}
+              active={location === '/admin/settings'}
+            >
+              {t('navigation.settings')}
+            </NavItem>
+            <NavItem 
+              href="/admin/users" 
+              icon={<UserCheck className="h-5 w-5" />}
+              active={location === '/admin/users'}
+            >
+              {t('navigation.users')}
+            </NavItem>
+            <NavItem 
+              href="/admin/permissions" 
+              icon={<Shield className="h-5 w-5" />}
+              active={location === '/admin/permissions'}
+            >
+              {t('navigation.permissions')}
+            </NavItem>
+          </ModuleNav>
+
+          <ModuleNav 
+            title={t('navigation.parks')} 
+            icon={<Map className="h-5 w-5" />}
+            value="parks"
+          >
+            <NavItem 
+              href="/admin/parks/dashboard" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location === '/admin/parks/dashboard'}
+            >
+              {t('navigation.operativeSummary')}
+            </NavItem>
+            <NavItem 
+              href="/admin/parks" 
+              icon={<Map className="h-5 w-5" />}
+              active={location === '/admin/parks'}
+            >
+              {t('navigation.management')}
+            </NavItem>
+          </ModuleNav>
+
+          <ModuleNav 
+            title={t('navigation.amenities')} 
+            icon={<Package className="h-5 w-5" />}
+            value="amenities"
+          >
+            <NavItem 
+              href="/admin/amenities-dashboard" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location === '/admin/amenities-dashboard'}
+            >
+              {t('navigation.operativeSummary')}
+            </NavItem>
+            <NavItem 
+              href="/admin/amenities" 
+              icon={<Package className="h-5 w-5" />}
+              active={location === '/admin/amenities'}
+            >
+              {t('navigation.management')}
+            </NavItem>
+          </ModuleNav>
+
+          <ModuleNav 
+            title={t('navigation.incidents')} 
+            icon={<AlertTriangle className="h-5 w-5" />}
+            value="incidents"
+          >
+            <NavItem 
+              href="/admin/incidents" 
+              icon={<ClipboardList className="h-5 w-5" />}
+              active={location === '/admin/incidents'}
+            >
+              {t('navigation.listing')}
+            </NavItem>
+            <NavItem 
+              href="/admin/incidents/categories" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location === '/admin/incidents/categories'}
+            >
+              {t('navigation.categories')}
+            </NavItem>
+          </ModuleNav>
+
+          <ModuleNav 
+            title={t('navigation.assets')} 
+            icon={<Package className="h-5 w-5" />}
+            value="assets"
+          >
+            <NavItem 
+              href="/admin/assets" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location === '/admin/assets'}
+            >
+              {t('navigation.operativeSummary')}
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/inventory" 
+              icon={<Archive className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/inventory')}
+            >
+              {t('navigation.inventory')}
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/map" 
+              icon={<Map className="h-5 w-5" />}
+              active={location === '/admin/assets/map'}
+            >
+              {t('navigation.map')}
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/maintenance" 
+              icon={<Wrench className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/maintenance')}
+            >
+              {t('navigation.maintenance')}
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/assignments" 
+              icon={<UserCheck className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/assignments')}
+            >
+              {t('navigation.assignments')}
+            </NavItem>
+          </ModuleNav>
+
+          <ModuleNav 
+            title={t('navigation.finance')} 
+            icon={<DollarSign className="h-5 w-5" />}
+            value="finance"
+          >
+            <NavItem 
+              href="/admin/finance/catalog" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location === '/admin/finance/catalog'}
+            >
+              Catálogo
+            </NavItem>
+            <NavItem 
+              href="/admin/finance/incomes" 
+              icon={<TrendingUp className="h-5 w-5" />}
+              active={location === '/admin/finance/incomes'}
+            >
+              Ingresos
+            </NavItem>
+            <NavItem 
+              href="/admin/finance/expenses" 
+              icon={<TrendingDown className="h-5 w-5" />}
+              active={location === '/admin/finance/expenses'}
+            >
+              Egresos
+            </NavItem>
+            <NavItem 
+              href="/admin/finance/cash-flow-matrix" 
+              icon={<LayoutGrid className="h-5 w-5" />}
+              active={location === '/admin/finance/cash-flow-matrix'}
+            >
+              {t('navigation.cashFlow')}
+            </NavItem>
+            <NavItem 
+              href="/admin/finance/annual-budget" 
+              icon={<Target className="h-5 w-5" />}
+              active={location === '/admin/finance/annual-budget'}
+            >
+              {t('navigation.budgets')}
+            </NavItem>
+            <NavItem 
+              href="/admin/finance/calculator" 
+              icon={<Calculator className="h-5 w-5" />}
+              active={location === '/admin/finance/calculator'}
+            >
+              Calculadora
+            </NavItem>
+            <NavItem 
+              href="/admin/finance/reports" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location === '/admin/finance/reports'}
+            >
+              {t('navigation.reports')}
+            </NavItem>
+            <NavItem 
+              href="/admin/finance/dashboard" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location === '/admin/finance/dashboard'}
+            >
+              {t('navigation.dashboard')}
+            </NavItem>
+          </ModuleNav>
+
+          <ModuleNav 
+            title={t('navigation.events')} 
+            icon={<CalendarDays className="h-5 w-5" />}
+            value="events"
+          >
+            <NavItem 
+              href="/admin/events" 
+              icon={<ListFilter className="h-5 w-5" />}
+              active={location.startsWith('/admin/events') && !location.startsWith('/admin/events/new')}
+            >
+              {t('navigation.listing')}
+            </NavItem>
+            <NavItem 
+              href="/admin/events/new" 
+              icon={<Upload className="h-5 w-5" />}
+              active={location.startsWith('/admin/events/new')}
+            >
+              Nuevo Evento
+            </NavItem>
+            <NavItem 
+              href="/admin/events/calendar" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/events/calendar')}
+            >
+              Calendario
+            </NavItem>
+          </ModuleNav>
+
+          {/* SECCIÓN DE ACTIVIDADES CON ORDEN CORREGIDO */}
+          <ModuleNav 
+            title={t('navigation.activities')} 
+            icon={<Calendar className="h-5 w-5" />}
+            value="activities"
+            defaultOpen={true}
+          >
+            {/* 1. ORGANIZADOR PRIMERO */}
+            <NavItem 
+              href="/admin/organizador" 
+              icon={<UserCog className="h-5 w-5" />}
+              active={location.startsWith('/admin/organizador')}
+            >
+              Organizador
+            </NavItem>
+            {/* 2. LISTADO SEGUNDO */}
+            <NavItem 
+              href="/admin/activities" 
+              icon={<Activity className="h-5 w-5" />}
+              active={location === '/admin/activities'}
+            >
+              {t('navigation.listing')}
+            </NavItem>
+            {/* 3. NUEVA ACTIVIDAD TERCERO */}
+            <NavItem 
+              href="/admin/activities/new" 
+              icon={<Plus className="h-5 w-5" />}
+              active={location.startsWith('/admin/activities/new')}
+            >
+              Nueva Actividad
+            </NavItem>
+            {/* 4. CALENDARIO CUARTO */}
+            <NavItem 
+              href="/admin/activities/calendar" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/activities/calendar')}
+            >
+              Calendario
+            </NavItem>
+            {/* 5. INSTRUCTORES QUINTO */}
+            <NavItem 
+              href="/admin/instructors" 
+              icon={<GraduationCap className="h-5 w-5" />}
+              active={location === '/admin/instructors'}
+            >
+              {t('navigation.instructors')}
+            </NavItem>
+          </ModuleNav>
+
+          <ModuleNav 
+            title="Marketing" 
+            icon={<Megaphone className="h-5 w-5" />}
+            value="marketing"
+          >
+            <NavItem 
+              href="/admin/marketing/sponsors" 
+              icon={<Handshake className="h-5 w-5" />}
+              active={location.startsWith('/admin/marketing/sponsors')}
+            >
+              Patrocinios
+            </NavItem>
+            <NavItem 
+              href="/admin/marketing/reports" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/marketing/reports')}
+            >
+              Reportes
+            </NavItem>
+          </ModuleNav>
+
+          <ModuleNav 
+            title={t('navigation.concessions')} 
+            icon={<Store className="h-5 w-5" />}
+            value="concessions"
+          >
+            <NavItem 
+              href="/admin/concessions/catalog" 
+              icon={<ListChecks className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/catalog')}
+            >
+              Catálogo
+            </NavItem>
+            <NavItem 
+              href="/admin/concessions/concessionaires" 
+              icon={<Building className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/concessionaires')}
+            >
+              Concesionarios
+            </NavItem>
+            <NavItem 
+              href="/admin/concessions/contracts" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/contracts')}
+            >
+              {t('navigation.contracts')}
+            </NavItem>
+            <NavItem 
+              href="/admin/concessions/reports" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/reports')}
+            >
+              {t('navigation.reports')}
+            </NavItem>
+          </ModuleNav>
+
+          <ModuleNav 
+            title="Recursos Humanos" 
+            icon={<Users className="h-5 w-5" />}
+            value="hr"
+          >
+            <NavItem 
+              href="/admin/hr/employees" 
+              icon={<User className="h-5 w-5" />}
+              active={location.startsWith('/admin/hr/employees')}
+            >
+              Personal
+            </NavItem>
+            <NavItem 
+              href="/admin/hr/payroll" 
+              icon={<CreditCard className="h-5 w-5" />}
+              active={location.startsWith('/admin/hr/payroll')}
+            >
+              Nómina
+            </NavItem>
+            <NavItem 
+              href="/admin/hr/receipts" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/hr/receipts')}
+            >
+              Recibos
+            </NavItem>
+            <NavItem 
+              href="/admin/hr/vacation" 
+              icon={<Clock className="h-5 w-5" />}
+              active={location.startsWith('/admin/hr/vacation')}
+            >
+              Vacaciones
+            </NavItem>
+          </ModuleNav>
+
+          <ModuleNav 
+            title={t('navigation.volunteers')} 
+            icon={<HeartHandshake className="h-5 w-5" />}
+            value="volunteers"
+          >
+            <NavItem 
+              href="/admin/volunteers" 
+              icon={<PersonStanding className="h-5 w-5" />}
+              active={location === '/admin/volunteers'}
+            >
+              {t('navigation.listing')}
+            </NavItem>
+            <NavItem 
+              href="/admin/volunteers/register" 
+              icon={<ClipboardCheck className="h-5 w-5" />}
+              active={location.startsWith('/admin/volunteers/register')}
+            >
+              {t('navigation.register')}
+            </NavItem>
+            <NavItem 
+              href="/admin/volunteers/evaluations" 
+              icon={<Star className="h-5 w-5" />}
+              active={location.startsWith('/admin/volunteers/evaluations')}
+            >
+              {t('navigation.evaluations')}
+            </NavItem>
+            <NavItem 
+              href="/admin/volunteers/recognition" 
+              icon={<Award className="h-5 w-5" />}
+              active={location.startsWith('/admin/volunteers/recognition')}
+            >
+              {t('navigation.recognition')}
+            </NavItem>
+          </ModuleNav>
+
+          <ModuleNav 
+            title={t('navigation.trees')} 
+            icon={<TreePine className="h-5 w-5" />}
+            value="trees"
+          >
+            <NavItem 
+              href="/admin/trees/inventory" 
+              icon={<Archive className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/inventory')}
+            >
+              {t('navigation.inventory')}
+            </NavItem>
+            <NavItem 
+              href="/admin/trees/species" 
+              icon={<Leaf className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/species')}
+            >
+              {t('navigation.species')}
+            </NavItem>
+            <NavItem 
+              href="/admin/trees/maintenance" 
+              icon={<Scissors className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/maintenance')}
+            >
+              {t('navigation.maintenance')}
+            </NavItem>
+            <NavItem 
+              href="/admin/trees/planting" 
+              icon={<TreePine className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/planting')}
+            >
+              {t('navigation.planting')}
+            </NavItem>
+          </ModuleNav>
+
+        </Accordion>
+      </ScrollArea>
+
+      {/* Footer */}
+      <div className="p-4 border-t bg-gray-50">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <UserProfileImage user={user} size="sm" />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-gray-900">
+                {user?.firstName && user?.lastName 
+                  ? `${user.firstName} ${user.lastName}` 
+                  : user?.fullName || user?.username || 'Usuario'}
+              </span>
+              <span className="text-xs text-gray-500">{user?.role || 'usuario'}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <LanguageSelector />
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={handleLogout}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminSidebarComplete;
