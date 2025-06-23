@@ -169,6 +169,28 @@ const AdminActivities = () => {
     return 'Sin categoría';
   };
 
+  // Función para obtener los colores de las categorías (igual que en organizador)
+  const getCategoryColors = (categoryName: string) => {
+    switch (categoryName) {
+      case 'Arte y Cultura':
+        return 'bg-green-100 text-green-800';
+      case 'Recreación y Bienestar':
+        return 'bg-blue-100 text-blue-800';
+      case 'Eventos de Temporada':
+        return 'bg-orange-100 text-orange-800';
+      case 'Deportivo':
+        return 'bg-red-100 text-red-800';
+      case 'Comunidad':
+        return 'bg-purple-100 text-purple-800';
+      case 'Naturaleza y Ciencia':
+        return 'bg-teal-100 text-teal-800';
+      case 'Fitness y Ejercicio':
+        return 'bg-indigo-100 text-indigo-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   const uniqueCategories = useMemo(() => {
     if (!Array.isArray(activitiesData)) return [];
     const categories = new Set();
@@ -397,7 +419,7 @@ const AdminActivities = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColors(getCategoryName(activity))}`}>
                           {getCategoryName(activity)}
                         </span>
                       </TableCell>
