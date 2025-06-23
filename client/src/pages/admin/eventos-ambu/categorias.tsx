@@ -377,5 +377,6 @@ export default function CategoriasEventosAmbu() {
         </Card>
       )}
     </div>
+    </AdminLayout>
   );
 }
