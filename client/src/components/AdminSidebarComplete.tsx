@@ -165,7 +165,7 @@ const AdminSidebarComplete: React.FC = () => {
   };
 
   return (
-    <div className="flex h-full flex-col bg-white shadow-lg">
+    <div className="fixed inset-y-0 left-0 w-64 flex flex-col bg-white shadow-lg z-50" style={{ height: '100vh' }}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-3">

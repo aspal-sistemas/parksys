@@ -13,7 +13,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
+      {/* Sidebar fijo global - siempre visible */}
+      <AdminSidebarComplete />
+      
       {/* Mobile sidebar overlay */}
       {mobileSidebarOpen && (
         <div 
@@ -22,17 +25,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
         />
       )}
       
-      {/* Sidebar - desktop is permanent, mobile is slideover */}
-      <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out
-        md:relative md:translate-x-0 md:shadow-none
-        ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <AdminSidebarComplete />
-      </div>
-      
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Main Content con margen izquierdo para el sidebar */}
+      <div className="ml-64 flex flex-col min-h-screen">
         <header className="bg-white shadow-sm z-10">
           <div className="px-6 py-4 flex items-center">
             <Button 

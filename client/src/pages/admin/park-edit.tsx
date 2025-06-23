@@ -258,70 +258,32 @@ const AdminParkEdit: React.FC = () => {
   }
   
   return (
-    <div className="relative h-screen overflow-hidden bg-gray-50">
-      {/* Sidebar ABSOLUTAMENTE fijo - NO SE MUEVE */}
-      <div 
-        className="absolute top-0 left-0 w-64 h-full bg-white shadow-lg z-50"
-        style={{ 
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          height: '100vh',
-          width: '16rem',
-          zIndex: 1000,
-          overflow: 'hidden'
-        }}
-      >
-        <AdminSidebarComplete />
-      </div>
-      
-      {/* Contenido principal que puede hacer scroll */}
-      <div 
-        className="absolute top-0 left-64 right-0 h-full overflow-y-auto"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: '16rem',
-          right: 0,
-          height: '100vh',
-          overflow: 'auto'
-        }}
-      >
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="px-6 py-4">
-            <h1 className="text-2xl font-semibold text-gray-900">
-              {isEdit ? `Editar parque: ${park?.name || ''}` : 'Nuevo parque'}
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {isEdit ? "Actualiza la información del parque" : "Ingresa la información para crear un nuevo parque"}
-            </p>
+    <AdminLayout
+      title={isEdit ? `Editar parque: ${park?.name || ''}` : 'Nuevo parque'}
+      subtitle={isEdit ? "Actualiza la información del parque" : "Ingresa la información para crear un nuevo parque"}
+    >
+      <div className="p-6">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLocation('/admin/parks')}
+              className="mb-2"
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Volver a la lista
+            </Button>
           </div>
-        </header>
-        
-        {/* Contenido de la página */}
-        <div className="p-6" style={{ paddingBottom: '2rem' }}>
-          <div className="max-w-6xl mx-auto">
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLocation('/admin/parks')}
-            className="mb-2"
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Volver a la lista
-          </Button>
-        </div>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 park-edit-container">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="basic">Información Básica</TabsTrigger>
-              <TabsTrigger value="media">Multimedia</TabsTrigger>
-              <TabsTrigger value="amenities">Amenidades</TabsTrigger>
-            </TabsList>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 park-edit-container">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="basic">Información Básica</TabsTrigger>
+                  <TabsTrigger value="media">Multimedia</TabsTrigger>
+                  <TabsTrigger value="amenities">Amenidades</TabsTrigger>
+                </TabsList>
             
             <TabsContent value="basic">
               <Card>
@@ -864,13 +826,12 @@ const AdminParkEdit: React.FC = () => {
                 </CardFooter>
               </Card>
             </TabsContent>
-          </Tabs>
-          </form>
-        </Form>
-          </div>
+              </Tabs>
+            </form>
+          </Form>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 
