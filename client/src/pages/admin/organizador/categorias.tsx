@@ -265,10 +265,12 @@ const CategoriasActividades: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<ActivityCategory | undefined>();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const { data: categories = [], isLoading } = useQuery({
+  const { data: categoriesResponse, isLoading } = useQuery({
     queryKey: ['/api/activity-categories'],
     queryFn: () => apiRequest('/api/activity-categories'),
   });
+
+  const categories = Array.isArray(categoriesResponse) ? categoriesResponse : [];
 
   const deleteMutation = useMutation({
     mutationFn: (categoryId: number) => apiRequest(`/api/activity-categories/${categoryId}`, {
