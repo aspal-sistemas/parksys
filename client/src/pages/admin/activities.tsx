@@ -55,6 +55,7 @@ const AdminActivities = () => {
     title: '',
     description: '',
     activityType: '',
+    categoryId: '',
     startDate: '',
     endDate: '',
     location: '',
@@ -71,6 +72,10 @@ const AdminActivities = () => {
 
   const { data: parksData } = useQuery({
     queryKey: ['/api/parks'],
+  });
+
+  const { data: categoriesData } = useQuery({
+    queryKey: ['/api/activity-categories'],
   });
 
   // Mutations for edit and delete
@@ -152,7 +157,7 @@ const AdminActivities = () => {
       if (filterPark && filterPark !== "all" && activity.parkId.toString() !== filterPark) {
         return false;
       }
-      if (filterCategory && filterCategory !== "all" && activity.activityType !== filterCategory) {
+      if (filterCategory && filterCategory !== "all" && activity.categoryId?.toString() !== filterCategory) {
         return false;
       }
       return true;
@@ -182,6 +187,7 @@ const AdminActivities = () => {
       title: activity.title || '',
       description: activity.description || '',
       activityType: activity.activityType || '',
+      categoryId: activity.categoryId ? activity.categoryId.toString() : '',
       startDate: activity.startDate ? new Date(activity.startDate).toISOString().slice(0, 16) : '',
       endDate: activity.endDate ? new Date(activity.endDate).toISOString().slice(0, 16) : '',
       location: activity.location || '',
@@ -302,9 +308,9 @@ const AdminActivities = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas las categorías</SelectItem>
-                {uniqueCategories.map((category: any) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
+                {categoriesData?.map((category: any) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    {category.name}
                   </SelectItem>
                 ))}
               </SelectContent>

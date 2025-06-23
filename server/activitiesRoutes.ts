@@ -1,11 +1,23 @@
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { fromZodError } from 'zod-validation-error';
-import { insertActivitySchema } from '@shared/schema';
+import { insertActivitySchema, activityCategories } from '@shared/schema';
 import { storage } from './storage';
+import { db } from './db';
 
 // Controladores para gestión de actividades
 export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated: any, hasParkAccess: any) {
+  // Obtener todas las categorías de actividades
+  apiRouter.get("/activity-categories", async (_req: Request, res: Response) => {
+    try {
+      const categories = await db.select().from(activityCategories).orderBy(activityCategories.sortOrder);
+      res.json(categories);
+    } catch (error) {
+      console.error("Error al obtener categorías de actividades:", error);
+      res.status(500).json({ message: "Error al obtener categorías de actividades" });
+    }
+  });
+
   // Obtener todas las actividades
   apiRouter.get("/activities", async (_req: Request, res: Response) => {
     try {
