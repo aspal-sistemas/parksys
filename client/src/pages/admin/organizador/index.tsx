@@ -26,13 +26,28 @@ const OrganizadorPage: React.FC = () => {
     queryKey: ['/api/parks']
   });
 
+  // Obtener categorías de actividades
+  const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['/api/activity-categories']
+  });
+
+  // Crear mapeo de categorías por ID
+  const categoriesMap = categories.reduce((acc: any, category: any) => {
+    acc[category.id] = category;
+    return acc;
+  }, {});
+
   // Calcular estadísticas
   const totalActivities = activities.length;
-  const activeActivities = activities.filter(a => new Date(a.startDate) >= new Date()).length;
+  const activeActivities = activities.filter((a: any) => new Date(a.startDate) >= new Date()).length;
   
-  // Contar actividades por categoría
-  const categoryCounts = activities.reduce((acc, activity) => {
-    acc[activity.category] = (acc[activity.category] || 0) + 1;
+  // Contar actividades por categoría usando category_id
+  const categoryCounts = activities.reduce((acc: any, activity: any) => {
+    const categoryId = activity.categoryId;
+    if (categoryId && categoriesMap[categoryId]) {
+      const categoryName = categoriesMap[categoryId].name;
+      acc[categoryName] = (acc[categoryName] || 0) + 1;
+    }
     return acc;
   }, {});
 
@@ -158,7 +173,9 @@ const OrganizadorPage: React.FC = () => {
                   <TableCell className="font-medium">{activity.title}</TableCell>
                   <TableCell>
                     <Badge variant="outline">
-                      {CATEGORIAS_MAP[activity.category] || activity.category}
+                      {activity.categoryId && categoriesMap[activity.categoryId] 
+                        ? categoriesMap[activity.categoryId].name 
+                        : activity.category || 'Sin categoría'}
                     </Badge>
                   </TableCell>
                   <TableCell>{parkNamesMap[activity.parkId] || `Parque ${activity.parkId}`}</TableCell>
@@ -189,32 +206,44 @@ const OrganizadorPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h2 className="text-xl font-semibold mb-4">Categorías de Actividades</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Categorías de Actividades</h2>
+            <Link href="/admin/activities/categories">
+              <Button variant="outline" size="sm">
+                <Tag className="h-4 w-4 mr-2" />
+                Gestionar Categorías
+              </Button>
+            </Link>
+          </div>
           <div className="space-y-2">
-            {isLoadingActivities ? (
+            {isLoadingActivities || isLoadingCategories ? (
               <div className="text-center py-4 text-gray-500">Cargando categorías...</div>
             ) : Object.keys(categoryCounts).length === 0 ? (
               <div className="text-center py-4 text-gray-500">No hay categorías disponibles</div>
             ) : (
-              Object.entries(categoryCounts).map(([category, count]: [string, any]) => (
-                <div key={category} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
+              Object.entries(categoryCounts).map(([categoryName, count]: [string, any]) => (
+                <div key={categoryName} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
                   <div className="flex items-center gap-2">
                     <Badge className={`${
-                      category === 'artecultura' ? 'bg-green-100 text-green-800' :
-                      category === 'recreacionbienestar' ? 'bg-blue-100 text-blue-800' :
-                      category === 'temporada' ? 'bg-orange-100 text-orange-800' :
-                      category === 'deportivo' ? 'bg-red-100 text-red-800' :
-                      category === 'comunidad' ? 'bg-purple-100 text-purple-800' :
+                      categoryName === 'Arte y Cultura' ? 'bg-green-100 text-green-800' :
+                      categoryName === 'Recreación y Bienestar' ? 'bg-blue-100 text-blue-800' :
+                      categoryName === 'Eventos de Temporada' ? 'bg-orange-100 text-orange-800' :
+                      categoryName === 'Deportivo' ? 'bg-red-100 text-red-800' :
+                      categoryName === 'Comunidad' ? 'bg-purple-100 text-purple-800' :
+                      categoryName === 'Naturaleza y Ciencia' ? 'bg-teal-100 text-teal-800' :
+                      categoryName === 'Fitness y Ejercicio' ? 'bg-indigo-100 text-indigo-800' :
                       'bg-emerald-100 text-emerald-800'
                     } hover:${
-                      category === 'artecultura' ? 'bg-green-100' :
-                      category === 'recreacionbienestar' ? 'bg-blue-100' :
-                      category === 'temporada' ? 'bg-orange-100' :
-                      category === 'deportivo' ? 'bg-red-100' :
-                      category === 'comunidad' ? 'bg-purple-100' :
+                      categoryName === 'Arte y Cultura' ? 'bg-green-100' :
+                      categoryName === 'Recreación y Bienestar' ? 'bg-blue-100' :
+                      categoryName === 'Eventos de Temporada' ? 'bg-orange-100' :
+                      categoryName === 'Deportivo' ? 'bg-red-100' :
+                      categoryName === 'Comunidad' ? 'bg-purple-100' :
+                      categoryName === 'Naturaleza y Ciencia' ? 'bg-teal-100' :
+                      categoryName === 'Fitness y Ejercicio' ? 'bg-indigo-100' :
                       'bg-emerald-100'
                     }`}>
-                      {CATEGORIAS_MAP[category] || category}
+                      {categoryName}
                     </Badge>
                   </div>
                   <span className="text-sm text-gray-500">{count} actividades</span>
