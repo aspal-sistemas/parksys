@@ -169,7 +169,7 @@ export default function ParkAmenitiesManager({ parkId }: ParkAmenitiesManagerPro
   // Mutación para eliminar amenidad
   const removeAmenityMutation = useMutation({
     mutationFn: async (parkAmenityId: number) => {
-      const response = await fetch(`/api/park-amenities/${parkAmenityId}`, {
+      const response = await fetch(`/api/parks/${parkId}/amenities/${parkAmenityId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': 'Bearer direct-token-1750522117022',
