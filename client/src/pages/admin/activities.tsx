@@ -487,7 +487,7 @@ const AdminActivities = () => {
                 <SelectValue placeholder="Seleccione un parque" />
               </SelectTrigger>
               <SelectContent>
-                {parks.map(park => (
+                {(parks as Park[]).map(park => (
                   <SelectItem key={park.id} value={park.id.toString()}>
                     {park.name}
                   </SelectItem>
@@ -517,20 +517,12 @@ const AdminActivities = () => {
             <DialogTitle>Editar Actividad</DialogTitle>
           </DialogHeader>
           {selectedActivity && (
-            <NewActivityForm
-              parkId={selectedActivity.parkId}
-              parkName={getParkName(selectedActivity.parkId)}
-              onSuccess={() => {
-                setShowEditDialog(false);
-                refetchActivities();
-                toast({
-                  title: "Actividad actualizada",
-                  description: "La actividad ha sido actualizada exitosamente.",
-                });
-              }}
-              onCancel={() => setShowEditDialog(false)}
-              existingActivity={selectedActivity}
-            />
+            <div className="p-4 text-center">
+              <p className="text-gray-600">Formulario de edición temporalmente no disponible</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Actividad: {selectedActivity.title} (ID: {selectedActivity.id})
+              </p>
+            </div>
           )}
         </DialogContent>
       </Dialog>
@@ -551,10 +543,10 @@ const AdminActivities = () => {
                     ID: {detailActivity.id} | Parque: {getParkName(detailActivity.parkId)}
                   </p>
                 </div>
-                {detailActivity.category && (
+                {detailActivity.activityType && (
                   <div className="col-span-4 md:col-span-1 flex justify-start md:justify-end">
                     <Badge className="bg-primary/10 text-primary hover:bg-primary/20 py-1 px-2">
-                      {detailActivity.category}
+                      {detailActivity.activityType}
                     </Badge>
                   </div>
                 )}
@@ -589,15 +581,12 @@ const AdminActivities = () => {
                 </div>
               )}
               
-              {detailActivity.organizerName && (
+              {detailActivity.capacity && (
                 <div className="pt-2 border-t">
-                  <h3 className="text-sm font-medium mb-1">Organizador</h3>
-                  <p className="text-gray-700">{detailActivity.organizerName}</p>
-                  {detailActivity.organizerContact && (
-                    <p className="text-gray-500 text-sm">
-                      Contacto: {detailActivity.organizerContact}
-                    </p>
-                  )}
+                  <h3 className="text-sm font-medium mb-1">Capacidad</h3>
+                  <p className="text-gray-700">
+                    {detailActivity.capacity} personas
+                  </p>
                 </div>
               )}
               
