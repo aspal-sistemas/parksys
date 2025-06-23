@@ -114,27 +114,32 @@ export default function DetalleEventoAmbu() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-gray-600">Cargando detalles del evento...</p>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2 text-gray-600">Cargando detalles del evento...</p>
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   if (error || !evento) {
     return (
-      <div className="text-center py-8">
-        <p className="text-red-600">Error al cargar el evento</p>
-        <Link href="/admin/eventos-ambu">
-          <Button className="mt-4">Volver al listado</Button>
-        </Link>
-      </div>
+      <AdminLayout>
+        <div className="text-center py-8">
+          <p className="text-red-600">Error al cargar el evento</p>
+          <Link href="/admin/eventos-ambu">
+            <Button className="mt-4">Volver al listado</Button>
+          </Link>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
+    <AdminLayout>
     <div className="container mx-auto py-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
@@ -538,6 +543,7 @@ export default function DetalleEventoAmbu() {
         )}
       </Tabs>
     </div>
+    </AdminLayout>
   );
 }
 

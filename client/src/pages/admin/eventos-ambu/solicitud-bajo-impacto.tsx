@@ -13,6 +13,7 @@ import { CalendarIcon, FileTextIcon, InfoIcon, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import AdminLayout from "@/components/AdminLayout";
 
 // Schema de validación para eventos de bajo impacto
 const bajoImpactoSchema = z.object({
@@ -215,7 +216,8 @@ export default function SolicitudBajoImpacto() {
   }, [tipoEvento]);
 
   return (
-    <div className="container mx-auto py-6 max-w-4xl">
+    <AdminLayout>
+      <div className="container mx-auto py-6 max-w-4xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Solicitud de Evento de Bajo Impacto
@@ -686,5 +688,6 @@ export default function SolicitudBajoImpacto() {
         </div>
       </form>
     </div>
+    </AdminLayout>
   );
 }
