@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { fromZodError } from 'zod-validation-error';
+import { sql } from 'drizzle-orm';
 import { insertActivitySchema, activityCategories } from '@shared/schema';
 import { storage } from './storage';
 import { db } from './db';
@@ -21,20 +22,21 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
   // Obtener todas las actividades
   apiRouter.get("/activities", async (_req: Request, res: Response) => {
     try {
-      const activities = await storage.getAllActivities();
-      
-      // Enriquecer con información del parque
-      const activitiesWithParkInfo = await Promise.all(
-        activities.map(async (activity) => {
-          const park = await storage.getPark(activity.parkId);
-          return {
-            ...activity,
-            parkName: park ? park.name : 'Parque no disponible'
-          };
-        })
+      // Usar consulta SQL directa para incluir categorías y parques
+      const result = await db.execute(
+        sql`SELECT a.id, a.park_id as "parkId", a.title, a.description, 
+                 a.start_date as "startDate", a.end_date as "endDate", 
+                 a.category, a.location, a.capacity, a.category_id as "categoryId",
+                 a.created_at as "createdAt",
+                 p.name as "parkName",
+                 ac.name as "categoryName"
+             FROM activities a
+             LEFT JOIN parks p ON a.park_id = p.id
+             LEFT JOIN activity_categories ac ON a.category_id = ac.id
+             ORDER BY a.start_date DESC`
       );
       
-      res.json(activitiesWithParkInfo);
+      res.json(result.rows);
     } catch (error) {
       console.error("Error al obtener actividades:", error);
       res.status(500).json({ message: "Error al obtener actividades" });

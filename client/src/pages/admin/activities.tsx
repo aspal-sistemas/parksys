@@ -218,6 +218,7 @@ const AdminActivities = () => {
       title: editFormData.title,
       description: editFormData.description,
       activityType: editFormData.activityType,
+      categoryId: editFormData.categoryId ? parseInt(editFormData.categoryId) : null,
       startDate: editFormData.startDate,
       endDate: editFormData.endDate || null,
       location: editFormData.location || null,
@@ -364,7 +365,7 @@ const AdminActivities = () => {
                       </TableCell>
                       <TableCell>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {activity.activityType}
+                          {activity.categoryName || 'Sin categoría'}
                         </span>
                       </TableCell>
                       <TableCell>{activity.parkName || `Parque ${activity.parkId}`}</TableCell>
@@ -467,13 +468,21 @@ const AdminActivities = () => {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="activityType" className="text-right">Categoría</label>
-                <Input
-                  id="activityType"
-                  value={editFormData.activityType}
-                  onChange={(e) => handleInputChange('activityType', e.target.value)}
-                  className="col-span-3"
-                />
+                <label htmlFor="categoryId" className="text-right">Categoría</label>
+                <div className="col-span-3">
+                  <Select value={editFormData.categoryId} onValueChange={(value) => handleInputChange('categoryId', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.isArray(categoriesData) && categoriesData.map((category: any) => (
+                        <SelectItem key={category.id} value={category.id.toString()}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <label htmlFor="startDate" className="text-right">Fecha Inicio</label>
