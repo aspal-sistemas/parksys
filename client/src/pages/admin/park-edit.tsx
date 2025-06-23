@@ -49,8 +49,8 @@ const parkSchema = z.object({
   address: z.string().min(1, 'La dirección es requerida'),
   description: z.string().nullable().optional(),
   postalCode: z.string().nullable().optional(),
-  latitude: z.string().min(1, 'La latitud es requerida'),
-  longitude: z.string().min(1, 'La longitud es requerida'),
+  latitude: z.string().nullable().optional(),
+  longitude: z.string().nullable().optional(),
   area: z.string().nullable().optional(),
   foundationYear: z.coerce.number().nullable().optional(),
   hasAccessibility: z.boolean().default(false),
@@ -180,6 +180,9 @@ const AdminParkEdit: React.FC = () => {
   }, [park, isEdit, form, id]);
   
   const onSubmit = (values: ParkFormValues) => {
+    console.log('Formulario enviado con valores:', values);
+    console.log('Estado del formulario:', form.formState);
+    console.log('Errores del formulario:', form.formState.errors);
     mutation.mutate(values);
   };
   
@@ -749,13 +752,27 @@ const AdminParkEdit: React.FC = () => {
                   <Button variant="outline" onClick={() => setActiveTab('media')}>
                     Anterior
                   </Button>
-                  <Button 
-                    type="submit"
-                    disabled={mutation.isPending}
-                  >
-                    {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                    {isEdit ? 'Actualizar Parque' : 'Crear Parque'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        console.log('Estado del formulario:', form.formState);
+                        console.log('Errores:', form.formState.errors);
+                        console.log('Valores actuales:', form.getValues());
+                        console.log('Es válido:', form.formState.isValid);
+                      }}
+                    >
+                      Debug
+                    </Button>
+                    <Button 
+                      type="submit"
+                      disabled={mutation.isPending || !form.formState.isValid}
+                    >
+                      {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                      {isEdit ? 'Actualizar Parque' : 'Crear Parque'}
+                    </Button>
+                  </div>
                 </CardFooter>
               </Card>
             </TabsContent>
