@@ -18,11 +18,38 @@ const app = express();
 
 // Health check endpoint for deployment
 app.get('/', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    status: 'ok', 
-    message: 'ParkSys API is running',
-    timestamp: new Date().toISOString()
-  });
+  try {
+    res.status(200).json({ 
+      status: 'ok', 
+      message: 'ParkSys API is running',
+      timestamp: new Date().toISOString(),
+      port: process.env.PORT || 5000,
+      environment: process.env.NODE_ENV || 'production'
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'error', 
+      message: 'Service temporarily unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Additional health check endpoint
+app.get('/health', (req: Request, res: Response) => {
+  try {
+    res.status(200).json({ 
+      status: 'healthy',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      memory: process.memoryUsage()
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'unhealthy',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Servir archivos estáticos del directorio public ANTES de otras rutas
@@ -919,13 +946,27 @@ async function initializeDatabaseAsync() {
     serveStatic(app);
   }
 
-  // Use environment port or default to 5000 for deployment
+  // Use environment port for deployment compatibility
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
+  const HOST = '0.0.0.0';
   
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
+  const appServer = app.listen(PORT, HOST, () => {
+    console.log(`Server successfully listening on port ${PORT} host ${HOST}`);
     
-    // Initialize database after server is running
-    initializeDatabaseAsync().catch(console.error);
+    // Initialize database after server is confirmed running
+    setTimeout(() => {
+      initializeDatabaseAsync().catch(error => {
+        console.error("Database initialization error (non-blocking):", error);
+      });
+    }, 1000);
+  });
+
+  // Ensure graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    appServer.close(() => {
+      console.log('Process terminated');
+      process.exit(0);
+    });
   });
 })();

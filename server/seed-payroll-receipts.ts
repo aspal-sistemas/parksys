@@ -15,7 +15,7 @@ export async function seedPayrollReceipts() {
   try {
     console.log("Iniciando creación de datos de muestra para recibos de nómina...");
 
-    // Verificar que existan empleados
+    // Verificar que existan empleados (using correct schema)
     const existingEmployees = await db.select().from(employees).limit(3);
     if (existingEmployees.length === 0) {
       console.log("No hay empleados disponibles para crear recibos");
