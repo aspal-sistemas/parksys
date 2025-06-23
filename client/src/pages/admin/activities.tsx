@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Pencil, Trash, Calendar, ArrowUpDown, X, Search, Loader } from 'lucide-react';
+import { Plus, Pencil, Trash, Calendar, ArrowUpDown, X, Search, Loader, ChevronLeft, ChevronRight } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,6 +46,10 @@ const AdminActivities = () => {
   const [activityToDelete, setActivityToDelete] = useState<Activity | null>(null);
   const [sortField, setSortField] = useState<string>('startDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const activitiesPerPage = 10;
 
   // Fetch all activities
   const { 
@@ -73,9 +77,9 @@ const AdminActivities = () => {
   // Get unique categories from activities
   const categories = React.useMemo(() => {
     const uniqueCategories = new Set<string>();
-    activitiesData.forEach(activity => {
-      if (activity.category) {
-        uniqueCategories.add(activity.category);
+    (activitiesData as Activity[]).forEach(activity => {
+      if (activity.activityType) {
+        uniqueCategories.add(activity.activityType);
       }
     });
     return Array.from(uniqueCategories);
@@ -83,7 +87,7 @@ const AdminActivities = () => {
 
   // Filter and sort activities
   const filteredActivities = React.useMemo(() => {
-    return [...activitiesData].filter(activity => {
+    return [...(activitiesData as Activity[])].filter(activity => {
       // Apply search filter
       if (searchQuery && !activity.title.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
@@ -95,7 +99,7 @@ const AdminActivities = () => {
       }
       
       // Apply category filter
-      if (filterCategory && activity.category !== filterCategory) {
+      if (filterCategory && activity.activityType !== filterCategory) {
         return false;
       }
       
@@ -115,11 +119,11 @@ const AdminActivities = () => {
       }
 
       if (sortField === 'category') {
-        if (!a.category) return sortDirection === 'asc' ? 1 : -1;
-        if (!b.category) return sortDirection === 'asc' ? -1 : 1;
+        if (!a.activityType) return sortDirection === 'asc' ? 1 : -1;
+        if (!b.activityType) return sortDirection === 'asc' ? -1 : 1;
         return sortDirection === 'asc' 
-          ? a.category.localeCompare(b.category) 
-          : b.category.localeCompare(a.category);
+          ? a.activityType.localeCompare(b.activityType) 
+          : b.activityType.localeCompare(a.activityType);
       }
       
       // Default sort by startDate
@@ -129,9 +133,21 @@ const AdminActivities = () => {
     });
   }, [activitiesData, searchQuery, filterPark, filterCategory, sortField, sortDirection]);
 
+  // Cálculos de paginación
+  const totalActivities = filteredActivities.length;
+  const totalPages = Math.ceil(totalActivities / activitiesPerPage);
+  const startIndex = (currentPage - 1) * activitiesPerPage;
+  const endIndex = startIndex + activitiesPerPage;
+  const currentActivities = filteredActivities.slice(startIndex, endIndex);
+  
+  // Reset page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterPark, filterCategory]);
+
   // Get park name by ID
   const getParkName = (parkId: number) => {
-    const park = parks.find(p => p.id === parkId);
+    const park = (parks as Park[]).find(p => p.id === parkId);
     return park ? park.name : 'Desconocido';
   };
   
@@ -235,7 +251,7 @@ const AdminActivities = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos los parques</SelectItem>
-              {parks.map(park => (
+              {(parks as Park[]).map(park => (
                 <SelectItem key={park.id} value={park.id.toString()}>
                   {park.name}
                 </SelectItem>
@@ -336,15 +352,15 @@ const AdminActivities = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredActivities.map(activity => (
+                {currentActivities.map(activity => (
                   <TableRow key={activity.id}>
                     <TableCell className="font-medium">{activity.id}</TableCell>
                     <TableCell>{activity.title}</TableCell>
                     <TableCell>{formatDate(activity.startDate)}</TableCell>
                     <TableCell>
-                      {activity.category ? (
+                      {activity.activityType ? (
                         <Badge variant="outline" className="bg-gray-100">
-                          {activity.category}
+                          {activity.activityType}
                         </Badge>
                       ) : (
                         <span className="text-gray-400">No definida</span>
@@ -384,6 +400,74 @@ const AdminActivities = () => {
                 ))}
               </TableBody>
             </Table>
+          )}
+          
+          {/* Controles de paginación */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50">
+              <div className="text-sm text-gray-600">
+                Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalActivities)} de {totalActivities} actividades
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                {/* Botón Anterior */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="h-8"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Anterior
+                </Button>
+                
+                {/* Números de página */}
+                <div className="flex space-x-1">
+                  {(() => {
+                    const pages = [];
+                    const maxVisiblePages = 5;
+                    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                    
+                    if (endPage - startPage + 1 < maxVisiblePages) {
+                      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                    }
+                    
+                    for (let i = startPage; i <= endPage; i++) {
+                      pages.push(
+                        <Button
+                          key={i}
+                          variant={i === currentPage ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(i)}
+                          className={`h-8 w-8 p-0 ${
+                            i === currentPage 
+                              ? "bg-[#00a587] border-[#00a587] text-white hover:bg-[#067f5f]" 
+                              : "hover:bg-gray-100"
+                          }`}
+                        >
+                          {i}
+                        </Button>
+                      );
+                    }
+                    return pages;
+                  })()}
+                </div>
+                
+                {/* Botón Siguiente */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="h-8"
+                >
+                  Siguiente
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </div>
