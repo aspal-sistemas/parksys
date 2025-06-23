@@ -16,15 +16,15 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
-// Health check endpoint for deployment
-app.get('/', (req: Request, res: Response) => {
+// Health check endpoint for deployment (moved to API route)
+app.get('/api/health', (req: Request, res: Response) => {
   try {
     res.status(200).json({ 
       status: 'ok', 
       message: 'ParkSys API is running',
       timestamp: new Date().toISOString(),
       port: process.env.PORT || 5000,
-      environment: process.env.NODE_ENV || 'production'
+      environment: process.env.NODE_ENV || 'development'
     });
   } catch (error) {
     res.status(503).json({ 
