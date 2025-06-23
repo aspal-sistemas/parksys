@@ -258,16 +258,37 @@ const AdminParkEdit: React.FC = () => {
   }
   
   return (
-    <div className="park-edit-page min-h-screen bg-gray-50">
-      {/* Sidebar completamente fijo */}
-      <div className="fixed inset-y-0 left-0 w-64 z-50 bg-white shadow-lg">
+    <div className="relative h-screen overflow-hidden bg-gray-50">
+      {/* Sidebar ABSOLUTAMENTE fijo - NO SE MUEVE */}
+      <div 
+        className="absolute top-0 left-0 w-64 h-full bg-white shadow-lg z-50"
+        style={{ 
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          height: '100vh',
+          width: '16rem',
+          zIndex: 1000,
+          overflow: 'hidden'
+        }}
+      >
         <AdminSidebarComplete />
       </div>
       
-      {/* Contenido principal con margen izquierdo exacto para el sidebar */}
-      <div className="ml-64">
-        {/* Header fijo en la parte superior del contenido */}
-        <header className="bg-white shadow-sm sticky top-0 z-40">
+      {/* Contenido principal que puede hacer scroll */}
+      <div 
+        className="absolute top-0 left-64 right-0 h-full overflow-y-auto"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: '16rem',
+          right: 0,
+          height: '100vh',
+          overflow: 'auto'
+        }}
+      >
+        {/* Header */}
+        <header className="bg-white shadow-sm">
           <div className="px-6 py-4">
             <h1 className="text-2xl font-semibold text-gray-900">
               {isEdit ? `Editar parque: ${park?.name || ''}` : 'Nuevo parque'}
@@ -278,9 +299,9 @@ const AdminParkEdit: React.FC = () => {
           </div>
         </header>
         
-        {/* Contenido de la página con padding controlado */}
-        <div className="park-edit-content p-6">
-          <div className="max-w-6xl mx-auto park-form-container">
+        {/* Contenido de la página */}
+        <div className="p-6" style={{ paddingBottom: '2rem' }}>
+          <div className="max-w-6xl mx-auto">
         <div className="mb-6">
           <Button
             variant="ghost"
