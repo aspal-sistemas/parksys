@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { fromZodError } from 'zod-validation-error';
-import { sql } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 import { insertActivitySchema, activityCategories, insertActivityCategorySchema, activities } from '@shared/schema';
 import { storage } from './storage';
 import { db } from './db';
@@ -71,7 +71,7 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
       const activitiesUsingCategory = await db
         .select()
         .from(activities)
-        .where(sql`${activities.categoryId} = ${categoryId}`)
+        .where(eq(activities.categoryId, categoryId))
         .limit(1);
 
       if (activitiesUsingCategory.length > 0) {
@@ -82,7 +82,7 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
 
       const [deletedCategory] = await db
         .delete(activityCategories)
-        .where(sql`${activityCategories.id} = ${categoryId}`)
+        .where(eq(activityCategories.id, categoryId))
         .returning();
 
       if (!deletedCategory) {

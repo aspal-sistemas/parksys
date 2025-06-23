@@ -277,9 +277,7 @@ const CategoriasActividades: React.FC = () => {
     },
   });
 
-  console.log('Categorías response procesada:', categoriesResponse);
-  console.log('Is loading:', isLoading);
-  console.log('Error:', error);
+
 
   const categories = Array.isArray(categoriesResponse) ? categoriesResponse : [];
 
