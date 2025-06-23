@@ -262,7 +262,7 @@ const AdminParkEdit: React.FC = () => {
       title={isEdit ? `Editar parque: ${park?.name || ''}` : 'Nuevo parque'} 
       subtitle={isEdit ? "Actualiza la información del parque" : "Ingresa la información para crear un nuevo parque"}
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto pb-8">
         <div className="mb-6">
           <Button
             variant="ghost"
@@ -826,8 +826,8 @@ const AdminParkEdit: React.FC = () => {
               </Card>
             </TabsContent>
           </Tabs>
-        </form>
-      </Form>
+          </form>
+        </Form>
       </div>
     </AdminLayout>
   );
