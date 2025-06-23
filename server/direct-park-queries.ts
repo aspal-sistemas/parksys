@@ -388,11 +388,9 @@ export async function getParkByIdDirectly(parkId: number) {
         columnsArray.push('description');
       }
       
-      // Comprobamos si existe type o activity_type
-      if (activityColumns.rows.some(col => col.column_name === 'type')) {
-        columnsArray.push('type as "activityType"');
-      } else if (activityColumns.rows.some(col => col.column_name === 'activity_type')) {
-        columnsArray.push('activity_type as "activityType"');
+      // Comprobamos si existe category (columna de texto)
+      if (activityColumns.rows.some(col => col.column_name === 'category')) {
+        columnsArray.push('category');
       }
       
       if (activityColumns.rows.some(col => col.column_name === 'start_date')) {
