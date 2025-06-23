@@ -140,6 +140,18 @@ const AdminActivities = () => {
   const endIndex = startIndex + activitiesPerPage;
   const currentActivities = filteredActivities.slice(startIndex, endIndex);
   
+  // Debug: Log pagination values
+  console.log('Pagination Debug:', {
+    totalActivities,
+    totalPages,
+    activitiesPerPage,
+    currentPage,
+    startIndex,
+    endIndex,
+    currentActivitiesLength: currentActivities.length,
+    shouldShowPagination: filteredActivities.length > activitiesPerPage
+  });
+  
   // Reset page when filters change
   React.useEffect(() => {
     setCurrentPage(1);
@@ -403,7 +415,7 @@ const AdminActivities = () => {
           )}
           
           {/* Controles de paginación */}
-          {totalPages > 1 && (
+          {filteredActivities.length > activitiesPerPage && (
             <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50">
               <div className="text-sm text-gray-600">
                 Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalActivities)} de {totalActivities} actividades
