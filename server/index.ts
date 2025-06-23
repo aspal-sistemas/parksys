@@ -664,7 +664,7 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar rutas de Recibos de Nómina:", error);
   }
 
-  const server = await registerRoutes(app);
+  const routeServer = await registerRoutes(app);
 
   // Registrar API de integraciones financieras múltiples
   try {
@@ -941,7 +941,10 @@ async function initializeDatabaseAsync() {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
-    await setupVite(app, server);
+    // For development, we need a server reference for Vite setup
+    // Since routeServer is not a server instance, we'll handle this differently
+    const { setupVite } = await import("./vite");
+    await setupVite(app, appServer);
   } else {
     serveStatic(app);
   }
