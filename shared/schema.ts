@@ -112,21 +112,26 @@ export type InsertActualExpense = z.infer<typeof insertActualExpenseSchema>;
 export const employees = pgTable("employees", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
+  employeeCode: varchar("employee_code", { length: 20 }).unique(),
   fullName: varchar("full_name", { length: 100 }).notNull(),
   email: varchar("email", { length: 100 }).notNull(),
   phone: varchar("phone", { length: 20 }),
   position: varchar("position", { length: 100 }).notNull(),
   department: varchar("department", { length: 100 }).notNull(),
+  parkId: integer("park_id").references(() => parks.id),
   salary: decimal("salary", { precision: 10, scale: 2 }).notNull(),
+  baseSalary: decimal("base_salary", { precision: 10, scale: 2 }),
+  salaryType: varchar("salary_type", { length: 20 }).default("monthly"),
   hireDate: date("hire_date").notNull(),
   status: varchar("status", { length: 20 }).default("active"),
+  contractType: varchar("contract_type", { length: 20 }).default("permanent"),
+  workSchedule: varchar("work_schedule", { length: 100 }),
   education: text("education"),
   address: text("address"),
   emergencyContact: varchar("emergency_contact", { length: 100 }),
   emergencyPhone: varchar("emergency_phone", { length: 20 }),
   skills: text("skills").array(),
   certifications: text("certifications").array(),
-  workSchedule: varchar("work_schedule", { length: 100 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -151,11 +156,17 @@ export const payrollConcepts = pgTable("payroll_concepts", {
 export const payrollPeriods = pgTable("payroll_periods", {
   id: serial("id").primaryKey(),
   period: varchar("period", { length: 7 }).notNull(), // Format: YYYY-MM
+  name: varchar("name", { length: 100 }), // Period name for HR-Finance integration
+  periodType: varchar("period_type", { length: 20 }).default("monthly"),
   startDate: date("start_date").notNull(),
   endDate: date("end_date").notNull(),
+  payDate: date("pay_date"), // Payment date for HR integration
   status: varchar("status", { length: 20 }).default("draft"),
   processedAt: timestamp("processed_at"),
   totalAmount: decimal("total_amount", { precision: 12, scale: 2 }),
+  totalGross: decimal("total_gross", { precision: 12, scale: 2 }),
+  totalDeductions: decimal("total_deductions", { precision: 12, scale: 2 }),
+  totalNet: decimal("total_net", { precision: 12, scale: 2 }),
   employeesCount: integer("employees_count"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -165,10 +176,13 @@ export const payrollPeriods = pgTable("payroll_periods", {
 export const payrollDetails = pgTable("payroll_details", {
   id: serial("id").primaryKey(),
   periodId: integer("period_id").references(() => payrollPeriods.id),
+  payrollPeriodId: integer("payroll_period_id").references(() => payrollPeriods.id), // For HR integration compatibility
   employeeId: integer("employee_id").references(() => employees.id),
   conceptId: integer("concept_id").references(() => payrollConcepts.id),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   quantity: decimal("quantity", { precision: 8, scale: 2 }).default("1"),
+  hours: decimal("hours", { precision: 8, scale: 2 }),
+  rate: decimal("rate", { precision: 10, scale: 2 }),
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow(),
 });

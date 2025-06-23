@@ -125,14 +125,33 @@ export async function seedHRFinanceIntegration() {
           .where(eq(employees.employeeCode, employee.employeeCode));
         
         if (!existingEmployee) {
-          const [newEmployee] = await db
-            .insert(employees)
-            .values(employee)
-            .onConflictDoNothing({ target: employees.employeeCode })
-            .returning();
-          if (newEmployee) {
-            createdEmployees.push(newEmployee);
-            console.log(`Empleado creado: ${newEmployee.fullName}`);
+          try {
+            const [newEmployee] = await db
+              .insert(employees)
+              .values({
+                employeeCode: employee.employeeCode,
+                fullName: employee.fullName,
+                email: employee.email,
+                phone: employee.phone,
+                position: employee.position,
+                department: employee.department,
+                parkId: employee.parkId,
+                hireDate: employee.hireDate,
+                baseSalary: employee.baseSalary,
+                salary: employee.baseSalary, // Map baseSalary to salary for compatibility
+                salaryType: employee.salaryType,
+                status: employee.status,
+                contractType: employee.contractType,
+                workSchedule: employee.workSchedule
+              })
+              .onConflictDoNothing({ target: employees.employeeCode })
+              .returning();
+            if (newEmployee) {
+              createdEmployees.push(newEmployee);
+              console.log(`Empleado creado: ${newEmployee.fullName}`);
+            }
+          } catch (error) {
+            console.error(`Error creating employee ${employee.employeeCode}:`, error);
           }
         } else {
           createdEmployees.push(existingEmployee);

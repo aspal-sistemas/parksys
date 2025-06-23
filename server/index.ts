@@ -549,10 +549,11 @@ async function initializeDatabaseAsync() {
       console.error("Error al cargar especies de árboles (continuando):", error);
     }
     
-    // Inicializar integración HR-Finanzas con protección mejorada
+    // Inicializar integración HR-Finanzas con protección mejorada - TEMPORALMENTE DESHABILITADO PARA DESPLIEGUE
     try {
-      const { seedHRFinanceIntegration } = await import("./seed-hr-finance-integration");
-      await seedHRFinanceIntegration();
+      console.log("HR-Finance integration seeding temporarily disabled for deployment stability");
+      // const { seedHRFinanceIntegration } = await import("./seed-hr-finance-integration");
+      // await seedHRFinanceIntegration();
     } catch (error) {
       console.error("Error al inicializar integración HR-Finanzas (continuando):", error);
     }
