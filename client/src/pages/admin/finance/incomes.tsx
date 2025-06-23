@@ -319,8 +319,10 @@ const IncomesPage = () => {
               <Loader2 className={`h-4 w-4 ${incomesLoading ? 'animate-spin' : ''}`} />
               Actualizar
             </Button>
+          </div>
+        </div>
             
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="flex items-center gap-2">
                   <Plus className="h-4 w-4" />
