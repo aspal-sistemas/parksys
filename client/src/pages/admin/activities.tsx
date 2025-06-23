@@ -283,12 +283,15 @@ const AdminActivities = () => {
           )}
         </div>
 
-        {/* Pagination */}
-        {totalActivities > activitiesPerPage && (
+        {/* Pagination - FORZADA PARA DEBUG */}
+        {true && (
           <div className="bg-white rounded-lg shadow-sm border mt-4">
             <div className="flex items-center justify-between px-6 py-4">
               <div className="text-sm text-gray-600">
                 Mostrando {startIndex + 1}-{Math.min(endIndex, totalActivities)} de {totalActivities} actividades
+                <div className="text-xs bg-yellow-100 px-2 py-1 rounded mt-1">
+                  DEBUG: Total={totalActivities}, PerPage={activitiesPerPage}, Pages={totalPages}, Current={currentPage}
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button
