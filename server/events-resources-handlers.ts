@@ -10,6 +10,11 @@ export async function getEventResources(req: Request, res: Response) {
   try {
     const eventId = parseInt(req.params.id);
     
+    // Validar que el ID es un número válido
+    if (isNaN(eventId)) {
+      return res.status(400).json({ message: "ID de evento inválido" });
+    }
+    
     // Verificar que el evento existe
     const eventExists = await db.select().from(events).where(eq(events.id, eventId));
     if (!eventExists.length) {

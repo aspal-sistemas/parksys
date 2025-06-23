@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { db } from "./db";
 import { eventRegistrations, events } from "@shared/events-schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 /**
  * Obtiene todos los participantes de un evento
@@ -9,6 +9,11 @@ import { eq } from "drizzle-orm";
 export async function getEventParticipants(req: Request, res: Response) {
   try {
     const eventId = parseInt(req.params.id);
+    
+    // Validar que el ID es un número válido
+    if (isNaN(eventId)) {
+      return res.status(400).json({ message: "ID de evento inválido" });
+    }
     
     // Verificar que el evento existe
     const eventExists = await db.select().from(events).where(eq(events.id, eventId));
@@ -114,6 +119,11 @@ export async function updateParticipantStatus(req: Request, res: Response) {
     const participantId = parseInt(req.params.participantId);
     const { status, notes } = req.body;
     
+    // Validar que los IDs son números válidos
+    if (isNaN(eventId) || isNaN(participantId)) {
+      return res.status(400).json({ message: "IDs inválidos" });
+    }
+    
     if (!status) {
       return res.status(400).json({ message: "El estado es obligatorio" });
     }
@@ -121,8 +131,10 @@ export async function updateParticipantStatus(req: Request, res: Response) {
     // Verificar que el participante existe
     const participantExists = await db.select()
       .from(eventRegistrations)
-      .where(eq(eventRegistrations.id, participantId))
-      .where(eq(eventRegistrations.eventId, eventId));
+      .where(and(
+        eq(eventRegistrations.id, participantId),
+        eq(eventRegistrations.eventId, eventId)
+      ));
     
     if (!participantExists.length) {
       return res.status(404).json({ message: "El participante no existe en este evento" });
