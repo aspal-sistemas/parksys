@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { sql } from 'drizzle-orm';
-import { insertActivitySchema, activityCategories } from '@shared/schema';
+import { insertActivitySchema, activityCategories, insertActivityCategorySchema, activities } from '@shared/schema';
 import { storage } from './storage';
 import { db } from './db';
 
@@ -16,6 +16,83 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
     } catch (error) {
       console.error("Error al obtener categorías de actividades:", error);
       res.status(500).json({ message: "Error al obtener categorías de actividades" });
+    }
+  });
+
+  // Crear nueva categoría de actividad
+  apiRouter.post("/activity-categories", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const categoryData = insertActivityCategorySchema.parse(req.body);
+      const [newCategory] = await db.insert(activityCategories).values(categoryData).returning();
+      res.status(201).json(newCategory);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      console.error("Error al crear categoría:", error);
+      res.status(500).json({ message: "Error al crear categoría de actividad" });
+    }
+  });
+
+  // Actualizar categoría de actividad
+  apiRouter.put("/activity-categories/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const categoryId = Number(req.params.id);
+      const categoryData = insertActivityCategorySchema.parse(req.body);
+      
+      const [updatedCategory] = await db
+        .update(activityCategories)
+        .set({ ...categoryData, updatedAt: new Date() })
+        .where(sql`${activityCategories.id} = ${categoryId}`)
+        .returning();
+
+      if (!updatedCategory) {
+        return res.status(404).json({ message: "Categoría no encontrada" });
+      }
+
+      res.json(updatedCategory);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      console.error("Error al actualizar categoría:", error);
+      res.status(500).json({ message: "Error al actualizar categoría de actividad" });
+    }
+  });
+
+  // Eliminar categoría de actividad
+  apiRouter.delete("/activity-categories/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const categoryId = Number(req.params.id);
+
+      // Verificar si hay actividades usando esta categoría
+      const activitiesUsingCategory = await db
+        .select()
+        .from(activities)
+        .where(sql`${activities.categoryId} = ${categoryId}`)
+        .limit(1);
+
+      if (activitiesUsingCategory.length > 0) {
+        return res.status(400).json({ 
+          message: "No se puede eliminar la categoría porque tiene actividades asociadas" 
+        });
+      }
+
+      const [deletedCategory] = await db
+        .delete(activityCategories)
+        .where(sql`${activityCategories.id} = ${categoryId}`)
+        .returning();
+
+      if (!deletedCategory) {
+        return res.status(404).json({ message: "Categoría no encontrada" });
+      }
+
+      res.json({ message: "Categoría eliminada exitosamente" });
+    } catch (error) {
+      console.error("Error al eliminar categoría:", error);
+      res.status(500).json({ message: "Error al eliminar categoría de actividad" });
     }
   });
 
