@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Pencil, Trash, Calendar, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Pencil, Trash, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,57 +22,35 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-interface Activity {
-  id: number;
-  title: string;
-  description: string;
-  startDate: string;
-  endDate: string | null;
-  location: string | null;
-  capacity: number | null;
-  activityType: string;
-  parkId: number;
-  parkName?: string;
-}
-
-interface Park {
-  id: number;
-  name: string;
-}
-
 const AdminActivities = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPark, setFilterPark] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
-  
-  // Paginación
   const [currentPage, setCurrentPage] = useState(1);
+  
   const activitiesPerPage = 10;
 
-  // Fetch activities
+  // Fetch data
   const { data: activitiesData, isLoading, error, refetch } = useQuery({
     queryKey: ['/api/activities'],
   });
 
-  // Fetch parks for filter
   const { data: parksData } = useQuery({
     queryKey: ['/api/parks'],
   });
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "No especificado";
+  const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "dd/MM/yyyy HH:mm", { locale: es });
-    } catch (error) {
+    } catch {
       return "Fecha inválida";
     }
   };
 
-  // Get unique categories
-  const uniqueCategories = React.useMemo(() => {
-    if (!activitiesData || !Array.isArray(activitiesData)) return [];
-    const categories = new Set<string>();
-    activitiesData.forEach((activity: Activity) => {
+  const uniqueCategories = useMemo(() => {
+    if (!Array.isArray(activitiesData)) return [];
+    const categories = new Set();
+    activitiesData.forEach((activity: any) => {
       if (activity.activityType) {
         categories.add(activity.activityType);
       }
@@ -80,38 +58,29 @@ const AdminActivities = () => {
     return Array.from(categories);
   }, [activitiesData]);
 
-  // Filter activities
-  const filteredActivities = React.useMemo(() => {
-    if (!activitiesData || !Array.isArray(activitiesData)) return [];
+  const filteredActivities = useMemo(() => {
+    if (!Array.isArray(activitiesData)) return [];
     
-    return activitiesData.filter((activity: Activity) => {
-      // Search filter
+    return activitiesData.filter((activity: any) => {
       if (searchQuery && !activity.title.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
-      
-      // Park filter
       if (filterPark && activity.parkId.toString() !== filterPark) {
         return false;
       }
-      
-      // Category filter
       if (filterCategory && activity.activityType !== filterCategory) {
         return false;
       }
-      
       return true;
     });
   }, [activitiesData, searchQuery, filterPark, filterCategory]);
 
-  // Pagination calculations
   const totalActivities = filteredActivities.length;
   const totalPages = Math.ceil(totalActivities / activitiesPerPage);
   const startIndex = (currentPage - 1) * activitiesPerPage;
   const endIndex = startIndex + activitiesPerPage;
   const currentActivities = filteredActivities.slice(startIndex, endIndex);
 
-  // Reset page when filters change
   React.useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, filterPark, filterCategory]);
@@ -120,16 +89,17 @@ const AdminActivities = () => {
     setSearchQuery('');
     setFilterPark('');
     setFilterCategory('');
-    setCurrentPage(1);
   };
 
   if (isLoading) {
     return (
       <AdminLayout>
-        <div className="py-32 flex justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587] mx-auto mb-4"></div>
-            <p className="text-gray-500">Cargando actividades...</p>
+        <div className="p-6">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587] mx-auto mb-4"></div>
+              <p className="text-gray-500">Cargando actividades...</p>
+            </div>
           </div>
         </div>
       </AdminLayout>
@@ -139,10 +109,12 @@ const AdminActivities = () => {
   if (error) {
     return (
       <AdminLayout>
-        <div className="py-32 flex justify-center">
-          <div className="text-center">
-            <p className="text-red-500 mb-4">Error al cargar las actividades</p>
-            <Button onClick={() => refetch()}>Reintentar</Button>
+        <div className="p-6">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-center">
+              <p className="text-red-500 mb-4">Error al cargar las actividades</p>
+              <Button onClick={() => refetch()}>Reintentar</Button>
+            </div>
           </div>
         </div>
       </AdminLayout>
@@ -164,7 +136,6 @@ const AdminActivities = () => {
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-4 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
@@ -175,14 +146,13 @@ const AdminActivities = () => {
               />
             </div>
 
-            {/* Park filter */}
             <Select value={filterPark} onValueChange={setFilterPark}>
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por parque" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">Todos los parques</SelectItem>
-                {parksData && Array.isArray(parksData) && parksData.map((park: Park) => (
+                {Array.isArray(parksData) && parksData.map((park: any) => (
                   <SelectItem key={park.id} value={park.id.toString()}>
                     {park.name}
                   </SelectItem>
@@ -190,14 +160,13 @@ const AdminActivities = () => {
               </SelectContent>
             </Select>
 
-            {/* Category filter */}
             <Select value={filterCategory} onValueChange={setFilterCategory}>
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por categoría" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">Todas las categorías</SelectItem>
-                {uniqueCategories.map((category) => (
+                {uniqueCategories.map((category: any) => (
                   <SelectItem key={category} value={category}>
                     {category}
                   </SelectItem>
@@ -205,7 +174,6 @@ const AdminActivities = () => {
               </SelectContent>
             </Select>
 
-            {/* Clear filters */}
             <Button variant="outline" onClick={handleClearFilters}>
               Limpiar filtros
             </Button>
@@ -215,7 +183,7 @@ const AdminActivities = () => {
         {/* Activities table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {filteredActivities.length === 0 ? (
-            <div className="py-32 flex justify-center">
+            <div className="py-16 flex justify-center">
               <div className="text-center">
                 <p className="text-gray-500 mb-2">No se encontraron actividades</p>
                 {(searchQuery || filterPark || filterCategory) && (
@@ -226,101 +194,100 @@ const AdminActivities = () => {
               </div>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">ID</TableHead>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Categoría</TableHead>
-                  <TableHead>Parque</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {currentActivities.map((activity: Activity) => (
-                  <TableRow key={activity.id}>
-                    <TableCell className="font-medium">#{activity.id}</TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{activity.title}</p>
-                        {activity.description && (
-                          <p className="text-sm text-gray-500 truncate max-w-xs">
-                            {activity.description}
-                          </p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {activity.activityType}
-                      </span>
-                    </TableCell>
-                    <TableCell>{activity.parkName || `Parque ${activity.parkId}`}</TableCell>
-                    <TableCell>{formatDate(activity.startDate)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-blue-600 hover:text-blue-700"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px]">ID</TableHead>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Categoría</TableHead>
+                    <TableHead>Parque</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {currentActivities.map((activity: any) => (
+                    <TableRow key={activity.id}>
+                      <TableCell className="font-medium">#{activity.id}</TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{activity.title}</p>
+                          {activity.description && (
+                            <p className="text-sm text-gray-500 truncate max-w-xs">
+                              {activity.description}
+                            </p>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {activity.activityType}
+                        </span>
+                      </TableCell>
+                      <TableCell>{activity.parkName || `Parque ${activity.parkId}`}</TableCell>
+                      <TableCell>{formatDate(activity.startDate)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end space-x-2">
+                          <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-700">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
           )}
         </div>
 
-        {/* Pagination - FORZADA PARA DEBUG */}
-        {true && (
-          <div className="bg-white rounded-lg shadow-sm border mt-4">
-            <div className="flex items-center justify-between px-6 py-4">
-              <div className="text-sm text-gray-600">
-                Mostrando {startIndex + 1}-{Math.min(endIndex, totalActivities)} de {totalActivities} actividades
-                <div className="text-xs bg-yellow-100 px-2 py-1 rounded mt-1">
-                  DEBUG: Total={totalActivities}, PerPage={activitiesPerPage}, Pages={totalPages}, Current={currentPage}
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Anterior
-                </Button>
-                <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-500">Página</span>
-                  <span className="bg-[#00a587] text-white px-2 py-1 rounded text-sm">{currentPage}</span>
-                  <span className="text-sm text-gray-500">de {totalPages}</span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                >
-                  Siguiente
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+        {/* Pagination - Siempre visible */}
+        <div className="bg-white rounded-lg shadow-sm border mt-4 p-4">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              <div>Mostrando {Math.min(startIndex + 1, totalActivities)}-{Math.min(endIndex, totalActivities)} de {totalActivities} actividades</div>
+              <div className="text-xs text-blue-600 mt-1">
+                Páginas calculadas: {totalPages} | Página actual: {currentPage} | Por página: {activitiesPerPage}
               </div>
             </div>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                className="flex items-center gap-1"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Anterior
+              </Button>
+              
+              <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded">
+                <span className="text-sm text-gray-600">Página</span>
+                <span className="bg-[#00a587] text-white px-2 py-1 rounded text-sm font-medium">
+                  {currentPage}
+                </span>
+                <span className="text-sm text-gray-600">de {totalPages}</span>
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === totalPages || totalPages === 0}
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                className="flex items-center gap-1"
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </AdminLayout>
   );
