@@ -123,6 +123,10 @@ const AdminAmenitiesPage = () => {
   const [sortBy, setSortBy] = useState<"name" | "parksCount" | "category">("parksCount");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  
   const [formData, setFormData] = useState<AmenityFormData>({
     name: "",
     icon: "park",
@@ -181,6 +185,25 @@ const AdminAmenitiesPage = () => {
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
       }
     });
+
+  // Cálculos de paginación
+  const totalItems = filteredAndSortedAmenities.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedAmenities = filteredAndSortedAmenities.slice(startIndex, endIndex);
+
+  // Reset página cuando cambien los filtros
+  const resetPage = () => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  };
+
+  // useEffect para resetear página cuando cambien filtros
+  React.useEffect(() => {
+    resetPage();
+  }, [searchTerm, filterCategory, sortBy, sortOrder]);
 
   // Obtener categorías únicas para el filtro
   const uniqueCategories = Array.from(
