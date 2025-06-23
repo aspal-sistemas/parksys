@@ -419,7 +419,7 @@ export const activities = pgTable("activities", {
   categoryId: integer("category_id").references(() => activityCategories.id),
   title: text("title").notNull(),
   description: text("description"),
-  activityType: text("activity_type").notNull(),
+  category: text("category"), // Campo de texto para categoría legacy
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date"),
   location: text("location"),
