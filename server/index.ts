@@ -664,6 +664,22 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar rutas de Recibos de Nómina:", error);
   }
 
+  // Registrar rutas de Eventos AMBU
+  try {
+    const { registerEventosAmbuRoutes } = await import("./eventos-ambu-routes");
+    const eventosAmbuRouter = express.Router();
+    
+    // Aplicar middleware JSON específicamente al router de eventos AMBU
+    eventosAmbuRouter.use(express.json({ limit: '50mb' }));
+    eventosAmbuRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    
+    registerEventosAmbuRoutes(app, eventosAmbuRouter, (req: Request, res: Response, next: NextFunction) => next());
+    app.use("/api", eventosAmbuRouter);
+    console.log("Rutas de Eventos AMBU registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de Eventos AMBU:", error);
+  }
+
   const routeServer = await registerRoutes(app);
 
   // Registrar API de integraciones financieras múltiples

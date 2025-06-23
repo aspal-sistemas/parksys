@@ -278,35 +278,40 @@ function Router() {
           </Suspense>
         </Route>
 
-        {/* Rutas para el módulo de eventos */}
-        <Route path="/admin/events">
-          <Suspense fallback={<div className="p-8 text-center">Cargando eventos...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/events/index')))}
+        {/* Rutas para el módulo de eventos AMBU */}
+        <Route path="/admin/eventos-ambu">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de eventos AMBU...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/index')))}
           </Suspense>
         </Route>
-        <Route path="/admin/events/new">
-          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de nuevo evento...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/events/new')))}
+        <Route path="/admin/eventos-ambu/solicitud-bajo-impacto">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de eventos de bajo impacto...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/solicitud-bajo-impacto')))}
           </Suspense>
         </Route>
-        <Route path="/admin/events/calendar">
-          <Suspense fallback={<div className="p-8 text-center">Cargando calendario de eventos...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/events/calendar')))}
+        <Route path="/admin/eventos-ambu/solicitud-alto-impacto">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de eventos de alto impacto...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/solicitud-alto-impacto')))}
           </Suspense>
         </Route>
-        <Route path="/admin/events/:id">
-          <Suspense fallback={<div className="p-8 text-center">Cargando detalles del evento...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/events/[id]')))}
+        <Route path="/admin/eventos-ambu/calendar">
+          <Suspense fallback={<div className="p-8 text-center">Cargando calendario de eventos AMBU...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/calendar')))}
           </Suspense>
         </Route>
-        <Route path="/admin/events/:id/edit">
-          <Suspense fallback={<div className="p-8 text-center">Cargando editor de evento...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/events/edit')))}
+        <Route path="/admin/eventos-ambu/tabulador">
+          <Suspense fallback={<div className="p-8 text-center">Cargando tabulador de costos AMBU...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/tabulador')))}
           </Suspense>
         </Route>
-        <Route path="/admin/events/participants/:id">
-          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de participantes...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/events/participants/[id]')))}
+        <Route path="/admin/eventos-ambu/:id">
+          <Suspense fallback={<div className="p-8 text-center">Cargando detalles del evento AMBU...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/detail')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/eventos-ambu/:id/edit">
+          <Suspense fallback={<div className="p-8 text-center">Cargando editor de evento AMBU...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/edit')))}
           </Suspense>
         </Route>
         
