@@ -44,7 +44,7 @@ import { apiRequest, queryClient } from '@/lib/queryClient';
 // Define el esquema de validación para el formulario
 const parkSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
-  municipalityId: z.coerce.number().min(1, 'Seleccione un municipio'),
+  municipalityId: z.coerce.number().refine(val => val > 0, 'Seleccione un municipio'),
   parkType: z.string().min(1, 'Seleccione un tipo de parque'),
   address: z.string().min(1, 'La dirección es requerida'),
   description: z.string().nullable().optional(),
@@ -266,7 +266,7 @@ const AdminParkEdit: React.FC = () => {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nombre del parque</FormLabel>
+                          <FormLabel className="text-red-600">Nombre del parque *</FormLabel>
                           <FormControl>
                             <Input placeholder="Nombre del parque" {...field} />
                           </FormControl>
@@ -281,7 +281,7 @@ const AdminParkEdit: React.FC = () => {
                       name="municipalityId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Municipio</FormLabel>
+                          <FormLabel className="text-red-600">Municipio *</FormLabel>
                           <Select 
                             onValueChange={(value) => field.onChange(parseInt(value))}
                             value={field.value ? field.value.toString() : ''}
@@ -314,7 +314,7 @@ const AdminParkEdit: React.FC = () => {
                     name="parkType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tipo de Parque</FormLabel>
+                        <FormLabel className="text-red-600">Tipo de Parque *</FormLabel>
                         <Select 
                           onValueChange={field.onChange}
                           value={field.value}
@@ -364,7 +364,7 @@ const AdminParkEdit: React.FC = () => {
                       name="address"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Dirección</FormLabel>
+                          <FormLabel className="text-red-600">Dirección *</FormLabel>
                           <FormControl>
                             <Input placeholder="Dirección completa" {...field} />
                           </FormControl>
@@ -752,27 +752,13 @@ const AdminParkEdit: React.FC = () => {
                   <Button variant="outline" onClick={() => setActiveTab('media')}>
                     Anterior
                   </Button>
-                  <div className="flex gap-2">
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        console.log('Estado del formulario:', form.formState);
-                        console.log('Errores:', form.formState.errors);
-                        console.log('Valores actuales:', form.getValues());
-                        console.log('Es válido:', form.formState.isValid);
-                      }}
-                    >
-                      Debug
-                    </Button>
-                    <Button 
-                      type="submit"
-                      disabled={mutation.isPending || !form.formState.isValid}
-                    >
-                      {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                      {isEdit ? 'Actualizar Parque' : 'Crear Parque'}
-                    </Button>
-                  </div>
+                  <Button 
+                    type="submit"
+                    disabled={mutation.isPending}
+                  >
+                    {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                    {isEdit ? 'Actualizar Parque' : 'Crear Parque'}
+                  </Button>
                 </CardFooter>
               </Card>
             </TabsContent>
