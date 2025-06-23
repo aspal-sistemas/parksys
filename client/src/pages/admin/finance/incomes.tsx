@@ -47,31 +47,27 @@ const IncomesPage = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [incomeToDelete, setIncomeToDelete] = useState<any>(null);
   const [filters, setFilters] = useState({
-    concept: "",
     year: "",
     month: "",
     date: "",
-    category: ""
+    category: "",
+    amount: ""
   });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const { toast } = useToast();
 
+  // Consultas principales
   const { data: incomes, isLoading: incomesLoading, refetch: refetchIncomes } = useQuery({
-    queryKey: ["/api/actual-incomes"],
-    staleTime: 0, // Always refetch to ensure fresh data
+    queryKey: ["/api/actual-incomes"]
   });
 
-  const { data: incomeCategories, isLoading: categoriesLoading } = useQuery({
-    queryKey: ["/api/income-categories"],
+  const { data: parks, isLoading: parksLoading } = useQuery({
+    queryKey: ["/api/parks"]
   });
 
-  // Debug: mostrar las categorías en consola
-  console.log("Categorías de ingresos cargadas:", incomeCategories);
-  console.log("Está cargando categorías:", categoriesLoading);
-
-  const { data: parks } = useQuery({
-    queryKey: ["/api/parks"],
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
+    queryKey: ["/api/income-categories"]
   });
 
   const form = useForm<IncomeFormValues>({
@@ -86,6 +82,19 @@ const IncomesPage = () => {
     },
   });
 
+  const editForm = useForm<IncomeFormValues>({
+    resolver: zodResolver(incomeSchema),
+    defaultValues: {
+      parkId: 3,
+      amount: undefined,
+      description: "",
+      date: new Date().toISOString().split('T')[0],
+      source: "",
+      notes: "",
+    },
+  });
+
+  // Mutación para crear ingreso
   const createIncomeMutation = useMutation({
     mutationFn: async (data: IncomeFormValues) => {
       const response = await fetch("/api/actual-incomes", {
@@ -95,62 +104,50 @@ const IncomesPage = () => {
         },
         body: JSON.stringify(data),
       });
-      
+
       if (!response.ok) {
-        throw new Error("Error al crear el ingreso");
+        const errorData = await response.text();
+        throw new Error(`Error al crear el ingreso: ${errorData}`);
       }
       
-      return response.json();
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/actual-incomes"] });
       setIsDialogOpen(false);
       form.reset();
       toast({
-        title: "Ingreso registrado",
-        description: "El ingreso se ha registrado correctamente.",
+        title: "Ingreso creado",
+        description: "El ingreso se ha creado correctamente.",
       });
     },
     onError: (error) => {
+      console.error("Error al crear ingreso:", error);
       toast({
         title: "Error",
-        description: "No se pudo registrar el ingreso. Intenta nuevamente.",
+        description: "No se pudo crear el ingreso. Intenta nuevamente.",
         variant: "destructive",
       });
     },
   });
 
-  // Formulario de edición separado
-  const editForm = useForm<IncomeFormValues>({
-    resolver: zodResolver(incomeSchema),
-    defaultValues: {
-      parkId: 3,
-      categoryId: 0,
-      amount: 0,
-      concept: "",
-      description: "",
-      date: new Date().toISOString().split('T')[0],
-      source: "",
-      notes: "",
-    },
-  });
-
-  // Mutación para actualizar ingresos
-  const updateIncomeMutation = useMutation({
-    mutationFn: async (data: IncomeFormValues & { id: number }) => {
-      const response = await fetch(`/api/actual-incomes/${data.id}`, {
+  // Mutación para editar ingreso
+  const editIncomeMutation = useMutation({
+    mutationFn: async (data: IncomeFormValues) => {
+      const response = await fetch(`/api/actual-incomes/${editingIncome.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
-      
+
       if (!response.ok) {
-        throw new Error("Error al actualizar el ingreso");
+        const errorData = await response.text();
+        throw new Error(`Error al editar el ingreso: ${errorData}`);
       }
       
-      return response.json();
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/actual-incomes"] });
@@ -163,23 +160,22 @@ const IncomesPage = () => {
       });
     },
     onError: (error) => {
+      console.error("Error al editar ingreso:", error);
       toast({
         title: "Error",
-        description: "No se pudo actualizar el ingreso. Intenta nuevamente.",
+        description: "No se pudo editar el ingreso. Intenta nuevamente.",
         variant: "destructive",
       });
     },
   });
 
+  // Mutación para eliminar ingreso
   const deleteIncomeMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/actual-incomes/${id}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
       });
-      
+
       if (!response.ok) {
         const errorData = await response.text();
         throw new Error(`Error al eliminar el ingreso: ${errorData}`);
@@ -206,16 +202,6 @@ const IncomesPage = () => {
     },
   });
 
-  const onSubmit = (data: IncomeFormValues) => {
-    createIncomeMutation.mutate(data);
-  };
-
-  const onEditSubmit = (data: IncomeFormValues) => {
-    if (editingIncome) {
-      updateIncomeMutation.mutate({ ...data, id: editingIncome.id });
-    }
-  };
-
   const handleEditIncome = (income: any) => {
     setEditingIncome(income);
     editForm.reset({
@@ -232,18 +218,13 @@ const IncomesPage = () => {
 
   // Función para filtrar ingresos
   const filteredIncomes = useMemo(() => {
-    if (!incomes) return [];
+    if (!incomes || !Array.isArray(incomes)) return [];
     
     return incomes.filter((income: any) => {
       const incomeDate = new Date(income.date);
       const incomeYear = incomeDate.getFullYear().toString();
       const incomeMonth = (incomeDate.getMonth() + 1).toString().padStart(2, '0');
       const incomeDay = incomeDate.toISOString().split('T')[0];
-      
-      // Filtro por concepto (descripción)
-      if (filters.concept && !income.description?.toLowerCase().includes(filters.concept.toLowerCase())) {
-        return false;
-      }
       
       // Filtro por año
       if (filters.year && incomeYear !== filters.year) {
@@ -292,6 +273,14 @@ const IncomesPage = () => {
     return new Date(dateString).toLocaleDateString('es-MX');
   };
 
+  const onSubmit = (data: IncomeFormValues) => {
+    createIncomeMutation.mutate(data);
+  };
+
+  const onEditSubmit = (data: IncomeFormValues) => {
+    editIncomeMutation.mutate(data);
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -323,21 +312,22 @@ const IncomesPage = () => {
         </div>
             
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Nuevo Ingreso
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Registrar Nuevo Ingreso</DialogTitle>
-                <DialogDescription>
-                  Completa la información del nuevo ingreso
-                </DialogDescription>
-              </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <DialogTrigger asChild>
+            <Button className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Nuevo Ingreso
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Registrar Nuevo Ingreso</DialogTitle>
+              <DialogDescription>
+                Completa la información del ingreso a registrar.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="parkId"
@@ -345,12 +335,12 @@ const IncomesPage = () => {
                       <FormItem>
                         <FormLabel>Parque</FormLabel>
                         <Select 
-                          value={field.value?.toString()} 
-                          onValueChange={(value) => field.onChange(Number(value))}
+                          onValueChange={(value) => field.onChange(parseInt(value))}
+                          value={field.value?.toString()}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecciona un parque" />
+                              <SelectValue placeholder="Selecciona parque" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -365,405 +355,24 @@ const IncomesPage = () => {
                       </FormItem>
                     )}
                   />
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="categoryId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Categoría</FormLabel>
-                          <Select onValueChange={(value) => field.onChange(Number(value))}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecciona una categoría" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {categoriesLoading ? (
-                                <SelectItem value="loading" disabled>
-                                  Cargando categorías...
-                                </SelectItem>
-                              ) : (
-                                Array.isArray(incomeCategories) && incomeCategories.length > 0 ? (
-                                  incomeCategories.map((category: any) => (
-                                    <SelectItem key={category.id} value={category.id.toString()}>
-                                      {category.name}
-                                    </SelectItem>
-                                  ))
-                                ) : (
-                                  <SelectItem value="no-categories" disabled>
-                                    No hay categorías disponibles
-                                  </SelectItem>
-                                )
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="amount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Monto</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="Ingresa el monto"
-                              {...field}
-                              value={field.value || ""}
-                              onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
+                  
                   <FormField
                     control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descripción</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Descripción del ingreso" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="date"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Fecha</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="source"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Fuente</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Fuente del ingreso" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notas adicionales</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Notas opcionales" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={createIncomeMutation.isPending}
-                    >
-                      {createIncomeMutation.isPending && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
-                      Registrar Ingreso
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {/* Lista de ingresos */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Ingresos Registrados</CardTitle>
-            <CardDescription>
-              Historial de todos los ingresos del parque
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* Filtros */}
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-700 mb-3">Filtros de búsqueda</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                <div>
-                  <Input
-                    placeholder="Buscar por concepto..."
-                    value={filters.concept}
-                    onChange={(e) => setFilters(prev => ({ ...prev, concept: e.target.value }))}
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <select
-                    value={filters.year}
-                    onChange={(e) => setFilters(prev => ({ ...prev, year: e.target.value }))}
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-                  >
-                    <option value="">Todos los años</option>
-                    <option value="2025">2025</option>
-                    <option value="2024">2024</option>
-                    <option value="2023">2023</option>
-                    <option value="2022">2022</option>
-                    <option value="2021">2021</option>
-                  </select>
-                </div>
-                <div>
-                  <select
-                    value={filters.month}
-                    onChange={(e) => setFilters(prev => ({ ...prev, month: e.target.value }))}
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-                  >
-                    <option value="">Todos los meses</option>
-                    <option value="01">Enero</option>
-                    <option value="02">Febrero</option>
-                    <option value="03">Marzo</option>
-                    <option value="04">Abril</option>
-                    <option value="05">Mayo</option>
-                    <option value="06">Junio</option>
-                    <option value="07">Julio</option>
-                    <option value="08">Agosto</option>
-                    <option value="09">Septiembre</option>
-                    <option value="10">Octubre</option>
-                    <option value="11">Noviembre</option>
-                    <option value="12">Diciembre</option>
-                  </select>
-                </div>
-                <div>
-                  <Input
-                    type="date"
-                    value={filters.date}
-                    onChange={(e) => setFilters(prev => ({ ...prev, date: e.target.value }))}
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <select
-                    value={filters.category}
-                    onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-                  >
-                    <option value="">Todas las categorías</option>
-                    {incomeCategories?.map((category: any) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              {(filters.concept || filters.year || filters.month || filters.date || filters.category) && (
-                <div className="mt-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setFilters({ concept: "", year: "", month: "", date: "", category: "" })}
-                  >
-                    Limpiar filtros
-                  </Button>
-                </div>
-              )}
-            </div>
-            
-            {incomesLoading ? (
-              <div className="text-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-                <p className="mt-2 text-gray-600">Cargando ingresos...</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {Array.isArray(paginatedIncomes) && paginatedIncomes.length > 0 ? (
-                  paginatedIncomes.map((income: any) => (
-                    <div
-                      key={income.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 bg-green-100 rounded-lg">
-                          <DollarSign className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                          <h3 className="font-medium">{income.description}</h3>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {formatDate(income.date)}
-                            </span>
-                            {income.source && (
-                              <span>Fuente: {income.source}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-green-600">
-                            {formatCurrency(income.amount)}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {income.categoryName || 'Sin categoría'}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditIncome(income)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setIncomeToDelete(income);
-                              setIsDeleteDialogOpen(true);
-                            }}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No hay ingresos registrados</p>
-                    <p className="text-sm text-gray-500">
-                      Comienza registrando tu primer ingreso
-                    </p>
-                  </div>
-                )}
-
-                {/* Controles de paginación */}
-                {!incomesLoading && filteredIncomes.length > 0 && (
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t">
-                    <div className="text-sm text-gray-600">
-                      Mostrando {startIndex + 1} a {Math.min(endIndex, totalItems)} de {totalItems} registros
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                          let pageNumber;
-                          if (totalPages <= 5) {
-                            pageNumber = i + 1;
-                          } else if (currentPage <= 3) {
-                            pageNumber = i + 1;
-                          } else if (currentPage >= totalPages - 2) {
-                            pageNumber = totalPages - 4 + i;
-                          } else {
-                            pageNumber = currentPage - 2 + i;
-                          }
-                          
-                          return (
-                            <Button
-                              key={pageNumber}
-                              variant={currentPage === pageNumber ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setCurrentPage(pageNumber)}
-                              className="h-8 w-8 p-0"
-                            >
-                              {pageNumber}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Diálogo de edición */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Editar Ingreso</DialogTitle>
-              <DialogDescription>
-                Modifica los datos del ingreso seleccionado
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...editForm}>
-              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
                     name="categoryId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Categoría</FormLabel>
                         <Select 
-                          onValueChange={(value) => field.onChange(Number(value))}
+                          onValueChange={(value) => field.onChange(parseInt(value))}
                           value={field.value?.toString()}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecciona una categoría" />
+                              <SelectValue placeholder="Selecciona categoría" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {Array.isArray(incomeCategories) && incomeCategories.map((category: any) => (
+                            {Array.isArray(categories) && categories.map((category: any) => (
                               <SelectItem key={category.id} value={category.id.toString()}>
                                 {category.name}
                               </SelectItem>
@@ -774,21 +383,36 @@ const IncomesPage = () => {
                       </FormItem>
                     )}
                   />
-                  
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
                   <FormField
-                    control={editForm.control}
+                    control={form.control}
                     name="amount"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Monto</FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
+                          <Input 
+                            type="number" 
+                            placeholder="0.00" 
                             {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                           />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fecha</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -797,7 +421,7 @@ const IncomesPage = () => {
                 </div>
 
                 <FormField
-                  control={editForm.control}
+                  control={form.control}
                   name="description"
                   render={({ field }) => (
                     <FormItem>
@@ -810,70 +434,41 @@ const IncomesPage = () => {
                   )}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fecha</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={editForm.control}
-                    name="source"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fuente</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Fuente del ingreso" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
                 <FormField
-                  control={editForm.control}
-                  name="notes"
+                  control={form.control}
+                  name="source"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notas adicionales</FormLabel>
+                      <FormLabel>Fuente (Opcional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Notas opcionales" {...field} />
+                        <Input placeholder="Fuente del ingreso" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsEditDialogOpen(false)}
-                  >
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notas (Opcional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Notas adicionales" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end gap-3">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={updateIncomeMutation.isPending}
-                  >
-                    {updateIncomeMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Actualizando...
-                      </>
-                    ) : (
-                      "Actualizar Ingreso"
-                    )}
+                  <Button type="submit" disabled={createIncomeMutation.isPending}>
+                    {createIncomeMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Registrar Ingreso
                   </Button>
                 </div>
               </form>
@@ -881,60 +476,434 @@ const IncomesPage = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Diálogo de confirmación para eliminar */}
+        {/* Filtros */}
+        <div className="bg-white p-4 rounded-lg border">
+          <h3 className="text-lg font-semibold mb-3">Filtros</h3>
+          <div className="grid grid-cols-5 gap-4">
+            <div>
+              <Label htmlFor="filter-year">Año</Label>
+              <Select 
+                value={filters.year} 
+                onValueChange={(value) => setFilters({...filters, year: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Año" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todos los años</SelectItem>
+                  <SelectItem value="2025">2025</SelectItem>
+                  <SelectItem value="2024">2024</SelectItem>
+                  <SelectItem value="2023">2023</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="filter-month">Mes</Label>
+              <Select 
+                value={filters.month} 
+                onValueChange={(value) => setFilters({...filters, month: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Mes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todos los meses</SelectItem>
+                  <SelectItem value="01">Enero</SelectItem>
+                  <SelectItem value="02">Febrero</SelectItem>
+                  <SelectItem value="03">Marzo</SelectItem>
+                  <SelectItem value="04">Abril</SelectItem>
+                  <SelectItem value="05">Mayo</SelectItem>
+                  <SelectItem value="06">Junio</SelectItem>
+                  <SelectItem value="07">Julio</SelectItem>
+                  <SelectItem value="08">Agosto</SelectItem>
+                  <SelectItem value="09">Septiembre</SelectItem>
+                  <SelectItem value="10">Octubre</SelectItem>
+                  <SelectItem value="11">Noviembre</SelectItem>
+                  <SelectItem value="12">Diciembre</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="filter-date">Fecha específica</Label>
+              <Input 
+                type="date" 
+                value={filters.date}
+                onChange={(e) => setFilters({...filters, date: e.target.value})}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="filter-category">Categoría</Label>
+              <Select 
+                value={filters.category} 
+                onValueChange={(value) => setFilters({...filters, category: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todas las categorías</SelectItem>
+                  {Array.isArray(categories) && categories.map((category: any) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-end">
+              <Button 
+                variant="outline" 
+                onClick={() => setFilters({year: "", month: "", date: "", category: "", amount: ""})}
+                className="w-full"
+              >
+                Limpiar filtros
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Lista de ingresos */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Registro de Ingresos
+            </CardTitle>
+            <CardDescription>
+              Listado completo de todos los ingresos registrados ({totalItems} registros)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {incomesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-2">Cargando ingresos...</span>
+              </div>
+            ) : paginatedIncomes && paginatedIncomes.length > 0 ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-8 gap-4 text-sm font-medium text-gray-500 pb-2 border-b">
+                  <div>Fecha</div>
+                  <div>Parque</div>
+                  <div>Categoría</div>
+                  <div>Descripción</div>
+                  <div>Monto</div>
+                  <div>Fuente</div>
+                  <div>Estado</div>
+                  <div>Acciones</div>
+                </div>
+                
+                {paginatedIncomes.map((income: any) => (
+                  <div key={income.id} className="grid grid-cols-8 gap-4 text-sm py-3 border-b border-gray-100 hover:bg-gray-50">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-gray-400" />
+                      {formatDate(income.date)}
+                    </div>
+                    <div className="font-medium">
+                      {income.parkName || 'N/A'}
+                    </div>
+                    <div>
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                        {income.categoryName || 'Sin categoría'}
+                      </span>
+                    </div>
+                    <div className="text-gray-600">
+                      {income.description}
+                    </div>
+                    <div className="font-semibold text-green-600">
+                      {formatCurrency(income.amount)}
+                    </div>
+                    <div className="text-gray-500">
+                      {income.source || '-'}
+                    </div>
+                    <div>
+                      <span className="flex items-center gap-1 text-green-600">
+                        <CheckCircle className="h-4 w-4" />
+                        Registrado
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditIncome(income)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setIncomeToDelete(income);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                No se encontraron ingresos registrados
+              </div>
+            )}
+
+            {/* Paginación */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                <div className="text-sm text-gray-500">
+                  Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalItems)} de {totalItems} ingresos
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="flex items-center gap-1"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Anterior
+                  </Button>
+                  
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center gap-1"
+                  >
+                    Siguiente
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Dialog de edición */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Editar Ingreso</DialogTitle>
+              <DialogDescription>
+                Modifica la información del ingreso.
+              </DialogDescription>
+            </DialogHeader>
+            {editingIncome && (
+              <Form {...editForm}>
+                <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editForm.control}
+                      name="parkId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Parque</FormLabel>
+                          <Select 
+                            onValueChange={(value) => field.onChange(parseInt(value))}
+                            value={field.value?.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona parque" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {Array.isArray(parks) && parks.map((park: any) => (
+                                <SelectItem key={park.id} value={park.id.toString()}>
+                                  {park.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={editForm.control}
+                      name="categoryId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Categoría</FormLabel>
+                          <Select 
+                            onValueChange={(value) => field.onChange(parseInt(value))}
+                            value={field.value?.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona categoría" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {Array.isArray(categories) && categories.map((category: any) => (
+                                <SelectItem key={category.id} value={category.id.toString()}>
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editForm.control}
+                      name="amount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Monto</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="0.00" 
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={editForm.control}
+                      name="date"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Fecha</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={editForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Descripción</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Descripción del ingreso" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={editForm.control}
+                    name="source"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fuente (Opcional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Fuente del ingreso" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={editForm.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Notas (Opcional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Notas adicionales" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="flex justify-end gap-3">
+                    <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button type="submit" disabled={editIncomeMutation.isPending}>
+                      {editIncomeMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Actualizar Ingreso
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog de confirmación de eliminación */}
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Confirmar Eliminación</DialogTitle>
               <DialogDescription>
                 ¿Estás seguro de que deseas eliminar este ingreso? Esta acción no se puede deshacer.
               </DialogDescription>
             </DialogHeader>
-
             {incomeToDelete && (
-              <div className="space-y-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-medium">{incomeToDelete.description}</h4>
-                  <p className="text-sm text-gray-600">
-                    {incomeToDelete.source && `Fuente: ${incomeToDelete.source}`}
-                  </p>
-                  <p className="text-lg font-bold text-green-600 mt-2">
-                    {formatCurrency(incomeToDelete.amount)}
-                  </p>
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsDeleteDialogOpen(false);
-                      setIncomeToDelete(null);
-                    }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => {
-                      if (incomeToDelete) {
-                        deleteIncomeMutation.mutate(incomeToDelete.id);
-                      }
-                    }}
-                    disabled={deleteIncomeMutation.isPending}
-                  >
-                    {deleteIncomeMutation.isPending && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    Eliminar Ingreso
-                  </Button>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="space-y-2">
+                  <div><strong>Descripción:</strong> {incomeToDelete.description}</div>
+                  <div><strong>Monto:</strong> {formatCurrency(incomeToDelete.amount)}</div>
+                  <div><strong>Fecha:</strong> {formatDate(incomeToDelete.date)}</div>
                 </div>
               </div>
             )}
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={() => deleteIncomeMutation.mutate(incomeToDelete.id)}
+                disabled={deleteIncomeMutation.isPending}
+              >
+                {deleteIncomeMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Eliminar Ingreso
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
-    </div>
-  </AdminLayout>
+    </AdminLayout>
   );
 };
 
