@@ -416,9 +416,11 @@ const AdminActivities = () => {
               </TableBody>
             </Table>
           )}
-          
-          {/* Controles de paginación */}
-          {totalActivities > activitiesPerPage && (
+        </div>
+        
+        {/* Controles de paginación fuera del contenedor de tabla */}
+        {totalActivities > activitiesPerPage && (
+          <div className="bg-white rounded-b-lg shadow">
             <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50">
               <div className="text-sm text-gray-600">
                 Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalActivities)} de {totalActivities} actividades
@@ -483,9 +485,10 @@ const AdminActivities = () => {
                 </Button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+    </AdminLayout>
       
       {/* Add activity dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
