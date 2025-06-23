@@ -258,16 +258,16 @@ const AdminParkEdit: React.FC = () => {
   }
   
   return (
-    <div className="park-edit-page flex bg-gray-50">
-      {/* Sidebar fijo */}
-      <div className="w-64 fixed inset-y-0 left-0 z-50">
+    <div className="park-edit-page min-h-screen bg-gray-50">
+      {/* Sidebar completamente fijo */}
+      <div className="fixed inset-y-0 left-0 w-64 z-50 bg-white shadow-lg">
         <AdminSidebarComplete />
       </div>
       
-      {/* Contenido principal con margen izquierdo para el sidebar */}
-      <div className="ml-64 flex-1">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
+      {/* Contenido principal con margen izquierdo exacto para el sidebar */}
+      <div className="ml-64">
+        {/* Header fijo en la parte superior del contenido */}
+        <header className="bg-white shadow-sm sticky top-0 z-40">
           <div className="px-6 py-4">
             <h1 className="text-2xl font-semibold text-gray-900">
               {isEdit ? `Editar parque: ${park?.name || ''}` : 'Nuevo parque'}
@@ -278,7 +278,7 @@ const AdminParkEdit: React.FC = () => {
           </div>
         </header>
         
-        {/* Contenido de la página */}
+        {/* Contenido de la página con padding controlado */}
         <div className="park-edit-content p-6">
           <div className="max-w-6xl mx-auto park-form-container">
         <div className="mb-6">

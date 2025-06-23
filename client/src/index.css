@@ -61,17 +61,23 @@
   /* Solución específica para páginas de edición de parques */
   .park-edit-page {
     height: auto !important;
-    min-height: auto !important;
-    max-height: 100vh !important;
-    overflow: hidden !important;
+    min-height: 100vh !important;
+    position: relative !important;
+  }
+  
+  /* Sidebar completamente fijo - no se mueve con scroll */
+  .park-edit-page .fixed {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 1000 !important;
   }
   
   /* Control específico para el contenedor principal de edición */
   .park-edit-content {
     height: fit-content !important;
     min-height: auto !important;
-    max-height: calc(100vh - 200px) !important;
-    overflow-y: auto !important;
     padding-bottom: 2rem !important;
   }
   
