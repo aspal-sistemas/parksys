@@ -218,7 +218,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
 
             {/* Amenity Icons Grid - Más grande y mejor visible */}
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-2">
-              {amenityItems.map(amenity => (
+              {amenityItems.map((amenity: any) => (
                 <TooltipProvider key={amenity.id}>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -227,30 +227,20 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
                         className={`flex flex-col items-center justify-center p-2 rounded-lg border w-full min-h-[80px] ${
                           selectedAmenities.includes(amenity.id)
                             ? 'border-secondary-500 bg-secondary-50 shadow-sm' 
-                            : isInActiveCategory(amenity) 
-                              ? 'border-gray-200 hover:bg-gray-50' 
-                              : 'border-gray-100 opacity-50 hover:opacity-70'
+                            : 'border-gray-200 hover:bg-gray-50'
                         }`}
                       >
                         <div className={`p-2 rounded-full mb-1 ${
                           selectedAmenities.includes(amenity.id)
                             ? 'bg-secondary-100 text-secondary-700'
-                            : isInActiveCategory(amenity)
-                              ? 'bg-gray-100 text-gray-600'
-                              : 'bg-gray-50 text-gray-400'
+                            : 'bg-gray-100 text-gray-600'
                         }`}>
                           <AmenityIcon 
                             name={amenity.icon || ''} 
-                            customIconUrl={amenity.customIconUrl || null}
-                            iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
                             size={48} 
                           />
                         </div>
-                        <span className={`text-xs text-center mt-1 font-medium ${
-                          !isInActiveCategory(amenity) && !selectedAmenities.includes(amenity.id) 
-                            ? 'text-gray-400' 
-                            : ''
-                        }`}>
+                        <span className="text-xs text-center mt-1 font-medium">
                           {amenity.name}
                         </span>
                       </button>
