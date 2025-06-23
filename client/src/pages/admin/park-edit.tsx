@@ -613,7 +613,14 @@ const AdminParkEdit: React.FC = () => {
                   />
                 </CardContent>
                 <CardFooter className="flex justify-between">
-                  <div></div>
+                  <Button 
+                    type="submit"
+                    variant="outline"
+                    disabled={mutation.isPending}
+                  >
+                    {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                    {isEdit ? 'Guardar Cambios' : 'Crear Parque'}
+                  </Button>
                   <Button 
                     onClick={() => setActiveTab('media')}
                   >
@@ -700,9 +707,19 @@ const AdminParkEdit: React.FC = () => {
                   <Button variant="outline" onClick={() => setActiveTab('basic')}>
                     Anterior
                   </Button>
-                  <Button onClick={() => setActiveTab('amenities')}>
-                    Siguiente
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      type="submit"
+                      variant="outline"
+                      disabled={mutation.isPending}
+                    >
+                      {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                      {isEdit ? 'Guardar Cambios' : 'Crear Parque'}
+                    </Button>
+                    <Button onClick={() => setActiveTab('amenities')}>
+                      Siguiente
+                    </Button>
+                  </div>
                 </CardFooter>
               </Card>
             </TabsContent>
