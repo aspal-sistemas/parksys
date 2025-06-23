@@ -41,15 +41,39 @@ const OrganizadorPage: React.FC = () => {
   const totalActivities = activities.length;
   const activeActivities = activities.filter((a: any) => new Date(a.startDate) >= new Date()).length;
   
-  // Contar actividades por categoría usando category_id
+  // Crear mapeo inverso de categorías por string del category
+  const categoryStringMap: any = {
+    'deportivo': 'Deportivo',
+    'artecultura': 'Arte y Cultura',
+    'recreacionbienestar': 'Recreación y Bienestar',
+    'temporada': 'Eventos de Temporada',
+    'naturalezaciencia': 'Naturaleza y Ciencia',
+    'comunidad': 'Comunidad',
+    'fitness': 'Fitness y Ejercicio'
+  };
+
+  // Contar actividades por categoría usando tanto category_id como category string
   const categoryCounts = activities.reduce((acc: any, activity: any) => {
-    const categoryId = activity.categoryId;
+    let categoryName = null;
+    
+    // Primero intentar con category_id numérico
+    const categoryId = activity.categoryId || activity.category_id;
     if (categoryId && categoriesMap[categoryId]) {
-      const categoryName = categoriesMap[categoryId].name;
+      categoryName = categoriesMap[categoryId].name;
+    }
+    // Si no, usar el campo category string
+    else if (activity.category && categoryStringMap[activity.category]) {
+      categoryName = categoryStringMap[activity.category];
+    }
+    
+    if (categoryName) {
       acc[categoryName] = (acc[categoryName] || 0) + 1;
     }
+    
     return acc;
   }, {});
+
+
 
   // Contar actividades por parque
   const parkCounts = activities.reduce((acc, activity) => {
@@ -173,9 +197,12 @@ const OrganizadorPage: React.FC = () => {
                   <TableCell className="font-medium">{activity.title}</TableCell>
                   <TableCell>
                     <Badge variant="outline">
-                      {activity.categoryId && categoriesMap[activity.categoryId] 
-                        ? categoriesMap[activity.categoryId].name 
-                        : activity.category || 'Sin categoría'}
+                      {(() => {
+                        const categoryId = activity.categoryId || activity.category_id;
+                        return categoryId && categoriesMap[categoryId] 
+                          ? categoriesMap[categoryId].name 
+                          : activity.category || 'Sin categoría';
+                      })()}
                     </Badge>
                   </TableCell>
                   <TableCell>{parkNamesMap[activity.parkId] || `Parque ${activity.parkId}`}</TableCell>
