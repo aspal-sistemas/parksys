@@ -199,9 +199,13 @@ const OrganizadorPage: React.FC = () => {
                     <Badge variant="outline">
                       {(() => {
                         const categoryId = activity.categoryId || activity.category_id;
-                        return categoryId && categoriesMap[categoryId] 
-                          ? categoriesMap[categoryId].name 
-                          : activity.category || 'Sin categoría';
+                        if (categoryId && categoriesMap[categoryId]) {
+                          return categoriesMap[categoryId].name;
+                        }
+                        else if (activity.category && categoryStringMap[activity.category]) {
+                          return categoryStringMap[activity.category];
+                        }
+                        return 'Sin categoría';
                       })()}
                     </Badge>
                   </TableCell>

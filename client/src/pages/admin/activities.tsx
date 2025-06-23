@@ -136,6 +136,39 @@ const AdminActivities = () => {
     }
   };
 
+  // Crear mapeo de categorías por ID y por string
+  const categoriesMap = useMemo(() => {
+    if (!Array.isArray(categoriesData)) return {};
+    return categoriesData.reduce((acc: any, category: any) => {
+      acc[category.id] = category;
+      return acc;
+    }, {});
+  }, [categoriesData]);
+
+  const categoryStringMap: any = {
+    'deportivo': 'Deportivo',
+    'artecultura': 'Arte y Cultura',
+    'recreacionbienestar': 'Recreación y Bienestar',
+    'temporada': 'Eventos de Temporada',
+    'naturalezaciencia': 'Naturaleza y Ciencia',
+    'comunidad': 'Comunidad',
+    'fitness': 'Fitness y Ejercicio'
+  };
+
+  // Función para obtener el nombre de la categoría
+  const getCategoryName = (activity: any) => {
+    // Primero intentar con category_id numérico
+    const categoryId = activity.categoryId || activity.category_id;
+    if (categoryId && categoriesMap[categoryId]) {
+      return categoriesMap[categoryId].name;
+    }
+    // Si no, usar el campo category string
+    else if (activity.category && categoryStringMap[activity.category]) {
+      return categoryStringMap[activity.category];
+    }
+    return 'Sin categoría';
+  };
+
   const uniqueCategories = useMemo(() => {
     if (!Array.isArray(activitiesData)) return [];
     const categories = new Set();
@@ -365,7 +398,7 @@ const AdminActivities = () => {
                       </TableCell>
                       <TableCell>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {activity.categoryName || 'Sin categoría'}
+                          {getCategoryName(activity)}
                         </span>
                       </TableCell>
                       <TableCell>{activity.parkName || `Parque ${activity.parkId}`}</TableCell>
