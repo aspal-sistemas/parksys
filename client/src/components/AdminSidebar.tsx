@@ -143,9 +143,9 @@ const AdminSidebar: React.FC = () => {
   // Determinar qué sección debe estar abierta basado en la URL actual
   const getInitialOpenSections = () => {
     if (location.startsWith('/admin/assets')) return ['assets'];
-    if (location.startsWith('/admin/activities')) return ['activities-v2'];
-    if (location.startsWith('/admin/instructors')) return ['activities-v2']; // Los instructores están bajo actividades
-    if (location.startsWith('/admin/organizador')) return ['activities-v2']; // Organizador está bajo actividades
+    if (location.startsWith('/admin/activities')) return ['activities-v3'];
+    if (location.startsWith('/admin/instructors')) return ['activities-v3']; // Los instructores están bajo actividades
+    if (location.startsWith('/admin/organizador')) return ['activities-v3']; // Organizador está bajo actividades
     if (location.startsWith('/admin/parks') || 
         location.startsWith('/admin/amenities') || 
         location.startsWith('/admin/incidents')) return ['operations'];
@@ -158,7 +158,7 @@ const AdminSidebar: React.FC = () => {
     if (location.startsWith('/admin/users')) return [];
     if (location.startsWith('/admin/permissions')) return [];
     if (location.startsWith('/admin/settings')) return [];
-    return []; // Ninguna sección abierta por defecto
+    return ['activities-v3']; // Actividades abierto por defecto para pruebas
   };
   
   const [defaultAccordion, setDefaultAccordion] = useState<string[]>(getInitialOpenSections());
@@ -217,7 +217,8 @@ const AdminSidebar: React.FC = () => {
           <ModuleNav 
             title="Actividades" 
             icon={<Calendar className="h-5 w-5" />}
-            value="activities-v2"
+            value="activities-v3"
+            defaultOpen={true}
           >
             <NavItem 
               href="/admin/organizador" 
@@ -228,6 +229,7 @@ const AdminSidebar: React.FC = () => {
             >
               Organizador
             </NavItem>
+            
             <NavItem 
               href="/admin/activities" 
               icon={<ListFilter className="h-5 w-5" />}
@@ -235,6 +237,7 @@ const AdminSidebar: React.FC = () => {
             >
               Listado
             </NavItem>
+            
             <NavItem 
               href="/admin/organizador/nueva-actividad" 
               icon={<Calendar className="h-5 w-5" />}
@@ -242,6 +245,7 @@ const AdminSidebar: React.FC = () => {
             >
               Nueva Actividad
             </NavItem>
+            
             <NavItem 
               href="/admin/activities/calendar" 
               icon={<CalendarDays className="h-5 w-5" />}
@@ -249,6 +253,7 @@ const AdminSidebar: React.FC = () => {
             >
               Calendario
             </NavItem>
+            
             <NavItem 
               href="/admin/instructors" 
               icon={<GraduationCap className="h-5 w-5" />}
