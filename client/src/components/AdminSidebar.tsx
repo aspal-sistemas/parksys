@@ -28,6 +28,7 @@ import {
   Box,
   Wrench,
   CalendarDays,
+  Plus,
   CircleDollarSign,
   MapPin,
   GraduationCap,
@@ -142,8 +143,9 @@ const AdminSidebar: React.FC = () => {
   // Determinar qué sección debe estar abierta basado en la URL actual
   const getInitialOpenSections = () => {
     if (location.startsWith('/admin/assets')) return ['assets'];
-    if (location.startsWith('/admin/activities')) return ['activities'];
-    if (location.startsWith('/admin/instructors')) return ['activities']; // Los instructores están bajo actividades
+    if (location.startsWith('/admin/activities')) return ['activities-v2'];
+    if (location.startsWith('/admin/instructors')) return ['activities-v2']; // Los instructores están bajo actividades
+    if (location.startsWith('/admin/organizador')) return ['activities-v2']; // Organizador está bajo actividades
     if (location.startsWith('/admin/parks') || 
         location.startsWith('/admin/amenities') || 
         location.startsWith('/admin/incidents')) return ['operations'];
@@ -215,9 +217,8 @@ const AdminSidebar: React.FC = () => {
           <ModuleNav 
             title="Actividades" 
             icon={<Calendar className="h-5 w-5" />}
-            value="activities"
+            value="activities-v2"
           >
-            {/* Organizador - Primera posición */}
             <NavItem 
               href="/admin/organizador" 
               icon={<FileText className="h-5 w-5" />}
@@ -227,8 +228,6 @@ const AdminSidebar: React.FC = () => {
             >
               Organizador
             </NavItem>
-            
-            {/* Listado - Segunda posición */}
             <NavItem 
               href="/admin/activities" 
               icon={<ListFilter className="h-5 w-5" />}
@@ -250,8 +249,6 @@ const AdminSidebar: React.FC = () => {
             >
               Calendario
             </NavItem>
-            
-            {/* Sección de Instructores */}
             <NavItem 
               href="/admin/instructors" 
               icon={<GraduationCap className="h-5 w-5" />}
