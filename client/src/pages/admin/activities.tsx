@@ -418,77 +418,40 @@ const AdminActivities = () => {
           )}
         </div>
         
-        {/* Controles de paginación fuera del contenedor de tabla */}
-        {totalActivities > activitiesPerPage && (
-          <div className="bg-white rounded-b-lg shadow">
-            <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50">
-              <div className="text-sm text-gray-600">
-                Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalActivities)} de {totalActivities} actividades
+        {/* PAGINACIÓN SIMPLE */}
+        <div className="bg-white rounded-lg shadow-sm border mt-4">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="text-sm text-gray-600">
+              Mostrando {startIndex + 1}-{Math.min(endIndex, totalActivities)} de {totalActivities} actividades
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Anterior
+              </Button>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-gray-500">Página</span>
+                <span className="bg-[#00a587] text-white px-2 py-1 rounded text-sm">{currentPage}</span>
+                <span className="text-sm text-gray-500">de {totalPages}</span>
               </div>
-              
-              <div className="flex items-center space-x-2">
-                {/* Botón Anterior */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="h-8"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Anterior
-                </Button>
-                
-                {/* Números de página */}
-                <div className="flex space-x-1">
-                  {(() => {
-                    const pages = [];
-                    const maxVisiblePages = 5;
-                    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-                    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-                    
-                    if (endPage - startPage + 1 < maxVisiblePages) {
-                      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-                    }
-                    
-                    for (let i = startPage; i <= endPage; i++) {
-                      pages.push(
-                        <Button
-                          key={i}
-                          variant={i === currentPage ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(i)}
-                          className={`h-8 w-8 p-0 ${
-                            i === currentPage 
-                              ? "bg-[#00a587] border-[#00a587] text-white hover:bg-[#067f5f]" 
-                              : "hover:bg-gray-100"
-                          }`}
-                        >
-                          {i}
-                        </Button>
-                      );
-                    }
-                    return pages;
-                  })()}
-                </div>
-                
-                {/* Botón Siguiente */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="h-8"
-                >
-                  Siguiente
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-        )}
+        </div>
       </div>
-    </AdminLayout>
       
       {/* Add activity dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
