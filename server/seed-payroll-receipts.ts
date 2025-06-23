@@ -72,8 +72,18 @@ export async function seedPayrollReceipts() {
       }
     ];
 
-    // Insertar recibos
-    const insertedReceipts = await db.insert(payrollReceipts).values(receiptsData).returning();
+    // Verificar si ya existen recibos para evitar duplicados
+    const existingReceipts = await db.select().from(payrollReceipts).limit(1);
+    if (existingReceipts.length > 0) {
+      console.log("Los recibos de nómina ya existen. Saltando creación para evitar duplicados.");
+      return;
+    }
+
+    // Insertar recibos con protección contra duplicados
+    const insertedReceipts = await db.insert(payrollReceipts)
+      .values(receiptsData)
+      .onConflictDoNothing({ target: payrollReceipts.receiptNumber })
+      .returning();
     console.log(`${insertedReceipts.length} recibos de nómina creados exitosamente`);
 
     // Crear detalles para cada recibo

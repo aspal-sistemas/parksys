@@ -128,9 +128,12 @@ export async function seedHRFinanceIntegration() {
           const [newEmployee] = await db
             .insert(employees)
             .values(employee)
+            .onConflictDoNothing({ target: employees.employeeCode })
             .returning();
-          createdEmployees.push(newEmployee);
-          console.log(`Empleado creado: ${newEmployee.fullName}`);
+          if (newEmployee) {
+            createdEmployees.push(newEmployee);
+            console.log(`Empleado creado: ${newEmployee.fullName}`);
+          }
         } else {
           createdEmployees.push(existingEmployee);
           console.log(`Empleado existe: ${existingEmployee.fullName}`);

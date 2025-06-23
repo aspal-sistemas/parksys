@@ -528,43 +528,46 @@ async function initializeDatabaseAsync() {
     console.log("Inicializando estructura de la base de datos de forma asíncrona...");
     await initializeDatabase();
     
-    // Intentar inicializar los datos predeterminados
+    // Intentar inicializar los datos predeterminados con protección extra
     try {
       await seedDatabase();
     } catch (error) {
-      console.error("Error al cargar datos iniciales:", error);
-      // Continuamos con la ejecución aunque haya un error en la carga de datos
+      console.error("Error al cargar datos iniciales (continuando):", error);
     }
     
-    // Crear tablas del módulo de arbolado
+    // Crear tablas del módulo de arbolado con protección
     try {
       await createTreeTables();
     } catch (error) {
-      console.error("Error al crear tablas de arbolado:", error);
-      // Continuamos con la ejecución aunque haya un error
+      console.error("Error al crear tablas de arbolado (continuando):", error);
     }
     
-    // Cargar especies de árboles de muestra
+    // Cargar especies de árboles de muestra con protección
     try {
       await seedTreeSpecies();
     } catch (error) {
-      console.error("Error al cargar especies de árboles:", error);
-      // Continuamos con la ejecución aunque haya un error
+      console.error("Error al cargar especies de árboles (continuando):", error);
     }
     
-    // Inicializar integración HR-Finanzas
+    // Inicializar integración HR-Finanzas con protección mejorada
     try {
       const { seedHRFinanceIntegration } = await import("./seed-hr-finance-integration");
       await seedHRFinanceIntegration();
     } catch (error) {
-      console.error("Error al inicializar integración HR-Finanzas:", error);
-      // Continuamos con la ejecución aunque haya un error
+      console.error("Error al inicializar integración HR-Finanzas (continuando):", error);
     }
     
-    console.log("Inicialización de base de datos completada");
+    // Inicializar recibos de nómina con protección contra duplicados
+    try {
+      const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
+      await seedPayrollReceipts();
+    } catch (error) {
+      console.error("Error al inicializar recibos de nómina (continuando):", error);
+    }
+    
+    console.log("Inicialización de base de datos completada exitosamente");
   } catch (error) {
-    console.error("Error crítico al inicializar la base de datos:", error);
-    // Continuamos con la ejecución aunque haya un error
+    console.error("Error crítico al inicializar la base de datos (servidor continuará funcionando):", error);
   }
 }
 
@@ -914,16 +917,11 @@ async function initializeDatabaseAsync() {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  const serverInstance = server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  // Use environment port or default to 5000 for deployment
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
+  
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
     
     // Initialize database after server is running
     initializeDatabaseAsync().catch(console.error);
