@@ -83,6 +83,12 @@ const OrganizadorPage: React.FC = () => {
           <p className="text-gray-500">Gestión de actividades y eventos en parques</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/admin/activities/categories">
+            <Button variant="outline" className="flex items-center gap-2">
+              <Tag size={16} />
+              Gestionar Categorías
+            </Button>
+          </Link>
           <Link href="/admin/organizador/nueva-actividad">
             <Button className="flex items-center gap-2">
               <Plus size={16} />
