@@ -36,9 +36,10 @@ export default function TabuladorCostosAmbu() {
   };
 
   return (
-    <div className="container mx-auto py-6">
-      {/* Header */}
-      <div className="mb-6">
+    <AdminLayout>
+      <div className="container mx-auto py-6">
+        {/* Header */}
+        <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Tabulador de Costos AMBU 2025
         </h1>
@@ -423,6 +424,7 @@ export default function TabuladorCostosAmbu() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

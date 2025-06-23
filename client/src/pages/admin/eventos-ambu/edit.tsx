@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import AdminLayout from "@/components/AdminLayout";
 
 // Schema de validación para edición de eventos AMBU
 const editEventoSchema = z.object({
@@ -169,9 +170,10 @@ export default function EditarEventoAmbu() {
   const categoriasDisponibles = impactoTipo === "bajo_impacto" ? categoriasBajoImpacto : categoriasAltoImpacto;
 
   return (
-    <div className="container mx-auto py-6 max-w-4xl">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+    <AdminLayout>
+      <div className="container mx-auto py-6 max-w-4xl">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
         <Button
           variant="outline"
           size="sm"
@@ -409,6 +411,7 @@ export default function EditarEventoAmbu() {
           </Button>
         </div>
       </form>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
