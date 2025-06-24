@@ -152,6 +152,20 @@ export default function CashFlowMatrix() {
             <CardTitle>Matriz de Flujo de Efectivo - {selectedYear}</CardTitle>
             <CardDescription>
               Comparación: Proyectado vs Real con Varianza Porcentual
+              <div className="flex gap-4 mt-2 text-xs">
+                <span className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#eff6ff' }}></div>
+                  Proyectado
+                </span>
+                <span className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#f0fdf4' }}></div>
+                  Real
+                </span>
+                <span className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#fefce8' }}></div>
+                  Varianza %
+                </span>
+              </div>
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -159,66 +173,60 @@ export default function CashFlowMatrix() {
               <table className="w-full border-collapse border border-gray-300" style={{ minWidth: '1200px' }}>
                 <thead className="sticky top-0 bg-white z-10">
                   <tr className="bg-gray-100">
-                    <th rowSpan={2} className="border border-gray-300 p-3 text-left font-semibold sticky left-0 bg-gray-100 z-20" style={{ minWidth: '150px' }}>
+                    <th className="border border-gray-300 p-3 text-left font-semibold sticky left-0 bg-gray-100 z-20" style={{ minWidth: '200px' }}>
                       Categoría
                     </th>
-                    <th rowSpan={2} className="border border-gray-300 p-3 text-center font-semibold" style={{ minWidth: '80px' }}>
-                      Tipo
-                    </th>
                     {months.map((month, index) => (
-                      <th key={index} colSpan={3} className="border border-gray-300 p-2 text-center font-semibold text-sm">
+                      <th key={index} className="border border-gray-300 p-2 text-center font-semibold text-sm" style={{ minWidth: '120px' }}>
                         {month}
                       </th>
                     ))}
-                    <th rowSpan={2} className="border border-gray-300 p-3 text-center font-semibold" style={{ minWidth: '100px' }}>
+                    <th className="border border-gray-300 p-3 text-center font-semibold" style={{ minWidth: '120px' }}>
                       Total Anual
                     </th>
-                  </tr>
-                  <tr className="bg-gray-50">
-                    {months.map((_, index) => (
-                      <React.Fragment key={index}>
-                        <th className="border border-gray-300 p-1 text-center font-medium text-xs bg-blue-50">Proyec</th>
-                        <th className="border border-gray-300 p-1 text-center font-medium text-xs bg-green-50">Real</th>
-                        <th className="border border-gray-300 p-1 text-center font-medium text-xs bg-yellow-50">Var%</th>
-                      </React.Fragment>
-                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {data.categories.map((category, index) => (
                     <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                      <td className="border border-gray-300 p-3 font-medium sticky left-0 bg-inherit z-10">
-                        {category.name}
-                      </td>
-                      <td className="border border-gray-300 p-3 text-center">
-                        <Badge variant={category.type === 'income' ? 'default' : 'destructive'} className="text-xs">
-                          {category.type === 'income' ? 'Ing' : 'Gasto'}
+                      <td className="border border-gray-300 p-3 sticky left-0 bg-inherit z-10">
+                        <div className="font-medium text-sm">{category.name}</div>
+                        <Badge variant={category.type === 'income' ? 'default' : 'destructive'} className="text-xs mt-1">
+                          {category.type === 'income' ? 'Ingreso' : 'Gasto'}
                         </Badge>
                       </td>
                       {months.map((_, monthIndex) => (
-                        <React.Fragment key={monthIndex}>
-                          <td className="border border-gray-300 p-1 text-right text-xs" style={{ backgroundColor: '#eff6ff' }}>
-                            {formatCurrency(category.projectedValues?.[monthIndex] || 0)}
-                          </td>
-                          <td className="border border-gray-300 p-1 text-right text-xs" style={{ backgroundColor: '#f0fdf4' }}>
-                            {formatCurrency(category.monthlyValues[monthIndex] || 0)}
-                          </td>
-                          <td className={`border border-gray-300 p-1 text-right text-xs font-medium ${
-                            Math.abs(category.varianceValues?.[monthIndex] || 0) > 20 ? 'text-red-600' : 
-                            Math.abs(category.varianceValues?.[monthIndex] || 0) > 10 ? 'text-yellow-600' : 'text-green-600'
-                          }`}>
-                            {(category.varianceValues?.[monthIndex] || 0).toFixed(1)}%
-                          </td>
-                        </React.Fragment>
+                        <td key={monthIndex} className="border border-gray-300 p-2 text-center">
+                          <div className="space-y-1">
+                            <div className="text-xs text-blue-700 font-medium" style={{ backgroundColor: '#eff6ff', padding: '2px 4px', borderRadius: '2px' }}>
+                              {formatCurrency(category.projectedValues?.[monthIndex] || 0)}
+                            </div>
+                            <div className="text-xs text-green-700 font-medium" style={{ backgroundColor: '#f0fdf4', padding: '2px 4px', borderRadius: '2px' }}>
+                              {formatCurrency(category.monthlyValues[monthIndex] || 0)}
+                            </div>
+                            <div className={`text-xs font-bold ${
+                              Math.abs(category.varianceValues?.[monthIndex] || 0) > 20 ? 'text-red-600' : 
+                              Math.abs(category.varianceValues?.[monthIndex] || 0) > 10 ? 'text-yellow-600' : 'text-green-600'
+                            }`} style={{ backgroundColor: '#fefce8', padding: '2px 4px', borderRadius: '2px' }}>
+                              {(category.varianceValues?.[monthIndex] || 0).toFixed(1)}%
+                            </div>
+                          </div>
+                        </td>
                       ))}
-                      <td className="border border-gray-300 p-2 text-right font-semibold text-sm">
-                        <div className="text-blue-600 text-xs">P: {formatCurrency(category.projectedTotal || 0)}</div>
-                        <div className="text-green-600 text-xs">R: {formatCurrency(category.total)}</div>
-                        <div className={`text-xs font-bold ${
-                          Math.abs(category.totalVariance || 0) > 20 ? 'text-red-600' : 
-                          Math.abs(category.totalVariance || 0) > 10 ? 'text-yellow-600' : 'text-green-600'
-                        }`}>
-                          V: {(category.totalVariance || 0).toFixed(1)}%
+                      <td className="border border-gray-300 p-2 text-center">
+                        <div className="space-y-1">
+                          <div className="text-xs text-blue-700 font-medium" style={{ backgroundColor: '#eff6ff', padding: '2px 4px', borderRadius: '2px' }}>
+                            {formatCurrency(category.projectedTotal || 0)}
+                          </div>
+                          <div className="text-xs text-green-700 font-medium" style={{ backgroundColor: '#f0fdf4', padding: '2px 4px', borderRadius: '2px' }}>
+                            {formatCurrency(category.total)}
+                          </div>
+                          <div className={`text-xs font-bold ${
+                            Math.abs(category.totalVariance || 0) > 20 ? 'text-red-600' : 
+                            Math.abs(category.totalVariance || 0) > 10 ? 'text-yellow-600' : 'text-green-600'
+                          }`} style={{ backgroundColor: '#fefce8', padding: '2px 4px', borderRadius: '2px' }}>
+                            {(category.totalVariance || 0).toFixed(1)}%
+                          </div>
                         </div>
                       </td>
                     </tr>
