@@ -4,6 +4,20 @@ import { budgetProjections, budgetTemplates } from "../shared/budget-planning-sc
 import { incomeCategories, expenseCategories } from "../shared/finance-schema";
 import { eq, and } from "drizzle-orm";
 import { BudgetMatrix, BudgetEntry, BudgetCSVRow } from "../shared/budget-planning-schema";
+import multer from "multer";
+import * as Papa from "papaparse";
+
+// Configuración de multer para archivos CSV
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos CSV'));
+    }
+  }
+});
 
 /**
  * Registra las rutas para el módulo de planificación presupuestaria

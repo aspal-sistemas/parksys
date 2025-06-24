@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Upload, Save, Calculator, TrendingUp, TrendingDown } from 'lucide-react';
+import { Download, Upload, Save, Calculator, TrendingUp, TrendingDown, FileText } from 'lucide-react';
 import { BudgetMatrix, BudgetEntry } from '../../../shared/budget-planning-schema';
 import { AdminLayout } from '@/components/AdminLayout';
 
@@ -19,6 +21,9 @@ export default function BudgetPlanningPage() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [budgetData, setBudgetData] = useState<BudgetMatrix | null>(null);
   const [isModified, setIsModified] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [csvPreview, setCsvPreview] = useState<string[][]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -151,19 +156,81 @@ export default function BudgetPlanningPage() {
     saveMutation.mutate({ year: selectedYear, projections });
   };
 
+  // Manejar selección de archivo CSV
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'text/csv') {
+      setCsvFile(file);
+      
+      // Leer y mostrar preview del CSV
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        const lines = text.split('\n').slice(0, 5); // Mostrar solo las primeras 5 líneas
+        const preview = lines.map(line => line.split(','));
+        setCsvPreview(preview);
+      };
+      reader.readAsText(file);
+    } else {
+      toast({
+        title: "Archivo Inválido",
+        description: "Por favor selecciona un archivo CSV válido",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Procesar e importar CSV
+  const handleImportCSV = async () => {
+    if (!csvFile) return;
+
+    try {
+      const formData = new FormData();
+      formData.append('file', csvFile);
+      formData.append('year', selectedYear.toString());
+
+      const response = await fetch('/api/budget-projections/import-csv', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Error al importar CSV');
+
+      const result = await response.json();
+      
+      toast({
+        title: "✓ Importación Exitosa",
+        description: `Se importaron ${result.recordsImported} registros presupuestarios`
+      });
+
+      // Refrescar datos y cerrar dialog
+      refetch();
+      setShowImportDialog(false);
+      setCsvFile(null);
+      setCsvPreview([]);
+      
+    } catch (error) {
+      toast({
+        title: "Error al Importar",
+        description: "No se pudo procesar el archivo CSV",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Exportar CSV
   const handleExportCSV = async () => {
     try {
-      const response = await fetch(`/api/budget-projections/export-csv?year=${selectedYear}`);
+      const response = await fetch(`/api/budget-projections/${selectedYear}/export-csv`);
       if (!response.ok) throw new Error('Error al exportar');
       
-      const data = await response.json();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const csvText = await response.text();
+      const blob = new Blob([csvText], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       
       const a = document.createElement('a');
       a.href = url;
-      a.download = `presupuesto_${selectedYear}.json`;
+      a.download = `presupuesto_${selectedYear}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -171,7 +238,7 @@ export default function BudgetPlanningPage() {
       
       toast({
         title: "✓ Exportación Exitosa",
-        description: `Presupuesto del ${selectedYear} exportado`
+        description: `Presupuesto del ${selectedYear} exportado en formato CSV`
       });
     } catch (error) {
       toast({
@@ -223,6 +290,76 @@ export default function BudgetPlanningPage() {
       <div className="flex items-center justify-end">
         
         <div className="flex items-center gap-3">
+          <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
+                <Upload className="h-4 w-4 mr-2" />
+                Importar CSV
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Importar Datos Presupuestarios desde CSV</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Seleccionar archivo CSV
+                  </label>
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleFileSelect}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#00a587] file:text-white hover:file:bg-[#067f5f]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Formato esperado: Categoría, Tipo, Enero, Febrero, ..., Diciembre
+                  </p>
+                </div>
+                
+                {csvPreview.length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-2">Vista previa del archivo:</h4>
+                    <div className="border rounded max-h-40 overflow-auto">
+                      <Table>
+                        <TableBody>
+                          {csvPreview.map((row, index) => (
+                            <TableRow key={index}>
+                              {row.map((cell, cellIndex) => (
+                                <TableCell key={cellIndex} className="text-xs px-2 py-1">
+                                  {cell}
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setShowImportDialog(false)}>
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={handleImportCSV} 
+                    disabled={!csvFile}
+                    className="bg-[#00a587] hover:bg-[#067f5f]"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Importar Datos
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Button variant="outline" onClick={handleExportCSV} className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100">
+            <Download className="h-4 w-4 mr-2" />
+            Exportar CSV
+          </Button>
+          
           <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
             <SelectTrigger className="w-32">
               <SelectValue />
