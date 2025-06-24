@@ -219,22 +219,31 @@ export default function ParkLandingPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                <div className="mb-4">
+                  <p className="text-sm text-gray-500">Debug: Amenidades encontradas: {park.amenities?.length || 0}</p>
+                </div>
+                
                 {park.amenities && park.amenities.length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {park.amenities.map((amenity) => (
-                      <div key={amenity.id} className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <div className="w-10 h-10 mr-3 flex-shrink-0">
-                          <AmenityIcon 
-                            name={amenity.icon || ''} 
-                            customIconUrl={amenity.customIconUrl || null} 
-                            iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
-                            size={40}
-                          />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {park.amenities.map((amenity, index) => (
+                      <div key={amenity.id || index} className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border">
+                        <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                          {amenity.customIconUrl ? (
+                            <img 
+                              src={amenity.customIconUrl} 
+                              alt={amenity.name}
+                              className="w-10 h-10 object-contain"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                              <Camera className="h-6 w-6 text-purple-600" />
+                            </div>
+                          )}
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-sm">{amenity.name}</p>
+                          <p className="font-medium text-base">{amenity.name}</p>
                           {amenity.description && (
-                            <p className="text-xs text-gray-500 mt-1">{amenity.description}</p>
+                            <p className="text-sm text-gray-500 mt-1">{amenity.description}</p>
                           )}
                         </div>
                       </div>
@@ -243,7 +252,10 @@ export default function ParkLandingPage() {
                 ) : (
                   <div className="text-center py-8 bg-gray-50 rounded-lg">
                     <Camera className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-500">Cargando amenidades...</p>
+                    <p className="text-gray-500">
+                      {park.amenities === undefined ? 'Cargando amenidades...' : 'No hay amenidades registradas'}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-2">Estado: {JSON.stringify(park.amenities)}</p>
                   </div>
                 )}
               </CardContent>
