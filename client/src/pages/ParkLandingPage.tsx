@@ -215,251 +215,44 @@ export default function ParkLandingPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-xl">
                   <Camera className="h-6 w-6 text-purple-600" />
-                  Servicios y Amenidades (17)
+                  Servicios y Amenidades ({park.amenities?.length || 0})
                 </CardTitle>
               </CardHeader>
               <CardContent>
 
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461467324-374178644.png" 
-                        alt="Asadores"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Asadores</p>
-                      <p className="text-xs text-gray-500 mt-1">Servicios</p>
-                    </div>
+                {park.amenities && park.amenities.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {park.amenities.map((amenity, index) => (
+                      <div key={amenity.id || index} className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border">
+                        <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
+                          {amenity.customIconUrl ? (
+                            <img 
+                              src={amenity.customIconUrl} 
+                              alt={amenity.name}
+                              className="w-8 h-8 object-contain"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                              <Camera className="h-5 w-5 text-purple-600" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{amenity.name}</p>
+                          <p className="text-xs text-gray-500 mt-1">{amenity.category || 'Servicios'}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461496160-194043589.png" 
-                        alt="Baños"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Baños</p>
-                      <p className="text-xs text-gray-500 mt-1">Infraestructura</p>
-                    </div>
+                ) : (
+                  <div className="text-center py-8 bg-gray-50 rounded-lg">
+                    <Camera className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-500">
+                      {park.amenities === undefined ? 'Cargando amenidades...' : 'No hay amenidades registradas'}
+                    </p>
                   </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461962302-550955154.png" 
-                        alt="Bosque Urbano"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Bosque Urbano</p>
-                      <p className="text-xs text-gray-500 mt-1">Naturaleza</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750462783551-418846186.png" 
-                        alt="Auditorio / Anfiteatro"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Auditorio / Anfiteatro</p>
-                      <p className="text-xs text-gray-500 mt-1">Infraestructura</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461536433-479052076.png" 
-                        alt="Cafeteria / Restaurante"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Cafetería / Restaurante</p>
-                      <p className="text-xs text-gray-500 mt-1">Servicios</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461863208-464490371.png" 
-                        alt="Caseta de Seguridad"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Caseta de Seguridad</p>
-                      <p className="text-xs text-gray-500 mt-1">Accesibilidad</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461559821-839842393.png" 
-                        alt="Estacionamiento"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Estacionamiento</p>
-                      <p className="text-xs text-gray-500 mt-1">Servicios</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461360357-212775011.png" 
-                        alt="Juegos Infantiles"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Juegos Infantiles</p>
-                      <p className="text-xs text-gray-500 mt-1">Servicios</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461718108-976099253.png" 
-                        alt="Señalética"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Señalética</p>
-                      <p className="text-xs text-gray-500 mt-1">Accesibilidad</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461415791-325753621.png" 
-                        alt="Área de Descanso"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Área de Descanso</p>
-                      <p className="text-xs text-gray-500 mt-1">Naturaleza</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750462681548-981619187.png" 
-                        alt="Rampas para discapacitados"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Rampas para discapacitados</p>
-                      <p className="text-xs text-gray-500 mt-1">Accesibilidad</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750463658755-659125983.png" 
-                        alt="Canchas de Basketbol"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Canchas de Basketbol</p>
-                      <p className="text-xs text-gray-500 mt-1">Deportes</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461612470-670817704.png" 
-                        alt="Food Trucks"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Food Trucks</p>
-                      <p className="text-xs text-gray-500 mt-1">Servicios</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461915128-444109464.png" 
-                        alt="Lago"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Lago</p>
-                      <p className="text-xs text-gray-500 mt-1">Naturaleza</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461883262-202070760.png" 
-                        alt="Skate Park"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Skate Park</p>
-                      <p className="text-xs text-gray-500 mt-1">Deportes</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461446334-956687771.png" 
-                        alt="Área de Campamento"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Área de Campamento</p>
-                      <p className="text-xs text-gray-500 mt-1">Recreación</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                      <img 
-                        src="/uploads/amenity-icon-1750461633827-931697128.png" 
-                        alt="Fuentes"
-                        className="w-8 h-8 object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">Fuentes</p>
-                      <p className="text-xs text-gray-500 mt-1">Infraestructura</p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
