@@ -411,7 +411,7 @@ const AdminSidebarComplete: React.FC = () => {
           </ModuleNav>
 
           <ModuleNav 
-            title="Eventos AMBU" 
+            title="Eventos" 
             icon={<CalendarDays className="h-5 w-5" />}
             value="events"
           >

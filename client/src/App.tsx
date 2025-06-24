@@ -48,6 +48,11 @@ function Router() {
         <Route path="/landing" component={Landing} />
         <Route path="/parks" component={Parks} />
         <Route path="/parks/:id" component={ParkDetail} />
+        <Route path="/parque/:slug">
+          <Suspense fallback={<div className="p-8 text-center">Cargando parque...</div>}>
+            {React.createElement(React.lazy(() => import('./pages/ParkLandingPage')))}
+          </Suspense>
+        </Route>
         <Route path="/instructors">
           <Suspense fallback={<div className="p-8 text-center">Cargando instructores...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/instructors')))}
