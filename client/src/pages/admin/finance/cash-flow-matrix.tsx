@@ -819,13 +819,17 @@ export default function CashFlowMatrix() {
 
         {/* Matriz de Flujo de Efectivo con Proyectado vs Real */}
       {data && (
-        <>
-          {/* CABECERA FIJA COMPARTIDA */}
-          <div className="sticky top-16 z-20 bg-white shadow-lg border-b-2 border-gray-300 mb-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-blue-700">📊 MATRIZ DE FLUJO DE EFECTIVO - {selectedYear}</CardTitle>
+            <CardDescription>Proyectado vs Real por mes con varianza para ingresos y egresos</CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-gray-300 table-fixed">
-                <thead>
-                  <tr className="bg-blue-50">
+                {/* CABECERA FIJA */}
+                <thead className="sticky top-16 z-10 bg-white">
+                  <tr className="bg-blue-50 border-b-2 border-blue-300">
                     <th className="border border-gray-300 p-3 text-left font-semibold w-48">Categoría</th>
                     {["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"].map((month) => (
                       <th key={month} className="border border-gray-300 p-2 text-center font-semibold w-32">
@@ -840,11 +844,8 @@ export default function CashFlowMatrix() {
                     <th className="border border-gray-300 p-3 text-center font-semibold w-40">Total Anual</th>
                   </tr>
                 </thead>
-              </table>
-            </div>
-          </div>
-
-          <div className="space-y-6">
+                
+                <tbody>
             {/* INGRESOS */}
             <Card>
               <CardHeader>
@@ -855,11 +856,11 @@ export default function CashFlowMatrix() {
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse border border-gray-300">
                     <tbody>
-                      {data.categories.filter(cat => cat.type === 'income').map((category, index) => {
-                        const projectedCategory = budgetMatrix?.incomeCategories?.find(p => p.categoryName === category.name);
-                        return (
-                        <tr key={category.name} className={index % 2 === 0 ? 'bg-white' : 'bg-green-50'}>
-                          <td className="border border-gray-300 p-3 font-medium w-48">{category.name}</td>
+                  {data.categories.filter(cat => cat.type === 'income').map((category, index) => {
+                    const projectedCategory = budgetMatrix?.incomeCategories?.find(p => p.categoryName === category.name);
+                    return (
+                      <tr key={category.name} className={index % 2 === 0 ? 'bg-white' : 'bg-green-50'}>
+                        <td className="border border-gray-300 p-3 font-medium w-48">{category.name}</td>
                           {Array.from({length: 12}, (_, monthIndex) => {
                             const projected = projectedCategory?.months[monthIndex + 1] || 0;
                             const real = category.monthlyValues[monthIndex] || 0;
@@ -896,50 +897,52 @@ export default function CashFlowMatrix() {
                           </td>
                         </tr>
                         );
-                      })}
-                      
-                      {/* Total de Ingresos */}
-                      <tr className="bg-green-100 border-t-2 border-green-300">
-                        <td className="border border-gray-300 p-3 font-bold text-green-800 w-48">TOTAL INGRESOS</td>
-                        {Array.from({length: 12}, (_, monthIndex) => {
-                          const monthlyProjected = budgetMatrix?.incomeCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
-                          const monthlyReal = data.summaries.monthly.income[monthIndex] || 0;
-                          const monthlyVariance = monthlyReal - monthlyProjected;
-                          return (
-                            <td key={monthIndex} className="border border-gray-300 p-2">
-                              <div className="space-y-1 text-xs">
-                                <div className="text-center text-blue-700 bg-blue-100 rounded px-2 py-1 font-semibold">
-                                  {formatCurrency(monthlyProjected)}
-                                </div>
-                                <div className="text-center text-gray-700 bg-gray-100 rounded px-2 py-1 font-semibold">
-                                  {formatCurrency(monthlyReal)}
-                                </div>
-                                <div className={`text-center rounded px-2 py-1 font-semibold ${monthlyVariance >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
-                                  {monthlyVariance !== 0 ? (monthlyVariance > 0 ? '+' : '') + formatCurrency(monthlyVariance) : '-'}
-                                </div>
-                              </div>
-                            </td>
-                          );
-                        })}
-                        <td className="border border-gray-300 p-3 text-center">
-                          <div className="space-y-2 text-sm">
-                            <div className="text-blue-700 font-bold bg-blue-100 rounded px-2 py-1">
-                              {formatCurrency(budgetMatrix?.yearlyTotals?.income || 0)}
+                  })}
+                  
+                  {/* Total de Ingresos */}
+                  <tr className="bg-green-100 border-t-2 border-green-300">
+                    <td className="border border-gray-300 p-3 font-bold text-green-800 w-48">TOTAL INGRESOS</td>
+                    {Array.from({length: 12}, (_, monthIndex) => {
+                      const monthlyProjected = budgetMatrix?.incomeCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                      const monthlyReal = data.summaries.monthly.income[monthIndex] || 0;
+                      const monthlyVariance = monthlyReal - monthlyProjected;
+                      return (
+                        <td key={monthIndex} className="border border-gray-300 p-2 w-32">
+                          <div className="space-y-1 text-xs">
+                            <div className="text-center text-blue-700 bg-blue-100 rounded px-2 py-1 font-semibold">
+                              {formatCurrency(monthlyProjected)}
                             </div>
-                            <div className="text-gray-700 font-bold bg-gray-100 rounded px-2 py-1">
-                              {formatCurrency(data.summaries.annual.income)}
+                            <div className="text-center text-gray-700 bg-gray-100 rounded px-2 py-1 font-semibold">
+                              {formatCurrency(monthlyReal)}
                             </div>
-                            <div className={`font-bold rounded px-2 py-1 ${(data.summaries.annual.income - (budgetMatrix?.yearlyTotals?.income || 0)) >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
-                              {formatCurrency(data.summaries.annual.income - (budgetMatrix?.yearlyTotals?.income || 0))}
+                            <div className={`text-center rounded px-2 py-1 font-semibold ${monthlyVariance >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
+                              {monthlyVariance !== 0 ? (monthlyVariance > 0 ? '+' : '') + formatCurrency(monthlyVariance) : '-'}
                             </div>
                           </div>
                         </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
+                      );
+                    })}
+                    <td className="border border-gray-300 p-3 text-center w-40">
+                      <div className="space-y-2 text-sm">
+                        <div className="text-blue-700 font-bold bg-blue-100 rounded px-2 py-1">
+                          {formatCurrency(budgetMatrix?.yearlyTotals?.income || 0)}
+                        </div>
+                        <div className="text-gray-700 font-bold bg-gray-100 rounded px-2 py-1">
+                          {formatCurrency(data.summaries.annual.income)}
+                        </div>
+                        <div className={`font-bold rounded px-2 py-1 ${(data.summaries.annual.income - (budgetMatrix?.yearlyTotals?.income || 0)) >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
+                          {formatCurrency(data.summaries.annual.income - (budgetMatrix?.yearlyTotals?.income || 0))}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* SECCIÓN EGRESOS */}
+                  <tr className="bg-red-200">
+                    <td colSpan={14} className="border border-gray-300 p-3 text-center font-bold text-red-800 text-lg">
+                      💸 EGRESOS
+                    </td>
+                  </tr>
 
             {/* EGRESOS */}
             <Card>
@@ -992,52 +995,50 @@ export default function CashFlowMatrix() {
                           </td>
                         </tr>
                         );
-                      })}
-                      
-                      {/* Total de Egresos */}
-                      <tr className="bg-red-100 border-t-2 border-red-300">
-                        <td className="border border-gray-300 p-3 font-bold text-red-800 w-48">TOTAL EGRESOS</td>
-                        {Array.from({length: 12}, (_, monthIndex) => {
-                          const monthlyProjected = budgetMatrix?.expenseCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
-                          const monthlyReal = data.summaries.monthly.expenses[monthIndex] || 0;
-                          const monthlyVariance = monthlyReal - monthlyProjected;
-                          return (
-                            <td key={monthIndex} className="border border-gray-300 p-2">
-                              <div className="space-y-1 text-xs">
-                                <div className="text-center text-blue-700 bg-blue-100 rounded px-2 py-1 font-semibold">
-                                  {formatCurrency(monthlyProjected)}
-                                </div>
-                                <div className="text-center text-gray-700 bg-gray-100 rounded px-2 py-1 font-semibold">
-                                  {formatCurrency(monthlyReal)}
-                                </div>
-                                <div className={`text-center rounded px-2 py-1 font-semibold ${monthlyVariance >= 0 ? 'text-red-600 bg-red-100' : 'text-green-600 bg-green-100'}`}>
-                                  {monthlyVariance !== 0 ? (monthlyVariance > 0 ? '+' : '') + formatCurrency(monthlyVariance) : '-'}
-                                </div>
-                              </div>
-                            </td>
-                          );
-                        })}
-                        <td className="border border-gray-300 p-3 text-center">
-                          <div className="space-y-2 text-sm">
-                            <div className="text-blue-700 font-bold bg-blue-100 rounded px-2 py-1">
-                              {formatCurrency(budgetMatrix?.yearlyTotals?.expense || 0)}
+                  })}
+                  
+                  {/* Total de Egresos */}
+                  <tr className="bg-red-100 border-t-2 border-red-300">
+                    <td className="border border-gray-300 p-3 font-bold text-red-800 w-48">TOTAL EGRESOS</td>
+                    {Array.from({length: 12}, (_, monthIndex) => {
+                      const monthlyProjected = budgetMatrix?.expenseCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                      const monthlyReal = data.summaries.monthly.expenses[monthIndex] || 0;
+                      const monthlyVariance = monthlyReal - monthlyProjected;
+                      return (
+                        <td key={monthIndex} className="border border-gray-300 p-2 w-32">
+                          <div className="space-y-1 text-xs">
+                            <div className="text-center text-blue-700 bg-blue-100 rounded px-2 py-1 font-semibold">
+                              {formatCurrency(monthlyProjected)}
                             </div>
-                            <div className="text-gray-700 font-bold bg-gray-100 rounded px-2 py-1">
-                              {formatCurrency(data.summaries.annual.expenses)}
+                            <div className="text-center text-gray-700 bg-gray-100 rounded px-2 py-1 font-semibold">
+                              {formatCurrency(monthlyReal)}
                             </div>
-                            <div className={`font-bold rounded px-2 py-1 ${(data.summaries.annual.expenses - (budgetMatrix?.yearlyTotals?.expense || 0)) >= 0 ? 'text-red-600 bg-red-100' : 'text-green-600 bg-green-100'}`}>
-                              {formatCurrency(data.summaries.annual.expenses - (budgetMatrix?.yearlyTotals?.expense || 0))}
+                            <div className={`text-center rounded px-2 py-1 font-semibold ${monthlyVariance >= 0 ? 'text-red-600 bg-red-100' : 'text-green-600 bg-green-100'}`}>
+                              {monthlyVariance !== 0 ? (monthlyVariance > 0 ? '+' : '') + formatCurrency(monthlyVariance) : '-'}
                             </div>
                           </div>
                         </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </>
+                      );
+                    })}
+                    <td className="border border-gray-300 p-3 text-center w-40">
+                      <div className="space-y-2 text-sm">
+                        <div className="text-blue-700 font-bold bg-blue-100 rounded px-2 py-1">
+                          {formatCurrency(budgetMatrix?.yearlyTotals?.expense || 0)}
+                        </div>
+                        <div className="text-gray-700 font-bold bg-gray-100 rounded px-2 py-1">
+                          {formatCurrency(data.summaries.annual.expenses)}
+                        </div>
+                        <div className={`font-bold rounded px-2 py-1 ${(data.summaries.annual.expenses - (budgetMatrix?.yearlyTotals?.expense || 0)) >= 0 ? 'text-red-600 bg-red-100' : 'text-green-600 bg-green-100'}`}>
+                          {formatCurrency(data.summaries.annual.expenses - (budgetMatrix?.yearlyTotals?.expense || 0))}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Tabla de proyecciones */}
