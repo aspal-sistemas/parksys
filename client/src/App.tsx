@@ -327,10 +327,15 @@ function Router() {
           </Suspense>
         </Route>
         
-        {/* Ruta para crear nuevo evento general */}
+        {/* Rutas para eventos generales */}
         <Route path="/admin/events/new">
           <Suspense fallback={<div className="p-8 text-center">Cargando formulario de evento...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/events/new-event')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/events/calendar">
+          <Suspense fallback={<div className="p-8 text-center">Cargando calendario de eventos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/events/calendar')))}
           </Suspense>
         </Route>
 
