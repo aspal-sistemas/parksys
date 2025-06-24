@@ -6,16 +6,16 @@ export async function getParksDirectly(filters?: any) {
   try {
     // Construir la consulta SQL básica
     let queryStr = `
-      SELECT 
-        id, name, municipality_id as "municipalityId", 
-        park_type as "parkType", description, address, 
-        postal_code as "postalCode", latitude, longitude, 
-        area, foundation_year as "foundationYear",
-        administrator, conservation_status as "conservationStatus",
-        regulation_url as "regulationUrl", opening_hours as "openingHours", 
-        contact_email as "contactEmail", contact_phone as "contactPhone",
-        video_url as "videoUrl"
-      FROM parks
+      SELECT DISTINCT
+        p.id, p.name, p.municipality_id as "municipalityId", 
+        p.park_type as "parkType", p.description, p.address, 
+        p.postal_code as "postalCode", p.latitude, p.longitude, 
+        p.area, p.foundation_year as "foundationYear",
+        p.administrator, p.conservation_status as "conservationStatus",
+        p.regulation_url as "regulationUrl", p.opening_hours as "openingHours", 
+        p.contact_email as "contactEmail", p.contact_phone as "contactPhone",
+        p.video_url as "videoUrl"
+      FROM parks p
       WHERE 1=1
     `;
     
@@ -25,33 +25,48 @@ export async function getParksDirectly(filters?: any) {
     // Añadir filtros si existen
     if (filters) {
       if (filters.municipalityId !== undefined) {
-        queryStr += ` AND municipality_id = $${paramIndex++}`;
+        queryStr += ` AND p.municipality_id = $${paramIndex++}`;
         params.push(filters.municipalityId);
       }
       
       if (filters.parkType) {
-        queryStr += ` AND park_type = $${paramIndex++}`;
+        queryStr += ` AND p.park_type = $${paramIndex++}`;
         params.push(filters.parkType);
       }
       
       if (filters.postalCode) {
-        queryStr += ` AND postal_code = $${paramIndex++}`;
+        queryStr += ` AND p.postal_code = $${paramIndex++}`;
         params.push(filters.postalCode);
       }
       
       if (filters.search) {
         queryStr += ` AND (
-          name ILIKE $${paramIndex} OR
-          COALESCE(description, '') ILIKE $${paramIndex} OR
-          address ILIKE $${paramIndex}
+          p.name ILIKE $${paramIndex} OR
+          COALESCE(p.description, '') ILIKE $${paramIndex} OR
+          p.address ILIKE $${paramIndex}
         )`;
         params.push(`%${filters.search}%`);
         paramIndex++;
       }
+      
+      // FILTRO DE AMENIDADES - Esta es la parte crítica que faltaba
+      if (filters.amenities && Array.isArray(filters.amenities) && filters.amenities.length > 0) {
+        // Si se especifican amenidades, solo mostrar parques que tengan TODAS las amenidades especificadas
+        queryStr += ` AND p.id IN (
+          SELECT pa.park_id 
+          FROM park_amenities pa 
+          WHERE pa.amenity_id = ANY($${paramIndex})
+          GROUP BY pa.park_id 
+          HAVING COUNT(DISTINCT pa.amenity_id) = $${paramIndex + 1}
+        )`;
+        params.push(filters.amenities);
+        params.push(filters.amenities.length);
+        paramIndex += 2;
+      }
     }
     
     // Ordenar por nombre
-    queryStr += ` ORDER BY name`;
+    queryStr += ` ORDER BY p.name`;
     
     // Ejecutar la consulta
     const result = await pool.query(queryStr, params);
