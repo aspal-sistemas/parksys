@@ -190,7 +190,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                     size="sm"
                     className="w-32 bg-green-600 hover:bg-green-700 text-white"
                   >
-                    Ir A
+                    Ir al Parque
                   </Button>
                 </Link>
               </div>

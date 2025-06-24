@@ -114,22 +114,13 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
           )}
         </div>
         
-        <div className="flex gap-2 mt-3">
-          {onClick && (
-            <Button 
-              variant="outline" 
-              className="flex-1"
-              onClick={onClick}
-            >
-              Vista rápida
-            </Button>
-          )}
-          <Link href={`/parque/${generateParkSlug(park.name, park.id)}`} className="flex-1">
+        <div className="mt-3">
+          <Link href={`/parque/${generateParkSlug(park.name, park.id)}`} className="block">
             <Button 
               variant="default" 
               className="w-full bg-green-600 hover:bg-green-700 text-white"
             >
-              Ver página completa
+              Ir al Parque
             </Button>
           </Link>
         </div>
