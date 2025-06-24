@@ -10,10 +10,10 @@ import { BudgetMatrix, BudgetEntry, BudgetCSVRow } from "../shared/budget-planni
  */
 export function registerBudgetPlanningRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
   
-  // Obtener proyecciones presupuestarias por año
-  apiRouter.get('/budget-projections', async (req: Request, res: Response) => {
+  // Obtener proyecciones presupuestarias por año (con parámetro en URL)
+  apiRouter.get('/budget-projections/:year', async (req: Request, res: Response) => {
     try {
-      const year = parseInt(req.query.year as string) || new Date().getFullYear();
+      const year = parseInt(req.params.year) || new Date().getFullYear();
       
       console.log(`=== OBTENIENDO PROYECCIONES PRESUPUESTARIAS PARA ${year} ===`);
       
