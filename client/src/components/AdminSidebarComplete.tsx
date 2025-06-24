@@ -83,7 +83,6 @@ import {
   UserCog,
   Zap,
   Book,
-  Clock,
   Plus
 } from 'lucide-react';
 

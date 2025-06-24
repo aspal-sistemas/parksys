@@ -185,7 +185,7 @@ export default function CommunicationsPage() {
         </TabsList>
 
         {/* Dashboard Principal */}
-          <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-6">
             {/* Recent Activity */}
             <Card>
               <CardHeader>
@@ -349,9 +349,13 @@ export default function CommunicationsPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
       </div>
     </AdminLayout>
   );
-}
+};
+
+// Exportar componentes para usar en páginas independientes
+export { TemplatesSection, QueueSection, CampaignsSection, BulkEmailSection, AnalyticsSection };
+
+export default CommunicationsPage;

@@ -336,11 +336,12 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/system/email-settings')))}
           </Suspense>
         </Route>
-        <Route path="/admin/communications">
-          <Suspense fallback={<div className="p-8 text-center">Cargando sistema de comunicación...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/communications')))}
-          </Suspense>
-        </Route>
+        <Route path="/admin/communications" component={React.lazy(() => import("@/pages/admin/communications"))} />
+        <Route path="/admin/communications/templates" component={React.lazy(() => import("@/pages/admin/communications/templates"))} />
+        <Route path="/admin/communications/queue" component={React.lazy(() => import("@/pages/admin/communications/queue"))} />
+        <Route path="/admin/communications/campaigns" component={React.lazy(() => import("@/pages/admin/communications/campaigns"))} />
+        <Route path="/admin/communications/bulk" component={React.lazy(() => import("@/pages/admin/communications/bulk"))} />
+        <Route path="/admin/communications/analytics" component={React.lazy(() => import("@/pages/admin/communications/analytics"))} />
 
         {/* Rutas para el módulo de activos */}
         <Route path="/admin/assets/dashboard">
