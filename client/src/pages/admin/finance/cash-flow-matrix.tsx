@@ -1021,6 +1021,47 @@ export default function CashFlowMatrix() {
                           </div>
                         </td>
                       </tr>
+
+                      {/* Utilidad/Pérdida */}
+                      <tr className="bg-purple-100 border-t-2 border-purple-300">
+                        <td className="border border-gray-300 p-3 font-bold text-purple-800">UTILIDAD / PÉRDIDA</td>
+                        {Array.from({length: 12}, (_, monthIndex) => {
+                          const monthlyIncomeProjected = budgetMatrix?.incomeCategories?.reduce((sum: any, cat: any) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                          const monthlyExpenseProjected = budgetMatrix?.expenseCategories?.reduce((sum: any, cat: any) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                          const monthlyNetProjected = monthlyIncomeProjected - monthlyExpenseProjected;
+                          const monthlyNetReal = data.summaries.monthly.net[monthIndex] || 0;
+                          const monthlyNetVariance = monthlyNetReal - monthlyNetProjected;
+                          
+                          return (
+                            <td key={monthIndex} className="border border-gray-300 p-2">
+                              <div className="space-y-1 text-xs">
+                                <div className={`text-center rounded px-2 py-1 font-semibold ${monthlyNetProjected >= 0 ? 'text-blue-700 bg-blue-100' : 'text-red-700 bg-red-100'}`}>
+                                  {formatCurrency(monthlyNetProjected)}
+                                </div>
+                                <div className={`text-center rounded px-2 py-1 font-semibold ${monthlyNetReal >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
+                                  {formatCurrency(monthlyNetReal)}
+                                </div>
+                                <div className={`text-center rounded px-2 py-1 font-semibold ${monthlyNetVariance >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
+                                  {monthlyNetVariance !== 0 ? (monthlyNetVariance > 0 ? '+' : '') + formatCurrency(monthlyNetVariance) : '-'}
+                                </div>
+                              </div>
+                            </td>
+                          );
+                        })}
+                        <td className="border border-gray-300 p-3 text-center">
+                          <div className="space-y-2 text-sm">
+                            <div className={`font-bold rounded px-2 py-1 ${(budgetMatrix?.yearlyTotals?.net || 0) >= 0 ? 'text-blue-700 bg-blue-100' : 'text-red-700 bg-red-100'}`}>
+                              {formatCurrency(budgetMatrix?.yearlyTotals?.net || 0)}
+                            </div>
+                            <div className={`font-bold rounded px-2 py-1 text-lg ${data.summaries.annual.net >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
+                              {formatCurrency(data.summaries.annual.net)}
+                            </div>
+                            <div className={`font-bold rounded px-2 py-1 ${(data.summaries.annual.net - (budgetMatrix?.yearlyTotals?.net || 0)) >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
+                              {formatCurrency(data.summaries.annual.net - (budgetMatrix?.yearlyTotals?.net || 0))}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
