@@ -688,6 +688,10 @@ async function initializeDatabaseAsync() {
     const apiRouter = express.Router();
     registerFinancialIntegrationsAPI(apiRouter, (req: Request, res: Response, next: NextFunction) => next());
     registerMultimediaRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Importar y registrar rutas de planificación presupuestaria
+    const { registerBudgetPlanningRoutes } = await import('./budget-planning-routes');
+    registerBudgetPlanningRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
     app.use("/api", apiRouter);
     console.log("API de integraciones financieras múltiples registrada correctamente");
     

@@ -373,6 +373,13 @@ const AdminSidebarComplete: React.FC = () => {
               Egresos
             </NavItem>
             <NavItem 
+              href="/admin/finance/budget-planning" 
+              icon={<Target className="h-5 w-5" />}
+              active={location === '/admin/finance/budget-planning'}
+            >
+              Planificación Presupuestaria
+            </NavItem>
+            <NavItem 
               href="/admin/finance/cash-flow-matrix" 
               icon={<LayoutGrid className="h-5 w-5" />}
               active={location === '/admin/finance/cash-flow-matrix'}
