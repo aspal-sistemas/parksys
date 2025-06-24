@@ -500,8 +500,8 @@ export default function CashFlowMatrix() {
                     </td>
                   </tr>
                   
-                  {data.categories.filter(cat => cat.type === 'income').map((category, index) => {
-                    const projectedCategory = budgetMatrix?.incomeCategories?.find(p => p.categoryName === category.name);
+                  {data.categories.filter((cat: any) => cat.type === 'income').map((category: any, index: number) => {
+                    const projectedCategory = budgetMatrix?.incomeCategories?.find((p: any) => p.categoryName === category.name);
                     return (
                       <tr key={category.name} className={index % 2 === 0 ? 'bg-white' : 'bg-green-50'}>
                         <td className="border border-gray-300 p-3 font-medium w-48">{category.name}</td>
@@ -546,7 +546,7 @@ export default function CashFlowMatrix() {
                   <tr className="bg-green-100 border-t-2 border-green-300">
                     <td className="border border-gray-300 p-3 font-bold text-green-800 w-48">TOTAL INGRESOS</td>
                     {Array.from({length: 12}, (_, monthIndex) => {
-                      const monthlyProjected = budgetMatrix?.incomeCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                      const monthlyProjected = budgetMatrix?.incomeCategories?.reduce((sum: number, cat: any) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
                       const monthlyReal = data.summaries.monthly.income[monthIndex] || 0;
                       const monthlyVariance = monthlyReal - monthlyProjected;
                       return (
@@ -587,8 +587,8 @@ export default function CashFlowMatrix() {
                     </td>
                   </tr>
                   
-                  {data.categories.filter(cat => cat.type === 'expense').map((category, index) => {
-                    const projectedCategory = budgetMatrix?.expenseCategories?.find(p => p.categoryName === category.name);
+                  {data.categories.filter((cat: any) => cat.type === 'expense').map((category: any, index: number) => {
+                    const projectedCategory = budgetMatrix?.expenseCategories?.find((p: any) => p.categoryName === category.name);
                     return (
                       <tr key={category.name} className={index % 2 === 0 ? 'bg-white' : 'bg-red-50'}>
                         <td className="border border-gray-300 p-3 font-medium w-48">{category.name}</td>
@@ -633,7 +633,7 @@ export default function CashFlowMatrix() {
                   <tr className="bg-red-100 border-t-2 border-red-300">
                     <td className="border border-gray-300 p-3 font-bold text-red-800 w-48">TOTAL EGRESOS</td>
                     {Array.from({length: 12}, (_, monthIndex) => {
-                      const monthlyProjected = budgetMatrix?.expenseCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                      const monthlyProjected = budgetMatrix?.expenseCategories?.reduce((sum: number, cat: any) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
                       const monthlyReal = data.summaries.monthly.expenses[monthIndex] || 0;
                       const monthlyVariance = monthlyReal - monthlyProjected;
                       return (
@@ -671,8 +671,8 @@ export default function CashFlowMatrix() {
                   <tr className="bg-yellow-100 border-t-4 border-yellow-400">
                     <td className="border border-gray-300 p-3 font-bold text-yellow-800 w-48">UTILIDAD / PÉRDIDA</td>
                     {Array.from({length: 12}, (_, monthIndex) => {
-                      const monthlyIncomeProjected = budgetMatrix?.incomeCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
-                      const monthlyExpenseProjected = budgetMatrix?.expenseCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                      const monthlyIncomeProjected = budgetMatrix?.incomeCategories?.reduce((sum: number, cat: any) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                      const monthlyExpenseProjected = budgetMatrix?.expenseCategories?.reduce((sum: number, cat: any) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
                       const monthlyIncomeReal = data.summaries.monthly.income[monthIndex] || 0;
                       const monthlyExpenseReal = data.summaries.monthly.expenses[monthIndex] || 0;
                       
