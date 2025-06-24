@@ -509,6 +509,36 @@ export default function ParkLandingPage() {
               </Card>
             )}
 
+            {/* Ubicación Compacta */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-blue-600" />
+                  Ubicación
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm text-gray-500">Dirección</p>
+                  <p className="font-medium text-sm">{park.address || 'No especificada'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Municipio</p>
+                  <p className="font-medium text-sm">{park.municipality?.name}, {park.municipality?.state}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="flex-1 text-xs">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    Cómo llegar
+                  </Button>
+                  <Button variant="outline" size="sm" className="flex-1 text-xs">
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    Ver mapa
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Estadísticas de Árboles */}
             {park.treeStats && park.treeStats.total > 0 && (
               <Card>
