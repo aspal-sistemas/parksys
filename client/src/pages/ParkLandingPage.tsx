@@ -73,8 +73,10 @@ function ParkLandingPage() {
     );
   }
 
-  // Get main image
-  const mainImage = park.primaryImage || (park.images && park.images.length > 0 ? park.images[0].imageUrl : '');
+  // Get main image - prioritize primary image or first available image
+  const mainImage = park.primaryImage || 
+    (park.images && park.images.length > 0 ? park.images[0].imageUrl : '') ||
+    (park.images && park.images.length > 0 ? park.images[0].url : '');
   const additionalImages = park.images?.filter(img => !img.isPrimary) || [];
 
   // Format dates
