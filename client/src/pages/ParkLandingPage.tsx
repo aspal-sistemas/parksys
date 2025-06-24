@@ -223,11 +223,11 @@ export default function ParkLandingPage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461467324-374178644.png" 
                         alt="Asadores"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -237,11 +237,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461496160-194043589.png" 
                         alt="Baños"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -251,11 +251,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461962302-550955154.png" 
                         alt="Bosque Urbano"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -265,11 +265,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750462783551-418846186.png" 
                         alt="Auditorio / Anfiteatro"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -279,11 +279,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461536433-479052076.png" 
                         alt="Cafeteria / Restaurante"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -293,11 +293,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461863208-464490371.png" 
                         alt="Caseta de Seguridad"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -307,11 +307,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461559821-839842393.png" 
                         alt="Estacionamiento"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -321,11 +321,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461360357-212775011.png" 
                         alt="Juegos Infantiles"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -335,11 +335,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461718108-976099253.png" 
                         alt="Señalética"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -349,11 +349,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461415791-325753621.png" 
                         alt="Área de Descanso"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -363,11 +363,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750462681548-981619187.png" 
                         alt="Rampas para discapacitados"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -377,11 +377,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750463658755-659125983.png" 
                         alt="Canchas de Basketbol"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -391,11 +391,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461612470-670817704.png" 
                         alt="Food Trucks"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -405,11 +405,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461915128-444109464.png" 
                         alt="Lago"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -419,11 +419,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461883262-202070760.png" 
                         alt="Skate Park"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -433,11 +433,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461446334-956687771.png" 
                         alt="Área de Campamento"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
@@ -447,11 +447,11 @@ export default function ParkLandingPage() {
                   </div>
                   
                   <div className="flex items-center p-4 bg-gray-50 rounded-lg border">
-                    <div className="w-12 h-12 mr-3 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
                       <img 
                         src="/uploads/amenity-icon-1750461633827-931697128.png" 
                         alt="Fuentes"
-                        className="w-10 h-10 object-contain"
+                        className="w-8 h-8 object-contain"
                       />
                     </div>
                     <div className="flex-1">
