@@ -12,7 +12,11 @@ import {
   FileText, 
   AlertCircle,
   MessageSquare,
-  Trees
+  Trees,
+  Globe,
+  Calendar,
+  Clock,
+  Phone
 } from 'lucide-react';
 import { ExtendedPark } from '@shared/schema';
 import { Badge } from '@/components/ui/badge';
