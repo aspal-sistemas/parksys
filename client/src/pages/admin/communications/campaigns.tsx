@@ -1,6 +1,6 @@
 import React from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { CampaignsSection } from '../communications/index';
+import { CampaignsSection } from './index';
 
 const CommunicationCampaignsPage: React.FC = () => {
   return (

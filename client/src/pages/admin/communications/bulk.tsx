@@ -1,6 +1,6 @@
 import React from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { BulkEmailSection } from '../communications/index';
+import { BulkEmailSection } from './index';
 
 const CommunicationBulkPage: React.FC = () => {
   return (

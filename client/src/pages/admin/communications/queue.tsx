@@ -1,6 +1,6 @@
 import React from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { QueueSection } from '../communications/index';
+import { QueueSection } from './index';
 
 const CommunicationQueuePage: React.FC = () => {
   return (

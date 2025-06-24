@@ -58,6 +58,8 @@ import {
   Camera,
   Heart,
   AlertCircle,
+  Mail,
+  Clock,
   AlertTriangle,
   Database,
   Lock,
@@ -700,7 +702,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
             <NavItem 
               href="/admin/communications/bulk" 
-              icon={<Send className="h-5 w-5" />}
+              icon={<Mail className="h-5 w-5" />}
               active={location.startsWith('/admin/communications/bulk')}
             >
               Envío Masivo

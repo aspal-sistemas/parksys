@@ -1,6 +1,6 @@
 import React from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { AnalyticsSection } from '../communications/index';
+import { AnalyticsSection } from './index';
 
 const CommunicationAnalyticsPage: React.FC = () => {
   return (
