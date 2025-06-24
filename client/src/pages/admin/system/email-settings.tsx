@@ -14,6 +14,11 @@ import AdminLayout from "@/components/AdminLayout";
 export default function EmailSettings() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Query para obtener el estado de configuración
+  const { data: emailStatus } = useQuery({
+    queryKey: ["/api/email/status"],
+  });
   
   const [testEmail, setTestEmail] = useState({
     to: "",
@@ -130,6 +135,16 @@ export default function EmailSettings() {
                 {testingConnection ? "Probando..." : "Probar Conexión"}
               </Button>
 
+              <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                <div className="flex items-center gap-2 text-yellow-800">
+                  <Mail className="h-4 w-4" />
+                  <span className="font-medium">Estado del Sistema</span>
+                </div>
+                <p className="text-sm text-yellow-700 mt-1">
+                  Sistema de email robusto instalado con soporte para SendGrid y Gmail
+                </p>
+              </div>
+
               {connectionStatus && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
@@ -167,20 +182,20 @@ export default function EmailSettings() {
                 <div className="text-sm space-y-1">
                   <div className="flex justify-between">
                     <span>SENDGRID_API_KEY:</span>
-                    <Badge variant={process.env.SENDGRID_API_KEY ? "default" : "destructive"}>
-                      {process.env.SENDGRID_API_KEY ? "Configurado" : "Faltante"}
+                    <Badge variant={emailStatus?.sendgrid ? "default" : "destructive"}>
+                      {emailStatus?.sendgrid ? "Configurado" : "Faltante"}
                     </Badge>
                   </div>
                   <div className="flex justify-between">
                     <span>GMAIL_USER:</span>
-                    <Badge variant={process.env.GMAIL_USER ? "default" : "secondary"}>
-                      {process.env.GMAIL_USER ? "Configurado" : "Opcional"}
+                    <Badge variant={emailStatus?.gmail ? "default" : "secondary"}>
+                      {emailStatus?.gmail ? "Configurado" : "Opcional"}
                     </Badge>
                   </div>
                   <div className="flex justify-between">
                     <span>GMAIL_APP_PASSWORD:</span>
-                    <Badge variant={process.env.GMAIL_APP_PASSWORD ? "default" : "secondary"}>
-                      {process.env.GMAIL_APP_PASSWORD ? "Configurado" : "Opcional"}
+                    <Badge variant={emailStatus?.gmail ? "default" : "secondary"}>
+                      {emailStatus?.gmail ? "Configurado" : "Opcional"}
                     </Badge>
                   </div>
                 </div>

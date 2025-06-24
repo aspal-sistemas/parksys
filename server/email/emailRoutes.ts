@@ -4,6 +4,28 @@ import { emailService } from "./emailService";
 const emailRouter = Router();
 
 /**
+ * Ruta para obtener el estado de configuración de email
+ */
+emailRouter.get("/status", async (req: Request, res: Response) => {
+  try {
+    const status = {
+      sendgrid: !!process.env.SENDGRID_API_KEY,
+      gmail: !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD),
+      configured: !!(process.env.SENDGRID_API_KEY || (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD))
+    };
+    res.json(status);
+  } catch (error) {
+    console.error("Error getting email status:", error);
+    res.status(500).json({ 
+      sendgrid: false, 
+      gmail: false, 
+      configured: false,
+      error: 'Error interno del servidor' 
+    });
+  }
+});
+
+/**
  * Ruta para probar la configuración de email
  */
 emailRouter.get("/test-connection", async (req: Request, res: Response) => {
