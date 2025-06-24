@@ -698,35 +698,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `, [parkId]);
       console.log(`Documentos encontrados: ${documentsResult.rows.length}`);
 
-      // Obtener instructores asignados al parque - consulta simplificada hasta verificar estructura
+      // Obtener instructores asignados al parque
       console.log('Paso 5: Consultando instructores del parque...');
       const instructorsResult = await pool.query(`
-        SELECT u.id, u.full_name as "fullName", u.email, u.phone, 
-               u.profile_image_url as "profileImageUrl"
+        SELECT i.id, i.full_name as "fullName", i.email, i.phone, 
+               i.specialties, i.experience_years as "experienceYears", i.bio,
+               i.profile_image_url as "profileImageUrl"
         FROM instructors i
-        JOIN users u ON i.user_id = u.id
-        ORDER BY u.full_name
-        LIMIT 5
-      `, []);
+        WHERE i.preferred_park_id = $1
+        ORDER BY i.full_name
+        LIMIT 10
+      `, [parkId]);
       console.log(`Instructores encontrados: ${instructorsResult.rows.length}`);
 
       // Obtener voluntarios que prefieren este parque
       console.log('Paso 6: Consultando voluntarios del parque...');
       const volunteersResult = await pool.query(`
-        SELECT u.id, u.full_name as "fullName", u.email, u.phone,
-               u.profile_image_url as "profileImageUrl"
+        SELECT v.id, v.full_name as "fullName", v.email, v.phone,
+               v.skills, v.previous_experience as "previousExperience",
+               v.profile_image_url as "profileImageUrl", v.interest_areas as "interestAreas"
         FROM volunteers v
-        JOIN users u ON v.user_id = u.id
         WHERE v.preferred_park_id = $1
-        ORDER BY u.full_name
+        ORDER BY v.full_name
         LIMIT 10
       `, [parkId]);
       console.log(`Voluntarios encontrados: ${volunteersResult.rows.length}`);
 
-      // Obtener activos del parque - consulta simplificada hasta verificar estructura
+      // Obtener activos del parque
       console.log('Paso 7: Consultando activos del parque...');
       const assetsResult = await pool.query(`
-        SELECT id, name, description
+        SELECT id, name, description, condition, status, category_id as "categoryId"
         FROM assets
         WHERE park_id = $1
         ORDER BY name
