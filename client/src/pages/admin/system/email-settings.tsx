@@ -263,13 +263,75 @@ export default function EmailSettings() {
           </Card>
         </div>
 
+        {/* Configuración de Claves */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-green-600">Configurar Gmail/Google Workspace</CardTitle>
+            <CardDescription>
+              Configura tu cuenta de Gmail para enviar emails desde el sistema
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+              <h4 className="font-medium text-green-900 mb-3">Pasos para obtener las credenciales:</h4>
+              <ol className="list-decimal list-inside text-sm text-green-800 space-y-2">
+                <li>Ve a tu <a href="https://myaccount.google.com" target="_blank" className="underline font-medium">Cuenta de Google</a></li>
+                <li>En el menú izquierdo, selecciona <strong>"Seguridad"</strong></li>
+                <li>Busca <strong>"Verificación en 2 pasos"</strong> y actívala si no está activa</li>
+                <li>Busca <strong>"Contraseñas de aplicaciones"</strong> (App passwords)</li>
+                <li>Selecciona <strong>"Correo"</strong> como aplicación</li>
+                <li>Google generará una contraseña de 16 caracteres</li>
+                <li>Copia esa contraseña y úsala como GMAIL_APP_PASSWORD</li>
+              </ol>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-green-700 font-medium">GMAIL_USER</Label>
+                <div className="p-3 bg-white border border-green-300 rounded">
+                  <p className="text-sm text-gray-600 mb-1">Tu dirección de Gmail:</p>
+                  <code className="text-green-700 bg-green-100 px-2 py-1 rounded text-sm">
+                    tuempresa@gmail.com
+                  </code>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-green-700 font-medium">GMAIL_APP_PASSWORD</Label>
+                <div className="p-3 bg-white border border-green-300 rounded">
+                  <p className="text-sm text-gray-600 mb-1">Contraseña de aplicación (16 caracteres):</p>
+                  <code className="text-green-700 bg-green-100 px-2 py-1 rounded text-sm">
+                    abcd efgh ijkl mnop
+                  </code>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
+              <h5 className="font-medium text-yellow-800 mb-1">⚠️ Importante:</h5>
+              <p className="text-sm text-yellow-700">
+                NO uses tu contraseña normal de Gmail. Debes generar una "Contraseña de aplicación" específica desde la configuración de seguridad de Google.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center pt-4">
+              <Button 
+                onClick={() => window.open('https://myaccount.google.com/security', '_blank')}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Ir a Configuración de Google
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Instrucciones de Configuración */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-blue-600">Opción 1: SendGrid (Recomendado)</CardTitle>
+              <CardTitle className="text-blue-600">Opción 1: SendGrid (Profesional)</CardTitle>
               <CardDescription>
-                Servicio profesional con alta entregabilidad
+                Servicio recomendado para uso empresarial
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -279,34 +341,28 @@ export default function EmailSettings() {
                   <li>Crea cuenta en <a href="https://sendgrid.com" target="_blank" className="underline">sendgrid.com</a></li>
                   <li>Ve a Settings → API Keys</li>
                   <li>Crea nueva API Key con permisos de envío</li>
-                  <li>Copia la clave y agrégala como SENDGRID_API_KEY</li>
+                  <li>Copia la clave y agrégala como SENDGRID_API_KEY en secretos</li>
                 </ol>
               </div>
               <div className="text-sm">
-                <strong>Ventajas:</strong> Alta entregabilidad, análiticas, plantillas dinámicas
+                <strong>Ventajas:</strong> Alta entregabilidad, análiticas, plantillas dinámicas, soporte empresarial
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-green-600">Opción 2: Gmail/Google Workspace</CardTitle>
+              <CardTitle className="text-green-600">Opción 2: Gmail (Configurado arriba)</CardTitle>
               <CardDescription>
-                Alternativa usando tu cuenta de Gmail
+                Usando tu cuenta de Gmail actual
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="p-3 bg-green-50 rounded-lg">
-                <h4 className="font-medium text-green-900">Pasos para configurar:</h4>
-                <ol className="list-decimal list-inside text-sm text-green-800 mt-2 space-y-1">
-                  <li>Ve a tu <a href="https://myaccount.google.com" target="_blank" className="underline">Cuenta de Google</a></li>
-                  <li>Seguridad → Verificación en 2 pasos (activar)</li>
-                  <li>Generar "Contraseña de aplicación"</li>
-                  <li>Configura GMAIL_USER (tu email) y GMAIL_APP_PASSWORD</li>
-                </ol>
-              </div>
-              <div className="text-sm">
-                <strong>Ventajas:</strong> Fácil configuración, sin costo adicional, familiar
+              <div className="text-sm space-y-2">
+                <p><strong>Estado:</strong> <span className={emailStatus?.gmail ? "text-green-600" : "text-orange-600"}>{emailStatus?.gmail ? "Configurado" : "Pendiente"}</span></p>
+                <p><strong>Configuración:</strong> Ver instrucciones arriba</p>
+                <p><strong>Ventajas:</strong> Gratis, fácil configuración, familiar</p>
+                <p><strong>Limitaciones:</strong> 500 emails/día, menos funciones empresariales</p>
               </div>
             </CardContent>
           </Card>
