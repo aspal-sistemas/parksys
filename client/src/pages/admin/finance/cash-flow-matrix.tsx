@@ -81,6 +81,16 @@ export default function CashFlowMatrix() {
     }
   });
 
+  // Cargar datos proyectados desde planificación presupuestaria
+  const { data: budgetMatrix } = useQuery({
+    queryKey: ['budget-projections', selectedYear],
+    queryFn: async () => {
+      const response = await fetch(`/api/budget-projections/${selectedYear}`);
+      if (!response.ok) throw new Error('Error al cargar proyecciones');
+      return response.json();
+    }
+  });
+
   const { data: parks } = useQuery({
     queryKey: ["/api/parks"],
   });
