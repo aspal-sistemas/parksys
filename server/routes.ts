@@ -677,6 +677,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Obtener actividades del parque
+      console.log('Paso 3: Consultando actividades del parque...');
       const activitiesResult = await pool.query(`
         SELECT id, title, description, start_date as "startDate", category
         FROM activities
@@ -684,8 +685,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ORDER BY start_date DESC
         LIMIT 10
       `, [parkId]);
+      console.log(`Actividades encontradas: ${activitiesResult.rows.length}`);
       
       // Obtener documentos del parque
+      console.log('Paso 4: Consultando documentos del parque...');
       const documentsResult = await pool.query(`
         SELECT id, title, file_url as "fileUrl", file_type as "fileType", 
                description, category, created_at as "createdAt"
@@ -693,9 +696,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         WHERE park_id = $1
         ORDER BY created_at DESC
       `, [parkId]);
+      console.log(`Documentos encontrados: ${documentsResult.rows.length}`);
+
+      // Obtener instructores asignados al parque
+      console.log('Paso 5: Consultando instructores del parque...');
+      const instructorsResult = await pool.query(`
+        SELECT u.id, u.full_name as "fullName", u.email, u.phone, 
+               i.experience, i.specialties, i.bio, u.profile_image_url as "profileImageUrl"
+        FROM instructors i
+        JOIN users u ON i.user_id = u.id
+        WHERE i.assigned_park_id = $1
+        ORDER BY u.full_name
+      `, [parkId]);
+      console.log(`Instructores encontrados: ${instructorsResult.rows.length}`);
+
+      // Obtener voluntarios que prefieren este parque
+      console.log('Paso 6: Consultando voluntarios del parque...');
+      const volunteersResult = await pool.query(`
+        SELECT u.id, u.full_name as "fullName", u.email, u.phone,
+               v.skills, v.availability, v.volunteer_experience as "volunteerExperience",
+               u.profile_image_url as "profileImageUrl"
+        FROM volunteers v
+        JOIN users u ON v.user_id = u.id
+        WHERE v.preferred_park_id = $1
+        ORDER BY u.full_name
+        LIMIT 10
+      `, [parkId]);
+      console.log(`Voluntarios encontrados: ${volunteersResult.rows.length}`);
+
+      // Obtener activos del parque
+      console.log('Paso 7: Consultando activos del parque...');
+      const assetsResult = await pool.query(`
+        SELECT id, name, category, description, condition, 
+               acquisition_date as "acquisitionDate", asset_value as "assetValue"
+        FROM assets
+        WHERE park_id = $1
+        ORDER BY name
+        LIMIT 10
+      `, [parkId]);
+      console.log(`Activos encontrados: ${assetsResult.rows.length}`);
       
       // Construir respuesta completa
-      console.log('Paso 4: Construyendo respuesta final...');
+      console.log('Paso 8: Construyendo respuesta final...');
       const extendedPark = {
         ...park,
         municipality: {
@@ -705,6 +747,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amenities: amenitiesResult.rows,
         activities: activitiesResult.rows,
         documents: documentsResult.rows,
+        instructors: instructorsResult.rows,
+        volunteers: volunteersResult.rows,
+        assets: assetsResult.rows,
         images: [],
         trees: {
           total: 0,
@@ -713,7 +758,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
       
-      console.log(`Respuesta final: ${extendedPark.name} con ${extendedPark.amenities.length} amenidades`);
+      console.log(`Respuesta final: ${extendedPark.name} con ${extendedPark.amenities.length} amenidades, ${extendedPark.activities.length} actividades, ${extendedPark.instructors.length} instructores, ${extendedPark.volunteers.length} voluntarios, ${extendedPark.assets.length} activos`);
       console.log('=== FIN PROCESAMIENTO ===');
       res.json(extendedPark);
     } catch (error) {
