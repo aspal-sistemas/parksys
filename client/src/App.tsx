@@ -338,6 +338,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/events/calendar')))}
           </Suspense>
         </Route>
+        <Route path="/admin/events/categories">
+          <Suspense fallback={<div className="p-8 text-center">Cargando categorías de eventos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/events/categories')))}
+          </Suspense>
+        </Route>
 
         {/* Rutas para el módulo de activos */}
         <Route path="/admin/assets/dashboard">
