@@ -114,17 +114,30 @@ export const getQueryFn: <T>(options: {
       "X-User-Role": userRole
     };
 
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-      headers
-    });
+    try {
+      const res = await fetch(queryKey[0] as string, {
+        credentials: "include",
+        headers,
+        signal: AbortSignal.timeout(30000) // 30 second timeout
+      });
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        return null;
+      }
+
+      await throwIfResNotOk(res);
+      return await res.json();
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        console.error('Network connectivity issue:', error);
+        throw new Error('Network error: Unable to connect to server. Please check your connection.');
+      }
+      if (error.name === 'AbortError') {
+        console.error('Request timeout:', error);
+        throw new Error('Request timeout: Server is taking too long to respond.');
+      }
+      throw error;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({
