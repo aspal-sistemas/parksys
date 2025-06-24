@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { emailTemplateService } from './emailTemplateService';
 import { emailQueueService } from './emailQueueService';
 import { emailService } from '../email/emailService';
-import { db } from '../storage';
+import { pool } from '../storage';
 import { users } from '../../shared/schema';
 import { eq, inArray } from 'drizzle-orm';
 

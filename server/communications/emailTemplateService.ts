@@ -1,7 +1,7 @@
 import Handlebars from 'handlebars';
 import juice from 'juice';
 import { convert } from 'html-to-text';
-import { db } from '../storage';
+import { pool } from '../storage';
 import { emailTemplates } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 
@@ -56,7 +56,8 @@ export class EmailTemplateService {
    * Obtiene todas las plantillas disponibles
    */
   async getAllTemplates() {
-    return await db.select().from(emailTemplates).orderBy(emailTemplates.name);
+    const result = await pool.query('SELECT * FROM email_templates ORDER BY name');
+    return result.rows;
   }
 
   /**

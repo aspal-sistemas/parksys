@@ -1,4 +1,4 @@
-import { db } from '../storage';
+import { pool } from '../storage';
 import { emailTemplates } from '../../shared/schema';
 
 /**
@@ -212,7 +212,19 @@ export async function seedEmailTemplates() {
     // Insertar plantillas
     for (const template of templates) {
       try {
-        await db.insert(emailTemplates).values(template);
+        await pool.query(`
+          INSERT INTO email_templates (name, subject, html_content, text_content, template_type, module_id, variables)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+          ON CONFLICT (name) DO NOTHING
+        `, [
+          template.name,
+          template.subject,
+          template.htmlContent,
+          template.textContent,
+          template.templateType,
+          template.moduleId,
+          JSON.stringify(template.variables)
+        ]);
         console.log(`✅ Plantilla creada: ${template.name}`);
       } catch (error) {
         console.log(`ℹ️ Plantilla ya existe: ${template.name}`);

@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '../storage';
+import { pool } from '../storage';
 import { emailQueue, emailLogs, emailTemplates } from '../../shared/schema';
 import { eq, and, lte, gte, desc, asc } from 'drizzle-orm';
 import { emailService } from '../email/emailService';
