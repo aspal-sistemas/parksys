@@ -623,6 +623,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint específico para datos extendidos del parque (landing page)
+  apiRouter.get("/parks/:id/extended", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      console.log("Solicitando datos extendidos para parque:", parkId);
+      
+      // Obtener datos básicos del parque
+      const parkResult = await pool.query(`
+        SELECT 
+          p.id, p.name, p.municipality_id as "municipalityId", 
+          p.park_type as "parkType", p.description, p.address, 
+          p.postal_code as "postalCode", p.latitude, p.longitude, 
+          p.area, p.foundation_year as "foundationYear",
+          p.administrator, p.conservation_status as "conservationStatus",
+          p.regulation_url as "regulationUrl", p.opening_hours as "openingHours", 
+          p.contact_email as "contactEmail", p.contact_phone as "contactPhone",
+          p.video_url as "videoUrl",
+          m.name as "municipalityName", m.state
+        FROM parks p
+        LEFT JOIN municipalities m ON p.municipality_id = m.id
+        WHERE p.id = $1
+      `, [parkId]);
+      
+      if (parkResult.rows.length === 0) {
+        return res.status(404).json({ message: "Park not found" });
+      }
+      
+      const park = parkResult.rows[0];
+      
+      // Obtener amenidades del parque
+      const amenitiesResult = await pool.query(`
+        SELECT a.id, a.name, a.icon, a.category, 
+               a.icon_type as "iconType", a.custom_icon_url as "customIconUrl",
+               a.description
+        FROM amenities a
+        JOIN park_amenities pa ON a.id = pa.amenity_id
+        WHERE pa.park_id = $1
+        ORDER BY a.name
+      `, [parkId]);
+      
+      console.log("Amenidades encontradas para parque", parkId, ":", amenitiesResult.rows.length);
+      
+      // Obtener actividades del parque
+      const activitiesResult = await pool.query(`
+        SELECT id, title, description, start_date as "startDate", category
+        FROM activities
+        WHERE park_id = $1
+        ORDER BY start_date DESC
+        LIMIT 10
+      `, [parkId]);
+      
+      // Obtener documentos del parque
+      const documentsResult = await pool.query(`
+        SELECT id, title, file_url as "fileUrl", file_type as "fileType", 
+               description, category, created_at as "createdAt"
+        FROM park_documents
+        WHERE park_id = $1
+        ORDER BY created_at DESC
+      `, [parkId]);
+      
+      // Construir respuesta completa
+      const extendedPark = {
+        ...park,
+        municipality: {
+          name: park.municipalityName,
+          state: park.state
+        },
+        amenities: amenitiesResult.rows,
+        activities: activitiesResult.rows,
+        documents: documentsResult.rows,
+        images: [],
+        trees: {
+          total: 0,
+          byHealth: {},
+          bySpecies: {}
+        }
+      };
+      
+      res.json(extendedPark);
+    } catch (error) {
+      console.error("Error al obtener datos extendidos del parque:", error);
+      res.status(500).json({ message: "Error fetching extended park data" });
+    }
+  });
+
   // Get detailed park information with all related data
   apiRouter.get("/parks/:id/details", async (req: Request, res: Response) => {
     try {
