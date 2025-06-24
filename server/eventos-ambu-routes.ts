@@ -81,7 +81,8 @@ export function registerEventosAmbuRoutes(app: any, apiRouter: Router, isAuthent
         countQuery = countQuery.where(and(...whereConditions));
       }
       
-      const [{ count }] = await countQuery;
+      const countResult = await countQuery;
+      const count = countResult?.[0]?.count || 0;
       
       res.json({
         eventos,

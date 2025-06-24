@@ -141,7 +141,7 @@ export default function CalendarioEventosAmbu() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Calendario de Eventos AMBU
+            Calendario de Eventos
           </h1>
           <p className="text-gray-600 mt-1">
             Vista mensual de eventos de bajo y alto impacto
