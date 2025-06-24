@@ -736,8 +736,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `, [parkId]);
       console.log(`Activos encontrados: ${assetsResult.rows.length}`);
       
+      // Obtener imágenes del parque
+      console.log('Paso 8: Consultando imágenes del parque...');
+      const imagesResult = await pool.query(`
+        SELECT id, image_url as "imageUrl", caption, is_primary as "isPrimary", created_at as "createdAt"
+        FROM park_images
+        WHERE park_id = $1
+        ORDER BY is_primary DESC, created_at ASC
+      `, [parkId]);
+      console.log(`Imágenes encontradas: ${imagesResult.rows.length}`);
+      
+      // Buscar imagen principal
+      let primaryImage = null;
+      const images = imagesResult.rows.map(img => ({
+        id: img.id,
+        imageUrl: img.imageUrl,
+        url: img.imageUrl,
+        caption: img.caption,
+        isPrimary: img.isPrimary,
+        createdAt: img.createdAt
+      }));
+      
+      if (images.length > 0) {
+        const primaryImg = images.find(img => img.isPrimary);
+        primaryImage = primaryImg ? primaryImg.imageUrl : images[0].imageUrl;
+        console.log(`Imagen principal encontrada: ${primaryImage}`);
+      }
+
       // Construir respuesta completa
-      console.log('Paso 8: Construyendo respuesta final...');
+      console.log('Paso 9: Construyendo respuesta final...');
       const extendedPark = {
         ...park,
         municipality: {
@@ -750,7 +777,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         instructors: instructorsResult.rows,
         volunteers: volunteersResult.rows,
         assets: assetsResult.rows,
-        images: [],
+        images: images,
+        primaryImage: primaryImage,
         trees: {
           total: 0,
           byHealth: {},
