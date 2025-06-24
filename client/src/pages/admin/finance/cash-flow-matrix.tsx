@@ -831,18 +831,16 @@ export default function CashFlowMatrix() {
                   <thead>
                     <tr className="bg-green-50">
                       <th className="border border-gray-300 p-3 text-left font-semibold">Categoría</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Ene</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Feb</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Mar</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Abr</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">May</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Jun</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Jul</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Ago</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Sep</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Oct</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Nov</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Dic</th>
+                      {["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"].map((month) => (
+                        <th key={month} className="border border-gray-300 p-2 text-center font-semibold">
+                          <div className="text-sm">{month}</div>
+                          <div className="grid grid-cols-3 gap-1 text-xs mt-1">
+                            <div className="text-blue-600">Proyec</div>
+                            <div className="text-gray-600">Real</div>
+                            <div className="text-orange-600">Var</div>
+                          </div>
+                        </th>
+                      ))}
                       <th className="border border-gray-300 p-3 text-center font-semibold">Total</th>
                     </tr>
                   </thead>
@@ -850,70 +848,43 @@ export default function CashFlowMatrix() {
                     {data.categories.filter(cat => cat.type === 'income').map((category, index) => {
                       const projectedCategory = budgetMatrix?.incomeCategories?.find(p => p.categoryName === category.name);
                       return (
-                        <React.Fragment key={category.name}>
-                          {/* Fila Proyectado */}
-                          <tr className="bg-blue-50">
-                            <td className="border border-gray-300 p-2 text-sm">
-                              <div className="font-medium">{category.name}</div>
-                              <div className="text-xs text-blue-600">Proyectado</div>
-                            </td>
-                            {Array.from({length: 12}, (_, monthIndex) => {
-                              const projected = projectedCategory?.months[monthIndex + 1] || 0;
-                              return (
-                                <td key={monthIndex} className="border border-gray-300 p-2 text-center text-xs text-blue-700">
-                                  {formatCurrency(projected)}
-                                </td>
-                              );
-                            })}
-                            <td className="border border-gray-300 p-2 text-center text-sm font-semibold text-blue-700">
-                              {formatCurrency(projectedCategory?.total || 0)}
-                            </td>
-                          </tr>
-                          
-                          {/* Fila Real */}
-                          <tr className="bg-white">
-                            <td className="border border-gray-300 p-2 text-sm">
-                              <div className="text-xs text-gray-600">Real</div>
-                            </td>
-                            {category.monthlyValues.map((value, monthIndex) => (
-                              <td key={monthIndex} className="border border-gray-300 p-2 text-center text-xs">
-                                {formatCurrency(value)}
+                        <tr key={category.name} className={index % 2 === 0 ? 'bg-white' : 'bg-green-50'}>
+                          <td className="border border-gray-300 p-3 font-medium">{category.name}</td>
+                          {Array.from({length: 12}, (_, monthIndex) => {
+                            const projected = projectedCategory?.months[monthIndex + 1] || 0;
+                            const real = category.monthlyValues[monthIndex] || 0;
+                            const variance = real - projected;
+                            const isPositive = variance >= 0;
+                            return (
+                              <td key={monthIndex} className="border border-gray-300 p-1">
+                                <div className="grid grid-cols-3 gap-1 text-xs">
+                                  <div className="text-center text-blue-700 bg-blue-50 rounded px-1">
+                                    {projected > 0 ? formatCurrency(projected).replace('$', '').replace(',', 'k').slice(0, 4) : '-'}
+                                  </div>
+                                  <div className="text-center text-gray-700 bg-gray-50 rounded px-1">
+                                    {real > 0 ? formatCurrency(real).replace('$', '').replace(',', 'k').slice(0, 4) : '-'}
+                                  </div>
+                                  <div className={`text-center rounded px-1 ${isPositive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
+                                    {variance !== 0 ? (variance > 0 ? '+' : '') + formatCurrency(variance).replace('$', '').replace(',', 'k').slice(0, 4) : '-'}
+                                  </div>
+                                </div>
                               </td>
-                            ))}
-                            <td className="border border-gray-300 p-2 text-center text-sm font-semibold">
-                              {formatCurrency(category.total)}
-                            </td>
-                          </tr>
-                          
-                          {/* Fila Varianza */}
-                          <tr className="bg-yellow-50">
-                            <td className="border border-gray-300 p-2 text-sm">
-                              <div className="text-xs text-orange-600">Varianza</div>
-                            </td>
-                            {Array.from({length: 12}, (_, monthIndex) => {
-                              const projected = projectedCategory?.months[monthIndex + 1] || 0;
-                              const real = category.monthlyValues[monthIndex] || 0;
-                              const variance = real - projected;
-                              const isPositive = variance >= 0;
-                              return (
-                                <td key={monthIndex} className={`border border-gray-300 p-2 text-center text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                                  {variance !== 0 ? formatCurrency(variance) : '-'}
-                                </td>
-                              );
-                            })}
-                            <td className="border border-gray-300 p-2 text-center text-sm font-semibold">
-                              {(() => {
-                                const totalVariance = category.total - (projectedCategory?.total || 0);
-                                const isPositive = totalVariance >= 0;
-                                return (
-                                  <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
-                                    {formatCurrency(totalVariance)}
-                                  </span>
-                                );
-                              })()}
-                            </td>
-                          </tr>
-                        </React.Fragment>
+                            );
+                          })}
+                          <td className="border border-gray-300 p-3 text-center">
+                            <div className="grid grid-cols-3 gap-1 text-xs">
+                              <div className="text-blue-700 font-semibold">
+                                {formatCurrency(projectedCategory?.total || 0)}
+                              </div>
+                              <div className="text-gray-700 font-semibold">
+                                {formatCurrency(category.total)}
+                              </div>
+                              <div className={`font-semibold ${(category.total - (projectedCategory?.total || 0)) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {formatCurrency(category.total - (projectedCategory?.total || 0))}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
                       );
                     })}
                   </tbody>
@@ -934,18 +905,16 @@ export default function CashFlowMatrix() {
                   <thead>
                     <tr className="bg-red-50">
                       <th className="border border-gray-300 p-3 text-left font-semibold">Categoría</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Ene</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Feb</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Mar</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Abr</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">May</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Jun</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Jul</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Ago</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Sep</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Oct</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Nov</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Dic</th>
+                      {["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"].map((month) => (
+                        <th key={month} className="border border-gray-300 p-2 text-center font-semibold">
+                          <div className="text-sm">{month}</div>
+                          <div className="grid grid-cols-3 gap-1 text-xs mt-1">
+                            <div className="text-blue-600">Proyec</div>
+                            <div className="text-gray-600">Real</div>
+                            <div className="text-orange-600">Var</div>
+                          </div>
+                        </th>
+                      ))}
                       <th className="border border-gray-300 p-3 text-center font-semibold">Total</th>
                     </tr>
                   </thead>
@@ -953,70 +922,43 @@ export default function CashFlowMatrix() {
                     {data.categories.filter(cat => cat.type === 'expense').map((category, index) => {
                       const projectedCategory = budgetMatrix?.expenseCategories?.find(p => p.categoryName === category.name);
                       return (
-                        <React.Fragment key={category.name}>
-                          {/* Fila Proyectado */}
-                          <tr className="bg-blue-50">
-                            <td className="border border-gray-300 p-2 text-sm">
-                              <div className="font-medium">{category.name}</div>
-                              <div className="text-xs text-blue-600">Proyectado</div>
-                            </td>
-                            {Array.from({length: 12}, (_, monthIndex) => {
-                              const projected = projectedCategory?.months[monthIndex + 1] || 0;
-                              return (
-                                <td key={monthIndex} className="border border-gray-300 p-2 text-center text-xs text-blue-700">
-                                  {formatCurrency(projected)}
-                                </td>
-                              );
-                            })}
-                            <td className="border border-gray-300 p-2 text-center text-sm font-semibold text-blue-700">
-                              {formatCurrency(projectedCategory?.total || 0)}
-                            </td>
-                          </tr>
-                          
-                          {/* Fila Real */}
-                          <tr className="bg-white">
-                            <td className="border border-gray-300 p-2 text-sm">
-                              <div className="text-xs text-gray-600">Real</div>
-                            </td>
-                            {category.monthlyValues.map((value, monthIndex) => (
-                              <td key={monthIndex} className="border border-gray-300 p-2 text-center text-xs">
-                                {formatCurrency(value)}
+                        <tr key={category.name} className={index % 2 === 0 ? 'bg-white' : 'bg-red-50'}>
+                          <td className="border border-gray-300 p-3 font-medium">{category.name}</td>
+                          {Array.from({length: 12}, (_, monthIndex) => {
+                            const projected = projectedCategory?.months[monthIndex + 1] || 0;
+                            const real = category.monthlyValues[monthIndex] || 0;
+                            const variance = real - projected;
+                            const isPositive = variance >= 0; // Para gastos, positivo significa gastamos más
+                            return (
+                              <td key={monthIndex} className="border border-gray-300 p-1">
+                                <div className="grid grid-cols-3 gap-1 text-xs">
+                                  <div className="text-center text-blue-700 bg-blue-50 rounded px-1">
+                                    {projected > 0 ? formatCurrency(projected).replace('$', '').replace(',', 'k').slice(0, 4) : '-'}
+                                  </div>
+                                  <div className="text-center text-gray-700 bg-gray-50 rounded px-1">
+                                    {real > 0 ? formatCurrency(real).replace('$', '').replace(',', 'k').slice(0, 4) : '-'}
+                                  </div>
+                                  <div className={`text-center rounded px-1 ${isPositive ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'}`}>
+                                    {variance !== 0 ? (variance > 0 ? '+' : '') + formatCurrency(variance).replace('$', '').replace(',', 'k').slice(0, 4) : '-'}
+                                  </div>
+                                </div>
                               </td>
-                            ))}
-                            <td className="border border-gray-300 p-2 text-center text-sm font-semibold">
-                              {formatCurrency(category.total)}
-                            </td>
-                          </tr>
-                          
-                          {/* Fila Varianza */}
-                          <tr className="bg-yellow-50">
-                            <td className="border border-gray-300 p-2 text-sm">
-                              <div className="text-xs text-orange-600">Varianza</div>
-                            </td>
-                            {Array.from({length: 12}, (_, monthIndex) => {
-                              const projected = projectedCategory?.months[monthIndex + 1] || 0;
-                              const real = category.monthlyValues[monthIndex] || 0;
-                              const variance = real - projected;
-                              const isPositive = variance >= 0;
-                              return (
-                                <td key={monthIndex} className={`border border-gray-300 p-2 text-center text-xs ${isPositive ? 'text-red-600' : 'text-green-600'}`}>
-                                  {variance !== 0 ? formatCurrency(variance) : '-'}
-                                </td>
-                              );
-                            })}
-                            <td className="border border-gray-300 p-2 text-center text-sm font-semibold">
-                              {(() => {
-                                const totalVariance = category.total - (projectedCategory?.total || 0);
-                                const isPositive = totalVariance >= 0;
-                                return (
-                                  <span className={isPositive ? 'text-red-600' : 'text-green-600'}>
-                                    {formatCurrency(totalVariance)}
-                                  </span>
-                                );
-                              })()}
-                            </td>
-                          </tr>
-                        </React.Fragment>
+                            );
+                          })}
+                          <td className="border border-gray-300 p-3 text-center">
+                            <div className="grid grid-cols-3 gap-1 text-xs">
+                              <div className="text-blue-700 font-semibold">
+                                {formatCurrency(projectedCategory?.total || 0)}
+                              </div>
+                              <div className="text-gray-700 font-semibold">
+                                {formatCurrency(category.total)}
+                              </div>
+                              <div className={`font-semibold ${(category.total - (projectedCategory?.total || 0)) >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                {formatCurrency(category.total - (projectedCategory?.total || 0))}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
                       );
                     })}
                   </tbody>
@@ -1037,18 +979,11 @@ export default function CashFlowMatrix() {
                   <thead>
                     <tr className="bg-blue-50">
                       <th className="border border-gray-300 p-3 text-left font-semibold">Concepto</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Ene</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Feb</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Mar</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Abr</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">May</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Jun</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Jul</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Ago</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Sep</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Oct</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Nov</th>
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Dic</th>
+                      {["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"].map((month) => (
+                        <th key={month} className="border border-gray-300 p-2 text-center font-semibold">
+                          <div className="text-sm">{month}</div>
+                        </th>
+                      ))}
                       <th className="border border-gray-300 p-3 text-center font-semibold">Total Anual</th>
                     </tr>
                   </thead>
