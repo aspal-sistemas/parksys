@@ -12,8 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CalendarIcon, FileTextIcon, InfoIcon, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import { useLocation } from "wouter";
-import AdminLayout from "@/components/AdminLayout";
+
 
 // Schema de validación para eventos de bajo impacto
 const bajoImpactoSchema = z.object({
@@ -687,6 +686,6 @@ export default function SolicitudBajoImpacto() {
           </Button>
         </div>
       </form>
-      </div>
+    </div>
   );
 }

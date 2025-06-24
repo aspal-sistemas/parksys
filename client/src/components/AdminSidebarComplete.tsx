@@ -440,24 +440,11 @@ const AdminSidebarComplete: React.FC = () => {
             <NavItem 
               href="/admin/eventos-ambu" 
               icon={<ListFilter className="h-5 w-5" />}
-              active={location === '/admin/eventos-ambu'}
+              active={location.startsWith('/admin/eventos-ambu') && !location.includes('/calendar') && !location.includes('/tabulador')}
             >
               Eventos AMBU
             </NavItem>
-            <NavItem 
-              href="/admin/eventos-ambu/solicitud-bajo-impacto" 
-              icon={<Plus className="h-5 w-5 text-emerald-600" />}
-              active={location.startsWith('/admin/eventos-ambu/solicitud-bajo-impacto')}
-            >
-              Evento Bajo Impacto
-            </NavItem>
-            <NavItem 
-              href="/admin/eventos-ambu/solicitud-alto-impacto" 
-              icon={<Plus className="h-5 w-5 text-orange-600" />}
-              active={location.startsWith('/admin/eventos-ambu/solicitud-alto-impacto')}
-            >
-              Evento Alto Impacto
-            </NavItem>
+
             <NavItem 
               href="/admin/eventos-ambu/calendar" 
               icon={<Calendar className="h-5 w-5" />}

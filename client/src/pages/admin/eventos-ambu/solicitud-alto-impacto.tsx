@@ -12,8 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CalendarIcon, FileTextIcon, AlertTriangle, DollarSign, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import { useLocation } from "wouter";
-import AdminLayout from "@/components/AdminLayout";
+
 
 // Schema de validación para eventos de alto impacto
 const altoImpactoSchema = z.object({
@@ -881,6 +880,6 @@ export default function SolicitudAltoImpacto() {
           </Button>
         </div>
       </form>
-      </div>
+    </div>
   );
 }

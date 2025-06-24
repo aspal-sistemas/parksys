@@ -289,16 +289,7 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/index')))}
           </Suspense>
         </Route>
-        <Route path="/admin/eventos-ambu/solicitud-bajo-impacto">
-          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de eventos de bajo impacto...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/solicitud-bajo-impacto')))}
-          </Suspense>
-        </Route>
-        <Route path="/admin/eventos-ambu/solicitud-alto-impacto">
-          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de eventos de alto impacto...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/solicitud-alto-impacto')))}
-          </Suspense>
-        </Route>
+
         <Route path="/admin/eventos-ambu/calendar">
           <Suspense fallback={<div className="p-8 text-center">Cargando calendario de eventos AMBU...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/calendar')))}
