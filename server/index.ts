@@ -697,6 +697,10 @@ async function initializeDatabaseAsync() {
     const { registerFinanceRoutes } = await import('./finance-routes');
     registerFinanceRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
     
+    // Importar y registrar rutas de categorías de eventos
+    const { registerEventCategoriesRoutes } = await import('./event-categories-routes');
+    registerEventCategoriesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
     app.use("/api", apiRouter);
     console.log("API de integraciones financieras múltiples registrada correctamente");
     

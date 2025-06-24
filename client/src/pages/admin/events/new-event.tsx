@@ -71,9 +71,9 @@ export default function NewEventPage() {
     }))
   });
 
-  // Obtener categorías de actividades
+  // Obtener categorías de eventos
   const { data: categories } = useQuery({
-    queryKey: ['/api/activity-categories']
+    queryKey: ['/api/event-categories']
   });
 
   // Mutación para crear evento
