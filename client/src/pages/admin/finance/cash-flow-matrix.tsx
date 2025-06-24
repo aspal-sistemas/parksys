@@ -845,18 +845,14 @@ export default function CashFlowMatrix() {
           </div>
 
           <div className="space-y-6">
-            {/* INGRESOS */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-green-700">💰 INGRESOS - {selectedYear}</CardTitle>
-                <CardDescription>Proyectado vs Real por mes con varianza</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {data.categories.filter(cat => cat.type === 'income').map((category, index) => {
-                        const projectedCategory = budgetMatrix?.incomeCategories?.find(p => p.categoryName === category.name);
+                    {/* SECCIÓN INGRESOS */}
+                    <tr className="bg-green-200">
+                      <td colSpan={14} className="border border-gray-300 p-3 text-center font-bold text-green-800 text-lg">
+                        💰 INGRESOS - {selectedYear}
+                      </td>
+                    </tr>
+                    {data.categories.filter(cat => cat.type === 'income').map((category, index) => {
+                        const projectedCategory = budgetMatrix?.incomeCategories?.find((p: any) => p.categoryName === category.name);
                         return (
                         <tr key={category.name} className={index % 2 === 0 ? 'bg-white' : 'bg-green-50'}>
                           <td className="border border-gray-300 p-3 font-medium w-48">{category.name}</td>
@@ -902,7 +898,7 @@ export default function CashFlowMatrix() {
                       <tr className="bg-green-100 border-t-2 border-green-300">
                         <td className="border border-gray-300 p-3 font-bold text-green-800 w-48">TOTAL INGRESOS</td>
                         {Array.from({length: 12}, (_, monthIndex) => {
-                          const monthlyProjected = budgetMatrix?.incomeCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                          const monthlyProjected = budgetMatrix?.incomeCategories?.reduce((sum: any, cat: any) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
                           const monthlyReal = data.summaries.monthly.income[monthIndex] || 0;
                           const monthlyVariance = monthlyReal - monthlyProjected;
                           return (
@@ -935,24 +931,15 @@ export default function CashFlowMatrix() {
                           </div>
                         </td>
                       </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* EGRESOS */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-red-700">💸 EGRESOS - {selectedYear}</CardTitle>
-                <CardDescription>Proyectado vs Real por mes con varianza</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {data.categories.filter(cat => cat.type === 'expense').map((category, index) => {
-                        const projectedCategory = budgetMatrix?.expenseCategories?.find(p => p.categoryName === category.name);
+                    {/* SECCIÓN EGRESOS */}
+                    <tr className="bg-red-200">
+                      <td colSpan={14} className="border border-gray-300 p-3 text-center font-bold text-red-800 text-lg">
+                        💸 EGRESOS - {selectedYear}
+                      </td>
+                    </tr>
+                    {data.categories.filter(cat => cat.type === 'expense').map((category, index) => {
+                        const projectedCategory = budgetMatrix?.expenseCategories?.find((p: any) => p.categoryName === category.name);
                         return (
                         <tr key={category.name} className={index % 2 === 0 ? 'bg-white' : 'bg-red-50'}>
                           <td className="border border-gray-300 p-3 font-medium w-48">{category.name}</td>
@@ -998,7 +985,7 @@ export default function CashFlowMatrix() {
                       <tr className="bg-red-100 border-t-2 border-red-300">
                         <td className="border border-gray-300 p-3 font-bold text-red-800 w-48">TOTAL EGRESOS</td>
                         {Array.from({length: 12}, (_, monthIndex) => {
-                          const monthlyProjected = budgetMatrix?.expenseCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                          const monthlyProjected = budgetMatrix?.expenseCategories?.reduce((sum: any, cat: any) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
                           const monthlyReal = data.summaries.monthly.expenses[monthIndex] || 0;
                           const monthlyVariance = monthlyReal - monthlyProjected;
                           return (
@@ -1031,13 +1018,12 @@ export default function CashFlowMatrix() {
                           </div>
                         </td>
                       </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </>
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Tabla de proyecciones */}
