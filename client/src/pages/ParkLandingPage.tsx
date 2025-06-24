@@ -16,71 +16,17 @@ import {
   Globe,
   Calendar,
   Clock,
-  Phone
+  Phone,
+  Mail,
+  User,
+  ExternalLink
 } from 'lucide-react';
 import { ExtendedPark } from '@shared/schema';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import AmenityIcon from '@/components/ui/amenity-icon';
-
-interface ExtendedPark {
-  id: number;
-  name: string;
-  description: string;
-  location: string;
-  type: string;
-  area: number;
-  establishedYear: number;
-  municipality: {
-    id: number;
-    name: string;
-    state: string;
-  };
-  images: Array<{
-    id: number;
-    imageUrl: string;
-    isPrimary: boolean;
-    caption?: string;
-  }>;
-  amenities: Array<{
-    id: number;
-    name: string;
-    description: string;
-    icon: string;
-    customIconUrl?: string;
-  }>;
-  activities: Array<{
-    id: number;
-    title: string;
-    description: string;
-    category: string;
-    startDate: string;
-    endDate: string;
-  }>;
-  documents: Array<{
-    id: number;
-    title: string;
-    type: string;
-    fileUrl: string;
-  }>;
-  treeStats: {
-    total: number;
-    good: number;
-    regular: number;
-    bad: number;
-    unknown: number;
-  };
-  assets: Array<{
-    id: number;
-    name: string;
-    category: string;
-    condition: string;
-  }>;
-}
 
 export default function ParkLandingPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -106,15 +52,17 @@ export default function ParkLandingPage() {
 
   if (error || !park) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-600 text-6xl mb-4">🏞️</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Parque no encontrado</h1>
-          <p className="text-gray-600 mb-6">El parque que buscas no existe o no está disponible.</p>
+          <div className="text-red-600 mb-4">
+            <FileText className="h-16 w-16 mx-auto" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Parque no encontrado</h1>
+          <p className="text-gray-600 mb-6">No pudimos encontrar la información de este parque.</p>
           <Link href="/parks">
-            <Button className="bg-green-600 hover:bg-green-700">
+            <Button>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver a Parques
+              Volver a parques
             </Button>
           </Link>
         </div>
@@ -122,28 +70,57 @@ export default function ParkLandingPage() {
     );
   }
 
-  const primaryImage = park.images?.find(img => img.isPrimary) || park.images?.[0];
-  const formatArea = (area: number) => area >= 10000 ? `${(area / 10000).toFixed(1)} hectáreas` : `${area} m²`;
+  // Get main image
+  const mainImage = park.primaryImage || (park.images && park.images.length > 0 ? park.images[0].imageUrl : '');
+  const additionalImages = park.images?.filter(img => !img.isPrimary) || [];
+
+  // Format dates
+  const formatDate = (date: string | Date) => {
+    if (!date) return 'Fecha por confirmar';
+    return format(new Date(date), "EEEE, d 'de' MMMM 'de' yyyy • h:mm a", { locale: es });
+  };
+
+  // Get park type label
+  const getParkTypeLabel = (type: string) => {
+    const typeMap: Record<string, string> = {
+      'metropolitano': 'Metropolitano',
+      'barrial': 'Barrial', 
+      'vecinal': 'Vecinal',
+      'lineal': 'Lineal',
+      'ecologico': 'Ecológico',
+      'botanico': 'Botánico',
+      'deportivo': 'Deportivo',
+      'urbano': 'Urbano',
+      'natural': 'Natural',
+      'temático': 'Temático'
+    };
+    return typeMap[type] || type;
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      {/* Navegación superior */}
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Navigation */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <Link href="/parks">
             <Button variant="ghost" className="mb-2">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver a Parques
+              Volver a parques
             </Button>
           </Link>
+          <h1 className="text-3xl font-bold text-gray-900">{park.name}</h1>
+          <p className="text-gray-600 flex items-center mt-2">
+            <MapPin className="h-4 w-4 mr-1" />
+            {park.municipality?.name || 'Guadalajara'}, {park.municipality?.state || 'Jalisco'}
+          </p>
         </div>
       </div>
 
-      {/* Hero Section */}
+      {/* Hero Image Section */}
       <div className="relative h-96 overflow-hidden">
-        {primaryImage ? (
+        {mainImage ? (
           <img 
-            src={primaryImage.imageUrl} 
+            src={mainImage} 
             alt={park.name}
             className="w-full h-full object-cover"
           />
@@ -152,25 +129,23 @@ export default function ParkLandingPage() {
             <Trees className="h-24 w-24 text-white opacity-50" />
           </div>
         )}
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
-          <div className="max-w-7xl mx-auto px-4 py-8 text-white w-full">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="h-5 w-5" />
-              <span className="text-sm opacity-90">{park.municipality?.name || 'Guadalajara'}, {park.municipality?.state || 'Jalisco'}</span>
-            </div>
-            <h1 className="text-5xl font-bold mb-4">{park.name}</h1>
-            <div className="flex flex-wrap gap-3">
-              <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                {park.parkType || park.type || 'Parque urbano'}
+        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div className="absolute bottom-0 left-0 right-0 p-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-wrap gap-3 mb-4">
+              <Badge className="bg-white/20 text-white border-white/30">
+                {getParkTypeLabel(park.parkType || 'urbano')}
               </Badge>
               {park.area && (
-                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                  {formatArea(park.area)}
+                <Badge className="bg-white/20 text-white border-white/30">
+                  {Number(park.area) >= 10000 
+                    ? `${(Number(park.area) / 10000).toFixed(1)} hectáreas` 
+                    : `${park.area} m²`}
                 </Badge>
               )}
-              {park.establishedYear && (
-                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                  Est. {park.establishedYear}
+              {park.foundationYear && (
+                <Badge className="bg-white/20 text-white border-white/30">
+                  Est. {park.foundationYear}
                 </Badge>
               )}
             </div>
@@ -178,25 +153,102 @@ export default function ParkLandingPage() {
         </div>
       </div>
 
-      {/* Contenido principal */}
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Columna principal */}
+          {/* Content Column */}
           <div className="lg:col-span-2 space-y-8">
             
-            {/* Descripción */}
+            {/* Descripción General */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-green-600" />
-                  Acerca de este parque
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Globe className="h-6 w-6 text-green-600" />
+                  Información General
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 leading-relaxed text-lg">
-                  {park.description}
+                <p className="text-gray-700 leading-relaxed text-lg mb-6">
+                  {park.description || 'Espacio verde público destinado al esparcimiento y recreación de la comunidad.'}
                 </p>
+                
+                {/* Basic Details Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <Globe className="h-6 w-6 mx-auto mb-2 text-gray-600" />
+                    <p className="text-sm text-gray-500">Tipo</p>
+                    <p className="font-semibold">{getParkTypeLabel(park.parkType || 'urbano')}</p>
+                  </div>
+                  
+                  {park.area && (
+                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                      <Trees className="h-6 w-6 mx-auto mb-2 text-gray-600" />
+                      <p className="text-sm text-gray-500">Superficie</p>
+                      <p className="font-semibold">
+                        {Number(park.area) >= 10000 
+                          ? `${(Number(park.area) / 10000).toFixed(1)} ha` 
+                          : `${park.area} m²`}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {park.foundationYear && (
+                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                      <Calendar className="h-6 w-6 mx-auto mb-2 text-gray-600" />
+                      <p className="text-sm text-gray-500">Fundado</p>
+                      <p className="font-semibold">{park.foundationYear}</p>
+                    </div>
+                  )}
+                  
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <Clock className="h-6 w-6 mx-auto mb-2 text-gray-600" />
+                    <p className="text-sm text-gray-500">Horario</p>
+                    <p className="font-semibold">7:00 - 19:30</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Ubicación y Mapa */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <MapPin className="h-6 w-6 text-blue-600" />
+                  Ubicación
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4">
+                  <p className="text-gray-700 mb-2">{park.address || 'Dirección no especificada'}</p>
+                  <p className="text-sm text-gray-500">{park.municipality?.name}, {park.municipality?.state}</p>
+                </div>
+                
+                {/* Map */}
+                <div className="rounded-lg overflow-hidden h-64 bg-gray-200 mb-4">
+                  <iframe
+                    title={`Mapa de ${park.name}`}
+                    className="w-full h-full"
+                    src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=${park.latitude},${park.longitude}`}
+                    allowFullScreen
+                  ></iframe>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Cómo llegar
+                  </Button>
+                  <Button variant="outline" className="flex-1">
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Compartir ubicación
+                  </Button>
+                  <Button variant="outline" className="flex-1">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Ver en Google Maps
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -204,30 +256,27 @@ export default function ParkLandingPage() {
             {park.amenities && park.amenities.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5 text-blue-600" />
-                    Servicios y Amenidades
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Camera className="h-6 w-6 text-purple-600" />
+                    Servicios y Amenidades ({park.amenities.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {park.amenities.map((amenity) => (
-                      <div key={amenity.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        {amenity.customIconUrl ? (
-                          <img 
-                            src={amenity.customIconUrl} 
-                            alt={amenity.name}
-                            className="h-8 w-8"
+                      <div key={amenity.id} className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div className="w-10 h-10 mr-3 flex-shrink-0">
+                          <AmenityIcon 
+                            name={amenity.icon || ''} 
+                            customIconUrl={amenity.customIconUrl || null} 
+                            iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
+                            size={40}
                           />
-                        ) : (
-                          <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs">
-                            {amenity.icon}
-                          </div>
-                        )}
-                        <div>
+                        </div>
+                        <div className="flex-1">
                           <p className="font-medium text-sm">{amenity.name}</p>
                           {amenity.description && (
-                            <p className="text-xs text-gray-500">{amenity.description}</p>
+                            <p className="text-xs text-gray-500 mt-1">{amenity.description}</p>
                           )}
                         </div>
                       </div>
@@ -237,53 +286,103 @@ export default function ParkLandingPage() {
               </Card>
             )}
 
-            {/* Actividades */}
-            {park.activities && park.activities.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-purple-600" />
-                    Próximas Actividades
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+            {/* Actividades y Eventos */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Calendar className="h-6 w-6 text-orange-600" />
+                  Actividades y Eventos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {park.activities && park.activities.length > 0 ? (
                   <div className="space-y-4">
-                    {park.activities.slice(0, 3).map((activity) => (
-                      <div key={activity.id} className="border-l-4 border-purple-300 pl-4">
-                        <h4 className="font-semibold text-gray-800">{activity.title}</h4>
-                        <p className="text-sm text-gray-600 mb-2">{activity.description}</p>
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {new Date(activity.startDate).toLocaleDateString()}
-                          </span>
-                          <Badge variant="outline" className="text-xs">
-                            {activity.category}
-                          </Badge>
+                    {park.activities.map((activity) => (
+                      <div key={activity.id} className="border-l-4 border-orange-300 pl-4 py-3 bg-orange-50 rounded-r-lg">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-semibold text-gray-800">{activity.title}</h3>
+                          {activity.category && (
+                            <Badge variant="outline" className="ml-2">
+                              {activity.category}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-gray-600 text-sm mb-2">{activity.description}</p>
+                        <div className="flex items-center text-xs text-gray-500">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {formatDate(activity.startDate)}
                         </div>
                       </div>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                ) : (
+                  <div className="text-center py-8 bg-gray-50 rounded-lg">
+                    <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-500 mb-2">No hay actividades programadas actualmente</p>
+                    <p className="text-sm text-gray-400">Próximamente se publicarán nuevos eventos</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-            {/* Galería de imágenes */}
-            {park.images && park.images.length > 1 && (
+            {/* Documentos */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <FileText className="h-6 w-6 text-gray-600" />
+                  Documentos y Reglamentos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {park.documents && park.documents.length > 0 ? (
+                  <div className="space-y-3">
+                    {park.documents.map((doc) => (
+                      <a 
+                        key={doc.id}
+                        href={doc.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center p-4 border rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all"
+                      >
+                        <FileText className={`h-8 w-8 mr-4 ${
+                          doc.fileType?.includes('pdf') ? 'text-red-500' : 'text-blue-500'
+                        }`} />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">{doc.title}</h4>
+                          <p className="text-sm text-gray-500">{doc.type}</p>
+                          {doc.fileSize && (
+                            <p className="text-xs text-gray-400 mt-1">{doc.fileSize}</p>
+                          )}
+                        </div>
+                        <Download className="h-5 w-5 text-gray-400" />
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-gray-50 rounded-lg">
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-500">No hay documentos disponibles</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Galería de Imágenes */}
+            {additionalImages.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Camera className="h-5 w-5 text-indigo-600" />
-                    Galería de Imágenes
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Camera className="h-6 w-6 text-indigo-600" />
+                    Galería de Imágenes ({additionalImages.length + 1})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {park.images.slice(1, 7).map((image) => (
-                      <div key={image.id} className="relative group overflow-hidden rounded-lg">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {additionalImages.slice(0, 7).map((image, idx) => (
+                      <div key={idx} className="relative group overflow-hidden rounded-lg hover:shadow-lg transition-all">
                         <img 
                           src={image.imageUrl} 
-                          alt={image.caption || park.name}
+                          alt={image.caption || `Vista del parque ${idx + 1}`}
                           className="w-full h-32 object-cover transition-transform group-hover:scale-105"
                         />
                         {image.caption && (
@@ -293,6 +392,11 @@ export default function ParkLandingPage() {
                         )}
                       </div>
                     ))}
+                    {additionalImages.length > 7 && (
+                      <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 font-medium hover:bg-gray-200 cursor-pointer">
+                        +{additionalImages.length - 7} fotos más
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -302,58 +406,55 @@ export default function ParkLandingPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             
-            {/* Información básica */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Información General</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <MapPin className="h-5 w-5 text-gray-500" />
-                  <div>
-                    <p className="font-medium">Ubicación</p>
-                    <p className="text-sm text-gray-600">{park.location || park.municipality?.name || 'Guadalajara'}</p>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="flex items-center gap-3">
-                  <Trees className="h-5 w-5 text-gray-500" />
-                  <div>
-                    <p className="font-medium">Tipo de Parque</p>
-                    <p className="text-sm text-gray-600">{park.parkType || park.type || 'Parque urbano'}</p>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="flex items-center gap-3">
-                  <Globe className="h-5 w-5 text-gray-500" />
-                  <div>
-                    <p className="font-medium">Área Total</p>
-                    <p className="text-sm text-gray-600">{park.area ? formatArea(park.area) : 'No especificada'}</p>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-gray-500" />
-                  <div>
-                    <p className="font-medium">Establecido</p>
-                    <p className="text-sm text-gray-600">{park.establishedYear || 'No especificado'}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Contacto */}
+            {(park.administrator || park.contactPhone || park.contactEmail) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5 text-blue-600" />
+                    Información de Contacto
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {park.administrator && (
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 mr-3 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-500">Administrador</p>
+                        <p className="font-medium">{park.administrator}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {park.contactPhone && (
+                    <div className="flex items-center">
+                      <Phone className="h-4 w-4 mr-3 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-500">Teléfono</p>
+                        <p className="font-medium">{park.contactPhone}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {park.contactEmail && (
+                    <div className="flex items-center">
+                      <Mail className="h-4 w-4 mr-3 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-500">Email</p>
+                        <p className="font-medium">{park.contactEmail}</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-            {/* Estadísticas de árboles */}
+            {/* Estadísticas de Árboles */}
             {park.treeStats && park.treeStats.total > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Leaf className="h-5 w-5 text-green-600" />
+                    <Trees className="h-5 w-5 text-green-600" />
                     Arbolado Urbano
                   </CardTitle>
                 </CardHeader>
@@ -380,51 +481,61 @@ export default function ParkLandingPage() {
               </Card>
             )}
 
-            {/* Documentos */}
-            {park.documents && park.documents.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-gray-600" />
-                    Documentos
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {park.documents.map((doc) => (
-                      <a 
-                        key={doc.id}
-                        href={doc.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <FileText className="h-4 w-4 text-gray-500" />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{doc.title}</p>
-                          <p className="text-xs text-gray-500">{doc.type}</p>
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Acciones */}
+            {/* Acciones Rápidas */}
             <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-3">
-                  <Link href="/parks">
-                    <Button variant="outline" className="w-full">
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Explorar más parques
-                    </Button>
-                  </Link>
-                  <Button className="w-full bg-green-600 hover:bg-green-700">
-                    <Phone className="h-4 w-4 mr-2" />
-                    Contactar administrador
-                  </Button>
+              <CardHeader>
+                <CardTitle>Acciones</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button className="w-full" variant="default">
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Compartir este parque
+                </Button>
+                <Button variant="outline" className="w-full">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  Reportar un problema
+                </Button>
+                <Button variant="outline" className="w-full">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Sugerir mejoras
+                </Button>
+                <Button variant="outline" className="w-full">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Proponer evento
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Información Adicional */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Información Adicional</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div>
+                  <p className="text-gray-500">Estado de conservación</p>
+                  <p className="font-medium">{park.conservationStatus || 'Bueno'}</p>
+                </div>
+                
+                {park.regulationUrl && (
+                  <div>
+                    <p className="text-gray-500">Reglamento</p>
+                    <a 
+                      href={park.regulationUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline font-medium"
+                    >
+                      Ver reglamento completo
+                    </a>
+                  </div>
+                )}
+                
+                <div>
+                  <p className="text-gray-500">Última actualización</p>
+                  <p className="font-medium">
+                    {park.updatedAt ? format(new Date(park.updatedAt), 'dd/MM/yyyy', { locale: es }) : 'No disponible'}
+                  </p>
                 </div>
               </CardContent>
             </Card>
