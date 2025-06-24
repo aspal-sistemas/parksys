@@ -1531,7 +1531,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status = $5,
           location_latitude = $6,
           location_longitude = $7,
-          description = $8
+          description = $8,
+          updated_at = CURRENT_TIMESTAMP
         WHERE id = $1 AND park_id = $2
         RETURNING *
       `, [amenityId, parkId, moduleName, surfaceArea, status, locationLatitude, locationLongitude, description]);

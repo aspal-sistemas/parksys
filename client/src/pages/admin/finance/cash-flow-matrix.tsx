@@ -557,7 +557,7 @@ export default function CashFlowMatrix() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los parques</SelectItem>
-                {parks && Array.isArray(parks) && parks.map((park: any) => (
+                {parks && Array.isArray(parks) && parks.map((park: { id: number; name: string }) => (
                   <SelectItem key={park.id} value={park.id.toString()}>
                     {park.name}
                   </SelectItem>

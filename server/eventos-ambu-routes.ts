@@ -75,14 +75,14 @@ export function registerEventosAmbuRoutes(app: any, apiRouter: Router, isAuthent
         .limit(parseInt(limit as string))
         .offset(offset);
       
-      // Obtener conteo total
-      let countQuery = db.select({ count: eventosAmbu.id }).from(eventosAmbu);
+      // Obtener conteo total usando sql`count(*)`
+      let countQuery = db.select({ count: sql`count(*)` }).from(eventosAmbu);
       if (whereConditions.length > 0) {
         countQuery = countQuery.where(and(...whereConditions));
       }
       
       const countResult = await countQuery;
-      const count = countResult?.[0]?.count || 0;
+      const count = Number(countResult?.[0]?.count) || 0;
       
       res.json({
         eventos,
