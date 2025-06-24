@@ -5,7 +5,7 @@ import { incomeCategories, expenseCategories } from "../shared/finance-schema";
 import { eq, and } from "drizzle-orm";
 import { BudgetMatrix, BudgetEntry, BudgetCSVRow } from "../shared/budget-planning-schema";
 import multer from "multer";
-import * as Papa from "papaparse";
+import Papa from "papaparse";
 
 // Configuración de multer para archivos CSV
 const upload = multer({ 
@@ -239,8 +239,8 @@ export function registerBudgetPlanningRoutes(app: any, apiRouter: Router, isAuth
       res.json({ 
         success: true,
         message: `CSV importado correctamente`,
-        processed: processedRows,
-        skipped: skippedRows
+        recordsImported: processedRows,
+        recordsSkipped: skippedRows
       });
     } catch (error) {
       console.error('Error al importar CSV:', error);
@@ -256,15 +256,28 @@ export function registerBudgetPlanningRoutes(app: any, apiRouter: Router, isAuth
     try {
       const year = parseInt(req.params.year);
       
-      // Obtener matriz presupuestaria
-      const matrixResponse = await fetch(`${req.protocol}://${req.get('host')}/api/budget-projections/${year}`);
-      const matrix = await matrixResponse.json();
+      console.log(`=== EXPORTANDO CSV PARA PRESUPUESTO ${year} ===`);
+      
+      // Obtener todas las categorías activas
+      const [incomeCategs, expenseCategs] = await Promise.all([
+        db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true)),
+        db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true))
+      ]);
+      
+      // Obtener proyecciones existentes para el año
+      const projections = await db.select()
+        .from(budgetProjections)
+        .where(eq(budgetProjections.year, year));
+      
+      // Construir matriz presupuestaria
+      const incomeEntries = buildCategoryEntries(incomeCategs, projections, 'income');
+      const expenseEntries = buildCategoryEntries(expenseCategs, projections, 'expense');
       
       // Crear estructura CSV
       const csvData = [];
       
       // Agregar categorías de ingresos
-      matrix.incomeCategories.forEach((category: BudgetEntry) => {
+      incomeEntries.forEach((category: BudgetEntry) => {
         const row: any = {
           'Tipo': 'Ingreso',
           'Categoría': category.categoryName
@@ -279,7 +292,7 @@ export function registerBudgetPlanningRoutes(app: any, apiRouter: Router, isAuth
       });
       
       // Agregar categorías de gastos
-      matrix.expenseCategories.forEach((category: BudgetEntry) => {
+      expenseEntries.forEach((category: BudgetEntry) => {
         const row: any = {
           'Tipo': 'Gasto',
           'Categoría': category.categoryName
@@ -305,6 +318,7 @@ export function registerBudgetPlanningRoutes(app: any, apiRouter: Router, isAuth
         csvString += values.join(',') + '\n';
       });
       
+      console.log(`✓ CSV exportado: ${csvData.length} categorías`);
       res.send(csvString);
     } catch (error) {
       console.error('Error al exportar CSV:', error);
