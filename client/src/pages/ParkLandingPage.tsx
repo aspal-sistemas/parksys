@@ -19,7 +19,10 @@ import {
   Phone,
   Mail,
   User,
-  ExternalLink
+  ExternalLink,
+  Users,
+  Heart,
+  Wrench
 } from 'lucide-react';
 import { ExtendedPark } from '@shared/schema';
 import { Badge } from '@/components/ui/badge';
@@ -410,6 +413,150 @@ export default function ParkLandingPage() {
                         +{additionalImages.length - 7} fotos más
                       </div>
                     )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Personal del Parque - Instructores y Voluntarios */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              
+              {/* Instructores */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Users className="h-6 w-6 text-purple-600" />
+                    Instructores
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {park.instructors && park.instructors.length > 0 ? (
+                    <div className="space-y-4">
+                      {park.instructors.map((instructor) => (
+                        <div key={instructor.id} className="flex items-start gap-4 p-4 bg-purple-50 rounded-lg border">
+                          {instructor.profileImageUrl ? (
+                            <img 
+                              src={instructor.profileImageUrl} 
+                              alt={instructor.fullName}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-purple-200 rounded-full flex items-center justify-center">
+                              <Users className="h-6 w-6 text-purple-600" />
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-purple-900">{instructor.fullName}</h4>
+                            {instructor.specialties && (
+                              <p className="text-purple-700 text-sm mb-2">{instructor.specialties}</p>
+                            )}
+                            {instructor.experience && (
+                              <p className="text-purple-600 text-xs">{instructor.experience}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Users className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+                      <p className="text-purple-600">No hay instructores asignados actualmente</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Voluntarios */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Heart className="h-6 w-6 text-green-600" />
+                    Voluntarios Activos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {park.volunteers && park.volunteers.length > 0 ? (
+                    <div className="space-y-4">
+                      {park.volunteers.slice(0, 4).map((volunteer) => (
+                        <div key={volunteer.id} className="flex items-start gap-4 p-4 bg-green-50 rounded-lg border">
+                          {volunteer.profileImageUrl ? (
+                            <img 
+                              src={volunteer.profileImageUrl} 
+                              alt={volunteer.fullName}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center">
+                              <Heart className="h-6 w-6 text-green-600" />
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-green-900">{volunteer.fullName}</h4>
+                            {volunteer.skills && (
+                              <p className="text-green-700 text-sm mb-1">{volunteer.skills}</p>
+                            )}
+                            {volunteer.availability && (
+                              <Badge variant="outline" className="text-xs border-green-300 text-green-700">
+                                {volunteer.availability}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {park.volunteers.length > 4 && (
+                        <div className="text-center pt-2">
+                          <p className="text-green-600 text-sm">+{park.volunteers.length - 4} voluntarios más</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Heart className="h-12 w-12 text-green-400 mx-auto mb-4" />
+                      <p className="text-green-600 mb-2">¡Únete como voluntario!</p>
+                      <p className="text-green-500 text-sm">Ayuda a cuidar este espacio verde</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Instalaciones y Equipos */}
+            {park.assets && park.assets.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Wrench className="h-6 w-6 text-gray-600" />
+                    Instalaciones y Equipos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {park.assets.map((asset) => (
+                      <div key={asset.id} className="p-4 bg-gray-50 rounded-lg border">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-semibold text-gray-900">{asset.name}</h4>
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs ${
+                              asset.condition === 'Excelente' ? 'border-green-300 text-green-700' :
+                              asset.condition === 'Bueno' ? 'border-blue-300 text-blue-700' :
+                              asset.condition === 'Regular' ? 'border-yellow-300 text-yellow-700' :
+                              'border-red-300 text-red-700'
+                            }`}
+                          >
+                            {asset.condition}
+                          </Badge>
+                        </div>
+                        {asset.description && (
+                          <p className="text-gray-600 text-sm mb-2">{asset.description}</p>
+                        )}
+                        {asset.category && (
+                          <Badge variant="secondary" className="text-xs">
+                            {asset.category}
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
