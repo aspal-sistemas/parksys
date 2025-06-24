@@ -798,8 +798,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
       
-      console.log(`Respuesta final: ${extendedPark.name} con ${extendedPark.amenities.length} amenidades, ${extendedPark.activities.length} actividades, ${extendedPark.instructors.length} instructores, ${extendedPark.volunteers.length} voluntarios, ${extendedPark.assets.length} activos`);
-      console.log('=== FIN PROCESAMIENTO ===');
+      // Log solo en desarrollo
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Datos extendidos procesados para ${extendedPark.name}`);
+      }
       res.json(extendedPark);
     } catch (error) {
       console.error("Error al obtener datos extendidos del parque:", error);
@@ -1196,34 +1198,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Eliminando activos...');
       await db.execute(sql`DELETE FROM assets WHERE park_id = ${parkId}`);
       
-      console.log('Eliminando concesiones...');
+      // Eliminación en cascada de datos relacionados al parque
       await db.execute(sql`DELETE FROM concessions WHERE park_id = ${parkId}`);
-      
-      console.log('Eliminando historial de concesionarios...');
       await db.execute(sql`DELETE FROM concessionaire_history WHERE park_id = ${parkId}`);
-      
-      console.log('Eliminando evaluaciones de concesionarios...');
       await db.execute(sql`DELETE FROM concessionaire_evaluations WHERE park_id = ${parkId}`);
-      
-      console.log('Eliminando amenidades del parque...');
       await db.execute(sql`DELETE FROM park_amenities WHERE park_id = ${parkId}`);
-      
-      console.log('Eliminando imágenes del parque...');
       await db.execute(sql`DELETE FROM park_images WHERE park_id = ${parkId}`);
-      
-      console.log('Eliminando actividades...');
       await db.execute(sql`DELETE FROM activities WHERE park_id = ${parkId}`);
-      
-      console.log('Eliminando incidentes...');
       await db.execute(sql`DELETE FROM incidents WHERE park_id = ${parkId}`);
-      
-      console.log('Eliminando comentarios...');
       await db.execute(sql`DELETE FROM comments WHERE park_id = ${parkId}`);
-      
-      console.log('Eliminando parque...');
       await db.execute(sql`DELETE FROM parks WHERE id = ${parkId}`);
-      
-      console.log(`Parque ${parkId} eliminado exitosamente`);
       res.status(200).json({ message: "Park deleted successfully" });
     } catch (error) {
       console.error("Error al eliminar parque:", error);

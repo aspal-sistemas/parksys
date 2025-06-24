@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { eq, desc, and, gte, lte, like } from "drizzle-orm";
+import { eq, desc, and, gte, lte, like, sql } from "drizzle-orm";
 import { db } from "./db";
 import {
   eventosAmbu,

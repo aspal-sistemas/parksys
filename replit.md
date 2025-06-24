@@ -136,6 +136,7 @@ The system uses environment variables for database connection and supports both 
 - June 24, 2025. Página problemática de calendario de eventos eliminada - Removida /admin/events/calendar que causaba errores "RangeError: Invalid time value" y crashes en la aplicación. Ruta eliminada de App.tsx y entrada del sidebar removida. Sistema estabilizado para prevenir errores de renderizado
 - June 24, 2025. Nombre del calendario AMBU actualizado - Cambiado de "Calendario AMBU" a "Calendario de Eventos AMBU" en sidebar y página principal según solicitud del usuario
 - June 24, 2025. Simplificación de nomenclatura en módulo AMBU - Cambiado "Eventos AMBU" a solo "Eventos" en página principal y sidebar según solicitud del usuario. Entrada del calendario simplificada a solo "Calendario". Título del calendario actualizado a "Calendario de Eventos" removiendo referencia AMBU. Error 500 en API de eventos corregido con validación de conteo
+- June 24, 2025. Mejoras críticas de código implementadas - Corregido error de importación sql en eventos-ambu-routes.ts, mejorado tipado TypeScript en cash-flow-matrix.tsx eliminando tipos 'unknown', optimizados console.log solo para desarrollo, eliminadas declaraciones de debugging innecesarias. Calidad de código mejorada significativamente
 
 ## Recent Features
 
