@@ -24,44 +24,69 @@ import {
 
 interface AmenityIconProps {
   name: string;
+  customIconUrl?: string | null;
+  iconType?: 'system' | 'custom';
+  size?: number;
   className?: string;
 }
 
-const AmenityIcon: React.FC<AmenityIconProps> = ({ name, className = 'h-5 w-5' }) => {
-  // Map icon names to Lucide React components
+const AmenityIcon: React.FC<AmenityIconProps> = ({ 
+  name, 
+  customIconUrl, 
+  iconType = 'system',
+  size = 20,
+  className = '' 
+}) => {
+  // Si es un icono personalizado y tenemos la URL, mostrar la imagen
+  if (iconType === 'custom' && customIconUrl) {
+    return (
+      <img 
+        src={customIconUrl} 
+        alt={name}
+        width={size}
+        height={size}
+        className={`${className} object-contain`}
+        style={{ width: `${size}px`, height: `${size}px` }}
+      />
+    );
+  }
+
+  // Para iconos de sistema, usar las clases de Tailwind apropiadas
+  const iconClass = className || `h-${Math.ceil(size/4)} w-${Math.ceil(size/4)}`;
+  
   const iconMap: Record<string, React.ReactNode> = {
     // Recreation
-    playground: <PlayCircle className={className} />,
-    hiking: <Footprints className={className} />,
+    playground: <PlayCircle className={iconClass} />,
+    hiking: <Footprints className={iconClass} />,
     
     // Sports
-    bicycle: <Bike className={className} />,
-    sportsCourt: <Dumbbell className={className} />,
+    bicycle: <Bike className={iconClass} />,
+    sportsCourt: <Dumbbell className={iconClass} />,
     
     // Services
-    toilet: <Bath className={className} />,
-    security: <ShieldCheck className={className} />,
-    wifi: <Wifi className={className} />,
+    toilet: <Bath className={iconClass} />,
+    security: <ShieldCheck className={iconClass} />,
+    wifi: <Wifi className={iconClass} />,
     
     // Accessibility
-    accessibility: <Accessibility className={className} />,
+    accessibility: <Accessibility className={iconClass} />,
     
     // Infrastructure
-    parking: <ParkingSquare className={className} />,
-    bikeParking: <ParkingSquare className={className} />,
-    lightbulb: <Lightbulb className={className} />,
+    parking: <ParkingSquare className={iconClass} />,
+    bikeParking: <ParkingSquare className={iconClass} />,
+    lightbulb: <Lightbulb className={iconClass} />,
     
     // Nature
-    pets: <Dog className={className} />,
-    water: <Droplets className={className} />,
-    trees: <Trees className={className} />,
+    pets: <Dog className={iconClass} />,
+    water: <Droplets className={iconClass} />,
+    trees: <Trees className={iconClass} />,
     
     // Other common amenities
-    restaurant: <UtensilsCrossed className={className} />,
-    theater: <Theater className={className} />,
+    restaurant: <UtensilsCrossed className={iconClass} />,
+    theater: <Theater className={iconClass} />,
     
     // Default fallback
-    default: <LandPlot className={className} />
+    default: <Trees className={iconClass} />
   };
   
   return <>{iconMap[name] || iconMap.default}</>;
