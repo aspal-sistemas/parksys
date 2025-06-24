@@ -217,44 +217,34 @@ export default function ParkLandingPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-xl">
-                  <Camera className="h-6 w-6 text-purple-600" />
-                  Servicios y Amenidades ({park.amenities?.length || 0})
+                  <Trees className="h-6 w-6 text-green-600" />
+                  Amenidades del Parque
                 </CardTitle>
               </CardHeader>
               <CardContent>
-
-                
-
                 {park.amenities && park.amenities.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {park.amenities.map((amenity, index) => (
-                      <div key={amenity.id || index} className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border">
-                        <div className="w-10 h-10 mr-2 flex-shrink-0 flex items-center justify-center">
-                          {amenity.customIconUrl ? (
-                            <img 
-                              src={amenity.customIconUrl} 
-                              alt={amenity.name}
-                              className="w-8 h-8 object-contain"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                              <Camera className="h-5 w-5 text-purple-600" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">{amenity.name}</p>
-                          <p className="text-xs text-gray-500 mt-1">{amenity.category || 'Servicios'}</p>
-                        </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {park.amenities.map((amenity) => (
+                      <div key={amenity.id} className="flex flex-col items-center p-3 bg-gray-50 rounded-lg border text-center">
+                        <AmenityIcon 
+                          iconType={amenity.iconType === 'custom' ? 'custom' : amenity.icon}
+                          customIconUrl={amenity.customIconUrl}
+                          size={48}
+                        />
+                        <span className="text-sm font-medium mt-2">{amenity.name}</span>
+                        {amenity.category && (
+                          <span className="text-xs text-gray-500 mt-1 capitalize">{amenity.category}</span>
+                        )}
+                        {amenity.moduleName && (
+                          <span className="text-xs text-blue-600 mt-1">{amenity.moduleName}</span>
+                        )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 bg-gray-50 rounded-lg">
-                    <Camera className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-500">
-                      {park.amenities === undefined ? 'Cargando amenidades...' : 'No hay amenidades registradas'}
-                    </p>
+                  <div className="text-center py-8">
+                    <Trees className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">No hay amenidades registradas para este parque</p>
                   </div>
                 )}
               </CardContent>
