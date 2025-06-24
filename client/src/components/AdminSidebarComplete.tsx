@@ -436,7 +436,7 @@ const AdminSidebarComplete: React.FC = () => {
               icon={<ListFilter className="h-5 w-5" />}
               active={location.startsWith('/admin/eventos-ambu') && !location.includes('/calendar') && !location.includes('/tabulador')}
             >
-              Eventos AMBU
+              Eventos
             </NavItem>
 
             <NavItem 
