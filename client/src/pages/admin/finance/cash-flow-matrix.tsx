@@ -940,22 +940,7 @@ export default function CashFlowMatrix() {
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300">
-                  <thead>
-                    <tr className="bg-red-50">
-                      <th className="border border-gray-300 p-3 text-left font-semibold">Categoría</th>
-                      {["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"].map((month) => (
-                        <th key={month} className="border border-gray-300 p-2 text-center font-semibold">
-                          <div className="text-sm">{month}</div>
-                          <div className="space-y-1 text-xs mt-1">
-                            <div className="text-blue-600 py-1">Proyec</div>
-                            <div className="text-gray-600 py-1">Real</div>
-                            <div className="text-orange-600 py-1">Var</div>
-                          </div>
-                        </th>
-                      ))}
-                      <th className="border border-gray-300 p-3 text-center font-semibold">Total</th>
-                    </tr>
-                  </thead>
+
                   <tbody>
                     {data.categories.filter(cat => cat.type === 'expense').map((category, index) => {
                       const projectedCategory = budgetMatrix?.expenseCategories?.find(p => p.categoryName === category.name);
@@ -1042,13 +1027,11 @@ export default function CashFlowMatrix() {
               </div>
             </CardContent>
           </Card>
+          </div>
+        </>
+      )}
 
-
-
-
-        </div>
-
-        {/* Tabla de proyecciones */}
+      {/* Tabla de proyecciones */}
         {showProjections && projectedData && (
           <Card className="mt-6">
             <CardHeader>
