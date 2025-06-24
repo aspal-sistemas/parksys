@@ -832,12 +832,12 @@ export default function CashFlowMatrix() {
                     <tr className="bg-green-50">
                       <th className="border border-gray-300 p-3 text-left font-semibold">Categoría</th>
                       {["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"].map((month) => (
-                        <th key={month} className="border border-gray-300 p-2 text-center font-semibold">
-                          <div className="text-sm">{month}</div>
-                          <div className="grid grid-cols-3 gap-1 text-xs mt-1">
-                            <div className="text-blue-600">Proyec</div>
-                            <div className="text-gray-600">Real</div>
-                            <div className="text-orange-600">Var</div>
+                        <th key={month} className="border border-gray-300 p-2 text-center font-semibold min-w-[120px]">
+                          <div className="text-sm font-bold mb-2">{month}</div>
+                          <div className="space-y-1 text-xs">
+                            <div className="text-blue-600 py-1">Proyec</div>
+                            <div className="text-gray-600 py-1">Real</div>
+                            <div className="text-orange-600 py-1">Var</div>
                           </div>
                         </th>
                       ))}
