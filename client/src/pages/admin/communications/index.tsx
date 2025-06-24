@@ -184,7 +184,7 @@ export default function CommunicationsPage() {
           <TabsTrigger value="analytics">Análisis</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dashboard" className="space-y-6">
+        {/* Dashboard Principal */}
           <div className="grid grid-cols-2 gap-6">
             {/* Recent Activity */}
             <Card>

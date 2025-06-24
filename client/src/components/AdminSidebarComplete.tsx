@@ -169,6 +169,7 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/hr')) return ['hr'];
     if (location.startsWith('/admin/volunteers')) return ['volunteers'];
     if (location.startsWith('/admin/trees')) return ['trees'];
+    if (location.startsWith('/admin/communications')) return ['communications'];
     if (location.startsWith('/admin/settings') || location.startsWith('/admin/analytics') || location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
     return []; // Sin módulos abiertos por defecto
   };
@@ -664,13 +665,54 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          <NavItem 
-            href="/admin/communications" 
+          <ModuleNav 
+            title="Comunicación" 
             icon={<MessageSquare className="h-5 w-5" />}
-            active={location.startsWith('/admin/communications')}
+            value="communications"
           >
-            Comunicación
-          </NavItem>
+            <NavItem 
+              href="/admin/communications" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location === '/admin/communications'}
+            >
+              Dashboard
+            </NavItem>
+            <NavItem 
+              href="/admin/communications/templates" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location.startsWith('/admin/communications/templates')}
+            >
+              Plantillas
+            </NavItem>
+            <NavItem 
+              href="/admin/communications/queue" 
+              icon={<Clock className="h-5 w-5" />}
+              active={location.startsWith('/admin/communications/queue')}
+            >
+              Cola de Emails
+            </NavItem>
+            <NavItem 
+              href="/admin/communications/campaigns" 
+              icon={<Users className="h-5 w-5" />}
+              active={location.startsWith('/admin/communications/campaigns')}
+            >
+              Campañas
+            </NavItem>
+            <NavItem 
+              href="/admin/communications/bulk" 
+              icon={<Send className="h-5 w-5" />}
+              active={location.startsWith('/admin/communications/bulk')}
+            >
+              Envío Masivo
+            </NavItem>
+            <NavItem 
+              href="/admin/communications/analytics" 
+              icon={<TrendingUp className="h-5 w-5" />}
+              active={location.startsWith('/admin/communications/analytics')}
+            >
+              Análisis
+            </NavItem>
+          </ModuleNav>
 
         </Accordion>
       </ScrollArea>
