@@ -1,25 +1,25 @@
 import React from 'react';
 import { useParams, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { 
+  ArrowLeft,
+  Camera, 
+  MapPin, 
+  Share2, 
+  Download, 
+  FileText, 
+  AlertCircle,
+  MessageSquare
+} from 'lucide-react';
+import { ExtendedPark } from '@shared/schema';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { 
-  MapPin, 
-  Calendar, 
-  Users, 
-  Trees, 
-  Camera,
-  ArrowLeft,
-  Phone,
-  Globe,
-  Clock,
-  Leaf,
-  Activity,
-  ImageIcon,
-  FileText
-} from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import AmenityIcon from '@/components/ui/amenity-icon';
 
 interface ExtendedPark {
   id: number;
