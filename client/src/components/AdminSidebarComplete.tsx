@@ -423,13 +423,7 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Nuevo Evento
             </NavItem>
-            <NavItem 
-              href="/admin/events/calendar" 
-              icon={<Calendar className="h-5 w-5" />}
-              active={location.startsWith('/admin/events/calendar')}
-            >
-              Calendario
-            </NavItem>
+
             <NavItem 
               href="/admin/events/categories" 
               icon={<Tag className="h-5 w-5" />}
