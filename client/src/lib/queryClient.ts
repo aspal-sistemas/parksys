@@ -128,14 +128,29 @@ export const getQueryFn: <T>(options: {
       await throwIfResNotOk(res);
       return await res.json();
     } catch (error) {
+      console.error('Query failed for:', queryKey[0], error);
+      
       if (error instanceof TypeError && error.message.includes('fetch')) {
         console.error('Network connectivity issue:', error);
-        throw new Error('Network error: Unable to connect to server. Please check your connection.');
+        // Try a simple connectivity test
+        try {
+          await fetch('/api/health', { signal: AbortSignal.timeout(3000) });
+        } catch (healthError) {
+          console.error('Health check also failed:', healthError);
+        }
+        throw new Error('Network error: Unable to connect to server. Please refresh the page.');
       }
+      
       if (error.name === 'AbortError') {
         console.error('Request timeout:', error);
         throw new Error('Request timeout: Server is taking too long to respond.');
       }
+      
+      // For other errors, provide more context
+      if (error instanceof Error) {
+        throw new Error(`API Error: ${error.message}`);
+      }
+      
       throw error;
     }
   };
