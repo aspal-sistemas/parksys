@@ -228,11 +228,23 @@ function ParkLandingPage() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {park.amenities.map((amenity) => (
                       <div key={amenity.id} className="flex flex-col items-center p-3 bg-gray-50 rounded-lg border text-center">
-                        <AmenityIcon 
-                          iconType={amenity.iconType === 'custom' ? 'custom' : amenity.icon}
-                          customIconUrl={amenity.customIconUrl}
-                          size={48}
-                        />
+                        <div className="w-12 h-12 flex items-center justify-center mb-2">
+                          {amenity.iconType === 'custom' && amenity.customIconUrl ? (
+                            <img 
+                              src={amenity.customIconUrl} 
+                              alt={amenity.name}
+                              className="w-12 h-12 object-contain"
+                              onError={(e) => {
+                                console.error('Error cargando icono:', amenity.customIconUrl);
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                              <Trees className="h-6 w-6 text-green-600" />
+                            </div>
+                          )}
+                        </div>
                         <span className="text-sm font-medium mt-2">{amenity.name}</span>
                         {amenity.category && (
                           <span className="text-xs text-gray-500 mt-1 capitalize">{amenity.category}</span>
