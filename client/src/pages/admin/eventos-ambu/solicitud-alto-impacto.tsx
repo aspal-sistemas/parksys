@@ -882,6 +882,5 @@ export default function SolicitudAltoImpacto() {
         </div>
       </form>
       </div>
-    </AdminLayout>
   );
 }
