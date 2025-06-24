@@ -81,7 +81,7 @@ const parquesOptions = [
 
 export default function SolicitudBajoImpacto() {
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
+
   const [costoCalculado, setCostoCalculado] = useState<any>(null);
   
   const form = useForm<BajoImpactoForm>({
@@ -216,19 +216,18 @@ export default function SolicitudBajoImpacto() {
   }, [tipoEvento]);
 
   return (
-    <AdminLayout>
-      <div className="container mx-auto py-6 max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FileTextIcon className="h-6 w-6 text-emerald-600" />
           Solicitud de Evento de Bajo Impacto
-        </h1>
-        <p className="text-gray-600">
-          F-DIC-22 - Complete este formulario para solicitar autorización para eventos familiares, 
-          sesiones fotográficas, convivencias escolares y actividades educativas.
-        </p>
-      </div>
-
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        </CardTitle>
+        <CardDescription>
+          Formulario F-DIC-22 - Para eventos familiares, sesiones fotográficas y actividades educativas
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Tipo de Evento */}
         <Card>
           <CardHeader>
@@ -674,7 +673,7 @@ export default function SolicitudBajoImpacto() {
           <Button 
             type="button" 
             variant="outline" 
-            onClick={() => setLocation("/admin/eventos-ambu")}
+
           >
             Cancelar
           </Button>
@@ -686,8 +685,8 @@ export default function SolicitudBajoImpacto() {
             {crearSolicitudMutation.isPending ? "Enviando..." : "Enviar Solicitud"}
           </Button>
         </div>
-      </form>
-    </CardContent>
-  </Card>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

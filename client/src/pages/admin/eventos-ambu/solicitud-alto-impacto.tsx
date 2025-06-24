@@ -95,7 +95,7 @@ const parquesOptions = [
 
 export default function SolicitudAltoImpacto() {
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
+
   const [costoCalculado, setCostoCalculado] = useState<any>(null);
   
   const form = useForm<AltoImpactoForm>({
@@ -272,29 +272,29 @@ export default function SolicitudAltoImpacto() {
   }, [tipoEvento, numeroAsistentes]);
 
   return (
-    <AdminLayout>
-      <div className="container mx-auto py-6 max-w-4xl">
-        <div className="mb-6">
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
-          <div className="flex items-center gap-2 text-orange-800">
-            <AlertTriangle className="h-5 w-5" />
-            <h2 className="font-semibold">Evento de Alto Impacto</h2>
-          </div>
-          <p className="text-orange-700 mt-1">
-            Requiere anticipación de 2 meses, 50% de anticipo y 10% de depósito en garantía.
-          </p>
+    <div className="space-y-4">
+      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div className="flex items-center gap-2 text-orange-800">
+          <AlertTriangle className="h-5 w-5" />
+          <h2 className="font-semibold">Evento de Alto Impacto</h2>
         </div>
-
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Solicitud de Evento de Alto Impacto
-        </h1>
-        <p className="text-gray-600">
-          F-DIC-23 - Complete este formulario para solicitar autorización para eventos masivos, 
-          comerciales, cooperativos y actividades corporativas.
+        <p className="text-sm text-orange-700 mt-2">
+          Requiere mínimo 201 asistentes y mínimo 60 días de anticipación.
         </p>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-6 w-6 text-orange-600" />
+            Solicitud de Evento de Alto Impacto
+          </CardTitle>
+          <CardDescription>
+            Formulario F-DIC-23 - Para eventos masivos, comerciales y actividades de gran escala
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Tipo de Evento */}
         <Card>
           <CardHeader>
@@ -868,7 +868,7 @@ export default function SolicitudAltoImpacto() {
           <Button 
             type="button" 
             variant="outline" 
-            onClick={() => setLocation("/admin/eventos-ambu")}
+
           >
             Cancelar
           </Button>
@@ -879,10 +879,10 @@ export default function SolicitudAltoImpacto() {
           >
             {crearSolicitudMutation.isPending ? "Enviando..." : "Enviar Solicitud"}
           </Button>
-        </div>
-      </form>
-    </CardContent>
-  </Card>
-</div>
+          </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
