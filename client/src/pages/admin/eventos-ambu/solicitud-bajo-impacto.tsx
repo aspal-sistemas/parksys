@@ -684,8 +684,9 @@ export default function SolicitudBajoImpacto() {
           >
             {crearSolicitudMutation.isPending ? "Enviando..." : "Enviar Solicitud"}
           </Button>
-        </div>
-      </form>
-    </div>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

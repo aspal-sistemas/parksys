@@ -878,8 +878,10 @@ export default function SolicitudAltoImpacto() {
           >
             {crearSolicitudMutation.isPending ? "Enviando..." : "Enviar Solicitud"}
           </Button>
-        </div>
-      </form>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
