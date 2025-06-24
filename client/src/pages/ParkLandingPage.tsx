@@ -260,47 +260,7 @@ export default function ParkLandingPage() {
               </CardContent>
             </Card>
 
-            {/* Ubicación y Mapa */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <MapPin className="h-6 w-6 text-blue-600" />
-                  Ubicación
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <p className="text-gray-700 mb-2">{park.address || 'Dirección no especificada'}</p>
-                  <p className="text-sm text-gray-500">{park.municipality?.name}, {park.municipality?.state}</p>
-                </div>
-                
-                {/* Map */}
-                <div className="rounded-lg overflow-hidden h-64 bg-gray-200 mb-4">
-                  <iframe
-                    title={`Mapa de ${park.name}`}
-                    className="w-full h-full"
-                    src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=${park.latitude},${park.longitude}`}
-                    allowFullScreen
-                  ></iframe>
-                </div>
-                
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Cómo llegar
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Compartir ubicación
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Ver en Google Maps
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+
 
             {/* Actividades y Eventos */}
             <Card>
@@ -509,7 +469,7 @@ export default function ParkLandingPage() {
               </Card>
             )}
 
-            {/* Ubicación Compacta */}
+            {/* Ubicación */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -526,6 +486,17 @@ export default function ParkLandingPage() {
                   <p className="text-sm text-gray-500">Municipio</p>
                   <p className="font-medium text-sm">{park.municipality?.name}, {park.municipality?.state}</p>
                 </div>
+                
+                {/* Mapa compacto */}
+                <div className="rounded-lg overflow-hidden h-40 bg-gray-200">
+                  <iframe
+                    title={`Mapa de ${park.name}`}
+                    className="w-full h-full"
+                    src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=${park.latitude},${park.longitude}`}
+                    allowFullScreen
+                  ></iframe>
+                </div>
+                
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" className="flex-1 text-xs">
                     <MapPin className="h-3 w-3 mr-1" />
@@ -533,7 +504,7 @@ export default function ParkLandingPage() {
                   </Button>
                   <Button variant="outline" size="sm" className="flex-1 text-xs">
                     <ExternalLink className="h-3 w-3 mr-1" />
-                    Ver mapa
+                    Ver en Google Maps
                   </Button>
                 </div>
               </CardContent>
