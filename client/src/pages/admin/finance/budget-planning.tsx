@@ -26,7 +26,7 @@ export default function BudgetPlanningPage() {
   const { data: budgetMatrix, isLoading, refetch } = useQuery({
     queryKey: ['budget-projections', selectedYear],
     queryFn: async () => {
-      const response = await fetch(`/api/budget-projections?year=${selectedYear}`);
+      const response = await fetch(`/api/budget-projections/${selectedYear}`);
       if (!response.ok) throw new Error('Error al cargar datos presupuestarios');
       return response.json() as BudgetMatrix;
     }
