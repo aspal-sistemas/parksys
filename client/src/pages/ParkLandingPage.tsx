@@ -271,12 +271,12 @@ function ParkLandingPage() {
 
 
 
-            {/* Actividades y Eventos */}
+            {/* Actividades */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-xl">
                   <Calendar className="h-6 w-6 text-orange-600" />
-                  Actividades y Eventos
+                  Actividades
                 </CardTitle>
               </CardHeader>
               <CardContent>
