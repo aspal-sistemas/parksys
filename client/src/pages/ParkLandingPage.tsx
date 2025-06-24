@@ -31,7 +31,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import AmenityIcon from '@/components/ui/amenity-icon';
 
-export default function ParkLandingPage() {
+function ParkLandingPage() {
   const { slug } = useParams<{ slug: string }>();
   
   // Extraer ID del slug (formato: nombre-parque-id)
@@ -697,3 +697,5 @@ export default function ParkLandingPage() {
     </div>
   );
 }
+
+export default ParkLandingPage;
