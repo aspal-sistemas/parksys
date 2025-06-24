@@ -462,6 +462,20 @@ const AdminSidebar: React.FC = () => {
               Reportes
             </NavItem>
           </ModuleNav>
+
+          <ModuleNav 
+            title="Comunicación" 
+            icon={<MessageSquare className="h-5 w-5" />}
+            value="communications"
+          >
+            <NavItem 
+              href="/admin/communications" 
+              icon={<MessageSquare className="h-5 w-5" />}
+              active={location.startsWith('/admin/communications')}
+            >
+              Dashboard
+            </NavItem>
+          </ModuleNav>
           
           <ModuleNav 
             title="Operaciones" 
