@@ -376,11 +376,6 @@ export default function BudgetPlanningPage() {
             </SelectContent>
           </Select>
           
-          <Button variant="outline" onClick={handleExportCSV}>
-            <Download className="h-4 w-4 mr-2" />
-            Exportar CSV
-          </Button>
-          
           <Button 
             onClick={handleSave} 
             disabled={!isModified || saveMutation.isPending}
