@@ -42,7 +42,7 @@ class EmailService {
   private defaultFrom: string;
 
   constructor() {
-    this.defaultFrom = process.env.DEFAULT_FROM_EMAIL || 'noreply@parquesdemexico.com';
+    this.defaultFrom = process.env.GMAIL_USER || process.env.DEFAULT_FROM_EMAIL || 'noreply@parquesdemexico.com';
   }
 
   /**
@@ -270,8 +270,12 @@ class EmailService {
 
       if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
         // Test Gmail/Nodemailer
-        await nodemailerTransporter.verify();
-        return { success: true, method: 'Gmail/Google Workspace' };
+        try {
+          await nodemailerTransporter.verify();
+          return { success: true, method: 'Gmail/Google Workspace' };
+        } catch (gmailError) {
+          return { success: false, method: 'Gmail/Google Workspace', error: `Error de Gmail: ${gmailError instanceof Error ? gmailError.message : 'Error desconocido'}` };
+        }
       }
 
       return { success: false, method: 'none', error: 'No hay configuración de email disponible' };

@@ -685,7 +685,7 @@ async function initializeDatabaseAsync() {
   try {
     const { emailRouter } = await import("./email/emailRoutes");
     console.log("Registrando rutas del sistema de email...");
-    apiRouter.use("/email", emailRouter);
+    app.use("/api/email", emailRouter);
     console.log("Rutas del sistema de email registradas correctamente");
   } catch (error) {
     console.error("Error al registrar rutas de email:", error);
