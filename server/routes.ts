@@ -870,7 +870,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a new park (admin/municipality only)
+  // Create a new park (admin/municipality only) - CON AUTOMATIZACIÓN DE LANDING PAGE
   apiRouter.post("/parks", isAuthenticated, hasMunicipalityAccess(), async (req: Request, res: Response) => {
     try {
       // Si el usuario está autenticado y no es super_admin, forzamos que el parque sea de su municipio
@@ -887,14 +887,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // PASO 1: Crear el parque en la base de datos
       const newPark = await storage.createPark(parkData);
-      res.status(201).json(newPark);
+      console.log(`🏞️ Parque creado: ${newPark.name} (ID: ${newPark.id})`);
+      
+      // PASO 2: AUTOMATIZACIÓN - Procesar para landing page
+      try {
+        const { 
+          processNewParkForLanding, 
+          validateParkForLanding, 
+          logLandingPageAutomation 
+        } = await import('./park-landing-automation');
+        
+        // Validar que el parque tenga datos mínimos para landing page
+        const validation = validateParkForLanding(newPark);
+        
+        if (validation.isValid) {
+          // Procesar automáticamente para landing page
+          const landingPageData = await processNewParkForLanding(newPark);
+          
+          // Log del proceso de automatización
+          logLandingPageAutomation('LANDING_PAGE_GENERATED', newPark, {
+            slug: landingPageData.slug,
+            url: landingPageData.landingPageUrl,
+            syncedFields: Object.keys(landingPageData.syncedData).length
+          });
+          
+          // Responder con información extendida incluyendo datos de landing page
+          res.status(201).json({
+            ...newPark,
+            landingPage: {
+              enabled: true,
+              slug: landingPageData.slug,
+              url: landingPageData.landingPageUrl,
+              lastSync: landingPageData.syncedData.lastSyncAt
+            }
+          });
+        } else {
+          // Si falta información crítica, crear parque pero sin landing page automática
+          logLandingPageAutomation('LANDING_PAGE_SKIPPED', newPark, {
+            reason: 'MISSING_REQUIRED_FIELDS',
+            missingFields: validation.missingFields,
+            warnings: validation.warnings
+          });
+          
+          res.status(201).json({
+            ...newPark,
+            landingPage: {
+              enabled: false,
+              reason: 'Faltan campos requeridos para landing page',
+              missingFields: validation.missingFields
+            }
+          });
+        }
+        
+      } catch (automationError) {
+        // Si falla la automatización, el parque ya está creado - solo notificar
+        console.error('⚠️ Error en automatización de landing page:', automationError);
+        
+        res.status(201).json({
+          ...newPark,
+          landingPage: {
+            enabled: false,
+            reason: 'Error en automatización',
+            error: automationError.message
+          }
+        });
+      }
+      
     } catch (error) {
       if (error instanceof ZodError) {
         const validationError = fromZodError(error);
         return res.status(400).json({ message: validationError.message });
       }
-      console.error(error);
+      console.error('❌ Error creando parque:', error);
       res.status(500).json({ message: "Error creating park" });
     }
   });
