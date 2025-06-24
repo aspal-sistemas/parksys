@@ -666,6 +666,50 @@ export default function CashFlowMatrix() {
                       </div>
                     </td>
                   </tr>
+
+                  {/* UTILIDAD / PÉRDIDA */}
+                  <tr className="bg-yellow-100 border-t-4 border-yellow-400">
+                    <td className="border border-gray-300 p-3 font-bold text-yellow-800 w-48">UTILIDAD / PÉRDIDA</td>
+                    {Array.from({length: 12}, (_, monthIndex) => {
+                      const monthlyIncomeProjected = budgetMatrix?.incomeCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                      const monthlyExpenseProjected = budgetMatrix?.expenseCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                      const monthlyIncomeReal = data.summaries.monthly.income[monthIndex] || 0;
+                      const monthlyExpenseReal = data.summaries.monthly.expenses[monthIndex] || 0;
+                      
+                      const monthlyProjectedNet = monthlyIncomeProjected - monthlyExpenseProjected;
+                      const monthlyRealNet = monthlyIncomeReal - monthlyExpenseReal;
+                      const monthlyNetVariance = monthlyRealNet - monthlyProjectedNet;
+                      
+                      return (
+                        <td key={monthIndex} className="border border-gray-300 p-2 w-32">
+                          <div className="space-y-1 text-xs">
+                            <div className={`text-center rounded px-2 py-1 font-semibold ${monthlyProjectedNet >= 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}`}>
+                              {formatCurrency(monthlyProjectedNet)}
+                            </div>
+                            <div className={`text-center rounded px-2 py-1 font-semibold ${monthlyRealNet >= 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}`}>
+                              {formatCurrency(monthlyRealNet)}
+                            </div>
+                            <div className={`text-center rounded px-2 py-1 font-semibold ${monthlyNetVariance >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
+                              {monthlyNetVariance !== 0 ? (monthlyNetVariance > 0 ? '+' : '') + formatCurrency(monthlyNetVariance) : '-'}
+                            </div>
+                          </div>
+                        </td>
+                      );
+                    })}
+                    <td className="border border-gray-300 p-3 text-center w-40">
+                      <div className="space-y-2 text-sm">
+                        <div className={`font-bold rounded px-2 py-1 ${((budgetMatrix?.yearlyTotals?.income || 0) - (budgetMatrix?.yearlyTotals?.expense || 0)) >= 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}`}>
+                          {formatCurrency((budgetMatrix?.yearlyTotals?.income || 0) - (budgetMatrix?.yearlyTotals?.expense || 0))}
+                        </div>
+                        <div className={`font-bold rounded px-2 py-1 ${data.summaries.annual.net >= 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}`}>
+                          {formatCurrency(data.summaries.annual.net)}
+                        </div>
+                        <div className={`font-bold rounded px-2 py-1 ${(data.summaries.annual.net - ((budgetMatrix?.yearlyTotals?.income || 0) - (budgetMatrix?.yearlyTotals?.expense || 0))) >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
+                          {formatCurrency(data.summaries.annual.net - ((budgetMatrix?.yearlyTotals?.income || 0) - (budgetMatrix?.yearlyTotals?.expense || 0)))}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
                 </tbody>
                 </table>
               </div>
