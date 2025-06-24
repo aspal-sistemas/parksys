@@ -187,13 +187,11 @@ export default function CashFlowMatrix() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.categories.map((category, index) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  {/* Categorías de Ingresos */}
+                  {data.categories.filter(cat => cat.type === 'income').map((category, index) => (
+                    <tr key={`income-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                       <td className="border border-gray-300 p-3 sticky left-0 bg-inherit z-10">
                         <div className="font-medium text-sm">{category.name}</div>
-                        <Badge variant={category.type === 'income' ? 'default' : 'destructive'} className="text-xs mt-1">
-                          {category.type === 'income' ? 'Ingreso' : 'Gasto'}
-                        </Badge>
                       </td>
                       {months.map((_, monthIndex) => (
                         <td key={monthIndex} className="border border-gray-300 p-2 text-center">
@@ -231,6 +229,189 @@ export default function CashFlowMatrix() {
                       </td>
                     </tr>
                   ))}
+                  
+                  {/* Total de Ingresos */}
+                  <tr className="bg-green-100 font-bold border-t-2 border-green-500">
+                    <td className="border border-gray-300 p-3 sticky left-0 bg-green-100 z-10">
+                      <div className="font-bold text-sm text-green-800">TOTAL INGRESOS</div>
+                    </td>
+                    {months.map((_, monthIndex) => {
+                      const monthlyProjected = data.categories.filter(cat => cat.type === 'income').reduce((sum, cat) => sum + (cat.projectedValues?.[monthIndex] || 0), 0);
+                      const monthlyReal = data.categories.filter(cat => cat.type === 'income').reduce((sum, cat) => sum + (cat.monthlyValues[monthIndex] || 0), 0);
+                      const monthlyVariance = monthlyProjected === 0 ? 0 : ((monthlyReal - monthlyProjected) / monthlyProjected) * 100;
+                      
+                      return (
+                        <td key={monthIndex} className="border border-gray-300 p-2 text-center bg-green-100">
+                          <div className="space-y-1">
+                            <div className="text-xs text-blue-800 font-bold" style={{ backgroundColor: '#dbeafe', padding: '2px 4px', borderRadius: '2px' }}>
+                              {formatCurrency(monthlyProjected)}
+                            </div>
+                            <div className="text-xs text-green-800 font-bold" style={{ backgroundColor: '#dcfce7', padding: '2px 4px', borderRadius: '2px' }}>
+                              {formatCurrency(monthlyReal)}
+                            </div>
+                            <div className={`text-xs font-bold ${
+                              Math.abs(monthlyVariance) > 20 ? 'text-red-700' : 
+                              Math.abs(monthlyVariance) > 10 ? 'text-yellow-700' : 'text-green-700'
+                            }`} style={{ backgroundColor: '#fef3c7', padding: '2px 4px', borderRadius: '2px' }}>
+                              {monthlyVariance.toFixed(1)}%
+                            </div>
+                          </div>
+                        </td>
+                      );
+                    })}
+                    <td className="border border-gray-300 p-2 text-center bg-green-100">
+                      <div className="space-y-1">
+                        <div className="text-xs text-blue-800 font-bold" style={{ backgroundColor: '#dbeafe', padding: '2px 4px', borderRadius: '2px' }}>
+                          {formatCurrency(data.categories.filter(cat => cat.type === 'income').reduce((sum, cat) => sum + (cat.projectedTotal || 0), 0))}
+                        </div>
+                        <div className="text-xs text-green-800 font-bold" style={{ backgroundColor: '#dcfce7', padding: '2px 4px', borderRadius: '2px' }}>
+                          {formatCurrency(data.summaries.annual.income)}
+                        </div>
+                        <div className="text-xs text-green-700 font-bold" style={{ backgroundColor: '#fef3c7', padding: '2px 4px', borderRadius: '2px' }}>
+                          {data.summaries.annual.income > 0 ? (((data.summaries.annual.income - data.categories.filter(cat => cat.type === 'income').reduce((sum, cat) => sum + (cat.projectedTotal || 0), 0)) / data.categories.filter(cat => cat.type === 'income').reduce((sum, cat) => sum + (cat.projectedTotal || 0), 0)) * 100).toFixed(1) : '0.0'}%
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Categorías de Gastos */}
+                  {data.categories.filter(cat => cat.type === 'expense').map((category, index) => (
+                    <tr key={`expense-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="border border-gray-300 p-3 sticky left-0 bg-inherit z-10">
+                        <div className="font-medium text-sm">{category.name}</div>
+                      </td>
+                      {months.map((_, monthIndex) => (
+                        <td key={monthIndex} className="border border-gray-300 p-2 text-center">
+                          <div className="space-y-1">
+                            <div className="text-xs text-blue-700 font-medium" style={{ backgroundColor: '#eff6ff', padding: '2px 4px', borderRadius: '2px' }}>
+                              {formatCurrency(category.projectedValues?.[monthIndex] || 0)}
+                            </div>
+                            <div className="text-xs text-green-700 font-medium" style={{ backgroundColor: '#f0fdf4', padding: '2px 4px', borderRadius: '2px' }}>
+                              {formatCurrency(category.monthlyValues[monthIndex] || 0)}
+                            </div>
+                            <div className={`text-xs font-bold ${
+                              Math.abs(category.varianceValues?.[monthIndex] || 0) > 20 ? 'text-red-600' : 
+                              Math.abs(category.varianceValues?.[monthIndex] || 0) > 10 ? 'text-yellow-600' : 'text-green-600'
+                            }`} style={{ backgroundColor: '#fefce8', padding: '2px 4px', borderRadius: '2px' }}>
+                              {(category.varianceValues?.[monthIndex] || 0).toFixed(1)}%
+                            </div>
+                          </div>
+                        </td>
+                      ))}
+                      <td className="border border-gray-300 p-2 text-center">
+                        <div className="space-y-1">
+                          <div className="text-xs text-blue-700 font-medium" style={{ backgroundColor: '#eff6ff', padding: '2px 4px', borderRadius: '2px' }}>
+                            {formatCurrency(category.projectedTotal || 0)}
+                          </div>
+                          <div className="text-xs text-green-700 font-medium" style={{ backgroundColor: '#f0fdf4', padding: '2px 4px', borderRadius: '2px' }}>
+                            {formatCurrency(category.total)}
+                          </div>
+                          <div className={`text-xs font-bold ${
+                            Math.abs(category.totalVariance || 0) > 20 ? 'text-red-600' : 
+                            Math.abs(category.totalVariance || 0) > 10 ? 'text-yellow-600' : 'text-green-600'
+                          }`} style={{ backgroundColor: '#fefce8', padding: '2px 4px', borderRadius: '2px' }}>
+                            {(category.totalVariance || 0).toFixed(1)}%
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  
+                  {/* Total de Gastos */}
+                  <tr className="bg-red-100 font-bold border-t-2 border-red-500">
+                    <td className="border border-gray-300 p-3 sticky left-0 bg-red-100 z-10">
+                      <div className="font-bold text-sm text-red-800">TOTAL GASTOS</div>
+                    </td>
+                    {months.map((_, monthIndex) => {
+                      const monthlyProjected = data.categories.filter(cat => cat.type === 'expense').reduce((sum, cat) => sum + (cat.projectedValues?.[monthIndex] || 0), 0);
+                      const monthlyReal = data.categories.filter(cat => cat.type === 'expense').reduce((sum, cat) => sum + (cat.monthlyValues[monthIndex] || 0), 0);
+                      const monthlyVariance = monthlyProjected === 0 ? 0 : ((monthlyReal - monthlyProjected) / monthlyProjected) * 100;
+                      
+                      return (
+                        <td key={monthIndex} className="border border-gray-300 p-2 text-center bg-red-100">
+                          <div className="space-y-1">
+                            <div className="text-xs text-blue-800 font-bold" style={{ backgroundColor: '#dbeafe', padding: '2px 4px', borderRadius: '2px' }}>
+                              {formatCurrency(monthlyProjected)}
+                            </div>
+                            <div className="text-xs text-red-800 font-bold" style={{ backgroundColor: '#fecaca', padding: '2px 4px', borderRadius: '2px' }}>
+                              {formatCurrency(monthlyReal)}
+                            </div>
+                            <div className={`text-xs font-bold ${
+                              Math.abs(monthlyVariance) > 20 ? 'text-red-700' : 
+                              Math.abs(monthlyVariance) > 10 ? 'text-yellow-700' : 'text-green-700'
+                            }`} style={{ backgroundColor: '#fef3c7', padding: '2px 4px', borderRadius: '2px' }}>
+                              {monthlyVariance.toFixed(1)}%
+                            </div>
+                          </div>
+                        </td>
+                      );
+                    })}
+                    <td className="border border-gray-300 p-2 text-center bg-red-100">
+                      <div className="space-y-1">
+                        <div className="text-xs text-blue-800 font-bold" style={{ backgroundColor: '#dbeafe', padding: '2px 4px', borderRadius: '2px' }}>
+                          {formatCurrency(data.categories.filter(cat => cat.type === 'expense').reduce((sum, cat) => sum + (cat.projectedTotal || 0), 0))}
+                        </div>
+                        <div className="text-xs text-red-800 font-bold" style={{ backgroundColor: '#fecaca', padding: '2px 4px', borderRadius: '2px' }}>
+                          {formatCurrency(data.summaries.annual.expenses)}
+                        </div>
+                        <div className="text-xs text-red-700 font-bold" style={{ backgroundColor: '#fef3c7', padding: '2px 4px', borderRadius: '2px' }}>
+                          {data.summaries.annual.expenses > 0 ? (((data.summaries.annual.expenses - data.categories.filter(cat => cat.type === 'expense').reduce((sum, cat) => sum + (cat.projectedTotal || 0), 0)) / data.categories.filter(cat => cat.type === 'expense').reduce((sum, cat) => sum + (cat.projectedTotal || 0), 0)) * 100).toFixed(1) : '0.0'}%
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Utilidad/Pérdida */}
+                  <tr className={`font-bold border-t-4 ${data.summaries.annual.net >= 0 ? 'bg-blue-100 border-blue-600' : 'bg-orange-100 border-orange-600'}`}>
+                    <td className={`border border-gray-300 p-3 sticky left-0 z-10 ${data.summaries.annual.net >= 0 ? 'bg-blue-100' : 'bg-orange-100'}`}>
+                      <div className={`font-bold text-sm ${data.summaries.annual.net >= 0 ? 'text-blue-800' : 'text-orange-800'}`}>
+                        {data.summaries.annual.net >= 0 ? 'UTILIDAD' : 'PÉRDIDA'}
+                      </div>
+                    </td>
+                    {months.map((_, monthIndex) => {
+                      const monthlyProjectedIncome = data.categories.filter(cat => cat.type === 'income').reduce((sum, cat) => sum + (cat.projectedValues?.[monthIndex] || 0), 0);
+                      const monthlyProjectedExpense = data.categories.filter(cat => cat.type === 'expense').reduce((sum, cat) => sum + (cat.projectedValues?.[monthIndex] || 0), 0);
+                      const monthlyProjectedNet = monthlyProjectedIncome - monthlyProjectedExpense;
+                      
+                      const monthlyRealIncome = data.categories.filter(cat => cat.type === 'income').reduce((sum, cat) => sum + (cat.monthlyValues[monthIndex] || 0), 0);
+                      const monthlyRealExpense = data.categories.filter(cat => cat.type === 'expense').reduce((sum, cat) => sum + (cat.monthlyValues[monthIndex] || 0), 0);
+                      const monthlyRealNet = monthlyRealIncome - monthlyRealExpense;
+                      
+                      const monthlyVariance = monthlyProjectedNet === 0 ? 0 : ((monthlyRealNet - monthlyProjectedNet) / Math.abs(monthlyProjectedNet)) * 100;
+                      
+                      return (
+                        <td key={monthIndex} className={`border border-gray-300 p-2 text-center ${data.summaries.annual.net >= 0 ? 'bg-blue-100' : 'bg-orange-100'}`}>
+                          <div className="space-y-1">
+                            <div className="text-xs text-blue-800 font-bold" style={{ backgroundColor: '#dbeafe', padding: '2px 4px', borderRadius: '2px' }}>
+                              {formatCurrency(monthlyProjectedNet)}
+                            </div>
+                            <div className={`text-xs font-bold ${monthlyRealNet >= 0 ? 'text-blue-800' : 'text-orange-800'}`} style={{ backgroundColor: monthlyRealNet >= 0 ? '#dbeafe' : '#fed7aa', padding: '2px 4px', borderRadius: '2px' }}>
+                              {formatCurrency(monthlyRealNet)}
+                            </div>
+                            <div className={`text-xs font-bold ${
+                              Math.abs(monthlyVariance) > 20 ? 'text-red-700' : 
+                              Math.abs(monthlyVariance) > 10 ? 'text-yellow-700' : 'text-green-700'
+                            }`} style={{ backgroundColor: '#fef3c7', padding: '2px 4px', borderRadius: '2px' }}>
+                              {monthlyVariance.toFixed(1)}%
+                            </div>
+                          </div>
+                        </td>
+                      );
+                    })}
+                    <td className={`border border-gray-300 p-2 text-center ${data.summaries.annual.net >= 0 ? 'bg-blue-100' : 'bg-orange-100'}`}>
+                      <div className="space-y-1">
+                        <div className="text-xs text-blue-800 font-bold" style={{ backgroundColor: '#dbeafe', padding: '2px 4px', borderRadius: '2px' }}>
+                          {formatCurrency((data.categories.filter(cat => cat.type === 'income').reduce((sum, cat) => sum + (cat.projectedTotal || 0), 0)) - (data.categories.filter(cat => cat.type === 'expense').reduce((sum, cat) => sum + (cat.projectedTotal || 0), 0)))}
+                        </div>
+                        <div className={`text-xs font-bold ${data.summaries.annual.net >= 0 ? 'text-blue-800' : 'text-orange-800'}`} style={{ backgroundColor: data.summaries.annual.net >= 0 ? '#dbeafe' : '#fed7aa', padding: '2px 4px', borderRadius: '2px' }}>
+                          {formatCurrency(data.summaries.annual.net)}
+                        </div>
+                        <div className={`text-xs font-bold ${data.summaries.annual.net >= 0 ? 'text-blue-700' : 'text-orange-700'}`} style={{ backgroundColor: '#fef3c7', padding: '2px 4px', borderRadius: '2px' }}>
+                          {Math.abs(data.summaries.annual.net) > 0 ? (((data.summaries.annual.net - ((data.categories.filter(cat => cat.type === 'income').reduce((sum, cat) => sum + (cat.projectedTotal || 0), 0)) - (data.categories.filter(cat => cat.type === 'expense').reduce((sum, cat) => sum + (cat.projectedTotal || 0), 0)))) / Math.abs((data.categories.filter(cat => cat.type === 'income').reduce((sum, cat) => sum + (cat.projectedTotal || 0), 0)) - (data.categories.filter(cat => cat.type === 'expense').reduce((sum, cat) => sum + (cat.projectedTotal || 0), 0)))) * 100).toFixed(1) : '0.0'}%
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
