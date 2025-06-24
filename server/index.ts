@@ -10,6 +10,7 @@ import volunteerFieldRouter from "./volunteerFieldRoutes";
 import { skillsRouter } from "./update-skills-route";
 import { registerFinancialIntegrationsAPI } from "./financial-integrations-api";
 import { registerMultimediaRoutes, createMultimediaTables } from "./multimedia-system";
+import { registerBudgetPlanningRoutes } from "./budget-planning-routes";
 import { db } from "./db";
 import { incomeCategories, expenseCategories } from "../shared/finance-schema";
 import { eq } from "drizzle-orm";
