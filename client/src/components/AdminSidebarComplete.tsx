@@ -662,19 +662,12 @@ const AdminSidebarComplete: React.FC = () => {
             >
               {t('navigation.planting')}
             </NavItem>
-          </ModuleNav>
-
-          <ModuleNav 
-            title="Comunicación" 
-            icon={<MessageSquare className="h-5 w-5" />}
-            value="communications"
-          >
             <NavItem 
               href="/admin/communications" 
               icon={<MessageSquare className="h-5 w-5" />}
               active={location.startsWith('/admin/communications')}
             >
-              Dashboard
+              Comunicación
             </NavItem>
           </ModuleNav>
 
