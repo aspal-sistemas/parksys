@@ -856,30 +856,30 @@ export default function CashFlowMatrix() {
                             const variance = real - projected;
                             const isPositive = variance >= 0;
                             return (
-                              <td key={monthIndex} className="border border-gray-300 p-1">
-                                <div className="grid grid-cols-3 gap-1 text-xs">
-                                  <div className="text-center text-blue-700 bg-blue-50 rounded px-1">
-                                    {projected > 0 ? formatCurrency(projected).replace('$', '').replace(',', 'k').slice(0, 4) : '-'}
+                              <td key={monthIndex} className="border border-gray-300 p-2">
+                                <div className="space-y-1 text-xs">
+                                  <div className="text-center text-blue-700 bg-blue-50 rounded px-2 py-1">
+                                    {projected > 0 ? formatCurrency(projected) : '-'}
                                   </div>
-                                  <div className="text-center text-gray-700 bg-gray-50 rounded px-1">
-                                    {real > 0 ? formatCurrency(real).replace('$', '').replace(',', 'k').slice(0, 4) : '-'}
+                                  <div className="text-center text-gray-700 bg-gray-50 rounded px-2 py-1">
+                                    {real > 0 ? formatCurrency(real) : '-'}
                                   </div>
-                                  <div className={`text-center rounded px-1 ${isPositive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
-                                    {variance !== 0 ? (variance > 0 ? '+' : '') + formatCurrency(variance).replace('$', '').replace(',', 'k').slice(0, 4) : '-'}
+                                  <div className={`text-center rounded px-2 py-1 ${isPositive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
+                                    {variance !== 0 ? (variance > 0 ? '+' : '') + formatCurrency(variance) : '-'}
                                   </div>
                                 </div>
                               </td>
                             );
                           })}
                           <td className="border border-gray-300 p-3 text-center">
-                            <div className="grid grid-cols-3 gap-1 text-xs">
-                              <div className="text-blue-700 font-semibold">
+                            <div className="space-y-2 text-sm">
+                              <div className="text-blue-700 font-semibold bg-blue-50 rounded px-2 py-1">
                                 {formatCurrency(projectedCategory?.total || 0)}
                               </div>
-                              <div className="text-gray-700 font-semibold">
+                              <div className="text-gray-700 font-semibold bg-gray-50 rounded px-2 py-1">
                                 {formatCurrency(category.total)}
                               </div>
-                              <div className={`font-semibold ${(category.total - (projectedCategory?.total || 0)) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              <div className={`font-semibold rounded px-2 py-1 ${(category.total - (projectedCategory?.total || 0)) >= 0 ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
                                 {formatCurrency(category.total - (projectedCategory?.total || 0))}
                               </div>
                             </div>
@@ -930,30 +930,30 @@ export default function CashFlowMatrix() {
                             const variance = real - projected;
                             const isPositive = variance >= 0; // Para gastos, positivo significa gastamos más
                             return (
-                              <td key={monthIndex} className="border border-gray-300 p-1">
-                                <div className="grid grid-cols-3 gap-1 text-xs">
-                                  <div className="text-center text-blue-700 bg-blue-50 rounded px-1">
-                                    {projected > 0 ? formatCurrency(projected).replace('$', '').replace(',', 'k').slice(0, 4) : '-'}
+                              <td key={monthIndex} className="border border-gray-300 p-2">
+                                <div className="space-y-1 text-xs">
+                                  <div className="text-center text-blue-700 bg-blue-50 rounded px-2 py-1">
+                                    {projected > 0 ? formatCurrency(projected) : '-'}
                                   </div>
-                                  <div className="text-center text-gray-700 bg-gray-50 rounded px-1">
-                                    {real > 0 ? formatCurrency(real).replace('$', '').replace(',', 'k').slice(0, 4) : '-'}
+                                  <div className="text-center text-gray-700 bg-gray-50 rounded px-2 py-1">
+                                    {real > 0 ? formatCurrency(real) : '-'}
                                   </div>
-                                  <div className={`text-center rounded px-1 ${isPositive ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'}`}>
-                                    {variance !== 0 ? (variance > 0 ? '+' : '') + formatCurrency(variance).replace('$', '').replace(',', 'k').slice(0, 4) : '-'}
+                                  <div className={`text-center rounded px-2 py-1 ${isPositive ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'}`}>
+                                    {variance !== 0 ? (variance > 0 ? '+' : '') + formatCurrency(variance) : '-'}
                                   </div>
                                 </div>
                               </td>
                             );
                           })}
                           <td className="border border-gray-300 p-3 text-center">
-                            <div className="grid grid-cols-3 gap-1 text-xs">
-                              <div className="text-blue-700 font-semibold">
+                            <div className="space-y-2 text-sm">
+                              <div className="text-blue-700 font-semibold bg-blue-50 rounded px-2 py-1">
                                 {formatCurrency(projectedCategory?.total || 0)}
                               </div>
-                              <div className="text-gray-700 font-semibold">
+                              <div className="text-gray-700 font-semibold bg-gray-50 rounded px-2 py-1">
                                 {formatCurrency(category.total)}
                               </div>
-                              <div className={`font-semibold ${(category.total - (projectedCategory?.total || 0)) >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                              <div className={`font-semibold rounded px-2 py-1 ${(category.total - (projectedCategory?.total || 0)) >= 0 ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'}`}>
                                 {formatCurrency(category.total - (projectedCategory?.total || 0))}
                               </div>
                             </div>
