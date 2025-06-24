@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AdminSidebar from './AdminSidebar';
+import AdminSidebarComplete from './AdminSidebarComplete';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -15,7 +15,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar fijo global - siempre visible */}
-      <AdminSidebar />
+      <AdminSidebarComplete />
       
       {/* Mobile sidebar overlay */}
       {mobileSidebarOpen && (
