@@ -379,13 +379,7 @@ const AdminSidebarComplete: React.FC = () => {
             >
               {t('navigation.cashFlow')}
             </NavItem>
-            <NavItem 
-              href="/admin/finance/annual-budget" 
-              icon={<Target className="h-5 w-5" />}
-              active={location === '/admin/finance/annual-budget'}
-            >
-              {t('navigation.budgets')}
-            </NavItem>
+
             <NavItem 
               href="/admin/finance/calculator" 
               icon={<Calculator className="h-5 w-5" />}
