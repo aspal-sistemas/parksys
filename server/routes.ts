@@ -653,17 +653,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const park = parkResult.rows[0];
       
       // Obtener amenidades del parque
+      console.log('Paso 2: Consultando amenidades del parque...');
       const amenitiesResult = await pool.query(`
         SELECT a.id, a.name, a.icon, a.category, 
-               a.icon_type as "iconType", a.custom_icon_url as "customIconUrl",
-               a.description
+               a.icon_type as "iconType", a.custom_icon_url as "customIconUrl"
         FROM amenities a
         JOIN park_amenities pa ON a.id = pa.amenity_id
         WHERE pa.park_id = $1
         ORDER BY a.name
       `, [parkId]);
       
-      console.log("Amenidades encontradas para parque", parkId, ":", amenitiesResult.rows.length);
+      console.log(`Amenidades encontradas: ${amenitiesResult.rows.length}`);
+      if (amenitiesResult.rows.length > 0) {
+        console.log('Primeras amenidades:', amenitiesResult.rows.slice(0, 3).map(a => ({ name: a.name, category: a.category })));
+      }
       
       // Obtener actividades del parque
       const activitiesResult = await pool.query(`
@@ -684,6 +687,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `, [parkId]);
       
       // Construir respuesta completa
+      console.log('Paso 4: Construyendo respuesta final...');
       const extendedPark = {
         ...park,
         municipality: {
@@ -701,6 +705,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
       
+      console.log(`Respuesta final: ${extendedPark.name} con ${extendedPark.amenities.length} amenidades`);
+      console.log('=== FIN PROCESAMIENTO ===');
       res.json(extendedPark);
     } catch (error) {
       console.error("Error al obtener datos extendidos del parque:", error);
