@@ -179,19 +179,8 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                 </div>
               </div>
 
-              {/* Botones de acción */}
-              <div className="flex-shrink-0 flex flex-col justify-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onParkSelect(park);
-                  }}
-                  className="w-32"
-                >
-                  Vista rápida
-                </Button>
+              {/* Botón de acción */}
+              <div className="flex-shrink-0 flex justify-center">
                 <Link 
                   href={`/parque/${generateParkSlug(park.name, park.id)}`}
                   onClick={(e) => e.stopPropagation()}
@@ -201,7 +190,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                     size="sm"
                     className="w-32 bg-green-600 hover:bg-green-700 text-white"
                   >
-                    Ver página completa
+                    Ir A
                   </Button>
                 </Link>
               </div>
