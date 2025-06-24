@@ -999,6 +999,42 @@ export const insertParkSchema = createInsertSchema(parks).omit({
   updatedAt: true
 });
 
+// Categorías de eventos (diferente de actividades)
+export const eventCategories = pgTable("event_categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull().unique(),
+  description: text("description"),
+  color: varchar("color", { length: 7 }).default("#3B82F6"), // Color hex para UI
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+// Eventos generales (diferente de actividades)
+export const events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  start_date: timestamp("start_date").notNull(),
+  end_date: timestamp("end_date"),
+  park_id: integer("park_id").references(() => parks.id),
+  category_id: integer("category_id").references(() => eventCategories.id),
+  capacity: integer("capacity"),
+  price: decimal("price", { precision: 10, scale: 2 }).default("0.00"),
+  location: varchar("location", { length: 255 }), // Ubicación específica dentro del parque
+  contact_email: varchar("contact_email", { length: 255 }),
+  contact_phone: varchar("contact_phone", { length: 20 }),
+  notes: text("notes"),
+  status: varchar("status", { length: 50 }).default("programado"), // programado, en_curso, completado, cancelado
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+// Tipos para eventos
+export type EventCategory = typeof eventCategories.$inferSelect;
+export type InsertEventCategory = typeof eventCategories.$inferInsert;
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = typeof events.$inferInsert;
+
 export const insertTreeSpeciesSchema = createInsertSchema(treeSpecies).omit({ 
   id: true,
   createdAt: true,
