@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Download, Upload, Save, Calculator, TrendingUp, TrendingDown } from 'lucide-react';
 import { BudgetMatrix, BudgetEntry } from '../../../shared/budget-planning-schema';
+import AdminLayout from '@/components/AdminLayout';
 
 const monthNames = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -213,13 +214,13 @@ export default function BudgetPlanningPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Planificación Presupuestaria</h1>
-          <p className="text-gray-600 mt-1">Define las proyecciones mensuales por categoría de ingresos y gastos</p>
-        </div>
+    <AdminLayout 
+      title="Planificación Presupuestaria" 
+      subtitle="Define las proyecciones mensuales por categoría de ingresos y gastos"
+    >
+      <div className="space-y-6">
+      {/* Header eliminado ya que AdminLayout maneja títulos */}
+      <div className="flex items-center justify-end">
         
         <div className="flex items-center gap-3">
           <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
@@ -498,6 +499,7 @@ export default function BudgetPlanningPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
