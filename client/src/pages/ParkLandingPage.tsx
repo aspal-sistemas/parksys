@@ -11,7 +11,8 @@ import {
   Download, 
   FileText, 
   AlertCircle,
-  MessageSquare
+  MessageSquare,
+  Trees
 } from 'lucide-react';
 import { ExtendedPark } from '@shared/schema';
 import { Badge } from '@/components/ui/badge';
