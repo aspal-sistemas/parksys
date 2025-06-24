@@ -464,6 +464,20 @@ const AdminSidebar: React.FC = () => {
           </ModuleNav>
           
           <ModuleNav 
+            title="Comunicación" 
+            icon={<MessageSquare className="h-5 w-5" />}
+            value="communications"
+          >
+            <NavItem 
+              href="/admin/communications" 
+              icon={<Mail className="h-5 w-5" />}
+              active={location.startsWith('/admin/communications')}
+            >
+              Panel de Control
+            </NavItem>
+          </ModuleNav>
+          
+          <ModuleNav 
             title="Operaciones" 
             icon={<Workflow className="h-5 w-5" />}
             value="operations"
