@@ -1,8 +1,10 @@
 import React from 'react';
+import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { ExtendedPark, Amenity } from '@shared/schema';
 import { MapPin, Clock, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import AmenityIcon from './AmenityIcon';
 
 interface ExtendedParksListProps {
@@ -10,6 +12,23 @@ interface ExtendedParksListProps {
   isLoading: boolean;
   onParkSelect: (park: ExtendedPark) => void;
 }
+
+// Función para generar slug del parque
+const generateParkSlug = (parkName: string, parkId: number) => {
+  return parkName
+    .toLowerCase()
+    .replace(/[áàäâ]/g, 'a')
+    .replace(/[éèëê]/g, 'e')
+    .replace(/[íìïî]/g, 'i')
+    .replace(/[óòöô]/g, 'o')
+    .replace(/[úùüû]/g, 'u')
+    .replace(/[ñ]/g, 'n')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim()
+    + '-' + parkId;
+};
 
 function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksListProps) {
   // Obtenemos las amenidades para mostrar los iconos
@@ -160,17 +179,31 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                 </div>
               </div>
 
-              {/* Botón de acción */}
-              <div className="flex-shrink-0 flex flex-col justify-center">
-                <button 
-                  className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+              {/* Botones de acción */}
+              <div className="flex-shrink-0 flex flex-col justify-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     onParkSelect(park);
                   }}
+                  className="w-32"
                 >
-                  Ver Detalles
-                </button>
+                  Vista rápida
+                </Button>
+                <Link 
+                  href={`/parque/${generateParkSlug(park.name, park.id)}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    className="w-32 bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    Ver página completa
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
