@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -165,6 +165,103 @@ export default function CashFlowMatrix() {
   // Preparar datos base
   const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
+  // Usar datos combinados después de definir las funciones
+  // Primero definir las funciones necesarias
+  
+  // Funciones de cálculo de proyecciones
+  const calculateTrendGrowth = (historicalValues: number[]) => {
+    if (historicalValues.length < 2) return 0;
+    
+    // Calcular tendencia simple usando regresión lineal básica
+    const n = historicalValues.length;
+    let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+    
+    for (let i = 0; i < n; i++) {
+      sumX += i;
+      sumY += historicalValues[i];
+      sumXY += i * historicalValues[i];
+      sumXX += i * i;
+    }
+    
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    const average = sumY / n;
+    
+    // Convertir pendiente a porcentaje de crecimiento
+    return average > 0 ? (slope / average) * 100 : 0;
+  };
+
+  const getScenarioMultiplier = (scenario: 'optimistic' | 'realistic' | 'pessimistic'): number => {
+    switch (scenario) {
+      case 'optimistic': return 1.2;
+      case 'pessimistic': return 0.8;
+      default: return 1.0;
+    }
+  };
+
+  // Calcular varianza porcentual
+  const calculateVariance = (real: number, projected: number): number => {
+    if (projected === 0) return real === 0 ? 0 : 100;
+    return ((real - projected) / projected) * 100;
+  };
+
+  // Combinar datos reales con proyectados
+  const getCombinedData = () => {
+    if (!cashFlowData || !budgetData) return null;
+
+    const combinedCategories = cashFlowData.categories.map(category => {
+      // Buscar la categoría correspondiente en datos proyectados
+      const categoryType = category.type === 'income' ? 'incomeCategories' : 'expenseCategories';
+      const projectedCategory = budgetData[categoryType]?.find(
+        (proj: any) => proj.categoryName === category.name
+      );
+
+      let projectedValues = new Array(12).fill(0);
+      let projectedTotal = 0;
+
+      if (projectedCategory) {
+        for (let month = 1; month <= 12; month++) {
+          const value = projectedCategory.months[month] || 0;
+          projectedValues[month - 1] = value;
+          projectedTotal += value;
+        }
+      }
+
+      // Calcular varianzas
+      const varianceValues = category.monthlyValues.map((real, index) => 
+        calculateVariance(real, projectedValues[index])
+      );
+      const totalVariance = calculateVariance(category.total, projectedTotal);
+
+      return {
+        ...category,
+        projectedValues,
+        varianceValues,
+        projectedTotal,
+        totalVariance
+      };
+    });
+
+    return {
+      ...cashFlowData,
+      categories: combinedCategories
+    };
+  };
+
+  // Usar datos combinados
+  const data = getCombinedData() || {
+    year: selectedYear,
+    months: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+    categories: [],
+    summaries: {
+      monthly: { income: new Array(12).fill(0), expenses: new Array(12).fill(0), net: new Array(12).fill(0) },
+      projected: { income: new Array(12).fill(0), expenses: new Array(12).fill(0), net: new Array(12).fill(0) },
+      variance: { income: new Array(12).fill(0), expenses: new Array(12).fill(0), net: new Array(12).fill(0) },
+      annual: { income: 0, expenses: 0, net: 0 },
+      projectedAnnual: { income: 0, expenses: 0, net: 0 },
+      annualVariance: { income: 0, expenses: 0, net: 0 }
+    }
+  };
+
   // Funciones de cálculo de proyecciones
   const calculateTrendGrowth = (historicalValues: number[]) => {
     if (historicalValues.length < 2) return 0;
@@ -321,14 +418,7 @@ export default function CashFlowMatrix() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+
 
   // Calcular varianza porcentual
   const calculateVariance = (real: number, projected: number): number => {
@@ -379,20 +469,7 @@ export default function CashFlowMatrix() {
     };
   };
 
-  // Usar datos combinados (reales + proyectados)
-  const data = getCombinedData() || {
-    year: selectedYear,
-    months: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
-    categories: [],
-    summaries: {
-      monthly: { income: new Array(12).fill(0), expenses: new Array(12).fill(0), net: new Array(12).fill(0) },
-      projected: { income: new Array(12).fill(0), expenses: new Array(12).fill(0), net: new Array(12).fill(0) },
-      variance: { income: new Array(12).fill(0), expenses: new Array(12).fill(0), net: new Array(12).fill(0) },
-      annual: { income: 0, expenses: 0, net: 0 },
-      projectedAnnual: { income: 0, expenses: 0, net: 0 },
-      annualVariance: { income: 0, expenses: 0, net: 0 }
-    }
-  };
+
 
   // Funciones para importación CSV
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -956,53 +1033,6 @@ export default function CashFlowMatrix() {
                     </tr>
                   ))}
                   
-                  {/* Fila de totales */}
-                  <tr className="bg-blue-50 font-semibold">
-                    <td className="border border-gray-300 p-3">TOTAL INGRESOS</td>
-                    <td className="border border-gray-300 p-3 text-center">
-                      <Badge variant="default">Ingreso</Badge>
-                    </td>
-                    {groupValues(data.summaries.monthly.income).map((value, index) => (
-                      <td key={index} className="border border-gray-300 p-3 text-right">
-                        {formatCurrency(value)}
-                      </td>
-                    ))}
-                    <td className="border border-gray-300 p-3 text-right">
-                      {formatCurrency(data.summaries.annual.income)}
-                    </td>
-                  </tr>
-                  
-                  <tr className="bg-red-50 font-semibold">
-                    <td className="border border-gray-300 p-3">TOTAL GASTOS</td>
-                    <td className="border border-gray-300 p-3 text-center">
-                      <Badge variant="destructive">Gasto</Badge>
-                    </td>
-                    {groupValues(data.summaries.monthly.expenses).map((value, index) => (
-                      <td key={index} className="border border-gray-300 p-3 text-right">
-                        {formatCurrency(value)}
-                      </td>
-                    ))}
-                    <td className="border border-gray-300 p-3 text-right">
-                      {formatCurrency(data.summaries.annual.expenses)}
-                    </td>
-                  </tr>
-                  
-                  <tr className="bg-green-50 font-bold">
-                    <td className="border border-gray-300 p-3">FLUJO NETO</td>
-                    <td className="border border-gray-300 p-3 text-center">
-                      <Badge variant={data.summaries.annual.net >= 0 ? 'default' : 'destructive'}>
-                        {data.summaries.annual.net >= 0 ? 'Positivo' : 'Negativo'}
-                      </Badge>
-                    </td>
-                    {groupValues(data.summaries.monthly.net).map((value, index) => (
-                      <td key={index} className={`border border-gray-300 p-3 text-right ${value >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatCurrency(value)}
-                      </td>
-                    ))}
-                    <td className={`border border-gray-300 p-3 text-right ${data.summaries.annual.net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatCurrency(data.summaries.annual.net)}
-                    </td>
-                  </tr>
                 </tbody>
               </table>
             </div>
