@@ -599,6 +599,102 @@ export default function ParkLandingPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Instructores */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-purple-600" />
+                  Instructores
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {park.instructors && park.instructors.length > 0 ? (
+                  <div className="space-y-3">
+                    {park.instructors.map((instructor) => (
+                      <div key={instructor.id} className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg border">
+                        {instructor.profileImageUrl ? (
+                          <img 
+                            src={instructor.profileImageUrl} 
+                            alt={instructor.fullName}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-purple-200 rounded-full flex items-center justify-center">
+                            <Users className="h-5 w-5 text-purple-600" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <h4 className="font-medium text-purple-900 text-sm">{instructor.fullName}</h4>
+                          {instructor.specialties && (
+                            <p className="text-purple-700 text-xs mt-1">{instructor.specialties}</p>
+                          )}
+                          {instructor.experienceYears && (
+                            <p className="text-purple-600 text-xs mt-1">{instructor.experienceYears} años de experiencia</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <Users className="h-8 w-8 text-purple-400 mx-auto mb-2" />
+                    <p className="text-purple-600 text-sm">No hay instructores asignados</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Voluntarios Activos */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-green-600" />
+                  Voluntarios Activos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {park.volunteers && park.volunteers.length > 0 ? (
+                  <div className="space-y-3">
+                    {park.volunteers.slice(0, 3).map((volunteer) => (
+                      <div key={volunteer.id} className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border">
+                        {volunteer.profileImageUrl ? (
+                          <img 
+                            src={volunteer.profileImageUrl} 
+                            alt={volunteer.fullName}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center">
+                            <Heart className="h-5 w-5 text-green-600" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <h4 className="font-medium text-green-900 text-sm">{volunteer.fullName}</h4>
+                          {volunteer.skills && (
+                            <p className="text-green-700 text-xs mt-1">{volunteer.skills}</p>
+                          )}
+                          {volunteer.interestAreas && (
+                            <p className="text-green-600 text-xs mt-1">{volunteer.interestAreas}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {park.volunteers.length > 3 && (
+                      <div className="text-center pt-2">
+                        <p className="text-green-600 text-xs">+{park.volunteers.length - 3} voluntarios más</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <Heart className="h-8 w-8 text-green-400 mx-auto mb-2" />
+                    <p className="text-green-600 text-sm mb-1">¡Únete como voluntario!</p>
+                    <p className="text-green-500 text-xs">Ayuda a cuidar este espacio verde</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
