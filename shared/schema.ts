@@ -3,6 +3,80 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
+// ===== SISTEMA DE COMUNICACIONES =====
+
+// Plantillas de email
+export const emailTemplates = pgTable("email_templates", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  htmlContent: text("html_content").notNull(),
+  textContent: text("text_content"),
+  templateType: varchar("template_type", { length: 100 }).notNull(), // welcome, notification, marketing, etc.
+  moduleId: varchar("module_id", { length: 100 }), // hr, parks, events, etc.
+  variables: json("variables").$type<string[]>().default([]), // Variables disponibles como {{name}}, {{park}}
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Cola de emails
+export const emailQueue = pgTable("email_queue", {
+  id: serial("id").primaryKey(),
+  to: varchar("to", { length: 255 }).notNull(),
+  cc: varchar("cc", { length: 255 }),
+  bcc: varchar("bcc", { length: 255 }),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  htmlContent: text("html_content").notNull(),
+  textContent: text("text_content"),
+  templateId: integer("template_id").references(() => emailTemplates.id),
+  priority: varchar("priority", { length: 20 }).default("normal"), // low, normal, high, urgent
+  status: varchar("status", { length: 50 }).default("pending"), // pending, sending, sent, failed, cancelled
+  scheduledFor: timestamp("scheduled_for"),
+  sentAt: timestamp("sent_at"),
+  attempts: integer("attempts").default(0),
+  maxAttempts: integer("max_attempts").default(3),
+  errorMessage: text("error_message"),
+  metadata: json("metadata").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Campañas de email
+export const emailCampaigns = pgTable("email_campaigns", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  templateId: integer("template_id").references(() => emailTemplates.id),
+  targetUserTypes: json("target_user_types").$type<string[]>().default([]), // admin, employee, volunteer, etc.
+  targetModules: json("target_modules").$type<string[]>().default([]), // hr, parks, events, etc.
+  status: varchar("status", { length: 50 }).default("draft"), // draft, scheduled, sending, sent, cancelled
+  scheduledFor: timestamp("scheduled_for"),
+  sentAt: timestamp("sent_at"),
+  totalRecipients: integer("total_recipients").default(0),
+  successfulSends: integer("successful_sends").default(0),
+  failedSends: integer("failed_sends").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Logs de emails
+export const emailLogs = pgTable("email_logs", {
+  id: serial("id").primaryKey(),
+  queueId: integer("queue_id").references(() => emailQueue.id),
+  campaignId: integer("campaign_id").references(() => emailCampaigns.id),
+  recipient: varchar("recipient", { length: 255 }).notNull(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  status: varchar("status", { length: 50 }).notNull(), // sent, failed, bounced, opened, clicked
+  provider: varchar("provider", { length: 50 }), // gmail, sendgrid
+  messageId: varchar("message_id", { length: 255 }),
+  errorMessage: text("error_message"),
+  sentAt: timestamp("sent_at"),
+  openedAt: timestamp("opened_at"),
+  clickedAt: timestamp("clicked_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // ========== MÓDULO DE FINANZAS ==========
 
 // Categorías de ingresos

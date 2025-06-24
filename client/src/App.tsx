@@ -336,6 +336,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/system/email-settings')))}
           </Suspense>
         </Route>
+        <Route path="/admin/communications">
+          <Suspense fallback={<div className="p-8 text-center">Cargando sistema de comunicación...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/communications')))}
+          </Suspense>
+        </Route>
 
         {/* Rutas para el módulo de activos */}
         <Route path="/admin/assets/dashboard">

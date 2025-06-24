@@ -701,6 +701,14 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar rutas de comunicaciones:", error);
   }
 
+  // Inicializar tablas de comunicaciones
+  try {
+    const { seedEmailTemplates } = await import("./communications/seedCommunications");
+    await seedEmailTemplates();
+  } catch (error) {
+    console.error("Error inicializando tablas de comunicaciones:", error);
+  }
+
   const routeServer = await registerRoutes(app);
 
   // Registrar API de integraciones financieras múltiples
