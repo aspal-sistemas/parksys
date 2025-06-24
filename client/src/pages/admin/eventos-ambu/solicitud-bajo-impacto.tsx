@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CalendarIcon, FileTextIcon, InfoIcon, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 
 // Schema de validación para eventos de bajo impacto
@@ -684,9 +685,9 @@ export default function SolicitudBajoImpacto() {
           >
             {crearSolicitudMutation.isPending ? "Enviando..." : "Enviar Solicitud"}
           </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+      </form>
+    </CardContent>
+  </Card>
   );
 }
