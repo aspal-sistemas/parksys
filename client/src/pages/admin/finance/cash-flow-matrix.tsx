@@ -819,43 +819,46 @@ export default function CashFlowMatrix() {
 
         {/* Matriz de Flujo de Efectivo con Proyectado vs Real */}
       {data && (
-        <>
-          {/* CABECERA FIJA COMPARTIDA */}
-          <div className="sticky top-16 z-20 bg-white shadow-lg border-b-2 border-gray-300 mb-4">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 table-fixed">
-                <thead>
-                  <tr className="bg-blue-50">
-                    <th className="border border-gray-300 p-3 text-left font-semibold w-48">Categoría</th>
-                    {["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"].map((month) => (
-                      <th key={month} className="border border-gray-300 p-2 text-center font-semibold w-32">
-                        <div className="text-sm font-bold mb-2">{month}</div>
-                        <div className="space-y-1 text-xs">
-                          <div className="text-blue-600 py-1">Proyec</div>
-                          <div className="text-gray-600 py-1">Real</div>
-                          <div className="text-orange-600 py-1">Var</div>
-                        </div>
-                      </th>
-                    ))}
-                    <th className="border border-gray-300 p-3 text-center font-semibold w-40">Total Anual</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-          </div>
+        <div className="space-y-6">
 
-          <div className="space-y-6">
-                    {/* SECCIÓN INGRESOS */}
-                    <tr className="bg-green-200">
-                      <td colSpan={14} className="border border-gray-300 p-3 text-center font-bold text-green-800 text-lg">
-                        💰 INGRESOS - {selectedYear}
-                      </td>
-                    </tr>
-                    {data.categories.filter(cat => cat.type === 'income').map((category, index) => {
+            {/* CONTENEDOR ÚNICO CON CABECERA FIJA */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-blue-700">📊 MATRIZ DE FLUJO DE EFECTIVO - {selectedYear}</CardTitle>
+                <CardDescription>Análisis comparativo proyectado vs real por categorías</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300">
+                    {/* CABECERA FIJA */}
+                    <thead className="sticky top-0 z-10 bg-blue-50">
+                      <tr>
+                        <th className="border border-gray-300 p-3 text-left font-semibold bg-blue-50">Categoría</th>
+                        {["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"].map((month) => (
+                          <th key={month} className="border border-gray-300 p-2 text-center font-semibold min-w-[120px] bg-blue-50">
+                            <div className="text-sm font-bold mb-2">{month}</div>
+                            <div className="space-y-1 text-xs">
+                              <div className="text-blue-600 py-1">Proyec</div>
+                              <div className="text-gray-600 py-1">Real</div>
+                              <div className="text-orange-600 py-1">Var</div>
+                            </div>
+                          </th>
+                        ))}
+                        <th className="border border-gray-300 p-3 text-center font-semibold bg-blue-50">Total Anual</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* SECCIÓN INGRESOS */}
+                      <tr className="bg-green-200">
+                        <td colSpan={14} className="border border-gray-300 p-3 text-center font-bold text-green-800 text-lg">
+                          💰 INGRESOS - {selectedYear}
+                        </td>
+                      </tr>
+                      {data.categories.filter(cat => cat.type === 'income').map((category, index) => {
                         const projectedCategory = budgetMatrix?.incomeCategories?.find((p: any) => p.categoryName === category.name);
                         return (
-                        <tr key={category.name} className={index % 2 === 0 ? 'bg-white' : 'bg-green-50'}>
-                          <td className="border border-gray-300 p-3 font-medium w-48">{category.name}</td>
+                          <tr key={category.name} className={index % 2 === 0 ? 'bg-white' : 'bg-green-50'}>
+                            <td className="border border-gray-300 p-3 font-medium">{category.name}</td>
                           {Array.from({length: 12}, (_, monthIndex) => {
                             const projected = projectedCategory?.months[monthIndex + 1] || 0;
                             const real = category.monthlyValues[monthIndex] || 0;
@@ -891,12 +894,12 @@ export default function CashFlowMatrix() {
                             </div>
                           </td>
                         </tr>
-                        );
+                          );
                       })}
                       
                       {/* Total de Ingresos */}
                       <tr className="bg-green-100 border-t-2 border-green-300">
-                        <td className="border border-gray-300 p-3 font-bold text-green-800 w-48">TOTAL INGRESOS</td>
+                        <td className="border border-gray-300 p-3 font-bold text-green-800">TOTAL INGRESOS</td>
                         {Array.from({length: 12}, (_, monthIndex) => {
                           const monthlyProjected = budgetMatrix?.incomeCategories?.reduce((sum: any, cat: any) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
                           const monthlyReal = data.summaries.monthly.income[monthIndex] || 0;
@@ -938,11 +941,11 @@ export default function CashFlowMatrix() {
                         💸 EGRESOS - {selectedYear}
                       </td>
                     </tr>
-                    {data.categories.filter(cat => cat.type === 'expense').map((category, index) => {
+                      {data.categories.filter(cat => cat.type === 'expense').map((category, index) => {
                         const projectedCategory = budgetMatrix?.expenseCategories?.find((p: any) => p.categoryName === category.name);
                         return (
-                        <tr key={category.name} className={index % 2 === 0 ? 'bg-white' : 'bg-red-50'}>
-                          <td className="border border-gray-300 p-3 font-medium w-48">{category.name}</td>
+                          <tr key={category.name} className={index % 2 === 0 ? 'bg-white' : 'bg-red-50'}>
+                            <td className="border border-gray-300 p-3 font-medium">{category.name}</td>
                           {Array.from({length: 12}, (_, monthIndex) => {
                             const projected = projectedCategory?.months[monthIndex + 1] || 0;
                             const real = category.monthlyValues[monthIndex] || 0;
@@ -978,12 +981,12 @@ export default function CashFlowMatrix() {
                             </div>
                           </td>
                         </tr>
-                        );
+                          );
                       })}
                       
                       {/* Total de Egresos */}
                       <tr className="bg-red-100 border-t-2 border-red-300">
-                        <td className="border border-gray-300 p-3 font-bold text-red-800 w-48">TOTAL EGRESOS</td>
+                        <td className="border border-gray-300 p-3 font-bold text-red-800">TOTAL EGRESOS</td>
                         {Array.from({length: 12}, (_, monthIndex) => {
                           const monthlyProjected = budgetMatrix?.expenseCategories?.reduce((sum: any, cat: any) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
                           const monthlyReal = data.summaries.monthly.expenses[monthIndex] || 0;
@@ -1018,11 +1021,11 @@ export default function CashFlowMatrix() {
                           </div>
                         </td>
                       </tr>
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
         </div>
       )}
 
