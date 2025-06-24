@@ -11,6 +11,7 @@ import { RefreshCw, Calculator, TrendingUp, TrendingDown, Download, Settings, Up
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
+import React from "react";
 
 interface CashFlowData {
   year: number;
@@ -816,101 +817,336 @@ export default function CashFlowMatrix() {
           </Card>
         </div>
 
-        {/* Matriz de Flujo de Efectivo */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Matriz de Flujo de Efectivo - {selectedYear}</CardTitle>
-            <CardDescription>
-              Vista {viewMode} de ingresos y gastos por categoría
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="border border-gray-300 p-3 text-left font-semibold">Categoría</th>
-                    <th className="border border-gray-300 p-3 text-center font-semibold">Tipo</th>
-                    {getLabels().map((label, index) => (
-                      <th key={index} className="border border-gray-300 p-3 text-center font-semibold text-xs">
-                        {label}
-                      </th>
-                    ))}
-                    <th className="border border-gray-300 p-3 text-center font-semibold">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.categories.map((category, index) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                      <td className="border border-gray-300 p-3 font-medium">{category.name}</td>
-                      <td className="border border-gray-300 p-3 text-center">
-                        <Badge variant={category.type === 'income' ? 'default' : 'destructive'}>
-                          {category.type === 'income' ? 'Ingreso' : 'Gasto'}
-                        </Badge>
-                      </td>
-                      {groupValues(category.monthlyValues).map((value, monthIndex) => (
-                        <td key={monthIndex} className="border border-gray-300 p-3 text-right text-sm">
-                          {formatCurrency(value)}
-                        </td>
-                      ))}
-                      <td className="border border-gray-300 p-3 text-right font-semibold">
-                        {formatCurrency(category.total)}
+        {/* Matriz de Flujo de Efectivo con Proyectado vs Real */}
+        <div className="space-y-6">
+          {/* INGRESOS */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-green-700">💰 INGRESOS - {selectedYear}</CardTitle>
+              <CardDescription>Proyectado vs Real por mes con varianza</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-green-50">
+                      <th className="border border-gray-300 p-3 text-left font-semibold">Categoría</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Ene</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Feb</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Mar</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Abr</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">May</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Jun</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Jul</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Ago</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Sep</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Oct</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Nov</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Dic</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.categories.filter(cat => cat.type === 'income').map((category, index) => {
+                      const projectedCategory = budgetMatrix?.incomeCategories?.find(p => p.categoryName === category.name);
+                      return (
+                        <React.Fragment key={category.name}>
+                          {/* Fila Proyectado */}
+                          <tr className="bg-blue-50">
+                            <td className="border border-gray-300 p-2 text-sm">
+                              <div className="font-medium">{category.name}</div>
+                              <div className="text-xs text-blue-600">Proyectado</div>
+                            </td>
+                            {Array.from({length: 12}, (_, monthIndex) => {
+                              const projected = projectedCategory?.months[monthIndex + 1] || 0;
+                              return (
+                                <td key={monthIndex} className="border border-gray-300 p-2 text-center text-xs text-blue-700">
+                                  {formatCurrency(projected)}
+                                </td>
+                              );
+                            })}
+                            <td className="border border-gray-300 p-2 text-center text-sm font-semibold text-blue-700">
+                              {formatCurrency(projectedCategory?.total || 0)}
+                            </td>
+                          </tr>
+                          
+                          {/* Fila Real */}
+                          <tr className="bg-white">
+                            <td className="border border-gray-300 p-2 text-sm">
+                              <div className="text-xs text-gray-600">Real</div>
+                            </td>
+                            {category.monthlyValues.map((value, monthIndex) => (
+                              <td key={monthIndex} className="border border-gray-300 p-2 text-center text-xs">
+                                {formatCurrency(value)}
+                              </td>
+                            ))}
+                            <td className="border border-gray-300 p-2 text-center text-sm font-semibold">
+                              {formatCurrency(category.total)}
+                            </td>
+                          </tr>
+                          
+                          {/* Fila Varianza */}
+                          <tr className="bg-yellow-50">
+                            <td className="border border-gray-300 p-2 text-sm">
+                              <div className="text-xs text-orange-600">Varianza</div>
+                            </td>
+                            {Array.from({length: 12}, (_, monthIndex) => {
+                              const projected = projectedCategory?.months[monthIndex + 1] || 0;
+                              const real = category.monthlyValues[monthIndex] || 0;
+                              const variance = real - projected;
+                              const isPositive = variance >= 0;
+                              return (
+                                <td key={monthIndex} className={`border border-gray-300 p-2 text-center text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                                  {variance !== 0 ? formatCurrency(variance) : '-'}
+                                </td>
+                              );
+                            })}
+                            <td className="border border-gray-300 p-2 text-center text-sm font-semibold">
+                              {(() => {
+                                const totalVariance = category.total - (projectedCategory?.total || 0);
+                                const isPositive = totalVariance >= 0;
+                                return (
+                                  <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
+                                    {formatCurrency(totalVariance)}
+                                  </span>
+                                );
+                              })()}
+                            </td>
+                          </tr>
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* EGRESOS */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-red-700">💸 EGRESOS - {selectedYear}</CardTitle>
+              <CardDescription>Proyectado vs Real por mes con varianza</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-red-50">
+                      <th className="border border-gray-300 p-3 text-left font-semibold">Categoría</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Ene</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Feb</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Mar</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Abr</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">May</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Jun</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Jul</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Ago</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Sep</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Oct</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Nov</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Dic</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.categories.filter(cat => cat.type === 'expense').map((category, index) => {
+                      const projectedCategory = budgetMatrix?.expenseCategories?.find(p => p.categoryName === category.name);
+                      return (
+                        <React.Fragment key={category.name}>
+                          {/* Fila Proyectado */}
+                          <tr className="bg-blue-50">
+                            <td className="border border-gray-300 p-2 text-sm">
+                              <div className="font-medium">{category.name}</div>
+                              <div className="text-xs text-blue-600">Proyectado</div>
+                            </td>
+                            {Array.from({length: 12}, (_, monthIndex) => {
+                              const projected = projectedCategory?.months[monthIndex + 1] || 0;
+                              return (
+                                <td key={monthIndex} className="border border-gray-300 p-2 text-center text-xs text-blue-700">
+                                  {formatCurrency(projected)}
+                                </td>
+                              );
+                            })}
+                            <td className="border border-gray-300 p-2 text-center text-sm font-semibold text-blue-700">
+                              {formatCurrency(projectedCategory?.total || 0)}
+                            </td>
+                          </tr>
+                          
+                          {/* Fila Real */}
+                          <tr className="bg-white">
+                            <td className="border border-gray-300 p-2 text-sm">
+                              <div className="text-xs text-gray-600">Real</div>
+                            </td>
+                            {category.monthlyValues.map((value, monthIndex) => (
+                              <td key={monthIndex} className="border border-gray-300 p-2 text-center text-xs">
+                                {formatCurrency(value)}
+                              </td>
+                            ))}
+                            <td className="border border-gray-300 p-2 text-center text-sm font-semibold">
+                              {formatCurrency(category.total)}
+                            </td>
+                          </tr>
+                          
+                          {/* Fila Varianza */}
+                          <tr className="bg-yellow-50">
+                            <td className="border border-gray-300 p-2 text-sm">
+                              <div className="text-xs text-orange-600">Varianza</div>
+                            </td>
+                            {Array.from({length: 12}, (_, monthIndex) => {
+                              const projected = projectedCategory?.months[monthIndex + 1] || 0;
+                              const real = category.monthlyValues[monthIndex] || 0;
+                              const variance = real - projected;
+                              const isPositive = variance >= 0;
+                              return (
+                                <td key={monthIndex} className={`border border-gray-300 p-2 text-center text-xs ${isPositive ? 'text-red-600' : 'text-green-600'}`}>
+                                  {variance !== 0 ? formatCurrency(variance) : '-'}
+                                </td>
+                              );
+                            })}
+                            <td className="border border-gray-300 p-2 text-center text-sm font-semibold">
+                              {(() => {
+                                const totalVariance = category.total - (projectedCategory?.total || 0);
+                                const isPositive = totalVariance >= 0;
+                                return (
+                                  <span className={isPositive ? 'text-red-600' : 'text-green-600'}>
+                                    {formatCurrency(totalVariance)}
+                                  </span>
+                                );
+                              })()}
+                            </td>
+                          </tr>
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* UTILIDAD/PÉRDIDA DEL EJERCICIO */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-blue-700">📊 UTILIDAD / PÉRDIDA DEL EJERCICIO - {selectedYear}</CardTitle>
+              <CardDescription>Resumen mensual y anual del ejercicio</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-blue-50">
+                      <th className="border border-gray-300 p-3 text-left font-semibold">Concepto</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Ene</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Feb</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Mar</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Abr</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">May</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Jun</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Jul</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Ago</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Sep</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Oct</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Nov</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Dic</th>
+                      <th className="border border-gray-300 p-3 text-center font-semibold">Total Anual</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Ingresos Proyectados */}
+                    <tr className="bg-green-100">
+                      <td className="border border-gray-300 p-3 font-medium text-green-700">Ingresos Proyectados</td>
+                      {Array.from({length: 12}, (_, monthIndex) => {
+                        const monthlyProjected = budgetMatrix?.incomeCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                        return (
+                          <td key={monthIndex} className="border border-gray-300 p-3 text-center text-green-700">
+                            {formatCurrency(monthlyProjected)}
+                          </td>
+                        );
+                      })}
+                      <td className="border border-gray-300 p-3 text-center font-semibold text-green-700">
+                        {formatCurrency(budgetMatrix?.yearlyTotals?.income || 0)}
                       </td>
                     </tr>
-                  ))}
-                  
-                  {/* Fila de totales */}
-                  <tr className="bg-blue-50 font-semibold">
-                    <td className="border border-gray-300 p-3">TOTAL INGRESOS</td>
-                    <td className="border border-gray-300 p-3 text-center">
-                      <Badge variant="default">Ingreso</Badge>
-                    </td>
-                    {groupValues(data.summaries.monthly.income).map((value, index) => (
-                      <td key={index} className="border border-gray-300 p-3 text-right">
-                        {formatCurrency(value)}
+                    
+                    {/* Ingresos Reales */}
+                    <tr className="bg-green-50">
+                      <td className="border border-gray-300 p-3 font-medium text-green-600">Ingresos Reales</td>
+                      {data.summaries.monthly.income.map((income, monthIndex) => (
+                        <td key={monthIndex} className="border border-gray-300 p-3 text-center text-green-600">
+                          {formatCurrency(income)}
+                        </td>
+                      ))}
+                      <td className="border border-gray-300 p-3 text-center font-semibold text-green-600">
+                        {formatCurrency(data.summaries.annual.income)}
                       </td>
-                    ))}
-                    <td className="border border-gray-300 p-3 text-right">
-                      {formatCurrency(data.summaries.annual.income)}
-                    </td>
-                  </tr>
-                  
-                  <tr className="bg-red-50 font-semibold">
-                    <td className="border border-gray-300 p-3">TOTAL GASTOS</td>
-                    <td className="border border-gray-300 p-3 text-center">
-                      <Badge variant="destructive">Gasto</Badge>
-                    </td>
-                    {groupValues(data.summaries.monthly.expenses).map((value, index) => (
-                      <td key={index} className="border border-gray-300 p-3 text-right">
-                        {formatCurrency(value)}
+                    </tr>
+                    
+                    {/* Egresos Proyectados */}
+                    <tr className="bg-red-100">
+                      <td className="border border-gray-300 p-3 font-medium text-red-700">Egresos Proyectados</td>
+                      {Array.from({length: 12}, (_, monthIndex) => {
+                        const monthlyProjected = budgetMatrix?.expenseCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                        return (
+                          <td key={monthIndex} className="border border-gray-300 p-3 text-center text-red-700">
+                            {formatCurrency(monthlyProjected)}
+                          </td>
+                        );
+                      })}
+                      <td className="border border-gray-300 p-3 text-center font-semibold text-red-700">
+                        {formatCurrency(budgetMatrix?.yearlyTotals?.expense || 0)}
                       </td>
-                    ))}
-                    <td className="border border-gray-300 p-3 text-right">
-                      {formatCurrency(data.summaries.annual.expenses)}
-                    </td>
-                  </tr>
-                  
-                  <tr className="bg-green-50 font-bold">
-                    <td className="border border-gray-300 p-3">FLUJO NETO</td>
-                    <td className="border border-gray-300 p-3 text-center">
-                      <Badge variant={data.summaries.annual.net >= 0 ? 'default' : 'destructive'}>
-                        {data.summaries.annual.net >= 0 ? 'Positivo' : 'Negativo'}
-                      </Badge>
-                    </td>
-                    {groupValues(data.summaries.monthly.net).map((value, index) => (
-                      <td key={index} className={`border border-gray-300 p-3 text-right ${value >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatCurrency(value)}
+                    </tr>
+                    
+                    {/* Egresos Reales */}
+                    <tr className="bg-red-50">
+                      <td className="border border-gray-300 p-3 font-medium text-red-600">Egresos Reales</td>
+                      {data.summaries.monthly.expenses.map((expense, monthIndex) => (
+                        <td key={monthIndex} className="border border-gray-300 p-3 text-center text-red-600">
+                          {formatCurrency(expense)}
+                        </td>
+                      ))}
+                      <td className="border border-gray-300 p-3 text-center font-semibold text-red-600">
+                        {formatCurrency(data.summaries.annual.expenses)}
                       </td>
-                    ))}
-                    <td className={`border border-gray-300 p-3 text-right ${data.summaries.annual.net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatCurrency(data.summaries.annual.net)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+                    </tr>
+                    
+                    {/* Utilidad/Pérdida Proyectada */}
+                    <tr className="bg-blue-100">
+                      <td className="border border-gray-300 p-3 font-medium text-blue-700">Utilidad/Pérdida Proyectada</td>
+                      {Array.from({length: 12}, (_, monthIndex) => {
+                        const monthlyIncomeProjected = budgetMatrix?.incomeCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                        const monthlyExpenseProjected = budgetMatrix?.expenseCategories?.reduce((sum, cat) => sum + (cat.months[monthIndex + 1] || 0), 0) || 0;
+                        const monthlyNet = monthlyIncomeProjected - monthlyExpenseProjected;
+                        return (
+                          <td key={monthIndex} className={`border border-gray-300 p-3 text-center ${monthlyNet >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                            {formatCurrency(monthlyNet)}
+                          </td>
+                        );
+                      })}
+                      <td className={`border border-gray-300 p-3 text-center font-semibold ${(budgetMatrix?.yearlyTotals?.net || 0) >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                        {formatCurrency(budgetMatrix?.yearlyTotals?.net || 0)}
+                      </td>
+                    </tr>
+                    
+                    {/* Utilidad/Pérdida Real */}
+                    <tr className="bg-gray-100">
+                      <td className="border border-gray-300 p-3 font-medium">Utilidad/Pérdida Real</td>
+                      {data.summaries.monthly.net.map((net, monthIndex) => (
+                        <td key={monthIndex} className={`border border-gray-300 p-3 text-center font-semibold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {formatCurrency(net)}
+                        </td>
+                      ))}
+                      <td className={`border border-gray-300 p-3 text-center font-bold text-lg ${data.summaries.annual.net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCurrency(data.summaries.annual.net)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Tabla de proyecciones */}
         {showProjections && projectedData && (
