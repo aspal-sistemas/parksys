@@ -414,13 +414,28 @@ const AdminSidebarComplete: React.FC = () => {
             title="Eventos" 
             icon={<CalendarDays className="h-5 w-5" />}
             value="events"
+            defaultOpen={location.startsWith('/admin/events') || location.startsWith('/admin/eventos-ambu')}
           >
+            <NavItem 
+              href="/admin/events/new" 
+              icon={<Plus className="h-5 w-5" />}
+              active={location.startsWith('/admin/events/new')}
+            >
+              Nuevo Evento
+            </NavItem>
+            <NavItem 
+              href="/admin/events/calendar" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/events/calendar')}
+            >
+              Calendario
+            </NavItem>
             <NavItem 
               href="/admin/eventos-ambu" 
               icon={<ListFilter className="h-5 w-5" />}
               active={location === '/admin/eventos-ambu'}
             >
-              Gestión de Eventos
+              Eventos AMBU
             </NavItem>
             <NavItem 
               href="/admin/eventos-ambu/solicitud-bajo-impacto" 
@@ -441,7 +456,7 @@ const AdminSidebarComplete: React.FC = () => {
               icon={<Calendar className="h-5 w-5" />}
               active={location.startsWith('/admin/eventos-ambu/calendar')}
             >
-              Calendario
+              Calendario AMBU
             </NavItem>
             <NavItem 
               href="/admin/eventos-ambu/tabulador" 
