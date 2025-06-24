@@ -87,78 +87,85 @@ export function registerBudgetPlanningRoutes(app: any, apiRouter: Router, isAuth
     }
   });
   
-  // Guardar matriz presupuestaria
+  // Guardar matriz presupuestaria simplificado
   apiRouter.post('/budget-projections/:year', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const year = parseInt(req.params.year);
       const { matrix } = req.body;
       
       console.log(`=== GUARDANDO MATRIZ PRESUPUESTARIA PARA ${year} ===`);
+      console.log(`Categorías ingresos: ${matrix.incomeCategories?.length || 0}`);
+      console.log(`Categorías gastos: ${matrix.expenseCategories?.length || 0}`);
       
       // Eliminar proyecciones existentes del año
       await db.delete(budgetProjections)
         .where(eq(budgetProjections.year, year));
       
-      const projectionInserts = [];
+      const insertions = [];
       
       // Procesar categorías de ingresos
-      for (const category of matrix.incomeCategories) {
-        projectionInserts.push({
-          year,
-          categoryId: category.categoryId,
-          categoryType: 'income' as const,
-          month1: (category.months[1] || 0).toString(),
-          month2: (category.months[2] || 0).toString(),
-          month3: (category.months[3] || 0).toString(),
-          month4: (category.months[4] || 0).toString(),
-          month5: (category.months[5] || 0).toString(),
-          month6: (category.months[6] || 0).toString(),
-          month7: (category.months[7] || 0).toString(),
-          month8: (category.months[8] || 0).toString(),
-          month9: (category.months[9] || 0).toString(),
-          month10: (category.months[10] || 0).toString(),
-          month11: (category.months[11] || 0).toString(),
-          month12: (category.months[12] || 0).toString()
-        });
+      if (matrix.incomeCategories) {
+        for (const category of matrix.incomeCategories) {
+          insertions.push({
+            year,
+            categoryId: category.categoryId,
+            categoryType: 'income',
+            month1: (category.months[1] || 0).toString(),
+            month2: (category.months[2] || 0).toString(),
+            month3: (category.months[3] || 0).toString(),
+            month4: (category.months[4] || 0).toString(),
+            month5: (category.months[5] || 0).toString(),
+            month6: (category.months[6] || 0).toString(),
+            month7: (category.months[7] || 0).toString(),
+            month8: (category.months[8] || 0).toString(),
+            month9: (category.months[9] || 0).toString(),
+            month10: (category.months[10] || 0).toString(),
+            month11: (category.months[11] || 0).toString(),
+            month12: (category.months[12] || 0).toString()
+          });
+        }
       }
       
       // Procesar categorías de gastos
-      for (const category of matrix.expenseCategories) {
-        projectionInserts.push({
-          year,
-          categoryId: category.categoryId,
-          categoryType: 'expense' as const,
-          month1: (category.months[1] || 0).toString(),
-          month2: (category.months[2] || 0).toString(),
-          month3: (category.months[3] || 0).toString(),
-          month4: (category.months[4] || 0).toString(),
-          month5: (category.months[5] || 0).toString(),
-          month6: (category.months[6] || 0).toString(),
-          month7: (category.months[7] || 0).toString(),
-          month8: (category.months[8] || 0).toString(),
-          month9: (category.months[9] || 0).toString(),
-          month10: (category.months[10] || 0).toString(),
-          month11: (category.months[11] || 0).toString(),
-          month12: (category.months[12] || 0).toString()
-        });
+      if (matrix.expenseCategories) {
+        for (const category of matrix.expenseCategories) {
+          insertions.push({
+            year,
+            categoryId: category.categoryId,
+            categoryType: 'expense',
+            month1: (category.months[1] || 0).toString(),
+            month2: (category.months[2] || 0).toString(),
+            month3: (category.months[3] || 0).toString(),
+            month4: (category.months[4] || 0).toString(),
+            month5: (category.months[5] || 0).toString(),
+            month6: (category.months[6] || 0).toString(),
+            month7: (category.months[7] || 0).toString(),
+            month8: (category.months[8] || 0).toString(),
+            month9: (category.months[9] || 0).toString(),
+            month10: (category.months[10] || 0).toString(),
+            month11: (category.months[11] || 0).toString(),
+            month12: (category.months[12] || 0).toString()
+          });
+        }
       }
       
-      // Insertar nuevas proyecciones
-      if (projectionInserts.length > 0) {
-        await db.insert(budgetProjections).values(projectionInserts);
+      // Insertar en lotes si hay datos
+      if (insertions.length > 0) {
+        await db.insert(budgetProjections).values(insertions);
+        console.log(`✓ Insertadas ${insertions.length} proyecciones`);
       }
       
-      console.log(`✓ Matriz presupuestaria guardada exitosamente`);
       res.json({ 
-        success: true, 
-        message: `Matriz presupuestaria del ${year} guardada correctamente`,
-        count: projectionInserts.length
+        success: true,
+        message: `Presupuesto ${year} guardado exitosamente`,
+        recordsInserted: insertions.length
       });
+      
     } catch (error) {
-      console.error('Error al guardar matriz:', error);
+      console.error('Error al guardar presupuesto:', error);
       res.status(500).json({ 
         error: 'Error interno del servidor',
-        message: 'No se pudo guardar la matriz presupuestaria'
+        message: error.message || 'No se pudo guardar la matriz presupuestaria'
       });
     }
   });
