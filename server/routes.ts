@@ -664,11 +664,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const amenitiesResult = await pool.query(`
         SELECT a.id, a.name, a.icon, a.category, 
-               a.icon_type as "iconType", a.custom_icon_url as "customIconUrl"
+               a.icon_type as "iconType", a.custom_icon_url as "customIconUrl",
+               pa.module_name as "moduleName", pa.surface_area as "surfaceArea"
         FROM amenities a
         JOIN park_amenities pa ON a.id = pa.amenity_id
-        WHERE pa.park_id = $1
-        ORDER BY a.name
+        WHERE pa.park_id = $1 AND pa.status = 'activo'
+        ORDER BY a.category, a.name
       `, [parkId]);
       
       console.log(`Amenidades encontradas: ${amenitiesResult.rows.length}`);
