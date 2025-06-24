@@ -471,15 +471,12 @@ export default function CashFlowMatrix() {
             <CardDescription>Proyectado vs Real por mes con varianza para ingresos y egresos</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* CABECERA FIJA SEPARADA */}
-            <div 
-              className="fixed top-16 left-64 right-4 z-50 bg-white shadow-lg border-b-2 border-blue-300"
-              style={{ marginRight: '16px' }}
-            >
+            <div className="relative max-h-[600px] overflow-y-auto">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 table-fixed">
-                  <thead>
-                    <tr className="bg-blue-50">
+                  {/* CABECERA FIJA DENTRO DEL CONTENEDOR */}
+                  <thead className="sticky top-0 z-10 bg-white">
+                    <tr className="bg-blue-50 border-b-2 border-blue-300">
                       <th className="border border-gray-300 p-3 text-left font-semibold w-48">Categoría</th>
                       {["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"].map((month) => (
                         <th key={month} className="border border-gray-300 p-2 text-center font-semibold w-32">
@@ -494,30 +491,6 @@ export default function CashFlowMatrix() {
                       <th className="border border-gray-300 p-3 text-center font-semibold w-40">Total Anual</th>
                     </tr>
                   </thead>
-                </table>
-              </div>
-            </div>
-
-            {/* TABLA PRINCIPAL CON MARGEN SUPERIOR PARA LA CABECERA FIJA */}
-            <div className="overflow-x-auto" style={{ marginTop: '120px' }}>
-              <table className="w-full border-collapse border border-gray-300 table-fixed">
-                {/* CABECERA INVISIBLE PARA MANTENER ESTRUCTURA */}
-                <thead className="invisible">
-                  <tr className="bg-blue-50 border-b-2 border-blue-300">
-                    <th className="border border-gray-300 p-3 text-left font-semibold w-48">Categoría</th>
-                    {["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"].map((month) => (
-                      <th key={month} className="border border-gray-300 p-2 text-center font-semibold w-32">
-                        <div className="text-sm font-bold mb-2">{month}</div>
-                        <div className="space-y-1 text-xs">
-                          <div className="text-blue-600 py-1">Proyec</div>
-                          <div className="text-gray-600 py-1">Real</div>
-                          <div className="text-orange-600 py-1">Var</div>
-                        </div>
-                      </th>
-                    ))}
-                    <th className="border border-gray-300 p-3 text-center font-semibold w-40">Total Anual</th>
-                  </tr>
-                </thead>
                 
                 <tbody>
                   {/* SECCIÓN INGRESOS */}
@@ -694,7 +667,8 @@ export default function CashFlowMatrix() {
                     </td>
                   </tr>
                 </tbody>
-              </table>
+                </table>
+              </div>
             </div>
           </CardContent>
         </Card>
