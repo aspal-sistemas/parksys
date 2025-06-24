@@ -398,6 +398,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.search = String(req.query.search);
       }
       
+      // Filtro de amenidades - convertir string de IDs separados por comas a array de números
+      if (req.query.amenities) {
+        const amenityIds = String(req.query.amenities)
+          .split(',')
+          .map(id => parseInt(id.trim()))
+          .filter(id => !isNaN(id));
+        
+        if (amenityIds.length > 0) {
+          filters.amenities = amenityIds;
+        }
+      }
+      
       // Obtenemos los parques con sus imágenes y amenidades
       const parks = await getParksDirectly(filters);
       
