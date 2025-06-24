@@ -267,6 +267,7 @@ const AdminSidebar: React.FC = () => {
             title="Eventos" 
             icon={<Calendar className="h-5 w-5" />}
             value="events"
+            defaultOpen={location.startsWith('/admin/events') || location.startsWith('/admin/eventos-ambu')}
           >
             <NavItem 
               href="/admin/events/new" 
