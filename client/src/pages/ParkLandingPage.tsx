@@ -231,8 +231,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Asadores</p>
-                      <p className="text-sm text-gray-500 mt-1">Servicios</p>
+                      <p className="font-medium text-sm">Asadores</p>
+                      <p className="text-xs text-gray-500 mt-1">Servicios</p>
                     </div>
                   </div>
                   
@@ -245,8 +245,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Baños</p>
-                      <p className="text-sm text-gray-500 mt-1">Infraestructura</p>
+                      <p className="font-medium text-sm">Baños</p>
+                      <p className="text-xs text-gray-500 mt-1">Infraestructura</p>
                     </div>
                   </div>
                   
@@ -259,8 +259,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Bosque Urbano</p>
-                      <p className="text-sm text-gray-500 mt-1">Naturaleza</p>
+                      <p className="font-medium text-sm">Bosque Urbano</p>
+                      <p className="text-xs text-gray-500 mt-1">Naturaleza</p>
                     </div>
                   </div>
                   
@@ -273,8 +273,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Auditorio / Anfiteatro</p>
-                      <p className="text-sm text-gray-500 mt-1">Infraestructura</p>
+                      <p className="font-medium text-sm">Auditorio / Anfiteatro</p>
+                      <p className="text-xs text-gray-500 mt-1">Infraestructura</p>
                     </div>
                   </div>
                   
@@ -287,8 +287,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Cafeteria / Restaurante</p>
-                      <p className="text-sm text-gray-500 mt-1">Servicios</p>
+                      <p className="font-medium text-sm">Cafetería / Restaurante</p>
+                      <p className="text-xs text-gray-500 mt-1">Servicios</p>
                     </div>
                   </div>
                   
@@ -301,8 +301,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Caseta de Seguridad</p>
-                      <p className="text-sm text-gray-500 mt-1">Accesibilidad</p>
+                      <p className="font-medium text-sm">Caseta de Seguridad</p>
+                      <p className="text-xs text-gray-500 mt-1">Accesibilidad</p>
                     </div>
                   </div>
                   
@@ -315,8 +315,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Estacionamiento</p>
-                      <p className="text-sm text-gray-500 mt-1">Servicios</p>
+                      <p className="font-medium text-sm">Estacionamiento</p>
+                      <p className="text-xs text-gray-500 mt-1">Servicios</p>
                     </div>
                   </div>
                   
@@ -329,8 +329,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Juegos Infantiles</p>
-                      <p className="text-sm text-gray-500 mt-1">Servicios</p>
+                      <p className="font-medium text-sm">Juegos Infantiles</p>
+                      <p className="text-xs text-gray-500 mt-1">Servicios</p>
                     </div>
                   </div>
                   
@@ -343,8 +343,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Señalética</p>
-                      <p className="text-sm text-gray-500 mt-1">Accesibilidad</p>
+                      <p className="font-medium text-sm">Señalética</p>
+                      <p className="text-xs text-gray-500 mt-1">Accesibilidad</p>
                     </div>
                   </div>
                   
@@ -357,8 +357,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Área de Descanso</p>
-                      <p className="text-sm text-gray-500 mt-1">Naturaleza</p>
+                      <p className="font-medium text-sm">Área de Descanso</p>
+                      <p className="text-xs text-gray-500 mt-1">Naturaleza</p>
                     </div>
                   </div>
                   
@@ -371,8 +371,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Rampas para discapacitados</p>
-                      <p className="text-sm text-gray-500 mt-1">Accesibilidad</p>
+                      <p className="font-medium text-sm">Rampas para discapacitados</p>
+                      <p className="text-xs text-gray-500 mt-1">Accesibilidad</p>
                     </div>
                   </div>
                   
@@ -385,8 +385,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Canchas de Basketbol</p>
-                      <p className="text-sm text-gray-500 mt-1">Deportes</p>
+                      <p className="font-medium text-sm">Canchas de Basketbol</p>
+                      <p className="text-xs text-gray-500 mt-1">Deportes</p>
                     </div>
                   </div>
                   
@@ -399,8 +399,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Food Trucks</p>
-                      <p className="text-sm text-gray-500 mt-1">Servicios</p>
+                      <p className="font-medium text-sm">Food Trucks</p>
+                      <p className="text-xs text-gray-500 mt-1">Servicios</p>
                     </div>
                   </div>
                   
@@ -413,8 +413,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Lago</p>
-                      <p className="text-sm text-gray-500 mt-1">Naturaleza</p>
+                      <p className="font-medium text-sm">Lago</p>
+                      <p className="text-xs text-gray-500 mt-1">Naturaleza</p>
                     </div>
                   </div>
                   
@@ -427,8 +427,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Skate Park</p>
-                      <p className="text-sm text-gray-500 mt-1">Deportes</p>
+                      <p className="font-medium text-sm">Skate Park</p>
+                      <p className="text-xs text-gray-500 mt-1">Deportes</p>
                     </div>
                   </div>
                   
@@ -441,8 +441,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Área de Campamento</p>
-                      <p className="text-sm text-gray-500 mt-1">Recreación</p>
+                      <p className="font-medium text-sm">Área de Campamento</p>
+                      <p className="text-xs text-gray-500 mt-1">Recreación</p>
                     </div>
                   </div>
                   
@@ -455,8 +455,8 @@ export default function ParkLandingPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-base">Fuentes</p>
-                      <p className="text-sm text-gray-500 mt-1">Infraestructura</p>
+                      <p className="font-medium text-sm">Fuentes</p>
+                      <p className="text-xs text-gray-500 mt-1">Infraestructura</p>
                     </div>
                   </div>
                 </div>
