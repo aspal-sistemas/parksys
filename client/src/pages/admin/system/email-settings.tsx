@@ -198,6 +198,12 @@ export default function EmailSettings() {
                       {emailStatus?.gmail ? "Configurado" : "Opcional"}
                     </Badge>
                   </div>
+                  <div className="flex justify-between">
+                    <span>Sistema configurado:</span>
+                    <Badge variant={emailStatus?.configured ? "default" : "destructive"}>
+                      {emailStatus?.configured ? "Sí" : "No"}
+                    </Badge>
+                  </div>
                 </div>
               </div>
             </CardContent>
