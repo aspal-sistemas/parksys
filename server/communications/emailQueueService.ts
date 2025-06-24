@@ -94,20 +94,23 @@ export class EmailQueueService {
 
     try {
       // Obtener emails pendientes que deben ser enviados
-      const pendingEmails = await db.select()
-        .from(emailQueue)
-        .where(
-          and(
-            eq(emailQueue.status, 'pending'),
-            lte(emailQueue.attempts, emailQueue.maxAttempts),
-            lte(emailQueue.scheduledFor, new Date())
-          )
-        )
-        .orderBy(
-          desc(emailQueue.priority), // urgent > high > normal > low
-          asc(emailQueue.createdAt)
-        )
-        .limit(50); // Procesar máximo 50 emails por lote
+      const result = await pool.query(`
+        SELECT * FROM email_queue 
+        WHERE status = 'pending' 
+        AND attempts <= max_attempts 
+        AND scheduled_for <= NOW()
+        ORDER BY 
+          CASE priority 
+            WHEN 'urgent' THEN 1
+            WHEN 'high' THEN 2  
+            WHEN 'normal' THEN 3
+            WHEN 'low' THEN 4
+            ELSE 5
+          END,
+          created_at ASC
+        LIMIT 50
+      `);
+      const pendingEmails = result.rows;
 
       if (pendingEmails.length === 0) {
         this.isProcessing = false;
