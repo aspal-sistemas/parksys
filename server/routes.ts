@@ -654,6 +654,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Obtener amenidades del parque
       console.log('Paso 2: Consultando amenidades del parque...');
+      console.log('Park ID para consulta:', parkId, typeof parkId);
+      
+      // Primero verificar si hay relaciones park_amenities
+      const countResult = await pool.query(`
+        SELECT COUNT(*) as count FROM park_amenities WHERE park_id = $1
+      `, [parkId]);
+      console.log('Total park_amenities encontradas:', countResult.rows[0].count);
+      
       const amenitiesResult = await pool.query(`
         SELECT a.id, a.name, a.icon, a.category, 
                a.icon_type as "iconType", a.custom_icon_url as "customIconUrl"
