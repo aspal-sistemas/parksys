@@ -681,6 +681,16 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar rutas de Eventos AMBU:", error);
   }
 
+  // Registrar rutas del sistema de email
+  try {
+    const { emailRouter } = await import("./email/emailRoutes");
+    console.log("Registrando rutas del sistema de email...");
+    apiRouter.use("/email", emailRouter);
+    console.log("Rutas del sistema de email registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de email:", error);
+  }
+
   const routeServer = await registerRoutes(app);
 
   // Registrar API de integraciones financieras múltiples

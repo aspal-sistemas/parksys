@@ -7,7 +7,7 @@ if (process.env.SENDGRID_API_KEY) {
 }
 
 // Configuración de Nodemailer para Gmail/Google Workspace
-const nodemailerTransporter = nodemailer.createTransporter({
+const nodemailerTransporter = nodemailer.createTransport({
   service: 'gmail',
   host: 'smtp.gmail.com',
   port: 587,

@@ -314,13 +314,45 @@ export default function EmailSettings() {
               </p>
             </div>
 
-            <div className="flex items-center justify-center pt-4">
-              <Button 
-                onClick={() => window.open('https://myaccount.google.com/security', '_blank')}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                Ir a Configuración de Google
-              </Button>
+            <div className="space-y-3">
+              <div className="flex items-center justify-center">
+                <Button 
+                  onClick={() => window.open('https://myaccount.google.com/security', '_blank')}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Ir a Configuración de Google
+                </Button>
+              </div>
+              
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded">
+                <h5 className="font-medium text-blue-900 mb-2">📍 Configurar credenciales en Replit</h5>
+                <div className="space-y-3">
+                  <div className="text-sm text-blue-800">
+                    <p className="font-medium mb-2">Pasos para agregar los secretos:</p>
+                    <ol className="space-y-1 ml-4">
+                      <li><strong>1.</strong> En el panel izquierdo de Replit, busca <strong>"Secrets"</strong> (icono de candado 🔒)</li>
+                      <li><strong>2.</strong> Haz clic en "Add new secret"</li>
+                      <li><strong>3.</strong> Primer secreto:
+                        <div className="ml-4 mt-1 p-2 bg-white rounded border">
+                          <code>Key: GMAIL_USER</code><br/>
+                          <code>Value: tu-email@gmail.com</code>
+                        </div>
+                      </li>
+                      <li><strong>4.</strong> Segundo secreto:
+                        <div className="ml-4 mt-1 p-2 bg-white rounded border">
+                          <code>Key: GMAIL_APP_PASSWORD</code><br/>
+                          <code>Value: abcd efgh ijkl mnop</code>
+                        </div>
+                      </li>
+                      <li><strong>5.</strong> El servidor se reiniciará automáticamente</li>
+                    </ol>
+                  </div>
+                  
+                  <div className="text-xs text-blue-700 bg-blue-100 p-2 rounded">
+                    <strong>💡 Tip:</strong> Si no ves la sección "Secrets", está en la barra lateral izquierda bajo "Tools" o como un icono de candado.
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
