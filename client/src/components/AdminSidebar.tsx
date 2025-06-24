@@ -52,8 +52,7 @@ import {
   AlertTriangle,
   Leaf,
   Trophy,
-  Clock,
-  Mail
+  Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -463,7 +462,7 @@ const AdminSidebar: React.FC = () => {
               Reportes
             </NavItem>
           </ModuleNav>
-          
+
           <ModuleNav 
             title="Comunicación" 
             icon={<MessageSquare className="h-5 w-5" />}
@@ -471,10 +470,10 @@ const AdminSidebar: React.FC = () => {
           >
             <NavItem 
               href="/admin/communications" 
-              icon={<Mail className="h-5 w-5" />}
+              icon={<MessageSquare className="h-5 w-5" />}
               active={location.startsWith('/admin/communications')}
             >
-              Panel de Control
+              Dashboard
             </NavItem>
           </ModuleNav>
           
