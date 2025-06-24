@@ -39,11 +39,11 @@ export default function BudgetPlanningPage() {
 
   // Mutation para guardar proyecciones
   const saveMutation = useMutation({
-    mutationFn: async (data: { year: number; projections: any[] }) => {
-      const response = await fetch('/api/budget-projections/bulk', {
+    mutationFn: async (data: { year: number; matrix: BudgetMatrix }) => {
+      const response = await fetch(`/api/budget-projections/${data.year}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ matrix: data.matrix })
       });
       if (!response.ok) throw new Error('Error al guardar proyecciones');
       return response.json();
@@ -54,7 +54,7 @@ export default function BudgetPlanningPage() {
         description: `Presupuesto del ${selectedYear} guardado correctamente`
       });
       setIsModified(false);
-      queryClient.invalidateQueries({ queryKey: ['budget-projections'] });
+      queryClient.invalidateQueries({ queryKey: ['budget-projections', selectedYear] });
     },
     onError: () => {
       toast({
@@ -137,23 +137,11 @@ export default function BudgetPlanningPage() {
   const handleSave = () => {
     if (!budgetData) return;
     
-    const projections: any[] = [];
+    // Recalcular totales antes de guardar
+    recalculateTotals(budgetData);
     
-    // Convertir datos a formato de API
-    [...budgetData.incomeCategories, ...budgetData.expenseCategories].forEach(category => {
-      for (let month = 1; month <= 12; month++) {
-        const amount = category.months[month] || 0;
-        if (amount > 0) {
-          projections.push({
-            categoryId: category.categoryId,
-            month: month,
-            projectedAmount: amount
-          });
-        }
-      }
-    });
-    
-    saveMutation.mutate({ year: selectedYear, projections });
+    // Enviar la matriz completa al servidor
+    saveMutation.mutate({ year: selectedYear, matrix: budgetData });
   };
 
   // Manejar selección de archivo CSV

@@ -103,49 +103,43 @@ export function registerBudgetPlanningRoutes(app: any, apiRouter: Router, isAuth
       
       // Procesar categorías de ingresos
       for (const category of matrix.incomeCategories) {
-        const totalAmount = Object.values(category.months).reduce((sum: number, val: any) => sum + parseFloat(val || '0'), 0);
-        
         projectionInserts.push({
           year,
           categoryId: category.categoryId,
-          categoryType: 'income',
-          month1: category.months[1]?.toString() || '0',
-          month2: category.months[2]?.toString() || '0',
-          month3: category.months[3]?.toString() || '0',
-          month4: category.months[4]?.toString() || '0',
-          month5: category.months[5]?.toString() || '0',
-          month6: category.months[6]?.toString() || '0',
-          month7: category.months[7]?.toString() || '0',
-          month8: category.months[8]?.toString() || '0',
-          month9: category.months[9]?.toString() || '0',
-          month10: category.months[10]?.toString() || '0',
-          month11: category.months[11]?.toString() || '0',
-          month12: category.months[12]?.toString() || '0',
-          totalAmount: totalAmount.toString()
+          categoryType: 'income' as const,
+          month1: (category.months[1] || 0).toString(),
+          month2: (category.months[2] || 0).toString(),
+          month3: (category.months[3] || 0).toString(),
+          month4: (category.months[4] || 0).toString(),
+          month5: (category.months[5] || 0).toString(),
+          month6: (category.months[6] || 0).toString(),
+          month7: (category.months[7] || 0).toString(),
+          month8: (category.months[8] || 0).toString(),
+          month9: (category.months[9] || 0).toString(),
+          month10: (category.months[10] || 0).toString(),
+          month11: (category.months[11] || 0).toString(),
+          month12: (category.months[12] || 0).toString()
         });
       }
       
       // Procesar categorías de gastos
       for (const category of matrix.expenseCategories) {
-        const totalAmount = Object.values(category.months).reduce((sum: number, val: any) => sum + parseFloat(val || '0'), 0);
-        
         projectionInserts.push({
           year,
           categoryId: category.categoryId,
-          categoryType: 'expense',
-          month1: category.months[1]?.toString() || '0',
-          month2: category.months[2]?.toString() || '0',
-          month3: category.months[3]?.toString() || '0',
-          month4: category.months[4]?.toString() || '0',
-          month5: category.months[5]?.toString() || '0',
-          month6: category.months[6]?.toString() || '0',
-          month7: category.months[7]?.toString() || '0',
-          month8: category.months[8]?.toString() || '0',
-          month9: category.months[9]?.toString() || '0',
-          month10: category.months[10]?.toString() || '0',
-          month11: category.months[11]?.toString() || '0',
-          month12: category.months[12]?.toString() || '0',
-          totalAmount: totalAmount.toString()
+          categoryType: 'expense' as const,
+          month1: (category.months[1] || 0).toString(),
+          month2: (category.months[2] || 0).toString(),
+          month3: (category.months[3] || 0).toString(),
+          month4: (category.months[4] || 0).toString(),
+          month5: (category.months[5] || 0).toString(),
+          month6: (category.months[6] || 0).toString(),
+          month7: (category.months[7] || 0).toString(),
+          month8: (category.months[8] || 0).toString(),
+          month9: (category.months[9] || 0).toString(),
+          month10: (category.months[10] || 0).toString(),
+          month11: (category.months[11] || 0).toString(),
+          month12: (category.months[12] || 0).toString()
         });
       }
       
