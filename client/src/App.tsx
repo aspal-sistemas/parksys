@@ -577,7 +577,7 @@ function Router() {
         
         <Route path="/admin/finance/cash-flow-matrix">
           <Suspense fallback={<div className="p-8 text-center">Cargando matriz de flujo de efectivo...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/finance/cash-flow-matrix-simple')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/finance/cash-flow-matrix')))}
           </Suspense>
         </Route>
         
