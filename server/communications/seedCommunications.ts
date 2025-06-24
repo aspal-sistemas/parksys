@@ -1,4 +1,4 @@
-import { pool } from '../storage';
+import { pool } from '../db';
 import { emailTemplates } from '../../shared/schema';
 
 /**

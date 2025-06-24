@@ -1,7 +1,7 @@
 import Handlebars from 'handlebars';
 import juice from 'juice';
 import { convert } from 'html-to-text';
-import { pool } from '../storage';
+import { pool } from '../db';
 import { emailTemplates } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 
