@@ -150,19 +150,23 @@ export default function ParkLandingPage() {
           <div className="max-w-7xl mx-auto px-4 py-8 text-white w-full">
             <div className="flex items-center gap-2 mb-2">
               <MapPin className="h-5 w-5" />
-              <span className="text-sm opacity-90">{park.municipality.name}, {park.municipality.state}</span>
+              <span className="text-sm opacity-90">{park.municipality?.name || 'Guadalajara'}, {park.municipality?.state || 'Jalisco'}</span>
             </div>
             <h1 className="text-5xl font-bold mb-4">{park.name}</h1>
             <div className="flex flex-wrap gap-3">
               <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                {park.type}
+                {park.parkType || park.type || 'Parque urbano'}
               </Badge>
-              <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                {formatArea(park.area)}
-              </Badge>
-              <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                Est. {park.establishedYear}
-              </Badge>
+              {park.area && (
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                  {formatArea(park.area)}
+                </Badge>
+              )}
+              {park.establishedYear && (
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                  Est. {park.establishedYear}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
@@ -191,7 +195,7 @@ export default function ParkLandingPage() {
             </Card>
 
             {/* Amenidades */}
-            {park.amenities.length > 0 && (
+            {park.amenities && park.amenities.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -302,7 +306,7 @@ export default function ParkLandingPage() {
                   <MapPin className="h-5 w-5 text-gray-500" />
                   <div>
                     <p className="font-medium">Ubicación</p>
-                    <p className="text-sm text-gray-600">{park.location}</p>
+                    <p className="text-sm text-gray-600">{park.location || park.municipality?.name || 'Guadalajara'}</p>
                   </div>
                 </div>
                 
@@ -312,7 +316,7 @@ export default function ParkLandingPage() {
                   <Trees className="h-5 w-5 text-gray-500" />
                   <div>
                     <p className="font-medium">Tipo de Parque</p>
-                    <p className="text-sm text-gray-600">{park.type}</p>
+                    <p className="text-sm text-gray-600">{park.parkType || park.type || 'Parque urbano'}</p>
                   </div>
                 </div>
                 
@@ -322,7 +326,7 @@ export default function ParkLandingPage() {
                   <Globe className="h-5 w-5 text-gray-500" />
                   <div>
                     <p className="font-medium">Área Total</p>
-                    <p className="text-sm text-gray-600">{formatArea(park.area)}</p>
+                    <p className="text-sm text-gray-600">{park.area ? formatArea(park.area) : 'No especificada'}</p>
                   </div>
                 </div>
                 
@@ -332,7 +336,7 @@ export default function ParkLandingPage() {
                   <Calendar className="h-5 w-5 text-gray-500" />
                   <div>
                     <p className="font-medium">Establecido</p>
-                    <p className="text-sm text-gray-600">{park.establishedYear}</p>
+                    <p className="text-sm text-gray-600">{park.establishedYear || 'No especificado'}</p>
                   </div>
                 </div>
               </CardContent>
