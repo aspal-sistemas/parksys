@@ -691,6 +691,16 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar rutas de email:", error);
   }
 
+  // Registrar rutas del sistema de comunicaciones
+  try {
+    const { default: communicationsRouter } = await import("./communications/communicationsRoutes");
+    console.log("Registrando rutas del sistema de comunicaciones...");
+    app.use("/api/communications", communicationsRouter);
+    console.log("Rutas del sistema de comunicaciones registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de comunicaciones:", error);
+  }
+
   const routeServer = await registerRoutes(app);
 
   // Registrar API de integraciones financieras múltiples
