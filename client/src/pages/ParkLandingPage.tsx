@@ -116,7 +116,7 @@ export default function ParkLandingPage() {
     );
   }
 
-  const primaryImage = park.images.find(img => img.isPrimary) || park.images[0];
+  const primaryImage = park.images?.find(img => img.isPrimary) || park.images?.[0];
   const formatArea = (area: number) => area >= 10000 ? `${(area / 10000).toFixed(1)} hectáreas` : `${area} m²`;
 
   return (
@@ -228,7 +228,7 @@ export default function ParkLandingPage() {
             )}
 
             {/* Actividades */}
-            {park.activities.length > 0 && (
+            {park.activities && park.activities.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -259,7 +259,7 @@ export default function ParkLandingPage() {
             )}
 
             {/* Galería de imágenes */}
-            {park.images.length > 1 && (
+            {park.images && park.images.length > 1 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -339,7 +339,7 @@ export default function ParkLandingPage() {
             </Card>
 
             {/* Estadísticas de árboles */}
-            {park.treeStats.total > 0 && (
+            {park.treeStats && park.treeStats.total > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -371,7 +371,7 @@ export default function ParkLandingPage() {
             )}
 
             {/* Documentos */}
-            {park.documents.length > 0 && (
+            {park.documents && park.documents.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
