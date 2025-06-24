@@ -38,7 +38,7 @@ export default function ParkLandingPage() {
   const parkId = slug?.split('-').pop();
 
   const { data: park, isLoading, error } = useQuery<ExtendedPark>({
-    queryKey: ['/api/parks', parkId, 'extended'],
+    queryKey: [`/api/parks/${parkId}/extended`],
     enabled: !!parkId,
   });
 
@@ -222,6 +222,8 @@ export default function ParkLandingPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+
+                
                 {park.amenities && park.amenities.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {park.amenities.map((amenity) => (
@@ -245,6 +247,9 @@ export default function ParkLandingPage() {
                   <div className="text-center py-8">
                     <Trees className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600">No hay amenidades registradas para este parque</p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Parque ID: {park.id} | Amenidades: {park.amenities ? 'array definido' : 'undefined'}
+                    </p>
                   </div>
                 )}
               </CardContent>
