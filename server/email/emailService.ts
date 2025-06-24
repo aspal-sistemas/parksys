@@ -6,14 +6,15 @@ if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 }
 
-// Configuración de Nodemailer como fallback
+// Configuración de Nodemailer para Gmail/Google Workspace
 const nodemailerTransporter = nodemailer.createTransporter({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
+  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
   secure: false,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.GMAIL_USER, // Email de Gmail
+    pass: process.env.GMAIL_APP_PASSWORD, // Contraseña de aplicación de Google
   },
 });
 
@@ -54,8 +55,8 @@ class EmailService {
         return await this.sendWithSendGrid(options);
       }
       
-      // Fallback a Nodemailer
-      if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+      // Fallback a Gmail/Nodemailer
+      if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
         return await this.sendWithNodemailer(options);
       }
 
@@ -267,10 +268,10 @@ class EmailService {
         return { success: true, method: 'SendGrid' };
       }
 
-      if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-        // Test Nodemailer
+      if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+        // Test Gmail/Nodemailer
         await nodemailerTransporter.verify();
-        return { success: true, method: 'SMTP/Nodemailer' };
+        return { success: true, method: 'Gmail/Google Workspace' };
       }
 
       return { success: false, method: 'none', error: 'No hay configuración de email disponible' };

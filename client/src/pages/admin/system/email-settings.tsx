@@ -160,7 +160,10 @@ export default function EmailSettings() {
               <Separator />
 
               <div className="space-y-2">
-                <h4 className="font-medium">Variables de Entorno Requeridas:</h4>
+                <h4 className="font-medium">Configuración de Email:</h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  Puedes usar SendGrid (profesional) o Gmail (alternativo)
+                </p>
                 <div className="text-sm space-y-1">
                   <div className="flex justify-between">
                     <span>SENDGRID_API_KEY:</span>
@@ -169,15 +172,15 @@ export default function EmailSettings() {
                     </Badge>
                   </div>
                   <div className="flex justify-between">
-                    <span>SMTP_USER:</span>
-                    <Badge variant={process.env.SMTP_USER ? "default" : "secondary"}>
-                      {process.env.SMTP_USER ? "Configurado" : "Opcional"}
+                    <span>GMAIL_USER:</span>
+                    <Badge variant={process.env.GMAIL_USER ? "default" : "secondary"}>
+                      {process.env.GMAIL_USER ? "Configurado" : "Opcional"}
                     </Badge>
                   </div>
                   <div className="flex justify-between">
-                    <span>SMTP_PASS:</span>
-                    <Badge variant={process.env.SMTP_PASS ? "default" : "secondary"}>
-                      {process.env.SMTP_PASS ? "Configurado" : "Opcional"}
+                    <span>GMAIL_APP_PASSWORD:</span>
+                    <Badge variant={process.env.GMAIL_APP_PASSWORD ? "default" : "secondary"}>
+                      {process.env.GMAIL_APP_PASSWORD ? "Configurado" : "Opcional"}
                     </Badge>
                   </div>
                 </div>
@@ -235,6 +238,55 @@ export default function EmailSettings() {
                 <Send className="h-4 w-4 mr-2" />
                 {sendTestEmailMutation.isPending ? "Enviando..." : "Enviar Email de Prueba"}
               </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Instrucciones de Configuración */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-blue-600">Opción 1: SendGrid (Recomendado)</CardTitle>
+              <CardDescription>
+                Servicio profesional con alta entregabilidad
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-blue-900">Pasos para configurar:</h4>
+                <ol className="list-decimal list-inside text-sm text-blue-800 mt-2 space-y-1">
+                  <li>Crea cuenta en <a href="https://sendgrid.com" target="_blank" className="underline">sendgrid.com</a></li>
+                  <li>Ve a Settings → API Keys</li>
+                  <li>Crea nueva API Key con permisos de envío</li>
+                  <li>Copia la clave y agrégala como SENDGRID_API_KEY</li>
+                </ol>
+              </div>
+              <div className="text-sm">
+                <strong>Ventajas:</strong> Alta entregabilidad, análiticas, plantillas dinámicas
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-green-600">Opción 2: Gmail/Google Workspace</CardTitle>
+              <CardDescription>
+                Alternativa usando tu cuenta de Gmail
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="p-3 bg-green-50 rounded-lg">
+                <h4 className="font-medium text-green-900">Pasos para configurar:</h4>
+                <ol className="list-decimal list-inside text-sm text-green-800 mt-2 space-y-1">
+                  <li>Ve a tu <a href="https://myaccount.google.com" target="_blank" className="underline">Cuenta de Google</a></li>
+                  <li>Seguridad → Verificación en 2 pasos (activar)</li>
+                  <li>Generar "Contraseña de aplicación"</li>
+                  <li>Configura GMAIL_USER (tu email) y GMAIL_APP_PASSWORD</li>
+                </ol>
+              </div>
+              <div className="text-sm">
+                <strong>Ventajas:</strong> Fácil configuración, sin costo adicional, familiar
+              </div>
             </CardContent>
           </Card>
         </div>
