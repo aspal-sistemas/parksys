@@ -48,8 +48,20 @@ export function registerBudgetPlanningRoutes(app: any, apiRouter: Router, isAuth
         }
       };
       
-      // Calcular totales mensuales y anuales
-      calculateTotals(budgetMatrix);
+      // Calcular totales mensuales
+      for (let month = 1; month <= 12; month++) {
+        const monthlyIncome = budgetMatrix.incomeCategories.reduce((sum, cat) => sum + (cat.months[month] || 0), 0);
+        const monthlyExpense = budgetMatrix.expenseCategories.reduce((sum, cat) => sum + (cat.months[month] || 0), 0);
+        
+        budgetMatrix.monthlyTotals.income[month] = monthlyIncome;
+        budgetMatrix.monthlyTotals.expense[month] = monthlyExpense;
+        budgetMatrix.monthlyTotals.net[month] = monthlyIncome - monthlyExpense;
+      }
+      
+      // Calcular totales anuales
+      budgetMatrix.yearlyTotals.income = budgetMatrix.incomeCategories.reduce((sum, cat) => sum + (cat.total || 0), 0);
+      budgetMatrix.yearlyTotals.expense = budgetMatrix.expenseCategories.reduce((sum, cat) => sum + (cat.total || 0), 0);
+      budgetMatrix.yearlyTotals.net = budgetMatrix.yearlyTotals.income - budgetMatrix.yearlyTotals.expense;
       
       res.json(budgetMatrix);
     } catch (error) {
@@ -294,16 +306,17 @@ export function registerBudgetPlanningRoutes(app: any, apiRouter: Router, isAuth
 function buildCategoryEntries(categories: any[], projections: any[], type: 'income' | 'expense'): BudgetEntry[] {
   return categories.map(category => {
     const categoryProjection = projections.find(p => 
-      p.category_id === category.id && p.category_type === type
+      p.categoryId === category.id && p.categoryType === type
     );
 
     const months: { [month: number]: number } = {};
     let total = 0;
 
     if (categoryProjection) {
-      const monthlyValues = extractMonthlyValues(categoryProjection);
+      // Extraer valores mensuales desde month1 hasta month12
       for (let month = 1; month <= 12; month++) {
-        const amount = monthlyValues[month - 1] || 0;
+        const monthKey = `month${month}` as keyof typeof categoryProjection;
+        const amount = parseFloat(categoryProjection[monthKey] as string || '0');
         months[month] = amount;
         total += amount;
       }
