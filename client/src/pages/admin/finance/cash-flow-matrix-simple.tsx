@@ -197,10 +197,10 @@ export default function CashFlowMatrix() {
                       </td>
                       {months.map((_, monthIndex) => (
                         <React.Fragment key={monthIndex}>
-                          <td className="border border-gray-300 p-1 text-right text-xs bg-blue-25">
+                          <td className="border border-gray-300 p-1 text-right text-xs" style={{ backgroundColor: '#eff6ff' }}>
                             {formatCurrency(category.projectedValues?.[monthIndex] || 0)}
                           </td>
-                          <td className="border border-gray-300 p-1 text-right text-xs bg-green-25">
+                          <td className="border border-gray-300 p-1 text-right text-xs" style={{ backgroundColor: '#f0fdf4' }}>
                             {formatCurrency(category.monthlyValues[monthIndex] || 0)}
                           </td>
                           <td className={`border border-gray-300 p-1 text-right text-xs font-medium ${
