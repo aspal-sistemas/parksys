@@ -24,7 +24,7 @@ const parkEditSchema = z.object({
   address: z.string().optional(),
   postalCode: z.string().optional(),
   contactPhone: z.string().optional(),
-  contactEmail: z.string().email().optional().or(z.literal("")),
+  contactEmail: z.string().optional(),
   parkType: z.string().optional(),
   latitude: z.string().optional(),
   longitude: z.string().optional(),
@@ -33,8 +33,8 @@ const parkEditSchema = z.object({
   foundationYear: z.number().optional(),
   administrator: z.string().optional(),
   conservationStatus: z.string().optional(),
-  regulationUrl: z.string().url("URL inválida").optional().or(z.literal("")),
-  videoUrl: z.string().url("URL inválida").optional().or(z.literal("")),
+  regulationUrl: z.string().optional(),
+  videoUrl: z.string().optional(),
   schedule: z.object({
     monday: z.object({ enabled: z.boolean(), openTime: z.string(), closeTime: z.string() }),
     tuesday: z.object({ enabled: z.boolean(), openTime: z.string(), closeTime: z.string() }),
@@ -189,6 +189,20 @@ export default function ParkEditSimple() {
 
   const onSubmit = (values: ParkEditFormValues) => {
     console.log('=== FORM SUBMIT ===');
+    console.log('Form values:', values);
+    console.log('Form errors:', form.formState.errors);
+    
+    // Validar que el formulario sea válido antes de enviar
+    if (!form.formState.isValid) {
+      console.error('Formulario inválido, no se puede enviar');
+      toast({
+        title: "Error de validación",
+        description: "Por favor revisa los campos del formulario",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     updateParkMutation.mutate(values);
   };
 
