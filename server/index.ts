@@ -296,6 +296,104 @@ app.post("/api/parks/:parkId/images", imageUpload.single('image'), async (req: R
   }
 });
 
+// ENDPOINT DIRECTO PARA ACTUALIZAR PARQUES - DEVELOPMENT MODE
+app.put("/api/dev/parks/:id", async (req: Request, res: Response) => {
+  try {
+    console.log("=== DESARROLLO - Actualizando parque directamente ===");
+    console.log("Park ID:", req.params.id);
+    console.log("Datos recibidos:", req.body);
+    
+    const parkId = Number(req.params.id);
+    const parkData = req.body;
+    
+    const { pool } = await import("./db");
+    
+    // Construir la consulta de actualización dinámicamente
+    const updateFields = [];
+    const values = [];
+    let paramIndex = 1;
+    
+    if (parkData.name !== undefined) {
+      updateFields.push(`name = $${paramIndex++}`);
+      values.push(parkData.name);
+    }
+    if (parkData.description !== undefined) {
+      updateFields.push(`description = $${paramIndex++}`);
+      values.push(parkData.description);
+    }
+    if (parkData.address !== undefined) {
+      updateFields.push(`address = $${paramIndex++}`);
+      values.push(parkData.address);
+    }
+    if (parkData.postalCode !== undefined) {
+      updateFields.push(`postal_code = $${paramIndex++}`);
+      values.push(parkData.postalCode);
+    }
+    if (parkData.latitude !== undefined) {
+      updateFields.push(`latitude = $${paramIndex++}`);
+      values.push(parkData.latitude);
+    }
+    if (parkData.longitude !== undefined) {
+      updateFields.push(`longitude = $${paramIndex++}`);
+      values.push(parkData.longitude);
+    }
+    if (parkData.parkType !== undefined) {
+      updateFields.push(`park_type = $${paramIndex++}`);
+      values.push(parkData.parkType);
+    }
+    if (parkData.municipalityId !== undefined) {
+      updateFields.push(`municipality_id = $${paramIndex++}`);
+      values.push(parkData.municipalityId);
+    }
+    if (parkData.contactEmail !== undefined) {
+      updateFields.push(`contact_email = $${paramIndex++}`);
+      values.push(parkData.contactEmail);
+    }
+    if (parkData.contactPhone !== undefined) {
+      updateFields.push(`contact_phone = $${paramIndex++}`);
+      values.push(parkData.contactPhone);
+    }
+    if (parkData.openingHours !== undefined) {
+      updateFields.push(`opening_hours = $${paramIndex++}`);
+      values.push(parkData.openingHours);
+    }
+    
+    // Agregar ID del parque al final
+    values.push(parkId);
+    const whereClause = `$${paramIndex}`;
+    
+    if (updateFields.length === 0) {
+      return res.status(400).json({ message: "No hay campos para actualizar" });
+    }
+    
+    const updateQuery = `
+      UPDATE parks 
+      SET ${updateFields.join(', ')}, updated_at = NOW()
+      WHERE id = ${whereClause}
+      RETURNING *
+    `;
+    
+    console.log("Query SQL:", updateQuery);
+    console.log("Valores:", values);
+    
+    const result = await pool.query(updateQuery, values);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Parque no encontrado" });
+    }
+    
+    console.log("Parque actualizado exitosamente:", result.rows[0]);
+    res.json(result.rows[0]);
+    
+  } catch (error) {
+    console.error("Error al actualizar parque:", error);
+    res.status(500).json({ 
+      message: "Error al actualizar parque", 
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+});
+
 // ENDPOINT DIRECTO PARA DOCUMENTOS - PRIORITY ROUTING
 app.get("/api/parks/:parkId/documents", async (req: Request, res: Response) => {
   try {
