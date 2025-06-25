@@ -418,11 +418,17 @@ export default function ParkEditSimple() {
                         <div className="space-y-2">
                           <label className="text-sm font-medium">Seleccionar ubicación en mapa</label>
                           <MapSelector
-                            initialLatitude={parseFloat(form.watch("latitude") || "0")}
-                            initialLongitude={parseFloat(form.watch("longitude") || "0")}
-                            onLocationChange={(lat, lng) => {
-                              form.setValue("latitude", lat.toString());
-                              form.setValue("longitude", lng.toString());
+                            latitude={form.watch("latitude")}
+                            longitude={form.watch("longitude")}
+                            selectedLocation={
+                              form.watch("latitude") && form.watch("longitude") ? {
+                                lat: parseFloat(form.watch("latitude") || "0"),
+                                lng: parseFloat(form.watch("longitude") || "0")
+                              } : null
+                            }
+                            onLocationSelect={(location) => {
+                              form.setValue("latitude", location.lat.toString());
+                              form.setValue("longitude", location.lng.toString());
                             }}
                           />
                         </div>
