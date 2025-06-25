@@ -336,12 +336,36 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/system/email-settings')))}
           </Suspense>
         </Route>
-        <Route path="/admin/communications" component={React.lazy(() => import("@/pages/admin/communications"))} />
-        <Route path="/admin/communications/templates" component={React.lazy(() => import("@/pages/admin/communications/templates"))} />
-        <Route path="/admin/communications/queue" component={React.lazy(() => import("@/pages/admin/communications/queue"))} />
-        <Route path="/admin/communications/campaigns" component={React.lazy(() => import("@/pages/admin/communications/campaigns"))} />
-        <Route path="/admin/communications/bulk" component={React.lazy(() => import("@/pages/admin/communications/bulk"))} />
-        <Route path="/admin/communications/analytics" component={React.lazy(() => import("@/pages/admin/communications/analytics"))} />
+        <Route path="/admin/communications">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de comunicaciones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/communications')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/communications/templates">
+          <Suspense fallback={<div className="p-8 text-center">Cargando plantillas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/communications/templates')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/communications/queue">
+          <Suspense fallback={<div className="p-8 text-center">Cargando cola de emails...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/communications/queue')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/communications/campaigns">
+          <Suspense fallback={<div className="p-8 text-center">Cargando campañas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/communications/campaigns')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/communications/bulk">
+          <Suspense fallback={<div className="p-8 text-center">Cargando envío masivo...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/communications/bulk')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/communications/analytics">
+          <Suspense fallback={<div className="p-8 text-center">Cargando análisis...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/communications/analytics')))}
+          </Suspense>
+        </Route>
 
         {/* Rutas para el módulo de activos */}
         <Route path="/admin/assets/dashboard">
