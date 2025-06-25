@@ -145,13 +145,29 @@ export default function ParkEditSimple() {
       
       const dataToSend = {
         ...parkData,
-        openingHours: schedule ? JSON.stringify(schedule) : null,
+        openingHours: schedule ? JSON.stringify(schedule) : "{}",
+        // Convertir foundationYear a number si existe
+        foundationYear: parkData.foundationYear || null,
       };
       
-      return await apiRequest(`/api/dev/parks/${id}`, {
+      console.log('Datos procesados a enviar:', dataToSend);
+      
+      // Usar fetch directamente para mayor control
+      const response = await fetch(`/api/dev/parks/${id}`, {
         method: "PUT",
-        data: dataToSend,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToSend),
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Error ${response.status}: ${errorText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/parks"] });
