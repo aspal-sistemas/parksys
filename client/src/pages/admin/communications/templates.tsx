@@ -1,6 +1,6 @@
 import React from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { TemplatesSection } from './index';
+import { TemplatesSection } from './components';
 
 const CommunicationTemplatesPage: React.FC = () => {
   return (
