@@ -247,6 +247,13 @@ export default function ParkEdit() {
     enabled: !!id,
   });
 
+  // Función para manejar el submit del formulario
+  const onSubmit = (values: ParkEditFormValues) => {
+    console.log('=== FORM SUBMIT EJECUTADO ===');
+    console.log('Valores del formulario:', values);
+    updateParkMutation.mutate(values);
+  };
+
   // Mutación para actualizar el parque
   const updateParkMutation = useMutation({
     mutationFn: async (values: ParkEditFormValues) => {
