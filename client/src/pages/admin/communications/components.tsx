@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Mail, 
   Send, 
@@ -29,6 +36,78 @@ import {
 } from 'lucide-react';
 
 export const TemplatesSection: React.FC = () => {
+  const [isNewTemplateOpen, setIsNewTemplateOpen] = useState(false);
+  const [newTemplate, setNewTemplate] = useState({
+    name: '',
+    category: '',
+    description: '',
+    subject: '',
+    htmlContent: '',
+    textContent: '',
+    variables: [] as string[],
+    newVariable: '',
+    usage: 'manual',
+    module: '',
+    isActive: true
+  });
+
+  const categories = [
+    'Recursos Humanos',
+    'Finanzas',
+    'Eventos',
+    'Voluntarios',
+    'Concesiones',
+    'Infraestructura',
+    'Seguridad',
+    'Medio Ambiente'
+  ];
+
+  const modules = [
+    'HR',
+    'Finanzas',
+    'Eventos',
+    'Voluntarios',
+    'Concesiones',
+    'Activos',
+    'Seguridad',
+    'Arbolado'
+  ];
+
+  const handleCreateTemplate = () => {
+    console.log('Creating template:', newTemplate);
+    // Aquí iría la lógica para crear la plantilla
+    setIsNewTemplateOpen(false);
+    setNewTemplate({
+      name: '',
+      category: '',
+      description: '',
+      subject: '',
+      htmlContent: '',
+      textContent: '',
+      variables: [],
+      newVariable: '',
+      usage: 'manual',
+      module: '',
+      isActive: true
+    });
+  };
+
+  const addVariable = () => {
+    if (newTemplate.newVariable.trim() && !newTemplate.variables.includes(newTemplate.newVariable.trim())) {
+      setNewTemplate({
+        ...newTemplate,
+        variables: [...newTemplate.variables, `{{${newTemplate.newVariable.trim()}}}`],
+        newVariable: ''
+      });
+    }
+  };
+
+  const removeVariable = (index: number) => {
+    setNewTemplate({
+      ...newTemplate,
+      variables: newTemplate.variables.filter((_, i) => i !== index)
+    });
+  };
   const templates = [
     {
       id: 1,
@@ -190,10 +269,179 @@ export const TemplatesSection: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Gestión de Plantillas</span>
-            <Button className="bg-[#00a587] hover:bg-[#067f5f]">
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Plantilla
-            </Button>
+            <Dialog open={isNewTemplateOpen} onOpenChange={setIsNewTemplateOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nueva Plantilla
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Crear Nueva Plantilla de Email</DialogTitle>
+                  <DialogDescription>
+                    Diseñe una nueva plantilla de email para el sistema de comunicaciones
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-6 py-4">
+                  {/* Información básica */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="template-name">Nombre de la Plantilla</Label>
+                      <Input
+                        id="template-name"
+                        value={newTemplate.name}
+                        onChange={(e) => setNewTemplate({...newTemplate, name: e.target.value})}
+                        placeholder="Ej: Bienvenida Nuevo Empleado"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="template-category">Categoría</Label>
+                      <Select value={newTemplate.category} onValueChange={(value) => setNewTemplate({...newTemplate, category: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="template-module">Módulo del Sistema</Label>
+                      <Select value={newTemplate.module} onValueChange={(value) => setNewTemplate({...newTemplate, module: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar módulo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {modules.map((module) => (
+                            <SelectItem key={module} value={module}>{module}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="template-usage">Tipo de Uso</Label>
+                      <Select value={newTemplate.usage} onValueChange={(value) => setNewTemplate({...newTemplate, usage: value})}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="manual">Manual</SelectItem>
+                          <SelectItem value="automatic">Automático</SelectItem>
+                          <SelectItem value="scheduled">Programado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="template-description">Descripción</Label>
+                    <Textarea
+                      id="template-description"
+                      value={newTemplate.description}
+                      onChange={(e) => setNewTemplate({...newTemplate, description: e.target.value})}
+                      placeholder="Descripción del propósito de la plantilla..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="template-subject">Asunto del Email</Label>
+                    <Input
+                      id="template-subject"
+                      value={newTemplate.subject}
+                      onChange={(e) => setNewTemplate({...newTemplate, subject: e.target.value})}
+                      placeholder="Ej: Bienvenido {{nombre_empleado}} - {{empresa}}"
+                    />
+                  </div>
+
+                  {/* Variables */}
+                  <div>
+                    <Label>Variables Disponibles</Label>
+                    <div className="flex space-x-2 mt-2">
+                      <Input
+                        value={newTemplate.newVariable}
+                        onChange={(e) => setNewTemplate({...newTemplate, newVariable: e.target.value})}
+                        placeholder="nombre_variable"
+                        onKeyPress={(e) => e.key === 'Enter' && addVariable()}
+                      />
+                      <Button type="button" onClick={addVariable} variant="outline">
+                        Agregar
+                      </Button>
+                    </div>
+                    {newTemplate.variables.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {newTemplate.variables.map((variable, index) => (
+                          <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                            {variable}
+                            <button
+                              type="button"
+                              onClick={() => removeVariable(index)}
+                              className="ml-1 text-red-500 hover:text-red-700"
+                            >
+                              ×
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Contenido HTML */}
+                  <div>
+                    <Label htmlFor="template-html">Contenido HTML</Label>
+                    <Textarea
+                      id="template-html"
+                      value={newTemplate.htmlContent}
+                      onChange={(e) => setNewTemplate({...newTemplate, htmlContent: e.target.value})}
+                      placeholder="<h1>Bienvenido {{nombre_empleado}}</h1><p>Su usuario es: {{username}}</p>"
+                      rows={8}
+                      className="font-mono text-sm"
+                    />
+                  </div>
+
+                  {/* Contenido de texto plano */}
+                  <div>
+                    <Label htmlFor="template-text">Contenido de Texto Plano (fallback)</Label>
+                    <Textarea
+                      id="template-text"
+                      value={newTemplate.textContent}
+                      onChange={(e) => setNewTemplate({...newTemplate, textContent: e.target.value})}
+                      placeholder="Bienvenido {{nombre_empleado}}. Su usuario es: {{username}}"
+                      rows={6}
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="template-active"
+                      checked={newTemplate.isActive}
+                      onCheckedChange={(checked) => setNewTemplate({...newTemplate, isActive: Boolean(checked)})}
+                    />
+                    <Label htmlFor="template-active">Plantilla activa</Label>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setIsNewTemplateOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={handleCreateTemplate}
+                    className="bg-[#00a587] hover:bg-[#067f5f]"
+                    disabled={!newTemplate.name || !newTemplate.category || !newTemplate.htmlContent}
+                  >
+                    Crear Plantilla
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </CardTitle>
           <CardDescription>
             Plantillas de email especializadas para el sistema de parques urbanos
@@ -587,6 +835,23 @@ export const QueueSection: React.FC = () => {
 };
 
 export const CampaignsSection: React.FC = () => {
+  const [isNewCampaignOpen, setIsNewCampaignOpen] = useState(false);
+  const [newCampaign, setNewCampaign] = useState({
+    name: '',
+    description: '',
+    type: 'manual',
+    targetSegment: '',
+    template: '',
+    startDate: '',
+    endDate: '',
+    frequency: 'once',
+    customFrequency: '',
+    priority: 'normal',
+    sendImmediately: false,
+    scheduledTime: '',
+    targetUsers: [] as string[],
+    includeInactive: false
+  });
   const campaigns = [
     {
       id: 1,
@@ -699,6 +964,60 @@ export const CampaignsSection: React.FC = () => {
   const avgOpenRate = campaigns.filter(c => c.sentCount > 0).reduce((sum, c) => sum + c.openRate, 0) / campaigns.filter(c => c.sentCount > 0).length;
   const totalTargets = campaigns.reduce((sum, c) => sum + c.targetCount, 0);
 
+  const templates = [
+    "Bienvenida Empleado",
+    "Recibo de Nómina", 
+    "Nueva Actividad en Parque",
+    "Reconocimiento Voluntario",
+    "Vencimiento de Contrato",
+    "Mantenimiento de Activos",
+    "Evaluación de Instructor",
+    "Reporte de Incidente",
+    "Actualización de Presupuesto",
+    "Cuidado del Arbolado"
+  ];
+
+  const targetSegments = [
+    { value: "todos_empleados", label: "Todos los Empleados", count: 185 },
+    { value: "empleados_nuevos", label: "Empleados Nuevos", count: 15 },
+    { value: "empleados_activos", label: "Empleados Activos", count: 170 },
+    { value: "directivos", label: "Personal Directivo", count: 12 },
+    { value: "instructores", label: "Instructores", count: 28 },
+    { value: "usuarios_activos", label: "Usuarios Activos", count: 1250 },
+    { value: "usuarios_premium", label: "Usuarios Premium", count: 89 },
+    { value: "voluntarios_activos", label: "Voluntarios Activos", count: 45 },
+    { value: "voluntarios_nuevos", label: "Voluntarios Nuevos", count: 8 },
+    { value: "concesionarios", label: "Concesionarios", count: 8 },
+    { value: "proveedores", label: "Proveedores", count: 23 }
+  ];
+
+  const handleCreateCampaign = () => {
+    console.log('Creating campaign:', newCampaign);
+    // Aquí iría la lógica para crear la campaña
+    setIsNewCampaignOpen(false);
+    setNewCampaign({
+      name: '',
+      description: '',
+      type: 'manual',
+      targetSegment: '',
+      template: '',
+      startDate: '',
+      endDate: '',
+      frequency: 'once',
+      customFrequency: '',
+      priority: 'normal',
+      sendImmediately: false,
+      scheduledTime: '',
+      targetUsers: [],
+      includeInactive: false
+    });
+  };
+
+  const getSegmentCount = (segmentValue: string) => {
+    const segment = targetSegments.find(s => s.value === segmentValue);
+    return segment ? segment.count : 0;
+  };
+
   return (
     <div className="space-y-6">
       {/* Stats Dashboard */}
@@ -757,10 +1076,221 @@ export const CampaignsSection: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Gestión de Campañas</span>
-            <Button className="bg-[#00a587] hover:bg-[#067f5f]">
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Campaña
-            </Button>
+            <Dialog open={isNewCampaignOpen} onOpenChange={setIsNewCampaignOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nueva Campaña
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Crear Nueva Campaña de Email</DialogTitle>
+                  <DialogDescription>
+                    Configure los detalles de su nueva campaña de comunicación
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-6 py-4">
+                  {/* Información básica */}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="campaign-name">Nombre de la Campaña</Label>
+                        <Input
+                          id="campaign-name"
+                          value={newCampaign.name}
+                          onChange={(e) => setNewCampaign({...newCampaign, name: e.target.value})}
+                          placeholder="Ej: Bienvenida Nuevos Empleados"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="campaign-template">Plantilla</Label>
+                        <Select value={newCampaign.template} onValueChange={(value) => setNewCampaign({...newCampaign, template: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar plantilla" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {templates.map((template) => (
+                              <SelectItem key={template} value={template}>{template}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="campaign-description">Descripción</Label>
+                      <Textarea
+                        id="campaign-description"
+                        value={newCampaign.description}
+                        onChange={(e) => setNewCampaign({...newCampaign, description: e.target.value})}
+                        placeholder="Descripción de la campaña..."
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Tipo de campaña */}
+                  <div>
+                    <Label>Tipo de Campaña</Label>
+                    <RadioGroup 
+                      value={newCampaign.type} 
+                      onValueChange={(value) => setNewCampaign({...newCampaign, type: value})}
+                      className="mt-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="manual" id="manual" />
+                        <Label htmlFor="manual">Manual - Envío controlado manualmente</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="scheduled" id="scheduled" />
+                        <Label htmlFor="scheduled">Programada - Envío en fechas específicas</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="automated" id="automated" />
+                        <Label htmlFor="automated">Automatizada - Triggers del sistema</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Segmentación */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="target-segment">Segmento Objetivo</Label>
+                      <Select value={newCampaign.targetSegment} onValueChange={(value) => setNewCampaign({...newCampaign, targetSegment: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar audiencia" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {targetSegments.map((segment) => (
+                            <SelectItem key={segment.value} value={segment.value}>
+                              {segment.label} ({segment.count} usuarios)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {newCampaign.targetSegment && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          Destinatarios estimados: {getSegmentCount(newCampaign.targetSegment)} usuarios
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="include-inactive"
+                        checked={newCampaign.includeInactive}
+                        onCheckedChange={(checked) => setNewCampaign({...newCampaign, includeInactive: Boolean(checked)})}
+                      />
+                      <Label htmlFor="include-inactive">Incluir usuarios inactivos</Label>
+                    </div>
+                  </div>
+
+                  {/* Programación */}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="start-date">Fecha de Inicio</Label>
+                        <Input
+                          id="start-date"
+                          type="date"
+                          value={newCampaign.startDate}
+                          onChange={(e) => setNewCampaign({...newCampaign, startDate: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="end-date">Fecha de Fin</Label>
+                        <Input
+                          id="end-date"
+                          type="date"
+                          value={newCampaign.endDate}
+                          onChange={(e) => setNewCampaign({...newCampaign, endDate: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    {newCampaign.type !== 'automated' && (
+                      <div>
+                        <Label htmlFor="frequency">Frecuencia</Label>
+                        <Select value={newCampaign.frequency} onValueChange={(value) => setNewCampaign({...newCampaign, frequency: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar frecuencia" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="once">Una sola vez</SelectItem>
+                            <SelectItem value="daily">Diario</SelectItem>
+                            <SelectItem value="weekly">Semanal</SelectItem>
+                            <SelectItem value="monthly">Mensual</SelectItem>
+                            <SelectItem value="custom">Personalizada</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {newCampaign.frequency === 'custom' && (
+                          <Input
+                            className="mt-2"
+                            placeholder="Especificar frecuencia personalizada"
+                            value={newCampaign.customFrequency}
+                            onChange={(e) => setNewCampaign({...newCampaign, customFrequency: e.target.value})}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Opciones avanzadas */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="priority">Prioridad</Label>
+                      <Select value={newCampaign.priority} onValueChange={(value) => setNewCampaign({...newCampaign, priority: value})}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Baja</SelectItem>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="high">Alta</SelectItem>
+                          <SelectItem value="urgent">Urgente</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="send-immediately"
+                        checked={newCampaign.sendImmediately}
+                        onCheckedChange={(checked) => setNewCampaign({...newCampaign, sendImmediately: Boolean(checked)})}
+                      />
+                      <Label htmlFor="send-immediately">Enviar inmediatamente después de crear</Label>
+                    </div>
+
+                    {!newCampaign.sendImmediately && (
+                      <div>
+                        <Label htmlFor="scheduled-time">Hora Programada</Label>
+                        <Input
+                          id="scheduled-time"
+                          type="datetime-local"
+                          value={newCampaign.scheduledTime}
+                          onChange={(e) => setNewCampaign({...newCampaign, scheduledTime: e.target.value})}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setIsNewCampaignOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={handleCreateCampaign}
+                    className="bg-[#00a587] hover:bg-[#067f5f]"
+                    disabled={!newCampaign.name || !newCampaign.template || !newCampaign.targetSegment}
+                  >
+                    Crear Campaña
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </CardTitle>
           <CardDescription>
             Campañas de email segmentadas por tipos de usuario y módulos del sistema
