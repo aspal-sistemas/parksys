@@ -1828,19 +1828,330 @@ export const BulkEmailSection: React.FC = () => {
 };
 
 export const AnalyticsSection: React.FC = () => {
+  const [timeRange, setTimeRange] = useState('30days');
+  const [selectedMetric, setSelectedMetric] = useState('delivery');
+
+  // Datos de análisis de ejemplo
+  const analyticsData = {
+    overview: {
+      totalSent: 2847,
+      deliveryRate: 98.7,
+      openRate: 42.3,
+      clickRate: 18.6,
+      unsubscribeRate: 0.8,
+      bounceRate: 1.3
+    },
+    byModule: [
+      { module: "HR", sent: 812, opens: 389, clicks: 178, color: "bg-blue-500" },
+      { module: "Finanzas", sent: 694, opens: 315, clicks: 142, color: "bg-green-500" },
+      { module: "Eventos", sent: 523, opens: 231, clicks: 89, color: "bg-purple-500" },
+      { module: "Voluntarios", sent: 298, opens: 167, clicks: 72, color: "bg-orange-500" },
+      { module: "Concesiones", sent: 187, opens: 94, clicks: 41, color: "bg-red-500" },
+      { module: "Activos", sent: 165, opens: 78, clicks: 35, color: "bg-yellow-500" },
+      { module: "Seguridad", sent: 112, opens: 58, clicks: 23, color: "bg-pink-500" },
+      { module: "Arbolado", sent: 56, opens: 29, clicks: 12, color: "bg-teal-500" }
+    ],
+    recentCampaigns: [
+      { name: "Bienvenida Q1 2025", sent: 15, opens: 13, clicks: 4, date: "2025-06-23", status: "completed" },
+      { name: "Recibos Diciembre", sent: 185, opens: 174, clicks: 146, date: "2025-06-22", status: "completed" },
+      { name: "Actividades Verano", sent: 0, opens: 0, clicks: 0, date: "2025-06-25", status: "draft" },
+      { name: "Reconocimientos 2024", sent: 28, opens: 27, clicks: 12, date: "2025-06-20", status: "paused" },
+      { name: "Vencimientos Contratos", sent: 3, opens: 3, clicks: 2, date: "2025-06-24", status: "active" }
+    ],
+    topPerformers: [
+      { template: "Recibo de Nómina", opens: 94.1, clicks: 78.9, sent: 185 },
+      { template: "Vencimiento de Contrato", opens: 100, clicks: 66.7, sent: 3 },
+      { template: "Reconocimiento Voluntario", opens: 96.4, clicks: 42.1, sent: 28 },
+      { template: "Bienvenida Empleado", opens: 87.5, clicks: 23.4, sent: 15 }
+    ],
+    weeklyTrend: [
+      { week: "Sem 1", sent: 342, opens: 156, clicks: 67 },
+      { week: "Sem 2", sent: 428, opens: 189, clicks: 84 },
+      { week: "Sem 3", sent: 385, opens: 171, clicks: 76 },
+      { week: "Sem 4", sent: 467, opens: 203, clicks: 92 }
+    ]
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      completed: "bg-green-100 text-green-700",
+      active: "bg-blue-100 text-blue-700",
+      draft: "bg-gray-100 text-gray-700",
+      paused: "bg-orange-100 text-orange-700"
+    };
+    return variants[status as keyof typeof variants] || "bg-gray-100 text-gray-700";
+  };
+
   return (
     <div className="space-y-6">
+      {/* Header con filtros */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Análisis de Comunicaciones</h2>
+          <p className="text-gray-600">Métricas de rendimiento y reportes detallados</p>
+        </div>
+        <div className="flex gap-3">
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7days">Últimos 7 días</SelectItem>
+              <SelectItem value="30days">Últimos 30 días</SelectItem>
+              <SelectItem value="90days">Últimos 90 días</SelectItem>
+              <SelectItem value="year">Este año</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Métricas principales */}
+      <div className="grid grid-cols-6 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <Send className="h-6 w-6 text-blue-600" />
+              <div>
+                <p className="text-2xl font-bold">{analyticsData.overview.totalSent.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">Emails Enviados</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+              <div>
+                <p className="text-2xl font-bold">{analyticsData.overview.deliveryRate}%</p>
+                <p className="text-xs text-gray-500">Tasa Entrega</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <Eye className="h-6 w-6 text-purple-600" />
+              <div>
+                <p className="text-2xl font-bold">{analyticsData.overview.openRate}%</p>
+                <p className="text-xs text-gray-500">Tasa Apertura</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <Users className="h-6 w-6 text-orange-600" />
+              <div>
+                <p className="text-2xl font-bold">{analyticsData.overview.clickRate}%</p>
+                <p className="text-xs text-gray-500">Tasa Clicks</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <XCircle className="h-6 w-6 text-red-600" />
+              <div>
+                <p className="text-2xl font-bold">{analyticsData.overview.bounceRate}%</p>
+                <p className="text-xs text-gray-500">Tasa Rebote</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="h-6 w-6 text-yellow-600" />
+              <div>
+                <p className="text-2xl font-bold">{analyticsData.overview.unsubscribeRate}%</p>
+                <p className="text-xs text-gray-500">Cancelaciones</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Análisis por módulos y campañas recientes */}
+      <div className="grid grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Rendimiento por Módulo</CardTitle>
+            <CardDescription>
+              Distribución de emails y engagement por módulo del sistema
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analyticsData.byModule.map((module, index) => {
+                const openRate = ((module.opens / module.sent) * 100).toFixed(1);
+                const clickRate = ((module.clicks / module.sent) * 100).toFixed(1);
+                
+                return (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-4 h-4 rounded-full ${module.color}`}></div>
+                      <div>
+                        <p className="font-medium">{module.module}</p>
+                        <p className="text-sm text-gray-600">{module.sent} emails enviados</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">{openRate}% apertura</p>
+                      <p className="text-sm text-gray-600">{clickRate}% clicks</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Campañas Recientes</CardTitle>
+            <CardDescription>
+              Estado y rendimiento de las últimas campañas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {analyticsData.recentCampaigns.map((campaign, index) => {
+                const openRate = campaign.sent > 0 ? ((campaign.opens / campaign.sent) * 100).toFixed(1) : '0.0';
+                
+                return (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <p className="font-medium text-sm">{campaign.name}</p>
+                        <Badge className={`text-xs ${getStatusBadge(campaign.status)}`}>
+                          {campaign.status}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-gray-600">{campaign.date}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">{campaign.sent} enviados</p>
+                      <p className="text-xs text-gray-600">{openRate}% apertura</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Plantillas top y tendencias */}
+      <div className="grid grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Plantillas Más Efectivas</CardTitle>
+            <CardDescription>
+              Ranking de plantillas por tasa de apertura y clicks
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analyticsData.topPerformers.map((template, index) => (
+                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#00a587] text-white text-sm font-bold">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{template.template}</p>
+                      <p className="text-xs text-gray-600">{template.sent} emails enviados</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-purple-600">{template.opens}% apertura</p>
+                    <p className="text-sm text-orange-600">{template.clicks}% clicks</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Tendencia Semanal</CardTitle>
+            <CardDescription>
+              Evolución del engagement en las últimas 4 semanas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analyticsData.weeklyTrend.map((week, index) => {
+                const openRate = ((week.opens / week.sent) * 100).toFixed(1);
+                const clickRate = ((week.clicks / week.sent) * 100).toFixed(1);
+                
+                return (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{week.week}</p>
+                      <p className="text-sm text-gray-600">{week.sent} emails</p>
+                    </div>
+                    <div className="flex space-x-4">
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-purple-600">{openRate}%</p>
+                        <p className="text-xs text-gray-500">Apertura</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-orange-600">{clickRate}%</p>
+                        <p className="text-xs text-gray-500">Clicks</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Acciones y reportes */}
       <Card>
         <CardHeader>
-          <CardTitle>Análisis y Reportes</CardTitle>
+          <CardTitle>Acciones y Reportes</CardTitle>
           <CardDescription>
-            Métricas de rendimiento de emails
+            Herramientas para análisis detallado y exportación de datos
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12 text-gray-500">
-            <Eye className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <p>Dashboard de análisis en desarrollo</p>
+          <div className="grid grid-cols-4 gap-4">
+            <Button variant="outline" className="flex flex-col items-center p-6 h-auto">
+              <FileText className="h-8 w-8 mb-2 text-blue-600" />
+              <span className="text-sm font-medium">Reporte Completo</span>
+              <span className="text-xs text-gray-500 text-center">Descargar PDF con todas las métricas</span>
+            </Button>
+            
+            <Button variant="outline" className="flex flex-col items-center p-6 h-auto">
+              <BarChart3 className="h-8 w-8 mb-2 text-green-600" />
+              <span className="text-sm font-medium">Exportar CSV</span>
+              <span className="text-xs text-gray-500 text-center">Datos en formato CSV para análisis</span>
+            </Button>
+            
+            <Button variant="outline" className="flex flex-col items-center p-6 h-auto">
+              <Settings className="h-8 w-8 mb-2 text-purple-600" />
+              <span className="text-sm font-medium">Configurar Alertas</span>
+              <span className="text-xs text-gray-500 text-center">Notificaciones automáticas</span>
+            </Button>
+            
+            <Button variant="outline" className="flex flex-col items-center p-6 h-auto">
+              <TrendingUp className="h-8 w-8 mb-2 text-orange-600" />
+              <span className="text-sm font-medium">Análisis Avanzado</span>
+              <span className="text-xs text-gray-500 text-center">Métricas personalizadas</span>
+            </Button>
           </div>
         </CardContent>
       </Card>
