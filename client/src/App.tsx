@@ -91,7 +91,7 @@ function Router() {
         </Route>
         <Route path="/admin/parks/:id/edit">
           <Suspense fallback={<div className="p-8 text-center">Cargando editor del parque...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/parks/[id]/edit')))}
+            {React.createElement(React.lazy(() => import('./pages/admin/parks/[id]/edit-simple')))}
           </Suspense>
         </Route>
         <Route path="/admin/parks/:id/amenities">
