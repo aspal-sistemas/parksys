@@ -291,22 +291,297 @@ export const TemplatesSection: React.FC = () => {
 };
 
 export const QueueSection: React.FC = () => {
+  const queueEmails = [
+    {
+      id: 1,
+      subject: "Bienvenida - María González",
+      template: "Bienvenida Empleado",
+      recipient: "maria.gonzalez@parques.gob.mx",
+      scheduledFor: "2025-06-25 09:00:00",
+      status: "pending",
+      priority: "normal",
+      retries: 0,
+      module: "HR"
+    },
+    {
+      id: 2,
+      subject: "Recibo de Nómina - Diciembre 2024",
+      template: "Recibo de Nómina",
+      recipient: "carlos.martinez@parques.gob.mx",
+      scheduledFor: "2025-06-25 08:30:00",
+      status: "processing",
+      priority: "high",
+      retries: 0,
+      module: "Finanzas"
+    },
+    {
+      id: 3,
+      subject: "Nueva Actividad - Yoga en el Parque",
+      template: "Nueva Actividad en Parque",
+      recipient: "voluntarios@parques.gob.mx",
+      scheduledFor: "2025-06-25 10:15:00",
+      status: "pending",
+      priority: "normal",
+      retries: 0,
+      module: "Eventos"
+    },
+    {
+      id: 4,
+      subject: "Vencimiento Contrato - Cafetería Central",
+      template: "Vencimiento de Contrato",
+      recipient: "admin@cafeteriacentral.com",
+      scheduledFor: "2025-06-25 07:45:00",
+      status: "failed",
+      priority: "high",
+      retries: 2,
+      module: "Concesiones"
+    },
+    {
+      id: 5,
+      subject: "Mantenimiento Programado - Juegos Infantiles",
+      template: "Mantenimiento de Activos",
+      recipient: "mantenimiento@parques.gob.mx",
+      scheduledFor: "2025-06-25 11:00:00",
+      status: "sent",
+      priority: "normal",
+      retries: 0,
+      module: "Activos"
+    },
+    {
+      id: 6,
+      subject: "Incidente Reportado - Bosque Los Colomos",
+      template: "Reporte de Incidente",
+      recipient: "seguridad@parques.gob.mx",
+      scheduledFor: "2025-06-25 06:30:00",
+      status: "sent",
+      priority: "urgent",
+      retries: 0,
+      module: "Seguridad"
+    }
+  ];
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending': return <Clock className="h-4 w-4 text-orange-500" />;
+      case 'processing': return <Play className="h-4 w-4 text-blue-500" />;
+      case 'sent': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'failed': return <XCircle className="h-4 w-4 text-red-500" />;
+      default: return <Clock className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      pending: "bg-orange-100 text-orange-700",
+      processing: "bg-blue-100 text-blue-700", 
+      sent: "bg-green-100 text-green-700",
+      failed: "bg-red-100 text-red-700"
+    };
+    return variants[status as keyof typeof variants] || "bg-gray-100 text-gray-700";
+  };
+
+  const getPriorityBadge = (priority: string) => {
+    const variants = {
+      urgent: "bg-red-500 text-white",
+      high: "bg-orange-500 text-white",
+      normal: "bg-blue-500 text-white",
+      low: "bg-gray-500 text-white"
+    };
+    return variants[priority as keyof typeof variants] || "bg-gray-500 text-white";
+  };
+
+  const statusCounts = {
+    pending: queueEmails.filter(e => e.status === 'pending').length,
+    processing: queueEmails.filter(e => e.status === 'processing').length,
+    sent: queueEmails.filter(e => e.status === 'sent').length,
+    failed: queueEmails.filter(e => e.status === 'failed').length
+  };
+
   return (
     <div className="space-y-6">
+      {/* Stats Dashboard */}
+      <div className="grid grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <Clock className="h-8 w-8 text-orange-600" />
+              <div>
+                <p className="text-2xl font-bold">{statusCounts.pending}</p>
+                <p className="text-xs text-gray-500">Pendientes</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <Play className="h-8 w-8 text-blue-600" />
+              <div>
+                <p className="text-2xl font-bold">{statusCounts.processing}</p>
+                <p className="text-xs text-gray-500">Procesando</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+              <div>
+                <p className="text-2xl font-bold">{statusCounts.sent}</p>
+                <p className="text-xs text-gray-500">Enviados</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <XCircle className="h-8 w-8 text-red-600" />
+              <div>
+                <p className="text-2xl font-bold">{statusCounts.failed}</p>
+                <p className="text-xs text-gray-500">Fallidos</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Queue Management */}
       <Card>
         <CardHeader>
-          <CardTitle>Cola de Emails</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>Cola de Emails en Tiempo Real</span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                <Pause className="h-4 w-4 mr-2" />
+                Pausar Cola
+              </Button>
+              <Button className="bg-[#00a587] hover:bg-[#067f5f]" size="sm">
+                <Play className="h-4 w-4 mr-2" />
+                Procesar Ahora
+              </Button>
+            </div>
+          </CardTitle>
           <CardDescription>
-            Monitorea y gestiona emails programados y en proceso
+            Monitoreo en tiempo real del procesamiento de emails programados
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12 text-gray-500">
-            <Clock className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <p>Cola de emails en desarrollo</p>
+          <div className="space-y-4">
+            {queueEmails.map((email) => (
+              <div key={email.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                <div className="flex items-start space-x-4 flex-1">
+                  <div className="flex items-center space-x-2">
+                    {getStatusIcon(email.status)}
+                    <Badge className={`text-xs ${getPriorityBadge(email.priority)}`}>
+                      {email.priority.toUpperCase()}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <h4 className="font-medium text-sm truncate">{email.subject}</h4>
+                      <Badge variant="outline" className="text-xs">{email.module}</Badge>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-1">Para: {email.recipient}</p>
+                    <p className="text-xs text-gray-500">Plantilla: {email.template}</p>
+                  </div>
+                  
+                  <div className="flex flex-col items-end space-y-1 min-w-0">
+                    <Badge className={`text-xs ${getStatusBadge(email.status)}`}>
+                      {email.status.charAt(0).toUpperCase() + email.status.slice(1)}
+                    </Badge>
+                    <p className="text-xs text-gray-500">{email.scheduledFor}</p>
+                    {email.retries > 0 && (
+                      <p className="text-xs text-red-500">Reintentos: {email.retries}</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-1 ml-4">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  {email.status === 'failed' && (
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600">
+                      <Play className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {email.status === 'pending' && (
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600">
+                      <Pause className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
+
+      {/* Queue Statistics */}
+      <div className="grid grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Rendimiento de la Cola</CardTitle>
+            <CardDescription>
+              Estadísticas de procesamiento de las últimas 24 horas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Emails procesados</span>
+                <span className="font-bold">342</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Tasa de éxito</span>
+                <span className="font-bold text-green-600">96.8%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Tiempo promedio</span>
+                <span className="font-bold">2.3s</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Emails en cola</span>
+                <span className="font-bold text-orange-600">{statusCounts.pending}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Módulos Más Activos</CardTitle>
+            <CardDescription>
+              Distribución de emails por módulo del sistema
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[
+                { module: "HR", count: 12, color: "bg-blue-500" },
+                { module: "Finanzas", count: 8, color: "bg-green-500" },
+                { module: "Eventos", count: 6, color: "bg-purple-500" },
+                { module: "Seguridad", count: 4, color: "bg-red-500" },
+                { module: "Activos", count: 3, color: "bg-yellow-500" }
+              ].map((item) => (
+                <div key={item.module} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
+                    <span className="text-sm">{item.module}</span>
+                  </div>
+                  <span className="font-bold text-sm">{item.count}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
