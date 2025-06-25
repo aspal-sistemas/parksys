@@ -39,7 +39,7 @@ function MapController({ latitude, longitude }: { latitude?: string; longitude?:
     if (latitude && longitude) {
       const lat = parseFloat(latitude);
       const lng = parseFloat(longitude);
-      if (!isNaN(lat) && !isNaN(lng)) {
+      if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
         map.setView([lat, lng], 15);
       }
     }
@@ -52,13 +52,16 @@ export function MapSelector({ latitude, longitude, defaultCenter, selectedLocati
   const [position, setPosition] = useState<[number, number] | null>(null);
 
   useEffect(() => {
-    if (defaultCenter) {
+    if (defaultCenter && !isNaN(defaultCenter.lat) && !isNaN(defaultCenter.lng)) {
       setPosition([defaultCenter.lat, defaultCenter.lng]);
     } else if (latitude && longitude) {
       const lat = parseFloat(latitude);
       const lng = parseFloat(longitude);
       if (!isNaN(lat) && !isNaN(lng)) {
         setPosition([lat, lng]);
+      } else {
+        // Si hay coordenadas inválidas, usar coordenadas por defecto
+        setPosition([19.4326, -99.1332]);
       }
     } else {
       // Coordenadas por defecto para México (Centro del país)
@@ -88,7 +91,8 @@ export function MapSelector({ latitude, longitude, defaultCenter, selectedLocati
           />
           <MapClickHandler onLocationSelect={onLocationSelect} />
           <MapController latitude={latitude} longitude={longitude} />
-          {selectedLocation && <Marker position={[selectedLocation.lat, selectedLocation.lng]} />}
+          {selectedLocation && !isNaN(selectedLocation.lat) && !isNaN(selectedLocation.lng) && 
+           <Marker position={[selectedLocation.lat, selectedLocation.lng]} />}
         </MapContainer>
       </div>
       {selectedLocation && (

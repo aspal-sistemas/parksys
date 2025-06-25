@@ -716,16 +716,18 @@ export default function ParkEdit() {
                     }}
                     selectedLocation={
                       editData.locationLatitude && editData.locationLongitude
-                        ? {
-                            lat: parseFloat(editData.locationLatitude),
-                            lng: parseFloat(editData.locationLongitude)
-                          }
+                        ? (() => {
+                            const lat = parseFloat(editData.locationLatitude);
+                            const lng = parseFloat(editData.locationLongitude);
+                            return (!isNaN(lat) && !isNaN(lng)) ? { lat, lng } : null;
+                          })()
                         : null
                     }
                     className="w-full h-full"
                   />
                 </div>
-                {editData.locationLatitude && editData.locationLongitude && (
+                {editData.locationLatitude && editData.locationLongitude && 
+                 !isNaN(parseFloat(editData.locationLatitude)) && !isNaN(parseFloat(editData.locationLongitude)) && (
                   <div className="text-sm text-gray-500">
                     📍 {parseFloat(editData.locationLatitude).toFixed(6)}, {parseFloat(editData.locationLongitude).toFixed(6)}
                     <Button
@@ -741,7 +743,8 @@ export default function ParkEdit() {
               </DialogContent>
             </Dialog>
           ) : (
-            parkAmenity.locationLatitude && parkAmenity.locationLongitude ? (
+            parkAmenity.locationLatitude && parkAmenity.locationLongitude && 
+            !isNaN(parseFloat(parkAmenity.locationLatitude)) && !isNaN(parseFloat(parkAmenity.locationLongitude)) ? (
               <span className="text-sm">📍 {parseFloat(parkAmenity.locationLatitude).toFixed(6)}, {parseFloat(parkAmenity.locationLongitude).toFixed(6)}</span>
             ) : (
               '-'
@@ -1176,10 +1179,11 @@ export default function ParkEdit() {
                           longitude={form.watch("longitude")}
                           selectedLocation={
                             form.watch("latitude") && form.watch("longitude")
-                              ? {
-                                  lat: parseFloat(form.watch("latitude")),
-                                  lng: parseFloat(form.watch("longitude"))
-                                }
+                              ? (() => {
+                                  const lat = parseFloat(form.watch("latitude"));
+                                  const lng = parseFloat(form.watch("longitude"));
+                                  return (!isNaN(lat) && !isNaN(lng)) ? { lat, lng } : null;
+                                })()
                               : null
                           }
                           onLocationSelect={(location) => {
