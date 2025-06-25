@@ -83,8 +83,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
       {parks.map((park) => (
         <div 
           key={park.id}
-          className="bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all duration-200 cursor-pointer"
-          onClick={() => onParkSelect(park)}
+          className="bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all duration-200"
         >
           <div className="p-6">
             <div className="flex gap-6">
@@ -111,7 +110,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 hover:text-primary-600 transition-colors">
+                    <h3 className="text-xl font-semibold text-gray-900">
                       {park.name}
                     </h3>
                     <div className="flex items-center text-gray-600 mt-1">
@@ -131,7 +130,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
 
                 {/* Amenidades del parque */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Instalaciones Disponibles:</h4>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Amenidades, Instalaciones y Servicios:</h4>
                   <div className="flex flex-wrap gap-2">
                     {park.amenities && park.amenities.length > 0 ? (
                       park.amenities.slice(0, 8).map((amenity, index) => (
@@ -181,10 +180,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
 
               {/* Botón de acción */}
               <div className="flex-shrink-0 flex justify-center">
-                <Link 
-                  href={`/parque/${generateParkSlug(park.name, park.id)}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <Link href={`/parque/${generateParkSlug(park.name, park.id)}`}>
                   <Button 
                     variant="default" 
                     size="sm"
