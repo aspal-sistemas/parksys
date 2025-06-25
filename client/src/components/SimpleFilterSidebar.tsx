@@ -125,6 +125,21 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
     });
   };
 
+  // Aplicar filtros automáticamente cuando cambie la búsqueda
+  React.useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      onApplyFilters({
+        search: search || undefined,
+        parkType: parkType || undefined,
+        postalCode: postalCode || undefined,
+        municipality: municipality || undefined,
+        amenityIds: selectedAmenities.length > 0 ? selectedAmenities : undefined
+      });
+    }, 300); // Debounce de 300ms para evitar demasiadas consultas
+
+    return () => clearTimeout(timeoutId);
+  }, [search, parkType, postalCode, municipality, selectedAmenities]);
+
   const handleClearFilters = () => {
     setSearch('');
     setParkType('');
