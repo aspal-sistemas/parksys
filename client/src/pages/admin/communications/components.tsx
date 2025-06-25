@@ -1443,19 +1443,383 @@ export const CampaignsSection: React.FC = () => {
 };
 
 export const BulkEmailSection: React.FC = () => {
+  const [selectedSegments, setSelectedSegments] = useState<string[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [bulkSettings, setBulkSettings] = useState({
+    subject: '',
+    scheduledTime: '',
+    priority: 'normal',
+    batchSize: 100,
+    delayBetweenBatches: 5,
+    testMode: false,
+    trackOpens: true,
+    trackClicks: true,
+    unsubscribeLink: true
+  });
+
+  const [previewMode, setPreviewMode] = useState(false);
+
+  const availableSegments = [
+    { id: "todos_empleados", name: "Todos los Empleados", count: 185, description: "Personal completo del sistema de parques" },
+    { id: "empleados_activos", name: "Empleados Activos", count: 170, description: "Empleados con estado activo" },
+    { id: "directivos", name: "Personal Directivo", count: 12, description: "Directores y coordinadores" },
+    { id: "instructores", name: "Instructores", count: 28, description: "Instructores de actividades" },
+    { id: "usuarios_activos", name: "Usuarios Activos", count: 1250, description: "Usuarios que han usado el sistema en 30 días" },
+    { id: "usuarios_premium", name: "Usuarios Premium", count: 89, description: "Usuarios con membresía premium" },
+    { id: "voluntarios_activos", name: "Voluntarios Activos", count: 45, description: "Voluntarios con participación reciente" },
+    { id: "concesionarios", name: "Concesionarios", count: 8, description: "Empresas con contratos de concesión" },
+    { id: "proveedores", name: "Proveedores", count: 23, description: "Proveedores de servicios" }
+  ];
+
+  const availableTemplates = [
+    "Bienvenida Empleado",
+    "Recibo de Nómina", 
+    "Nueva Actividad en Parque",
+    "Reconocimiento Voluntario",
+    "Vencimiento de Contrato",
+    "Mantenimiento de Activos",
+    "Evaluación de Instructor",
+    "Reporte de Incidente",
+    "Actualización de Presupuesto",
+    "Cuidado del Arbolado"
+  ];
+
+  const toggleSegment = (segmentId: string) => {
+    setSelectedSegments(prev => 
+      prev.includes(segmentId) 
+        ? prev.filter(id => id !== segmentId)
+        : [...prev, segmentId]
+    );
+  };
+
+  const getTotalRecipients = () => {
+    return selectedSegments.reduce((total, segmentId) => {
+      const segment = availableSegments.find(s => s.id === segmentId);
+      return total + (segment?.count || 0);
+    }, 0);
+  };
+
+  const getEstimatedTime = () => {
+    const totalRecipients = getTotalRecipients();
+    const batches = Math.ceil(totalRecipients / bulkSettings.batchSize);
+    const totalMinutes = batches * bulkSettings.delayBetweenBatches;
+    return totalMinutes;
+  };
+
+  const handleBulkSend = () => {
+    if (bulkSettings.testMode) {
+      console.log('Modo de prueba - No se enviarán emails reales');
+    }
+    console.log('Envío masivo configurado:', {
+      segments: selectedSegments,
+      template: selectedTemplate,
+      settings: bulkSettings,
+      totalRecipients: getTotalRecipients()
+    });
+  };
+
   return (
     <div className="space-y-6">
+      {/* Header con estadísticas */}
+      <div className="grid grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <Users className="h-8 w-8 text-blue-600" />
+              <div>
+                <p className="text-2xl font-bold">{selectedSegments.length}</p>
+                <p className="text-xs text-gray-500">Segmentos Seleccionados</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <Mail className="h-8 w-8 text-green-600" />
+              <div>
+                <p className="text-2xl font-bold">{getTotalRecipients().toLocaleString()}</p>
+                <p className="text-xs text-gray-500">Destinatarios Totales</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <Clock className="h-8 w-8 text-orange-600" />
+              <div>
+                <p className="text-2xl font-bold">{getEstimatedTime()}</p>
+                <p className="text-xs text-gray-500">Minutos Estimados</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2">
+              <Settings className="h-8 w-8 text-purple-600" />
+              <div>
+                <p className="text-2xl font-bold">{bulkSettings.batchSize}</p>
+                <p className="text-xs text-gray-500">Emails por Lote</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Configuración principal */}
+      <div className="grid grid-cols-2 gap-6">
+        {/* Selección de segmentos */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Selección de Audiencias</CardTitle>
+            <CardDescription>
+              Elige los segmentos de usuarios que recibirán el envío masivo
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {availableSegments.map((segment) => (
+                <div 
+                  key={segment.id}
+                  className={`border rounded-lg p-3 cursor-pointer transition-colors ${
+                    selectedSegments.includes(segment.id) 
+                      ? 'border-[#00a587] bg-green-50' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => toggleSegment(segment.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox 
+                        checked={selectedSegments.includes(segment.id)}
+                        onChange={() => {}}
+                      />
+                      <div>
+                        <p className="font-medium">{segment.name}</p>
+                        <p className="text-sm text-gray-600">{segment.description}</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="ml-2">
+                      {segment.count.toLocaleString()}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Configuración del envío */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Configuración del Envío</CardTitle>
+            <CardDescription>
+              Personaliza los parámetros del envío masivo
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="bulk-template">Plantilla de Email</Label>
+              <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar plantilla" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTemplates.map((template) => (
+                    <SelectItem key={template} value={template}>{template}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="bulk-subject">Asunto Personalizado (opcional)</Label>
+              <Input
+                id="bulk-subject"
+                value={bulkSettings.subject}
+                onChange={(e) => setBulkSettings({...bulkSettings, subject: e.target.value})}
+                placeholder="Dejar vacío para usar asunto de plantilla"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="bulk-priority">Prioridad</Label>
+              <Select 
+                value={bulkSettings.priority} 
+                onValueChange={(value) => setBulkSettings({...bulkSettings, priority: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Baja</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="high">Alta</SelectItem>
+                  <SelectItem value="urgent">Urgente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="scheduled-time">Programar Envío (opcional)</Label>
+              <Input
+                id="scheduled-time"
+                type="datetime-local"
+                value={bulkSettings.scheduledTime}
+                onChange={(e) => setBulkSettings({...bulkSettings, scheduledTime: e.target.value})}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="batch-size">Emails por Lote</Label>
+                <Input
+                  id="batch-size"
+                  type="number"
+                  min="10"
+                  max="1000"
+                  value={bulkSettings.batchSize}
+                  onChange={(e) => setBulkSettings({...bulkSettings, batchSize: parseInt(e.target.value)})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="batch-delay">Delay entre Lotes (min)</Label>
+                <Input
+                  id="batch-delay"
+                  type="number"
+                  min="1"
+                  max="60"
+                  value={bulkSettings.delayBetweenBatches}
+                  onChange={(e) => setBulkSettings({...bulkSettings, delayBetweenBatches: parseInt(e.target.value)})}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="test-mode"
+                  checked={bulkSettings.testMode}
+                  onCheckedChange={(checked) => setBulkSettings({...bulkSettings, testMode: Boolean(checked)})}
+                />
+                <Label htmlFor="test-mode">Modo de prueba (no envía emails reales)</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="track-opens"
+                  checked={bulkSettings.trackOpens}
+                  onCheckedChange={(checked) => setBulkSettings({...bulkSettings, trackOpens: Boolean(checked)})}
+                />
+                <Label htmlFor="track-opens">Rastrear aperturas</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="track-clicks"
+                  checked={bulkSettings.trackClicks}
+                  onCheckedChange={(checked) => setBulkSettings({...bulkSettings, trackClicks: Boolean(checked)})}
+                />
+                <Label htmlFor="track-clicks">Rastrear clicks</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="unsubscribe-link"
+                  checked={bulkSettings.unsubscribeLink}
+                  onCheckedChange={(checked) => setBulkSettings({...bulkSettings, unsubscribeLink: Boolean(checked)})}
+                />
+                <Label htmlFor="unsubscribe-link">Incluir enlace de cancelación</Label>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Preview y acciones */}
       <Card>
         <CardHeader>
-          <CardTitle>Envío Masivo</CardTitle>
-          <CardDescription>
-            Envía emails a múltiples destinatarios de forma eficiente
-          </CardDescription>
+          <CardTitle className="flex items-center justify-between">
+            <span>Resumen del Envío</span>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setPreviewMode(!previewMode)}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                {previewMode ? 'Ocultar' : 'Vista Previa'}
+              </Button>
+              <Button 
+                onClick={handleBulkSend}
+                className="bg-[#00a587] hover:bg-[#067f5f]"
+                disabled={selectedSegments.length === 0 || !selectedTemplate}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {bulkSettings.scheduledTime ? 'Programar Envío' : 'Enviar Ahora'}
+              </Button>
+            </div>
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12 text-gray-500">
-            <Send className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <p>Envío masivo en desarrollo</p>
+          {previewMode && (
+            <div className="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="font-medium text-sm">Segmentos seleccionados:</p>
+                  <ul className="text-sm text-gray-600 mt-1">
+                    {selectedSegments.map(segmentId => {
+                      const segment = availableSegments.find(s => s.id === segmentId);
+                      return segment && (
+                        <li key={segmentId} className="flex justify-between">
+                          <span>{segment.name}</span>
+                          <span>{segment.count} usuarios</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium text-sm">Configuración:</p>
+                  <div className="text-sm text-gray-600 mt-1 space-y-1">
+                    <p>Plantilla: {selectedTemplate || 'No seleccionada'}</p>
+                    <p>Prioridad: {bulkSettings.priority}</p>
+                    <p>Lotes de: {bulkSettings.batchSize} emails</p>
+                    <p>Delay: {bulkSettings.delayBetweenBatches} minutos</p>
+                    {bulkSettings.scheduledTime && (
+                      <p>Programado: {new Date(bulkSettings.scheduledTime).toLocaleString()}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center space-x-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-[#00a587]">{getTotalRecipients().toLocaleString()}</p>
+                <p className="text-sm text-gray-500">Destinatarios</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-600">{Math.ceil(getTotalRecipients() / bulkSettings.batchSize)}</p>
+                <p className="text-sm text-gray-500">Lotes</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-orange-600">{getEstimatedTime()}</p>
+                <p className="text-sm text-gray-500">Minutos</p>
+              </div>
+            </div>
+            
+            {bulkSettings.testMode && (
+              <Badge variant="outline" className="bg-yellow-100 text-yellow-700">
+                MODO DE PRUEBA
+              </Badge>
+            )}
           </div>
         </CardContent>
       </Card>
