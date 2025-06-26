@@ -685,8 +685,12 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   // Crear nueva especie de árbol (requiere autenticación)
   apiRouter.post("/tree-species", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const { commonName, scientificName, family, origin, imageUrl, description, 
-              benefits, careRequirements, lifespan, growthRate, canopyShape } = req.body;
+      const { 
+        commonName, scientificName, family, origin, growthRate, imageUrl, 
+        description, isEndangered, ecologicalBenefits, maintenanceRequirements, 
+        lifespan, climateZone, soilRequirements, waterRequirements, 
+        sunRequirements, ornamentalValue, commonUses 
+      } = req.body;
       
       // Validación básica de datos
       if (!commonName || !scientificName) {
@@ -695,18 +699,22 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         });
       }
       
-      // Insertar la nueva especie
+      // Insertar la nueva especie usando nombres de columnas correctos del esquema
       const result = await db.execute(sql`
         INSERT INTO tree_species (
-          common_name, scientific_name, family, origin, image_url, 
-          description, benefits, care_requirements, lifespan, growth_rate, 
-          canopy_shape, created_at, updated_at
+          common_name, scientific_name, family, origin, growth_rate, 
+          image_url, description, is_endangered, ecological_benefits, 
+          maintenance_requirements, lifespan, climate_zone, 
+          soil_requirements, water_requirements, sun_requirements, 
+          ornamental_value, common_uses, created_at, updated_at
         ) 
         VALUES (
           ${commonName}, ${scientificName}, ${family || null}, ${origin || null}, 
-          ${imageUrl || null}, ${description || null}, ${benefits || null}, 
-          ${careRequirements || null}, ${lifespan || null}, ${growthRate || null}, 
-          ${canopyShape || null}, NOW(), NOW()
+          ${growthRate || null}, ${imageUrl || null}, ${description || null}, 
+          ${isEndangered || false}, ${ecologicalBenefits || null}, 
+          ${maintenanceRequirements || null}, ${lifespan || null}, ${climateZone || null},
+          ${soilRequirements || null}, ${waterRequirements || null}, ${sunRequirements || null},
+          ${ornamentalValue || null}, ${commonUses || null}, NOW(), NOW()
         )
         RETURNING *
       `);
