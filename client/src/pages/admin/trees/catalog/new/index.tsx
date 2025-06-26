@@ -63,19 +63,15 @@ const treeSpeciesSchema = z.object({
   }).max(1000, {
     message: 'La descripción no debe exceder los 1000 caracteres.'
   }),
-  benefits: z.string().min(10, {
-    message: 'Los beneficios deben tener al menos 10 caracteres.',
-  }).optional().or(z.literal('')),
-  careRequirements: z.string().min(10, {
-    message: 'Los requisitos de cuidado deben tener al menos 10 caracteres.',
-  }).optional().or(z.literal('')),
-  lifespan: z.string().optional().or(z.literal('')),
-  canopyType: z.string().optional().or(z.literal('')),
-  soilPreference: z.string().optional().or(z.literal('')),
-  waterRequirements: z.string().optional().or(z.literal('')),
-  sunExposure: z.string().optional().or(z.literal('')),
-  pestDiseaseResistance: z.string().optional().or(z.literal('')),
-  notes: z.string().optional().or(z.literal('')),
+  benefits: z.string().optional(),
+  careRequirements: z.string().optional(),
+  lifespan: z.string().optional(),
+  canopyType: z.string().optional(),
+  soilPreference: z.string().optional(),
+  waterRequirements: z.string().optional(),
+  sunExposure: z.string().optional(),
+  pestDiseaseResistance: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 type TreeSpeciesFormValues = z.infer<typeof treeSpeciesSchema>;
@@ -147,6 +143,8 @@ function NewTreeSpecies() {
 
   // Manejar el envío del formulario
   function onSubmit(data: TreeSpeciesFormValues) {
+    console.log('Datos del formulario:', data);
+    console.log('Errores del formulario:', form.formState.errors);
     createTreeSpeciesMutation.mutate(data);
   }
 
