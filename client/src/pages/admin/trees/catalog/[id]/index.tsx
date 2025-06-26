@@ -461,14 +461,14 @@ function TreeSpeciesDetail() {
                     
                     <div className="p-4 bg-green-50 rounded-md border border-green-100">
                       <p className="mb-2 font-medium text-green-800">Requisitos de Cuidado</p>
-                      {species?.careRequirements ? (
+                      {species?.maintenanceRequirements ? (
                         <div className="whitespace-pre-line text-green-700">
-                          {species.careRequirements.split('\n').map((paragraph, i) => (
+                          {species.maintenanceRequirements.split('\n').map((paragraph, i) => (
                             <p key={i} className="mb-2">{paragraph}</p>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-gray-500 italic">No se ha proporcionado información sobre los requisitos de cuidado de esta especie.</p>
+                        <p className="text-gray-500 italic">No se ha proporcionado información sobre los requisitos de mantenimiento de esta especie.</p>
                       )}
                     </div>
                     
