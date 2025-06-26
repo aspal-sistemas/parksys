@@ -169,14 +169,13 @@ function SimpleNewTreeSpecies() {
   return (
     <AdminLayout>
       <div className="container mx-auto py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-green-800">Nueva Especie Arbórea</h1>
-          <p className="text-muted-foreground">
-            Registra una nueva especie en el catálogo de árboles.
-          </p>
-        </div>
-
         <div className="max-w-2xl mx-auto">
+          <div className="mb-6 text-center">
+            <h1 className="text-3xl font-bold text-green-800">Nueva Especie Arbórea</h1>
+            <p className="text-muted-foreground">
+              Registra una nueva especie en el catálogo de árboles.
+            </p>
+          </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             
