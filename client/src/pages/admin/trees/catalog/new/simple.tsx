@@ -10,6 +10,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useState } from "react";
+import { Upload, Image } from "lucide-react";
 
 // Schema simplificado que coincide exactamente con la base de datos
 const treeSpeciesSchema = z.object({
@@ -55,6 +57,7 @@ function SimpleNewTreeSpecies() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
 
   // Configuración del formulario
   const form = useForm<TreeSpeciesFormValues>({
@@ -119,6 +122,41 @@ function SimpleNewTreeSpecies() {
       });
     },
   });
+
+  // Manejar la subida de foto
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    try {
+      const response = await fetch('/api/tree-photos/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUploadedImageUrl(data.url);
+        form.setValue('imageUrl', data.url);
+        toast({
+          title: "Foto subida",
+          description: "La foto se ha subido correctamente.",
+        });
+      } else {
+        throw new Error('Error al subir la foto');
+      }
+    } catch (error) {
+      console.error('Error al subir foto:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo subir la foto. Intenta de nuevo.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Manejar el envío del formulario
   function onSubmit(data: TreeSpeciesFormValues) {
@@ -277,17 +315,94 @@ function SimpleNewTreeSpecies() {
               )}
             />
 
+            {/* Sección de fotografía */}
+            <div className="space-y-4">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                <div className="text-center">
+                  <div className="mx-auto h-12 w-12 text-gray-400">
+                    <Image className="h-12 w-12" />
+                  </div>
+                  <div className="mt-4">
+                    <label htmlFor="photo-upload" className="cursor-pointer">
+                      <span className="mt-2 block text-sm font-medium text-gray-900">
+                        Subir fotografía de la especie
+                      </span>
+                      <span className="mt-1 block text-sm text-gray-500">
+                        PNG, JPG, JPEG hasta 5MB
+                      </span>
+                    </label>
+                    <input
+                      id="photo-upload"
+                      type="file"
+                      className="sr-only"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="mt-3"
+                      onClick={() => document.getElementById('photo-upload')?.click()}
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Seleccionar Foto
+                    </Button>
+                  </div>
+                  
+                  {uploadedImageUrl && (
+                    <div className="mt-4">
+                      <p className="text-sm text-green-600 mb-2">✓ Foto subida correctamente</p>
+                      <img 
+                        src={uploadedImageUrl} 
+                        alt="Vista previa" 
+                        className="mx-auto h-24 w-24 object-cover rounded-lg border"
+                      />
+                    </div>
+                  )}
+                </div>
+                
+                {/* Separador */}
+                <div className="flex items-center my-4">
+                  <div className="flex-grow border-t border-gray-300"></div>
+                  <span className="px-3 text-sm text-gray-500">o</span>
+                  <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+                
+                {/* URL externa */}
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>URL de imagen externa</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="https://ejemplo.com/imagen.jpg" 
+                          {...field} 
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        URL de una imagen externa representativa de la especie.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
             {/* Campos opcionales */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="imageUrl"
+                name="climateZone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>URL de Imagen (Opcional)</FormLabel>
+                    <FormLabel>Zona Climática (Opcional)</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="https://ejemplo.com/imagen.jpg" 
+                        placeholder="Ej. Tropical, Templada..." 
                         {...field} 
                         value={field.value || ''}
                       />
@@ -299,13 +414,13 @@ function SimpleNewTreeSpecies() {
 
               <FormField
                 control={form.control}
-                name="climateZone"
+                name="ornamentalValue"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Zona Climática (Opcional)</FormLabel>
+                    <FormLabel>Valor Ornamental (Opcional)</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Ej. Tropical, Templada..." 
+                        placeholder="Ej. Alto, Medio, Bajo..." 
                         {...field} 
                         value={field.value || ''}
                       />
