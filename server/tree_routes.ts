@@ -505,21 +505,160 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   // Desactivar la ruta en tree_inventory_routes.ts que causa conflicto
   // Ya estamos usando getTreeDetails que es una implementación compatible con la estructura real
   
-  // Obtener todas las especies de árboles
+  // Obtener todas las especies de árboles con paginación
   apiRouter.get("/tree-species", async (req: Request, res: Response) => {
     try {
-      // Ejecutar una consulta directa para obtener las especies
-      const result = await db.execute(sql`
-        SELECT * FROM tree_species
-        ORDER BY common_name ASC
-      `);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const offset = (page - 1) * limit;
+      const search = req.query.search as string || '';
+      const origin = req.query.origin as string || '';
+      const sortBy = req.query.sortBy as string || 'common_name';
+      const sortOrder = req.query.sortOrder as string || 'asc';
+
+      // Construir condiciones WHERE
+      let whereConditions = [];
+      if (search) {
+        whereConditions.push(`(common_name ILIKE '%${search}%' OR scientific_name ILIKE '%${search}%' OR family ILIKE '%${search}%')`);
+      }
+      if (origin && origin !== 'all') {
+        whereConditions.push(`origin = '${origin}'`);
+      }
+
+      const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+      const orderClause = `ORDER BY ${sortBy} ${sortOrder.toUpperCase()}`;
+
+      // Obtener total de registros
+      const countResult = await db.execute(sql.raw(`
+        SELECT COUNT(*) as total FROM tree_species ${whereClause}
+      `));
+      const total = Number(countResult.rows[0]?.total || 0);
+
+      // Obtener datos paginados
+      const result = await db.execute(sql.raw(`
+        SELECT * FROM tree_species 
+        ${whereClause}
+        ${orderClause}
+        LIMIT ${limit} OFFSET ${offset}
+      `));
       
       res.json({
-        data: result.rows
+        data: result.rows,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        }
       });
     } catch (error) {
       console.error("Error al obtener especies de árboles:", error);
       res.status(500).json({ message: "Error al obtener especies de árboles" });
+    }
+  });
+
+  // Exportar especies de árboles a CSV
+  apiRouter.get("/tree-species/export/csv", async (req: Request, res: Response) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          common_name as "Nombre Común",
+          scientific_name as "Nombre Científico", 
+          family as "Familia",
+          origin as "Origen",
+          growth_rate as "Ritmo de Crecimiento",
+          CASE WHEN is_endangered THEN 'Sí' ELSE 'No' END as "Amenazada",
+          description as "Descripción",
+          care_instructions as "Instrucciones de Cuidado",
+          benefits as "Beneficios",
+          image_url as "URL de Imagen"
+        FROM tree_species
+        ORDER BY common_name ASC
+      `);
+
+      // Generar CSV
+      const headers = Object.keys(result.rows[0] || {});
+      const csvContent = [
+        headers.join(','),
+        ...result.rows.map(row => 
+          headers.map(header => {
+            const value = row[header] || '';
+            // Escapar comillas y envolver en comillas si contiene comas
+            const escapedValue = String(value).replace(/"/g, '""');
+            return escapedValue.includes(',') || escapedValue.includes('\n') ? `"${escapedValue}"` : escapedValue;
+          }).join(',')
+        )
+      ].join('\n');
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="especies-arboreas.csv"');
+      res.send('\ufeff' + csvContent); // BOM para UTF-8
+    } catch (error) {
+      console.error("Error al exportar especies:", error);
+      res.status(500).json({ message: "Error al exportar especies" });
+    }
+  });
+
+  // Importar especies de árboles desde CSV
+  apiRouter.post("/tree-species/import/csv", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { data } = req.body;
+      
+      if (!Array.isArray(data) || data.length === 0) {
+        return res.status(400).json({ message: "No se proporcionaron datos válidos" });
+      }
+
+      let imported = 0;
+      let errors = [];
+
+      for (const row of data) {
+        try {
+          // Validar datos requeridos
+          if (!row.commonName || !row.scientificName) {
+            errors.push(`Fila ${imported + 1}: Nombre común y científico son requeridos`);
+            continue;
+          }
+
+          // Verificar si la especie ya existe
+          const existing = await db.execute(sql`
+            SELECT id FROM tree_species 
+            WHERE LOWER(scientific_name) = LOWER(${row.scientificName})
+          `);
+
+          if (existing.rows.length > 0) {
+            errors.push(`Fila ${imported + 1}: La especie "${row.scientificName}" ya existe`);
+            continue;
+          }
+
+          // Insertar nueva especie
+          await db.execute(sql`
+            INSERT INTO tree_species (
+              common_name, scientific_name, family, origin, growth_rate,
+              is_endangered, description, care_instructions, benefits, image_url
+            ) VALUES (
+              ${row.commonName}, ${row.scientificName}, 
+              ${row.family || 'No especificada'}, ${row.origin || 'No especificado'},
+              ${row.growthRate || 'Medio'}, ${row.isEndangered === 'Sí' || row.isEndangered === true},
+              ${row.description || null}, ${row.careInstructions || null},
+              ${row.benefits || null}, ${row.imageUrl || null}
+            )
+          `);
+
+          imported++;
+        } catch (error) {
+          console.error("Error al importar fila:", error);
+          errors.push(`Fila ${imported + 1}: Error al insertar datos`);
+        }
+      }
+
+      res.json({
+        message: `Importación completada: ${imported} especies importadas`,
+        imported,
+        errors
+      });
+    } catch (error) {
+      console.error("Error al importar especies:", error);
+      res.status(500).json({ message: "Error al procesar importación" });
     }
   });
 
