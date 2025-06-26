@@ -56,9 +56,7 @@ const treeSpeciesSchema = z.object({
   growthRate: z.string({
     required_error: 'Selecciona la tasa de crecimiento.',
   }),
-  imageUrl: z.string().url({
-    message: 'Ingresa una URL válida para la imagen.',
-  }).optional().or(z.literal('')),
+  imageUrl: z.string().optional(),
   isEndangered: z.boolean().default(false),
   description: z.string().min(10, {
     message: 'La descripción debe tener al menos 10 caracteres.',
