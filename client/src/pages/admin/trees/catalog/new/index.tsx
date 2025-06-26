@@ -36,7 +36,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TreePine, ArrowLeft, Save, Leaf } from 'lucide-react';
+import { TreePine, ArrowLeft, Save, Leaf, Upload, Image } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 // Definir el esquema de validación para el formulario
@@ -85,6 +85,8 @@ type TreeSpeciesFormValues = z.infer<typeof treeSpeciesSchema>;
 function NewTreeSpecies() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [uploadedPhoto, setUploadedPhoto] = React.useState<string | null>(null);
+  const [isUploading, setIsUploading] = React.useState(false);
 
   // Configuración del formulario con valores por defecto
   const form = useForm<TreeSpeciesFormValues>({
@@ -149,6 +151,67 @@ function NewTreeSpecies() {
   function onSubmit(data: TreeSpeciesFormValues) {
     createTreeSpeciesMutation.mutate(data);
   }
+
+  // Manejar la subida de foto
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    if (!['image/jpeg', 'image/png', 'image/svg+xml'].includes(file.type)) {
+      toast({
+        title: "Formato no válido",
+        description: "Solo se permiten archivos JPEG, PNG o SVG.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Archivo muy grande",
+        description: "El tamaño máximo permitido es 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('photo', file);
+
+      const response = await fetch('/api/tree-species/upload-photo', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al subir la foto');
+      }
+
+      const result = await response.json();
+      
+      // Actualizar el campo imageUrl del formulario con la URL de la foto subida
+      form.setValue('imageUrl', result.photoUrl);
+      setUploadedPhoto(result.photoUrl);
+
+      toast({
+        title: "Foto subida exitosamente",
+        description: "La foto se ha guardado y se usará como imagen de la especie.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo subir la foto. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Manejar el regreso al catálogo
   const handleBack = () => {
@@ -334,26 +397,82 @@ function NewTreeSpecies() {
                     </div>
                     
                     <div className="grid grid-cols-1 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="imageUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>URL de Imagen</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="https://ejemplo.com/imagen.jpg" 
-                                {...field} 
-                                value={field.value || ''}
+                      <div className="space-y-4">
+                        <FormLabel>Imagen de la Especie</FormLabel>
+                        
+                        {/* Vista previa de la imagen subida */}
+                        {uploadedPhoto && (
+                          <div className="flex items-center space-x-4 p-4 border rounded-lg bg-green-50">
+                            <div className="flex-shrink-0">
+                              <img
+                                src={uploadedPhoto}
+                                alt="Vista previa"
+                                className="h-16 w-16 object-cover rounded-lg border"
                               />
-                            </FormControl>
-                            <FormDescription>
-                              URL de una imagen representativa de la especie.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
+                            </div>
+                            <div className="flex-grow">
+                              <p className="text-sm font-medium text-green-800">
+                                Foto subida exitosamente
+                              </p>
+                              <p className="text-xs text-green-600">
+                                Esta imagen se usará como icono en las amenidades
+                              </p>
+                            </div>
+                          </div>
                         )}
-                      />
+                        
+                        {/* Opción 1: Subir archivo directo */}
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Opción 1: Subir archivo directo</label>
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type="file"
+                              accept="image/jpeg,image/png,image/svg+xml"
+                              onChange={handlePhotoUpload}
+                              disabled={isUploading}
+                              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                            />
+                            {isUploading && (
+                              <div className="flex items-center text-sm text-gray-500">
+                                <Upload className="animate-spin h-4 w-4 mr-1" />
+                                Subiendo...
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            Formatos: JPEG, PNG, SVG | Tamaño máximo: 5MB
+                          </p>
+                        </div>
+                        
+                        {/* Separador */}
+                        <div className="flex items-center">
+                          <div className="flex-grow border-t border-gray-300"></div>
+                          <span className="px-3 text-sm text-gray-500">o</span>
+                          <div className="flex-grow border-t border-gray-300"></div>
+                        </div>
+                        
+                        {/* Opción 2: URL externa */}
+                        <FormField
+                          control={form.control}
+                          name="imageUrl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Opción 2: URL de imagen externa</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="https://ejemplo.com/imagen.jpg" 
+                                  {...field} 
+                                  value={field.value || ''}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                URL de una imagen externa representativa de la especie.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
                     
                     <FormField
