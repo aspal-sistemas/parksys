@@ -133,7 +133,7 @@ function SimpleNewTreeSpecies() {
     formData.append('photo', file);
 
     try {
-      const response = await fetch('/api/tree-photos/upload', {
+      const response = await fetch('/api/tree-species/upload-photo', {
         method: 'POST',
         body: formData,
       });
