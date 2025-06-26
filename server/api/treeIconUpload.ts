@@ -2,6 +2,11 @@ import { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// Obtener el directorio actual en módulos ES
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configurar la carpeta de destino para iconos de especies de árboles
 const uploadDir = path.join(__dirname, '../../public/uploads/tree-icons');
