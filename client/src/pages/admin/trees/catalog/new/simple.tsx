@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useState } from "react";
 import { Upload, Image } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
 
 // Schema simplificado que coincide exactamente con la base de datos
 const treeSpeciesSchema = z.object({
@@ -166,15 +167,16 @@ function SimpleNewTreeSpecies() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-green-800">Nueva Especie Arbórea</h1>
-        <p className="text-muted-foreground">
-          Registra una nueva especie en el catálogo de árboles.
-        </p>
-      </div>
+    <AdminLayout>
+      <div className="container mx-auto py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-green-800">Nueva Especie Arbórea</h1>
+          <p className="text-muted-foreground">
+            Registra una nueva especie en el catálogo de árboles.
+          </p>
+        </div>
 
-      <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             
@@ -468,8 +470,9 @@ function SimpleNewTreeSpecies() {
             </div>
           </form>
         </Form>
+        </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
 
