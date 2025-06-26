@@ -923,4 +923,182 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
       res.status(500).json({ message: "Error al obtener estadísticas de árboles" });
     }
   });
+
+  // ===== ENDPOINTS PARA ICONOS Y FOTOS DE ESPECIES DE ÁRBOLES =====
+
+  // Subir icono personalizado para especies de árboles
+  apiRouter.post("/tree-species/upload-icon", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar que el usuario sea administrador
+      if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
+        return res.status(403).json({ message: "Solo administradores pueden subir iconos" });
+      }
+      
+      const { uploadTreeIcon, handleTreeIconUploadErrors, uploadTreeIconHandler } = await import('./api/treeIconUpload');
+      
+      // Usar el middleware de multer para procesar la carga
+      uploadTreeIcon(req, res, (err: any) => {
+        if (err) {
+          return handleTreeIconUploadErrors(err, req, res, () => {});
+        }
+        // Si no hay errores, manejar la respuesta
+        return uploadTreeIconHandler(req, res);
+      });
+    } catch (error) {
+      console.error("Error al subir icono de especie de árbol:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
+
+  // Subir foto principal para especies de árboles
+  apiRouter.post("/tree-species/upload-photo", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar que el usuario sea administrador
+      if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
+        return res.status(403).json({ message: "Solo administradores pueden subir fotos" });
+      }
+      
+      const { uploadTreePhoto, handleTreePhotoUploadErrors, uploadTreePhotoHandler } = await import('./api/treeIconUpload');
+      
+      // Usar el middleware de multer para procesar la carga
+      uploadTreePhoto(req, res, (err: any) => {
+        if (err) {
+          return handleTreePhotoUploadErrors(err, req, res, () => {});
+        }
+        // Si no hay errores, manejar la respuesta
+        return uploadTreePhotoHandler(req, res);
+      });
+    } catch (error) {
+      console.error("Error al subir foto de especie de árbol:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
+
+  // Subida masiva de iconos para especies de árboles
+  apiRouter.post("/tree-species/bulk-upload-icons", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar que el usuario sea administrador
+      if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
+        return res.status(403).json({ message: "Solo administradores pueden realizar carga masiva" });
+      }
+
+      const { uploadMultipleTreeIcons } = await import('./api/treeIconUpload');
+      
+      uploadMultipleTreeIcons(req, res, async (err: any) => {
+        if (err) {
+          console.error("Error en carga masiva:", err);
+          return res.status(400).json({ error: err.message });
+        }
+
+        const files = req.files as Express.Multer.File[];
+        if (!files || files.length === 0) {
+          return res.status(400).json({ error: "No se han seleccionado archivos" });
+        }
+
+        const { family = 'general' } = req.body;
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+        const results = [];
+        
+        for (const file of files) {
+          try {
+            // Validar tipo de archivo
+            if (!allowedTypes.includes(file.mimetype)) {
+              results.push({
+                filename: file.originalname,
+                success: false,
+                error: "Formato de archivo no válido"
+              });
+              continue;
+            }
+
+            // Validar tamaño de archivo (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+              results.push({
+                filename: file.originalname,
+                success: false,
+                error: "Archivo demasiado grande (máximo 2MB)"
+              });
+              continue;
+            }
+
+            // Crear nombre de especie desde el nombre del archivo
+            const speciesName = file.originalname
+              .replace(/\.[^/.]+$/, "") // Remover extensión
+              .replace(/[-_]/g, " ") // Reemplazar guiones y guiones bajos con espacios
+              .replace(/\b\w/g, l => l.toUpperCase()); // Capitalizar primera letra de cada palabra
+
+            const iconUrl = `/uploads/tree-icons/${file.filename}`;
+
+            // Datos de la especie de árbol
+            const speciesData = {
+              commonName: speciesName,
+              scientificName: speciesName, // Se puede actualizar manualmente después
+              family: family,
+              origin: 'No especificado',
+              growthRate: 'Medio',
+              iconType: 'custom',
+              customIconUrl: iconUrl,
+              description: `Especie de árbol: ${speciesName}`
+            };
+
+            // Verificar si ya existe
+            const existingCheck = await db.select({ id: treeSpecies.id })
+              .from(treeSpecies)
+              .where(eq(treeSpecies.commonName, speciesData.commonName));
+            
+            if (existingCheck.length > 0) {
+              // Ya existe, actualizar el icono
+              await db.update(treeSpecies)
+                .set({
+                  iconType: speciesData.iconType,
+                  customIconUrl: speciesData.customIconUrl,
+                  family: speciesData.family
+                })
+                .where(eq(treeSpecies.id, existingCheck[0].id));
+            } else {
+              // No existe, crear nueva especie
+              await db.insert(treeSpecies).values({
+                commonName: speciesData.commonName,
+                scientificName: speciesData.scientificName,
+                family: speciesData.family,
+                origin: speciesData.origin,
+                growthRate: speciesData.growthRate,
+                iconType: speciesData.iconType,
+                customIconUrl: speciesData.customIconUrl,
+                description: speciesData.description
+              });
+            }
+            
+            results.push({
+              filename: file.originalname,
+              speciesName: speciesName,
+              iconUrl: iconUrl,
+              success: true
+            });
+
+          } catch (error) {
+            console.error(`Error procesando archivo ${file.originalname}:`, error);
+            results.push({
+              filename: file.originalname,
+              success: false,
+              error: "Error al procesar el archivo"
+            });
+          }
+        }
+
+        const successCount = results.filter(r => r.success).length;
+        const failedCount = results.filter(r => !r.success).length;
+
+        res.json({
+          message: `Carga masiva completada: ${successCount} exitosos, ${failedCount} fallidos`,
+          successCount,
+          failedCount,
+          results
+        });
+      });
+    } catch (error) {
+      console.error("Error en carga masiva de iconos de especies:", error);
+      res.status(500).json({ error: "Error al procesar la carga masiva" });
+    }
+  });
 }

@@ -1016,6 +1016,12 @@ export const treeSpecies = pgTable("tree_species", {
   commonUses: text("common_uses"),
   isEndangered: boolean("is_endangered").default(false),
   iconColor: text("icon_color").default("#4CAF50"),
+  // Campos para iconos personalizados
+  iconType: text("icon_type").default("system"), // 'system' o 'custom'
+  customIconUrl: text("custom_icon_url"), // URL del icono personalizado
+  // Campos adicionales para fotos
+  photoUrl: text("photo_url"), // URL de la foto principal
+  photoCaption: text("photo_caption"), // Descripción de la foto
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
