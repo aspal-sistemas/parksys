@@ -152,22 +152,10 @@ export default function ParkEditSimple() {
       
       console.log('Datos procesados a enviar:', dataToSend);
       
-      // Usar fetch directamente para mayor control
-      const response = await fetch(`/api/dev/parks/${id}`, {
+      return await apiRequest(`/api/dev/parks/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(dataToSend),
+        data: dataToSend,
       });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
-        throw new Error(`Error ${response.status}: ${errorText}`);
-      }
-      
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/parks"] });
