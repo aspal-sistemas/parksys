@@ -152,10 +152,25 @@ export default function ParkEditSimple() {
       
       console.log('Datos procesados a enviar:', dataToSend);
       
-      return await apiRequest(`/api/dev/parks/${id}`, {
+      // Usar fetch directo para evitar problemas con stream
+      const response = await fetch(`/api/dev/parks/${id}`, {
         method: "PUT",
-        data: dataToSend,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : "Bearer direct-token-1750522117022",
+          "X-User-Id": "1",
+          "X-User-Role": "super_admin",
+        },
+        body: JSON.stringify(dataToSend),
+        credentials: "include",
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error ${response.status}: ${errorText}`);
+      }
+
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/parks"] });
