@@ -43,6 +43,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import TreeSpeciesIcon from '@/components/ui/tree-species-icon';
 
 interface TreeSpecies {
   id: number;
@@ -53,6 +54,9 @@ interface TreeSpecies {
   growthRate: string;
   imageUrl: string;
   isEndangered: boolean;
+  iconType?: 'system' | 'custom';
+  customIconUrl?: string | null;
+  customPhotoUrl?: string | null;
 }
 
 interface PaginationInfo {
@@ -67,6 +71,7 @@ function TreeSpeciesCatalog() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const iconFileInputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [originFilter, setOriginFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -74,6 +79,10 @@ function TreeSpeciesCatalog() {
   const [sortOrder, setSortOrder] = useState('asc');
   const [csvPreview, setCsvPreview] = useState<any[]>([]);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isIconUploadDialogOpen, setIsIconUploadDialogOpen] = useState(false);
+  const [selectedIconFiles, setSelectedIconFiles] = useState<FileList | null>(null);
+  const [iconUploadFamily, setIconUploadFamily] = useState('general');
+  const [isUploading, setIsUploading] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['/api/tree-species', searchTerm, originFilter, currentPage, sortBy, sortOrder],
@@ -334,6 +343,84 @@ function TreeSpeciesCatalog() {
     reader.readAsText(file);
   };
 
+  // Manejar selección de archivos de iconos
+  const handleIconFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    // Verificar que sean archivos de imagen
+    const validFiles = Array.from(files).filter(file => {
+      const isValid = file.type.startsWith('image/') && 
+                     (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/svg+xml');
+      if (!isValid) {
+        toast({
+          title: "Archivo inválido",
+          description: `${file.name} no es un archivo de imagen válido`,
+          variant: "destructive",
+        });
+      }
+      return isValid;
+    });
+
+    if (validFiles.length > 0) {
+      const fileList = new DataTransfer();
+      validFiles.forEach(file => fileList.items.add(file));
+      setSelectedIconFiles(fileList.files);
+      setIsIconUploadDialogOpen(true);
+    }
+  };
+
+  // Mutación para subida masiva de iconos
+  const bulkIconUploadMutation = useMutation({
+    mutationFn: async ({ files, family }: { files: FileList, family: string }) => {
+      const formData = new FormData();
+      Array.from(files).forEach(file => {
+        formData.append('icons', file);
+      });
+      formData.append('family', family);
+
+      const response = await fetch('/api/tree-species/bulk-upload-icons', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error en la carga masiva');
+      }
+
+      return response.json();
+    },
+    onSuccess: (result) => {
+      toast({
+        title: "Carga masiva completada",
+        description: `${result.successCount} especies creadas/actualizadas exitosamente`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/tree-species'] });
+      setIsIconUploadDialogOpen(false);
+      setSelectedIconFiles(null);
+      setIconUploadFamily('general');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error en la carga masiva",
+        description: error.message || "Error al procesar los iconos",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Confirmar subida de iconos
+  const handleConfirmIconUpload = () => {
+    if (!selectedIconFiles || selectedIconFiles.length === 0) return;
+    
+    setIsUploading(true);
+    bulkIconUploadMutation.mutate({ 
+      files: selectedIconFiles, 
+      family: iconUploadFamily 
+    });
+  };
+
   const renderPagination = () => {
     if (!pagination || pagination.totalPages <= 1) return null;
     
@@ -425,6 +512,14 @@ function TreeSpeciesCatalog() {
                   <Upload className="mr-2 h-4 w-4" /> Importar CSV
                 </Button>
               </DialogTrigger>
+            
+            <Button
+              variant="outline"
+              className="border-purple-600 text-purple-600 hover:bg-purple-50"
+              onClick={() => iconFileInputRef.current?.click()}
+            >
+              <Upload className="mr-2 h-4 w-4" /> Subir Iconos
+            </Button>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Importar Especies desde CSV</DialogTitle>
@@ -494,6 +589,81 @@ function TreeSpeciesCatalog() {
           style={{ display: 'none' }}
           onChange={handleFileSelect}
         />
+
+        <input
+          ref={iconFileInputRef}
+          type="file"
+          accept=".png,.jpg,.jpeg,.svg"
+          multiple
+          style={{ display: 'none' }}
+          onChange={handleIconFileSelect}
+        />
+
+        {/* Diálogo para subida masiva de iconos */}
+        <Dialog open={isIconUploadDialogOpen} onOpenChange={setIsIconUploadDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Subir Iconos para Especies de Árboles</DialogTitle>
+              <DialogDescription>
+                Sube múltiples iconos para crear o actualizar especies de árboles automáticamente.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedIconFiles && (
+              <div className="space-y-4">
+                <div>
+                  <Label>Archivos seleccionados: {selectedIconFiles.length}</Label>
+                  <div className="mt-2 max-h-32 overflow-y-auto border rounded p-2">
+                    {Array.from(selectedIconFiles).map((file, index) => (
+                      <div key={index} className="text-sm text-gray-600">
+                        {file.name}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="family">Familia de árboles</Label>
+                  <Select value={iconUploadFamily} onValueChange={setIconUploadFamily}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una familia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="general">General</SelectItem>
+                      <SelectItem value="pinus">Pinus (Pinos)</SelectItem>
+                      <SelectItem value="quercus">Quercus (Robles)</SelectItem>
+                      <SelectItem value="ficus">Ficus</SelectItem>
+                      <SelectItem value="jacaranda">Jacaranda</SelectItem>
+                      <SelectItem value="fraxinus">Fraxinus (Fresnos)</SelectItem>
+                      <SelectItem value="eucalyptus">Eucalyptus</SelectItem>
+                      <SelectItem value="palmae">Palmae (Palmas)</SelectItem>
+                      <SelectItem value="citrus">Citrus (Cítricos)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsIconUploadDialogOpen(false);
+                      setSelectedIconFiles(null);
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleConfirmIconUpload}
+                    disabled={bulkIconUploadMutation.isPending}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    {bulkIconUploadMutation.isPending ? 'Subiendo...' : 'Subir Iconos'}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
         
         <Card className="mb-6">
           <CardHeader className="pb-3">
