@@ -777,7 +777,7 @@ function TreeSpeciesCatalog() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[50px]"></TableHead>
+                        <TableHead className="w-[60px]">Icono</TableHead>
                         <TableHead>Nombre Común</TableHead>
                         <TableHead>Nombre Científico</TableHead>
                         <TableHead>Familia</TableHead>
@@ -791,19 +791,15 @@ function TreeSpeciesCatalog() {
                       {species.map((species) => (
                         <TableRow key={species.id} className="cursor-pointer hover:bg-gray-50" onClick={() => handleViewDetails(species.id)}>
                           <TableCell>
-                            {species.imageUrl ? (
-                              <div className="h-10 w-10 rounded-full overflow-hidden">
-                                <img
-                                  src={species.imageUrl}
-                                  alt={species.commonName}
-                                  className="h-full w-full object-cover"
-                                />
-                              </div>
-                            ) : (
-                              <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                                <Leaf className="h-5 w-5 text-green-600" />
-                              </div>
-                            )}
+                            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-green-50">
+                              <TreeSpeciesIcon
+                                name={species.commonName}
+                                iconType={species.iconType || 'system'}
+                                customIconUrl={species.customIconUrl}
+                                size={32}
+                                className="text-green-600"
+                              />
+                            </div>
                           </TableCell>
                           <TableCell className="font-medium">{species.commonName}</TableCell>
                           <TableCell className="italic">{species.scientificName}</TableCell>
