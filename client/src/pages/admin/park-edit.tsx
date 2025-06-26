@@ -210,23 +210,13 @@ const AdminParkEdit: React.FC = () => {
       
       console.log('Iniciando mutación:', { endpoint, method, values });
       
-      try {
-        const response = await apiRequest(endpoint, {
-          method: method,
-          data: values,
-        });
-        
-        console.log('Respuesta de la API:', response);
-        
-        // Parseamos la respuesta JSON
-        const result = await response.json();
-        console.log('Datos parseados:', result);
-        
-        return result;
-      } catch (error) {
-        console.error('Error en la mutación:', error);
-        throw error;
-      }
+      const result = await apiRequest(endpoint, {
+        method: method,
+        data: values,
+      });
+      
+      console.log('Respuesta de la API:', result);
+      return result;
     },
     onSuccess: (data) => {
       console.log('Mutación exitosa:', data);
