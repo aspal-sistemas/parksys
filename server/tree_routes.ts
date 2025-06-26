@@ -542,8 +542,39 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         LIMIT ${limit} OFFSET ${offset}
       `));
       
+      // Mapear campos de snake_case a camelCase
+      const mappedData = result.rows.map((row: any) => ({
+        id: row.id,
+        commonName: row.common_name,
+        scientificName: row.scientific_name,
+        family: row.family,
+        origin: row.origin,
+        climateZone: row.climate_zone,
+        growthRate: row.growth_rate,
+        heightMature: row.height_mature,
+        canopyDiameter: row.canopy_diameter,
+        lifespan: row.lifespan,
+        imageUrl: row.image_url,
+        description: row.description,
+        maintenanceRequirements: row.maintenance_requirements,
+        waterRequirements: row.water_requirements,
+        sunRequirements: row.sun_requirements,
+        soilRequirements: row.soil_requirements,
+        ecologicalBenefits: row.ecological_benefits,
+        ornamentalValue: row.ornamental_value,
+        commonUses: row.common_uses,
+        isEndangered: row.is_endangered,
+        iconColor: row.icon_color,
+        iconType: row.icon_type,
+        customIconUrl: row.custom_icon_url,
+        photoUrl: row.photo_url,
+        photoCaption: row.photo_caption,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }));
+      
       res.json({
-        data: result.rows,
+        data: mappedData,
         pagination: {
           total,
           page,

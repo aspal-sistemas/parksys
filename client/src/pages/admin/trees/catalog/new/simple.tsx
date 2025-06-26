@@ -50,6 +50,9 @@ const treeSpeciesSchema = z.object({
   ecologicalBenefits: z.string().optional(),
   ornamentalValue: z.string().optional(),
   commonUses: z.string().optional(),
+  // Campos para iconos personalizados
+  iconType: z.string().optional(),
+  customIconUrl: z.string().optional(),
 });
 
 type TreeSpeciesFormValues = z.infer<typeof treeSpeciesSchema>;
@@ -142,6 +145,9 @@ function SimpleNewTreeSpecies() {
         const data = await response.json();
         setUploadedImageUrl(data.url);
         form.setValue('imageUrl', data.url);
+        // También establecer como icono personalizado
+        form.setValue('customIconUrl', data.url);
+        form.setValue('iconType', 'custom');
         toast({
           title: "Foto subida",
           description: "La foto se ha subido correctamente.",
