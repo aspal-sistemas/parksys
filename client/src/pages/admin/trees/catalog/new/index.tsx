@@ -63,15 +63,15 @@ const treeSpeciesSchema = z.object({
   }).max(1000, {
     message: 'La descripción no debe exceder los 1000 caracteres.'
   }),
-  benefits: z.string().optional(),
-  careRequirements: z.string().optional(),
+  ecologicalBenefits: z.string().optional(),
+  maintenanceRequirements: z.string().optional(),
   lifespan: z.string().optional(),
-  canopyType: z.string().optional(),
-  soilPreference: z.string().optional(),
+  climateZone: z.string().optional(),
+  soilRequirements: z.string().optional(),
   waterRequirements: z.string().optional(),
-  sunExposure: z.string().optional(),
-  pestDiseaseResistance: z.string().optional(),
-  notes: z.string().optional(),
+  sunRequirements: z.string().optional(),
+  ornamentalValue: z.string().optional(),
+  commonUses: z.string().optional(),
 });
 
 type TreeSpeciesFormValues = z.infer<typeof treeSpeciesSchema>;
@@ -94,15 +94,15 @@ function NewTreeSpecies() {
       imageUrl: '',
       isEndangered: false,
       description: '',
-      benefits: '',
-      careRequirements: '',
+      ecologicalBenefits: '',
+      maintenanceRequirements: '',
       lifespan: '',
-      canopyType: '',
-      soilPreference: '',
+      climateZone: '',
+      soilRequirements: '',
       waterRequirements: '',
-      sunExposure: '',
-      pestDiseaseResistance: '',
-      notes: '',
+      sunRequirements: '',
+      ornamentalValue: '',
+      commonUses: '',
     },
   });
 
@@ -530,7 +530,7 @@ function NewTreeSpecies() {
                     
                     <FormField
                       control={form.control}
-                      name="benefits"
+                      name="ecologicalBenefits"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Beneficios</FormLabel>
@@ -553,15 +553,15 @@ function NewTreeSpecies() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name="canopyType"
+                        name="climateZone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Tipo de Dosel</FormLabel>
+                            <FormLabel>Zona Climática</FormLabel>
                             <FormControl>
-                              <Input placeholder="Ej. Extendido, columnar, cónico..." {...field} value={field.value || ''} />
+                              <Input placeholder="Ej. Tropical, Templada, Seca..." {...field} value={field.value || ''} />
                             </FormControl>
                             <FormDescription>
-                              Forma y características del dosel o copa.
+                              Zona climática donde mejor se desarrolla.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -570,7 +570,7 @@ function NewTreeSpecies() {
                       
                       <FormField
                         control={form.control}
-                        name="notes"
+                        name="commonUses"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Notas Adicionales</FormLabel>
