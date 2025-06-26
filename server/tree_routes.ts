@@ -706,7 +706,39 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         return res.status(404).json({ message: "Especie de árbol no encontrada" });
       }
       
-      res.json(result.rows[0]);
+      // Mapear campos de snake_case a camelCase
+      const row = result.rows[0] as any;
+      const mappedData = {
+        id: row.id,
+        commonName: row.common_name,
+        scientificName: row.scientific_name,
+        family: row.family,
+        origin: row.origin,
+        climateZone: row.climate_zone,
+        growthRate: row.growth_rate,
+        heightMature: row.height_mature,
+        canopyDiameter: row.canopy_diameter,
+        lifespan: row.lifespan,
+        imageUrl: row.image_url,
+        description: row.description,
+        maintenanceRequirements: row.maintenance_requirements,
+        waterRequirements: row.water_requirements,
+        sunRequirements: row.sun_requirements,
+        soilRequirements: row.soil_requirements,
+        ecologicalBenefits: row.ecological_benefits,
+        ornamentalValue: row.ornamental_value,
+        commonUses: row.common_uses,
+        isEndangered: row.is_endangered,
+        iconColor: row.icon_color,
+        iconType: row.icon_type,
+        customIconUrl: row.custom_icon_url,
+        photoUrl: row.photo_url,
+        photoCaption: row.photo_caption,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      };
+      
+      res.json(mappedData);
     } catch (error) {
       console.error("Error al obtener especie de árbol:", error);
       res.status(500).json({ message: "Error al obtener especie de árbol" });

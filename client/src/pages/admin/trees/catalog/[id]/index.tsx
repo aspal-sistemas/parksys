@@ -41,19 +41,26 @@ interface TreeSpecies {
   scientificName: string;
   family: string;
   origin: string;
+  climateZone: string | null;
   growthRate: string;
+  heightMature: number | null;
+  canopyDiameter: number | null;
+  lifespan: number | null;
   imageUrl: string | null;
-  isEndangered: boolean;
   description: string;
-  benefits: string | null;
-  careRequirements: string | null;
-  lifespan: string | null;
-  canopyType: string | null;
-  soilPreference: string | null;
+  maintenanceRequirements: string | null;
   waterRequirements: string | null;
-  sunExposure: string | null;
-  pestDiseaseResistance: string | null;
-  notes: string | null;
+  sunRequirements: string | null;
+  soilRequirements: string | null;
+  ecologicalBenefits: string | null;
+  ornamentalValue: string | null;
+  commonUses: string | null;
+  isEndangered: boolean;
+  iconColor: string | null;
+  iconType: string | null;
+  customIconUrl: string | null;
+  photoUrl: string | null;
+  photoCaption: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -250,7 +257,7 @@ function TreeSpeciesDetail() {
                       </div>
                       <div>
                         <span className="text-sm text-gray-500">Esperanza de Vida:</span>
-                        <p className="font-medium">{species?.lifespan || 'No especificada'}</p>
+                        <p className="font-medium">{species?.lifespan ? `${species.lifespan} años` : 'No especificada'}</p>
                       </div>
                     </div>
                   </div>
@@ -264,9 +271,9 @@ function TreeSpeciesDetail() {
                     <Separator className="my-6" />
                     
                     <h3 className="text-lg font-semibold mb-2 flex items-center">
-                      <Leaf className="mr-2 h-5 w-5 text-green-600" /> Beneficios
+                      <Leaf className="mr-2 h-5 w-5 text-green-600" /> Beneficios Ecológicos
                     </h3>
-                    {renderDescription(species?.benefits)}
+                    {renderDescription(species?.ecologicalBenefits)}
                     
                     {species?.notes && (
                       <>
@@ -327,8 +334,8 @@ function TreeSpeciesDetail() {
                     
                     <div className="space-y-4">
                       {renderDetailItem(
-                        "Tipo de Dosel/Copa", 
-                        species?.canopyType, 
+                        "Diámetro de Copa", 
+                        species?.canopyDiameter ? `${species.canopyDiameter} metros` : null, 
                         <TreePine className="h-5 w-5" />
                       )}
                       
@@ -382,15 +389,15 @@ function TreeSpeciesDetail() {
                     <h3 className="text-lg font-semibold mb-4 text-green-700">Beneficios</h3>
                     
                     <div className="p-4 bg-green-50 rounded-md border border-green-100">
-                      <p className="mb-2 font-medium text-green-800">Beneficios Principales</p>
-                      {species?.benefits ? (
+                      <p className="mb-2 font-medium text-green-800">Beneficios Ecológicos</p>
+                      {species?.ecologicalBenefits ? (
                         <div className="whitespace-pre-line text-green-700">
-                          {species.benefits.split('\n').map((paragraph, i) => (
+                          {species.ecologicalBenefits.split('\n').map((paragraph, i) => (
                             <p key={i} className="mb-2">{paragraph}</p>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-gray-500 italic">No se ha proporcionado información sobre los beneficios de esta especie.</p>
+                        <p className="text-gray-500 italic">No se ha proporcionado información sobre los beneficios ecológicos de esta especie.</p>
                       )}
                     </div>
                   </div>
@@ -424,8 +431,8 @@ function TreeSpeciesDetail() {
                     
                     <div className="space-y-4">
                       {renderDetailItem(
-                        "Preferencia de Suelo", 
-                        species?.soilPreference, 
+                        "Requerimientos de Suelo", 
+                        species?.soilRequirements, 
                         <Shovel className="h-5 w-5" />
                       )}
                       
@@ -436,14 +443,14 @@ function TreeSpeciesDetail() {
                       )}
                       
                       {renderDetailItem(
-                        "Exposición al Sol", 
-                        species?.sunExposure, 
+                        "Requerimientos de Sol", 
+                        species?.sunRequirements, 
                         <Sun className="h-5 w-5" />
                       )}
                       
                       {renderDetailItem(
-                        "Resistencia a Plagas/Enfermedades", 
-                        species?.pestDiseaseResistance, 
+                        "Zona Climática", 
+                        species?.climateZone, 
                         <Bug className="h-5 w-5" />
                       )}
                     </div>
