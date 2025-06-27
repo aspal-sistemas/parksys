@@ -257,7 +257,7 @@ export default function InstructorsListPage() {
             </p>
           </div>
           <div className="flex space-x-2">
-            <Button onClick={() => setLocation('/admin/users')}>
+            <Button onClick={() => setLocation('/admin/activities/instructors/new')}>
               <Plus className="mr-2 h-4 w-4" />
               Nuevo Instructor
             </Button>
