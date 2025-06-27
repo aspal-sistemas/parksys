@@ -2359,23 +2359,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let parsedStartDate: Date;
       let parsedEndDate: Date | undefined;
       
+      console.log("Procesando fechas - fechaInicio:", fechaInicio, "tipo:", typeof fechaInicio);
+      console.log("Procesando fechas - fechaFin:", fechaFin, "tipo:", typeof fechaFin);
+      
       try {
-        parsedStartDate = new Date(fechaInicio);
+        // Si viene como string ISO, parsearlo; si ya es Date, usarlo directamente
+        parsedStartDate = typeof fechaInicio === 'string' ? new Date(fechaInicio) : fechaInicio;
         if (fechaFin) {
-          parsedEndDate = new Date(fechaFin);
+          parsedEndDate = typeof fechaFin === 'string' ? new Date(fechaFin) : fechaFin;
         }
+        
+        console.log("Fechas parseadas - parsedStartDate:", parsedStartDate);
+        console.log("Fechas parseadas - parsedEndDate:", parsedEndDate);
+        
       } catch (e) {
         console.error("Error al convertir fechas:", e);
         return res.status(400).json({ message: "Formato de fecha inválido" });
       }
       
       // Verificar que la fecha de inicio es válida
-      if (isNaN(parsedStartDate.getTime())) {
+      if (!parsedStartDate || isNaN(parsedStartDate.getTime())) {
+        console.error("Fecha de inicio inválida:", parsedStartDate);
         return res.status(400).json({ message: "La fecha de inicio no es válida" });
       }
       
       // Verificar que la fecha de fin es válida (si existe)
       if (parsedEndDate && isNaN(parsedEndDate.getTime())) {
+        console.error("Fecha de fin inválida:", parsedEndDate);
         return res.status(400).json({ message: "La fecha de fin no es válida" });
       }
       
