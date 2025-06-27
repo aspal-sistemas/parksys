@@ -759,11 +759,8 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         const row = data[i];
         
         try {
-          console.log(`🌳 Procesando fila ${i + 1}:`, row);
-          
           // Detectar formato: nuevo (nombre_comun) vs viejo (family)
           const isNewFormat = row.nombre_comun !== undefined;
-          console.log(`📝 Formato detectado: ${isNewFormat ? 'nuevo' : 'viejo'}`);
           
           let insertData;
           if (isNewFormat) {
@@ -779,7 +776,12 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
               maintenance_requirements: row.requisitos_mantenimiento || null,
               ecological_benefits: row.beneficios_ecologicos || null,
               image_url: row.url_imagen || null,
-              lifespan: row.esperanza_vida ? parseInt(row.esperanza_vida) : null,
+              lifespan: (() => {
+                if (!row.esperanza_vida) return null;
+                const lifespanStr = row.esperanza_vida.toString();
+                const match = lifespanStr.match(/(\d+)/);
+                return match ? parseInt(match[1]) : null;
+              })(),
               climate_zone: row.zona_climatica || null,
               soil_requirements: row.requisitos_suelo || null,
               water_requirements: row.requisitos_agua || null,
@@ -813,8 +815,6 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
             };
           }
 
-          console.log(`💾 Insertando datos:`, insertData);
-          
           const result = await db.execute(sql`
             INSERT INTO tree_species (
               common_name, scientific_name, family, origin, growth_rate,
@@ -833,7 +833,6 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
             )
           `);
 
-          console.log(`✅ Fila ${i + 1} insertada exitosamente`, result);
           imported++;
         } catch (error) {
           errors.push(`Fila ${i + 1}: ${error instanceof Error ? error.message : 'Error desconocido'}`);
