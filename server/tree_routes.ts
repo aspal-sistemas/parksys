@@ -673,22 +673,53 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
 
       for (const row of data) {
         try {
-          // Validar datos requeridos
-          if (!row.commonName || !row.scientificName) {
-            errors.push(`Fila ${imported + 1}: Nombre común y científico son requeridos`);
+          // Auto-generar nombres si no están presentes
+          let commonName = row.commonName;
+          let scientificName = row.scientificName;
+          
+          // Si faltan nombres, crear automáticamente basados en familia y origen
+          if (!commonName && row.family) {
+            commonName = `Especie de ${row.family}`;
+          }
+          if (!scientificName && row.family) {
+            // Crear un nombre científico genérico
+            const familyName = row.family.toLowerCase();
+            scientificName = `${familyName.charAt(0).toUpperCase()}${familyName.slice(1)} sp.`;
+          }
+          
+          // Validar que al menos tengamos información básica
+          if (!commonName && !scientificName && !row.family) {
+            errors.push(`Fila ${imported + 1}: Se requiere al menos familia, nombre común o científico`);
             continue;
           }
+          
+          // Usar valores por defecto si aún faltan
+          commonName = commonName || 'Especie no identificada';
+          scientificName = scientificName || 'Species sp.';
 
-          // Verificar si la especie ya existe
-          const existing = await db.execute(sql`
-            SELECT id FROM tree_species 
-            WHERE LOWER(scientific_name) = LOWER(${row.scientificName})
-          `);
+          // Verificar si la especie ya existe (solo si tenemos nombre científico específico)
+          if (scientificName && !scientificName.includes('sp.')) {
+            const existing = await db.execute(sql`
+              SELECT id FROM tree_species 
+              WHERE LOWER(scientific_name) = LOWER(${scientificName})
+            `);
 
-          if (existing.rows.length > 0) {
-            errors.push(`Fila ${imported + 1}: La especie "${row.scientificName}" ya existe`);
-            continue;
+            if (existing.rows.length > 0) {
+              errors.push(`Fila ${imported + 1}: La especie "${scientificName}" ya existe`);
+              continue;
+            }
           }
+
+          console.log(`Processing row ${imported + 1}:`, {
+            originalRow: row,
+            processedData: {
+              commonName,
+              scientificName,
+              family: row.family,
+              origin: row.origin,
+              isEndangered: row.isEndangered
+            }
+          });
 
           // Insertar nueva especie
           await db.execute(sql`
@@ -696,7 +727,7 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
               common_name, scientific_name, family, origin, growth_rate,
               is_endangered, description, care_instructions, benefits, image_url
             ) VALUES (
-              ${row.commonName}, ${row.scientificName}, 
+              ${commonName}, ${scientificName}, 
               ${row.family || 'No especificada'}, ${row.origin || 'No especificado'},
               ${row.growthRate || 'Medio'}, ${row.isEndangered === 'Sí' || row.isEndangered === true},
               ${row.description || null}, ${row.careInstructions || null},

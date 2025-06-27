@@ -313,13 +313,17 @@ function TreeSpeciesCatalog() {
         // Map CSV headers to expected fields
         headers.forEach((header, i) => {
           const value = values[i] || '';
-          switch (header.toLowerCase()) {
-            case 'nombre común':
-            case 'common_name':
+          const normalizedHeader = header.toLowerCase().replace(/[_\s]/g, '');
+          
+          switch (normalizedHeader) {
+            case 'nombrecomun':
+            case 'nombrecomún':
+            case 'commonname':
               row.commonName = value;
               break;
-            case 'nombre científico':
-            case 'scientific_name':
+            case 'nombrecientifico':
+            case 'nombrecientífico':
+            case 'scientificname':
               row.scientificName = value;
               break;
             case 'familia':
@@ -330,28 +334,33 @@ function TreeSpeciesCatalog() {
             case 'origin':
               row.origin = value;
               break;
-            case 'ritmo de crecimiento':
-            case 'growth_rate':
+            case 'ritmodecrecimiento':
+            case 'ritmocrecimiento':
+            case 'growthrate':
               row.growthRate = value;
               break;
             case 'amenazada':
-            case 'is_endangered':
-              row.isEndangered = value.toLowerCase() === 'sí' || value.toLowerCase() === 'true';
+            case 'isendangered':
+            case 'endangered':
+              row.isEndangered = value.toLowerCase() === 'sí' || value.toLowerCase() === 'true' || value.toLowerCase() === 'yes';
               break;
             case 'descripción':
+            case 'descripcion':
             case 'description':
               row.description = value;
               break;
-            case 'instrucciones de cuidado':
-            case 'care_instructions':
+            case 'instruccionesdecuidado':
+            case 'careinstructions':
               row.careInstructions = value;
               break;
             case 'beneficios':
+            case 'beneficiosecologicos':
             case 'benefits':
               row.benefits = value;
               break;
-            case 'url de imagen':
-            case 'image_url':
+            case 'urldeimagen':
+            case 'imageurl':
+            case 'urlimagen':
               row.imageUrl = value;
               break;
           }
