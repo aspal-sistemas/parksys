@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { AdminLayout } from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,7 @@ interface InstructorFormData {
 }
 
 export default function NewInstructorPage() {
-  const [navigate] = useNavigate();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
@@ -124,7 +124,7 @@ export default function NewInstructorPage() {
       queryClient.invalidateQueries({ queryKey: ['/public-api/instructors/public'] });
       
       // Navegar de vuelta a la lista
-      navigate('/admin/activities/instructors');
+      setLocation('/admin/activities/instructors');
     },
     onError: (error) => {
       toast({
@@ -525,7 +525,7 @@ export default function NewInstructorPage() {
             <Button 
               type="button" 
               variant="outline" 
-              onClick={() => navigate('/admin/activities/instructors')}
+              onClick={() => setLocation('/admin/activities/instructors')}
             >
               Cancelar
             </Button>
