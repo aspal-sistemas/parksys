@@ -29,9 +29,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import AmenityIcon from '@/components/ui/amenity-icon';
 import TreeSpeciesIcon from '@/components/ui/tree-species-icon';
 import TreePhotoViewer from '@/components/TreePhotoViewer';
+import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
 
 function ParkLandingPage() {
   const { slug } = useParams<{ slug: string }>();
