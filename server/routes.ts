@@ -2337,6 +2337,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/activities", isAuthenticated, async (req: Request, res: Response) => {
     try {
       console.log("Datos recibidos en POST /api/activities:", req.body);
+      console.log("=== DEBUGGING COMPLETO ===");
+      console.log("Body JSON:", JSON.stringify(req.body, null, 2));
       
       // Log de depuración más detallado
       console.log("fechaInicio recibido:", req.body.fechaInicio, "tipo:", typeof req.body.fechaInicio);
@@ -2422,6 +2424,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       console.log("Datos finales para validación Zod:", activityData);
+      console.log("Intentando crear actividad en base de datos...");
       
       console.log("Datos procesados para creación de actividad:", activityData);
       console.log("parsedStartDate:", parsedStartDate, "isValid:", !isNaN(parsedStartDate.getTime()));
