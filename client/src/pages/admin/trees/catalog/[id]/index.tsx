@@ -229,11 +229,11 @@ function TreeSpeciesDetail() {
                       </div>
                       <div>
                         <span className="text-sm text-gray-500">Origen:</span>
-                        <p>
+                        <div>
                           <Badge variant={species?.origin === 'Nativo' ? 'default' : 'outline'}>
                             {species?.origin}
                           </Badge>
-                        </p>
+                        </div>
                       </div>
                       <div>
                         <span className="text-sm text-gray-500">Tasa de Crecimiento:</span>
@@ -241,7 +241,7 @@ function TreeSpeciesDetail() {
                       </div>
                       <div>
                         <span className="text-sm text-gray-500">Estado de Conservación:</span>
-                        <p>
+                        <div>
                           {species?.isEndangered ? (
                             <Badge variant="destructive" className="flex items-center gap-1">
                               <CircleAlert className="h-3 w-3" /> Amenazada
@@ -251,7 +251,7 @@ function TreeSpeciesDetail() {
                               <CircleCheck className="h-3 w-3" /> Normal
                             </Badge>
                           )}
-                        </p>
+                        </div>
                       </div>
                       <div>
                         <span className="text-sm text-gray-500">Esperanza de Vida:</span>
