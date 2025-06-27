@@ -37,6 +37,7 @@ import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluat
 
 function ParkLandingPage() {
   const { slug } = useParams<{ slug: string }>();
+  const [selectedInstructor, setSelectedInstructor] = React.useState<any>(null);
   
   // Extraer ID del slug (formato: nombre-parque-id)
   const parkId = slug?.split('-').pop();
@@ -792,6 +793,38 @@ function ParkLandingPage() {
                                   </span>
                                 </div>
                               )}
+                              
+                              {/* Botón de evaluación */}
+                              <div className="mt-3">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      className="text-xs border-green-300 text-green-700 hover:bg-green-50"
+                                      onClick={() => setSelectedInstructor(instructor)}
+                                    >
+                                      <MessageSquare className="h-3 w-3 mr-1" />
+                                      Evalúa a este instructor
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                                    <DialogHeader>
+                                      <DialogTitle>Evaluar Instructor</DialogTitle>
+                                      <DialogDescription>
+                                        Comparte tu experiencia con {instructor.fullName} para ayudar a otros visitantes.
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    <PublicInstructorEvaluationForm
+                                      instructorId={instructor.id}
+                                      instructorName={instructor.fullName}
+                                      onSuccess={() => {
+                                        // El dialog se cerrará automáticamente por el estado del formulario
+                                      }}
+                                    />
+                                  </DialogContent>
+                                </Dialog>
+                              </div>
                             </div>
                           </div>
                         </div>
