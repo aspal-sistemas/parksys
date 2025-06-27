@@ -111,7 +111,10 @@ export default function InstructorsManagementPage() {
     }
   };
 
-  const formatSpecialties = (specialties: string[]) => {
+  const formatSpecialties = (specialties: string[] | null | undefined) => {
+    if (!specialties || !Array.isArray(specialties)) {
+      return <Badge variant="outline" className="text-gray-500">Sin especialidades</Badge>;
+    }
     return specialties.slice(0, 3).map((specialty, index) => (
       <Badge key={index} variant="secondary" className="bg-[#00a587]/10 text-[#00a587] mr-1 mb-1">
         {specialty}
@@ -255,12 +258,12 @@ export default function InstructorsManagementPage() {
                         <Avatar>
                           <AvatarImage src={instructor.profileImageUrl} />
                           <AvatarFallback>
-                            {instructor.firstName[0]}{instructor.lastName[0]}
+                            {instructor.firstName?.[0] || 'I'}{instructor.lastName?.[0] || 'N'}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="font-medium">
-                            {instructor.firstName} {instructor.lastName}
+                            {instructor.firstName || 'Sin nombre'} {instructor.lastName || ''}
                           </div>
                           <div className="text-sm text-gray-500">
                             {instructor.activitiesCount || 0} actividades
