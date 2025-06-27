@@ -834,42 +834,7 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
     }
   });
 
-  // Eliminar especie de árbol (requiere autenticación)
-  apiRouter.delete("/tree-species/:id", isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const id = Number(req.params.id);
-      
-      // Verificar si la especie tiene árboles asociados
-      const treeCount = await db.execute(sql`
-        SELECT COUNT(*) as count FROM trees
-        WHERE species_id = ${id}
-      `);
-      
-      if (treeCount.rows[0]?.count > 0) {
-        return res.status(400).json({ 
-          message: "No se puede eliminar la especie porque tiene árboles asociados" 
-        });
-      }
-      
-      // Eliminar la especie
-      const result = await db.execute(sql`
-        DELETE FROM tree_species
-        WHERE id = ${id}
-        RETURNING *
-      `);
-      
-      if (!result.rows || result.rows.length === 0) {
-        return res.status(404).json({ message: "Especie de árbol no encontrada" });
-      }
-      
-      res.json({ message: "Especie de árbol eliminada correctamente" });
-    } catch (error) {
-      console.error("Error al eliminar especie de árbol:", error);
-      res.status(500).json({ message: "Error al eliminar especie de árbol" });
-    }
-  });
-
-  // Eliminar todas las especies de árboles (requiere autenticación)
+  // Eliminar todas las especies de árboles (requiere autenticación) - DEBE IR ANTES DEL :id
   apiRouter.delete("/tree-species/delete-all", isAuthenticated, async (req: Request, res: Response) => {
     try {
       // Verificar si hay árboles registrados
@@ -902,6 +867,48 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
     } catch (error) {
       console.error("Error al limpiar catálogo:", error);
       res.status(500).json({ message: "Error al eliminar todas las especies" });
+    }
+  });
+
+  // Eliminar especie de árbol individual (requiere autenticación)
+  apiRouter.delete("/tree-species/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      
+      // Validar que el ID sea un número válido
+      if (isNaN(id)) {
+        return res.status(400).json({ 
+          message: "ID de especie inválido" 
+        });
+      }
+      
+      // Verificar si la especie tiene árboles asociados
+      const treeCount = await db.execute(sql`
+        SELECT COUNT(*) as count FROM trees
+        WHERE species_id = ${id}
+      `);
+      
+      if (treeCount.rows[0]?.count > 0) {
+        return res.status(400).json({ 
+          message: "No se puede eliminar la especie porque tiene árboles asociados" 
+        });
+      }
+      
+      // Eliminar la especie
+      const result = await db.execute(sql`
+        DELETE FROM tree_species
+        WHERE id = ${id}
+        RETURNING *
+      `);
+      
+      if (!result.rows || result.rows.length === 0) {
+        return res.status(404).json({ message: "Especie de árbol no encontrada" });
+      }
+      
+      res.json({ message: "Especie de árbol eliminada correctamente" });
+    } catch (error) {
+      console.error("Error al eliminar especie de árbol:", error);
+      res.status(500).json({ message: "Error al eliminar especie de árbol" });
     }
   });
 
