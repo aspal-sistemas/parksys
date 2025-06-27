@@ -8,6 +8,7 @@ import { ArrowLeft, Images, MapPin, Calendar, Users, TreePine, Wrench, AlertTria
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import ParkMultimediaManager from "@/components/ParkMultimediaManager";
 import ParkAmenitiesManager from "@/components/ParkAmenitiesManager";
+import ParkTreeSpeciesManager from "@/components/ParkTreeSpeciesManager";
 
 export default function ParkManage() {
   const { id } = useParams();
@@ -172,16 +173,16 @@ export default function ParkManage() {
             <TabsContent value="arboles" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Gestión de Árboles</CardTitle>
+                  <CardTitle className="text-2xl text-green-600 flex items-center gap-2">
+                    <TreePine className="h-6 w-6" />
+                    Gestión de Especies Arbóreas del Parque
+                  </CardTitle>
                   <CardDescription>
-                    Administra el inventario de árboles del parque.
+                    Administra las especies arbóreas asignadas al parque. Puedes seleccionar especies del catálogo y configurar detalles de plantación.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8 text-gray-500">
-                    <TreePine className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p>Funcionalidad de gestión de árboles próximamente</p>
-                  </div>
+                  <ParkTreeSpeciesManager parkId={parseInt(id!)} />
                 </CardContent>
               </Card>
             </TabsContent>

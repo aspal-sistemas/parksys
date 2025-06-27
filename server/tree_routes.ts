@@ -1172,4 +1172,148 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
       res.status(500).json({ error: "Error al procesar la carga masiva" });
     }
   });
+
+  // ============== RUTAS PARA GESTIÓN DE ESPECIES ARBÓREAS EN PARQUES ==============
+
+  // Obtener especies asignadas a un parque
+  apiRouter.get("/parks/:id/tree-species", async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.id);
+      
+      const result = await db.execute(sql`
+        SELECT 
+          pts.id,
+          pts.park_id as "parkId",
+          pts.species_id as "speciesId",
+          pts.recommended_quantity as "recommendedQuantity",
+          pts.current_quantity as "currentQuantity",
+          pts.planting_zone as "plantingZone",
+          pts.notes,
+          pts.status,
+          pts.created_at as "createdAt",
+          pts.updated_at as "updatedAt",
+          ts.common_name as "commonName",
+          ts.scientific_name as "scientificName",
+          ts.family,
+          ts.origin,
+          ts.is_endangered as "isEndangered",
+          ts.icon_type as "iconType",
+          ts.custom_icon_url as "customIconUrl"
+        FROM park_tree_species pts
+        JOIN tree_species ts ON pts.species_id = ts.id
+        WHERE pts.park_id = ${parkId}
+        ORDER BY ts.common_name
+      `);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error("Error al obtener especies del parque:", error);
+      res.status(500).json({ error: "Error al obtener especies del parque" });
+    }
+  });
+
+  // Asignar especie a un parque
+  apiRouter.post("/parks/:id/tree-species", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.id);
+      const { speciesId, recommendedQuantity, currentQuantity, plantingZone, notes, status } = req.body;
+
+      // Verificar que el parque existe
+      const parkExists = await db.execute(sql`SELECT id FROM parks WHERE id = ${parkId}`);
+      if (!parkExists.rows || parkExists.rows.length === 0) {
+        return res.status(404).json({ error: "Parque no encontrado" });
+      }
+
+      // Verificar que la especie existe
+      const speciesExists = await db.execute(sql`SELECT id FROM tree_species WHERE id = ${speciesId}`);
+      if (!speciesExists.rows || speciesExists.rows.length === 0) {
+        return res.status(404).json({ error: "Especie no encontrada" });
+      }
+
+      // Verificar que no esté ya asignada
+      const existingAssignment = await db.execute(sql`
+        SELECT id FROM park_tree_species 
+        WHERE park_id = ${parkId} AND species_id = ${speciesId}
+      `);
+      if (existingAssignment.rows && existingAssignment.rows.length > 0) {
+        return res.status(400).json({ error: "Esta especie ya está asignada al parque" });
+      }
+
+      // Crear la asignación
+      const result = await db.execute(sql`
+        INSERT INTO park_tree_species (
+          park_id, species_id, recommended_quantity, current_quantity, 
+          planting_zone, notes, status, created_at, updated_at
+        ) VALUES (
+          ${parkId}, ${speciesId}, ${recommendedQuantity || null}, ${currentQuantity || 0}, 
+          ${plantingZone || null}, ${notes || null}, ${status || 'planificado'}, 
+          NOW(), NOW()
+        ) RETURNING id
+      `);
+
+      res.status(201).json({ 
+        message: "Especie asignada al parque correctamente",
+        id: result.rows[0]?.id 
+      });
+    } catch (error) {
+      console.error("Error al asignar especie al parque:", error);
+      res.status(500).json({ error: "Error al asignar especie al parque" });
+    }
+  });
+
+  // Actualizar asignación de especie
+  apiRouter.put("/park-tree-species/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const assignmentId = parseInt(req.params.id);
+      const { recommendedQuantity, currentQuantity, plantingZone, notes, status } = req.body;
+
+      // Verificar que la asignación existe
+      const existingAssignment = await db.execute(sql`
+        SELECT id FROM park_tree_species WHERE id = ${assignmentId}
+      `);
+      if (!existingAssignment.rows || existingAssignment.rows.length === 0) {
+        return res.status(404).json({ error: "Asignación no encontrada" });
+      }
+
+      // Actualizar la asignación
+      await db.execute(sql`
+        UPDATE park_tree_species SET
+          recommended_quantity = ${recommendedQuantity || null},
+          current_quantity = ${currentQuantity || 0},
+          planting_zone = ${plantingZone || null},
+          notes = ${notes || null},
+          status = ${status || 'planificado'},
+          updated_at = NOW()
+        WHERE id = ${assignmentId}
+      `);
+
+      res.json({ message: "Asignación actualizada correctamente" });
+    } catch (error) {
+      console.error("Error al actualizar asignación:", error);
+      res.status(500).json({ error: "Error al actualizar asignación" });
+    }
+  });
+
+  // Eliminar asignación de especie
+  apiRouter.delete("/park-tree-species/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const assignmentId = parseInt(req.params.id);
+
+      // Verificar que la asignación existe
+      const existingAssignment = await db.execute(sql`
+        SELECT id FROM park_tree_species WHERE id = ${assignmentId}
+      `);
+      if (!existingAssignment.rows || existingAssignment.rows.length === 0) {
+        return res.status(404).json({ error: "Asignación no encontrada" });
+      }
+
+      // Eliminar la asignación
+      await db.execute(sql`DELETE FROM park_tree_species WHERE id = ${assignmentId}`);
+
+      res.json({ message: "Especie removida del parque correctamente" });
+    } catch (error) {
+      console.error("Error al remover asignación:", error);
+      res.status(500).json({ error: "Error al remover asignación" });
+    }
+  });
 }
