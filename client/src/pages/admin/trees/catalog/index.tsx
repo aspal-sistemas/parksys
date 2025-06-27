@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import AdminLayout from '@/components/AdminLayout';
-import { Leaf, Search, Plus, TreePine, Filter, CircleCheck, CircleAlert, Eye, Download, Upload, FileSpreadsheet } from 'lucide-react';
+import { Leaf, Search, Plus, TreePine, Filter, CircleCheck, CircleAlert, Eye, Download, Upload, FileSpreadsheet, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -419,6 +419,36 @@ function TreeSpeciesCatalog() {
       files: selectedIconFiles, 
       family: iconUploadFamily 
     });
+  };
+
+  // Mutación para eliminar especie
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest(`/api/tree-species/${id}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: (response) => {
+      toast({
+        title: "Especie eliminada",
+        description: response.message || "La especie ha sido eliminada correctamente",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/tree-species'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al eliminar",
+        description: error.message || "No se pudo eliminar la especie",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Manejar eliminación con confirmación
+  const handleDelete = (species: TreeSpecies) => {
+    if (window.confirm(`¿Estás seguro de que deseas eliminar la especie "${species.commonName}"?\n\nEsta acción no se puede deshacer.`)) {
+      deleteMutation.mutate(species.id);
+    }
   };
 
   const renderPagination = () => {
@@ -822,17 +852,32 @@ function TreeSpeciesCatalog() {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewDetails(species.id);
-                              }}
-                              className="text-green-600 hover:text-green-800 hover:bg-green-50"
-                            >
-                              <Eye className="h-4 w-4 mr-1" /> Ver
-                            </Button>
+                            <div className="flex gap-2 justify-end">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewDetails(species.id);
+                                }}
+                                className="text-green-600 hover:text-green-800 hover:bg-green-50"
+                              >
+                                <Eye className="h-4 w-4 mr-1" /> Ver
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(species);
+                                }}
+                                className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                                disabled={deleteMutation.isPending}
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" /> 
+                                {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
