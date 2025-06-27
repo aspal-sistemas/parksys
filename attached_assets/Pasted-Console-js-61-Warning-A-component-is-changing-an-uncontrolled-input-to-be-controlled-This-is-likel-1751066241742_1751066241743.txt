@@ -1,0 +1,37 @@
+Console.js:61 Warning: A component is changing an uncontrolled input to be controlled. This is likely caused by the value changing from undefined to a defined value, which should not happen. Decide between using a controlled or uncontrolled input element for the lifetime of the component. More info: https://reactjs.org/link/controlled-components
+    at input
+    at _c (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/ui/input.tsx:20:11)
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-GXYGOJMY.js?v=a039f427:79:13
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-GXYGOJMY.js?v=a039f427:56:13
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/ui/form.tsx:130:9
+    at div
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/ui/form.tsx:72:6
+    at Controller (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…nner/workspace/node_modules/.vite/deps/chunk-L5SG6GRX.js?v=a039f427:298:35)
+    at FormField (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/ui/form.tsx:33:6)
+    at div
+    at div
+    at form
+    at FormProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…nner/workspace/node_modules/.vite/deps/chunk-L5SG6GRX.js?v=a039f427:102:11)
+    at div
+    at main
+    at div
+    at div
+    at AdminLayout (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/AdminLayout.tsx:22:24)
+    at NuevaActividadPage (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/pages/admin/organizador/nueva-actividad.tsx:78:35)
+    at Suspense
+    at Route (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=a039f427:338:16)
+    at Switch (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=a039f427:394:17)
+    at div
+    at Router (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/App.tsx?v=DGbRzuIOcx0tzUTDxXmFX:50:22)
+    at Provider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-GBY3YEWR.js?v=a039f427:38:15)
+    at TooltipProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…rkspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=a039f427:64:5)
+    at ProfileCompletionProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/ProfileCompletionContext.tsx:169:45)
+    at QueryClientProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…rkspace/node_modules/.vite/deps/@tanstack_react-query.js?v=a039f427:2881:3)
+    at App
+    at V (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…e/runner/workspace/node_modules/.vite/deps/next-themes.js?v=a039f427:44:25)
+    at J (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…e/runner/workspace/node_modules/.vite/deps/next-themes.js?v=a039f427:42:18)
+
+4db9107a-1fd2-47c3-a…ev/api/activities:1 
+ Failed to load resource: the server responded with a status of 400 (Bad Request)
+4db9107a-1fd2-47c3-a…ev/api/activities:1 
+ Failed to load resource: the server responded with a status of 400 (Bad Request)

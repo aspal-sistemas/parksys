@@ -2335,10 +2335,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Endpoint directo para crear actividades
   apiRouter.post("/activities", isAuthenticated, async (req: Request, res: Response) => {
+    console.log("🔥 INICIO POST /api/activities");
+    console.log("🔥 Body completo:", JSON.stringify(req.body, null, 2));
+    
     try {
-      console.log("Datos recibidos en POST /api/activities:", req.body);
-      console.log("=== DEBUGGING COMPLETO ===");
-      console.log("Body JSON:", JSON.stringify(req.body, null, 2));
       
       // Log de depuración más detallado
       console.log("fechaInicio recibido:", req.body.fechaInicio, "tipo:", typeof req.body.fechaInicio);
