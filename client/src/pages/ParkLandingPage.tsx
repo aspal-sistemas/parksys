@@ -30,6 +30,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import AmenityIcon from '@/components/ui/amenity-icon';
+import TreeSpeciesIcon from '@/components/ui/tree-species-icon';
 
 function ParkLandingPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -269,7 +270,110 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
-
+            {/* Especies Arbóreas */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Trees className="h-6 w-6 text-green-600" />
+                  Especies Arbóreas del Parque
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {park.treeSpecies && park.treeSpecies.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {park.treeSpecies.map((species: any) => (
+                      <div key={species.id} className="flex flex-col p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                            <TreeSpeciesIcon 
+                              iconType={species.iconType}
+                              customIconUrl={species.customIconUrl}
+                              size={48}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-green-800 text-sm line-clamp-2">
+                              {species.commonName}
+                            </h4>
+                            <p className="text-xs text-green-600 italic mt-1 line-clamp-2">
+                              {species.scientificName}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant="outline" className="text-xs border-green-300 text-green-700">
+                              {species.family}
+                            </Badge>
+                            <Badge 
+                              variant={species.origin === 'Nativo' ? 'default' : 'secondary'} 
+                              className="text-xs"
+                            >
+                              {species.origin}
+                            </Badge>
+                            {species.isEndangered && (
+                              <Badge variant="destructive" className="text-xs">
+                                Amenazada
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          {species.status && (
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-600">Estado:</span>
+                              <Badge 
+                                className={
+                                  species.status === 'establecido' ? 'bg-green-100 text-green-800' :
+                                  species.status === 'en_desarrollo' ? 'bg-blue-100 text-blue-800' :
+                                  'bg-yellow-100 text-yellow-800'
+                                }
+                              >
+                                {species.status === 'establecido' ? 'Establecido' :
+                                 species.status === 'en_desarrollo' ? 'En Desarrollo' :
+                                 'Planificado'}
+                              </Badge>
+                            </div>
+                          )}
+                          
+                          {(species.currentQuantity > 0 || species.recommendedQuantity > 0) && (
+                            <div className="text-xs text-gray-600">
+                              {species.currentQuantity > 0 && (
+                                <div className="flex justify-between">
+                                  <span>Plantados:</span>
+                                  <span className="font-medium text-green-700">{species.currentQuantity}</span>
+                                </div>
+                              )}
+                              {species.recommendedQuantity > 0 && (
+                                <div className="flex justify-between">
+                                  <span>Meta:</span>
+                                  <span className="font-medium text-blue-700">{species.recommendedQuantity}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {species.plantingZone && (
+                            <div className="text-xs text-gray-600">
+                              <span>Zona: </span>
+                              <span className="font-medium">{species.plantingZone}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Trees className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">No hay especies arbóreas registradas para este parque</p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Este parque aún no tiene especies arbóreas asignadas en el plan de arbolado.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Actividades */}
             <Card>

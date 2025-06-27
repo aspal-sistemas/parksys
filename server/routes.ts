@@ -689,6 +689,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Primeras amenidades:', amenitiesResult.rows.slice(0, 3).map(a => ({ name: a.name, category: a.category })));
       }
       
+      // Obtener especies arbóreas del parque
+      console.log('Paso 2.5: Consultando especies arbóreas del parque...');
+      const treeSpeciesResult = await pool.query(`
+        SELECT 
+          pts.id,
+          pts.recommended_quantity as "recommendedQuantity",
+          pts.current_quantity as "currentQuantity",
+          pts.planting_zone as "plantingZone",
+          pts.notes,
+          pts.status,
+          ts.common_name as "commonName",
+          ts.scientific_name as "scientificName",
+          ts.family,
+          ts.origin,
+          ts.is_endangered as "isEndangered",
+          ts.icon_type as "iconType",
+          ts.custom_icon_url as "customIconUrl",
+          ts.description
+        FROM park_tree_species pts
+        JOIN tree_species ts ON pts.species_id = ts.id
+        WHERE pts.park_id = $1
+        ORDER BY ts.common_name
+      `, [parkId]);
+      console.log(`Especies arbóreas encontradas: ${treeSpeciesResult.rows.length}`);
+      
       // Obtener actividades del parque
       console.log('Paso 3: Consultando actividades del parque...');
       const activitiesResult = await pool.query(`
@@ -784,6 +809,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           state: park.state
         },
         amenities: amenitiesResult.rows,
+        treeSpecies: treeSpeciesResult.rows,
         activities: activitiesResult.rows,
         documents: documentsResult.rows,
         instructors: instructorsResult.rows,
