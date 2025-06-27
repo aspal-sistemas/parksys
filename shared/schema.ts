@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, varchar, jsonb, date, decimal, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json, varchar, jsonb, date, decimal, pgEnum, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -808,15 +808,26 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 export const instructors = pgTable("instructors", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
   specialties: text("specialties").array(),
   certifications: text("certifications").array(),
   experience: text("experience"),
+  experienceYears: integer("experience_years").default(0),
   availability: text("availability").array(),
   preferredParkId: integer("preferred_park_id"),
   emergencyContactName: text("emergency_contact_name"),
   emergencyContactPhone: text("emergency_contact_phone"),
   status: text("status").default("active"),
   bio: text("bio"),
+  qualifications: text("qualifications"),
+  profileImageUrl: text("profile_image_url"),
+  curriculumUrl: text("curriculum_url"),
+  hourlyRate: real("hourly_rate").default(0),
+  rating: real("rating").default(0),
+  activitiesCount: integer("activities_count").default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
 });
