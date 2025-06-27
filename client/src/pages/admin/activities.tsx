@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Plus, Pencil, Trash, Search, ChevronLeft, ChevronRight, Calendar, X } from 'lucide-react';
+import { useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +43,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
 const AdminActivities = () => {
+  const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPark, setFilterPark] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
@@ -325,7 +327,13 @@ const AdminActivities = () => {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Gestión de Actividades</h1>
-          <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+          <Button 
+            className="bg-[#00a587] hover:bg-[#067f5f]"
+            onClick={() => {
+              console.log('Botón Nueva Actividad clickeado - activities.tsx');
+              setLocation('/admin/activities/new');
+            }}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Nueva Actividad
           </Button>
