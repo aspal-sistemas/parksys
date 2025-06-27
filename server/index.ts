@@ -213,8 +213,8 @@ app.get("/api/employees", async (req: Request, res: Response) => {
 // Registrar las rutas simplificadas de activos ANTES de otras rutas - COMENTADO
 // app.use('/api', simpleAssetRouter);
 
-// Registrar las rutas de actividades
-app.use('/api', activityRouter);
+// Registrar las rutas de actividades - TEMPORALMENTE COMENTADO PARA USAR ENDPOINT PRINCIPAL
+// app.use('/api', activityRouter);
 
 // Registrar las rutas de prueba
 app.use('/api/test', testRouter);
