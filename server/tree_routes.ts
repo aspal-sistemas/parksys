@@ -973,8 +973,25 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   apiRouter.put("/tree-species/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const id = Number(req.params.id);
-      const { commonName, scientificName, family, origin, imageUrl, description, 
-              benefits, careRequirements, lifespan, growthRate, canopyShape } = req.body;
+      const { 
+        commonName, 
+        scientificName, 
+        family, 
+        origin, 
+        growthRate,
+        imageUrl, 
+        isEndangered,
+        description, 
+        ecologicalBenefits,
+        maintenanceRequirements,
+        lifespan,
+        climateZone,
+        soilRequirements,
+        waterRequirements,
+        sunRequirements,
+        ornamentalValue,
+        commonUses
+      } = req.body;
       
       // Validación básica de datos
       if (!commonName || !scientificName) {
@@ -983,7 +1000,10 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         });
       }
       
-      // Actualizar la especie
+      // Convertir lifespan a número si está presente
+      const lifespanNum = lifespan && !isNaN(parseInt(lifespan)) ? parseInt(lifespan) : null;
+      
+      // Actualizar la especie con todos los campos del formulario completo
       const result = await db.execute(sql`
         UPDATE tree_species
         SET 
@@ -991,13 +1011,22 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
           scientific_name = ${scientificName},
           family = ${family || null},
           origin = ${origin || null},
-          image_url = ${imageUrl || null},
-          description = ${description || null},
-          benefits = ${benefits || null},
-          care_requirements = ${careRequirements || null},
-          lifespan = ${lifespan || null},
           growth_rate = ${growthRate || null},
-          canopy_shape = ${canopyShape || null},
+          image_url = ${imageUrl || null},
+          photo_url = ${imageUrl || null},
+          is_endangered = ${isEndangered || false},
+          description = ${description || null},
+          ecological_benefits = ${ecologicalBenefits || null},
+          maintenance_requirements = ${maintenanceRequirements || null},
+          lifespan = ${lifespanNum},
+          climate_zone = ${climateZone || null},
+          soil_requirements = ${soilRequirements || null},
+          water_requirements = ${waterRequirements || null},
+          sun_requirements = ${sunRequirements || null},
+          ornamental_value = ${ornamentalValue || null},
+          common_uses = ${commonUses || null},
+          icon_type = ${imageUrl ? 'custom' : null},
+          custom_icon_url = ${imageUrl || null},
           updated_at = NOW()
         WHERE id = ${id}
         RETURNING *
@@ -1007,7 +1036,39 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         return res.status(404).json({ message: "Especie de árbol no encontrada" });
       }
       
-      res.json(result.rows[0]);
+      // Mapear campos de snake_case a camelCase para la respuesta
+      const row = result.rows[0] as any;
+      const mappedData = {
+        id: row.id,
+        commonName: row.common_name,
+        scientificName: row.scientific_name,
+        family: row.family,
+        origin: row.origin,
+        climateZone: row.climate_zone,
+        growthRate: row.growth_rate,
+        heightMature: row.height_mature,
+        canopyDiameter: row.canopy_diameter,
+        lifespan: row.lifespan,
+        imageUrl: row.image_url,
+        description: row.description,
+        maintenanceRequirements: row.maintenance_requirements,
+        waterRequirements: row.water_requirements,
+        sunRequirements: row.sun_requirements,
+        soilRequirements: row.soil_requirements,
+        ecologicalBenefits: row.ecological_benefits,
+        ornamentalValue: row.ornamental_value,
+        commonUses: row.common_uses,
+        isEndangered: row.is_endangered,
+        iconColor: row.icon_color,
+        iconType: row.icon_type,
+        customIconUrl: row.custom_icon_url,
+        photoUrl: row.photo_url,
+        photoCaption: row.photo_caption,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      };
+      
+      res.json(mappedData);
     } catch (error) {
       console.error("Error al actualizar especie de árbol:", error);
       res.status(500).json({ message: "Error al actualizar especie de árbol" });

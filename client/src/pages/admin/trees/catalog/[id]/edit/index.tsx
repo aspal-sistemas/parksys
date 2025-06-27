@@ -36,7 +36,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TreePine, ArrowLeft, Save, Leaf, Loader2 } from 'lucide-react';
+import { TreePine, ArrowLeft, Save, Leaf, Upload, Image, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 // Definir el esquema de validación para el formulario
@@ -56,28 +56,22 @@ const treeSpeciesSchema = z.object({
   growthRate: z.string({
     required_error: 'Selecciona la tasa de crecimiento.',
   }),
-  imageUrl: z.string().url({
-    message: 'Ingresa una URL válida para la imagen.',
-  }).optional().or(z.literal('')),
+  imageUrl: z.string().optional(),
   isEndangered: z.boolean().default(false),
   description: z.string().min(10, {
     message: 'La descripción debe tener al menos 10 caracteres.',
   }).max(1000, {
     message: 'La descripción no debe exceder los 1000 caracteres.'
   }),
-  benefits: z.string().min(10, {
-    message: 'Los beneficios deben tener al menos 10 caracteres.',
-  }).optional().or(z.literal('')),
-  careRequirements: z.string().min(10, {
-    message: 'Los requisitos de cuidado deben tener al menos 10 caracteres.',
-  }).optional().or(z.literal('')),
-  lifespan: z.string().optional().or(z.literal('')),
-  canopyType: z.string().optional().or(z.literal('')),
-  soilPreference: z.string().optional().or(z.literal('')),
-  waterRequirements: z.string().optional().or(z.literal('')),
-  sunExposure: z.string().optional().or(z.literal('')),
-  pestDiseaseResistance: z.string().optional().or(z.literal('')),
-  notes: z.string().optional().or(z.literal('')),
+  ecologicalBenefits: z.string().optional(),
+  maintenanceRequirements: z.string().optional(),
+  lifespan: z.string().optional(),
+  climateZone: z.string().optional(),
+  soilRequirements: z.string().optional(),
+  waterRequirements: z.string().optional(),
+  sunRequirements: z.string().optional(),
+  ornamentalValue: z.string().optional(),
+  commonUses: z.string().optional(),
 });
 
 type TreeSpeciesFormValues = z.infer<typeof treeSpeciesSchema>;
@@ -86,6 +80,8 @@ function EditTreeSpecies() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [uploadedPhoto, setUploadedPhoto] = React.useState<string | null>(null);
+  const [isUploading, setIsUploading] = React.useState(false);
 
   // Configuración del formulario con valores por defecto
   const form = useForm<TreeSpeciesFormValues>({
@@ -99,15 +95,15 @@ function EditTreeSpecies() {
       imageUrl: '',
       isEndangered: false,
       description: '',
-      benefits: '',
-      careRequirements: '',
+      ecologicalBenefits: '',
+      maintenanceRequirements: '',
       lifespan: '',
-      canopyType: '',
-      soilPreference: '',
+      climateZone: '',
+      soilRequirements: '',
       waterRequirements: '',
-      sunExposure: '',
-      pestDiseaseResistance: '',
-      notes: '',
+      sunRequirements: '',
+      ornamentalValue: '',
+      commonUses: '',
     },
   });
 
@@ -168,21 +164,87 @@ function EditTreeSpecies() {
         family: species.family || '',
         origin: species.origin || 'Nativo',
         growthRate: species.growthRate || 'Medio',
-        imageUrl: species.imageUrl || '',
+        imageUrl: species.imageUrl || species.photoUrl || '',
         isEndangered: species.isEndangered || false,
         description: species.description || '',
-        benefits: species.benefits || '',
-        careRequirements: species.careRequirements || '',
-        lifespan: species.lifespan || '',
-        canopyType: species.canopyType || '',
-        soilPreference: species.soilPreference || '',
+        ecologicalBenefits: species.ecologicalBenefits || '',
+        maintenanceRequirements: species.maintenanceRequirements || '',
+        lifespan: species.lifespan?.toString() || '',
+        climateZone: species.climateZone || '',
+        soilRequirements: species.soilRequirements || '',
         waterRequirements: species.waterRequirements || '',
-        sunExposure: species.sunExposure || '',
-        pestDiseaseResistance: species.pestDiseaseResistance || '',
-        notes: species.notes || '',
+        sunRequirements: species.sunRequirements || '',
+        ornamentalValue: species.ornamentalValue || '',
+        commonUses: species.commonUses || '',
       });
+      
+      // Si la especie tiene una foto, mostrarla como subida
+      if (species.photoUrl) {
+        setUploadedPhoto(species.photoUrl);
+      }
     }
   }, [species, form]);
+
+  // Manejar la subida de foto
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    if (!['image/jpeg', 'image/png', 'image/svg+xml'].includes(file.type)) {
+      toast({
+        title: "Formato no válido",
+        description: "Solo se permiten archivos JPEG, PNG o SVG.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Archivo muy grande",
+        description: "El tamaño máximo permitido es 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('photo', file);
+
+      const response = await fetch('/api/tree-species/upload-photo', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al subir la foto');
+      }
+
+      const result = await response.json();
+      
+      // Actualizar el campo imageUrl del formulario con la URL de la foto subida
+      form.setValue('imageUrl', result.photoUrl);
+      setUploadedPhoto(result.photoUrl);
+
+      toast({
+        title: "Foto subida exitosamente",
+        description: "La foto se ha guardado y se usará como imagen de la especie.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo subir la foto. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Manejar el envío del formulario
   function onSubmit(data: TreeSpeciesFormValues) {
@@ -378,40 +440,98 @@ function EditTreeSpecies() {
                         name="lifespan"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Esperanza de Vida</FormLabel>
+                            <FormLabel>Esperanza de Vida (años)</FormLabel>
                             <FormControl>
-                              <Input placeholder="Ej. 500-1500 años" {...field} value={field.value || ''} />
+                              <Input placeholder="Ej. 100" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormDescription>
-                              Tiempo de vida promedio de la especie.
+                              Tiempo de vida promedio de la especie en años.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
-                    
+
+                    {/* Sección de imagen/foto */}
                     <div className="grid grid-cols-1 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="imageUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>URL de Imagen</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="https://ejemplo.com/imagen.jpg" 
-                                {...field} 
-                                value={field.value || ''}
+                      <Card className="p-4 border-dashed">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="flex items-center text-lg">
+                            <Image className="mr-2 h-5 w-5" />
+                            Fotografía de la Especie
+                          </CardTitle>
+                          <CardDescription>
+                            Sube una foto que se usará como icono en la lista y en la página pública
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {/* Vista previa de la imagen subida */}
+                          {uploadedPhoto && (
+                            <div className="mb-4">
+                              <img 
+                                src={uploadedPhoto} 
+                                alt="Especie arbórea"
+                                className="w-32 h-32 object-cover rounded-lg border-2 border-green-300"
                               />
-                            </FormControl>
-                            <FormDescription>
-                              URL de una imagen representativa de la especie.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                              <p className="text-sm text-green-600 mt-2 flex items-center">
+                                <Image className="h-4 w-4 mr-1" />
+                                Esta imagen se usará como icono en las amenidades
+                              </p>
+                            </div>
+                          )}
+                          
+                          <div>
+                            <label htmlFor="photo-upload" className="block text-sm font-medium mb-2">
+                              Opción 1: Subir fotografía desde tu dispositivo
+                            </label>
+                            <input
+                              id="photo-upload"
+                              type="file"
+                              accept="image/jpeg,image/png,image/svg+xml"
+                              onChange={handlePhotoUpload}
+                              disabled={isUploading}
+                              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                            />
+                            {isUploading && (
+                              <p className="text-sm text-blue-600 mt-2 flex items-center">
+                                <Upload className="animate-spin h-4 w-4 mr-1" />
+                                Subiendo foto...
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                              <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                              <span className="bg-background px-2 text-muted-foreground">O</span>
+                            </div>
+                          </div>
+                          
+                          <FormField
+                            control={form.control}
+                            name="imageUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Opción 2: URL de imagen externa</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="https://ejemplo.com/imagen.jpg" 
+                                    {...field} 
+                                    value={field.value || ''}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  URL de una imagen externa representativa de la especie.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </CardContent>
+                      </Card>
                     </div>
                     
                     <FormField
@@ -427,10 +547,10 @@ function EditTreeSpecies() {
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel>
-                              Especie en Peligro de Extinción
+                              Especie en peligro de extinción
                             </FormLabel>
                             <FormDescription>
-                              Marca esta opción si la especie está amenazada o en peligro de extinción.
+                              Marca esta casilla si la especie está clasificada como amenazada o en peligro.
                             </FormDescription>
                           </div>
                         </FormItem>
@@ -446,7 +566,7 @@ function EditTreeSpecies() {
                   <CardHeader>
                     <CardTitle>Descripción y Detalles</CardTitle>
                     <CardDescription>
-                      Información descriptiva y beneficios de la especie
+                      Información detallada sobre la especie arbórea
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -455,16 +575,16 @@ function EditTreeSpecies() {
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Descripción *</FormLabel>
+                          <FormLabel>Descripción General *</FormLabel>
                           <FormControl>
                             <Textarea 
-                              placeholder="Descripción general de la especie..."
-                              className="min-h-[120px]"
+                              placeholder="Describe las características principales de la especie..." 
+                              className="min-h-[100px]"
                               {...field} 
                             />
                           </FormControl>
                           <FormDescription>
-                            Descripción general de la especie, incluyendo características distintivas.
+                            Descripción detallada de la especie, incluyendo características físicas, hábitat y distribución.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -473,38 +593,60 @@ function EditTreeSpecies() {
                     
                     <FormField
                       control={form.control}
-                      name="benefits"
+                      name="ecologicalBenefits"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Beneficios</FormLabel>
+                          <FormLabel>Beneficios Ecológicos</FormLabel>
                           <FormControl>
                             <Textarea 
-                              placeholder="Beneficios ecológicos, culturales o para la salud..."
-                              className="min-h-[120px]"
+                              placeholder="Beneficios ambientales que proporciona la especie..." 
+                              className="min-h-[80px]"
                               {...field} 
                               value={field.value || ''}
                             />
                           </FormControl>
                           <FormDescription>
-                            Beneficios ecológicos, culturales o para la salud que ofrece esta especie.
+                            Beneficios que la especie aporta al ecosistema, como purificación del aire, control de erosión, etc.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                     
+                    <FormField
+                      control={form.control}
+                      name="maintenanceRequirements"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Requisitos de Mantenimiento</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Cuidados y mantenimiento que requiere la especie..." 
+                              className="min-h-[80px]"
+                              {...field} 
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Información sobre poda, fertilización, control de plagas y otros cuidados necesarios.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name="canopyType"
+                        name="ornamentalValue"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Tipo de Dosel</FormLabel>
+                            <FormLabel>Valor Ornamental</FormLabel>
                             <FormControl>
-                              <Input placeholder="Ej. Extendido, columnar, cónico..." {...field} value={field.value || ''} />
+                              <Input placeholder="Ej. Alto - floración espectacular" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormDescription>
-                              Forma y características del dosel o copa.
+                              Valor decorativo de la especie.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -513,15 +655,15 @@ function EditTreeSpecies() {
                       
                       <FormField
                         control={form.control}
-                        name="notes"
+                        name="commonUses"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Notas Adicionales</FormLabel>
+                            <FormLabel>Usos Comunes</FormLabel>
                             <FormControl>
-                              <Input placeholder="Información adicional relevante..." {...field} value={field.value || ''} />
+                              <Input placeholder="Ej. Ornamental, sombra, madera" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormDescription>
-                              Cualquier otra información relevante sobre la especie.
+                              Principales usos de la especie.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -538,26 +680,21 @@ function EditTreeSpecies() {
                   <CardHeader>
                     <CardTitle>Requisitos de Cultivo</CardTitle>
                     <CardDescription>
-                      Condiciones óptimas para el crecimiento y mantenimiento
+                      Condiciones ambientales ideales para el crecimiento
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <FormField
                       control={form.control}
-                      name="careRequirements"
+                      name="climateZone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Requisitos de Cuidado</FormLabel>
+                          <FormLabel>Zona Climática</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              placeholder="Requisitos generales de cuidado y mantenimiento..."
-                              className="min-h-[120px]"
-                              {...field} 
-                              value={field.value || ''}
-                            />
+                            <Input placeholder="Ej. Templado a subtropical" {...field} value={field.value || ''} />
                           </FormControl>
                           <FormDescription>
-                            Requisitos generales de cuidado y mantenimiento.
+                            Tipo de clima donde mejor se desarrolla la especie.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -567,15 +704,15 @@ function EditTreeSpecies() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name="soilPreference"
+                        name="soilRequirements"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Preferencia de Suelo</FormLabel>
+                            <FormLabel>Requisitos de Suelo</FormLabel>
                             <FormControl>
-                              <Input placeholder="Ej. Arcilloso, arenoso, bien drenado..." {...field} value={field.value || ''} />
+                              <Input placeholder="Ej. Bien drenado, fértil" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormDescription>
-                              Tipo de suelo preferido por esta especie.
+                              Tipo de suelo preferido para la especie.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -587,12 +724,12 @@ function EditTreeSpecies() {
                         name="waterRequirements"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Requerimientos de Agua</FormLabel>
+                            <FormLabel>Requisitos de Agua</FormLabel>
                             <FormControl>
-                              <Input placeholder="Ej. Bajo, moderado, alto..." {...field} value={field.value || ''} />
+                              <Input placeholder="Ej. Moderado, resistente a sequía" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormDescription>
-                              Necesidades de riego o humedad.
+                              Necesidades hídricas de la especie.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -600,71 +737,53 @@ function EditTreeSpecies() {
                       />
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="sunExposure"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Exposición al Sol</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Ej. Sol pleno, sombra parcial..." {...field} value={field.value || ''} />
-                            </FormControl>
-                            <FormDescription>
-                              Preferencia de exposición a la luz solar.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="pestDiseaseResistance"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Resistencia a Plagas/Enfermedades</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Ej. Alta, media, baja..." {...field} value={field.value || ''} />
-                            </FormControl>
-                            <FormDescription>
-                              Nivel de resistencia a plagas y enfermedades comunes.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="sunRequirements"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Requisitos de Luz Solar</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ej. Pleno sol, sombra parcial" {...field} value={field.value || ''} />
+                          </FormControl>
+                          <FormDescription>
+                            Cantidad de luz solar que necesita la especie.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
             </Tabs>
             
-            <div className="flex justify-end gap-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleBack}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit" 
-                className="bg-green-600 hover:bg-green-700"
-                disabled={updateTreeSpeciesMutation.isPending}
-              >
-                {updateTreeSpeciesMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
-                    Guardando...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" /> Guardar Cambios
-                  </>
-                )}
-              </Button>
-            </div>
+            {/* Botones de acción */}
+            <Card>
+              <CardFooter className="flex justify-between">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleBack}
+                  className="flex items-center"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={updateTreeSpeciesMutation.isPending}
+                  className="flex items-center bg-green-600 hover:bg-green-700"
+                >
+                  {updateTreeSpeciesMutation.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  Guardar Cambios
+                </Button>
+              </CardFooter>
+            </Card>
           </form>
         </Form>
       </div>
