@@ -2352,6 +2352,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fechaFin,
         ubicacion: location,
         instructorId,
+        horaInicio: startTime,
+        duracion: duration,
+        capacidad: capacity,
+        materiales: materials,
+        personalRequerido: requiredStaff,
+        esRecurrente: isRecurring,
+        esGratuita: isFree,
+        precio: price,
+        requisitos: requirements,
+        diasRecurrentes: recurringDays,
         ...otherData
       } = req.body;
       
@@ -2389,7 +2399,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "La fecha de fin no es válida" });
       }
       
-      // Crear el objeto con los datos procesados y mapeados (solo campos que existen en el esquema)
+      // Crear el objeto con los datos procesados y mapeados (incluye TODOS los campos del esquema)
       const activityData = { 
         title,
         description,
@@ -2398,6 +2408,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         location: location || null,
         categoryId: category ? parseInt(category) : null,
         instructorId: instructorId || null,
+        startTime: startTime || null,
+        duration: duration ? parseInt(duration) : null,
+        capacity: capacity ? parseInt(capacity) : null,
+        materials: materials || null,
+        requiredStaff: requiredStaff ? parseInt(requiredStaff) : null,
+        isRecurring: Boolean(isRecurring),
+        isFree: Boolean(isFree),
+        price: price ? price.toString() : null,
+        requirements: requirements || null,
+        recurringDays: recurringDays || null,
         ...(parsedEndDate && { endDate: parsedEndDate })
       };
       

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, varchar, jsonb, date, decimal, pgEnum, real } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json, varchar, jsonb, date, decimal, pgEnum, real, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -498,7 +498,18 @@ export const activities = pgTable("activities", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   location: text("location"),
   categoryId: integer("category_id").references(() => activityCategories.id),
-  instructorId: integer("instructor_id").references(() => instructors.id)
+  instructorId: integer("instructor_id").references(() => instructors.id),
+  // Campos adicionales del formulario
+  startTime: text("start_time"), // horaInicio
+  duration: integer("duration"), // duracion en minutos
+  capacity: integer("capacity"), // capacidad maxima
+  materials: text("materials"), // materiales necesarios
+  requiredStaff: integer("required_staff"), // personalRequerido
+  isRecurring: boolean("is_recurring").default(false), // esRecurrente
+  isFree: boolean("is_free").default(true), // esGratuita
+  price: decimal("price", { precision: 10, scale: 2 }), // precio
+  requirements: text("requirements"), // requisitos
+  recurringDays: text("recurring_days").array() // diasRecurrentes
 });
 
 export const comments = pgTable("comments", {
