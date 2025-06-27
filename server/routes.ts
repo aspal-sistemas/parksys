@@ -2344,13 +2344,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Mapear campos del frontend al esquema de base de datos
       const {
-        nombre,
-        descripcion,
-        categoria,
-        parqueId,
+        nombre: title,
+        descripcion: description,
+        categoria: category,
+        parqueId: parkId,
         fechaInicio,
         fechaFin,
-        ubicacion,
+        ubicacion: location,
         instructorId,
         ...otherData
       } = req.body;
@@ -2391,12 +2391,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Crear el objeto con los datos procesados y mapeados (solo campos que existen en el esquema)
       const activityData = { 
-        title: nombre,
-        description: descripcion,
-        parkId: parqueId,
+        title,
+        description,
+        parkId: Number(parkId),
         startDate: parsedStartDate,
-        location: ubicacion || null,
-        categoryId: categoria ? parseInt(categoria) : null,
+        location: location || null,
+        categoryId: category ? parseInt(category) : null,
         instructorId: instructorId || null,
         ...(parsedEndDate && { endDate: parsedEndDate })
       };
