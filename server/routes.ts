@@ -749,7 +749,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         FROM instructors i
         WHERE i.preferred_park_id = $1
         ORDER BY i.full_name
-        LIMIT 3
+        LIMIT 4
       `, [parkId]);
       console.log(`Instructores encontrados: ${instructorsResult.rows.length}`);
 
