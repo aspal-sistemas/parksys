@@ -118,7 +118,7 @@ export default function PublicInstructorEvaluationForm({
 
       return apiRequest(`/api/public/instructors/${instructorId}/evaluations`, {
         method: 'POST',
-        body: JSON.stringify(cleanData),
+        data: cleanData,
       });
     },
     onSuccess: () => {

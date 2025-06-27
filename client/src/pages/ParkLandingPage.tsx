@@ -794,36 +794,51 @@ function ParkLandingPage() {
                                 </div>
                               )}
                               
-                              {/* Botón de evaluación */}
-                              <div className="mt-3">
-                                <Dialog>
-                                  <DialogTrigger asChild>
+                              {/* Botones de acciones */}
+                              <div className="mt-3 space-y-2">
+                                <div className="flex gap-2">
+                                  <Link href={`/instructor/${instructor.id}`}>
                                     <Button 
                                       size="sm" 
                                       variant="outline"
-                                      className="text-xs border-green-300 text-green-700 hover:bg-green-50"
-                                      onClick={() => setSelectedInstructor(instructor)}
+                                      className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 flex-1"
                                     >
-                                      <MessageSquare className="h-3 w-3 mr-1" />
-                                      Evalúa a este instructor
+                                      <User className="h-3 w-3 mr-1" />
+                                      Ver perfil
                                     </Button>
-                                  </DialogTrigger>
-                                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                                    <DialogHeader>
-                                      <DialogTitle>Evaluar Instructor</DialogTitle>
-                                      <DialogDescription>
-                                        Comparte tu experiencia con {instructor.fullName} para ayudar a otros visitantes.
-                                      </DialogDescription>
-                                    </DialogHeader>
-                                    <PublicInstructorEvaluationForm
-                                      instructorId={instructor.id}
-                                      instructorName={instructor.fullName}
-                                      onSuccess={() => {
-                                        // El dialog se cerrará automáticamente por el estado del formulario
-                                      }}
-                                    />
-                                  </DialogContent>
-                                </Dialog>
+                                  </Link>
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline"
+                                        className="text-xs border-green-300 text-green-700 hover:bg-green-50 flex-1"
+                                        onClick={() => setSelectedInstructor(instructor)}
+                                      >
+                                        <MessageSquare className="h-3 w-3 mr-1" />
+                                        Evaluar
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent 
+                                      className="max-w-2xl max-h-[90vh] overflow-y-auto"
+                                      aria-describedby="evaluation-description"
+                                    >
+                                      <DialogHeader>
+                                        <DialogTitle>Evaluar Instructor</DialogTitle>
+                                        <DialogDescription id="evaluation-description">
+                                          Comparte tu experiencia con {instructor.fullName} para ayudar a otros visitantes.
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <PublicInstructorEvaluationForm
+                                        instructorId={instructor.id}
+                                        instructorName={instructor.fullName}
+                                        onSuccess={() => {
+                                          // El dialog se cerrará automáticamente por el estado del formulario
+                                        }}
+                                      />
+                                    </DialogContent>
+                                  </Dialog>
+                                </div>
                               </div>
                             </div>
                           </div>
