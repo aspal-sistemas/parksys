@@ -150,7 +150,7 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
         qualifications,
         availability,
         hourlyRate,
-        experience,
+
         preferredParkId
       } = req.body;
 
@@ -273,7 +273,7 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
           experienceYears: parseInt(experienceYears) || 1,
           bio: bio || '',
           qualifications: qualifications || '',
-          availability: availabilityArray,
+          availableDays: availabilityArray,
           hourlyRate: parseFloat(hourlyRate) || 0,
           preferredParkId: preferredParkId ? parseInt(preferredParkId) : null,
           profileImageUrl,
@@ -338,7 +338,7 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
         qualifications,
         availability,
         hourlyRate,
-        experience,
+
         preferredParkId
       } = req.body;
 
@@ -413,7 +413,7 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
             phone,
             bio,
             specialties: processedSpecialties,
-            experience,
+    
             profileImageUrl,
             updatedAt: new Date(),
           })
