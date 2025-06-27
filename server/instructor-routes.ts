@@ -162,6 +162,13 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
         specialties = [specialtiesStr]; // Si no es JSON válido, usar como string único
       }
 
+      console.log('🔍 Debugging specialties:', {
+        original: specialtiesStr,
+        parsed: specialties,
+        isArray: Array.isArray(specialties),
+        type: typeof specialties
+      });
+
       // Validaciones básicas
       if (!firstName || !lastName || !email) {
         console.log('❌ Validación fallida - campos requeridos:', { firstName, lastName, email });
@@ -196,15 +203,8 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
         curriculumUrl = `/uploads/instructors/${files.curriculum[0].filename}`;
       }
 
-      // Procesar especialidades
-      let processedSpecialties: string[] = [];
-      try {
-        processedSpecialties = typeof specialties === 'string' 
-          ? JSON.parse(specialties) 
-          : specialties || [];
-      } catch (error) {
-        processedSpecialties = [];
-      }
+      // Usar las specialties ya procesadas anteriormente
+      const processedSpecialties = specialties;
 
       // 1. Primero crear el usuario automáticamente
       const hashedPassword = await bcryptjs.hash('instructor123', 10); // Contraseña temporal
