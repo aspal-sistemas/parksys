@@ -27,6 +27,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import InstructorActivitiesList from '@/components/InstructorActivitiesList';
 import InstructorEvaluationDialog from '@/components/InstructorEvaluationDialog';
+import InstructorEvaluationsList from '@/components/InstructorEvaluationsList';
 
 export default function InstructorDetailPage() {
   const params = useParams<{ id: string }>();

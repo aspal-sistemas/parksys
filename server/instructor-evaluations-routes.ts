@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { eq, desc, and, sql } from 'drizzle-orm';
-import { db } from './db';
+import { db, pool } from './db';
 import { instructorEvaluations, instructors, insertInstructorEvaluationSchema } from '../shared/schema';
 import { z } from 'zod';
 
@@ -21,7 +21,7 @@ export function registerInstructorEvaluationRoutes(app: any, apiRouter: Router) 
       }
 
       // Obtener solo evaluaciones aprobadas para mostrar públicamente
-      const result = await db.execute(`
+      const result = await pool.query(`
         SELECT 
           ie.id,
           ie.overall_rating as "overallRating",
@@ -36,11 +36,11 @@ export function registerInstructorEvaluationRoutes(app: any, apiRouter: Router) 
           ie.evaluator_city as "evaluatorCity",
           ie.created_at as "createdAt"
         FROM instructor_evaluations ie
-        WHERE ie.instructor_id = ${instructorId} 
+        WHERE ie.instructor_id = $1 
           AND ie.status = 'approved'
         ORDER BY ie.created_at DESC
         LIMIT 50
-      `);
+      `, [instructorId]);
 
       res.json(result.rows);
     } catch (error) {
