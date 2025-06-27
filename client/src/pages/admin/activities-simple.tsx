@@ -215,6 +215,8 @@ const AdminActivitiesSimple = () => {
             className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium bg-green-600 text-white hover:bg-green-700 h-10 px-4 py-2 transition-colors"
             onClick={() => {
               console.log('Botón Nueva Actividad clickeado');
+              console.log('Navegando a: /admin/activities/new');
+              alert('Botón clickeado! Navegando a /admin/activities/new');
               setLocation('/admin/activities/new');
             }}
           >
