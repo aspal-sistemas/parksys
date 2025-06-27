@@ -815,7 +815,7 @@ export const instructors = pgTable("instructors", {
   specialties: text("specialties").array(),
   certifications: text("certifications").array(),
   experienceYears: integer("experience_years").default(0),
-  availability: text("availability").array(),
+  availableDays: text("available_days").array(),
   preferredParkId: integer("preferred_park_id"),
   emergencyContactName: text("emergency_contact_name"),
   emergencyContactPhone: text("emergency_contact_phone"),
