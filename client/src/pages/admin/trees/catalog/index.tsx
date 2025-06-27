@@ -121,9 +121,17 @@ function TreeSpeciesCatalog() {
   // Mutación para importar CSV
   const importMutation = useMutation({
     mutationFn: async (data: any[]) => {
+      console.log("=== MUTATION FUNCTION ===");
+      console.log("Received data in mutation:", data);
+      console.log("Data length:", data?.length);
+      
+      const payload = { data };
+      console.log("Sending payload:", payload);
+      console.log("Payload JSON:", JSON.stringify(payload));
+      
       return apiRequest('/api/tree-species/import/csv', {
         method: 'POST',
-        body: JSON.stringify({ data }),
+        body: JSON.stringify(payload),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -426,6 +434,10 @@ function TreeSpeciesCatalog() {
         return row;
       });
 
+      console.log("=== FRONTEND CSV DATA ===");
+      console.log("Parsed data:", data);
+      console.log("Data length:", data.length);
+      console.log("First row:", data[0]);
       importMutation.mutate(data);
     };
 
