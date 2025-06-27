@@ -2392,6 +2392,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       console.log("Datos procesados para creación de actividad:", activityData);
+      console.log("parsedStartDate:", parsedStartDate, "isValid:", !isNaN(parsedStartDate.getTime()));
+      console.log("parsedEndDate:", parsedEndDate, "isValid:", parsedEndDate ? !isNaN(parsedEndDate.getTime()) : 'no endDate');
       
       const data = insertActivitySchema.parse(activityData);
       const result = await storage.createActivity(data);
@@ -2402,8 +2404,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof ZodError) {
         const validationError = fromZodError(error);
-        console.error("Error de validación Zod:", error);
-        return res.status(400).json({ message: validationError.message });
+        console.error("Error de validación Zod detallado:", error.errors);
+        console.error("Mensaje de error:", validationError.message);
+        return res.status(400).json({ 
+          message: validationError.message,
+          errors: error.errors 
+        });
       }
       console.error("Error al crear actividad:", error);
       res.status(500).json({ message: "Error al crear actividad" });
