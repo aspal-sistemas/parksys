@@ -275,7 +275,6 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
           qualifications: qualifications || '',
           availability: availabilityArray,
           hourlyRate: parseFloat(hourlyRate) || 0,
-          experience: experience || '',
           preferredParkId: preferredParkId ? parseInt(preferredParkId) : null,
           profileImageUrl,
           curriculumUrl,
