@@ -31,6 +31,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import AmenityIcon from '@/components/ui/amenity-icon';
 import TreeSpeciesIcon from '@/components/ui/tree-species-icon';
+import TreePhotoViewer from '@/components/TreePhotoViewer';
 
 function ParkLandingPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -292,12 +293,25 @@ function ParkLandingPage() {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-green-800 text-sm line-clamp-2">
-                              {species.commonName}
-                            </h4>
-                            <p className="text-xs text-green-600 italic mt-1 line-clamp-2">
-                              {species.scientificName}
-                            </p>
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-green-800 text-sm line-clamp-2">
+                                  {species.commonName}
+                                </h4>
+                                <p className="text-xs text-green-600 italic mt-1 line-clamp-2">
+                                  {species.scientificName}
+                                </p>
+                              </div>
+                              {/* Botón del visualizador de fotos */}
+                              <div className="ml-2 flex-shrink-0">
+                                <TreePhotoViewer 
+                                  photoUrl={species.photoUrl}
+                                  commonName={species.commonName}
+                                  scientificName={species.scientificName}
+                                  photoCaption={species.photoCaption}
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
                         
