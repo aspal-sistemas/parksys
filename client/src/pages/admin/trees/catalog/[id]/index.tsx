@@ -330,15 +330,9 @@ function TreeSpeciesDetail() {
                     
                     <Separator className="my-6" />
                     
-                    <h3 className="text-lg font-semibold mb-4 text-green-700">Estructura</h3>
+                    <h3 className="text-lg font-semibold mb-4 text-green-700">Características Generales</h3>
                     
                     <div className="space-y-4">
-                      {renderDetailItem(
-                        "Diámetro de Copa", 
-                        species?.canopyDiameter ? `${species.canopyDiameter} metros` : null, 
-                        <TreePine className="h-5 w-5" />
-                      )}
-                      
                       {renderDetailItem(
                         "Tasa de Crecimiento", 
                         species?.growthRate, 
@@ -472,28 +466,34 @@ function TreeSpeciesDetail() {
                       )}
                     </div>
                     
-                    <div className="mt-6">
-                      <h3 className="text-lg font-semibold mb-4 text-green-700">Recomendaciones de Mantenimiento</h3>
-                      
-                      <ul className="space-y-2 text-green-700">
-                        <li className="flex items-start gap-2">
-                          <CircleCheck className="h-4 w-4 mt-1 flex-shrink-0" />
-                          <span>Realizar inspecciones periódicas para detectar problemas de salud</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <CircleCheck className="h-4 w-4 mt-1 flex-shrink-0" />
-                          <span>Aplicar podas estructurales para mantener la forma adecuada</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <CircleCheck className="h-4 w-4 mt-1 flex-shrink-0" />
-                          <span>Mantener la zona del cepellón libre de malezas</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <CircleCheck className="h-4 w-4 mt-1 flex-shrink-0" />
-                          <span>Proteger los árboles jóvenes durante eventos climáticos extremos</span>
-                        </li>
-                      </ul>
-                    </div>
+                    {species?.commonUses && (
+                      <>
+                        <Separator className="my-6" />
+                        <h3 className="text-lg font-semibold mb-4 text-green-700">Usos Comunes</h3>
+                        <div className="p-4 bg-blue-50 rounded-md border border-blue-100">
+                          <p className="mb-2 font-medium text-blue-800">Aplicaciones y Usos</p>
+                          <div className="whitespace-pre-line text-blue-700">
+                            {species.commonUses.split('\n').map((paragraph, i) => (
+                              <p key={i} className="mb-2">{paragraph}</p>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    
+                    {species?.ornamentalValue && (
+                      <>
+                        <Separator className="my-6" />
+                        <h3 className="text-lg font-semibold mb-4 text-green-700">Valor Ornamental</h3>
+                        <div className="p-4 bg-purple-50 rounded-md border border-purple-100">
+                          <p className="mb-2 font-medium text-purple-800">Características Decorativas</p>
+                          <div className="whitespace-pre-line text-purple-700">
+                            {species.ornamentalValue}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
                   </div>
                 </div>
               </CardContent>
