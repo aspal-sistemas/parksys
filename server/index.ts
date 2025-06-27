@@ -17,6 +17,16 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
+// Global request logging for debugging
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method === 'POST' && req.url.includes('/api/activities')) {
+    console.log(`🌟 GLOBAL: ${req.method} ${req.url}`);
+    console.log(`🌟 Headers:`, req.headers);
+    console.log(`🌟 Body:`, req.body);
+  }
+  next();
+});
+
 // Health check endpoint for deployment (moved to API route)
 app.get('/api/health', (req: Request, res: Response) => {
   try {
