@@ -2430,8 +2430,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("parsedStartDate:", parsedStartDate, "isValid:", !isNaN(parsedStartDate.getTime()));
       console.log("parsedEndDate:", parsedEndDate, "isValid:", parsedEndDate ? !isNaN(parsedEndDate.getTime()) : 'no endDate');
       
-      const data = insertActivitySchema.parse(activityData);
-      const result = await storage.createActivity(data);
+      try {
+        console.log("Intentando validar con Zod schema...");
+        const data = insertActivitySchema.parse(activityData);
+        console.log("Validación Zod exitosa:", data);
+        const result = await storage.createActivity(data);
+      } catch (zodError) {
+        console.error("Error de validación Zod:", zodError);
+        console.error("Datos que fallaron validación:", JSON.stringify(activityData, null, 2));
+        return res.status(400).json({ 
+          message: "Error de validación de datos",
+          error: (zodError as any).issues || (zodError as Error).message
+        });
+      }
       
       console.log("Actividad creada exitosamente:", result);
       
