@@ -124,15 +124,15 @@ export default function InstructorsManagementPage() {
       );
 
     // Filtro por especialidad
-    const matchesSpecialty = specialtyFilter === '' || 
+    const matchesSpecialty = specialtyFilter === 'all' || specialtyFilter === '' || 
       (Array.isArray(instructor.specialties) ? instructor.specialties : []).includes(specialtyFilter);
 
     // Filtro por calificación
-    const matchesRating = ratingFilter === '' || 
+    const matchesRating = ratingFilter === 'all' || ratingFilter === '' || 
       (instructor.rating && instructor.rating >= parseFloat(ratingFilter));
 
     // Filtro por experiencia
-    const matchesExperience = experienceFilter === '' || 
+    const matchesExperience = experienceFilter === 'all' || experienceFilter === '' || 
       (experienceFilter === '0-2' && instructor.experienceYears <= 2) ||
       (experienceFilter === '3-5' && instructor.experienceYears >= 3 && instructor.experienceYears <= 5) ||
       (experienceFilter === '6-10' && instructor.experienceYears >= 6 && instructor.experienceYears <= 10) ||
@@ -291,7 +291,7 @@ export default function InstructorsManagementPage() {
                     <SelectValue placeholder="Todas las especialidades" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas las especialidades</SelectItem>
+                    <SelectItem value="all">Todas las especialidades</SelectItem>
                     {uniqueSpecialties.map((specialty) => (
                       <SelectItem key={specialty} value={specialty}>
                         {specialty}
@@ -309,7 +309,7 @@ export default function InstructorsManagementPage() {
                     <SelectValue placeholder="Todas las calificaciones" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas las calificaciones</SelectItem>
+                    <SelectItem value="all">Todas las calificaciones</SelectItem>
                     <SelectItem value="4.5">4.5+ estrellas</SelectItem>
                     <SelectItem value="4.0">4.0+ estrellas</SelectItem>
                     <SelectItem value="3.5">3.5+ estrellas</SelectItem>
@@ -326,7 +326,7 @@ export default function InstructorsManagementPage() {
                     <SelectValue placeholder="Toda la experiencia" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Toda la experiencia</SelectItem>
+                    <SelectItem value="all">Toda la experiencia</SelectItem>
                     <SelectItem value="0-2">0-2 años</SelectItem>
                     <SelectItem value="3-5">3-5 años</SelectItem>
                     <SelectItem value="6-10">6-10 años</SelectItem>
@@ -340,10 +340,11 @@ export default function InstructorsManagementPage() {
                 <Button 
                   variant="outline" 
                   onClick={() => {
-                    setSpecialtyFilter('');
-                    setRatingFilter('');
-                    setExperienceFilter('');
+                    setSpecialtyFilter('all');
+                    setRatingFilter('all');
+                    setExperienceFilter('all');
                     setSearchQuery('');
+                    setCurrentPage(1);
                   }}
                   className="w-full"
                 >
@@ -369,7 +370,7 @@ export default function InstructorsManagementPage() {
               </div>
             ) : paginatedInstructors.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                {searchQuery || specialtyFilter || ratingFilter || experienceFilter 
+                {searchQuery || (specialtyFilter !== 'all' && specialtyFilter !== '') || (ratingFilter !== 'all' && ratingFilter !== '') || (experienceFilter !== 'all' && experienceFilter !== '') 
                   ? 'No se encontraron instructores que coincidan con los filtros aplicados' 
                   : 'No hay instructores registrados'}
               </div>
@@ -485,6 +486,77 @@ export default function InstructorsManagementPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Paginación */}
+        {filteredInstructors.length > itemsPerPage && (
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-700">
+                  Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, filteredInstructors.length)} de {filteredInstructors.length} instructores
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  {/* Botón Anterior */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="flex items-center space-x-1"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span>Anterior</span>
+                  </Button>
+
+                  {/* Números de página */}
+                  <div className="flex space-x-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+                      let pageNumber;
+                      if (totalPages <= 5) {
+                        pageNumber = index + 1;
+                      } else if (currentPage <= 3) {
+                        pageNumber = index + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNumber = totalPages - 4 + index;
+                      } else {
+                        pageNumber = currentPage - 2 + index;
+                      }
+
+                      return (
+                        <Button
+                          key={pageNumber}
+                          variant={currentPage === pageNumber ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNumber)}
+                          className={`w-8 h-8 p-0 ${
+                            currentPage === pageNumber 
+                              ? 'bg-[#00a587] hover:bg-[#067f5f] text-white' 
+                              : 'hover:bg-gray-100'
+                          }`}
+                        >
+                          {pageNumber}
+                        </Button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Botón Siguiente */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center space-x-1"
+                  >
+                    <span>Siguiente</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Dialog de visualización de instructor */}
