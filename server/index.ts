@@ -17,16 +17,6 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
-// Global request logging for debugging
-app.use((req: Request, res: Response, next: NextFunction) => {
-  if (req.method === 'POST' && req.url.includes('/api/activities')) {
-    console.log(`🌟 GLOBAL: ${req.method} ${req.url}`);
-    console.log(`🌟 Headers:`, req.headers);
-    console.log(`🌟 Body:`, req.body);
-  }
-  next();
-});
-
 // Health check endpoint for deployment (moved to API route)
 app.get('/api/health', (req: Request, res: Response) => {
   try {
@@ -97,6 +87,15 @@ app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Global request logging for debugging - AFTER JSON parsing
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method === 'POST' && req.url.includes('/api/activities')) {
+    console.log(`🌟 GLOBAL POST-JSON: ${req.method} ${req.url}`);
+    console.log(`🌟 Body parseado:`, JSON.stringify(req.body, null, 2));
+  }
+  next();
+});
 
 // ENDPOINT DIRECTO EMPLEADOS - REGISTRADO PRIMERO para evitar conflictos
 app.post("/api/employees", async (req: Request, res: Response) => {
