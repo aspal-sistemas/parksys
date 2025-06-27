@@ -317,7 +317,10 @@ function TreeSpeciesCatalog() {
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const csvText = event.target?.result as string;
+      let csvText = event.target?.result as string;
+      // Corregir encoding UTF-8
+      csvText = fixEncoding(csvText);
+      console.log("CSV después de corrección de encoding (preview):", csvText.substring(0, 500));
       const lines = csvText.split('\n').filter(line => line.trim());
       
       if (lines.length < 2) {
@@ -411,7 +414,10 @@ function TreeSpeciesCatalog() {
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const csvText = event.target?.result as string;
+      let csvText = event.target?.result as string;
+      // Corregir encoding UTF-8
+      csvText = fixEncoding(csvText);
+      console.log("CSV después de corrección de encoding (importación):", csvText.substring(0, 500));
       const lines = csvText.split('\n').filter(line => line.trim());
       const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
       
