@@ -671,7 +671,10 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
       let imported = 0;
       let errors = [];
 
+      console.log("Starting to process rows...");
+
       for (const row of data) {
+        console.log(`Starting to process row ${imported + 1}/${data.length}`);
         try {
           // Auto-generar nombres si no están presentes
           let commonName = row.commonName;
