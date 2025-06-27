@@ -795,6 +795,17 @@ function ParkLandingPage() {
                         </div>
                       </div>
                     ))}
+                    
+                    {/* Enlace a página de instructores */}
+                    <div className="mt-6 text-center">
+                      <Link 
+                        href="/instructors"
+                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#00a587] to-[#067f5f] text-white font-medium rounded-lg hover:from-[#067f5f] hover:to-[#00a587] transition-all duration-300 shadow-md hover:shadow-lg"
+                      >
+                        <Users className="mr-2 h-5 w-5" />
+                        Conoce a nuestro equipo
+                      </Link>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-6">
