@@ -397,52 +397,19 @@ function TreeSpeciesCatalog() {
         const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
         const row: any = {};
         
+        // Mapeo directo desde CSV a objeto
         headers.forEach((header, i) => {
           const value = values[i] || '';
-          switch (header.toLowerCase()) {
-            case 'nombre común':
-            case 'common_name':
-              row.commonName = value;
-              break;
-            case 'nombre científico':
-            case 'scientific_name':
-              row.scientificName = value;
-              break;
-            case 'familia':
-            case 'family':
-              row.family = value;
-              break;
-            case 'origen':
-            case 'origin':
-              row.origin = value;
-              break;
-            case 'ritmo de crecimiento':
-            case 'growth_rate':
-              row.growthRate = value;
-              break;
-            case 'amenazada':
-            case 'is_endangered':
-              row.isEndangered = value.toLowerCase() === 'sí' || value.toLowerCase() === 'true';
-              break;
-            case 'descripción':
-            case 'description':
-              row.description = value;
-              break;
-            case 'instrucciones de cuidado':
-            case 'care_instructions':
-              row.careInstructions = value;
-              break;
-            case 'beneficios':
-            case 'benefits':
-              row.benefits = value;
-              break;
-            case 'url de imagen':
-            case 'image_url':
-              row.imageUrl = value;
-              break;
-          }
+          row[header.toLowerCase()] = value;
         });
         
+        // Convertir isEndangered a boolean si existe
+        if (row.isendangered !== undefined) {
+          row.isEndangered = row.isendangered === 'true' || row.isendangered === true;
+          delete row.isendangered;
+        }
+        
+        console.log("Parsed row:", row);
         return row;
       });
 
