@@ -913,10 +913,28 @@ export const insertInstructorAssignmentSchema = createInsertSchema(instructorAss
 export type InstructorEvaluation = typeof instructorEvaluations.$inferSelect;
 export type InsertInstructorEvaluation = typeof instructorEvaluations.$inferInsert;
 
-export const insertInstructorEvaluationSchema = createInsertSchema(instructorEvaluations).omit({ 
+export const insertInstructorEvaluationSchema = createInsertSchema(instructorEvaluations, {
+  evaluatorName: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(255),
+  evaluatorEmail: z.string().email("Email inválido").optional(),
+  evaluatorCity: z.string().max(100).optional(),
+  overallRating: z.number().min(1, "Calificación mínima: 1").max(5, "Calificación máxima: 5"),
+  knowledgeRating: z.number().min(1).max(5),
+  patienceRating: z.number().min(1).max(5),
+  clarityRating: z.number().min(1).max(5),
+  punctualityRating: z.number().min(1).max(5),
+  wouldRecommend: z.boolean().optional(),
+  comments: z.string().max(500, "Máximo 500 caracteres").optional(),
+  attendedActivity: z.string().max(255).optional(),
+}).omit({
   id: true,
   createdAt: true,
-  updatedAt: true
+  updatedAt: true,
+  status: true,
+  moderationNotes: true,
+  moderatedBy: true,
+  moderatedAt: true,
+  evaluatorIp: true,
+  evaluationDate: true,
 });
 
 export type InstructorRecognition = typeof instructorRecognitions.$inferSelect;

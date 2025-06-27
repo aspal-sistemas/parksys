@@ -831,6 +831,9 @@ async function initializeDatabaseAsync() {
     const { registerInstructorRoutes } = await import('./instructor-routes');
     registerInstructorRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
     
+    const { registerInstructorEvaluationRoutes } = await import('./instructor-evaluations-routes');
+    registerInstructorEvaluationRoutes(app, apiRouter);
+    
     app.use("/api", apiRouter);
     console.log("API de integraciones financieras múltiples registrada correctamente");
     
