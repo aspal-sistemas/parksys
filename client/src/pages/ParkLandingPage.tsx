@@ -283,7 +283,7 @@ function ParkLandingPage() {
                 {park.treeSpecies && park.treeSpecies.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {park.treeSpecies.map((species: any) => (
-                      <div key={species.id} className="flex flex-col p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                      <div key={species.id} className="flex flex-col p-4 bg-white rounded-lg border border-green-200">
                         <div className="flex items-start gap-3 mb-3">
                           <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
                             <TreeSpeciesIcon 
