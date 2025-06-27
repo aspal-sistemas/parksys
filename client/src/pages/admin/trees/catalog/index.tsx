@@ -84,6 +84,28 @@ function TreeSpeciesCatalog() {
   const [iconUploadFamily, setIconUploadFamily] = useState('general');
   const [isUploading, setIsUploading] = useState(false);
 
+  // Función para corregir encoding UTF-8
+  const fixEncoding = (text: string): string => {
+    return text
+      .replace(/Ã¡/g, 'á')
+      .replace(/Ã©/g, 'é')
+      .replace(/Ã­/g, 'í')
+      .replace(/Ã³/g, 'ó')
+      .replace(/Ãº/g, 'ú')
+      .replace(/Ã±/g, 'ñ')
+      .replace(/Ã/g, 'Á')
+      .replace(/Ã‰/g, 'É')
+      .replace(/Ã/g, 'Í')
+      .replace(/Ã"/g, 'Ó')
+      .replace(/Ãš/g, 'Ú')
+      .replace(/Ã'/g, 'Ñ')
+      .replace(/Â¿/g, '¿')
+      .replace(/Â¡/g, '¡')
+      .replace(/Ã¼/g, 'ü')
+      .replace(/Ã‡/g, 'Ç')
+      .replace(/Ã§/g, 'ç');
+  };
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['/api/tree-species', searchTerm, originFilter, currentPage, sortBy, sortOrder],
     queryFn: async () => {
