@@ -712,102 +712,28 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   });
 
   // Importar especies de árboles desde CSV
-  apiRouter.post("/tree-species/import/csv", 
-    // Middleware específico para verificar parsing
-    (req: Request, res: Response, next) => {
-      console.log("=== PRE-AUTH MIDDLEWARE ===");
-      console.log("Content-Type:", req.headers['content-type']);
-      console.log("Content-Length:", req.headers['content-length']);
-      console.log("Raw body check:", !!req.body);
-      console.log("Body keys:", Object.keys(req.body || {}));
-      console.log("Body content:", req.body);
-      next();
-    },
-    isAuthenticated, 
-    async (req: Request, res: Response) => {
+  apiRouter.post("/tree-species/import/csv", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      console.log("=== IMPORT CSV DEBUG ===");
-      console.log("Request body:", req.body);
-      console.log("Content-Type:", req.headers['content-type']);
-      
       const { data } = req.body;
       
-      console.log("Extracted data:", data);
-      console.log("Data type:", typeof data);
-      console.log("Is array:", Array.isArray(data));
-      console.log("Data length:", data?.length);
-      
-      if (!data) {
-        return res.status(400).json({ message: "No se proporcionaron datos" });
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        return res.status(400).json({ message: "No se recibieron datos válidos" });
       }
       
-      if (!Array.isArray(data)) {
-        return res.status(400).json({ message: "Los datos deben ser un array" });
-      }
-      
-      if (data.length === 0) {
-        return res.status(400).json({ message: "El array de datos está vacío" });
-      }
-
       let imported = 0;
-      let errors = [];
-
-      console.log("Starting to process rows...");
-      console.log("Sample row structure:", data[0]);
-
+      const errors: string[] = [];
+      
       for (const row of data) {
-        console.log(`Processing row ${imported + 1}/${data.length}:`, row);
         try {
-          // Detectar si es el formato nuevo (con nombre_comun) o el viejo (sin nombre_comun)
+          // Detectar formato: nuevo (nombre_comun) vs viejo (family)
           const isNewFormat = row.nombre_comun !== undefined;
           
-          let commonName, scientificName;
-          
-          if (isNewFormat) {
-            // Formato nuevo con plantilla completa
-            commonName = row.nombre_comun || 'Sin nombre';
-            scientificName = row.nombre_cientifico || 'Sin clasificar';
-          } else {
-            // Formato viejo - generar nombres
-            commonName = row.commonName || `Especie de ${row.family}`;
-            scientificName = row.scientificName || `${row.family} sp.`;
-          }
-          
-          // Usar valores por defecto si aún faltan
-          commonName = commonName || 'Especie no identificada';
-          scientificName = scientificName || 'Species sp.';
-
-          // Verificar si la especie ya existe (solo si tenemos nombre científico específico)
-          if (scientificName && !scientificName.includes('sp.')) {
-            const existing = await db.execute(sql`
-              SELECT id FROM tree_species 
-              WHERE LOWER(scientific_name) = LOWER(${scientificName})
-            `);
-
-            if (existing.rows.length > 0) {
-              errors.push(`Fila ${imported + 1}: La especie "${scientificName}" ya existe`);
-              continue;
-            }
-          }
-
-          console.log(`Processing row ${imported + 1}:`, {
-            originalRow: row,
-            processedData: {
-              commonName,
-              scientificName,
-              family: row.family,
-              origin: row.origin,
-              isEndangered: row.isEndangered
-            }
-          });
-
-          // Preparar datos según el formato
           let insertData;
           if (isNewFormat) {
-            // Formato completo con todos los campos
+            // Usar plantilla completa
             insertData = {
-              common_name: commonName,
-              scientific_name: scientificName,
+              common_name: row.nombre_comun || 'Sin nombre',
+              scientific_name: row.nombre_cientifico || 'Sin clasificar',
               family: row.familia || 'Sin familia',
               origin: row.origen || 'Desconocido',
               growth_rate: row.ritmo_crecimiento || 'Medio',
@@ -827,8 +753,8 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
           } else {
             // Formato simple (retrocompatibilidad)
             insertData = {
-              common_name: commonName,
-              scientific_name: scientificName,
+              common_name: `Especie de ${row.family}`,
+              scientific_name: `${row.family} sp.`,
               family: row.family || 'Sin familia',
               origin: row.origin || 'Desconocido',
               growth_rate: 'Medio',
@@ -847,7 +773,6 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
             };
           }
 
-          // Insertar nueva especie
           await db.execute(sql`
             INSERT INTO tree_species (
               common_name, scientific_name, family, origin, growth_rate,
@@ -868,13 +793,9 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
 
           imported++;
         } catch (error) {
-          console.error("Error al importar fila:", error);
           errors.push(`Fila ${imported + 1}: Error al insertar datos`);
         }
       }
-
-      console.log(`Importation completed: ${imported} imported, ${errors.length} errors`);
-      console.log("Errors:", errors);
 
       res.json({
         message: `Importación completada: ${imported} especies importadas`,
@@ -882,7 +803,6 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         errors
       });
     } catch (error) {
-      console.error("Error al importar especies:", error);
       res.status(500).json({ message: "Error al procesar importación" });
     }
   });
