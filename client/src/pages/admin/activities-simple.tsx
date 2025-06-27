@@ -211,8 +211,8 @@ const AdminActivitiesSimple = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Actividades</h1>
-          <Button 
-            className="bg-green-600 hover:bg-green-700"
+          <button 
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium bg-green-600 text-white hover:bg-green-700 h-10 px-4 py-2 transition-colors"
             onClick={() => {
               console.log('Botón Nueva Actividad clickeado');
               setLocation('/admin/activities/new');
@@ -220,7 +220,7 @@ const AdminActivitiesSimple = () => {
           >
             <Plus className="w-4 h-4 mr-2" />
             Nueva Actividad
-          </Button>
+          </button>
         </div>
 
         <Tabs defaultValue="list" className="w-full">
