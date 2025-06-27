@@ -835,7 +835,10 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
 
           imported++;
         } catch (error) {
-          errors.push(`Fila ${i + 1}: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+          console.error(`❌ Error en fila ${i + 1}:`, error);
+          console.error(`❌ Datos que causaron el error:`, insertData);
+          const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+          errors.push(`Fila ${i + 1}: ${errorMessage}`);
         }
       }
 
