@@ -306,6 +306,7 @@ function ParkLandingPage() {
                               <div className="ml-2 flex-shrink-0">
                                 <TreePhotoViewer 
                                   photoUrl={species.photoUrl}
+                                  customPhotoUrl={species.customPhotoUrl}
                                   commonName={species.commonName}
                                   scientificName={species.scientificName}
                                   photoCaption={species.photoCaption}
