@@ -59,6 +59,7 @@ const nuevaActividadSchema = z.object({
   ubicaciones: z.array(z.string()).optional(),
   diasRecurrentes: z.array(z.string()).optional(),
   requisitos: z.string().optional(),
+  instructorId: z.number().optional(),
 });
 
 type NuevaActividadFormValues = z.infer<typeof nuevaActividadSchema>;
@@ -78,6 +79,11 @@ const NuevaActividadPage = () => {
   // Obtener las categorías de actividades desde la API
   const { data: categorias = [] } = useQuery<{ id: number, name: string }[]>({
     queryKey: ['/api/activity-categories'],
+  });
+
+  // Obtener la lista de instructores
+  const { data: instructores = [] } = useQuery<any[]>({
+    queryKey: ['/api/instructors'],
   });
 
   // Configuración del formulario
@@ -271,6 +277,43 @@ const NuevaActividadPage = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="instructorId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Instructor Asignado</FormLabel>
+                      <Select 
+                        onValueChange={(value) => field.onChange(value === "0" ? undefined : Number(value))}
+                        defaultValue={field.value?.toString() || "0"}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona un instructor (opcional)" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="0">Sin instructor asignado</SelectItem>
+                          {instructores.map((instructor) => (
+                            <SelectItem key={instructor.id} value={instructor.id.toString()}>
+                              {instructor.firstName} {instructor.lastName}
+                              {instructor.specialties && instructor.specialties.length > 0 && (
+                                <span className="text-muted-foreground ml-2">
+                                  ({instructor.specialties.slice(0, 2).join(', ')})
+                                </span>
+                              )}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Asigna un instructor responsable de dirigir esta actividad
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
