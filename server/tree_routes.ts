@@ -764,17 +764,17 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
           
           let insertData;
           if (isNewFormat) {
-            // Usar plantilla completa con codificación correcta
+            // Usar datos directos sin conversión para preservar UTF-8
             insertData = {
-              common_name: Buffer.from(row.nombre_comun || 'Sin nombre', 'latin1').toString('utf8'),
-              scientific_name: Buffer.from(row.nombre_cientifico || 'Sin clasificar', 'latin1').toString('utf8'),
-              family: Buffer.from(row.familia || 'Sin familia', 'latin1').toString('utf8'),
-              origin: Buffer.from(row.origen || 'Desconocido', 'latin1').toString('utf8'),
+              common_name: row.nombre_comun || 'Sin nombre',
+              scientific_name: row.nombre_cientifico || 'Sin clasificar',
+              family: row.familia || 'Sin familia', 
+              origin: row.origen || 'Desconocido',
               growth_rate: row.ritmo_crecimiento || 'Medio',
               is_endangered: row.amenazada === 'si' || row.amenazada === 'sí',
-              description: row.descripcion ? Buffer.from(row.descripcion, 'latin1').toString('utf8') : null,
-              maintenance_requirements: row.requisitos_mantenimiento ? Buffer.from(row.requisitos_mantenimiento, 'latin1').toString('utf8') : null,
-              ecological_benefits: row.beneficios_ecologicos ? Buffer.from(row.beneficios_ecologicos, 'latin1').toString('utf8') : null,
+              description: row.descripcion || null,
+              maintenance_requirements: row.requisitos_mantenimiento || null,
+              ecological_benefits: row.beneficios_ecologicos || null,
               image_url: row.url_imagen || null,
               life_expectancy: row.esperanza_vida ? parseInt(row.esperanza_vida) : null,
               climate_zone: row.zona_climatica || null,
@@ -782,12 +782,12 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
               water_requirements: row.requisitos_agua || null,
               sun_requirements: row.requisitos_sol || null,
               ornamental_value: row.valor_ornamental || null,
-              common_uses: row.usos_comunes ? Buffer.from(row.usos_comunes, 'latin1').toString('utf8') : null
+              common_uses: row.usos_comunes || null
             };
           } else {
-            // Formato simple con nombres reales mexicanos y codificación correcta
+            // Formato simple con nombres reales mexicanos
             const family = row.family || 'Sin familia';
-            const origin = Buffer.from(row.origin || 'Desconocido', 'latin1').toString('utf8');
+            const origin = row.origin || 'Desconocido';
             
             insertData = {
               common_name: familyToCommonName[family] || `Árbol de ${family}`,
