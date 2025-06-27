@@ -586,9 +586,9 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
           a.created_at as "createdAt"
         FROM activities a 
         LEFT JOIN parks p ON a.park_id = p.id 
-        WHERE a.instructor_id = $1 
+        WHERE a.instructor_id = ${instructorId}
         ORDER BY a.start_date DESC
-      `, [instructorId]);
+      `);
 
       res.json(result.rows);
     } catch (error) {
