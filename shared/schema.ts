@@ -845,15 +845,35 @@ export const instructorAssignments = pgTable("instructor_assignments", {
 
 export const instructorEvaluations = pgTable("instructor_evaluations", {
   id: serial("id").primaryKey(),
-  instructorId: integer("instructor_id").notNull(),
-  evaluatorId: integer("evaluator_id").notNull(),
-  evaluationDate: date("evaluation_date").notNull(),
-  knowledgeRating: integer("knowledge_rating").notNull(),
-  teachingRating: integer("teaching_rating").notNull(),
-  punctualityRating: integer("punctuality_rating").notNull(),
-  communicationRating: integer("communication_rating").notNull(),
+  instructorId: integer("instructor_id").references(() => instructors.id).notNull(),
+  
+  // Información del evaluador (puede ser usuario registrado o ciudadano)
+  evaluatorId: integer("evaluator_id").references(() => users.id), // Opcional para usuarios registrados
+  evaluatorName: varchar("evaluator_name", { length: 255 }), // Para ciudadanos sin registro
+  evaluatorEmail: varchar("evaluator_email", { length: 255 }),
+  evaluatorCity: varchar("evaluator_city", { length: 100 }),
+  evaluatorIp: varchar("evaluator_ip", { length: 45 }), // Para evitar spam
+  
+  // Calificaciones específicas (1-5)
   overallRating: integer("overall_rating").notNull(),
+  knowledgeRating: integer("knowledge_rating").notNull(),
+  patienceRating: integer("patience_rating").notNull(),
+  clarityRating: integer("clarity_rating").notNull(),
+  punctualityRating: integer("punctuality_rating").notNull(),
+  
+  // Información adicional
+  wouldRecommend: boolean("would_recommend"),
   comments: text("comments"),
+  attendedActivity: varchar("attended_activity", { length: 255 }),
+  
+  // Control de moderación
+  status: varchar("status", { length: 20 }).default("pending"), // pending, approved, rejected
+  moderationNotes: text("moderation_notes"),
+  moderatedBy: integer("moderated_by").references(() => users.id),
+  moderatedAt: timestamp("moderated_at"),
+  
+  // Metadatos
+  evaluationDate: date("evaluation_date").defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
 });
@@ -2526,85 +2546,5 @@ export type InsertContractAuthorizedService = z.infer<typeof insertContractAutho
 export type ContractIncomeReport = typeof contractIncomeReports.$inferSelect;
 export type InsertContractIncomeReport = z.infer<typeof insertContractIncomeReportSchema>;
 
-export type ContractMonthlyPayment = typeof contractMonthlyPayments.$inferSelect;
-export type InsertContractMonthlyPayment = z.infer<typeof insertContractMonthlyPaymentSchema>;
-
-// Relaciones para el sistema de cobro híbrido
-export const contractPaymentConfigsRelations = relations(contractPaymentConfigs, ({ one, many }) => ({
-  contract: one(concessionContracts, {
-    fields: [contractPaymentConfigs.contractId],
-    references: [concessionContracts.id]
-  }),
-  charges: many(contractCharges)
-}));
-
-export const contractChargesRelations = relations(contractCharges, ({ one }) => ({
-  paymentConfig: one(contractPaymentConfigs, {
-    fields: [contractCharges.paymentConfigId],
-    references: [contractPaymentConfigs.id]
-  })
-}));
-
-export const contractInvestmentsRelations = relations(contractInvestments, ({ one }) => ({
-  contract: one(concessionContracts, {
-    fields: [contractInvestments.contractId],
-    references: [concessionContracts.id]
-  })
-}));
-
-export const contractBonusesRelations = relations(contractBonuses, ({ one }) => ({
-  contract: one(concessionContracts, {
-    fields: [contractBonuses.contractId],
-    references: [concessionContracts.id]
-  })
-}));
-
-export const contractAuthorizedServicesRelations = relations(contractAuthorizedServices, ({ one }) => ({
-  contract: one(concessionContracts, {
-    fields: [contractAuthorizedServices.contractId],
-    references: [concessionContracts.id]
-  })
-}));
-
-export const contractIncomeReportsRelations = relations(contractIncomeReports, ({ one, many }) => ({
-  contract: one(concessionContracts, {
-    fields: [contractIncomeReports.contractId],
-    references: [concessionContracts.id]
-  }),
-  verifiedByUser: one(users, {
-    fields: [contractIncomeReports.verifiedBy],
-    references: [users.id]
-  }),
-  monthlyPayments: many(contractMonthlyPayments)
-}));
-
-export const contractMonthlyPaymentsRelations = relations(contractMonthlyPayments, ({ one }) => ({
-  contract: one(concessionContracts, {
-    fields: [contractMonthlyPayments.contractId],
-    references: [concessionContracts.id]
-  }),
-  incomeReport: one(contractIncomeReports, {
-    fields: [contractMonthlyPayments.incomeReportId],
-    references: [contractIncomeReports.id]
-  }),
-  calculatedByUser: one(users, {
-    fields: [contractMonthlyPayments.calculatedBy],
-    references: [users.id]
-  })
-}));
-
-// Tipos TypeScript para el sistema de cobro híbrido
-export type ContractPaymentConfig = typeof contractPaymentConfigs.$inferSelect;
-export type InsertContractPaymentConfig = z.infer<typeof insertContractPaymentConfigSchema>;
-export type ContractCharge = typeof contractCharges.$inferSelect;
-export type InsertContractCharge = z.infer<typeof insertContractChargeSchema>;
-export type ContractInvestment = typeof contractInvestments.$inferSelect;
-export type InsertContractInvestment = z.infer<typeof insertContractInvestmentSchema>;
-export type ContractBonus = typeof contractBonuses.$inferSelect;
-export type InsertContractBonus = z.infer<typeof insertContractBonusSchema>;
-export type ContractAuthorizedService = typeof contractAuthorizedServices.$inferSelect;
-export type InsertContractAuthorizedService = z.infer<typeof insertContractAuthorizedServiceSchema>;
-export type ContractIncomeReport = typeof contractIncomeReports.$inferSelect;
-export type InsertContractIncomeReport = z.infer<typeof insertContractIncomeReportSchema>;
 export type ContractMonthlyPayment = typeof contractMonthlyPayments.$inferSelect;
 export type InsertContractMonthlyPayment = z.infer<typeof insertContractMonthlyPaymentSchema>;
