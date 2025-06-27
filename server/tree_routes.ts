@@ -759,8 +759,11 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         const row = data[i];
         
         try {
+          console.log(`🌳 Procesando fila ${i + 1}:`, row);
+          
           // Detectar formato: nuevo (nombre_comun) vs viejo (family)
           const isNewFormat = row.nombre_comun !== undefined;
+          console.log(`📝 Formato detectado: ${isNewFormat ? 'nuevo' : 'viejo'}`);
           
           let insertData;
           if (isNewFormat) {
@@ -776,7 +779,7 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
               maintenance_requirements: row.requisitos_mantenimiento || null,
               ecological_benefits: row.beneficios_ecologicos || null,
               image_url: row.url_imagen || null,
-              life_expectancy: row.esperanza_vida ? parseInt(row.esperanza_vida) : null,
+              lifespan: row.esperanza_vida ? parseInt(row.esperanza_vida) : null,
               climate_zone: row.zona_climatica || null,
               soil_requirements: row.requisitos_suelo || null,
               water_requirements: row.requisitos_agua || null,
@@ -810,7 +813,9 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
             };
           }
 
-          await db.execute(sql`
+          console.log(`💾 Insertando datos:`, insertData);
+          
+          const result = await db.execute(sql`
             INSERT INTO tree_species (
               common_name, scientific_name, family, origin, growth_rate,
               is_endangered, description, maintenance_requirements, ecological_benefits, 
@@ -821,13 +826,14 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
               ${insertData.family}, ${insertData.origin}, ${insertData.growth_rate},
               ${insertData.is_endangered}, ${insertData.description}, 
               ${insertData.maintenance_requirements}, ${insertData.ecological_benefits},
-              ${insertData.image_url}, ${insertData.life_expectancy}, 
+              ${insertData.image_url}, ${insertData.lifespan}, 
               ${insertData.climate_zone}, ${insertData.soil_requirements},
               ${insertData.water_requirements}, ${insertData.sun_requirements}, 
               ${insertData.ornamental_value}, ${insertData.common_uses}
             )
           `);
 
+          console.log(`✅ Fila ${i + 1} insertada exitosamente`, result);
           imported++;
         } catch (error) {
           errors.push(`Fila ${i + 1}: ${error instanceof Error ? error.message : 'Error desconocido'}`);
