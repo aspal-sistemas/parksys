@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
 import { Helmet } from 'react-helmet';
 import AdminLayout from '@/components/AdminLayout';
@@ -49,7 +50,8 @@ import {
   CircleCheck, 
   CircleAlert, 
   Info,
-  Sprout
+  Sprout,
+  Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -79,6 +81,7 @@ interface TreeInventory {
 function TreeInventoryPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [parkFilter, setParkFilter] = useState('all');
@@ -159,8 +162,36 @@ function TreeInventoryPage() {
   const handleAddTree = () => {
     setLocation('/admin/trees/inventory/new');
   };
-  
-  // Esta función ha sido eliminada ya que no es necesaria
+
+  // Mutación para limpiar el inventario de árboles
+  const clearInventoryMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('/api/trees/delete-all', {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: (response) => {
+      toast({
+        title: "Inventario limpiado",
+        description: response.message || "Todos los árboles han sido eliminados del inventario",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/trees'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al limpiar inventario",
+        description: error.message || "No se pudieron eliminar todos los árboles",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Manejar limpiado del inventario
+  const handleClearInventory = () => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar TODOS los árboles del inventario?\n\nEsta acción eliminará todos los registros de árboles y sus mantenimientos asociados.\n\nEsta acción no se puede deshacer.')) {
+      clearInventoryMutation.mutate();
+    }
+  };
 
   const handleViewDetails = (id: number) => {
     setLocation(`/admin/trees/inventory/${id}`);
@@ -242,12 +273,23 @@ function TreeInventoryPage() {
               Gestión y seguimiento de árboles individuales en los parques
             </p>
           </div>
-          <Button 
-            onClick={handleAddTree}
-            className="bg-green-600 hover:bg-green-700 flex items-center"
-          >
-            <Plus className="mr-2 h-4 w-4" /> Agregar Árbol
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleClearInventory}
+              variant="outline"
+              className="border-red-600 text-red-600 hover:bg-red-50"
+              disabled={clearInventoryMutation.isPending}
+            >
+              <Trash2 className="mr-2 h-4 w-4" /> 
+              {clearInventoryMutation.isPending ? 'Limpiando...' : 'Limpiar Inventario'}
+            </Button>
+            <Button 
+              onClick={handleAddTree}
+              className="bg-green-600 hover:bg-green-700 flex items-center"
+            >
+              <Plus className="mr-2 h-4 w-4" /> Agregar Árbol
+            </Button>
+          </div>
         </div>
         
         <Card className="mb-6">

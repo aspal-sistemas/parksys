@@ -905,6 +905,36 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
     }
   });
 
+  // Eliminar todos los árboles del inventario (requiere autenticación)
+  apiRouter.delete("/trees/delete-all", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Contar árboles antes de eliminar
+      const treeCount = await db.execute(sql`
+        SELECT COUNT(*) as count FROM trees
+      `);
+      
+      // Eliminar primero los mantenimientos asociados
+      await db.execute(sql`
+        DELETE FROM tree_maintenances
+      `);
+      
+      // Eliminar todos los árboles
+      await db.execute(sql`
+        DELETE FROM trees
+      `);
+      
+      const deletedCount = treeCount.rows?.[0] ? (treeCount.rows[0] as any).count : 0;
+      
+      res.json({ 
+        message: `Inventario de árboles limpiado correctamente. ${deletedCount} árboles eliminados.`,
+        deletedCount: deletedCount
+      });
+    } catch (error) {
+      console.error("Error al limpiar inventario:", error);
+      res.status(500).json({ message: "Error al eliminar todos los árboles del inventario" });
+    }
+  });
+
   // Obtener árboles por parque
   apiRouter.get("/parks/:id/trees", async (req: Request, res: Response) => {
     try {
