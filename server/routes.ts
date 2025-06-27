@@ -2342,10 +2342,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Endpoint directo para crear actividades - SIN AUTENTICACIÓN TEMPORAL
   apiRouter.post("/activities", async (req: Request, res: Response) => {
-    console.log("🔥 INICIO POST /api/activities");
-    console.log("🔥 Body completo:", JSON.stringify(req.body, null, 2));
+    console.log("🔥🔥🔥 ENDPOINT ACTIVITIES EJECUTÁNDOSE 🔥🔥🔥");
     
     try {
+      console.log("🔥 INICIO POST /api/activities");
+      console.log("🔥 Body completo:", JSON.stringify(req.body, null, 2));
       
       // Log de depuración más detallado
       console.log("fechaInicio recibido:", req.body.fechaInicio, "tipo:", typeof req.body.fechaInicio);
