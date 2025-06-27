@@ -21,10 +21,14 @@ import {
   Phone,
   Award,
   Calendar,
-  MapPin
+  MapPin,
+  Filter,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Instructor {
   id: number;
@@ -55,6 +59,15 @@ export default function InstructorsManagementPage() {
   const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [instructorToDelete, setInstructorToDelete] = useState<Instructor | null>(null);
+  
+  // Estados para filtros
+  const [specialtyFilter, setSpecialtyFilter] = useState('');
+  const [ratingFilter, setRatingFilter] = useState('');
+  const [experienceFilter, setExperienceFilter] = useState('');
+  
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Obtener lista de instructores
   const { data: instructors = [], isLoading } = useQuery({
@@ -91,14 +104,53 @@ export default function InstructorsManagementPage() {
     },
   });
 
-  // Filtrar instructores por búsqueda
-  const filteredInstructors = instructors.filter((instructor: Instructor) =>
-    `${instructor.firstName} ${instructor.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    instructor.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    instructor.specialties.some(specialty => 
-      specialty.toLowerCase().includes(searchQuery.toLowerCase())
+  // Obtener especialidades únicas para el filtro
+  const uniqueSpecialties = Array.from(
+    new Set(
+      (instructors as Instructor[]).flatMap(instructor => 
+        Array.isArray(instructor.specialties) ? instructor.specialties : []
+      )
     )
-  );
+  ).sort();
+
+  // Aplicar todos los filtros
+  let filteredInstructors = (instructors as Instructor[]).filter((instructor: Instructor) => {
+    // Filtro de búsqueda
+    const matchesSearch = searchQuery === '' || 
+      `${instructor.firstName} ${instructor.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      instructor.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (Array.isArray(instructor.specialties) ? instructor.specialties : []).some(specialty => 
+        specialty.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+    // Filtro por especialidad
+    const matchesSpecialty = specialtyFilter === '' || 
+      (Array.isArray(instructor.specialties) ? instructor.specialties : []).includes(specialtyFilter);
+
+    // Filtro por calificación
+    const matchesRating = ratingFilter === '' || 
+      (instructor.rating && instructor.rating >= parseFloat(ratingFilter));
+
+    // Filtro por experiencia
+    const matchesExperience = experienceFilter === '' || 
+      (experienceFilter === '0-2' && instructor.experienceYears <= 2) ||
+      (experienceFilter === '3-5' && instructor.experienceYears >= 3 && instructor.experienceYears <= 5) ||
+      (experienceFilter === '6-10' && instructor.experienceYears >= 6 && instructor.experienceYears <= 10) ||
+      (experienceFilter === '10+' && instructor.experienceYears > 10);
+
+    return matchesSearch && matchesSpecialty && matchesRating && matchesExperience;
+  });
+
+  // Calcular paginación
+  const totalPages = Math.ceil(filteredInstructors.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedInstructors = filteredInstructors.slice(startIndex, endIndex);
+
+  // Reset página cuando cambien los filtros
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, specialtyFilter, ratingFilter, experienceFilter]);
 
   const handleDeleteInstructor = (instructor: Instructor) => {
     setInstructorToDelete(instructor);
@@ -221,6 +273,87 @@ export default function InstructorsManagementPage() {
           </Link>
         </div>
 
+        {/* Filtros */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filtros
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Filtro por especialidad */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Especialidad</label>
+                <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todas las especialidades" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todas las especialidades</SelectItem>
+                    {uniqueSpecialties.map((specialty) => (
+                      <SelectItem key={specialty} value={specialty}>
+                        {specialty}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Filtro por calificación */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Calificación mínima</label>
+                <Select value={ratingFilter} onValueChange={setRatingFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todas las calificaciones" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todas las calificaciones</SelectItem>
+                    <SelectItem value="4.5">4.5+ estrellas</SelectItem>
+                    <SelectItem value="4.0">4.0+ estrellas</SelectItem>
+                    <SelectItem value="3.5">3.5+ estrellas</SelectItem>
+                    <SelectItem value="3.0">3.0+ estrellas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Filtro por experiencia */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Años de experiencia</label>
+                <Select value={experienceFilter} onValueChange={setExperienceFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Toda la experiencia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Toda la experiencia</SelectItem>
+                    <SelectItem value="0-2">0-2 años</SelectItem>
+                    <SelectItem value="3-5">3-5 años</SelectItem>
+                    <SelectItem value="6-10">6-10 años</SelectItem>
+                    <SelectItem value="10+">Más de 10 años</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Botón limpiar filtros */}
+              <div className="flex items-end">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSpecialtyFilter('');
+                    setRatingFilter('');
+                    setExperienceFilter('');
+                    setSearchQuery('');
+                  }}
+                  className="w-full"
+                >
+                  Limpiar filtros
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Tabla de instructores */}
         <Card>
           <CardHeader>
@@ -234,9 +367,11 @@ export default function InstructorsManagementPage() {
               <div className="flex justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587]"></div>
               </div>
-            ) : filteredInstructors.length === 0 ? (
+            ) : paginatedInstructors.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                {searchQuery ? 'No se encontraron instructores que coincidan con la búsqueda' : 'No hay instructores registrados'}
+                {searchQuery || specialtyFilter || ratingFilter || experienceFilter 
+                  ? 'No se encontraron instructores que coincidan con los filtros aplicados' 
+                  : 'No hay instructores registrados'}
               </div>
             ) : (
               <Table>
