@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { eq, and, desc } from 'drizzle-orm';
 import { db } from './db';
-import { users, instructors } from '../shared/schema';
+import { users, instructors, parks } from '../shared/schema';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -10,7 +10,7 @@ import bcryptjs from 'bcryptjs';
 // Configuración de multer para subida de archivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = 'uploads/instructors';
+    const uploadDir = 'public/uploads/instructors';
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -81,13 +81,15 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
         result.map(async (instructor) => {
           if (instructor.preferredParkId) {
             try {
-              const parkResult = await db.execute(`
-                SELECT name FROM parks WHERE id = $1
-              `, [instructor.preferredParkId]);
+              const parkResult = await db
+                .select({ name: parks.name })
+                .from(parks)
+                .where(eq(parks.id, instructor.preferredParkId))
+                .limit(1);
               
               return {
                 ...instructor,
-                preferredParkName: parkResult.rows[0]?.name || null
+                preferredParkName: parkResult[0]?.name || null
               };
             } catch (error) {
               console.error('Error fetching park name:', error);
