@@ -128,12 +128,17 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
     }
   });
 
-  // Crear nuevo instructor (con creación automática de usuario)
+  // Crear nuevo instructor (con creación automática de usuario) - maneja FormData
   apiRouter.post('/instructors', upload.fields([
     { name: 'profileImage', maxCount: 1 },
     { name: 'curriculum', maxCount: 1 }
   ]), async (req: Request, res: Response) => {
     try {
+      console.log('📥 Datos recibidos en POST /instructors:', {
+        body: req.body,
+        files: req.files
+      });
+
       const {
         firstName,
         lastName,
@@ -151,6 +156,7 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
 
       // Validaciones básicas
       if (!firstName || !lastName || !email) {
+        console.log('❌ Validación fallida - campos requeridos:', { firstName, lastName, email });
         return res.status(400).json({ 
           message: 'Los campos nombre, apellido y email son requeridos' 
         });
