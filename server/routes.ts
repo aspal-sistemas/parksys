@@ -2338,17 +2338,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Datos recibidos en POST /api/activities:", req.body);
       
-      // Extraer los datos
-      const { startDate, endDate, ...otherData } = req.body;
+      // Mapear campos del frontend al esquema de base de datos
+      const {
+        nombre,
+        descripcion,
+        categoria,
+        parqueId,
+        fechaInicio,
+        fechaFin,
+        ubicacion,
+        instructorId,
+        ...otherData
+      } = req.body;
       
       // Convertir las fechas explícitamente a objetos Date
       let parsedStartDate: Date;
       let parsedEndDate: Date | undefined;
       
       try {
-        parsedStartDate = new Date(startDate);
-        if (endDate) {
-          parsedEndDate = new Date(endDate);
+        parsedStartDate = new Date(fechaInicio);
+        if (fechaFin) {
+          parsedEndDate = new Date(fechaFin);
         }
       } catch (e) {
         console.error("Error al convertir fechas:", e);
@@ -2365,10 +2375,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "La fecha de fin no es válida" });
       }
       
-      // Crear el objeto con los datos procesados
+      // Crear el objeto con los datos procesados y mapeados
       const activityData = { 
-        ...otherData, 
+        title: nombre,
+        description: descripcion,
+        parkId: parqueId,
         startDate: parsedStartDate,
+        location: ubicacion,
+        categoryId: categoria ? parseInt(categoria) : null,
+        instructorId: instructorId || null,
         ...(parsedEndDate && { endDate: parsedEndDate })
       };
       
