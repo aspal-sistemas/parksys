@@ -200,16 +200,12 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
         .values({
           username: `${firstName.toLowerCase()}.${lastName.toLowerCase()}`,
           email,
-          firstName,
-          lastName,
           fullName: `${firstName} ${lastName}`,
           password: hashedPassword,
           role: 'instructor',
           profileImageUrl,
           phone,
           bio,
-          specialties: processedSpecialties,
-          experience,
           municipalityId: null,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -267,7 +263,15 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
       });
 
     } catch (error) {
-      console.error('Error creating instructor:', error);
+      console.error('❌ Error creating instructor:', error);
+      
+      // Si el error está relacionado con la creación del usuario
+      if (error instanceof Error && error.message.includes('duplicate key')) {
+        return res.status(400).json({ 
+          message: 'Ya existe un usuario con este email o nombre de usuario' 
+        });
+      }
+      
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Error al crear instructor' 
       });
