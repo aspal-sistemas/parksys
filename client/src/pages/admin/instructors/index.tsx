@@ -56,14 +56,18 @@ import { es } from 'date-fns/locale';
 // Tipo para los instructores
 interface Instructor {
   id: number;
-  full_name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone?: string;
-  specialties?: string[] | string;
-  experience_years: number;
-  status: string;
-  profile_image_url?: string;
-  created_at: string;
+  specialties?: string[];
+  experienceYears: number;
+  status?: string;
+  profileImageUrl?: string;
+  createdAt: string;
+  preferredParkName?: string;
+  rating?: number;
+  activitiesCount?: number;
 }
 
 export default function InstructorsListPage() {
@@ -118,7 +122,7 @@ export default function InstructorsListPage() {
     return instructors.filter((instructor: Instructor) => {
       // Filtro por término de búsqueda (nombre o email)
       const matchesSearch = searchTerm === '' || 
-        instructor.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        `${instructor.firstName} ${instructor.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
         instructor.email?.toLowerCase().includes(searchTerm.toLowerCase());
       
       // Filtro por estado
@@ -214,27 +218,20 @@ export default function InstructorsListPage() {
   };
 
   // Renderizar columna de especialidades
-  const renderSpecialties = (specialties?: string[] | string) => {
-    if (!specialties) return <span className="text-gray-400 italic">No especificado</span>;
-    
-    let specialtiesList: string[];
-    if (Array.isArray(specialties)) {
-      specialtiesList = specialties;
-    } else if (typeof specialties === 'string') {
-      specialtiesList = specialties.split(',').map(s => s.trim());
-    } else {
+  const renderSpecialties = (specialties?: string[]) => {
+    if (!specialties || !Array.isArray(specialties) || specialties.length === 0) {
       return <span className="text-gray-400 italic">No especificado</span>;
     }
 
-    if (specialtiesList.length <= 2) {
-      return specialtiesList.map((specialty, index) => (
+    if (specialties.length <= 2) {
+      return specialties.map((specialty, index) => (
         <Badge key={index} variant="outline" className="mr-1">{specialty}</Badge>
       ));
     } else {
       return (
         <>
-          <Badge variant="outline" className="mr-1">{specialtiesList[0]}</Badge>
-          <Badge variant="outline" className="mr-1">+{specialtiesList.length - 1} más</Badge>
+          <Badge variant="outline" className="mr-1">{specialties[0]}</Badge>
+          <Badge variant="outline" className="mr-1">+{specialties.length - 1} más</Badge>
         </>
       );
     }
@@ -344,7 +341,7 @@ export default function InstructorsListPage() {
                 <Briefcase className="h-5 w-5 text-amber-600 mr-2" />
                 <span className="text-2xl font-bold">
                   {instructors && instructors.length > 0 
-                    ? Math.round(instructors.reduce((sum: number, i: Instructor) => sum + (i.experience_years || 0), 0) / instructors.length) 
+                    ? Math.round(instructors.reduce((sum: number, i: Instructor) => sum + (i.experienceYears || 0), 0) / instructors.length) 
                     : 0} años
                 </span>
               </div>
@@ -463,7 +460,7 @@ export default function InstructorsListPage() {
                   {paginatedInstructors.map((instructor: Instructor) => (
                     <TableRow key={instructor.id}>
                       <TableCell className="font-medium">
-                        {instructor.full_name}
+                        {instructor.firstName} {instructor.lastName}
                       </TableCell>
                       <TableCell>
                         <div>{instructor.email}</div>
@@ -478,9 +475,9 @@ export default function InstructorsListPage() {
                         {renderSpecialties(instructor.specialties)}
                       </TableCell>
                       <TableCell>
-                        {instructor.experience_years} {instructor.experience_years === 1 ? 'año' : 'años'}
+                        {instructor.experienceYears} {instructor.experienceYears === 1 ? 'año' : 'años'}
                       </TableCell>
-                      <TableCell>{formatDate(instructor.created_at)}</TableCell>
+                      <TableCell>{formatDate(instructor.createdAt)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button

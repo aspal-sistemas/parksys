@@ -133,11 +133,13 @@ export default function InstructorDetailPage() {
   };
 
   // Renderizar especialidades
-  const renderSpecialties = (specialties?: string) => {
-    if (!specialties) return <span className="text-gray-400 italic">Sin especialidades registradas</span>;
+  const renderSpecialties = (specialties?: string[]) => {
+    if (!specialties || !Array.isArray(specialties) || specialties.length === 0) {
+      return <span className="text-gray-400 italic">Sin especialidades registradas</span>;
+    }
     
-    return specialties.split(',').map((specialty, index) => (
-      <Badge key={index} variant="outline" className="mr-1 mb-1">{specialty.trim()}</Badge>
+    return specialties.map((specialty, index) => (
+      <Badge key={index} variant="outline" className="mr-1 mb-1">{specialty}</Badge>
     ));
   };
 
