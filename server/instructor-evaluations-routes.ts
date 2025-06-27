@@ -34,7 +34,6 @@ export function registerInstructorEvaluationRoutes(app: any, apiRouter: Router) 
           ie.attended_activity as "attendedActivity",
           ie.evaluator_name as "evaluatorName",
           ie.evaluator_city as "evaluatorCity",
-          ie.evaluation_date as "evaluationDate",
           ie.created_at as "createdAt"
         FROM instructor_evaluations ie
         WHERE ie.instructor_id = ${instructorId} 
