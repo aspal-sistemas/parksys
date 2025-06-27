@@ -362,68 +362,7 @@ export default function InstructorDetailPage() {
               </TabsContent>
               
               <TabsContent value="evaluations">
-                {isLoadingEvaluations ? (
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="flex justify-center py-4">
-                        <RefreshCw className="h-5 w-5 animate-spin text-gray-400" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : !evaluations || evaluations.length === 0 ? (
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center py-6">
-                        <BookOpen className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                        <p className="text-gray-500">No hay evaluaciones disponibles para este instructor.</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-4">
-                    {evaluations.map((evaluation: any) => (
-                      <Card key={evaluation.id}>
-                        <CardHeader className="pb-2">
-                          <div className="flex justify-between">
-                            <CardTitle className="text-lg">{evaluation.title || 'Evaluación'}</CardTitle>
-                            <Badge>{formatDate(evaluation.evaluation_date || evaluation.created_at)}</Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          {evaluation.comments && (
-                            <p className="text-gray-700 mb-3">{evaluation.comments}</p>
-                          )}
-                          
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-                            <div className="bg-gray-50 p-2 rounded text-center">
-                              <p className="text-xs text-gray-500">Conocimiento</p>
-                              <p className="font-bold">{evaluation.knowledge}/5</p>
-                            </div>
-                            <div className="bg-gray-50 p-2 rounded text-center">
-                              <p className="text-xs text-gray-500">Comunicación</p>
-                              <p className="font-bold">{evaluation.communication}/5</p>
-                            </div>
-                            <div className="bg-gray-50 p-2 rounded text-center">
-                              <p className="text-xs text-gray-500">Metodología</p>
-                              <p className="font-bold">{evaluation.methodology}/5</p>
-                            </div>
-                            <div className="bg-gray-50 p-2 rounded text-center">
-                              <p className="text-xs text-gray-500">Desempeño</p>
-                              <p className="font-bold">{evaluation.overall_performance}/5</p>
-                            </div>
-                          </div>
-                          
-                          {evaluation.activity_title && (
-                            <div className="mt-3 pt-3 border-t">
-                              <p className="text-xs text-gray-500">Actividad evaluada</p>
-                              <p>{evaluation.activity_title}</p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
+                <InstructorEvaluationsList instructorId={instructorId} />
               </TabsContent>
               
               <TabsContent value="recognitions">
