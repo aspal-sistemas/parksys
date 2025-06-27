@@ -179,6 +179,95 @@ function TreeSpeciesCatalog() {
     }
   };
 
+  // Descargar plantilla CSV con ejemplos
+  const handleDownloadTemplate = () => {
+    const headers = [
+      'nombre_comun',
+      'nombre_cientifico', 
+      'familia',
+      'origen',
+      'ritmo_crecimiento',
+      'url_imagen',
+      'amenazada',
+      'descripcion',
+      'beneficios_ecologicos',
+      'requisitos_mantenimiento',
+      'esperanza_vida',
+      'zona_climatica',
+      'requisitos_suelo',
+      'requisitos_agua',
+      'requisitos_sol',
+      'valor_ornamental',
+      'usos_comunes'
+    ];
+
+    const examples = [
+      [
+        'Ahuehuete',
+        'Taxodium mucronatum',
+        'Cupressaceae',
+        'Nativo',
+        'Medio',
+        'https://ejemplo.com/ahuehuete.jpg',
+        'no',
+        'Árbol sagrado de México, de gran longevidad y porte majestuoso. Se caracteriza por su tronco grueso y su corteza fibrosa. Es el árbol nacional de México.',
+        'Purifica el aire, proporciona sombra abundante, refugio para fauna, control de erosión, absorbe CO2',
+        'Riego abundante los primeros años, poda de mantenimiento ocasional, fertilización anual',
+        '500-1500 años',
+        'Templado húmedo a subtropical',
+        'Suelos húmedos, bien drenados, tolera encharcamiento temporal',
+        'Abundante, tolera inundaciones estacionales',
+        'Pleno sol a sombra parcial',
+        'Alto - follaje denso, forma característica, corteza atractiva',
+        'Ornamental, sombra, conservación de suelos, valor histórico y cultural'
+      ],
+      [
+        'Jacaranda',
+        'Jacaranda mimosifolia',
+        'Bignoniaceae',
+        'Introducido',
+        'Rápido',
+        'https://ejemplo.com/jacaranda.jpg',
+        'no',
+        'Árbol ornamental famoso por su espectacular floración violeta. Originario de Argentina, ampliamente cultivado en México por su belleza.',
+        'Atrae polinizadores, proporciona sombra, mejora paisaje urbano',
+        'Riego moderado, poda después de floración, fertilización en primavera',
+        '50-100 años',
+        'Subtropical a templado',
+        'Bien drenados, tolera sequía una vez establecido',
+        'Moderada, evitar encharcamiento',
+        'Pleno sol',
+        'Muy alto - floración espectacular, follaje delicado',
+        'Ornamental, sombra en parques y avenidas, paisajismo'
+      ]
+    ];
+
+    // Crear contenido CSV
+    const csvContent = [
+      headers.join(','),
+      ...examples.map(row => 
+        row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')
+      )
+    ].join('\n');
+
+    // Crear y descargar archivo
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = 'plantilla-especies-arboreas.csv';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    toast({
+      title: "Plantilla descargada",
+      description: "La plantilla CSV con ejemplos se ha descargado correctamente",
+    });
+  };
+
   // Manejar selección de archivo CSV
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -451,6 +540,34 @@ function TreeSpeciesCatalog() {
     }
   };
 
+  // Mutación para eliminar todas las especies
+  const deleteAllMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('/api/tree-species/delete-all', {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: (response) => {
+      toast({
+        title: "Catálogo limpiado",
+        description: response.message || "Todas las especies han sido eliminadas del catálogo",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/tree-species'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al limpiar catálogo",
+        description: error.message || "No se pudieron eliminar todas las especies",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Manejar eliminación de todas las especies
+  const handleDeleteAll = () => {
+    deleteAllMutation.mutate();
+  };
+
   const renderPagination = () => {
     if (!pagination || pagination.totalPages <= 1) return null;
     
@@ -532,6 +649,18 @@ function TreeSpeciesCatalog() {
               <Download className="mr-2 h-4 w-4" /> Exportar CSV
             </Button>
             
+            <Button
+              onClick={() => {
+                if (window.confirm('¿Estás seguro de que deseas eliminar TODAS las especies del catálogo?\n\nEsta acción no se puede deshacer. Se recomienda exportar un respaldo antes de continuar.')) {
+                  handleDeleteAll();
+                }
+              }}
+              variant="outline"
+              className="border-red-600 text-red-600 hover:bg-red-50"
+            >
+              <Trash2 className="mr-2 h-4 w-4" /> Borrar Todas
+            </Button>
+            
             <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
               <DialogTrigger asChild>
                 <Button
@@ -554,9 +683,32 @@ function TreeSpeciesCatalog() {
                 <DialogHeader>
                   <DialogTitle>Importar Especies desde CSV</DialogTitle>
                   <DialogDescription>
-                    Vista previa de los primeros 5 registros. Confirma para importar todos los datos.
+                    {csvPreview.length > 0 
+                      ? "Vista previa de los primeros 5 registros. Confirma para importar todos los datos."
+                      : "Selecciona un archivo CSV para importar especies o descarga la plantilla para ver el formato requerido."
+                    }
                   </DialogDescription>
                 </DialogHeader>
+                
+                {csvPreview.length === 0 && (
+                  <div className="flex flex-col space-y-4 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                    <div className="text-center">
+                      <p className="text-sm text-gray-600 mb-4">
+                        ¿Primera vez importando especies? Descarga la plantilla con ejemplos para ver el formato correcto.
+                      </p>
+                      <Button
+                        onClick={handleDownloadTemplate}
+                        variant="outline"
+                        className="border-green-600 text-green-600 hover:bg-green-50"
+                      >
+                        <Download className="mr-2 h-4 w-4" /> Descargar Plantilla CSV
+                      </Button>
+                    </div>
+                    <div className="text-center text-sm text-gray-500">
+                      La plantilla incluye todas las columnas disponibles y dos ejemplos (Ahuehuete y Jacaranda)
+                    </div>
+                  </div>
+                )}
                 
                 {csvPreview.length > 0 && (
                   <div className="space-y-4">
