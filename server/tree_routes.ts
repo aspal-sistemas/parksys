@@ -791,7 +791,7 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
             INSERT INTO tree_species (
               common_name, scientific_name, family, origin, growth_rate,
               is_endangered, description, maintenance_requirements, ecological_benefits, 
-              image_url, life_expectancy, climate_zone, soil_requirements, 
+              image_url, lifespan, climate_zone, soil_requirements, 
               water_requirements, sun_requirements, ornamental_value, common_uses
             ) VALUES (
               ${insertData.common_name}, ${insertData.scientific_name}, 
