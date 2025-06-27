@@ -708,6 +708,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ts.custom_icon_url as "customIconUrl",
           ts.photo_url as "photoUrl",
           ts.photo_caption as "photoCaption",
+          ts.custom_icon_url as "customPhotoUrl",
           ts.description
         FROM park_tree_species pts
         JOIN tree_species ts ON pts.species_id = ts.id

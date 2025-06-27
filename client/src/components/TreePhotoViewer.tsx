@@ -5,6 +5,7 @@ import { Eye, X, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface TreePhotoViewerProps {
   photoUrl?: string;
+  customPhotoUrl?: string;
   commonName: string;
   scientificName: string;
   photoCaption?: string;
@@ -12,6 +13,7 @@ interface TreePhotoViewerProps {
 
 export default function TreePhotoViewer({ 
   photoUrl, 
+  customPhotoUrl,
   commonName, 
   scientificName, 
   photoCaption 
@@ -19,8 +21,11 @@ export default function TreePhotoViewer({
   const [isOpen, setIsOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
 
+  // Usar foto personalizada (cargada desde backend) con prioridad, o URL externa como respaldo
+  const finalPhotoUrl = customPhotoUrl || photoUrl;
+
   // Si no hay foto, no mostrar el botón
-  if (!photoUrl) {
+  if (!finalPhotoUrl) {
     return null;
   }
 
@@ -112,7 +117,7 @@ export default function TreePhotoViewer({
                 }}
               >
                 <img
-                  src={photoUrl}
+                  src={finalPhotoUrl}
                   alt={`Foto de ${commonName} (${scientificName})`}
                   className="max-w-full max-h-[60vh] object-contain rounded-lg shadow-lg"
                   onError={(e) => {
