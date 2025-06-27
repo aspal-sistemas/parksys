@@ -30,12 +30,7 @@ interface LocationSelectorProps {
   disabled?: boolean;
 }
 
-interface Amenity {
-  id: number;
-  name: string;
-  category: string;
-  icon: string;
-}
+
 
 const LocationSelector: React.FC<LocationSelectorProps> = ({
   parkId,
@@ -46,29 +41,15 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 }) => {
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
   const [customLocation, setCustomLocation] = useState('');
-  const [selectedType, setSelectedType] = useState<'amenity' | 'custom'>('amenity');
+  const [selectedType, setSelectedType] = useState<'custom'>('custom');
 
-  // Fetch amenities for the selected park
-  const { data: amenities = [] } = useQuery<Amenity[]>({
-    queryKey: ['/api/parks', parkId, 'amenities'],
-    enabled: !!parkId,
-  });
-
-  // Pre-populate custom location if current value is not an amenity
+  // Pre-populate custom location if current value exists
   useEffect(() => {
-    if (value && amenities.length > 0) {
-      const isAmenity = amenities.some(amenity => amenity.name === value);
-      if (!isAmenity) {
-        setSelectedType('custom');
-        setCustomLocation(value);
-      }
+    if (value) {
+      setSelectedType('custom');
+      setCustomLocation(value);
     }
-  }, [value, amenities]);
-
-  const handleAmenitySelect = (amenityName: string) => {
-    setSelectedType('amenity');
-    onChange(amenityName);
-  };
+  }, [value]);
 
   const handleCustomLocation = () => {
     if (customLocation.trim()) {
@@ -99,43 +80,31 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 
   return (
     <div className="space-y-4">
-      <Label>Ubicación de la actividad</Label>
       
       {/* Current selection display */}
       {value && (
         <div className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
           <MapPin className="h-4 w-4 text-blue-600" />
           <span className="text-sm font-medium text-blue-800">{value}</span>
-          <Badge variant={selectedType === 'amenity' ? 'default' : 'secondary'} className="text-xs">
-            {selectedType === 'amenity' ? 'Amenidad' : 'Personalizada'}
+          <Badge variant="secondary" className="text-xs">
+            Personalizada
           </Badge>
         </div>
       )}
 
-      {/* Amenities section */}
-      {amenities.length > 0 && (
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Amenidades del parque</Label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-            {amenities.map((amenity) => (
-              <Button
-                key={amenity.id}
-                variant={value === amenity.name ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleAmenitySelect(amenity.name)}
-                disabled={disabled}
-                className="justify-start h-auto p-2"
-              >
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4" />
-                  <span className="text-xs truncate">{amenity.name}</span>
-                  {value === amenity.name && <Check className="h-3 w-3 ml-auto" />}
-                </div>
-              </Button>
-            ))}
+      {/* Ubicaciones del parque - Pendiente de implementar */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Ubicaciones del parque</Label>
+        <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+          <div className="text-center text-gray-500">
+            <MapPin className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+            <p className="text-sm">Ubicaciones específicas del parque</p>
+            <p className="text-xs text-gray-400 mt-1">
+              (Pendiente de configuración)
+            </p>
           </div>
         </div>
-      )}
+      </div>
 
 
 
