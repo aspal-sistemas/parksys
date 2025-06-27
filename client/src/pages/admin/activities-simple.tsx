@@ -213,7 +213,10 @@ const AdminActivitiesSimple = () => {
           <h1 className="text-3xl font-bold text-gray-900">Actividades</h1>
           <Button 
             className="bg-green-600 hover:bg-green-700"
-            onClick={() => setLocation('/admin/activities/new')}
+            onClick={() => {
+              console.log('Botón Nueva Actividad clickeado');
+              setLocation('/admin/activities/new');
+            }}
           >
             <Plus className="w-4 h-4 mr-2" />
             Nueva Actividad
