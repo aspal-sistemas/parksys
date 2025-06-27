@@ -869,6 +869,42 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
     }
   });
 
+  // Eliminar todas las especies de árboles (requiere autenticación)
+  apiRouter.delete("/tree-species/delete-all", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar si hay árboles registrados
+      const treeCount = await db.execute(sql`
+        SELECT COUNT(*) as count FROM trees
+      `);
+      
+      if (treeCount.rows && treeCount.rows[0] && (treeCount.rows[0] as any).count > 0) {
+        return res.status(400).json({
+          message: "No se pueden eliminar las especies porque hay árboles registrados en el sistema"
+        });
+      }
+      
+      // Contar especies antes de eliminar
+      const speciesCount = await db.execute(sql`
+        SELECT COUNT(*) as count FROM tree_species
+      `);
+      
+      // Eliminar todas las especies
+      await db.execute(sql`
+        DELETE FROM tree_species
+      `);
+      
+      const deletedCount = speciesCount.rows?.[0] ? (speciesCount.rows[0] as any).count : 0;
+      
+      res.json({ 
+        message: `Catálogo limpiado correctamente. ${deletedCount} especies eliminadas.`,
+        deletedCount: deletedCount
+      });
+    } catch (error) {
+      console.error("Error al limpiar catálogo:", error);
+      res.status(500).json({ message: "Error al eliminar todas las especies" });
+    }
+  });
+
   // Obtener árboles por parque
   apiRouter.get("/parks/:id/trees", async (req: Request, res: Response) => {
     try {
