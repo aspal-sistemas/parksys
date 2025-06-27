@@ -2338,6 +2338,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Datos recibidos en POST /api/activities:", req.body);
       
+      // Log de depuración más detallado
+      console.log("fechaInicio recibido:", req.body.fechaInicio, "tipo:", typeof req.body.fechaInicio);
+      console.log("fechaFin recibido:", req.body.fechaFin, "tipo:", typeof req.body.fechaFin);
+      
       // Mapear campos del frontend al esquema de base de datos
       const {
         nombre,
@@ -2375,13 +2379,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "La fecha de fin no es válida" });
       }
       
-      // Crear el objeto con los datos procesados y mapeados
+      // Crear el objeto con los datos procesados y mapeados (solo campos que existen en el esquema)
       const activityData = { 
         title: nombre,
         description: descripcion,
         parkId: parqueId,
         startDate: parsedStartDate,
-        location: ubicacion,
+        location: ubicacion || null,
         categoryId: categoria ? parseInt(categoria) : null,
         instructorId: instructorId || null,
         ...(parsedEndDate && { endDate: parsedEndDate })
