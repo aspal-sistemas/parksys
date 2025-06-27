@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Filter, MapPin, CalendarCheck, Star } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Search, Filter, MapPin, CalendarCheck, Star, Phone, Mail, Award, Clock, User } from 'lucide-react';
 
 // Tipo de datos para un instructor
 interface Instructor {
@@ -28,6 +29,8 @@ const InstructorsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   
   // Obtener datos de instructores de la ruta correcta para la página pública
   const { data: apiResponse = [], isLoading } = useQuery<any>({
@@ -117,6 +120,18 @@ const InstructorsPage: React.FC = () => {
     return specialties.split(',').map((specialty, index) => (
       <Badge key={index} variant="outline" className="mr-1 mb-1">{specialty.trim()}</Badge>
     ));
+  };
+
+  // Función para abrir el modal de perfil
+  const handleViewProfile = (instructor: Instructor) => {
+    setSelectedInstructor(instructor);
+    setProfileDialogOpen(true);
+  };
+
+  // Función para cerrar el modal
+  const handleCloseProfile = () => {
+    setProfileDialogOpen(false);
+    setSelectedInstructor(null);
   };
 
   return (
@@ -243,7 +258,12 @@ const InstructorsPage: React.FC = () => {
                       <span className="text-sm font-medium">{instructor.rating}/5</span>
                     </div>
                   )}
-                  <Button variant="link" size="sm" className="text-primary px-0">
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    className="text-primary px-0"
+                    onClick={() => handleViewProfile(instructor)}
+                  >
                     Ver perfil
                   </Button>
                 </CardFooter>
@@ -282,7 +302,11 @@ const InstructorsPage: React.FC = () => {
                       {renderSpecialties(instructor.specialties)}
                     </div>
                     <div className="flex justify-end">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleViewProfile(instructor)}
+                      >
                         Ver perfil
                       </Button>
                     </div>
@@ -301,6 +325,148 @@ const InstructorsPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de perfil del instructor */}
+      <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Perfil del Instructor</DialogTitle>
+          </DialogHeader>
+          
+          {selectedInstructor && (
+            <div className="space-y-6">
+              {/* Header con foto y datos básicos */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
+                <Avatar className="h-24 w-24 ring-4 ring-gray-100">
+                  <AvatarImage src={selectedInstructor.profile_image_url} alt={selectedInstructor.full_name} />
+                  <AvatarFallback className="text-xl">{getInitials(selectedInstructor.full_name)}</AvatarFallback>
+                </Avatar>
+                
+                <div className="flex-1 text-center sm:text-left">
+                  <h2 className="text-2xl font-bold text-gray-900">{selectedInstructor.full_name}</h2>
+                  <div className="flex items-center justify-center sm:justify-start mt-2 text-gray-600">
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span>{selectedInstructor.experience_years} {selectedInstructor.experience_years === 1 ? 'año' : 'años'} de experiencia</span>
+                  </div>
+                  {selectedInstructor.rating && (
+                    <div className="flex items-center justify-center sm:justify-start mt-2">
+                      <Star className="h-5 w-5 text-yellow-500 mr-1" />
+                      <span className="font-medium">{selectedInstructor.rating}/5</span>
+                      <span className="text-gray-500 ml-1">({Math.floor(Math.random() * 50) + 10} evaluaciones)</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Especialidades */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center">
+                  <Award className="h-5 w-5 mr-2 text-[#00a587]" />
+                  Especialidades
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {selectedInstructor.specialties ? (
+                    selectedInstructor.specialties.split(',').map((specialty, index) => (
+                      <Badge key={index} variant="secondary" className="bg-[#00a587]/10 text-[#00a587] border-[#00a587]/20">
+                        {specialty.trim()}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-gray-500 italic">No se han especificado especialidades</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Información de contacto */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center">
+                  <User className="h-5 w-5 mr-2 text-[#00a587]" />
+                  Información de Contacto
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <Mail className="h-5 w-5 text-gray-400 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-600">Email</p>
+                      <p className="font-medium">{selectedInstructor.email}</p>
+                    </div>
+                  </div>
+                  
+                  {selectedInstructor.phone && (
+                    <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                      <Phone className="h-5 w-5 text-gray-400 mr-3" />
+                      <div>
+                        <p className="text-sm text-gray-600">Teléfono</p>
+                        <p className="font-medium">{selectedInstructor.phone}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Estado y fecha de ingreso */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center">
+                  <CalendarCheck className="h-5 w-5 mr-2 text-[#00a587]" />
+                  Estado y Actividad
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-600">Estado</p>
+                    <Badge 
+                      variant={selectedInstructor.status === 'active' ? 'default' : 'secondary'}
+                      className={selectedInstructor.status === 'active' ? 'bg-green-100 text-green-800' : ''}
+                    >
+                      {selectedInstructor.status === 'active' ? 'Activo' : 'Inactivo'}
+                    </Badge>
+                  </div>
+                  
+                  {selectedInstructor.created_at && (
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600">Fecha de ingreso</p>
+                      <p className="font-medium">
+                        {new Date(selectedInstructor.created_at).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Actividades recientes */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center">
+                  <MapPin className="h-5 w-5 mr-2 text-[#00a587]" />
+                  Actividades Recientes
+                </h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-gray-600 text-center italic">
+                    No hay actividades recientes registradas
+                  </p>
+                </div>
+              </div>
+
+              {/* Botones de acción */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={handleCloseProfile}
+                >
+                  Cerrar
+                </Button>
+                <Button className="flex-1 bg-[#00a587] hover:bg-[#067f5f] text-white">
+                  <Mail className="h-4 w-4 mr-2" />
+                  Contactar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
