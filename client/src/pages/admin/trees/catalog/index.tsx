@@ -129,13 +129,16 @@ function TreeSpeciesCatalog() {
       console.log("Sending payload:", payload);
       console.log("Payload JSON:", JSON.stringify(payload));
       
-      return apiRequest('/api/tree-species/import/csv', {
+      const response = await apiRequest('/api/tree-species/import/csv', {
         method: 'POST',
         data: payload,
         headers: {
           'Content-Type': 'application/json',
         },
       });
+      
+      console.log("API Response:", response);
+      return response;
     },
     onSuccess: (response) => {
       toast({
