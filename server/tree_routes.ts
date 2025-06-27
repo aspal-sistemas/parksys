@@ -753,28 +753,24 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
       let errors = [];
 
       console.log("Starting to process rows...");
+      console.log("Sample row structure:", data[0]);
 
       for (const row of data) {
-        console.log(`Starting to process row ${imported + 1}/${data.length}`);
+        console.log(`Processing row ${imported + 1}/${data.length}:`, row);
         try {
-          // Auto-generar nombres si no están presentes
-          let commonName = row.commonName;
-          let scientificName = row.scientificName;
+          // Detectar si es el formato nuevo (con nombre_comun) o el viejo (sin nombre_comun)
+          const isNewFormat = row.nombre_comun !== undefined;
           
-          // Si faltan nombres, crear automáticamente basados en familia y origen
-          if (!commonName && row.family) {
-            commonName = `Especie de ${row.family}`;
-          }
-          if (!scientificName && row.family) {
-            // Crear un nombre científico genérico
-            const familyName = row.family.toLowerCase();
-            scientificName = `${familyName.charAt(0).toUpperCase()}${familyName.slice(1)} sp.`;
-          }
+          let commonName, scientificName;
           
-          // Validar que al menos tengamos información básica
-          if (!commonName && !scientificName && !row.family) {
-            errors.push(`Fila ${imported + 1}: Se requiere al menos familia, nombre común o científico`);
-            continue;
+          if (isNewFormat) {
+            // Formato nuevo con plantilla completa
+            commonName = row.nombre_comun || 'Sin nombre';
+            scientificName = row.nombre_cientifico || 'Sin clasificar';
+          } else {
+            // Formato viejo - generar nombres
+            commonName = row.commonName || `Especie de ${row.family}`;
+            scientificName = row.scientificName || `${row.family} sp.`;
           }
           
           // Usar valores por defecto si aún faltan
@@ -805,17 +801,68 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
             }
           });
 
+          // Preparar datos según el formato
+          let insertData;
+          if (isNewFormat) {
+            // Formato completo con todos los campos
+            insertData = {
+              common_name: commonName,
+              scientific_name: scientificName,
+              family: row.familia || 'Sin familia',
+              origin: row.origen || 'Desconocido',
+              growth_rate: row.ritmo_crecimiento || 'Medio',
+              is_endangered: row.amenazada === 'si' || row.amenazada === 'sí',
+              description: row.descripcion || null,
+              maintenance_requirements: row.requisitos_mantenimiento || null,
+              ecological_benefits: row.beneficios_ecologicos || null,
+              image_url: row.url_imagen || null,
+              life_expectancy: row.esperanza_vida || null,
+              climate_zone: row.zona_climatica || null,
+              soil_requirements: row.requisitos_suelo || null,
+              water_requirements: row.requisitos_agua || null,
+              sun_requirements: row.requisitos_sol || null,
+              ornamental_value: row.valor_ornamental || null,
+              common_uses: row.usos_comunes || null
+            };
+          } else {
+            // Formato simple (retrocompatibilidad)
+            insertData = {
+              common_name: commonName,
+              scientific_name: scientificName,
+              family: row.family || 'Sin familia',
+              origin: row.origin || 'Desconocido',
+              growth_rate: 'Medio',
+              is_endangered: row.isEndangered === true,
+              description: null,
+              maintenance_requirements: null,
+              ecological_benefits: null,
+              image_url: null,
+              life_expectancy: null,
+              climate_zone: null,
+              soil_requirements: null,
+              water_requirements: null,
+              sun_requirements: null,
+              ornamental_value: null,
+              common_uses: null
+            };
+          }
+
           // Insertar nueva especie
           await db.execute(sql`
             INSERT INTO tree_species (
               common_name, scientific_name, family, origin, growth_rate,
-              is_endangered, description, maintenance_requirements, ecological_benefits, image_url
+              is_endangered, description, maintenance_requirements, ecological_benefits, 
+              image_url, life_expectancy, climate_zone, soil_requirements, 
+              water_requirements, sun_requirements, ornamental_value, common_uses
             ) VALUES (
-              ${commonName}, ${scientificName}, 
-              ${row.family || 'No especificada'}, ${row.origin || 'No especificado'},
-              ${row.growthRate || 'Medio'}, ${row.isEndangered === 'Sí' || row.isEndangered === true},
-              ${null}, ${null},
-              ${null}, ${null}
+              ${insertData.common_name}, ${insertData.scientific_name}, 
+              ${insertData.family}, ${insertData.origin}, ${insertData.growth_rate},
+              ${insertData.is_endangered}, ${insertData.description}, 
+              ${insertData.maintenance_requirements}, ${insertData.ecological_benefits},
+              ${insertData.image_url}, ${insertData.life_expectancy}, 
+              ${insertData.climate_zone}, ${insertData.soil_requirements},
+              ${insertData.water_requirements}, ${insertData.sun_requirements}, 
+              ${insertData.ornamental_value}, ${insertData.common_uses}
             )
           `);
 
