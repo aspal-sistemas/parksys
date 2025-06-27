@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Filter, MapPin, CalendarCheck, Star, Phone, Mail, Award, Clock, User } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Search, Filter, MapPin, CalendarCheck, Star, Phone, Mail, Award, Clock, User, MessageSquare } from 'lucide-react';
+import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
 
 // Tipo de datos para un instructor
 interface Instructor {
@@ -31,6 +32,7 @@ const InstructorsPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [evaluationInstructor, setEvaluationInstructor] = useState<Instructor | null>(null);
   
   // Obtener datos de instructores de la ruta correcta para la página pública
   const { data: apiResponse = [], isLoading } = useQuery<any>({
@@ -251,21 +253,57 @@ const InstructorsPage: React.FC = () => {
                     {renderSpecialties(instructor.specialties)}
                   </div>
                 </CardContent>
-                <CardFooter className="bg-gray-50 pt-3 pb-3 flex justify-between items-center">
+                <CardFooter className="bg-gray-50 pt-3 pb-3">
                   {instructor.rating && (
-                    <div className="flex items-center">
+                    <div className="flex items-center mb-3">
                       <Star className="h-4 w-4 text-yellow-500 mr-1" />
                       <span className="text-sm font-medium">{instructor.rating}/5</span>
                     </div>
                   )}
-                  <Button 
-                    variant="link" 
-                    size="sm" 
-                    className="text-primary px-0"
-                    onClick={() => handleViewProfile(instructor)}
-                  >
-                    Ver perfil
-                  </Button>
+                  <div className="flex gap-2 w-full">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1 text-xs border-purple-300 text-purple-700 hover:bg-purple-50"
+                      onClick={() => window.open(`/instructor/${instructor.id}`, '_blank')}
+                    >
+                      <User className="h-3 w-3 mr-1" />
+                      Ver perfil
+                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 text-xs border-green-300 text-green-700 hover:bg-green-50"
+                          onClick={() => setEvaluationInstructor(instructor)}
+                        >
+                          <MessageSquare className="h-3 w-3 mr-1" />
+                          Evaluar
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent 
+                        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+                        aria-describedby="evaluation-description"
+                      >
+                        <DialogHeader>
+                          <DialogTitle>Evaluar Instructor</DialogTitle>
+                          <DialogDescription id="evaluation-description">
+                            Comparte tu experiencia con {instructor.full_name} para ayudar a otros visitantes.
+                          </DialogDescription>
+                        </DialogHeader>
+                        {evaluationInstructor && (
+                          <PublicInstructorEvaluationForm
+                            instructorId={evaluationInstructor.id}
+                            instructorName={evaluationInstructor.full_name}
+                            onSuccess={() => {
+                              // El dialog se cerrará automáticamente por el estado del formulario
+                            }}
+                          />
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </CardFooter>
               </Card>
             ))}
@@ -301,14 +339,49 @@ const InstructorsPage: React.FC = () => {
                     <div className="flex flex-wrap mt-2 mb-3">
                       {renderSpecialties(instructor.specialties)}
                     </div>
-                    <div className="flex justify-end">
+                    <div className="flex justify-end gap-2">
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleViewProfile(instructor)}
+                        className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                        onClick={() => window.open(`/instructor/${instructor.id}`, '_blank')}
                       >
+                        <User className="h-3 w-3 mr-1" />
                         Ver perfil
                       </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="border-green-300 text-green-700 hover:bg-green-50"
+                            onClick={() => setEvaluationInstructor(instructor)}
+                          >
+                            <MessageSquare className="h-3 w-3 mr-1" />
+                            Evaluar
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent 
+                          className="max-w-2xl max-h-[90vh] overflow-y-auto"
+                          aria-describedby="evaluation-description-list"
+                        >
+                          <DialogHeader>
+                            <DialogTitle>Evaluar Instructor</DialogTitle>
+                            <DialogDescription id="evaluation-description-list">
+                              Comparte tu experiencia con {instructor.full_name} para ayudar a otros visitantes.
+                            </DialogDescription>
+                          </DialogHeader>
+                          {evaluationInstructor && (
+                            <PublicInstructorEvaluationForm
+                              instructorId={evaluationInstructor.id}
+                              instructorName={evaluationInstructor.full_name}
+                              onSuccess={() => {
+                                // El dialog se cerrará automáticamente por el estado del formulario
+                              }}
+                            />
+                          )}
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
                 </div>

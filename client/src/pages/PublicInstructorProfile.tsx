@@ -81,7 +81,11 @@ function PublicInstructorProfile() {
     return format(new Date(date), "d 'de' MMMM 'de' yyyy", { locale: es });
   };
 
-  const specialtiesArray = instructor.specialties ? instructor.specialties.split(',').map(s => s.trim()) : [];
+  const specialtiesArray = instructor.specialties 
+    ? (Array.isArray(instructor.specialties) 
+        ? instructor.specialties 
+        : instructor.specialties.split(',').map(s => s.trim()))
+    : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
