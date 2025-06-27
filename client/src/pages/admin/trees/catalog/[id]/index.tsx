@@ -191,15 +191,13 @@ function TreeSpeciesDetail() {
           </div>
         </div>
         
-        <Tabs defaultValue="informacion-general" className="w-full">
+        <Tabs defaultValue="informacion-completa" className="w-full">
           <TabsList className="mb-4">
-            <TabsTrigger value="informacion-general">Información General</TabsTrigger>
-            <TabsTrigger value="caracteristicas">Características</TabsTrigger>
-            <TabsTrigger value="cultivo-cuidado">Cultivo y Cuidado</TabsTrigger>
+            <TabsTrigger value="informacion-completa">Información Completa</TabsTrigger>
           </TabsList>
           
-          {/* Pestaña de Información General */}
-          <TabsContent value="informacion-general">
+          {/* Pestaña de Información Completa */}
+          <TabsContent value="informacion-completa">
             <Card>
               <CardHeader>
                 <CardTitle>Información General</CardTitle>
@@ -287,9 +285,7 @@ function TreeSpeciesDetail() {
               </CardContent>
             </Card>
           </TabsContent>
-          
-          {/* Pestaña de Características */}
-          <TabsContent value="caracteristicas">
+
             <Card>
               <CardHeader>
                 <CardTitle>Características</CardTitle>
