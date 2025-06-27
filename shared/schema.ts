@@ -808,6 +808,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 export const instructors = pgTable("instructors", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
+  fullName: text("full_name").notNull(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   email: text("email").notNull(),
@@ -817,8 +818,6 @@ export const instructors = pgTable("instructors", {
   experienceYears: integer("experience_years").default(0),
   availableDays: text("available_days").array(),
   preferredParkId: integer("preferred_park_id"),
-  emergencyContactName: text("emergency_contact_name"),
-  emergencyContactPhone: text("emergency_contact_phone"),
   status: text("status").default("active"),
   bio: text("bio"),
   qualifications: text("qualifications"),

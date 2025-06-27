@@ -263,6 +263,7 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
       const instructorResult = await db
         .insert(instructors)
         .values({
+          fullName: `${firstName} ${lastName}`,
           firstName,
           lastName,
           email,
@@ -373,6 +374,20 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
           : specialties || [];
       } catch (error) {
         processedSpecialties = currentInstructor[0].specialties || [];
+      }
+
+      // Parsear availability - convertir string único a array
+      let availabilityArray = [];
+      if (availability) {
+        if (availability.startsWith('[')) {
+          try {
+            availabilityArray = JSON.parse(availability);
+          } catch (e) {
+            availabilityArray = [availability];
+          }
+        } else {
+          availabilityArray = [availability];
+        }
       }
 
       // Actualizar instructor
