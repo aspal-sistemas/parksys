@@ -45,7 +45,7 @@ interface TreeSpecies {
   growthRate: string;
   heightMature: number | null;
   canopyDiameter: number | null;
-  lifespan: number | null;
+  lifespan: string | null;
   imageUrl: string | null;
   description: string;
   maintenanceRequirements: string | null;
@@ -255,7 +255,7 @@ function TreeSpeciesDetail() {
                       </div>
                       <div>
                         <span className="text-sm text-gray-500">Esperanza de Vida:</span>
-                        <p className="font-medium">{species?.lifespan ? `${species.lifespan} años` : 'No especificada'}</p>
+                        <p className="font-medium">{species?.lifespan || 'No especificada'}</p>
                       </div>
                     </div>
                   </div>
@@ -272,6 +272,78 @@ function TreeSpeciesDetail() {
                       <Leaf className="mr-2 h-5 w-5 text-green-600" /> Beneficios Ecológicos
                     </h3>
                     {renderDescription(species?.ecologicalBenefits)}
+                    
+                    <Separator className="my-6" />
+                    
+                    <h3 className="text-lg font-semibold mb-4 flex items-center">
+                      <Sprout className="mr-2 h-5 w-5 text-green-600" /> Requerimientos de Cultivo
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <h4 className="font-medium text-blue-800 flex items-center mb-2">
+                          <Shovel className="mr-2 h-4 w-4" /> Suelo
+                        </h4>
+                        <p className="text-sm text-blue-700">
+                          {species?.soilRequirements || 'No especificado'}
+                        </p>
+                      </div>
+                      <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-200">
+                        <h4 className="font-medium text-cyan-800 flex items-center mb-2">
+                          <CloudRain className="mr-2 h-4 w-4" /> Agua
+                        </h4>
+                        <p className="text-sm text-cyan-700">
+                          {species?.waterRequirements || 'No especificado'}
+                        </p>
+                      </div>
+                      <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                        <h4 className="font-medium text-yellow-800 flex items-center mb-2">
+                          <Sun className="mr-2 h-4 w-4" /> Sol
+                        </h4>
+                        <p className="text-sm text-yellow-700">
+                          {species?.sunRequirements || 'No especificado'}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                        <h4 className="font-medium text-purple-800 flex items-center mb-2">
+                          <Clock className="mr-2 h-4 w-4" /> Zona Climática
+                        </h4>
+                        <p className="text-sm text-purple-700">
+                          {species?.climateZone || 'No especificada'}
+                        </p>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                        <h4 className="font-medium text-green-800 flex items-center mb-2">
+                          <TreePine className="mr-2 h-4 w-4" /> Usos Comunes
+                        </h4>
+                        <p className="text-sm text-green-700">
+                          {species?.commonUses || 'No especificados'}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {species?.ornamentalValue && (
+                      <div className="bg-pink-50 p-4 rounded-lg border border-pink-200 mb-4">
+                        <h4 className="font-medium text-pink-800 flex items-center mb-2">
+                          <Flower className="mr-2 h-4 w-4" /> Valor Ornamental
+                        </h4>
+                        <p className="text-sm text-pink-700">
+                          {species.ornamentalValue}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {species?.maintenanceRequirements && (
+                      <>
+                        <Separator className="my-6" />
+                        <h3 className="text-lg font-semibold mb-2 flex items-center">
+                          <Bug className="mr-2 h-5 w-5 text-green-600" /> Requisitos de Mantenimiento
+                        </h3>
+                        {renderDescription(species.maintenanceRequirements)}
+                      </>
+                    )}
                     
                     {species?.notes && (
                       <>
