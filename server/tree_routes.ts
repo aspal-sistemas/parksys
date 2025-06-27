@@ -588,33 +588,107 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
     }
   });
 
-  // Exportar especies de árboles a CSV
+  // Exportar plantilla CSV con especies mexicanas reales
   apiRouter.get("/tree-species/export/csv", async (req: Request, res: Response) => {
     try {
-      const result = await db.execute(sql`
-        SELECT 
-          common_name as "Nombre Común",
-          scientific_name as "Nombre Científico", 
-          family as "Familia",
-          origin as "Origen",
-          growth_rate as "Ritmo de Crecimiento",
-          CASE WHEN is_endangered THEN 'Sí' ELSE 'No' END as "Amenazada",
-          description as "Descripción",
-          care_instructions as "Instrucciones de Cuidado",
-          benefits as "Beneficios",
-          image_url as "URL de Imagen"
-        FROM tree_species
-        ORDER BY common_name ASC
-      `);
+      // Plantilla con especies mexicanas comunes y completas
+      const mexicanSpeciesSample = [
+        {
+          commonName: "Jacaranda",
+          scientificName: "Jacaranda mimosifolia",
+          family: "Bignoniaceae",
+          origin: "Argentina",
+          growthRate: "Rápido",
+          isEndangered: "false",
+          description: "Árbol ornamental con flores moradas muy vistosas",
+          maintenanceRequirements: "Riego moderado, poda anual",
+          ecologicalBenefits: "Atrae polinizadores, sombra abundante"
+        },
+        {
+          commonName: "Mezquite",
+          scientificName: "Prosopis laevigata",
+          family: "Fabaceae",
+          origin: "México",
+          growthRate: "Medio",
+          isEndangered: "false",
+          description: "Árbol nativo resistente a la sequía",
+          maintenanceRequirements: "Resistente, requiere poco mantenimiento",
+          ecologicalBenefits: "Fija nitrógeno, protege suelo de erosión"
+        },
+        {
+          commonName: "Fresno",
+          scientificName: "Fraxinus uhdei",
+          family: "Oleaceae",
+          origin: "México",
+          growthRate: "Rápido",
+          isEndangered: "false",
+          description: "Árbol de sombra muy popular en áreas urbanas",
+          maintenanceRequirements: "Riego regular, poda de formación",
+          ecologicalBenefits: "Purifica el aire, reduce temperatura urbana"
+        },
+        {
+          commonName: "Primavera",
+          scientificName: "Roseodendron donnell-smithii",
+          family: "Bignoniaceae",
+          origin: "México y Centroamérica",
+          growthRate: "Medio",
+          isEndangered: "false",
+          description: "Árbol con floración amarilla espectacular",
+          maintenanceRequirements: "Riego moderado en época seca",
+          ecologicalBenefits: "Alimento para abejas, madera dura"
+        },
+        {
+          commonName: "Rosa Laurel",
+          scientificName: "Nerium oleander",
+          family: "Apocynaceae",
+          origin: "Mediterráneo",
+          growthRate: "Medio",
+          isEndangered: "false",
+          description: "Arbusto ornamental de flores rosadas",
+          maintenanceRequirements: "Resistente a sequía, poda ligera",
+          ecologicalBenefits: "Flores atractivas para mariposas"
+        },
+        {
+          commonName: "Casuarina",
+          scientificName: "Casuarina equisetifolia",
+          family: "Casuarinaceae",
+          origin: "Australia",
+          growthRate: "Rápido",
+          isEndangered: "false",
+          description: "Árbol costero resistente al viento",
+          maintenanceRequirements: "Tolerante a suelos salinos",
+          ecologicalBenefits: "Control de erosión, cortina rompevientos"
+        },
+        {
+          commonName: "Ficus",
+          scientificName: "Ficus benjamina",
+          family: "Moraceae",
+          origin: "Asia tropical",
+          growthRate: "Rápido",
+          isEndangered: "false",
+          description: "Árbol ornamental de copa densa",
+          maintenanceRequirements: "Riego regular, poda de mantenimiento",
+          ecologicalBenefits: "Purifica el aire, hábitat para aves"
+        },
+        {
+          commonName: "Copal",
+          scientificName: "Bursera copallifera",
+          family: "Burseraceae",
+          origin: "México",
+          growthRate: "Lento",
+          isEndangered: "false",
+          description: "Árbol nativo productor de resina aromática",
+          maintenanceRequirements: "Resistente a sequía",
+          ecologicalBenefits: "Medicina tradicional, conservación de suelos"
+        }
+      ];
 
-      // Generar CSV
-      const headers = Object.keys(result.rows[0] || {});
+      const headers = ["commonName", "scientificName", "family", "origin", "growthRate", "isEndangered", "description", "maintenanceRequirements", "ecologicalBenefits"];
       const csvContent = [
         headers.join(','),
-        ...result.rows.map(row => 
+        ...mexicanSpeciesSample.map(species => 
           headers.map(header => {
-            const value = row[header] || '';
-            // Escapar comillas y envolver en comillas si contiene comas
+            const value = species[header] || '';
             const escapedValue = String(value).replace(/"/g, '""');
             return escapedValue.includes(',') || escapedValue.includes('\n') ? `"${escapedValue}"` : escapedValue;
           }).join(',')
@@ -622,11 +696,11 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
       ].join('\n');
 
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Content-Disposition', 'attachment; filename="especies-arboreas.csv"');
-      res.send('\ufeff' + csvContent); // BOM para UTF-8
+      res.setHeader('Content-Disposition', 'attachment; filename="especies_mexicanas_plantilla.csv"');
+      res.send('\uFEFF' + csvContent); // BOM para UTF-8
     } catch (error) {
-      console.error("Error al exportar especies:", error);
-      res.status(500).json({ message: "Error al exportar especies" });
+      console.error("Error al generar plantilla CSV:", error);
+      res.status(500).json({ message: "Error al generar plantilla CSV" });
     }
   });
 
@@ -733,8 +807,8 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
               ${commonName}, ${scientificName}, 
               ${row.family || 'No especificada'}, ${row.origin || 'No especificado'},
               ${row.growthRate || 'Medio'}, ${row.isEndangered === 'Sí' || row.isEndangered === true},
-              ${row.description || null}, ${row.careInstructions || null},
-              ${row.benefits || null}, ${row.imageUrl || null}
+              ${null}, ${null},
+              ${null}, ${null}
             )
           `);
 
@@ -744,6 +818,9 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
           errors.push(`Fila ${imported + 1}: Error al insertar datos`);
         }
       }
+
+      console.log(`Importation completed: ${imported} imported, ${errors.length} errors`);
+      console.log("Errors:", errors);
 
       res.json({
         message: `Importación completada: ${imported} especies importadas`,
