@@ -1,7 +1,7 @@
 /**
  * Rutas para el módulo de Arbolado
  */
-import { Router, Request, Response } from "express";
+import express, { Router, Request, Response } from "express";
 import { db } from "./db";
 import { 
   treeSpecies, 
@@ -631,7 +631,19 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   });
 
   // Importar especies de árboles desde CSV
-  apiRouter.post("/tree-species/import/csv", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.post("/tree-species/import/csv", 
+    // Middleware específico para verificar parsing
+    (req: Request, res: Response, next) => {
+      console.log("=== PRE-AUTH MIDDLEWARE ===");
+      console.log("Content-Type:", req.headers['content-type']);
+      console.log("Content-Length:", req.headers['content-length']);
+      console.log("Raw body check:", !!req.body);
+      console.log("Body keys:", Object.keys(req.body || {}));
+      console.log("Body content:", req.body);
+      next();
+    },
+    isAuthenticated, 
+    async (req: Request, res: Response) => {
     try {
       console.log("=== IMPORT CSV DEBUG ===");
       console.log("Request body:", req.body);
