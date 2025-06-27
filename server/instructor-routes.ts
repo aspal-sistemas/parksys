@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { eq, and, desc } from 'drizzle-orm';
 import { db } from './db';
-import { users, instructors, parks } from '../shared/schema';
+import { users, instructors, parks, activities } from '../shared/schema';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -558,6 +558,42 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
     } catch (error) {
       console.error('Error fetching park instructors:', error);
       res.status(500).json({ message: 'Error al obtener instructores del parque' });
+    }
+  });
+
+  // Obtener actividades asignadas a un instructor
+  apiRouter.get('/instructors/:id/assignments', async (req: Request, res: Response) => {
+    try {
+      const instructorId = parseInt(req.params.id);
+
+      if (isNaN(instructorId)) {
+        return res.status(400).json({ message: 'ID de instructor inválido' });
+      }
+
+      // Obtener actividades asignadas al instructor con información del parque
+      const result = await db.execute(`
+        SELECT 
+          a.id, 
+          a.title, 
+          a.description, 
+          a.start_date as "startDate", 
+          a.end_date as "endDate", 
+          a.location, 
+          a.park_id as "parkId", 
+          p.name as "parkName", 
+          a.category, 
+          a.category_id as "categoryId", 
+          a.created_at as "createdAt"
+        FROM activities a 
+        LEFT JOIN parks p ON a.park_id = p.id 
+        WHERE a.instructor_id = $1 
+        ORDER BY a.start_date DESC
+      `, [instructorId]);
+
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error fetching instructor activities:', error);
+      res.status(500).json({ message: 'Error al obtener actividades del instructor' });
     }
   });
 
