@@ -59,7 +59,7 @@ interface Instructor {
   full_name: string;
   email: string;
   phone?: string;
-  specialties?: string;
+  specialties?: string[] | string;
   experience_years: number;
   status: string;
   profile_image_url?: string;
@@ -126,7 +126,11 @@ export default function InstructorsListPage() {
       
       // Filtro por especialidad
       const matchesSpecialty = filterSpecialty === 'all' || 
-        (instructor.specialties && instructor.specialties.toLowerCase().includes(filterSpecialty.toLowerCase()));
+        (instructor.specialties && (
+          Array.isArray(instructor.specialties) 
+            ? instructor.specialties.some(s => s.toLowerCase().includes(filterSpecialty.toLowerCase()))
+            : instructor.specialties.toLowerCase().includes(filterSpecialty.toLowerCase())
+        ));
       
       return matchesSearch && matchesStatus && matchesSpecialty;
     });
@@ -167,7 +171,12 @@ export default function InstructorsListPage() {
     
     const allSpecialties = new Set<string>();
     instructors.forEach((instructor: Instructor) => {
-      if (instructor.specialties) {
+      if (instructor.specialties && Array.isArray(instructor.specialties)) {
+        instructor.specialties.forEach(specialty => {
+          allSpecialties.add(specialty.trim());
+        });
+      } else if (instructor.specialties && typeof instructor.specialties === 'string') {
+        // Fallback para datos legacy que puedan estar como string
         const specialtiesList = instructor.specialties.split(',');
         specialtiesList.forEach(specialty => {
           allSpecialties.add(specialty.trim());
@@ -205,10 +214,18 @@ export default function InstructorsListPage() {
   };
 
   // Renderizar columna de especialidades
-  const renderSpecialties = (specialties?: string) => {
+  const renderSpecialties = (specialties?: string[] | string) => {
     if (!specialties) return <span className="text-gray-400 italic">No especificado</span>;
     
-    const specialtiesList = specialties.split(',').map(s => s.trim());
+    let specialtiesList: string[];
+    if (Array.isArray(specialties)) {
+      specialtiesList = specialties;
+    } else if (typeof specialties === 'string') {
+      specialtiesList = specialties.split(',').map(s => s.trim());
+    } else {
+      return <span className="text-gray-400 italic">No especificado</span>;
+    }
+
     if (specialtiesList.length <= 2) {
       return specialtiesList.map((specialty, index) => (
         <Badge key={index} variant="outline" className="mr-1">{specialty}</Badge>
