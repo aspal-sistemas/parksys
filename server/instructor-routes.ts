@@ -144,7 +144,7 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
         lastName,
         email,
         phone,
-        specialties,
+        specialties: specialtiesStr,
         experienceYears,
         bio,
         qualifications,
@@ -153,6 +153,14 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
         experience,
         preferredParkId
       } = req.body;
+
+      // Parsear specialties de string a array
+      let specialties = [];
+      try {
+        specialties = specialtiesStr ? JSON.parse(specialtiesStr) : [];
+      } catch (e) {
+        specialties = [specialtiesStr]; // Si no es JSON válido, usar como string único
+      }
 
       // Validaciones básicas
       if (!firstName || !lastName || !email) {

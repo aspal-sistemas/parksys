@@ -14,7 +14,7 @@ import * as schema from "@shared/schema";
 const { parkAmenities, amenities } = schema;
 import { videoRouter } from "./video_routes";
 import { registerVolunteerRoutes } from "./volunteerRoutes";
-import { registerInstructorRoutes } from "./instructorRoutes";
+// import { registerInstructorRoutes } from "./instructorRoutes"; // Comentado para evitar conflictos - se usa instructor-routes.ts
 import { registerPublicRoutes } from "./publicRoutes";
 import { registerAssetRoutes } from "./asset_routes";
 import { registerAssetImageRoutes } from "./asset-image-routes";
@@ -138,7 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerVolunteerRoutes(app, apiRouter, null, isAuthenticated);
   
   // Registramos las rutas del módulo de instructores
-  registerInstructorRoutes(app, apiRouter, publicRouter, isAuthenticated);
+  // registerInstructorRoutes(app, apiRouter, publicRouter, isAuthenticated); // Comentado - se usa instructor-routes.ts
   
   // Registramos las rutas del módulo de activos
   registerAssetRoutes(app, apiRouter, isAuthenticated);
