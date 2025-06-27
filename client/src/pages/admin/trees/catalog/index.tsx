@@ -131,7 +131,7 @@ function TreeSpeciesCatalog() {
       
       return apiRequest('/api/tree-species/import/csv', {
         method: 'POST',
-        body: JSON.stringify(payload),
+        data: payload,
         headers: {
           'Content-Type': 'application/json',
         },
