@@ -728,7 +728,7 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
           await db.execute(sql`
             INSERT INTO tree_species (
               common_name, scientific_name, family, origin, growth_rate,
-              is_endangered, description, care_instructions, benefits, image_url
+              is_endangered, description, maintenance_requirements, ecological_benefits, image_url
             ) VALUES (
               ${commonName}, ${scientificName}, 
               ${row.family || 'No especificada'}, ${row.origin || 'No especificado'},
