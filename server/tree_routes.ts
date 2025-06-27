@@ -752,6 +752,20 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         'Burseraceae': 'Bursera simaruba'
       };
       
+      // Función para corregir acentos mal codificados
+      const fixEncoding = (text: string): string => {
+        if (!text) return text;
+        
+        return text
+          .replace(/Ã¡/g, 'á')
+          .replace(/Ã©/g, 'é') 
+          .replace(/Ã­/g, 'í')
+          .replace(/Ã³/g, 'ó')
+          .replace(/Ãº/g, 'ú')
+          .replace(/Ã±/g, 'ñ')
+          .replace(/Ã\u00D1/g, 'Ñ');
+      };
+      
       let imported = 0;
       const errors: string[] = [];
       
@@ -764,17 +778,17 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
           
           let insertData;
           if (isNewFormat) {
-            // Usar datos directos sin conversión para preservar UTF-8
+            // Aplicar corrección de acentos a todos los campos de texto
             insertData = {
-              common_name: row.nombre_comun || 'Sin nombre',
-              scientific_name: row.nombre_cientifico || 'Sin clasificar',
-              family: row.familia || 'Sin familia', 
-              origin: row.origen || 'Desconocido',
-              growth_rate: row.ritmo_crecimiento || 'Medio',
+              common_name: fixEncoding(row.nombre_comun || 'Sin nombre'),
+              scientific_name: fixEncoding(row.nombre_cientifico || 'Sin clasificar'),
+              family: fixEncoding(row.familia || 'Sin familia'), 
+              origin: fixEncoding(row.origen || 'Desconocido'),
+              growth_rate: fixEncoding(row.ritmo_crecimiento || 'Medio'),
               is_endangered: row.amenazada === 'si' || row.amenazada === 'sí',
-              description: row.descripcion || null,
-              maintenance_requirements: row.requisitos_mantenimiento || null,
-              ecological_benefits: row.beneficios_ecologicos || null,
+              description: fixEncoding(row.descripcion) || null,
+              maintenance_requirements: fixEncoding(row.requisitos_mantenimiento) || null,
+              ecological_benefits: fixEncoding(row.beneficios_ecologicos) || null,
               image_url: row.url_imagen || null,
               lifespan: (() => {
                 if (!row.esperanza_vida) return null;
@@ -782,12 +796,12 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
                 const match = lifespanStr.match(/(\d+)/);
                 return match ? parseInt(match[1]) : null;
               })(),
-              climate_zone: row.zona_climatica || null,
-              soil_requirements: row.requisitos_suelo || null,
-              water_requirements: row.requisitos_agua || null,
-              sun_requirements: row.requisitos_sol || null,
-              ornamental_value: row.valor_ornamental || null,
-              common_uses: row.usos_comunes || null
+              climate_zone: fixEncoding(row.zona_climatica) || null,
+              soil_requirements: fixEncoding(row.requisitos_suelo) || null,
+              water_requirements: fixEncoding(row.requisitos_agua) || null,
+              sun_requirements: fixEncoding(row.requisitos_sol) || null,
+              ornamental_value: fixEncoding(row.valor_ornamental) || null,
+              common_uses: fixEncoding(row.usos_comunes) || null
             };
           } else {
             // Formato simple con nombres reales mexicanos
