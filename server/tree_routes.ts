@@ -778,30 +778,37 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
           
           let insertData;
           if (isNewFormat) {
-            // Aplicar corrección de acentos a todos los campos de texto
+            // MAPEO CORREGIDO BASADO EN COLUMNAS REALES DEL CSV
+            // Según análisis: descripción=H, beneficios=I, mantenimiento=J, vida=K, clima=L, suelo=M, agua=N, sol=O, usos=Q
             insertData = {
               common_name: fixEncoding(row.nombre_comun || 'Sin nombre'),
               scientific_name: fixEncoding(row.nombre_cientifico || 'Sin clasificar'),
               family: fixEncoding(row.familia || 'Sin familia'), 
               origin: fixEncoding(row.origen || 'Desconocido'),
-              growth_rate: fixEncoding(row.ritmo_crecimiento || 'Medio'),
+              growth_rate: fixEncoding(row.ritmo_crecimiento || 'Medio'), // Columna E
               is_endangered: row.amenazada === 'si' || row.amenazada === 'sí',
-              description: fixEncoding(row.descripcion) || null,
-              maintenance_requirements: fixEncoding(row.requisitos_mantenimiento) || null,
-              ecological_benefits: fixEncoding(row.beneficios_ecologicos) || null,
-              image_url: row.url_imagen || null,
+              
+              // CORRECCIÓN DEL MAPEO DESORDENADO
+              description: fixEncoding(row.descripcion) || null, // Columna H - CORRECTO
+              ecological_benefits: fixEncoding(row.beneficios_ecologicos) || null, // Columna I - CORRECTO  
+              maintenance_requirements: fixEncoding(row.requisitos_mantenimiento) || null, // Columna J - CORRECTO
               lifespan: (() => {
                 if (!row.esperanza_vida) return null;
                 const lifespanStr = row.esperanza_vida.toString();
                 const match = lifespanStr.match(/(\d+)/);
                 return match ? parseInt(match[1]) : null;
-              })(),
-              climate_zone: fixEncoding(row.zona_climatica) || null,
-              soil_requirements: fixEncoding(row.requisitos_suelo) || null,
-              water_requirements: fixEncoding(row.requisitos_agua) || null,
-              sun_requirements: fixEncoding(row.requisitos_sol) || null,
-              ornamental_value: fixEncoding(row.valor_ornamental) || null,
-              common_uses: fixEncoding(row.usos_comunes) || null
+              })(), // Columna K - CORRECTO
+              climate_zone: fixEncoding(row.zona_climatica) || null, // Columna L - CORRECTO
+              soil_requirements: fixEncoding(row.requisitos_suelo) || null, // Columna M - CORRECTO
+              water_requirements: fixEncoding(row.requisitos_agua) || null, // Columna N - CORRECTO
+              sun_requirements: fixEncoding(row.requisitos_sol) || null, // Columna O - CORRECTO
+              common_uses: fixEncoding(row.usos_comunes) || null, // Columna Q - CORRECTO
+              
+              // URL de imagen sigue igual
+              image_url: row.url_imagen || null,
+              
+              // Valor ornamental desde la columna correcta
+              ornamental_value: fixEncoding(row.valor_ornamental) || null
             };
           } else {
             // Formato simple con nombres reales mexicanos
