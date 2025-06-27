@@ -457,6 +457,124 @@ function SimpleNewTreeSpecies() {
               )}
             />
 
+            {/* Separador visual */}
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold mb-4 text-green-700">Requerimientos de Cultivo</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="soilRequirements"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Requerimientos de Suelo</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Ej. Bien drenado, arcilloso..." 
+                          {...field} 
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="waterRequirements"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Requerimientos de Agua</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Ej. Bajo, Moderado, Alto..." 
+                          {...field} 
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="sunRequirements"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Requerimientos de Sol</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Ej. Pleno sol, Semi-sombra..." 
+                          {...field} 
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <FormField
+                  control={form.control}
+                  name="lifespan"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Esperanza de Vida</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Ej. 50-100 años, +200 años..." 
+                          {...field} 
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="commonUses"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Usos Comunes</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Ej. Sombra, ornamental, madera..." 
+                          {...field} 
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="maintenanceRequirements"
+                render={({ field }) => (
+                  <FormItem className="mt-4">
+                    <FormLabel>Requisitos de Mantenimiento</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Describe los cuidados y mantenimiento necesarios..."
+                        className="min-h-[100px]"
+                        {...field} 
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <div className="flex justify-end gap-4">
               <Button 
                 type="button" 
