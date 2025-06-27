@@ -714,19 +714,31 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   // Importar especies de árboles desde CSV
   apiRouter.post("/tree-species/import/csv", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      console.log("=== IMPORTACIÓN CSV DEBUG ===");
+      console.log("Request body:", JSON.stringify(req.body, null, 2));
+      
       const { data } = req.body;
       
       if (!data || !Array.isArray(data) || data.length === 0) {
+        console.log("❌ Error: datos inválidos", { data, isArray: Array.isArray(data), length: data?.length });
         return res.status(400).json({ message: "No se recibieron datos válidos" });
       }
+      
+      console.log(`📊 Procesando ${data.length} filas`);
+      console.log("Primera fila:", JSON.stringify(data[0], null, 2));
       
       let imported = 0;
       const errors: string[] = [];
       
-      for (const row of data) {
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        console.log(`\n--- Procesando fila ${i + 1} ---`);
+        console.log("Datos de fila:", JSON.stringify(row, null, 2));
+        
         try {
           // Detectar formato: nuevo (nombre_comun) vs viejo (family)
           const isNewFormat = row.nombre_comun !== undefined;
+          console.log("Formato detectado:", isNewFormat ? "NUEVO (17 campos)" : "VIEJO (3 campos)");
           
           let insertData;
           if (isNewFormat) {
@@ -773,7 +785,9 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
             };
           }
 
-          await db.execute(sql`
+          console.log("Datos a insertar:", JSON.stringify(insertData, null, 2));
+
+          const result = await db.execute(sql`
             INSERT INTO tree_species (
               common_name, scientific_name, family, origin, growth_rate,
               is_endangered, description, maintenance_requirements, ecological_benefits, 
@@ -791,11 +805,16 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
             )
           `);
 
+          console.log(`✅ Fila ${i + 1} insertada exitosamente:`, result);
           imported++;
         } catch (error) {
-          errors.push(`Fila ${imported + 1}: Error al insertar datos`);
+          console.error(`❌ Error en fila ${i + 1}:`, error);
+          errors.push(`Fila ${i + 1}: ${error instanceof Error ? error.message : 'Error desconocido'}`);
         }
       }
+
+      console.log(`\n🎯 RESULTADO FINAL: ${imported} importadas, ${errors.length} errores`);
+      console.log("Errores:", errors);
 
       res.json({
         message: `Importación completada: ${imported} especies importadas`,
@@ -803,7 +822,8 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
         errors
       });
     } catch (error) {
-      res.status(500).json({ message: "Error al procesar importación" });
+      console.error("❌ Error general en importación:", error);
+      res.status(500).json({ message: "Error al procesar importación", error: error instanceof Error ? error.message : 'Error desconocido' });
     }
   });
 
