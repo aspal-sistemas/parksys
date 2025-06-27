@@ -740,27 +740,58 @@ function ParkLandingPage() {
               <CardContent>
                 {park.instructors && park.instructors.length > 0 ? (
                   <div className="space-y-3">
-                    {park.instructors.map((instructor) => (
-                      <div key={instructor.id} className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg border">
+                    {park.instructors.slice(0, 3).map((instructor) => (
+                      <div key={instructor.id} className="flex items-start gap-3 p-4 bg-white rounded-lg border border-purple-200">
                         {instructor.profileImageUrl ? (
                           <img 
                             src={instructor.profileImageUrl} 
                             alt={instructor.fullName}
-                            className="w-10 h-10 rounded-full object-cover"
+                            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
                           />
                         ) : (
-                          <div className="w-10 h-10 bg-purple-200 rounded-full flex items-center justify-center">
-                            <Users className="h-5 w-5 text-purple-600" />
+                          <div className="w-12 h-12 bg-purple-200 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Users className="h-6 w-6 text-purple-600" />
                           </div>
                         )}
-                        <div className="flex-1">
-                          <h4 className="font-medium text-purple-900 text-sm">{instructor.fullName}</h4>
-                          {instructor.specialties && (
-                            <p className="text-purple-700 text-xs mt-1">{instructor.specialties}</p>
-                          )}
-                          {instructor.experienceYears && (
-                            <p className="text-purple-600 text-xs mt-1">{instructor.experienceYears} años de experiencia</p>
-                          )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-purple-900 text-sm line-clamp-2">{instructor.fullName}</h4>
+                              {instructor.specialties && (
+                                <div className="mt-2">
+                                  <div className="flex flex-wrap gap-1">
+                                    {instructor.specialties.split(',').slice(0, 2).map((specialty: string, index: number) => (
+                                      <Badge key={index} variant="outline" className="text-xs border-purple-300 text-purple-700">
+                                        {specialty.trim()}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {instructor.experienceYears && (
+                                <p className="text-purple-600 text-xs mt-1">
+                                  {instructor.experienceYears} años de experiencia
+                                </p>
+                              )}
+                              {instructor.averageRating && (
+                                <div className="flex items-center gap-1 mt-1">
+                                  <div className="flex">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <span 
+                                        key={star} 
+                                        className={`text-xs ${star <= Math.floor(instructor.averageRating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                                      >
+                                        ★
+                                      </span>
+                                    ))}
+                                  </div>
+                                  <span className="text-xs text-purple-600">
+                                    {instructor.averageRating}/5
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -768,7 +799,7 @@ function ParkLandingPage() {
                 ) : (
                   <div className="text-center py-6">
                     <Users className="h-8 w-8 text-purple-400 mx-auto mb-2" />
-                    <p className="text-purple-600 text-sm">No hay instructores asignados</p>
+                    <p className="text-purple-600 text-sm">No hay instructores asignados a este parque</p>
                   </div>
                 )}
               </CardContent>

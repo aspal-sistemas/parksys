@@ -744,11 +744,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const instructorsResult = await pool.query(`
         SELECT i.id, i.full_name as "fullName", i.email, i.phone, 
                i.specialties, i.experience_years as "experienceYears", i.bio,
-               i.profile_image_url as "profileImageUrl"
+               i.profile_image_url as "profileImageUrl",
+               COALESCE(
+                 (SELECT ROUND(AVG(e.overall_score), 1) 
+                  FROM instructor_evaluations e 
+                  WHERE e.instructor_id = i.id), 
+                 4.5
+               ) as "averageRating"
         FROM instructors i
         WHERE i.preferred_park_id = $1
         ORDER BY i.full_name
-        LIMIT 10
+        LIMIT 3
       `, [parkId]);
       console.log(`Instructores encontrados: ${instructorsResult.rows.length}`);
 
