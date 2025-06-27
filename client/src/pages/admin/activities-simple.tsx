@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'wouter';
+import { useLocation } from 'wouter';
 import { Search, Loader, Calendar, MapPin, Plus, ArrowUpDown, Filter, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -47,6 +47,7 @@ import {
 import { Activity } from '@shared/schema';
 
 const AdminActivitiesSimple = () => {
+  const [location, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<string>('startDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -210,12 +211,13 @@ const AdminActivitiesSimple = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Actividades</h1>
-          <Link href="/admin/organizador/nueva-actividad">
-            <Button className="bg-green-600 hover:bg-green-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Nueva Actividad
-            </Button>
-          </Link>
+          <Button 
+            className="bg-green-600 hover:bg-green-700"
+            onClick={() => setLocation('/admin/organizador/nueva-actividad')}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Nueva Actividad
+          </Button>
         </div>
 
         <Tabs defaultValue="list" className="w-full">
