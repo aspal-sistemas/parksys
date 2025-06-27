@@ -633,10 +633,27 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
   // Importar especies de árboles desde CSV
   apiRouter.post("/tree-species/import/csv", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      console.log("=== IMPORT CSV DEBUG ===");
+      console.log("Request body:", req.body);
+      console.log("Content-Type:", req.headers['content-type']);
+      
       const { data } = req.body;
       
-      if (!Array.isArray(data) || data.length === 0) {
-        return res.status(400).json({ message: "No se proporcionaron datos válidos" });
+      console.log("Extracted data:", data);
+      console.log("Data type:", typeof data);
+      console.log("Is array:", Array.isArray(data));
+      console.log("Data length:", data?.length);
+      
+      if (!data) {
+        return res.status(400).json({ message: "No se proporcionaron datos" });
+      }
+      
+      if (!Array.isArray(data)) {
+        return res.status(400).json({ message: "Los datos deben ser un array" });
+      }
+      
+      if (data.length === 0) {
+        return res.status(400).json({ message: "El array de datos está vacío" });
       }
 
       let imported = 0;
