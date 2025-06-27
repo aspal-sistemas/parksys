@@ -1061,6 +1061,20 @@ export const treeMaintenances = pgTable("tree_maintenances", {
   created_at: timestamp("created_at").notNull().defaultNow()
 });
 
+// Tabla de relación entre parques y especies arbóreas
+export const parkTreeSpecies = pgTable("park_tree_species", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").notNull().references(() => parks.id),
+  speciesId: integer("species_id").notNull().references(() => treeSpecies.id),
+  recommendedQuantity: integer("recommended_quantity"),
+  currentQuantity: integer("current_quantity").default(0),
+  plantingZone: text("planting_zone"), // Zona específica dentro del parque
+  notes: text("notes"),
+  status: varchar("status", { length: 50 }).default("planificado"), // planificado, en_desarrollo, establecido
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
 // Esquemas de inserción
 export const insertUserSchema = createInsertSchema(users).omit({ 
   id: true,
@@ -1150,6 +1164,14 @@ export type InsertTree = z.infer<typeof insertTreeSchema>;
 
 export type TreeMaintenance = typeof treeMaintenances.$inferSelect;
 export type InsertTreeMaintenance = z.infer<typeof insertTreeMaintenanceSchema>;
+
+export type ParkTreeSpecies = typeof parkTreeSpecies.$inferSelect;
+export const insertParkTreeSpeciesSchema = createInsertSchema(parkTreeSpecies).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+export type InsertParkTreeSpecies = z.infer<typeof insertParkTreeSpeciesSchema>;
 
 // Relaciones
 export const treesRelations = relations(trees, ({ one }) => ({
