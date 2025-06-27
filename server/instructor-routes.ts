@@ -162,11 +162,38 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
         specialties = [specialtiesStr]; // Si no es JSON válido, usar como string único
       }
 
-      console.log('🔍 Debugging specialties:', {
-        original: specialtiesStr,
-        parsed: specialties,
-        isArray: Array.isArray(specialties),
-        type: typeof specialties
+      // Parsear availability - convertir string único a array
+      let availabilityArray = [];
+      if (availability) {
+        if (availability.startsWith('[')) {
+          try {
+            availabilityArray = JSON.parse(availability);
+          } catch (e) {
+            availabilityArray = [availability];
+          }
+        } else {
+          availabilityArray = [availability];
+        }
+      }
+
+      // Parsear qualifications como certifications array
+      let certificationsArray = [];
+      if (qualifications) {
+        if (qualifications.startsWith('[')) {
+          try {
+            certificationsArray = JSON.parse(qualifications);
+          } catch (e) {
+            certificationsArray = [qualifications];
+          }
+        } else {
+          certificationsArray = [qualifications];
+        }
+      }
+
+      console.log('🔍 Debugging arrays:', {
+        specialties: { original: specialtiesStr, parsed: specialties },
+        availability: { original: availability, parsed: availabilityArray },
+        certifications: { original: qualifications, parsed: certificationsArray }
       });
 
       // Validaciones básicas
@@ -208,11 +235,12 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
 
       // 1. Primero crear el usuario automáticamente
       const hashedPassword = await bcryptjs.hash('instructor123', 10); // Contraseña temporal
+      const timestamp = Date.now().toString().slice(-6); // Últimos 6 dígitos del timestamp
       
       const userResult = await db
         .insert(users)
         .values({
-          username: `${firstName.toLowerCase()}.${lastName.toLowerCase()}`,
+          username: `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${timestamp}`,
           email,
           fullName: `${firstName} ${lastName}`,
           password: hashedPassword,
@@ -241,10 +269,11 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
           email,
           phone: phone || '',
           specialties: processedSpecialties,
+          certifications: certificationsArray,
           experienceYears: parseInt(experienceYears) || 1,
           bio: bio || '',
           qualifications: qualifications || '',
-          availability: availability || '',
+          availability: availabilityArray,
           hourlyRate: parseFloat(hourlyRate) || 0,
           experience: experience || '',
           preferredParkId: preferredParkId ? parseInt(preferredParkId) : null,
