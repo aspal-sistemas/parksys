@@ -2401,6 +2401,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(parsedEndDate && { endDate: parsedEndDate })
       };
       
+      console.log("Datos finales para validación Zod:", activityData);
+      
       console.log("Datos procesados para creación de actividad:", activityData);
       console.log("parsedStartDate:", parsedStartDate, "isValid:", !isNaN(parsedStartDate.getTime()));
       console.log("parsedEndDate:", parsedEndDate, "isValid:", parsedEndDate ? !isNaN(parsedEndDate.getTime()) : 'no endDate');
