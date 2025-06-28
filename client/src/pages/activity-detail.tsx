@@ -3,6 +3,39 @@ import { useParams, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+
+interface ActivityData {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  categoryName?: string;
+  categoryId?: number;
+  parkId: number;
+  parkName: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  capacity: number;
+  price: number;
+  instructorId?: number;
+  instructorName?: string;
+  startTime?: string;
+  duration?: number;
+  materials?: string;
+  requirements?: string;
+  isFree?: boolean;
+  isRecurring?: boolean;
+}
+
+interface ActivityImage {
+  id: number;
+  activityId: number;
+  imageUrl: string;
+  isPrimary: boolean;
+  caption?: string;
+  fileSize?: number;
+}
 import { 
   Calendar,
   Clock,
@@ -26,12 +59,12 @@ function ActivityDetailPage() {
   const [, setLocation] = useLocation();
   const activityId = params.id;
 
-  const { data: activity, isLoading, error } = useQuery({
+  const { data: activity, isLoading, error } = useQuery<ActivityData>({
     queryKey: [`/api/activities/${activityId}`],
     enabled: !!activityId,
   });
 
-  const { data: images = [] } = useQuery({
+  const { data: images = [] } = useQuery<ActivityImage[]>({
     queryKey: [`/api/activities/${activityId}/images`],
     enabled: !!activityId,
   });
