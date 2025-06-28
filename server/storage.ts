@@ -1358,7 +1358,57 @@ DatabaseStorage.prototype.getAllDocuments = async function(): Promise<any[]> {
 };
 
 DatabaseStorage.prototype.getAllActivities = async function(): Promise<any[]> {
-  return [];
+  try {
+    const result = await pool.query(`
+      SELECT 
+        a.id,
+        a.title,
+        a.description,
+        a.start_date as "startDate",
+        a.end_date as "endDate",
+        a.category,
+        a.category_id as "categoryId",
+        a.park_id as "parkId",
+        a.location,
+        a.capacity,
+        a.price,
+        a.instructor_id as "instructorId",
+        a.created_at as "createdAt",
+        p.name as "parkName",
+        c.name as "categoryName",
+        i.full_name as "instructorName",
+        img.image_url as "imageUrl",
+        img.caption as "imageCaption"
+      FROM activities a
+      LEFT JOIN parks p ON a.park_id = p.id
+      LEFT JOIN activity_categories c ON a.category_id = c.id
+      LEFT JOIN instructors i ON a.instructor_id = i.id
+      LEFT JOIN activity_images img ON a.id = img.activity_id AND img.is_primary = true
+      ORDER BY a.created_at DESC
+    `);
+    
+    return result.rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      startDate: row.startDate,
+      endDate: row.endDate,
+      category: row.categoryName || row.category,
+      categoryId: row.categoryId,
+      parkId: row.parkId,
+      parkName: row.parkName,
+      location: row.location,
+      capacity: row.capacity || 0,
+      price: row.price || 0,
+      instructorId: row.instructorId,
+      instructorName: row.instructorName,
+      imageUrl: row.imageUrl,
+      imageCaption: row.imageCaption
+    }));
+  } catch (error) {
+    console.error("Error al obtener todas las actividades:", error);
+    return [];
+  }
 };
 
 DatabaseStorage.prototype.getParkActivities = async function(parkId: number): Promise<any[]> {

@@ -45,6 +45,8 @@ interface ActivityData {
   price: number;
   instructorId?: number;
   instructorName?: string;
+  imageUrl?: string;
+  imageCaption?: string;
 }
 
 const categoryColors = {
@@ -141,8 +143,25 @@ function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden border-0 shadow-sm">
-      <div className="aspect-video bg-gradient-to-br from-green-100 to-blue-100 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10"></div>
+      <div className="aspect-video relative overflow-hidden">
+        {activity.imageUrl ? (
+          <>
+            <img 
+              src={activity.imageUrl} 
+              alt={activity.imageCaption || activity.title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-black/20"></div>
+          </>
+        ) : (
+          <>
+            <div className="bg-gradient-to-br from-green-100 to-blue-100 w-full h-full"></div>
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Activity className="h-16 w-16 text-white/70" />
+            </div>
+          </>
+        )}
         <div className="absolute top-4 left-4">
           <Badge className={`${categoryColor} border shadow-sm`}>
             {activity.category}
@@ -156,9 +175,6 @@ function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode
             </Badge>
           </div>
         )}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Activity className="h-16 w-16 text-white/70" />
-        </div>
       </div>
       
       <CardHeader className="pb-3">
