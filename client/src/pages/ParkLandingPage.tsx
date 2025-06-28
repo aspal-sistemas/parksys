@@ -486,47 +486,7 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
-            {/* Documentos */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <FileText className="h-6 w-6 text-gray-600" />
-                  Documentos y Reglamentos
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {park.documents && park.documents.length > 0 ? (
-                  <div className="space-y-3">
-                    {park.documents.map((doc) => (
-                      <a 
-                        key={doc.id}
-                        href={doc.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center p-4 border rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all"
-                      >
-                        <FileText className={`h-8 w-8 mr-4 ${
-                          doc.fileType?.includes('pdf') ? 'text-red-500' : 'text-blue-500'
-                        }`} />
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{doc.title}</h4>
-                          <p className="text-sm text-gray-500">{doc.type}</p>
-                          {doc.fileSize && (
-                            <p className="text-xs text-gray-400 mt-1">{doc.fileSize}</p>
-                          )}
-                        </div>
-                        <Download className="h-5 w-5 text-gray-400" />
-                      </a>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 bg-gray-50 rounded-lg">
-                    <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-500">No hay documentos disponibles</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+
 
             {/* Galería de Imágenes */}
             {additionalImages.length > 0 && (
@@ -971,6 +931,47 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
+            {/* Documentos y Reglamentos */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <FileText className="h-6 w-6 text-gray-600" />
+                  Documentos y Reglamentos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {park.documents && park.documents.length > 0 ? (
+                  <div className="space-y-3">
+                    {park.documents.map((doc) => (
+                      <a 
+                        key={doc.id}
+                        href={doc.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center p-4 border rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all"
+                      >
+                        <FileText className={`h-8 w-8 mr-4 ${
+                          doc.fileType?.includes('pdf') ? 'text-red-500' : 'text-blue-500'
+                        }`} />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">{doc.title}</h4>
+                          <p className="text-sm text-gray-500">{doc.type}</p>
+                          {doc.fileSize && (
+                            <p className="text-xs text-gray-400 mt-1">{doc.fileSize}</p>
+                          )}
+                        </div>
+                        <Download className="h-5 w-5 text-gray-400" />
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-gray-50 rounded-lg">
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-500">No hay documentos disponibles</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Realiza tu evento aquí */}
             <Card className="bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500">
