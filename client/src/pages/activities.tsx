@@ -245,7 +245,7 @@ function ActivitiesPage() {
 
   // Obtener todas las actividades
   const { data: activitiesData = [], isLoading } = useQuery<ActivityData[]>({
-    queryKey: ['/public-api/public-activities'],
+    queryKey: ['/api/activities-with-images'],
   });
 
   // Obtener parques para filtros

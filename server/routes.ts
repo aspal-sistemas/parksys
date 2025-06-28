@@ -2300,10 +2300,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Endpoint directo para obtener todas las actividades con imágenes
-  apiRouter.get("/activities", async (_req: Request, res: Response) => {
+  // Endpoint NUEVO para obtener todas las actividades con imágenes
+  apiRouter.get("/actividades-fotos", async (_req: Request, res: Response) => {
     try {
-      console.log("🎯 Obteniendo todas las actividades con imágenes en GET /api/activities");
+      console.log("🎯 Obteniendo todas las actividades con imágenes en GET /api/activities-with-images");
       
       const { pool } = await import("./db");
       
@@ -2359,6 +2359,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(activities);
     } catch (error) {
       console.error("🎯 Error al obtener actividades:", error);
+      res.status(500).json({ message: "Error al recuperar actividades" });
+    }
+  });
+
+  // Endpoint directo para obtener todas las actividades
+  apiRouter.get("/activities", async (_req: Request, res: Response) => {
+    try {
+      console.log("Obteniendo todas las actividades en GET /api/activities");
+      const activities = await storage.getAllActivities();
+      console.log(`Actividades encontradas: ${activities.length}`);
+      res.json(activities);
+    } catch (error) {
+      console.error("Error al obtener actividades:", error);
       res.status(500).json({ message: "Error al recuperar actividades" });
     }
   });
