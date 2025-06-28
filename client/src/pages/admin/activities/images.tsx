@@ -14,7 +14,7 @@ const ActivityImagesPage: React.FC = () => {
   const activityId = parseInt(params.id as string);
 
   // Obtener información de la actividad
-  const { data: activity, isLoading } = useQuery({
+  const { data: activity, isLoading } = useQuery<any>({
     queryKey: [`/api/activities/${activityId}`],
     enabled: !!activityId && !isNaN(activityId)
   });

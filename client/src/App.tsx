@@ -165,6 +165,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/activities/instructors/new')))}
           </Suspense>
         </Route>
+        <Route path="/admin/activities/:id/images">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de imágenes...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/activities/images')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/analytics" component={AdminAnalytics} />
         <Route path="/admin/documents" component={AdminDocuments} />
         <Route path="/admin/comments" component={AdminComments} />

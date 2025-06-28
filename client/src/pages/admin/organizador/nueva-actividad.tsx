@@ -119,7 +119,7 @@ const NuevaActividadPage = () => {
         data
       });
     },
-    onSuccess: (result) => {
+    onSuccess: (result: any) => {
       toast({
         title: 'Actividad creada',
         description: 'La actividad ha sido creada exitosamente. Ahora puedes agregar imágenes.',
