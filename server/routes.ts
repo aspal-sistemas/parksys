@@ -3479,6 +3479,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // Get individual concession by ID
+  publicRouter.get("/concessions/:id", async (req: Request, res: Response) => {
+    try {
+      const concessionId = parseInt(req.params.id);
+      const { pool } = await import("./db");
+      
+      const result = await pool.query(`
+        SELECT 
+          c.id,
+          c.vendor_name as "vendorName",
+          c.vendor_contact as "vendorContact", 
+          c.vendor_email as "vendorEmail",
+          c.vendor_phone as "vendorPhone",
+          c.start_date as "startDate",
+          c.end_date as "endDate",
+          c.status,
+          c.location,
+          c.notes as "description",
+          c.monthly_rent as "monthlyRent",
+          ct.name as "concessionType",
+          ct.description as "typeDescription",
+          ct.impact_level as "impactLevel",
+          p.name as "parkName",
+          p.id as "parkId"
+        FROM concessions c
+        LEFT JOIN concession_types ct ON c.concession_type_id = ct.id
+        LEFT JOIN parks p ON c.park_id = p.id
+        WHERE c.id = $1
+      `, [concessionId]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          status: "error",
+          message: "Concession not found"
+        });
+      }
+      
+      const concession = result.rows[0];
+      
+      res.json({
+        status: "success",
+        data: concession
+      });
+    } catch (error) {
+      console.error("Error fetching concession:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error fetching concession data" 
+      });
+    }
+  });
   
   // Advanced search endpoint for parks
   publicRouter.get("/search/parks", async (req: Request, res: Response) => {
