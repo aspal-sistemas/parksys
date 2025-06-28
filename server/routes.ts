@@ -3435,9 +3435,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all concessions for public display
-  apiRouter.get("/concessions", async (req: Request, res: Response) => {
-    console.log("GET /api/concessions endpoint hit");
+  // Get all concessions for public display - Using different path to avoid Vite conflicts
+  apiRouter.get("/concessions-list", async (req: Request, res: Response) => {
+    console.log("GET /api/concessions-list endpoint hit");
     try {
       const { pool } = await import("./db");
       console.log("Database pool imported successfully");

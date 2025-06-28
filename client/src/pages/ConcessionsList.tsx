@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,16 +31,15 @@ export default function ConcessionsList() {
   const itemsPerPage = 12;
 
   const { data: concessionsResponse = { data: [] }, isLoading } = useQuery({
-    queryKey: ['/api/concessions'],
+    queryKey: ['/api/all-concessions'],
   });
 
   const concessions = concessionsResponse.data || [];
 
   // Filtrar concesiones
   const filteredConcessions = concessions.filter((concession: Concession) => {
-    const matchesSearch = concession.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         concession.vendorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         concession.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchableText = `${concession.vendorName || ''} ${concession.location || ''} ${concession.concessionType || ''}`;
+    const matchesSearch = searchableText.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === "all" || concession.concessionType === typeFilter;
     const matchesStatus = statusFilter === "all" || concession.status === statusFilter;
     
@@ -53,7 +52,7 @@ export default function ConcessionsList() {
   const paginatedConcessions = filteredConcessions.slice(startIndex, startIndex + itemsPerPage);
 
   // Reset página cuando cambian filtros
-  useState(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, typeFilter, statusFilter]);
 
