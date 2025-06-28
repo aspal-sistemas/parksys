@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -118,7 +118,12 @@ function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode
             </div>
             
             <div className="ml-4 flex flex-col gap-2">
-              <Button size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="text-green-600 border-green-200 hover:bg-green-50"
+                onClick={() => window.open(`/activity/${activity.id}`, '_blank')}
+              >
                 Ver detalle
               </Button>
               {activity.price === 0 && (
@@ -201,7 +206,11 @@ function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode
           )}
         </div>
         
-        <Button className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white" size="sm">
+        <Button 
+          className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white" 
+          size="sm"
+          onClick={() => window.open(`/activity/${activity.id}`, '_blank')}
+        >
           Ver detalle
           <ExternalLink className="h-3 w-3 ml-2" />
         </Button>

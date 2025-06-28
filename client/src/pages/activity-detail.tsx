@@ -1,0 +1,271 @@
+import React from 'react';
+import { useParams, useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { 
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  DollarSign,
+  ArrowLeft,
+  Star,
+  User,
+  Activity,
+  Tag,
+  Info
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+
+function ActivityDetailPage() {
+  const params = useParams();
+  const [, setLocation] = useLocation();
+  const activityId = params.id;
+
+  const { data: activity, isLoading, error } = useQuery({
+    queryKey: [`/api/activities/${activityId}`],
+    enabled: !!activityId,
+  });
+
+  const { data: images = [] } = useQuery({
+    queryKey: [`/api/activities/${activityId}/images`],
+    enabled: !!activityId,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando detalles de la actividad...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !activity) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <Activity className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Actividad no encontrada</h1>
+          <p className="text-gray-600 mb-6">La actividad que buscas no existe o ha sido eliminada.</p>
+          <Button onClick={() => setLocation('/activities')} className="bg-green-600 hover:bg-green-700">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Volver a actividades
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const startDate = new Date(activity.startDate);
+  const endDate = activity.endDate ? new Date(activity.endDate) : null;
+  const isMultiDay = endDate && endDate.getTime() !== startDate.getTime();
+  const primaryImage = images.find(img => img.isPrimary) || images[0];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      {/* Header */}
+      <div className="bg-white border-b sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setLocation('/activities')}
+              className="hover:bg-green-50"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver
+            </Button>
+            <div className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-green-600" />
+              <h1 className="text-xl font-semibold text-gray-900">Detalle de Actividad</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Imagen principal */}
+          <div className="lg:col-span-2">
+            <Card className="overflow-hidden">
+              <div className="aspect-video bg-gradient-to-br from-green-100 to-blue-100 relative">
+                {primaryImage ? (
+                  <img
+                    src={primaryImage.imageUrl}
+                    alt={activity.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Activity className="h-16 w-16 text-green-600/30" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="absolute bottom-4 left-4 right-4">
+                  <h1 className="text-3xl font-bold text-white mb-2">{activity.title}</h1>
+                  <div className="flex items-center gap-4 text-white/90">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      <span>{activity.parkName}</span>
+                    </div>
+                    {activity.categoryName && (
+                      <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                        <Tag className="h-3 w-3 mr-1" />
+                        {activity.categoryName}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Galería de imágenes adicionales */}
+            {images.length > 1 && (
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold mb-3">Más imágenes</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {images.slice(0, 8).map((image, index) => (
+                    <div key={image.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                      <img
+                        src={image.imageUrl}
+                        alt={`Imagen ${index + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Información de la actividad */}
+          <div className="space-y-6">
+            {/* Información básica */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-green-600" />
+                  Información General
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <p className="font-medium">Fecha</p>
+                    <p className="text-sm text-gray-600">
+                      {isMultiDay 
+                        ? `${format(startDate, 'dd MMM', { locale: es })} - ${format(endDate, 'dd MMM yyyy', { locale: es })}`
+                        : format(startDate, 'dd MMM yyyy', { locale: es })
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                {activity.startTime && (
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-purple-600" />
+                    <div>
+                      <p className="font-medium">Horario</p>
+                      <p className="text-sm text-gray-600">
+                        {activity.startTime}
+                        {activity.duration && ` (${activity.duration} min)`}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <DollarSign className="h-5 w-5 text-yellow-600" />
+                  <div>
+                    <p className="font-medium">Precio</p>
+                    <p className="text-sm text-gray-600">
+                      {activity.price > 0 ? `$${activity.price}` : 'Gratis'}
+                    </p>
+                  </div>
+                </div>
+
+                {activity.capacity && (
+                  <div className="flex items-center gap-3">
+                    <Users className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="font-medium">Capacidad</p>
+                      <p className="text-sm text-gray-600">{activity.capacity} personas</p>
+                    </div>
+                  </div>
+                )}
+
+                {activity.instructorName && (
+                  <div className="flex items-center gap-3">
+                    <User className="h-5 w-5 text-indigo-600" />
+                    <div>
+                      <p className="font-medium">Instructor</p>
+                      <p className="text-sm text-gray-600">{activity.instructorName}</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Descripción */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Descripción</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700 leading-relaxed">
+                  {activity.description || 'No hay descripción disponible para esta actividad.'}
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Información adicional */}
+            {(activity.requirements || activity.materials) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Información Adicional</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {activity.requirements && (
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Requisitos</h4>
+                      <p className="text-sm text-gray-600">{activity.requirements}</p>
+                    </div>
+                  )}
+                  {activity.materials && (
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Materiales</h4>
+                      <p className="text-sm text-gray-600">{activity.materials}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Botón de contacto */}
+            <Card>
+              <CardContent className="pt-6">
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
+                  Contactar para más información
+                </Button>
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  Te ayudaremos con cualquier pregunta sobre esta actividad
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default ActivityDetailPage;

@@ -252,6 +252,10 @@ const NuevaActividadPage = () => {
       });
     },
     onSuccess: async (result: any) => {
+      console.log('🎯 Actividad creada exitosamente:', result);
+      console.log('🎯 Imágenes seleccionadas:', selectedImages.length);
+      console.log('🎯 ID de actividad recibido:', result.id);
+      
       toast({
         title: 'Actividad creada',
         description: 'La actividad ha sido creada exitosamente.',
@@ -260,8 +264,10 @@ const NuevaActividadPage = () => {
       
       // Subir imágenes si existen
       if (selectedImages.length > 0 && result.id) {
+        console.log('🎯 Iniciando subida de imágenes...');
         await uploadImages(result.id);
       } else {
+        console.log('🎯 No hay imágenes para subir, redirigiendo...');
         // Si no hay imágenes, redirigir al organizador
         setLocation('/admin/organizador');
       }
