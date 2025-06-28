@@ -364,8 +364,8 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
       const { id } = req.params;
       
       const result = await pool.query(`
-        SELECT ci.id, ci.concession_id, ci.image_url, ci.caption, ci.is_primary, ci.created_at
-        FROM concession_images ci
+        SELECT ci.id, ci.concession_id, ci.image_url, ci.title, ci.description, ci.is_primary, ci.created_at
+        FROM active_concession_images ci
         WHERE ci.concession_id = $1
         ORDER BY ci.is_primary DESC, ci.created_at DESC
       `, [id]);
@@ -426,12 +426,12 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
       const imageUrl = `/uploads/concession-images/${file.filename}`;
       
       // Si es la primera imagen, marcarla como principal
-      const existingImages = await pool.query('SELECT COUNT(*) as count FROM concession_images WHERE concession_id = $1', [id]);
+      const existingImages = await pool.query('SELECT COUNT(*) as count FROM active_concession_images WHERE concession_id = $1', [id]);
       const isPrimary = existingImages.rows[0].count === '0';
 
       const result = await pool.query(
-        'INSERT INTO concession_images (concession_id, image_url, caption, is_primary) VALUES ($1, $2, $3, $4) RETURNING *',
-        [id, imageUrl, caption || null, isPrimary]
+        'INSERT INTO active_concession_images (concession_id, image_url, title, description, is_primary) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [id, imageUrl, caption || null, null, isPrimary]
       );
 
       res.json(result.rows[0]);
@@ -448,7 +448,7 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
       const { id } = req.params;
 
       // Obtener la imagen antes de eliminarla
-      const imageResult = await pool.query('SELECT * FROM concession_images WHERE id = $1', [id]);
+      const imageResult = await pool.query('SELECT * FROM active_concession_images WHERE id = $1', [id]);
       if (imageResult.rows.length === 0) {
         return res.status(404).json({ error: 'Imagen no encontrada' });
       }
@@ -458,12 +458,12 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
       const concessionId = image.concession_id;
 
       // Eliminar la imagen de la base de datos
-      await pool.query('DELETE FROM concession_images WHERE id = $1', [id]);
+      await pool.query('DELETE FROM active_concession_images WHERE id = $1', [id]);
 
       // Si era la imagen principal, hacer principal a otra imagen
       if (wasPrimary) {
         await pool.query(
-          'UPDATE concession_images SET is_primary = true WHERE concession_id = $1 AND id = (SELECT id FROM concession_images WHERE concession_id = $1 ORDER BY created_at ASC LIMIT 1)',
+          'UPDATE active_concession_images SET is_primary = true WHERE concession_id = $1 AND id = (SELECT id FROM active_concession_images WHERE concession_id = $1 ORDER BY created_at ASC LIMIT 1)',
           [concessionId]
         );
       }
@@ -488,7 +488,7 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
       const { id } = req.params;
 
       // Obtener la concesión de la imagen
-      const imageResult = await pool.query('SELECT concession_id FROM concession_images WHERE id = $1', [id]);
+      const imageResult = await pool.query('SELECT concession_id FROM active_concession_images WHERE id = $1', [id]);
       if (imageResult.rows.length === 0) {
         return res.status(404).json({ error: 'Imagen no encontrada' });
       }
@@ -496,10 +496,10 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
       const concessionId = imageResult.rows[0].concession_id;
 
       // Quitar principal de todas las imágenes de la concesión
-      await pool.query('UPDATE concession_images SET is_primary = false WHERE concession_id = $1', [concessionId]);
+      await pool.query('UPDATE active_concession_images SET is_primary = false WHERE concession_id = $1', [concessionId]);
 
       // Establecer esta imagen como principal
-      await pool.query('UPDATE concession_images SET is_primary = true WHERE id = $1', [id]);
+      await pool.query('UPDATE active_concession_images SET is_primary = true WHERE id = $1', [id]);
 
       res.json({ message: 'Imagen principal actualizada' });
     } catch (error) {
