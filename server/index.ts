@@ -219,6 +219,77 @@ app.post("/api/activities", async (req: Request, res: Response) => {
   }
 });
 
+// ENDPOINT PARA OBTENER ACTIVIDAD ESPECÍFICA
+app.get("/api/activities/:id", async (req: Request, res: Response) => {
+  console.log("🎯 GET ACTIVITY ENDPOINT - ID:", req.params.id);
+  
+  try {
+    const activityId = parseInt(req.params.id);
+    
+    if (isNaN(activityId)) {
+      return res.status(400).json({ error: "ID de actividad inválido" });
+    }
+
+    const { db } = await import("./db");
+    const { sql } = await import("drizzle-orm");
+    
+    const result = await db.execute(
+      sql`SELECT 
+        a.*,
+        ac.name as category_name,
+        p.name as park_name,
+        i.full_name as instructor_name
+      FROM activities a
+      LEFT JOIN activity_categories ac ON a.category_id = ac.id
+      LEFT JOIN parks p ON a.park_id = p.id
+      LEFT JOIN instructors i ON a.instructor_id = i.id
+      WHERE a.id = ${activityId}`
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Actividad no encontrada" });
+    }
+
+    const activity = result.rows[0];
+    
+    // Formatear respuesta para que coincida con lo que espera el frontend
+    const formattedActivity = {
+      id: activity.id,
+      title: activity.title,
+      description: activity.description,
+      category: activity.category_name || activity.category,
+      categoryId: activity.category_id,
+      parkId: activity.park_id,
+      parkName: activity.park_name,
+      startDate: activity.start_date,
+      endDate: activity.end_date,
+      location: activity.location,
+      createdAt: activity.created_at,
+      capacity: activity.capacity,
+      price: activity.price,
+      materials: activity.materials,
+      requirements: activity.requirements,
+      duration: activity.duration,
+      isRecurring: activity.is_recurring,
+      isFree: activity.is_free,
+      recurringDays: activity.recurring_days,
+      instructorId: activity.instructor_id,
+      instructorName: activity.instructor_name,
+      startTime: activity.start_time
+    };
+
+    console.log("🎯 Actividad encontrada:", formattedActivity);
+    res.json(formattedActivity);
+
+  } catch (error) {
+    console.error("🎯 Error al obtener actividad:", error);
+    res.status(500).json({ 
+      error: "Error interno del servidor", 
+      details: error instanceof Error ? error.message : "Error desconocido" 
+    });
+  }
+});
+
 // ENDPOINT DIRECTO EMPLEADOS - REGISTRADO PRIMERO para evitar conflictos
 app.post("/api/employees", async (req: Request, res: Response) => {
   try {
