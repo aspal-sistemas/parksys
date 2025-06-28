@@ -940,6 +940,11 @@ const RoleBasedSidebar: React.FC = () => {
   
   const [defaultAccordion, setDefaultAccordion] = useState<string[]>(getInitialOpenSections());
   
+  // Actualizar secciones abiertas cuando cambie la ubicación
+  React.useEffect(() => {
+    setDefaultAccordion(getInitialOpenSections());
+  }, [location]);
+  
   // Función para obtener el sidebar según el rol
   const getSidebarForRole = () => {
     const role = (user as any)?.role;
