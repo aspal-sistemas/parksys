@@ -86,6 +86,15 @@ const Header: React.FC = () => {
                   Instructores
                 </Link>
                 
+                <Link href="/concessions"
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                    location === '/concessions' 
+                      ? 'border-primary text-gray-900' 
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}>
+                  Concesiones
+                </Link>
+                
                 {/* Enlace de registro de voluntarios removido */}
                 
                 <button 
@@ -181,6 +190,15 @@ const Header: React.FC = () => {
                   : 'text-gray-700 hover:bg-gray-50'
               }`}>
               Instructores
+            </Link>
+            
+            <Link href="/concessions"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                location === '/concessions' 
+                  ? 'bg-primary-50 text-primary-700' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}>
+              Concesiones
             </Link>
             
             {/* Enlace móvil de registro de voluntarios removido */}
