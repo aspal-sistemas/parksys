@@ -7,7 +7,7 @@ import ParksList from '@/components/ParksList';
 import ParkDetail from '@/components/ParkDetail';
 import ExtendedParksList from '@/components/ExtendedParksList';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
 
 const Parks: React.FC = () => {
   const [filters, setFilters] = useState<{
@@ -88,98 +88,207 @@ const Parks: React.FC = () => {
     setMapExpanded(!mapExpanded);
   };
 
+  // Calcular estadísticas para el hero
+  const uniqueTypes = new Set(filteredParks.map(park => park.parkType)).size;
+  const totalAmenities = filteredParks.reduce((acc, park) => acc + (park.amenities?.length || 0), 0);
+  const averageAmenities = filteredParks.length > 0 ? Math.round(totalAmenities / filteredParks.length) : 0;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-gray-600">Cargando parques...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* Header compacto */}
-      <div className="bg-gradient-to-r from-[#00a587] to-[#067f5f] text-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold">Agencia Metropolitana de Bosques Urbanos de Guadalajara</h1>
-          <p className="text-white/80 mt-1">Encuentra Parques y Espacios Recreativos - Busca y descubre parques por instalaciones y ubicación</p>
-        </div>
-      </div>
-
-      {/* Filtros extendidos en toda la pantalla */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <SimpleFilterSidebar onApplyFilters={handleApplyFilters} />
-      </div>
-
-      {/* Lista de parques extendida */}
-      <div className="max-w-7xl mx-auto px-6 pb-8">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-[#067f5f]">
-            Resultados de Búsqueda ({totalParks} parques encontrados)
-          </h2>
-          <div className="text-sm text-gray-600">
-            Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalParks)} de {totalParks} parques
+      {/* Hero Section con gradiente */}
+      <div className="relative bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 text-white">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              Explora Nuestros <span className="text-yellow-300">Parques</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto">
+              Descubre espacios verdes únicos en la Zona Metropolitana de Guadalajara para toda la familia
+            </p>
+            <div className="mt-8 flex justify-center items-center space-x-8 text-green-100">
+              <div className="text-center">
+                <div className="text-3xl font-bold">{totalParks}</div>
+                <div className="text-sm">Parques Disponibles</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold">{uniqueTypes}</div>
+                <div className="text-sm">Tipos Diferentes</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold">{averageAmenities}</div>
+                <div className="text-sm">Amenidades Promedio</div>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <ExtendedParksList 
-          parks={parks}
-          isLoading={isLoading}
-          onParkSelect={(park: ExtendedPark) => {
-            setSelectedParkId(park.id);
-            setModalOpen(true);
-          }}
-        />
+      </div>
 
-        {/* Paginación */}
-        {totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="flex items-center gap-1"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Anterior
-            </Button>
-            
-            <div className="flex items-center space-x-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNumber;
-                if (totalPages <= 5) {
-                  pageNumber = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNumber = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNumber = totalPages - 4 + i;
-                } else {
-                  pageNumber = currentPage - 2 + i;
-                }
-                
-                return (
-                  <Button
-                    key={pageNumber}
-                    variant={currentPage === pageNumber ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCurrentPage(pageNumber)}
-                    className={`w-10 h-10 ${
-                      currentPage === pageNumber 
-                        ? "bg-[#00a587] hover:bg-[#067f5f] text-white" 
-                        : "hover:bg-gray-50"
-                    }`}
-                  >
-                    {pageNumber}
-                  </Button>
-                );
-              })}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Filtros modernos */}
+        <div className="mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Search className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-semibold text-gray-900">Encuentra tu Parque Ideal</h3>
+            </div>
+            <SimpleFilterSidebar onApplyFilters={handleApplyFilters} />
+          </div>
+        </div>
+
+        {/* Resultados */}
+        <div className="mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Resultados de Búsqueda
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  {totalParks} parques encontrados que coinciden con tus criterios
+                </p>
+              </div>
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg border border-green-200">
+                <div className="text-sm text-gray-600">
+                  Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalParks)} de {totalParks}
+                </div>
+              </div>
             </div>
             
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="flex items-center gap-1"
-            >
-              Siguiente
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+            <ExtendedParksList 
+              parks={parks}
+              isLoading={isLoading}
+              onParkSelect={(park: ExtendedPark) => {
+                setSelectedParkId(park.id);
+                setModalOpen(true);
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Paginación moderna */}
+        {totalPages > 1 && (
+          <div className="bg-white rounded-2xl shadow-sm border p-6">
+            <div className="flex items-center justify-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="flex items-center gap-2 text-primary border-primary hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Anterior
+              </Button>
+              
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNumber;
+                  if (totalPages <= 5) {
+                    pageNumber = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNumber = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNumber = totalPages - 4 + i;
+                  } else {
+                    pageNumber = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <Button
+                      key={pageNumber}
+                      variant={currentPage === pageNumber ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className={`w-10 h-10 transition-all duration-200 ${
+                        currentPage === pageNumber 
+                          ? "bg-primary hover:bg-primary-600 text-white shadow-md" 
+                          : "text-primary border-primary hover:bg-primary hover:text-white"
+                      }`}
+                    >
+                      {pageNumber}
+                    </Button>
+                  );
+                })}
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-2 text-primary border-primary hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Información adicional de paginación */}
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-500">
+                Navegando por {totalParks} parques en {totalPages} páginas
+              </p>
+            </div>
           </div>
         )}
+
+        {/* Sección de estadísticas adicionales */}
+        <div className="mt-12 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-200">
+          <div className="text-center">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              Red de Parques Metropolitanos
+            </h3>
+            <p className="text-gray-600 max-w-3xl mx-auto mb-8">
+              Nuestra red de parques urbanos ofrece espacios diversos para recreación, deporte, cultura y conexión con la naturaleza en toda la zona metropolitana.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                  <Trees className="h-8 w-8 text-green-600" />
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">Espacios Verdes</h4>
+                <p className="text-gray-600">
+                  Áreas naturales diseñadas para la conservación y disfrute de la biodiversidad urbana
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                  <Users className="h-8 w-8 text-blue-600" />
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">Actividades Familiares</h4>
+                <p className="text-gray-600">
+                  Programas y eventos diseñados para fortalecer los vínculos comunitarios y familiares
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
+                  <MapPin className="h-8 w-8 text-purple-600" />
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">Ubicaciones Estratégicas</h4>
+                <p className="text-gray-600">
+                  Parques distribuidos estratégicamente para garantizar acceso equitativo en toda la ciudad
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Modal de detalle del parque */}
