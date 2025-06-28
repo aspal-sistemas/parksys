@@ -131,7 +131,7 @@ function Router() {
         </Route>
         <Route path="/admin/organizador/catalogo/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando detalles de actividad...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/organizador/catalogo/detalle-basico')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/organizador/catalogo/detalle')))}
           </Suspense>
         </Route>
         <Route path="/admin/activities" component={AdminActivities} />
