@@ -29,7 +29,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarIcon, Clock, MapPin, Users, X } from 'lucide-react';
+import { CalendarIcon, Clock, MapPin, Users, X, Upload, Image as ImageIcon, Trash2, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import AdminLayout from '@/components/AdminLayout';
@@ -70,6 +70,9 @@ const NuevaActividadPage = () => {
   const queryClient = useQueryClient();
   const [ubicacionSeleccionada, setUbicacionSeleccionada] = useState('');
   const [ubicaciones, setUbicaciones] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [primaryImageIndex, setPrimaryImageIndex] = useState<number>(0);
   
   // Obtener la lista de parques
   const { data: parques = [] } = useQuery<{ id: number, name: string }[]>({
@@ -676,6 +679,17 @@ const NuevaActividadPage = () => {
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* Sección de Imágenes */}
+            <div className="space-y-4">
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold mb-4">Imágenes de la actividad</h3>
+                <ImageUploadSection 
+                  onImagesChange={setSelectedImages}
+                  selectedImages={selectedImages}
+                />
+              </div>
             </div>
 
             <div className="flex justify-end gap-2">
