@@ -182,7 +182,7 @@ app.post("/api/activities", async (req: Request, res: Response) => {
         ${esGratuita !== false},
         ${precio || null},
         ${ubicacion || null},
-        ${diasRecurrentes ? JSON.stringify(diasRecurrentes) : null},
+        ${diasRecurrentes && diasRecurrentes.length > 0 ? diasRecurrentes : null},
         ${instructorId ? Number(instructorId) : null},
         ${horaInicio || null}
       ) RETURNING 
