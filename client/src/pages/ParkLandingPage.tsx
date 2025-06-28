@@ -917,6 +917,60 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
+            {/* Concesiones */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wrench className="h-5 w-5 text-blue-600" />
+                  Concesiones y Servicios
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {park.concessions && park.concessions.length > 0 ? (
+                  <div className="space-y-3">
+                    {park.concessions.map((concession) => (
+                      <div key={concession.id} className="border-l-4 border-blue-300 pl-4 py-3 bg-blue-50 rounded-r-lg">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-semibold text-gray-800">{concession.vendorName}</h3>
+                          {concession.concessionType && (
+                            <Badge variant="outline" className="ml-2 border-blue-300 text-blue-700">
+                              {concession.concessionType}
+                            </Badge>
+                          )}
+                        </div>
+                        {concession.typeDescription && (
+                          <p className="text-gray-600 text-sm mb-2">{concession.typeDescription}</p>
+                        )}
+                        {concession.location && (
+                          <p className="text-gray-500 text-xs mb-1">
+                            <MapPin className="h-3 w-3 inline mr-1" />
+                            {concession.location}
+                          </p>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs text-gray-500">
+                            <Clock className="h-3 w-3 mr-1 inline" />
+                            Desde {format(new Date(concession.startDate), 'MMMM yyyy', { locale: es })}
+                          </div>
+                          {concession.vendorPhone && (
+                            <Button variant="outline" size="sm" className="text-xs py-1 px-2 h-6">
+                              <Phone className="h-3 w-3 mr-1" />
+                              Contactar
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <Wrench className="h-8 w-8 text-blue-400 mx-auto mb-2" />
+                    <p className="text-blue-600 text-sm">No hay concesiones activas en este parque</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Realiza tu evento aquí */}
             <Card className="bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500">
               <CardHeader>

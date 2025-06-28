@@ -844,6 +844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         instructors: instructorsResult.rows,
         volunteers: volunteersResult.rows,
         assets: assetsResult.rows,
+        concessions: concessionsResult.rows,
         images: images,
         primaryImage: primaryImage,
         trees: {
