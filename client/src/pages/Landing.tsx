@@ -166,45 +166,64 @@ const Landing = () => {
         </div>
       </header>
 
-      {/* Hero Section mejorado con animaciones */}
-      <section className="relative bg-gradient-to-br from-[#00a587] via-[#067f5f] to-[#bcd256] text-white py-24 overflow-hidden">
-        {/* Elementos decorativos animados */}
+      {/* 🌟 NUEVO HERO SECTION RENOVADO - Diseño consistente con otras páginas 🌟 */}
+      <section className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-green-700 text-white min-h-[80vh] flex items-center overflow-hidden">
+        {/* Efectos de fondo modernos */}
         <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-48 h-48 bg-[#bcd256]/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-white/5 rounded-full blur-lg animate-bounce delay-500"></div>
+          <div className="absolute top-20 left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-yellow-300/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-white/5 rounded-full blur-2xl animate-bounce delay-500"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
         </div>
         
-        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8 animate-fade-in">
-              <Sparkles className="h-4 w-4 text-[#bcd256]" />
-              <span className="text-sm font-medium">Plataforma líder en gestión de parques urbanos</span>
+            {/* Badge moderno */}
+            <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md rounded-full px-6 py-3 mb-8 border border-white/20">
+              <Sparkles className="h-5 w-5 text-yellow-300" />
+              <span className="text-sm font-medium">🚀 Plataforma líder en gestión de parques urbanos</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 animate-fade-in-up">
-              Democratizamos la gestión
-              <span className="block text-[#bcd256] relative">
-                profesional de parques urbanos
-                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-[#bcd256] to-transparent"></div>
+            {/* Título principal renovado */}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight">
+              Democratizamos la 
+              <span className="block bg-gradient-to-r from-yellow-300 via-green-200 to-emerald-100 bg-clip-text text-transparent relative">
+                Gestión de Parques
+                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-48 h-2 bg-gradient-to-r from-transparent via-yellow-300/60 to-transparent rounded-full"></div>
               </span>
             </h1>
             
-            <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto opacity-90 leading-relaxed animate-fade-in-up delay-200">
-              Tecnología accesible que permite a cualquier municipio, sin importar su tamaño o presupuesto, 
-              ofrecer espacios públicos de calidad a sus ciudadanos.
+            {/* Subtítulo mejorado */}
+            <p className="text-xl md:text-3xl mb-12 max-w-5xl mx-auto text-green-50 leading-relaxed font-light">
+              Tecnología accesible que permite a <span className="font-semibold text-yellow-200">cualquier municipio</span>, 
+              sin importar su tamaño o presupuesto, ofrecer espacios públicos de calidad mundial.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fade-in-up delay-400">
-              <Button size="lg" className="bg-[#bcd256] hover:bg-white text-[#067f5f] font-semibold px-10 py-4 text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                <Zap className="mr-2 h-5 w-5" />
-                Comenzar Gratis
+            {/* Botones CTA renovados */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
+              <Button size="lg" className="bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-gray-900 font-bold px-12 py-6 text-xl rounded-2xl transition-all duration-300 hover:scale-110 hover:shadow-2xl transform">
+                <Zap className="mr-3 h-6 w-6" />
+                Comenzar Gratis Ahora
               </Button>
-              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-[#00a587] px-10 py-4 text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl backdrop-blur-sm">
-                <ArrowRight className="mr-2 h-5 w-5" />
-                Ver Demo
+              <Button size="lg" variant="outline" className="border-3 border-white/50 text-white hover:bg-white/10 hover:border-white px-12 py-6 text-xl rounded-2xl transition-all duration-300 hover:scale-110 hover:shadow-2xl backdrop-blur-md">
+                <ArrowRight className="mr-3 h-6 w-6" />
+                Ver Demo en Vivo
               </Button>
+            </div>
+            
+            {/* Stats destacados */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+              {[
+                { number: "500+", label: "Municipios" },
+                { number: "2,000+", label: "Parques" },
+                { number: "50K+", label: "Usuarios" },
+                { number: "99.9%", label: "Uptime" }
+              ].map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-yellow-300 mb-2">{stat.number}</div>
+                  <div className="text-sm text-green-100 font-medium">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -228,36 +247,44 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Features Section mejorado */}
-      <section id="features" className="py-24 bg-white">
+      {/* 🎯 FEATURES SECTION RENOVADO - Estilo moderno consistente */}
+      <section id="features" className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00a587]/10 to-[#bcd256]/10 rounded-full px-4 py-2 mb-6">
-              <TrendingUp className="h-4 w-4 text-[#00a587]" />
-              <span className="text-sm font-medium text-[#067f5f]">Plataforma todo-en-uno</span>
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-full px-6 py-3 mb-8 border border-emerald-200">
+              <TrendingUp className="h-5 w-5 text-emerald-600" />
+              <span className="text-sm font-semibold text-emerald-800">🚀 Plataforma todo-en-uno</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Plataforma Integral de Gestión
+            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
+              Plataforma Integral de 
+              <span className="block text-emerald-600">Gestión Municipal</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
               11 módulos especializados que cubren todos los aspectos de la administración de espacios públicos
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="group border-0 shadow-sm hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-gradient-to-br from-white to-gray-50 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#00a587]/5 to-[#bcd256]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <CardHeader className="relative">
-                  <div className="text-[#00a587] mb-4 group-hover:text-[#067f5f] transition-colors duration-300 group-hover:scale-110 transform">
-                    {feature.icon}
+              <Card key={index} className="group bg-white border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 rounded-3xl overflow-hidden relative">
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                
+                {/* Top accent line */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                
+                <CardHeader className="relative pt-8 pb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <div className="text-emerald-600 group-hover:text-emerald-700 transition-colors">
+                      {feature.icon}
+                    </div>
                   </div>
-                  <CardTitle className="text-lg text-gray-900 group-hover:text-[#067f5f] transition-colors">
+                  <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">
                     {feature.title}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="relative">
-                  <CardDescription className="text-gray-600 leading-relaxed">
+                <CardContent className="relative pb-8">
+                  <CardDescription className="text-gray-600 leading-relaxed text-base">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
