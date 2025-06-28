@@ -3458,10 +3458,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ct.description as "typeDescription",
           ct.impact_level as "impactLevel",
           p.name as "parkName",
-          p.id as "parkId"
+          p.id as "parkId",
+          ci.image_url as "primaryImage"
         FROM concessions c
         LEFT JOIN concession_types ct ON c.concession_type_id = ct.id
         LEFT JOIN parks p ON c.park_id = p.id
+        LEFT JOIN concession_images ci ON c.id = ci.concession_id AND ci.is_primary = true
         WHERE c.status = 'activa'
         ORDER BY c.start_date DESC
       `);
@@ -3501,7 +3503,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           c.status,
           c.location,
           c.notes as "description",
-          c.monthly_rent as "monthlyRent",
           ct.name as "concessionType",
           ct.description as "typeDescription",
           ct.impact_level as "impactLevel",
@@ -3531,6 +3532,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         status: "error",
         message: "Error fetching concession data" 
+      });
+    }
+  });
+
+  // Upload concession image
+  apiRouter.post("/concessions/:id/images", upload.single('image'), async (req: Request, res: Response) => {
+    try {
+      const concessionId = parseInt(req.params.id);
+      if (!req.file) {
+        return res.status(400).json({
+          status: "error",
+          message: "No image file provided"
+        });
+      }
+
+      const { pool } = await import("./db");
+      const imageUrl = `/uploads/${req.file.filename}`;
+      const caption = req.body.caption || '';
+      const isPrimary = req.body.isPrimary === 'true';
+
+      // If this is set as primary, unset other primary images for this concession
+      if (isPrimary) {
+        await pool.query(
+          'UPDATE concession_images SET is_primary = false WHERE concession_id = $1',
+          [concessionId]
+        );
+      }
+
+      const result = await pool.query(`
+        INSERT INTO concession_images (concession_id, image_url, caption, is_primary)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *
+      `, [concessionId, imageUrl, caption, isPrimary]);
+
+      res.json({
+        status: "success",
+        data: result.rows[0]
+      });
+    } catch (error) {
+      console.error("Error uploading concession image:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error uploading image"
+      });
+    }
+  });
+
+  // Get concession images
+  apiRouter.get("/concessions/:id/images", async (req: Request, res: Response) => {
+    try {
+      const concessionId = parseInt(req.params.id);
+      const { pool } = await import("./db");
+      
+      const result = await pool.query(`
+        SELECT * FROM concession_images 
+        WHERE concession_id = $1 
+        ORDER BY is_primary DESC, created_at ASC
+      `, [concessionId]);
+
+      res.json({
+        status: "success",
+        data: result.rows
+      });
+    } catch (error) {
+      console.error("Error fetching concession images:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error fetching images"
+      });
+    }
+  });
+
+  // Delete concession image
+  apiRouter.delete("/concessions/:concessionId/images/:imageId", async (req: Request, res: Response) => {
+    try {
+      const { concessionId, imageId } = req.params;
+      const { pool } = await import("./db");
+      
+      const result = await pool.query(
+        'DELETE FROM concession_images WHERE id = $1 AND concession_id = $2 RETURNING *',
+        [parseInt(imageId), parseInt(concessionId)]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          status: "error",
+          message: "Image not found"
+        });
+      }
+
+      res.json({
+        status: "success",
+        message: "Image deleted successfully"
+      });
+    } catch (error) {
+      console.error("Error deleting concession image:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error deleting image"
+      });
+    }
+  });
+
+  // Set concession primary image
+  apiRouter.put("/concessions/:concessionId/images/:imageId/set-primary", async (req: Request, res: Response) => {
+    try {
+      const { concessionId, imageId } = req.params;
+      const { pool } = await import("./db");
+      
+      // First, unset all primary images for this concession
+      await pool.query(
+        'UPDATE concession_images SET is_primary = false WHERE concession_id = $1',
+        [parseInt(concessionId)]
+      );
+
+      // Then set the selected image as primary
+      const result = await pool.query(
+        'UPDATE concession_images SET is_primary = true WHERE id = $1 AND concession_id = $2 RETURNING *',
+        [parseInt(imageId), parseInt(concessionId)]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          status: "error",
+          message: "Image not found"
+        });
+      }
+
+      res.json({
+        status: "success",
+        data: result.rows[0]
+      });
+    } catch (error) {
+      console.error("Error setting primary image:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error setting primary image"
       });
     }
   });

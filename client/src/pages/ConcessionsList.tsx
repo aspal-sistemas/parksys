@@ -184,66 +184,74 @@ export default function ConcessionsList() {
 
         {/* Grid de concesiones */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {paginatedConcessions.map((concession: Concession) => (
-            <Card key={concession.id} className="hover:shadow-lg transition-shadow duration-200 overflow-hidden">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex items-center gap-2">
-                    {getTypeIcon(concession.concessionType)}
-                    <Badge variant="outline" className="text-xs">
-                      {concession.concessionType}
-                    </Badge>
-                  </div>
-                  <Badge className={`text-xs ${getStatusColor(concession.status)}`}>
-                    {concession.status}
-                  </Badge>
-                </div>
-                <CardTitle className="text-lg text-gray-900 line-clamp-2">
-                  {concession.businessName}
-                </CardTitle>
-                <p className="text-sm text-gray-600">
-                  Por: {concession.vendorName}
-                </p>
-              </CardHeader>
-              
-              <CardContent className="pt-0">
-                <div className="space-y-3">
-                  {/* Ubicación */}
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin className="h-4 w-4" />
-                    <span className="line-clamp-1">{concession.location}</span>
-                  </div>
-
-                  {/* Parque */}
-                  {concession.parkName && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Building2 className="h-4 w-4" />
-                      <span className="line-clamp-1">{concession.parkName}</span>
+          {currentConcessions.map((concession: any) => (
+            <div key={concession.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+              {/* Image Section */}
+              <div className="aspect-video w-full bg-gradient-to-br from-[#00a587] via-[#067f5f] to-[#8498a5] relative overflow-hidden">
+                {concession.primaryImage ? (
+                  <img
+                    src={concession.primaryImage}
+                    alt={concession.vendorName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-white">
+                    <div className="text-center">
+                      <Building className="w-12 h-12 mx-auto mb-2 opacity-80" />
+                      <p className="text-sm font-medium opacity-90">{concession.concessionType}</p>
                     </div>
-                  )}
-
-                  {/* Vigencia */}
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Calendar className="h-4 w-4" />
-                    <span className="text-xs">
-                      {new Date(concession.startDate).toLocaleDateString()} - {new Date(concession.endDate).toLocaleDateString()}
-                    </span>
                   </div>
-
-                  {/* Contacto */}
-                  <div className="space-y-1">
-                    {concession.contactPhone && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Phone className="h-3 w-3" />
-                        <span className="text-xs">{concession.contactPhone}</span>
-                      </div>
-                    )}
-                    {concession.contactEmail && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Mail className="h-3 w-3" />
-                        <span className="text-xs">{concession.contactEmail}</span>
-                      </div>
-                    )}
+                )}
+                <div className="absolute top-3 right-3">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    concession.status === 'activa' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {concession.status}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Content Section */}
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {concession.vendorName}
+                </h3>
+                
+                <p className="text-sm text-[#00a587] font-medium mb-3">{concession.concessionType}</p>
+                
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex items-center">
+                    <MapPin className="w-4 h-4 mr-2 text-gray-400" />
+                    <span>{concession.location}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Building className="w-4 h-4 mr-2 text-gray-400" />
+                    <span>{concession.parkName}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                    <span>{concession.vendorPhone}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                    <span>{new Date(concession.startDate).toLocaleDateString('es-ES')} - {new Date(concession.endDate).toLocaleDateString('es-ES')}</span>
+                  </div>
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => navigate(`/concession/${concession.id}`)}
+                    className="w-full bg-[#00a587] text-white px-4 py-2 rounded-md hover:bg-[#067f5f] transition-colors"
+                  >
+                    Ver detalles
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
                   </div>
 
                   {/* Botón Ver detalles */}
