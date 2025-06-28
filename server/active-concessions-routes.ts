@@ -70,19 +70,39 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
           u.phone as "concessionairePhone",
           p.name as "parkName",
           p.address as "parkLocation",
-          0 as "imageCount",
-          null as "primaryImage"
+          COALESCE(img_count.count, 0) as "imageCount",
+          primary_img.image_url as "primaryImage"
         FROM active_concessions ac
         LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
         LEFT JOIN users u ON ac.concessionaire_id = u.id
         LEFT JOIN parks p ON ac.park_id = p.id
+        LEFT JOIN (
+          SELECT concession_id, COUNT(*) as count
+          FROM active_concession_images 
+          GROUP BY concession_id
+        ) img_count ON ac.id = img_count.concession_id
+        LEFT JOIN active_concession_images primary_img ON ac.id = primary_img.concession_id AND primary_img.is_primary = true
         ORDER BY ac.created_at DESC
       `);
       
+      // Debug: verificar estructura de datos
+      console.log('Sample row structure:', result.rows[0] ? Object.keys(result.rows[0]) : 'No rows');
+      console.log('Image data for first row:', result.rows[0] ? {
+        imageCount: result.rows[0].imageCount,
+        primaryImage: result.rows[0].primaryImage
+      } : 'No data');
+
+      // Mapear campos para consistencia con frontend
+      const mappedData = result.rows.map(row => ({
+        ...row,
+        imageCount: parseInt(row.imageCount) || 0,
+        primaryImage: row.primaryImage || null
+      }));
+
       res.json({
         status: 'success',
-        data: result.rows,
-        count: result.rows.length
+        data: mappedData,
+        count: mappedData.length
       });
     } catch (error) {
       console.error('Error al obtener concesiones activas:', error);
