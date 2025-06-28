@@ -1,28 +1,16 @@
 import { Request, Response } from 'express';
-import { eq, and, desc, asc } from 'drizzle-orm';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { 
-  activeConcessions, 
-  activeConcessionImages, 
-  activeConcessionDocuments,
-  concessionTypes,
-  users,
-  parks,
-  InsertActiveConcession,
-  InsertActiveConcessionImage,
-  InsertActiveConcessionDocument
-} from '../shared/schema';
 
 // Configuración de multer para subida de archivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join(process.cwd(), 'public', 'uploads', 'active-concessions');
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
+    const uploadDir = 'uploads/active-concessions';
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
-    cb(null, uploadPath);
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -32,23 +20,34 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB límite
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB límite
+  },
   fileFilter: (req, file, cb) => {
-    // Permitir imágenes y documentos
-    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|xls|xlsx/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (mimetype && extname) {
-      return cb(null, true);
+    if (file.fieldname === 'image') {
+      // Solo imágenes para el campo 'image'
+      const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (allowedMimes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Solo se permiten archivos de imagen (JPEG, PNG, GIF, WebP)'));
+      }
+    } else if (file.fieldname === 'document') {
+      // Documentos para el campo 'document'
+      const allowedMimes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (allowedMimes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Solo se permiten documentos PDF o Word'));
+      }
     } else {
-      cb(new Error('Tipo de archivo no permitido'));
+      cb(new Error('Campo de archivo no válido'));
     }
   }
 });
 
 /**
- * Registra todas las rutas para el módulo de Concesiones Activas
+ * Registra todas las rutas para el módulo de Concesiones Activas (versión simplificada)
  */
 export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthenticated: any) {
   
@@ -94,39 +93,31 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
     }
   });
 
-  // Obtener una concesión activa específica con toda la información
+  // Obtener una concesión activa específica
   apiRouter.get('/active-concessions/:id', async (req: Request, res: Response) => {
     try {
       const { pool } = await import('./db');
       const concessionId = parseInt(req.params.id);
-      
-      // Datos principales de la concesión
+
       const concessionResult = await pool.query(`
         SELECT 
           ac.*,
           ct.name as "concessionTypeName",
           ct.description as "concessionTypeDescription",
-          ct.technical_requirements as "technicalRequirements",
-          ct.legal_requirements as "legalRequirements",
-          ct.operating_rules as "operatingRules",
           ct.impact_level as "impactLevel",
           u.username as "concessionaireUsername",
           u.full_name as "concessionaireName",
           u.email as "concessionaireEmail",
           u.phone as "concessionairePhone",
           p.name as "parkName",
-          p.address as "parkLocation",
-          cb.username as "createdByUsername",
-          mb.username as "lastModifiedByUsername"
+          p.address as "parkLocation"
         FROM active_concessions ac
         LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
         LEFT JOIN users u ON ac.concessionaire_id = u.id
         LEFT JOIN parks p ON ac.park_id = p.id
-        LEFT JOIN users cb ON ac.created_by = cb.id
-        LEFT JOIN users mb ON ac.last_modified_by = mb.id
         WHERE ac.id = $1
       `, [concessionId]);
-      
+
       if (concessionResult.rows.length === 0) {
         return res.status(404).json({
           status: 'error',
@@ -134,16 +125,10 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
         });
       }
       
-      // Imágenes de la concesión (temporalmente deshabilitado)
-      const imagesResult = { rows: [] };
-      
-      // Documentos de la concesión (temporalmente deshabilitado)
-      const documentsResult = { rows: [] };
-      
       const concession = concessionResult.rows[0];
-      concession.images = imagesResult.rows;
-      concession.documents = documentsResult.rows;
-      
+      concession.images = [];
+      concession.documents = [];
+
       res.json({
         status: 'success',
         data: concession
@@ -157,68 +142,59 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
     }
   });
 
-  // Crear nueva concesión activa
+  // Crear una nueva concesión activa
   apiRouter.post('/active-concessions', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { pool } = await import('./db');
-      const userId = (req as any).userId;
       
-      const concessionData: InsertActiveConcession = {
-        ...req.body,
-        createdBy: userId,
-        lastModifiedBy: userId
+      const concessionData = {
+        name: req.body.name,
+        description: req.body.description,
+        concession_type_id: req.body.concessionTypeId,
+        concessionaire_id: req.body.concessionaireId,
+        park_id: req.body.parkId,
+        specific_location: req.body.specificLocation,
+        start_date: req.body.startDate,
+        end_date: req.body.endDate,
+        status: req.body.status || 'pending',
+        priority: req.body.priority || 'medium',
+        operating_hours: req.body.operatingHours,
+        operating_days: req.body.operatingDays,
+        monthly_payment: req.body.monthlyPayment,
+        emergency_contact: req.body.emergencyContact,
+        emergency_phone: req.body.emergencyPhone,
+        terms_conditions: req.body.termsConditions,
+        financial_guarantees: req.body.financialGuarantees,
+        insurance_policy: req.body.insurancePolicy,
+        created_at: new Date(),
+        updated_at: new Date()
       };
-      
+
       const result = await pool.query(`
         INSERT INTO active_concessions (
-          name, description, concession_type_id, concessionaire_id, park_id,
-          specific_location, coordinates, area, start_date, end_date,
-          operating_hours, operating_days, status, priority, specific_terms,
-          special_requirements, contract_number, contract_file, permit_file,
-          insurance_file, monthly_payment, revenue_percentage, deposit,
-          emergency_contact, emergency_phone, notes, internal_notes,
-          created_by, last_modified_by
+          name, description, concession_type_id, concessionaire_id, park_id, 
+          specific_location, start_date, end_date, status, priority, 
+          operating_hours, operating_days, monthly_payment, emergency_contact, 
+          emergency_phone, terms_conditions, financial_guarantees, insurance_policy,
+          created_at, updated_at
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-          $11, $12, $13, $14, $15, $16, $17, $18, $19,
-          $20, $21, $22, $23, $24, $25, $26, $27, $28, $29
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 
+          $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
         ) RETURNING *
       `, [
-        concessionData.name,
-        concessionData.description,
-        concessionData.concessionTypeId,
-        concessionData.concessionaireId,
-        concessionData.parkId,
-        concessionData.specificLocation,
-        concessionData.coordinates,
-        concessionData.area,
-        concessionData.startDate,
-        concessionData.endDate,
-        concessionData.operatingHours,
-        concessionData.operatingDays,
-        concessionData.status,
-        concessionData.priority,
-        concessionData.specificTerms,
-        concessionData.specialRequirements,
-        concessionData.contractNumber,
-        concessionData.contractFile,
-        concessionData.permitFile,
-        concessionData.insuranceFile,
-        concessionData.monthlyPayment,
-        concessionData.revenuePercentage,
-        concessionData.deposit,
-        concessionData.emergencyContact,
-        concessionData.emergencyPhone,
-        concessionData.notes,
-        concessionData.internalNotes,
-        userId,
-        userId
+        concessionData.name, concessionData.description, concessionData.concession_type_id,
+        concessionData.concessionaire_id, concessionData.park_id, concessionData.specific_location,
+        concessionData.start_date, concessionData.end_date, concessionData.status,
+        concessionData.priority, concessionData.operating_hours, concessionData.operating_days,
+        concessionData.monthly_payment, concessionData.emergency_contact, concessionData.emergency_phone,
+        concessionData.terms_conditions, concessionData.financial_guarantees, concessionData.insurance_policy,
+        concessionData.created_at, concessionData.updated_at
       ]);
-      
+
       res.status(201).json({
         status: 'success',
-        data: result.rows[0],
-        message: 'Concesión activa creada exitosamente'
+        message: 'Concesión activa creada exitosamente',
+        data: result.rows[0]
       });
     } catch (error) {
       console.error('Error al crear concesión activa:', error);
@@ -229,42 +205,65 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
     }
   });
 
-  // Actualizar concesión activa
+  // Actualizar una concesión activa
   apiRouter.put('/active-concessions/:id', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { pool } = await import('./db');
       const concessionId = parseInt(req.params.id);
-      const userId = (req as any).userId;
-      
-      const updateData = { ...req.body, lastModifiedBy: userId };
-      
-      // Construir query dinámico basado en campos enviados
-      const fields = Object.keys(updateData).filter(key => key !== 'id');
-      const setClause = fields.map((field, index) => {
-        const dbField = field.replace(/([A-Z])/g, '_$1').toLowerCase();
-        return `${dbField} = $${index + 2}`;
-      }).join(', ');
-      
-      const values = [concessionId, ...fields.map(field => updateData[field])];
-      
+
+      const updateData = {
+        name: req.body.name,
+        description: req.body.description,
+        concession_type_id: req.body.concessionTypeId,
+        concessionaire_id: req.body.concessionaireId,
+        park_id: req.body.parkId,
+        specific_location: req.body.specificLocation,
+        start_date: req.body.startDate,
+        end_date: req.body.endDate,
+        status: req.body.status,
+        priority: req.body.priority,
+        operating_hours: req.body.operatingHours,
+        operating_days: req.body.operatingDays,
+        monthly_payment: req.body.monthlyPayment,
+        emergency_contact: req.body.emergencyContact,
+        emergency_phone: req.body.emergencyPhone,
+        terms_conditions: req.body.termsConditions,
+        financial_guarantees: req.body.financialGuarantees,
+        insurance_policy: req.body.insurancePolicy,
+        updated_at: new Date()
+      };
+
       const result = await pool.query(`
-        UPDATE active_concessions 
-        SET ${setClause}, updated_at = NOW()
-        WHERE id = $1 
+        UPDATE active_concessions SET
+          name = $1, description = $2, concession_type_id = $3, concessionaire_id = $4,
+          park_id = $5, specific_location = $6, start_date = $7, end_date = $8,
+          status = $9, priority = $10, operating_hours = $11, operating_days = $12,
+          monthly_payment = $13, emergency_contact = $14, emergency_phone = $15,
+          terms_conditions = $16, financial_guarantees = $17, insurance_policy = $18,
+          updated_at = $19
+        WHERE id = $20
         RETURNING *
-      `, values);
-      
+      `, [
+        updateData.name, updateData.description, updateData.concession_type_id,
+        updateData.concessionaire_id, updateData.park_id, updateData.specific_location,
+        updateData.start_date, updateData.end_date, updateData.status,
+        updateData.priority, updateData.operating_hours, updateData.operating_days,
+        updateData.monthly_payment, updateData.emergency_contact, updateData.emergency_phone,
+        updateData.terms_conditions, updateData.financial_guarantees, updateData.insurance_policy,
+        updateData.updated_at, concessionId
+      ]);
+
       if (result.rows.length === 0) {
         return res.status(404).json({
           status: 'error',
           message: 'Concesión no encontrada'
         });
       }
-      
+
       res.json({
         status: 'success',
-        data: result.rows[0],
-        message: 'Concesión activa actualizada exitosamente'
+        message: 'Concesión activa actualizada exitosamente',
+        data: result.rows[0]
       });
     } catch (error) {
       console.error('Error al actualizar concesión activa:', error);
@@ -275,24 +274,21 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
     }
   });
 
-  // Eliminar concesión activa
+  // Eliminar una concesión activa
   apiRouter.delete('/active-concessions/:id', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { pool } = await import('./db');
       const concessionId = parseInt(req.params.id);
-      
-      // Verificar que la concesión existe
-      const checkResult = await pool.query('SELECT id FROM active_concessions WHERE id = $1', [concessionId]);
-      if (checkResult.rows.length === 0) {
+
+      const result = await pool.query('DELETE FROM active_concessions WHERE id = $1 RETURNING *', [concessionId]);
+
+      if (result.rows.length === 0) {
         return res.status(404).json({
           status: 'error',
           message: 'Concesión no encontrada'
         });
       }
-      
-      // Eliminar concesión (las imágenes y documentos se eliminan por CASCADE)
-      await pool.query('DELETE FROM active_concessions WHERE id = $1', [concessionId]);
-      
+
       res.json({
         status: 'success',
         message: 'Concesión activa eliminada exitosamente'
@@ -306,224 +302,20 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
     }
   });
 
-  // ========== RUTAS DE IMÁGENES ==========
+  // ========== RUTAS DE DATOS RELACIONADOS ==========
   
-  // Subir imagen a concesión activa
-  apiRouter.post('/active-concessions/:id/images', isAuthenticated, upload.single('image'), async (req: Request, res: Response) => {
-    try {
-      const { pool } = await import('./db');
-      const concessionId = parseInt(req.params.id);
-      const userId = (req as any).userId;
-      
-      if (!req.file) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'No se proporcionó archivo de imagen'
-        });
-      }
-      
-      const imageUrl = `/uploads/active-concessions/${req.file.filename}`;
-      const { title, description, imageType, isPrimary } = req.body;
-      
-      // Si es imagen principal, remover primary de las demás
-      if (isPrimary === 'true') {
-        await pool.query(
-          'UPDATE active_concession_images SET is_primary = false WHERE concession_id = $1',
-          [concessionId]
-        );
-      }
-      
-      const result = await pool.query(`
-        INSERT INTO active_concession_images (
-          concession_id, image_url, title, description, image_type, is_primary, uploaded_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
-      `, [
-        concessionId,
-        imageUrl,
-        title || '',
-        description || '',
-        imageType || 'general',
-        isPrimary === 'true',
-        userId
-      ]);
-      
-      res.status(201).json({
-        status: 'success',
-        data: result.rows[0],
-        message: 'Imagen subida exitosamente'
-      });
-    } catch (error) {
-      console.error('Error al subir imagen:', error);
-      res.status(500).json({
-        status: 'error',
-        message: 'Error al subir imagen'
-      });
-    }
-  });
-
-  // Obtener imágenes de una concesión
-  apiRouter.get('/active-concessions/:id/images', async (req: Request, res: Response) => {
-    try {
-      const { pool } = await import('./db');
-      const concessionId = parseInt(req.params.id);
-      
-      const result = await pool.query(`
-        SELECT * FROM active_concession_images 
-        WHERE concession_id = $1 
-        ORDER BY is_primary DESC, display_order ASC, created_at ASC
-      `, [concessionId]);
-      
-      res.json({
-        status: 'success',
-        data: result.rows
-      });
-    } catch (error) {
-      console.error('Error al obtener imágenes:', error);
-      res.status(500).json({
-        status: 'error',
-        message: 'Error al obtener imágenes'
-      });
-    }
-  });
-
-  // Eliminar imagen
-  apiRouter.delete('/active-concession-images/:id', isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const { pool } = await import('./db');
-      const imageId = parseInt(req.params.id);
-      
-      // Obtener información de la imagen antes de eliminar
-      const imageResult = await pool.query('SELECT image_url FROM active_concession_images WHERE id = $1', [imageId]);
-      
-      if (imageResult.rows.length === 0) {
-        return res.status(404).json({
-          status: 'error',
-          message: 'Imagen no encontrada'
-        });
-      }
-      
-      // Eliminar archivo físico
-      const imagePath = path.join(process.cwd(), 'public', imageResult.rows[0].image_url);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-      
-      // Eliminar de base de datos
-      await pool.query('DELETE FROM active_concession_images WHERE id = $1', [imageId]);
-      
-      res.json({
-        status: 'success',
-        message: 'Imagen eliminada exitosamente'
-      });
-    } catch (error) {
-      console.error('Error al eliminar imagen:', error);
-      res.status(500).json({
-        status: 'error',
-        message: 'Error al eliminar imagen'
-      });
-    }
-  });
-
-  // Establecer imagen como principal
-  apiRouter.post('/active-concession-images/:id/set-primary', isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const { pool } = await import('./db');
-      const imageId = parseInt(req.params.id);
-      
-      // Obtener concession_id de la imagen
-      const imageResult = await pool.query('SELECT concession_id FROM active_concession_images WHERE id = $1', [imageId]);
-      
-      if (imageResult.rows.length === 0) {
-        return res.status(404).json({
-          status: 'error',
-          message: 'Imagen no encontrada'
-        });
-      }
-      
-      const concessionId = imageResult.rows[0].concession_id;
-      
-      // Remover primary de todas las imágenes de la concesión
-      await pool.query('UPDATE active_concession_images SET is_primary = false WHERE concession_id = $1', [concessionId]);
-      
-      // Establecer como principal la imagen seleccionada
-      await pool.query('UPDATE active_concession_images SET is_primary = true WHERE id = $1', [imageId]);
-      
-      res.json({
-        status: 'success',
-        message: 'Imagen establecida como principal'
-      });
-    } catch (error) {
-      console.error('Error al establecer imagen principal:', error);
-      res.status(500).json({
-        status: 'error',
-        message: 'Error al establecer imagen principal'
-      });
-    }
-  });
-
-  // ========== RUTAS DE DOCUMENTOS ==========
-  
-  // Subir documento a concesión activa
-  apiRouter.post('/active-concessions/:id/documents', isAuthenticated, upload.single('document'), async (req: Request, res: Response) => {
-    try {
-      const { pool } = await import('./db');
-      const concessionId = parseInt(req.params.id);
-      const userId = (req as any).userId;
-      
-      if (!req.file) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'No se proporcionó archivo de documento'
-        });
-      }
-      
-      const documentUrl = `/uploads/active-concessions/${req.file.filename}`;
-      const { title, description, documentType, expirationDate, isRequired } = req.body;
-      
-      const result = await pool.query(`
-        INSERT INTO active_concession_documents (
-          concession_id, document_url, document_type, title, description, 
-          expiration_date, is_required, uploaded_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *
-      `, [
-        concessionId,
-        documentUrl,
-        documentType,
-        title,
-        description || '',
-        expirationDate || null,
-        isRequired === 'true',
-        userId
-      ]);
-      
-      res.status(201).json({
-        status: 'success',
-        data: result.rows[0],
-        message: 'Documento subido exitosamente'
-      });
-    } catch (error) {
-      console.error('Error al subir documento:', error);
-      res.status(500).json({
-        status: 'error',
-        message: 'Error al subir documento'
-      });
-    }
-  });
-
-  // ========== RUTAS DE DATOS AUXILIARES ==========
-  
-  // Obtener concesionarios (usuarios con rol concesionario)
+  // Obtener concesionarios (usuarios con rol 'concesionario')
   apiRouter.get('/concessionaires', async (req: Request, res: Response) => {
     try {
       const { pool } = await import('./db');
       
       const result = await pool.query(`
-        SELECT id, username, full_name as "fullName", email, phone
+        SELECT id, username, full_name, email, phone, created_at
         FROM users 
-        WHERE role = 'concesionario' 
+        WHERE role = 'concesionario'
         ORDER BY full_name ASC
       `);
-      
+
       res.json({
         status: 'success',
         data: result.rows
@@ -537,17 +329,18 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
     }
   });
 
-  // Obtener tipos de concesión activos
+  // Obtener tipos de concesión disponibles
   apiRouter.get('/concession-types-active', async (req: Request, res: Response) => {
     try {
       const { pool } = await import('./db');
       
       const result = await pool.query(`
-        SELECT * FROM concession_types 
-        WHERE is_active = true 
+        SELECT id, name, description, impact_level, created_at
+        FROM concession_types 
+        WHERE status = 'active'
         ORDER BY name ASC
       `);
-      
+
       res.json({
         status: 'success',
         data: result.rows
@@ -561,5 +354,5 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
     }
   });
 
-  console.log('✅ Rutas de Concesiones Activas registradas correctamente');
+  console.log('✅ Rutas de concesiones activas registradas exitosamente (versión simplificada)');
 }
