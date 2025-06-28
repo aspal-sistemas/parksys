@@ -176,7 +176,7 @@ export function registerPublicRoutes(publicRouter: any) {
   });
 
   // Obtener todas las actividades públicas
-  publicRouter.get('/activities/public', async (_req: Request, res: Response) => {
+  publicRouter.get('/public-activities', async (_req: Request, res: Response) => {
     try {
       const allActivities = await db.select({
         id: activities.id,
