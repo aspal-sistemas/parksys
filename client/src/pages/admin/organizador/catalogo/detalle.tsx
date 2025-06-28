@@ -58,31 +58,38 @@ const DetalleActividadPage = () => {
   
   // Obtener los detalles de la actividad
   const { data: actividadRaw, isLoading } = useQuery({
-    queryKey: ['/api/activities', actividadId],
+    queryKey: [`/api/activities/${actividadId}`],
     enabled: actividadId !== null,
   });
   
   // Procesar los datos de actividad con valores por defecto para evitar errores
   const actividad = actividadRaw ? {
-    id: actividadRaw.id || 0,
-    title: actividadRaw.title || 'Actividad sin título',
-    description: actividadRaw.description || 'Sin descripción disponible',
-    category: actividadRaw.category || 'Sin categoría',
-    parkId: actividadRaw.parkId || 0,
-    parkName: actividadRaw.parkName || '',
-    startDate: actividadRaw.startDate || null,
-    endDate: actividadRaw.endDate || null,
-    location: actividadRaw.location || null,
-    createdAt: actividadRaw.createdAt || new Date().toISOString(),
-    capacity: actividadRaw.capacity || null,
-    price: actividadRaw.price || null,
-    materials: actividadRaw.materials || null,
-    requirements: actividadRaw.requirements || null,
-    duration: actividadRaw.duration || null,
-    isRecurring: actividadRaw.isRecurring || false,
-    recurringDays: actividadRaw.recurringDays || [],
-    instructorId: actividadRaw.instructorId || null
+    id: (actividadRaw as any).id || 0,
+    title: (actividadRaw as any).title || 'Actividad sin título',
+    description: (actividadRaw as any).description || 'Sin descripción disponible',
+    category: (actividadRaw as any).category || 'Sin categoría',
+    parkId: (actividadRaw as any).parkId || 0,
+    parkName: (actividadRaw as any).parkName || '',
+    startDate: (actividadRaw as any).startDate || null,
+    endDate: (actividadRaw as any).endDate || null,
+    location: (actividadRaw as any).location || null,
+    createdAt: (actividadRaw as any).createdAt || new Date().toISOString(),
+    capacity: (actividadRaw as any).capacity || null,
+    price: (actividadRaw as any).price || null,
+    materials: (actividadRaw as any).materials || null,
+    requirements: (actividadRaw as any).requirements || null,
+    duration: (actividadRaw as any).duration || null,
+    isRecurring: (actividadRaw as any).isRecurring || false,
+    recurringDays: (actividadRaw as any).recurringDays || [],
+    instructorId: (actividadRaw as any).instructorId || null,
+    instructorName: (actividadRaw as any).instructorName || null,
+    startTime: (actividadRaw as any).startTime || null,
+    isFree: (actividadRaw as any).isFree || false
   } : null;
+
+  // Debug: Ver qué datos estamos recibiendo
+  console.log('Datos crudos recibidos:', actividadRaw);
+  console.log('Actividad procesada:', actividad);
   
   // Obtener el parque relacionado
   const { data: parque } = useQuery({
@@ -197,7 +204,7 @@ const DetalleActividadPage = () => {
                   <div className="flex items-center">
                     <MapPin className="h-5 w-5 mr-2 text-gray-500" />
                     <div>
-                      <p>{parque?.name || (actividad.parkId ? `Parque #${actividad.parkId}` : 'Parque no especificado')}</p>
+                      <p>{(parque as any)?.name || actividad.parkName || (actividad.parkId ? `Parque #${actividad.parkId}` : 'Parque no especificado')}</p>
                       {actividad.location && <p>{actividad.location}</p>}
                     </div>
                   </div>
@@ -310,17 +317,21 @@ const DetalleActividadPage = () => {
                 <div>
                   <h3 className="font-medium mb-2">Instructor</h3>
                   <div className="p-3 border rounded-md">
-                    <div className="font-medium">{instructor?.full_name || `Instructor #${actividad.instructorId}`}</div>
-                    {instructor?.specialties && (
-                      <div className="text-sm text-gray-500 mt-1">
-                        Especialidad: {instructor.specialties}
-                      </div>
-                    )}
-                    {instructor?.email && (
-                      <div className="text-sm text-gray-500">
-                        Email: {instructor.email}
-                      </div>
-                    )}
+                    <div className="font-medium">{actividad.instructorName || `Instructor #${actividad.instructorId}`}</div>
+                    <div className="text-sm text-gray-500 mt-1">
+                      ID: {actividad.instructorId}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Horario */}
+              {actividad.startTime && (
+                <div>
+                  <h3 className="font-medium mb-2">Horario de inicio</h3>
+                  <div className="flex items-center">
+                    <Clock className="h-5 w-5 mr-2 text-gray-500" />
+                    <span>{actividad.startTime}</span>
                   </div>
                 </div>
               )}
