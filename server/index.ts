@@ -993,6 +993,15 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar rutas de email:", error);
   }
 
+  // Registrar rutas de imágenes de actividades
+  try {
+    const activityImageRouter = await import("./activity-image-routes");
+    app.use("/api/activities", activityImageRouter.default);
+    console.log("Rutas de imágenes de actividades registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de imágenes de actividades:", error);
+  }
+
   // Registrar rutas del sistema de comunicaciones
   try {
     const { default: communicationsRouter } = await import("./communications/communicationsRoutes");

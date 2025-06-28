@@ -512,6 +512,21 @@ export const activities = pgTable("activities", {
   recurringDays: text("recurring_days").array() // diasRecurrentes
 });
 
+// Tabla de imágenes de actividades
+export const activityImages = pgTable("activity_images", {
+  id: serial("id").primaryKey(),
+  activityId: integer("activity_id").notNull().references(() => activities.id, { onDelete: "cascade" }),
+  imageUrl: text("image_url").notNull(),
+  fileName: text("file_name").notNull(),
+  fileSize: integer("file_size"), // Tamaño en bytes
+  mimeType: text("mime_type").notNull(),
+  caption: text("caption"),
+  isPrimary: boolean("is_primary").notNull().default(false),
+  uploadedById: integer("uploaded_by_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
 export const comments = pgTable("comments", {
   id: serial("id").primaryKey(),
   parkId: integer("park_id").notNull(),
@@ -2577,3 +2592,13 @@ export type InsertContractIncomeReport = z.infer<typeof insertContractIncomeRepo
 
 export type ContractMonthlyPayment = typeof contractMonthlyPayments.$inferSelect;
 export type InsertContractMonthlyPayment = z.infer<typeof insertContractMonthlyPaymentSchema>;
+
+// Esquemas de inserción y tipos para imágenes de actividades
+export const insertActivityImageSchema = createInsertSchema(activityImages).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export type ActivityImage = typeof activityImages.$inferSelect;
+export type InsertActivityImage = z.infer<typeof insertActivityImageSchema>;
