@@ -58,41 +58,33 @@ const Header: React.FC = () => {
                   Parques
                 </Link>
                 
-                {/* Actividades dropdown */}
-                <div className="relative group">
-                  <div 
-                    className={`flex items-center cursor-pointer border-b-2 pt-1 pb-3 px-1 text-sm font-medium 
-                    ${isActivitiesActive 
+                {/* Enlaces directos de Actividades */}
+                <Link href="/activities"
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                    location === '/activities' 
                       ? 'border-primary text-gray-900' 
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                    onClick={toggleActivitiesMenu}
-                  >
-                    <span>Actividades</span>
-                    <ChevronDown className="h-4 w-4 ml-1" />
-                  </div>
-                  
-                  <div className={`absolute z-10 mt-2 w-48 bg-white shadow-lg rounded-md py-1 ${activitiesMenuOpen ? 'block' : 'hidden'} group-hover:block`}>
-                    <Link href="/activities"
-                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${
-                        location === '/activities' ? 'font-medium text-primary' : ''
-                      }`}>
-                      Todas las Actividades
-                    </Link>
-                    <Link href="/calendar"
-                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${
-                        location === '/calendar' ? 'font-medium text-primary' : ''
-                      }`}>
-                      Calendario
-                    </Link>
-                    <Link href="/instructors"
-                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${
-                        location === '/instructors' ? 'font-medium text-primary' : ''
-                      }`}>
-                      Instructores
-                    </Link>
-                  </div>
-                </div>
+                  }`}>
+                  Actividades
+                </Link>
+                
+                <Link href="/calendar"
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                    location === '/calendar' 
+                      ? 'border-primary text-gray-900' 
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}>
+                  Calendario
+                </Link>
+                
+                <Link href="/instructors"
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                    location === '/instructors' 
+                      ? 'border-primary text-gray-900' 
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}>
+                  Instructores
+                </Link>
                 
                 {/* Enlace de registro de voluntarios removido */}
                 
@@ -163,48 +155,33 @@ const Header: React.FC = () => {
               Parques
             </Link>
             
-            {/* Actividades móvil con submenú */}
-            <div>
-              <div 
-                className={`flex items-center justify-between px-3 py-2 rounded-md text-base font-medium 
-                  ${isActivitiesActive ? 'bg-primary-50 text-primary-700' : 'text-gray-700'}`}
-                onClick={() => setActivitiesMenuOpen(!activitiesMenuOpen)}
-              >
-                <span>Actividades</span>
-                <ChevronDown className={`h-5 w-5 transition-transform ${activitiesMenuOpen ? 'transform rotate-180' : ''}`} />
-              </div>
-              
-              {activitiesMenuOpen && (
-                <div className="pl-4">
-                  <Link href="/activities"
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
-                      location === '/activities' 
-                        ? 'bg-primary-50 text-primary-700' 
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}>
-                    Todas las Actividades
-                  </Link>
-                  
-                  <Link href="/calendar"
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
-                      location === '/calendar' 
-                        ? 'bg-primary-50 text-primary-700' 
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}>
-                    Calendario
-                  </Link>
-                  
-                  <Link href="/instructors"
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
-                      location === '/instructors' 
-                        ? 'bg-primary-50 text-primary-700' 
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}>
-                    Instructores
-                  </Link>
-                </div>
-              )}
-            </div>
+            {/* Enlaces móviles directos */}
+            <Link href="/activities"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                location === '/activities' 
+                  ? 'bg-primary-50 text-primary-700' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}>
+              Actividades
+            </Link>
+            
+            <Link href="/calendar"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                location === '/calendar' 
+                  ? 'bg-primary-50 text-primary-700' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}>
+              Calendario
+            </Link>
+            
+            <Link href="/instructors"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                location === '/instructors' 
+                  ? 'bg-primary-50 text-primary-700' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}>
+              Instructores
+            </Link>
             
             {/* Enlace móvil de registro de voluntarios removido */}
             
