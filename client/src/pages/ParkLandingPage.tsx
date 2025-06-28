@@ -486,11 +486,40 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
-
-
-
-
-
+            {/* Realiza tu evento aquí */}
+            <Card className="bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-green-800">
+                  <Calendar className="h-5 w-5" />
+                  ¡Realiza tu evento aquí!
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-green-700 mb-4">
+                  Organiza tu evento en este parque. Tenemos opciones para eventos de bajo y alto impacto.
+                </p>
+                <div className="space-y-3">
+                  <Link href="/admin/eventos-ambu/solicitud-bajo-impacto">
+                    <Button 
+                      variant="outline" 
+                      className="w-full bg-white hover:bg-green-50 text-green-700 border-green-300 hover:border-green-400"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Solicitud de evento de bajo impacto
+                    </Button>
+                  </Link>
+                  <Link href="/admin/eventos-ambu/solicitud-alto-impacto">
+                    <Button 
+                      variant="outline" 
+                      className="w-full bg-white hover:bg-green-50 text-green-700 border-green-300 hover:border-green-400"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Solicitud de evento de alto impacto
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Instalaciones y Equipos */}
             {park.assets && park.assets.length > 0 && (
@@ -903,41 +932,6 @@ function ParkLandingPage() {
                     <p className="text-gray-500">No hay documentos disponibles</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Realiza tu evento aquí */}
-            <Card className="bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-green-800">
-                  <Calendar className="h-5 w-5" />
-                  ¡Realiza tu evento aquí!
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-green-700 mb-4">
-                  Organiza tu evento en este parque. Tenemos opciones para eventos de bajo y alto impacto.
-                </p>
-                <div className="space-y-3">
-                  <Link href="/admin/eventos-ambu/solicitud-bajo-impacto">
-                    <Button 
-                      variant="outline" 
-                      className="w-full bg-white hover:bg-green-50 text-green-700 border-green-300 hover:border-green-400"
-                    >
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Solicitud de evento de bajo impacto
-                    </Button>
-                  </Link>
-                  <Link href="/admin/eventos-ambu/solicitud-alto-impacto">
-                    <Button 
-                      variant="outline" 
-                      className="w-full bg-white hover:bg-green-50 text-green-700 border-green-300 hover:border-green-400"
-                    >
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Solicitud de evento de alto impacto
-                    </Button>
-                  </Link>
-                </div>
               </CardContent>
             </Card>
 
