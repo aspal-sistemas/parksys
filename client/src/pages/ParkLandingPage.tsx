@@ -679,40 +679,6 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
-            {/* Información Adicional */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Información Adicional</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div>
-                  <p className="text-gray-500">Estado de conservación</p>
-                  <p className="font-medium">{park.conservationStatus || 'Bueno'}</p>
-                </div>
-                
-                {park.regulationUrl && (
-                  <div>
-                    <p className="text-gray-500">Reglamento</p>
-                    <a 
-                      href={park.regulationUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline font-medium"
-                    >
-                      Ver reglamento completo
-                    </a>
-                  </div>
-                )}
-                
-                <div>
-                  <p className="text-gray-500">Última actualización</p>
-                  <p className="font-medium">
-                    {park.updatedAt ? format(new Date(park.updatedAt), 'dd/MM/yyyy', { locale: es }) : 'No disponible'}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Instructores */}
             <Card>
               <CardHeader>
