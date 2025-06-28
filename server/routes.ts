@@ -3436,9 +3436,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all concessions for public display
-  publicRouter.get("/concessions", async (req: Request, res: Response) => {
+  apiRouter.get("/concessions", async (req: Request, res: Response) => {
+    console.log("GET /api/concessions endpoint hit");
     try {
       const { pool } = await import("./db");
+      console.log("Database pool imported successfully");
       
       const result = await pool.query(`
         SELECT 
@@ -3465,6 +3467,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `);
       
       const concessions = result.rows || [];
+      console.log(`Found ${concessions.length} concessions`);
       
       res.json({
         status: "success",
@@ -3481,7 +3484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get individual concession by ID
-  publicRouter.get("/concessions/:id", async (req: Request, res: Response) => {
+  apiRouter.get("/concessions/:id", async (req: Request, res: Response) => {
     try {
       const concessionId = parseInt(req.params.id);
       const { pool } = await import("./db");
