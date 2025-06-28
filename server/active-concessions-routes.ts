@@ -310,7 +310,7 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
       const { pool } = await import('./db');
       
       const result = await pool.query(`
-        SELECT id, username, full_name, email, phone, created_at
+        SELECT id, username, full_name as "fullName", email, phone, created_at
         FROM users 
         WHERE role = 'concesionario'
         ORDER BY full_name ASC

@@ -60,7 +60,7 @@ function ActiveConcessionForm() {
   });
 
   const { data: concessionairesData } = useQuery({
-    queryKey: ['/api/concessionaires'],
+    queryKey: ['/api/active-concessions-concessionaires'],
     queryFn: () => apiRequest('/api/concessionaires')
   });
 
@@ -192,7 +192,7 @@ function ActiveConcessionForm() {
   }
 
   const concessionTypes = concessionTypesData?.data || [];
-  const concessionaires = concessionairesData?.data || [];
+  const concessionaires = concessionairesData || []; // El endpoint devuelve array directo
   const parks = parksData?.data || [];
 
   // Debug temporal - eliminar después
@@ -321,7 +321,7 @@ function ActiveConcessionForm() {
                         <SelectContent>
                           {concessionaires.map((concessionaire: any) => (
                             <SelectItem key={concessionaire.id} value={concessionaire.id.toString()}>
-                              {concessionaire.fullName} ({concessionaire.email})
+                              {concessionaire.fullName || concessionaire.name || concessionaire.username} ({concessionaire.email})
                             </SelectItem>
                           ))}
                         </SelectContent>
