@@ -99,8 +99,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // ENDPOINT SIMPLIFICADO ACTIVITIES - CREAR CON SQL DIRECTO
 app.post("/api/activities", async (req: Request, res: Response) => {
-  console.log("🎯 ENDPOINT ACTIVITIES EJECUTÁNDOSE");
-  console.log("🎯 Datos recibidos:", JSON.stringify(req.body, null, 2));
+  console.log("🎯 ENDPOINT ACTIVITIES EJECUTÁNDOSE - DATOS RECIBIDOS CORRECTAMENTE");
+  console.log("🎯 Datos completos:", JSON.stringify(req.body, null, 2));
   
   try {
     const { 
