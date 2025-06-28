@@ -674,7 +674,7 @@ function ParkLandingPage() {
             </Card>
 
             {/* Realiza tu evento aquí */}
-            <Card className="bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500">
+            <Card className="bg-white border-2 border-green-500">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-green-800">
                   <Calendar className="h-5 w-5" />
