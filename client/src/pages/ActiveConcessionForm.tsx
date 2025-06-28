@@ -195,17 +195,22 @@ function ActiveConcessionForm() {
     );
   }
 
-  // Debug temporal
-  console.log('Debug concessionaires:', {
-    concessionairesData,
-    isArray: Array.isArray(concessionairesData),
-    dataProperty: concessionairesData?.data,
-    isDataArray: Array.isArray(concessionairesData?.data)
-  });
-
   const concessionTypes = concessionTypesData?.data || [];
-  const concessionaires = Array.isArray(concessionairesData) ? concessionairesData : (Array.isArray(concessionairesData?.data) ? concessionairesData.data : []); 
+  const concessionaires = concessionairesData || []; // fetch devuelve directamente el array
   const parks = parksData?.data || [];
+
+  // Verificar que todos los datos estén cargados
+  const isDataLoading = !concessionTypesData || !concessionairesData || !parksData;
+  
+  if (isDataLoading) {
+    return (
+      <AdminLayout title={isEdit ? "Editar Concesión Activa" : "Nueva Concesión Activa"}>
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
 
 
