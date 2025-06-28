@@ -85,17 +85,12 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
         ORDER BY ac.created_at DESC
       `);
       
-      // Debug: verificar estructura de datos
-      console.log('Sample row structure:', result.rows[0] ? Object.keys(result.rows[0]) : 'No rows');
-      console.log('Image data for first row:', result.rows[0] ? {
-        imageCount: result.rows[0].imageCount,
-        primaryImage: result.rows[0].primaryImage
-      } : 'No data');
+
 
       // Mapear campos para consistencia con frontend
       const mappedData = result.rows.map(row => ({
         ...row,
-        imageCount: parseInt(row.imageCount) || 0,
+        imageCount: parseInt(row.imageCount?.toString()) || 0,
         primaryImage: row.primaryImage || null
       }));
 
