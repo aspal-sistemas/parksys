@@ -776,6 +776,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         LIMIT 10
       `, [parkId]);
       console.log(`Activos encontrados: ${assetsResult.rows.length}`);
+
+      // Obtener concesiones del parque
+      console.log('Paso 7.5: Consultando concesiones del parque...');
+      const concessionsResult = await pool.query(`
+        SELECT 
+          c.id,
+          c.vendor_name as "vendorName",
+          c.vendor_contact as "vendorContact", 
+          c.vendor_email as "vendorEmail",
+          c.vendor_phone as "vendorPhone",
+          c.start_date as "startDate",
+          c.end_date as "endDate",
+          c.status,
+          c.location,
+          c.notes,
+          ct.name as "concessionType",
+          ct.description as "typeDescription",
+          ct.impact_level as "impactLevel"
+        FROM concessions c
+        LEFT JOIN concession_types ct ON c.concession_type_id = ct.id
+        WHERE c.park_id = $1 AND c.status = 'activa'
+        ORDER BY c.start_date DESC
+        LIMIT 10
+      `, [parkId]);
+      console.log(`Concesiones encontradas: ${concessionsResult.rows.length}`);
       
       // Obtener imágenes del parque
       console.log('Paso 8: Consultando imágenes del parque...');
@@ -2303,7 +2328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Endpoint NUEVO para obtener todas las actividades con imágenes
   apiRouter.get("/actividades-fotos", async (_req: Request, res: Response) => {
     try {
-      console.log("🎯 Obteniendo todas las actividades con imágenes en GET /api/activities-with-images");
+      console.log("Obteniendo todas las actividades con imágenes");
       
       const { pool } = await import("./db");
       
@@ -3361,6 +3386,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         status: "error", 
         message: "Error fetching park activities data" 
+      });
+    }
+  });
+
+  // Get concessions for a specific park
+  publicRouter.get("/parks/:id/concessions", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      
+      const { pool } = await import("./db");
+      
+      const result = await pool.query(`
+        SELECT 
+          c.id,
+          c.vendor_name as "vendorName",
+          c.vendor_contact as "vendorContact", 
+          c.vendor_email as "vendorEmail",
+          c.vendor_phone as "vendorPhone",
+          c.start_date as "startDate",
+          c.end_date as "endDate",
+          c.status,
+          c.location,
+          c.notes,
+          ct.name as "concessionType",
+          ct.description as "typeDescription",
+          ct.impact_level as "impactLevel"
+        FROM concessions c
+        LEFT JOIN concession_types ct ON c.concession_type_id = ct.id
+        WHERE c.park_id = $1 AND c.status = 'activa'
+        ORDER BY c.start_date DESC
+      `, [parkId]);
+      
+      const concessions = result.rows || [];
+      
+      res.json({
+        status: "success",
+        data: concessions,
+        count: concessions.length
+      });
+    } catch (error) {
+      console.error("Error fetching park concessions:", error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching park concessions data" 
+      });
+    }
+  });
+
+  // Get all concessions for public display
+  publicRouter.get("/concessions", async (req: Request, res: Response) => {
+    try {
+      const { pool } = await import("./db");
+      
+      const result = await pool.query(`
+        SELECT 
+          c.id,
+          c.vendor_name as "vendorName",
+          c.vendor_contact as "vendorContact", 
+          c.vendor_email as "vendorEmail",
+          c.vendor_phone as "vendorPhone",
+          c.start_date as "startDate",
+          c.end_date as "endDate",
+          c.status,
+          c.location,
+          c.notes,
+          ct.name as "concessionType",
+          ct.description as "typeDescription",
+          ct.impact_level as "impactLevel",
+          p.name as "parkName",
+          p.id as "parkId"
+        FROM concessions c
+        LEFT JOIN concession_types ct ON c.concession_type_id = ct.id
+        LEFT JOIN parks p ON c.park_id = p.id
+        WHERE c.status = 'activa'
+        ORDER BY c.start_date DESC
+      `);
+      
+      const concessions = result.rows || [];
+      
+      res.json({
+        status: "success",
+        data: concessions,
+        count: concessions.length
+      });
+    } catch (error) {
+      console.error("Error fetching concessions:", error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching concessions data" 
       });
     }
   });
