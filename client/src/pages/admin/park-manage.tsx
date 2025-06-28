@@ -9,6 +9,7 @@ import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import ParkMultimediaManager from "@/components/ParkMultimediaManager";
 import ParkAmenitiesManager from "@/components/ParkAmenitiesManager";
 import ParkTreeSpeciesManager from "@/components/ParkTreeSpeciesManager";
+import ParkActivitiesManager from "@/components/ParkActivitiesManager";
 
 export default function ParkManage() {
   const { id } = useParams();
@@ -156,16 +157,16 @@ export default function ParkManage() {
             <TabsContent value="actividades" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Gestión de Actividades</CardTitle>
+                  <CardTitle className="text-2xl text-blue-600 flex items-center gap-2">
+                    <Calendar className="h-6 w-6" />
+                    Actividades del Parque
+                  </CardTitle>
                   <CardDescription>
-                    Administra las actividades y eventos del parque.
+                    Visualiza las actividades programadas en este parque. Para gestionar actividades, utiliza el módulo de Actividades.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8 text-gray-500">
-                    <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p>Funcionalidad de gestión de actividades próximamente</p>
-                  </div>
+                  <ParkActivitiesManager parkId={parseInt(id!)} />
                 </CardContent>
               </Card>
             </TabsContent>
