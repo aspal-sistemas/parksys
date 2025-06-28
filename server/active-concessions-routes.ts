@@ -71,8 +71,8 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
           u.phone as "concessionairePhone",
           p.name as "parkName",
           p.address as "parkLocation",
-          (SELECT COUNT(*) FROM active_concession_images aci WHERE aci.concession_id = ac.id) as "imageCount",
-          (SELECT image_url FROM active_concession_images aci WHERE aci.concession_id = ac.id AND aci.is_primary = true LIMIT 1) as "primaryImage"
+          0 as "imageCount",
+          null as "primaryImage"
         FROM active_concessions ac
         LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
         LEFT JOIN users u ON ac.concessionaire_id = u.id
@@ -134,19 +134,11 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
         });
       }
       
-      // Imágenes de la concesión
-      const imagesResult = await pool.query(`
-        SELECT * FROM active_concession_images 
-        WHERE concession_id = $1 
-        ORDER BY is_primary DESC, display_order ASC, created_at ASC
-      `, [concessionId]);
+      // Imágenes de la concesión (temporalmente deshabilitado)
+      const imagesResult = { rows: [] };
       
-      // Documentos de la concesión
-      const documentsResult = await pool.query(`
-        SELECT * FROM active_concession_documents 
-        WHERE concession_id = $1 
-        ORDER BY is_required DESC, created_at DESC
-      `, [concessionId]);
+      // Documentos de la concesión (temporalmente deshabilitado)
+      const documentsResult = { rows: [] };
       
       const concession = concessionResult.rows[0];
       concession.images = imagesResult.rows;
