@@ -195,6 +195,16 @@ function ActiveConcessionForm() {
   const concessionaires = concessionairesData?.data || [];
   const parks = parksData?.data || [];
 
+  // Debug temporal - eliminar después
+  console.log('Datos cargados:', {
+    concessionTypes: concessionTypes.length,
+    concessionaires: concessionaires.length,
+    parks: parks.length,
+    concessionTypesData,
+    concessionairesData,
+    parksData
+  });
+
   return (
     <AdminLayout title={isEdit ? "Editar Concesión Activa" : "Nueva Concesión Activa"}>
       <div className="max-w-4xl mx-auto p-6 space-y-6">

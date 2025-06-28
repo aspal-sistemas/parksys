@@ -337,7 +337,6 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
       const result = await pool.query(`
         SELECT id, name, description, impact_level, created_at
         FROM concession_types 
-        WHERE status = 'active'
         ORDER BY name ASC
       `);
 
