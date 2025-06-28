@@ -58,33 +58,36 @@ const Header: React.FC = () => {
                   Parques
                 </Link>
                 
-                {/* Enlaces directos de Actividades */}
-                <Link href="/activities"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
-                    location === '/activities' 
-                      ? 'border-primary text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}>
-                  Actividades
-                </Link>
-                
-                <Link href="/calendar"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
-                    location === '/calendar' 
-                      ? 'border-primary text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}>
-                  Calendario
-                </Link>
-                
-                <Link href="/instructors"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
-                    location === '/instructors' 
-                      ? 'border-primary text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}>
-                  Instructores
-                </Link>
+                {/* Menú de Actividades con dropdown */}
+                <div className="relative group">
+                  <button
+                    className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium flex items-center ${
+                      isActivitiesActive
+                        ? 'border-primary text-gray-900' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}>
+                    Actividades
+                    <ChevronDown className="ml-1 h-3 w-3" />
+                  </button>
+                  
+                  {/* Dropdown menu */}
+                  <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="py-1">
+                      <Link href="/activities"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                        Ver Actividades
+                      </Link>
+                      <Link href="/calendar"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                        Calendario
+                      </Link>
+                      <Link href="/instructors"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                        Instructores
+                      </Link>
+                    </div>
+                  </div>
+                </div>
                 
                 <Link href="/concessions"
                   className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
@@ -164,33 +167,50 @@ const Header: React.FC = () => {
               Parques
             </Link>
             
-            {/* Enlaces móviles directos */}
-            <Link href="/activities"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                location === '/activities' 
-                  ? 'bg-primary-50 text-primary-700' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}>
-              Actividades
-            </Link>
-            
-            <Link href="/calendar"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                location === '/calendar' 
-                  ? 'bg-primary-50 text-primary-700' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}>
-              Calendario
-            </Link>
-            
-            <Link href="/instructors"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                location === '/instructors' 
-                  ? 'bg-primary-50 text-primary-700' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}>
-              Instructores
-            </Link>
+            {/* Menú móvil de Actividades organizado */}
+            <div className="space-y-1">
+              <button
+                onClick={toggleActivitiesMenu}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium ${
+                  isActivitiesActive
+                    ? 'bg-primary-50 text-primary-700' 
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}>
+                Actividades
+                <ChevronDown className={`h-4 w-4 transition-transform ${activitiesMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {activitiesMenuOpen && (
+                <div className="ml-4 space-y-1">
+                  <Link href="/activities"
+                    className={`block px-3 py-2 rounded-md text-sm font-medium ${
+                      location === '/activities' 
+                        ? 'bg-primary-100 text-primary-800' 
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}>
+                    Ver Actividades
+                  </Link>
+                  
+                  <Link href="/calendar"
+                    className={`block px-3 py-2 rounded-md text-sm font-medium ${
+                      location === '/calendar' 
+                        ? 'bg-primary-100 text-primary-800' 
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}>
+                    Calendario
+                  </Link>
+                  
+                  <Link href="/instructors"
+                    className={`block px-3 py-2 rounded-md text-sm font-medium ${
+                      location === '/instructors' 
+                        ? 'bg-primary-100 text-primary-800' 
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}>
+                    Instructores
+                  </Link>
+                </div>
+              )}
+            </div>
             
             <Link href="/concessions"
               className={`block px-3 py-2 rounded-md text-base font-medium ${
