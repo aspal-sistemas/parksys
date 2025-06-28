@@ -97,26 +97,120 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// ENDPOINT TEMPORAL ACTIVITIES - PARA PROBAR ORDEN DE REGISTRO
+// ENDPOINT SIMPLIFICADO ACTIVITIES - CREAR CON SQL DIRECTO
 app.post("/api/activities", async (req: Request, res: Response) => {
-  console.log("🚀🚀🚀 ENDPOINT TEMPORAL EN INDEX.TS EJECUTÁNDOSE 🚀🚀🚀");
-  console.log("🚀 Datos recibidos:", JSON.stringify(req.body, null, 2));
+  console.log("🎯 ENDPOINT ACTIVITIES EJECUTÁNDOSE");
+  console.log("🎯 Datos recibidos:", JSON.stringify(req.body, null, 2));
   
   try {
-    // Solo para prueba - validar que fechas están llegando
-    const { fechaInicio, fechaFin } = req.body;
-    console.log("🚀 Fecha inicio:", fechaInicio, "tipo:", typeof fechaInicio);
-    console.log("🚀 Fecha fin:", fechaFin, "tipo:", typeof fechaFin);
+    const { 
+      nombre, 
+      descripcion, 
+      categoria, 
+      parqueId, 
+      fechaInicio, 
+      fechaFin, 
+      horaInicio, 
+      duracion,
+      capacidad,
+      esRecurrente,
+      esGratuita,
+      precio,
+      ubicacion,
+      diasRecurrentes,
+      instructorId
+    } = req.body;
+
+    console.log("🎯 Procesando fechas...");
+    console.log("🎯 fechaInicio:", fechaInicio, "tipo:", typeof fechaInicio);
+    console.log("🎯 fechaFin:", fechaFin, "tipo:", typeof fechaFin);
+
+    // Validaciones básicas
+    if (!nombre || !parqueId || !fechaInicio) {
+      return res.status(400).json({ 
+        error: "Faltan campos obligatorios: nombre, parqueId, fechaInicio" 
+      });
+    }
+
+    // Convertir fechas
+    const startDate = new Date(fechaInicio);
+    const endDate = fechaFin ? new Date(fechaFin) : null;
     
-    // Respuesta temporal de éxito
-    res.status(200).json({ 
-      success: true, 
-      message: "Endpoint temporal funcionando", 
-      data: req.body 
+    if (isNaN(startDate.getTime())) {
+      return res.status(400).json({ error: "Fecha de inicio inválida" });
+    }
+    
+    if (endDate && isNaN(endDate.getTime())) {
+      return res.status(400).json({ error: "Fecha de fin inválida" });
+    }
+
+    console.log("🎯 Fechas convertidas correctamente");
+    console.log("🎯 startDate:", startDate);
+    console.log("🎯 endDate:", endDate);
+
+    // Insertar en base de datos usando SQL directo
+    const { db } = await import("./db");
+    const { sql } = await import("drizzle-orm");
+    
+    const insertResult = await db.execute(
+      sql`INSERT INTO activities (
+        title, 
+        description, 
+        park_id, 
+        start_date, 
+        end_date, 
+        category_id,
+        duration_minutes,
+        capacity,
+        is_recurring,
+        is_free,
+        price,
+        location,
+        recurring_days,
+        instructor_id,
+        start_time
+      ) VALUES (
+        ${nombre}, 
+        ${descripcion || null}, 
+        ${Number(parqueId)}, 
+        ${startDate}, 
+        ${endDate}, 
+        ${categoria ? Number(categoria) : null},
+        ${duracion || 60},
+        ${capacidad || null},
+        ${esRecurrente || false},
+        ${esGratuita !== false},
+        ${precio || null},
+        ${ubicacion || null},
+        ${diasRecurrentes ? JSON.stringify(diasRecurrentes) : null},
+        ${instructorId ? Number(instructorId) : null},
+        ${horaInicio || null}
+      ) RETURNING 
+        id, 
+        title, 
+        description, 
+        park_id as "parkId", 
+        start_date as "startDate", 
+        end_date as "endDate",
+        category_id as "categoryId",
+        created_at as "createdAt"`
+    );
+
+    console.log("🎯 Actividad creada exitosamente");
+    console.log("🎯 Resultado:", insertResult.rows[0]);
+
+    res.status(201).json({
+      success: true,
+      message: "Actividad creada exitosamente",
+      data: insertResult.rows[0]
     });
+
   } catch (error) {
-    console.error("🚀 Error en endpoint temporal:", error);
-    res.status(500).json({ error: "Error en endpoint temporal" });
+    console.error("🎯 Error al crear actividad:", error);
+    res.status(500).json({ 
+      error: "Error interno del servidor", 
+      details: error instanceof Error ? error.message : "Error desconocido" 
+    });
   }
 });
 
