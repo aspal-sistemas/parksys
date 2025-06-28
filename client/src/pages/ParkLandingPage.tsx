@@ -488,40 +488,7 @@ function ParkLandingPage() {
 
 
 
-            {/* Galería de Imágenes */}
-            {additionalImages.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <Camera className="h-6 w-6 text-indigo-600" />
-                    Galería de Imágenes ({additionalImages.length + 1})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {additionalImages.slice(0, 7).map((image, idx) => (
-                      <div key={idx} className="relative group overflow-hidden rounded-lg hover:shadow-lg transition-all">
-                        <img 
-                          src={image.imageUrl} 
-                          alt={image.caption || `Vista del parque ${idx + 1}`}
-                          className="w-full h-32 object-cover transition-transform group-hover:scale-105"
-                        />
-                        {image.caption && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-2 text-xs">
-                            {image.caption}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                    {additionalImages.length > 7 && (
-                      <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 font-medium hover:bg-gray-200 cursor-pointer">
-                        +{additionalImages.length - 7} fotos más
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+
 
 
 
@@ -1007,6 +974,41 @@ function ParkLandingPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Galería de Imágenes */}
+            {additionalImages.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Camera className="h-6 w-6 text-indigo-600" />
+                    Galería de Imágenes ({additionalImages.length + 1})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {additionalImages.slice(0, 7).map((image, idx) => (
+                      <div key={idx} className="relative group overflow-hidden rounded-lg hover:shadow-lg transition-all">
+                        <img 
+                          src={image.imageUrl} 
+                          alt={image.caption || `Vista del parque ${idx + 1}`}
+                          className="w-full h-32 object-cover transition-transform group-hover:scale-105"
+                        />
+                        {image.caption && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-2 text-xs">
+                            {image.caption}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {additionalImages.length > 7 && (
+                      <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 font-medium hover:bg-gray-200 cursor-pointer">
+                        +{additionalImages.length - 7} fotos más
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
