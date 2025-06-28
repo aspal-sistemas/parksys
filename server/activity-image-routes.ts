@@ -58,7 +58,7 @@ router.get("/:activityId/images", async (req: Request, res: Response) => {
       .select()
       .from(activityImages)
       .where(eq(activityImages.activityId, activityId))
-      .orderBy(activityImages.isPrimary.desc(), activityImages.createdAt.desc());
+      .orderBy(desc(activityImages.isPrimary), desc(activityImages.createdAt));
     
     res.json(images);
   } catch (error) {
@@ -227,7 +227,7 @@ router.get("/:activityId/main-image", async (req: Request, res: Response) => {
         .select()
         .from(activityImages)
         .where(eq(activityImages.activityId, activityId))
-        .orderBy(activityImages.createdAt.desc())
+        .orderBy(desc(activityImages.createdAt))
         .limit(1);
         
       return res.json(firstImage[0] || null);

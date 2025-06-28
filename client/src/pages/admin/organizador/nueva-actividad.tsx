@@ -119,13 +119,14 @@ const NuevaActividadPage = () => {
         data
       });
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       toast({
         title: 'Actividad creada',
-        description: 'La actividad ha sido creada exitosamente',
+        description: 'La actividad ha sido creada exitosamente. Ahora puedes agregar imágenes.',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
-      setLocation('/admin/organizador');
+      // Redirigir a página de gestión de imágenes con el ID de la actividad creada
+      setLocation(`/admin/activities/${result.id}/images`);
     },
     onError: (error: any) => {
       toast({

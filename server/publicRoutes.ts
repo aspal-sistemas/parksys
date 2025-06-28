@@ -178,7 +178,7 @@ export function registerPublicRoutes(publicRouter: any) {
   // Obtener todas las actividades públicas
   publicRouter.get('/public-activities', async (_req: Request, res: Response) => {
     try {
-      // Usar SQL directo para obtener actividades con información de parques
+      // Usar SQL directo para obtener actividades con información de parques e imágenes
       const result = await db.execute(sql`
         SELECT 
           a.id,
@@ -193,10 +193,18 @@ export function registerPublicRoutes(publicRouter: any) {
           a.capacity,
           COALESCE(a.price, 0) as price,
           a.instructor_id as "instructorId",
-          i.full_name as "instructorName"
+          i.full_name as "instructorName",
+          img.image_url as "imageUrl"
         FROM activities a
         LEFT JOIN parks p ON a.park_id = p.id
         LEFT JOIN instructors i ON a.instructor_id = i.id
+        LEFT JOIN (
+          SELECT DISTINCT ON (activity_id) 
+            activity_id, 
+            image_url
+          FROM activity_images 
+          ORDER BY activity_id, is_primary DESC, created_at DESC
+        ) img ON a.id = img.activity_id
         ORDER BY a.start_date ASC
         LIMIT 50
       `);
