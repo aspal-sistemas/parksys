@@ -182,7 +182,7 @@ app.post("/api/activities", async (req: Request, res: Response) => {
         ${esGratuita !== false},
         ${precio || null},
         ${ubicacion || null},
-        ${diasRecurrentes && diasRecurrentes.length > 0 ? diasRecurrentes : null},
+        ${diasRecurrentes && diasRecurrentes.length > 0 ? `{${diasRecurrentes.join(',')}}` : null},
         ${instructorId ? Number(instructorId) : null},
         ${horaInicio || null}
       ) RETURNING 
