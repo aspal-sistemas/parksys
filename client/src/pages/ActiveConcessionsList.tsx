@@ -303,7 +303,7 @@ function ActiveConcessionsList() {
               )}
 
               {/* Acciones */}
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-2 pt-2 flex-wrap">
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -316,6 +316,11 @@ function ActiveConcessionsList() {
                 <Link href={`/admin/concessions/active/${concession.id}/edit`}>
                   <Button variant="outline" size="sm">
                     <Edit className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href={`/admin/concessions/active/${concession.id}/images`}>
+                  <Button variant="outline" size="sm" className="text-purple-600 hover:text-purple-700">
+                    <Images className="h-4 w-4" />
                   </Button>
                 </Link>
                 <Button 
