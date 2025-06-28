@@ -97,6 +97,29 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// ENDPOINT TEMPORAL ACTIVITIES - PARA PROBAR ORDEN DE REGISTRO
+app.post("/api/activities", async (req: Request, res: Response) => {
+  console.log("🚀🚀🚀 ENDPOINT TEMPORAL EN INDEX.TS EJECUTÁNDOSE 🚀🚀🚀");
+  console.log("🚀 Datos recibidos:", JSON.stringify(req.body, null, 2));
+  
+  try {
+    // Solo para prueba - validar que fechas están llegando
+    const { fechaInicio, fechaFin } = req.body;
+    console.log("🚀 Fecha inicio:", fechaInicio, "tipo:", typeof fechaInicio);
+    console.log("🚀 Fecha fin:", fechaFin, "tipo:", typeof fechaFin);
+    
+    // Respuesta temporal de éxito
+    res.status(200).json({ 
+      success: true, 
+      message: "Endpoint temporal funcionando", 
+      data: req.body 
+    });
+  } catch (error) {
+    console.error("🚀 Error en endpoint temporal:", error);
+    res.status(500).json({ error: "Error en endpoint temporal" });
+  }
+});
+
 // ENDPOINT DIRECTO EMPLEADOS - REGISTRADO PRIMERO para evitar conflictos
 app.post("/api/employees", async (req: Request, res: Response) => {
   try {
