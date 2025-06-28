@@ -2601,3 +2601,126 @@ export type InsertContractIncomeReport = z.infer<typeof insertContractIncomeRepo
 
 export type ContractMonthlyPayment = typeof contractMonthlyPayments.$inferSelect;
 export type InsertContractMonthlyPayment = z.infer<typeof insertContractMonthlyPaymentSchema>;
+
+// ===== CONCESIONES ACTIVAS - ESTRUCTURA MEJORADA =====
+
+// Tabla principal de concesiones activas (nueva estructura lógica)
+export const activeConcessions = pgTable("active_concessions", {
+  id: serial("id").primaryKey(),
+  
+  // Información básica de la concesión
+  name: varchar("name", { length: 255 }).notNull(), // Nombre específico de la concesión
+  description: text("description").notNull(),
+  
+  // Relaciones principales
+  concessionTypeId: integer("concession_type_id").notNull().references(() => concessionTypes.id),
+  concessionaireId: integer("concessionaire_id").notNull().references(() => users.id), // Usuario con rol concesionario
+  parkId: integer("park_id").notNull().references(() => parks.id),
+  
+  // Ubicación específica en el parque
+  specificLocation: text("specific_location").notNull(), // "Entrada principal", "Zona deportiva", etc.
+  coordinates: varchar("coordinates", { length: 100 }), // GPS si es necesario
+  area: decimal("area", { precision: 10, scale: 2 }), // Metros cuadrados
+  
+  // Operación y vigencia
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  operatingHours: varchar("operating_hours", { length: 255 }), // "8:00-18:00" o JSON
+  operatingDays: varchar("operating_days", { length: 100 }), // "Lunes a Domingo" o JSON
+  
+  // Estado y gestión
+  status: varchar("status", { length: 50 }).notNull().default('activa'), // activa, suspendida, vencida, renovacion
+  priority: varchar("priority", { length: 20 }).default("normal"), // alta, normal, baja
+  
+  // Términos específicos de la concesión
+  specificTerms: text("specific_terms"), // Condiciones particulares
+  specialRequirements: text("special_requirements"), // Requisitos específicos
+  
+  // Documentación
+  contractNumber: varchar("contract_number", { length: 100 }),
+  contractFile: varchar("contract_file", { length: 500 }), // URL del contrato firmado
+  permitFile: varchar("permit_file", { length: 500 }), // URL del permiso municipal
+  insuranceFile: varchar("insurance_file", { length: 500 }), // URL del seguro
+  
+  // Información financiera básica
+  monthlyPayment: decimal("monthly_payment", { precision: 10, scale: 2 }), // Pago mensual fijo si aplica
+  revenuePercentage: decimal("revenue_percentage", { precision: 5, scale: 2 }), // % de ingresos si aplica
+  deposit: decimal("deposit", { precision: 10, scale: 2 }), // Depósito en garantía
+  
+  // Contacto de emergencia/operación
+  emergencyContact: varchar("emergency_contact", { length: 255 }),
+  emergencyPhone: varchar("emergency_phone", { length: 50 }),
+  
+  // Notas y observaciones
+  notes: text("notes"),
+  internalNotes: text("internal_notes"), // Solo para administradores
+  
+  // Metadatos
+  createdBy: integer("created_by").references(() => users.id),
+  lastModifiedBy: integer("last_modified_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla para imágenes de concesiones activas (mejorando la existente)
+export const activeConcessionImages = pgTable("active_concession_images", {
+  id: serial("id").primaryKey(),
+  concessionId: integer("concession_id").notNull().references(() => activeConcessions.id, { onDelete: 'cascade' }),
+  imageUrl: varchar("image_url", { length: 500 }).notNull(),
+  title: varchar("title", { length: 255 }),
+  description: text("description"),
+  imageType: varchar("image_type", { length: 50 }).default("general"), // general, exterior, interior, products, menu, etc.
+  isPrimary: boolean("is_primary").default(false),
+  displayOrder: integer("display_order").default(0),
+  uploadedBy: integer("uploaded_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla para documentos adicionales de concesiones
+export const activeConcessionDocuments = pgTable("active_concession_documents", {
+  id: serial("id").primaryKey(),
+  concessionId: integer("concession_id").notNull().references(() => activeConcessions.id, { onDelete: 'cascade' }),
+  documentUrl: varchar("document_url", { length: 500 }).notNull(),
+  documentType: varchar("document_type", { length: 100 }).notNull(), // contrato, permiso, seguro, menu, reglamento, etc.
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  expirationDate: date("expiration_date"), // Para documentos que vencen
+  isRequired: boolean("is_required").default(false),
+  uploadedBy: integer("uploaded_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Schemas de validación
+export const insertActiveConcessionSchema = createInsertSchema(activeConcessions).omit({
+  id: true,
+  createdBy: true,
+  lastModifiedBy: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertActiveConcessionImageSchema = createInsertSchema(activeConcessionImages).omit({
+  id: true,
+  uploadedBy: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertActiveConcessionDocumentSchema = createInsertSchema(activeConcessionDocuments).omit({
+  id: true,
+  uploadedBy: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Tipos TypeScript
+export type ActiveConcession = typeof activeConcessions.$inferSelect;
+export type InsertActiveConcession = z.infer<typeof insertActiveConcessionSchema>;
+
+export type ActiveConcessionImage = typeof activeConcessionImages.$inferSelect;
+export type InsertActiveConcessionImage = z.infer<typeof insertActiveConcessionImageSchema>;
+
+export type ActiveConcessionDocument = typeof activeConcessionDocuments.$inferSelect;
+export type InsertActiveConcessionDocument = z.infer<typeof insertActiveConcessionDocumentSchema>;

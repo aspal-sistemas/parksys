@@ -35,6 +35,7 @@ import { registerConcessionairesRoutes } from "./concessionaires-routes";
 import { registerConcessionLocationsRoutes } from "./concession-locations-routes";
 import { registerConcessionPaymentsRoutes } from "./concession-payments-routes";
 import { registerConcessionEvaluationRoutes } from "./concession-evaluations-routes";
+import { registerActiveConcessionRoutes } from "./active-concessions-routes";
 import { registerFinanceRoutes } from "./finance-routes";
 import { registerBudgetRoutes } from "./budget-routes";
 import { registerFinanceUpdateRoutes } from "./finance-update-routes";
@@ -257,6 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerConcessionLocationsRoutes(app, apiRouter, isAuthenticated);
   registerConcessionPaymentsRoutes(app, apiRouter, isAuthenticated);
   registerConcessionEvaluationRoutes(app, apiRouter, isAuthenticated);
+  registerActiveConcessionRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas de integración financiera de concesiones
   try {
