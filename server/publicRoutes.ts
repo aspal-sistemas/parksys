@@ -178,26 +178,34 @@ export function registerPublicRoutes(publicRouter: any) {
   // Obtener todas las actividades públicas
   publicRouter.get('/public-activities', async (_req: Request, res: Response) => {
     try {
-      const allActivities = await db.select({
-        id: activities.id,
-        title: activities.title,
-        description: activities.description,
-        category: activities.category,
-        parkId: activities.parkId,
-        parkName: activities.parkName,
-        location: activities.location,
-        startDate: activities.startDate,
-        endDate: activities.endDate,
-        capacity: activities.capacity,
-        price: activities.price,
-        instructorId: activities.instructorId,
-        instructorName: activities.instructorName
-      }).from(activities);
+      // Usar SQL directo para obtener actividades con información de parques
+      const result = await db.execute(sql`
+        SELECT 
+          a.id,
+          a.title,
+          a.description,
+          a.category,
+          a.park_id as "parkId",
+          p.name as "parkName",
+          a.location,
+          a.start_date as "startDate",
+          a.end_date as "endDate",
+          a.capacity,
+          COALESCE(a.price, 0) as price,
+          a.instructor_id as "instructorId",
+          i.full_name as "instructorName"
+        FROM activities a
+        LEFT JOIN parks p ON a.park_id = p.id
+        LEFT JOIN instructors i ON a.instructor_id = i.id
+        ORDER BY a.start_date ASC
+        LIMIT 50
+      `);
       
-      return res.json(allActivities);
+      console.log('Actividades públicas obtenidas:', result.rows?.length || 0);
+      return res.json(result.rows || []);
     } catch (error) {
       console.error('Error al obtener actividades públicas:', error);
-      return res.status(500).json({ message: 'Error al obtener actividades' });
+      return res.status(500).json({ message: 'Error al obtener actividades públicas' });
     }
   });
 }

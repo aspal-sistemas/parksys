@@ -220,7 +220,7 @@ function ActivitiesPage() {
 
   // Obtener todas las actividades
   const { data: activitiesData = [], isLoading } = useQuery<ActivityData[]>({
-    queryKey: ['/api/public-activities'],
+    queryKey: ['/public-api/public-activities'],
   });
 
   // Obtener parques para filtros
