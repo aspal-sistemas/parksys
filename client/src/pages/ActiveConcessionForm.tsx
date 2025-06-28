@@ -60,8 +60,12 @@ function ActiveConcessionForm() {
   });
 
   const { data: concessionairesData } = useQuery({
-    queryKey: ['/api/active-concessions-concessionaires'],
-    queryFn: () => apiRequest('/api/concessionaires')
+    queryKey: ['/api/concessionaires'],
+    queryFn: async () => {
+      const response = await fetch('/api/concessionaires');
+      if (!response.ok) throw new Error('Error fetching concessionaires');
+      return response.json();
+    }
   });
 
   const { data: parksData } = useQuery({
@@ -191,8 +195,16 @@ function ActiveConcessionForm() {
     );
   }
 
+  // Debug temporal
+  console.log('Debug concessionaires:', {
+    concessionairesData,
+    isArray: Array.isArray(concessionairesData),
+    dataProperty: concessionairesData?.data,
+    isDataArray: Array.isArray(concessionairesData?.data)
+  });
+
   const concessionTypes = concessionTypesData?.data || [];
-  const concessionaires = Array.isArray(concessionairesData) ? concessionairesData : concessionairesData?.data || []; 
+  const concessionaires = Array.isArray(concessionairesData) ? concessionairesData : (Array.isArray(concessionairesData?.data) ? concessionairesData.data : []); 
   const parks = parksData?.data || [];
 
 
