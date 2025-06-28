@@ -41,13 +41,11 @@ export function registerConcessionLocationsRoutes(app: any, apiRouter: Router, i
         SELECT cl.*, 
           cc.park_id,
           p.name as park_name,
-          u.full_name as concessionaire_name,
-          pz.name as zone_name
+          u.full_name as concessionaire_name
         FROM concession_locations cl
         LEFT JOIN concession_contracts cc ON cl.contract_id = cc.id
         LEFT JOIN parks p ON cc.park_id = p.id
         LEFT JOIN users u ON cc.concessionaire_id = u.id
-        LEFT JOIN park_zones pz ON cl.park_zone_id = pz.id
         ORDER BY cl.created_at DESC
       `);
 
