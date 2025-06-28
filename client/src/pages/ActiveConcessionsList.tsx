@@ -68,8 +68,8 @@ function ActiveConcessionsList() {
     }
   });
 
-  const concessions: ActiveConcession[] = concessionsData?.data || [];
-  const parks = parksData?.data || [];
+  const concessions: ActiveConcession[] = concessionsData || [];
+  const parks = parksData || [];
 
   // Filtrar concesiones
   const filteredConcessions = concessions.filter(concession => {
