@@ -46,7 +46,7 @@ const activeConcessionSchema = z.object({
 
 type ActiveConcessionFormData = z.infer<typeof activeConcessionSchema>;
 
-export default function ActiveConcessionForm() {
+function ActiveConcessionForm() {
   const { id } = useParams();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -183,9 +183,11 @@ export default function ActiveConcessionForm() {
 
   if (isEdit && loadingExisting) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
-      </div>
+      <AdminLayout title={isEdit ? "Editar Concesión Activa" : "Nueva Concesión Activa"}>
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
@@ -194,7 +196,8 @@ export default function ActiveConcessionForm() {
   const parks = parksData?.data || [];
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <AdminLayout title={isEdit ? "Editar Concesión Activa" : "Nueva Concesión Activa"}>
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/admin/concessions/active">
@@ -743,6 +746,9 @@ export default function ActiveConcessionForm() {
           </div>
         </form>
       </Form>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
+
+export default ActiveConcessionForm;

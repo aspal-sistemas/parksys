@@ -37,7 +37,7 @@ interface ActiveConcession {
   emergencyPhone?: string;
 }
 
-export default function ActiveConcessionsList() {
+function ActiveConcessionsList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [parkFilter, setParkFilter] = useState('all');
