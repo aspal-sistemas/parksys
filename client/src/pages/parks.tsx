@@ -14,6 +14,7 @@ const Parks: React.FC = () => {
     search?: string;
     parkType?: string;
     postalCode?: string;
+    municipality?: string;
     amenityIds?: number[];
   }>({});
   
