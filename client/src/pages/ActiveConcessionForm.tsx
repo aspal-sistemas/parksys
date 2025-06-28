@@ -192,18 +192,10 @@ function ActiveConcessionForm() {
   }
 
   const concessionTypes = concessionTypesData?.data || [];
-  const concessionaires = concessionairesData || []; // El endpoint devuelve array directo
+  const concessionaires = Array.isArray(concessionairesData) ? concessionairesData : concessionairesData?.data || []; 
   const parks = parksData?.data || [];
 
-  // Debug temporal - eliminar después
-  console.log('Datos cargados:', {
-    concessionTypes: concessionTypes.length,
-    concessionaires: concessionaires.length,
-    parks: parks.length,
-    concessionTypesData,
-    concessionairesData,
-    parksData
-  });
+
 
   return (
     <AdminLayout title={isEdit ? "Editar Concesión Activa" : "Nueva Concesión Activa"}>
