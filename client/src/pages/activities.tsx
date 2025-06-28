@@ -245,8 +245,11 @@ function ActivitiesPage() {
 
   // Obtener todas las actividades
   const { data: activitiesData = [], isLoading } = useQuery<ActivityData[]>({
-    queryKey: ['/api/activities-with-images'],
+    queryKey: ['/api/actividades-fotos'],
   });
+
+  // Debug: log activities data to see what we're receiving
+  console.log("🚀 Activities data received:", activitiesData?.slice(0, 2));
 
   // Obtener parques para filtros
   const { data: parksData = [] } = useQuery<any[]>({
