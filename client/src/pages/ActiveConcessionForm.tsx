@@ -14,6 +14,7 @@ import { ArrowLeft, Save, Loader2, Building2, Users, MapPin, Calendar, DollarSig
 import { Link } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import AdminLayout from '@/components/AdminLayout';
 
 // Schema de validación
 const activeConcessionSchema = z.object({

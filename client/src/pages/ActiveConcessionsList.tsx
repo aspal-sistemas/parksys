@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar, MapPin, User, Phone, Mail, Building, Clock, ChevronLeft, ChevronRight, Plus, Search, Filter, Eye, Edit, Trash2 } from 'lucide-react';
 import { Link } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
+import AdminLayout from '@/components/AdminLayout';
 
 interface ActiveConcession {
   id: number;
@@ -134,27 +135,28 @@ export default function ActiveConcessionsList() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
-      </div>
+      <AdminLayout title="Concesiones Activas" subtitle="Gestión integral de concesiones operativas">
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Concesiones Activas</h1>
-          <p className="text-gray-600 mt-1">Gestión integral de concesiones operativas</p>
+    <AdminLayout title="Concesiones Activas" subtitle="Gestión integral de concesiones operativas">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <Link href="/admin/concessions/active/new">
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Concesión Activa
+              </Button>
+            </Link>
+          </div>
         </div>
-        <Link href="/admin/concessions/active/new">
-          <Button className="bg-green-600 hover:bg-green-700 text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            Nueva Concesión Activa
-          </Button>
-        </Link>
-      </div>
 
       {/* Filtros */}
       <Card>
@@ -488,6 +490,9 @@ export default function ActiveConcessionsList() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
+
+export default ActiveConcessionsList;
