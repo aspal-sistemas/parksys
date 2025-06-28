@@ -53,13 +53,13 @@ export default function InstructorEvaluationForm({
   
   // Obtener información del instructor
   const { data: instructor, isLoading: isLoadingInstructor } = useQuery({
-    queryKey: [`/api/instructors/${instructorId}`],
+    queryKey: ['/api/instructors', instructorId],
     enabled: !!instructorId,
   });
   
   // Obtener información de la asignación
   const { data: assignment, isLoading: isLoadingAssignment } = useQuery({
-    queryKey: [`/api/instructors/assignments/${assignmentId}`],
+    queryKey: ['/api/instructors/assignments', assignmentId],
     enabled: !!assignmentId,
   });
   

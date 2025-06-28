@@ -24,7 +24,7 @@ import AdminAmenities from "@/pages/admin/amenities";
 import AdminSettings from "@/pages/admin/settings";
 import AdminLogin from "@/pages/admin/login";
 import AdminVolunteers from "@/pages/admin/volunteers";
-import Landing from "@/pages/Landing";
+import MinimalLanding from "@/minimal-landing";
 // El import de AdminVolunteerNew ha sido eliminado
 import AdminVolunteerParticipations from "@/pages/admin/volunteers/participations";
 import AdminParticipationEdit from "@/pages/admin/volunteers/participations/edit";
@@ -42,10 +42,10 @@ function Router() {
     <div className="flex flex-col min-h-screen">
       {!isAdminRoute && !isVentasRoute && <Header />}
       <Switch>
-        <Route path="/" component={Landing} />
-        <Route path="/home" component={Landing} />
-        <Route path="/ventas" component={Landing} />
-        <Route path="/landing" component={Landing} />
+        <Route path="/" component={MinimalLanding} />
+        <Route path="/home" component={MinimalLanding} />
+        <Route path="/ventas" component={MinimalLanding} />
+        <Route path="/landing" component={MinimalLanding} />
         <Route path="/parks" component={Parks} />
         <Route path="/parks/:id" component={ParkDetail} />
         <Route path="/parque/:slug">

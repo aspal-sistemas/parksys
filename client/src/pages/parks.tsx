@@ -64,8 +64,8 @@ const Parks: React.FC = () => {
   
   // Fetch detailed park data when selected
   const { data: selectedPark, isLoading: isLoadingPark } = useQuery<ExtendedPark>({
-    queryKey: [`/api/parks/${selectedParkId}`],
-    enabled: !!selectedParkId,
+    queryKey: ['/api/parks', selectedParkId],
+    enabled: !!selectedParkId && selectedParkId > 0,
   });
   
   const handleApplyFilters = (newFilters: {
