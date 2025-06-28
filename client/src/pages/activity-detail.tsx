@@ -96,10 +96,10 @@ function ActivityDetailPage() {
     );
   }
 
-  const startDate = new Date(activity.startDate);
-  const endDate = activity.endDate ? new Date(activity.endDate) : null;
+  const startDate = activity?.startDate ? new Date(activity.startDate) : new Date();
+  const endDate = activity?.endDate ? new Date(activity.endDate) : null;
   const isMultiDay = endDate && endDate.getTime() !== startDate.getTime();
-  const primaryImage = images.find(img => img.isPrimary) || images[0];
+  const primaryImage = images?.find((img: ActivityImage) => img.isPrimary) || images?.[0];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
@@ -143,13 +143,13 @@ function ActivityDetailPage() {
                 )}
                 <div className="absolute inset-0 bg-black/20"></div>
                 <div className="absolute bottom-4 left-4 right-4">
-                  <h1 className="text-3xl font-bold text-white mb-2">{activity.title}</h1>
+                  <h1 className="text-3xl font-bold text-white mb-2">{activity?.title}</h1>
                   <div className="flex items-center gap-4 text-white/90">
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
-                      <span>{activity.parkName}</span>
+                      <span>{activity?.parkName}</span>
                     </div>
-                    {activity.categoryName && (
+                    {activity?.categoryName && (
                       <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
                         <Tag className="h-3 w-3 mr-1" />
                         {activity.categoryName}
@@ -161,11 +161,11 @@ function ActivityDetailPage() {
             </Card>
 
             {/* Galería de imágenes adicionales */}
-            {images.length > 1 && (
+            {images && images.length > 1 && (
               <div className="mt-4">
                 <h3 className="text-lg font-semibold mb-3">Más imágenes</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {images.slice(0, 8).map((image, index) => (
+                  {images.slice(0, 8).map((image: ActivityImage, index: number) => (
                     <div key={image.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
                       <img
                         src={image.imageUrl}
@@ -203,14 +203,14 @@ function ActivityDetailPage() {
                   </div>
                 </div>
 
-                {activity.startTime && (
+                {activity?.startTime && (
                   <div className="flex items-center gap-3">
                     <Clock className="h-5 w-5 text-purple-600" />
                     <div>
                       <p className="font-medium">Horario</p>
                       <p className="text-sm text-gray-600">
                         {activity.startTime}
-                        {activity.duration && ` (${activity.duration} min)`}
+                        {activity?.duration && ` (${activity.duration} min)`}
                       </p>
                     </div>
                   </div>
@@ -221,12 +221,12 @@ function ActivityDetailPage() {
                   <div>
                     <p className="font-medium">Precio</p>
                     <p className="text-sm text-gray-600">
-                      {activity.price > 0 ? `$${activity.price}` : 'Gratis'}
+                      {activity?.price && activity.price > 0 ? `$${activity.price}` : 'Gratis'}
                     </p>
                   </div>
                 </div>
 
-                {activity.capacity && (
+                {activity?.capacity && (
                   <div className="flex items-center gap-3">
                     <Users className="h-5 w-5 text-green-600" />
                     <div>
@@ -236,7 +236,7 @@ function ActivityDetailPage() {
                   </div>
                 )}
 
-                {activity.instructorName && (
+                {activity?.instructorName && (
                   <div className="flex items-center gap-3">
                     <User className="h-5 w-5 text-indigo-600" />
                     <div>
@@ -255,25 +255,25 @@ function ActivityDetailPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-700 leading-relaxed">
-                  {activity.description || 'No hay descripción disponible para esta actividad.'}
+                  {activity?.description || 'No hay descripción disponible para esta actividad.'}
                 </p>
               </CardContent>
             </Card>
 
             {/* Información adicional */}
-            {(activity.requirements || activity.materials) && (
+            {(activity?.requirements || activity?.materials) && (
               <Card>
                 <CardHeader>
                   <CardTitle>Información Adicional</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {activity.requirements && (
+                  {activity?.requirements && (
                     <div>
                       <h4 className="font-medium text-gray-900 mb-2">Requisitos</h4>
                       <p className="text-sm text-gray-600">{activity.requirements}</p>
                     </div>
                   )}
-                  {activity.materials && (
+                  {activity?.materials && (
                     <div>
                       <h4 className="font-medium text-gray-900 mb-2">Materiales</h4>
                       <p className="text-sm text-gray-600">{activity.materials}</p>
