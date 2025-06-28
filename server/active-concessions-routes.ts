@@ -70,7 +70,7 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
           u.email as "concessionaireEmail",
           u.phone as "concessionairePhone",
           p.name as "parkName",
-          p.location as "parkLocation",
+          p.address as "parkLocation",
           (SELECT COUNT(*) FROM active_concession_images aci WHERE aci.concession_id = ac.id) as "imageCount",
           (SELECT image_url FROM active_concession_images aci WHERE aci.concession_id = ac.id AND aci.is_primary = true LIMIT 1) as "primaryImage"
         FROM active_concessions ac
@@ -115,8 +115,7 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
           u.email as "concessionaireEmail",
           u.phone as "concessionairePhone",
           p.name as "parkName",
-          p.location as "parkLocation",
-          p.address as "parkAddress",
+          p.address as "parkLocation",
           cb.username as "createdByUsername",
           mb.username as "lastModifiedByUsername"
         FROM active_concessions ac
