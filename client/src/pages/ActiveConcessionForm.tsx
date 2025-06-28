@@ -56,7 +56,11 @@ function ActiveConcessionForm() {
   // Obtener datos para formulario
   const { data: concessionTypesData } = useQuery({
     queryKey: ['/api/concession-types-active'],
-    queryFn: () => apiRequest('/api/concession-types-active')
+    queryFn: async () => {
+      const response = await fetch('/api/concession-types-active');
+      if (!response.ok) throw new Error('Error fetching concession types');
+      return response.json();
+    }
   });
 
   const { data: concessionairesData } = useQuery({
@@ -70,7 +74,11 @@ function ActiveConcessionForm() {
 
   const { data: parksData } = useQuery({
     queryKey: ['/api/parks'],
-    queryFn: () => apiRequest('/api/parks')
+    queryFn: async () => {
+      const response = await fetch('/api/parks');
+      if (!response.ok) throw new Error('Error fetching parks');
+      return response.json();
+    }
   });
 
   // Obtener datos existentes si es edición
@@ -195,9 +203,9 @@ function ActiveConcessionForm() {
     );
   }
 
-  const concessionTypes = concessionTypesData?.data || [];
-  const concessionaires = concessionairesData || []; // fetch devuelve directamente el array
-  const parks = parksData?.data || [];
+  const concessionTypes = concessionTypesData?.data || concessionTypesData || [];
+  const concessionaires = concessionairesData || [];
+  const parks = parksData?.data || parksData || [];
 
   // Verificar que todos los datos estén cargados
   const isDataLoading = !concessionTypesData || !concessionairesData || !parksData;
