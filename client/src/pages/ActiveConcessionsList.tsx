@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, MapPin, User, Phone, Mail, Building, Clock, ChevronLeft, ChevronRight, Plus, Search, Filter, Eye, Edit, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, User, Phone, Mail, Building, Clock, ChevronLeft, ChevronRight, Plus, Search, Filter, Eye, Edit, Trash2, Images } from 'lucide-react';
 import { Link } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
 import AdminLayout from '@/components/AdminLayout';

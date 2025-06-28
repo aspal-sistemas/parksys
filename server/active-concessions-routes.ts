@@ -406,7 +406,7 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
   });
 
   // Subir nueva imagen para una concesión activa
-  apiRouter.post('/active-concessions/:id/images', isAuthenticated, upload.single('image'), async (req: Request, res: Response) => {
+  apiRouter.post('/active-concessions/:id/images', isAuthenticated, concessionImageUpload.single('image'), async (req: Request, res: Response) => {
     try {
       const { pool } = await import('./db');
       const { id } = req.params;
@@ -468,8 +468,8 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
         );
       }
 
-      // Eliminar archivo físico
-      const filePath = path.join(process.cwd(), uploadsDir, path.basename(image.image_url));
+      // Eliminar archivo físico  
+      const filePath = path.join(process.cwd(), concessionUploadsDir, path.basename(image.image_url));
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
