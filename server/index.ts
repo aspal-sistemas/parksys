@@ -160,7 +160,7 @@ app.post("/api/activities", async (req: Request, res: Response) => {
         start_date, 
         end_date, 
         category_id,
-        duration_minutes,
+        duration,
         capacity,
         is_recurring,
         is_free,
@@ -193,6 +193,11 @@ app.post("/api/activities", async (req: Request, res: Response) => {
         start_date as "startDate", 
         end_date as "endDate",
         category_id as "categoryId",
+        duration,
+        capacity,
+        is_recurring as "isRecurring",
+        is_free as "isFree",
+        price,
         created_at as "createdAt"`
     );
 
