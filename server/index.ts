@@ -78,8 +78,10 @@ app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
     return res.json(result);
   } catch (error) {
     console.error("Error al obtener datos para matriz:", error);
-    res.status(503).json({ 
-      message: "Servicio temporalmente no disponible - inicializando base de datos",
+    res.status(200).json({ 
+      incomeCategories: [],
+      expenseCategories: [],
+      message: "Base de datos inicializando",
       status: "initializing"
     });
   }
