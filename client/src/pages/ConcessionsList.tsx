@@ -1,26 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
+import { Search, MapPin, Building, Phone, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Phone, Mail, Clock, Search, Building2, Store, Coffee, Calendar } from "lucide-react";
-import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 
 interface Concession {
   id: number;
   vendorName: string;
-  businessName: string;
-  concessionType: string;
-  location: string;
-  contactPhone?: string;
-  contactEmail?: string;
+  vendorContact: string;
+  vendorEmail: string;
+  vendorPhone: string;
   startDate: string;
   endDate: string;
-  parkId: number;
-  parkName?: string;
   status: string;
+  location: string;
+  notes: string;
+  concessionType: string;
+  typeDescription: string;
+  impactLevel: string;
+  parkName: string;
+  parkId: number;
+  primaryImage?: string;
 }
 
 export default function ConcessionsList() {
@@ -38,9 +40,11 @@ export default function ConcessionsList() {
 
   // Filtrar concesiones
   const filteredConcessions = concessions.filter((concession: Concession) => {
-    const searchableText = `${concession.vendorName || ''} ${concession.location || ''} ${concession.concessionType || ''}`;
-    const matchesSearch = searchableText.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter === "all" || concession.concessionType === typeFilter;
+    const matchesSearch = concession.vendorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         concession.concessionType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         concession.location.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesType = typeFilter === "all" || concession.concessionType.includes(typeFilter);
     const matchesStatus = statusFilter === "all" || concession.status === statusFilter;
     
     return matchesSearch && matchesType && matchesStatus;
@@ -49,37 +53,14 @@ export default function ConcessionsList() {
   // Paginación
   const totalPages = Math.ceil(filteredConcessions.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedConcessions = filteredConcessions.slice(startIndex, startIndex + itemsPerPage);
+  const currentConcessions = filteredConcessions.slice(startIndex, startIndex + itemsPerPage);
 
-  // Reset página cuando cambian filtros
-  useEffect(() => {
+  // Reset page when filters change
+  const resetFilters = () => {
+    setSearchTerm("");
+    setTypeFilter("all");
+    setStatusFilter("all");
     setCurrentPage(1);
-  }, [searchTerm, typeFilter, statusFilter]);
-
-  const getTypeIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'alimentario':
-        return <Coffee className="h-4 w-4" />;
-      case 'comercial':
-        return <Store className="h-4 w-4" />;
-      case 'servicios':
-        return <Building2 className="h-4 w-4" />;
-      default:
-        return <Building2 className="h-4 w-4" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'activo':
-        return 'bg-green-100 text-green-800 border-green-300';
-      case 'por vencer':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'vencido':
-        return 'bg-red-100 text-red-800 border-red-300';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
   };
 
   if (isLoading) {
@@ -102,7 +83,7 @@ export default function ConcessionsList() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white py-16">
+      <div className="bg-gradient-to-r from-[#00a587] to-[#067f5f] text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -137,10 +118,10 @@ export default function ConcessionsList() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los tipos</SelectItem>
-                <SelectItem value="Alimentario">Alimentario</SelectItem>
+                <SelectItem value="Venta de alimentos">Venta de alimentos</SelectItem>
+                <SelectItem value="Renta de bicicletas">Renta de bicicletas</SelectItem>
+                <SelectItem value="Kiosco de información">Kiosco de información</SelectItem>
                 <SelectItem value="Comercial">Comercial</SelectItem>
-                <SelectItem value="Servicios">Servicios</SelectItem>
-                <SelectItem value="Recreativo">Recreativo</SelectItem>
               </SelectContent>
             </Select>
 
@@ -151,21 +132,17 @@ export default function ConcessionsList() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="Activo">Activo</SelectItem>
-                <SelectItem value="Por vencer">Por vencer</SelectItem>
-                <SelectItem value="Vencido">Vencido</SelectItem>
+                <SelectItem value="activa">Activa</SelectItem>
+                <SelectItem value="por vencer">Por vencer</SelectItem>
+                <SelectItem value="vencida">Vencida</SelectItem>
               </SelectContent>
             </Select>
 
             {/* Limpiar filtros */}
             <Button 
               variant="outline" 
-              onClick={() => {
-                setSearchTerm("");
-                setTypeFilter("all");
-                setStatusFilter("all");
-              }}
-              className="border-green-300 text-green-700 hover:bg-green-50"
+              onClick={resetFilters}
+              className="border-[#00a587] text-[#00a587] hover:bg-[#00a587] hover:text-white"
             >
               Limpiar Filtros
             </Button>
@@ -184,7 +161,7 @@ export default function ConcessionsList() {
 
         {/* Grid de concesiones */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {currentConcessions.map((concession: any) => (
+          {currentConcessions.map((concession: Concession) => (
             <div key={concession.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
               {/* Image Section */}
               <div className="aspect-video w-full bg-gradient-to-br from-[#00a587] via-[#067f5f] to-[#8498a5] relative overflow-hidden">
@@ -241,85 +218,51 @@ export default function ConcessionsList() {
                 </div>
                 
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                  <button
-                    onClick={() => navigate(`/concession/${concession.id}`)}
-                    className="w-full bg-[#00a587] text-white px-4 py-2 rounded-md hover:bg-[#067f5f] transition-colors"
-                  >
-                    Ver detalles
-                  </button>
+                  <Link href={`/concession/${concession.id}`}>
+                    <Button className="w-full bg-[#00a587] text-white hover:bg-[#067f5f]">
+                      Ver detalles
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
           ))}
         </div>
-                  </div>
-
-                  {/* Botón Ver detalles */}
-                  <Link href={`/concession/${concession.id}`}>
-                    <Button className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white">
-                      Ver detalles
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
         {/* Paginación */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-2">
+          <div className="flex items-center justify-center space-x-2">
             <Button
               variant="outline"
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="border-green-300 text-green-700 hover:bg-green-50"
             >
               Anterior
             </Button>
             
-            {/* Números de página */}
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-              if (pageNum <= totalPages) {
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={currentPage === pageNum ? "default" : "outline"}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={currentPage === pageNum 
-                      ? "bg-green-600 hover:bg-green-700 text-white" 
-                      : "border-green-300 text-green-700 hover:bg-green-50"
-                    }
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              }
-              return null;
+            {[...Array(Math.min(5, totalPages))].map((_, index) => {
+              const pageNumber = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + index;
+              if (pageNumber > totalPages) return null;
+              
+              return (
+                <Button
+                  key={pageNumber}
+                  variant={currentPage === pageNumber ? "default" : "outline"}
+                  onClick={() => setCurrentPage(pageNumber)}
+                  className={currentPage === pageNumber ? "bg-[#00a587] text-white" : ""}
+                >
+                  {pageNumber}
+                </Button>
+              );
             })}
             
             <Button
               variant="outline"
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="border-green-300 text-green-700 hover:bg-green-50"
             >
               Siguiente
             </Button>
-          </div>
-        )}
-
-        {/* Sin resultados */}
-        {filteredConcessions.length === 0 && (
-          <div className="text-center py-12">
-            <Store className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No se encontraron concesiones
-            </h3>
-            <p className="text-gray-600">
-              Intenta ajustar tus filtros de búsqueda
-            </p>
           </div>
         )}
       </div>
