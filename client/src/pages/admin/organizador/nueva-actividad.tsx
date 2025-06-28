@@ -64,6 +64,135 @@ const nuevaActividadSchema = z.object({
 
 type NuevaActividadFormValues = z.infer<typeof nuevaActividadSchema>;
 
+// Componente para gestión de imágenes
+interface ImageUploadSectionProps {
+  onImagesChange: (files: File[]) => void;
+  selectedImages: File[];
+}
+
+const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({ onImagesChange, selectedImages }) => {
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [primaryImageIndex, setPrimaryImageIndex] = useState<number>(0);
+
+  // Función para manejar la selección de archivos
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (imageFiles.length > 0) {
+      const newImages = [...selectedImages, ...imageFiles];
+      onImagesChange(newImages);
+      
+      // Crear previews para las nuevas imágenes
+      imageFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setImagePreviews(prev => [...prev, e.target?.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  // Función para eliminar una imagen
+  const removeImage = (index: number) => {
+    const newImages = selectedImages.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    
+    onImagesChange(newImages);
+    setImagePreviews(newPreviews);
+    
+    // Ajustar índice de imagen principal si es necesario
+    if (primaryImageIndex >= newImages.length) {
+      setPrimaryImageIndex(Math.max(0, newImages.length - 1));
+    }
+  };
+
+  // Función para establecer imagen principal
+  const setPrimaryImage = (index: number) => {
+    setPrimaryImageIndex(index);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Botón de subida */}
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleFileSelect}
+          className="hidden"
+          id="image-upload"
+        />
+        <label htmlFor="image-upload" className="cursor-pointer">
+          <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <p className="text-sm text-gray-600">
+            Haz clic para subir imágenes o arrastra archivos aquí
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            PNG, JPG, GIF hasta 10MB cada una
+          </p>
+        </label>
+      </div>
+
+      {/* Preview de imágenes */}
+      {imagePreviews.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {imagePreviews.map((preview, index) => (
+            <div key={index} className="relative group">
+              <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                <img
+                  src={preview}
+                  alt={`Preview ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              {/* Controles de la imagen */}
+              <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={primaryImageIndex === index ? "default" : "secondary"}
+                  onClick={() => setPrimaryImage(index)}
+                  className="text-xs"
+                >
+                  <Star className="w-3 h-3 mr-1" />
+                  {primaryImageIndex === index ? "Principal" : "Hacer principal"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => removeImage(index)}
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+              
+              {/* Indicador de imagen principal */}
+              {primaryImageIndex === index && (
+                <div className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold">
+                  <Star className="w-3 h-3 inline mr-1" />
+                  Principal
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {selectedImages.length > 0 && (
+        <p className="text-sm text-gray-600">
+          {selectedImages.length} imagen{selectedImages.length !== 1 ? 'es' : ''} seleccionada{selectedImages.length !== 1 ? 's' : ''}
+          {selectedImages.length > 0 && ` • Imagen principal: ${primaryImageIndex + 1}`}
+        </p>
+      )}
+    </div>
+  );
+};
+
 const NuevaActividadPage = () => {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
@@ -122,14 +251,20 @@ const NuevaActividadPage = () => {
         data
       });
     },
-    onSuccess: (result: any) => {
+    onSuccess: async (result: any) => {
       toast({
         title: 'Actividad creada',
-        description: 'La actividad ha sido creada exitosamente. Ahora puedes agregar imágenes.',
+        description: 'La actividad ha sido creada exitosamente.',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
-      // Redirigir a página de gestión de imágenes con el ID de la actividad creada
-      setLocation(`/admin/activities/${result.id}/images`);
+      
+      // Subir imágenes si existen
+      if (selectedImages.length > 0 && result.id) {
+        await uploadImages(result.id);
+      } else {
+        // Si no hay imágenes, redirigir al organizador
+        setLocation('/admin/organizador');
+      }
     },
     onError: (error: any) => {
       toast({
@@ -139,6 +274,39 @@ const NuevaActividadPage = () => {
       });
     }
   });
+
+  // Función para subir imágenes después de crear la actividad
+  const uploadImages = async (activityId: number) => {
+    try {
+      for (let i = 0; i < selectedImages.length; i++) {
+        const file = selectedImages[i];
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('isPrimary', (i === primaryImageIndex).toString());
+
+        await fetch(`/api/activities/${activityId}/images`, {
+          method: 'POST',
+          body: formData,
+        });
+      }
+
+      toast({
+        title: 'Imágenes subidas',
+        description: `Se subieron ${selectedImages.length} imágenes exitosamente.`,
+      });
+      
+      // Redirigir al organizador después de subir las imágenes
+      setLocation('/admin/organizador');
+    } catch (error) {
+      console.error('Error subiendo imágenes:', error);
+      toast({
+        title: 'Error al subir imágenes',
+        description: 'La actividad se creó, pero hubo un problema al subir las imágenes.',
+        variant: 'destructive',
+      });
+      setLocation('/admin/organizador');
+    }
+  };
 
   // Manejar el envío del formulario
   const onSubmit = (data: NuevaActividadFormValues) => {
