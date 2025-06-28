@@ -2286,27 +2286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all activities
-  apiRouter.get("/activities", async (_req: Request, res: Response) => {
-    try {
-      const activities = await storage.getAllActivities();
-      
-      // Enriquecer con información del parque
-      const activitiesWithParkInfo = await Promise.all(
-        activities.map(async (activity) => {
-          const park = await storage.getPark(activity.parkId);
-          return {
-            ...activity,
-            parkName: park ? park.name : 'Parque no disponible'
-          };
-        })
-      );
-      
-      res.json(activitiesWithParkInfo);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Error fetching activities" });
-    }
-  });
+  // REMOVIDO - Endpoint duplicado reemplazado por el siguiente
 
   // Get activities for a specific park
   apiRouter.get("/parks/:id/activities", async (req: Request, res: Response) => {
