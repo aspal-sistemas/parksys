@@ -23,7 +23,9 @@ import {
   Award,
   Phone,
   Mail,
-  Star
+  Star,
+  Sparkles,
+  TrendingUp
 } from 'lucide-react';
 import logoPath from '@assets/PHOTO-2025-06-16-16-11-35_1750112001756.jpg';
 
@@ -138,25 +140,25 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-100">
+      {/* Header con glassmorphism mejorado */}
+      <header className="relative bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <img src={logoPath} alt="Parques de México" className="h-10 w-auto" />
+              <img src={logoPath} alt="Parques de México" className="h-10 w-auto transition-transform hover:scale-105" />
             </div>
             <nav className="hidden md:flex space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-[#00a587] transition-colors">Características</a>
-              <a href="#pricing" className="text-gray-600 hover:text-[#00a587] transition-colors">Precios</a>
-              <a href="#contact" className="text-gray-600 hover:text-[#00a587] transition-colors">Contacto</a>
+              <a href="#features" className="text-gray-600 hover:text-[#00a587] transition-all duration-300 hover:scale-105">Características</a>
+              <a href="#pricing" className="text-gray-600 hover:text-[#00a587] transition-all duration-300 hover:scale-105">Precios</a>
+              <a href="#contact" className="text-gray-600 hover:text-[#00a587] transition-all duration-300 hover:scale-105">Contacto</a>
             </nav>
             <div className="flex items-center space-x-4">
               <Link href="/admin/login">
-                <Button variant="outline" className="border-[#00a587] text-[#00a587] hover:bg-[#00a587] hover:text-white">
+                <Button variant="outline" className="border-[#00a587] text-[#00a587] hover:bg-[#00a587] hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-lg">
                   Iniciar Sesión
                 </Button>
               </Link>
-              <Button className="bg-[#00a587] hover:bg-[#067f5f] text-white">
+              <Button className="bg-gradient-to-r from-[#00a587] to-[#067f5f] hover:from-[#067f5f] hover:to-[#00a587] text-white transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 Demo Gratuita
               </Button>
             </div>
@@ -164,25 +166,42 @@ const Landing = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-[#00a587] via-[#067f5f] to-[#bcd256] text-white py-20">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
+      {/* Hero Section mejorado con animaciones */}
+      <section className="relative bg-gradient-to-br from-[#00a587] via-[#067f5f] to-[#bcd256] text-white py-24 overflow-hidden">
+        {/* Elementos decorativos animados */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-48 h-48 bg-[#bcd256]/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-white/5 rounded-full blur-lg animate-bounce delay-500"></div>
+        </div>
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8 animate-fade-in">
+              <Sparkles className="h-4 w-4 text-[#bcd256]" />
+              <span className="text-sm font-medium">Plataforma líder en gestión de parques urbanos</span>
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 animate-fade-in-up">
               Democratizamos la gestión
-              <span className="block text-[#bcd256]">profesional de parques urbanos</span>
+              <span className="block text-[#bcd256] relative">
+                profesional de parques urbanos
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-[#bcd256] to-transparent"></div>
+              </span>
             </h1>
-            <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto opacity-90">
+            
+            <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto opacity-90 leading-relaxed animate-fade-in-up delay-200">
               Tecnología accesible que permite a cualquier municipio, sin importar su tamaño o presupuesto, 
               ofrecer espacios públicos de calidad a sus ciudadanos.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-[#bcd256] hover:bg-[#8498a5] text-[#067f5f] font-semibold px-8 py-4 text-lg">
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fade-in-up delay-400">
+              <Button size="lg" className="bg-[#bcd256] hover:bg-white text-[#067f5f] font-semibold px-10 py-4 text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl">
                 <Zap className="mr-2 h-5 w-5" />
                 Comenzar Gratis
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#00a587] px-8 py-4 text-lg">
+              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-[#00a587] px-10 py-4 text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl backdrop-blur-sm">
                 <ArrowRight className="mr-2 h-5 w-5" />
                 Ver Demo
               </Button>
@@ -191,43 +210,54 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-gray-50">
+      {/* Stats Section con efectos mejorados */}
+      <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-[#00a587] mb-2">{stat.number}</div>
-                <div className="text-gray-600">{stat.label}</div>
+              <div key={index} className="text-center group">
+                <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100">
+                  <div className="text-4xl md:text-5xl font-bold text-[#00a587] mb-3 group-hover:text-[#067f5f] transition-colors">
+                    {stat.number}
+                  </div>
+                  <div className="text-gray-600 font-medium">{stat.label}</div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
+      {/* Features Section mejorado */}
+      <section id="features" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00a587]/10 to-[#bcd256]/10 rounded-full px-4 py-2 mb-6">
+              <TrendingUp className="h-4 w-4 text-[#00a587]" />
+              <span className="text-sm font-medium text-[#067f5f]">Plataforma todo-en-uno</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
               Plataforma Integral de Gestión
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               11 módulos especializados que cubren todos los aspectos de la administración de espacios públicos
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="border-l-4 border-l-[#00a587] hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="text-[#00a587] mb-3">
+              <Card key={index} className="group border-0 shadow-sm hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-gradient-to-br from-white to-gray-50 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#00a587]/5 to-[#bcd256]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <CardHeader className="relative">
+                  <div className="text-[#00a587] mb-4 group-hover:text-[#067f5f] transition-colors duration-300 group-hover:scale-110 transform">
                     {feature.icon}
                   </div>
-                  <CardTitle className="text-lg text-gray-900">{feature.title}</CardTitle>
+                  <CardTitle className="text-lg text-gray-900 group-hover:text-[#067f5f] transition-colors">
+                    {feature.title}
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-gray-600">
+                <CardContent className="relative">
+                  <CardDescription className="text-gray-600 leading-relaxed">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
@@ -237,15 +267,21 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-20 bg-gradient-to-r from-[#bcd256] to-[#00a587]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      {/* Benefits Section con glassmorphism */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#bcd256] via-[#00a587] to-[#067f5f]"></div>
+        <div className="absolute inset-0">
+          <div className="absolute top-10 left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl animate-pulse"></div>
+          <div className="absolute bottom-10 right-10 w-60 h-60 bg-white/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="text-white">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              <h2 className="text-4xl md:text-5xl font-bold mb-8">
                 ¿Por qué elegir nuestra plataforma?
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {[
                   "Reduce costos operativos hasta 40%",
                   "Aumenta transparencia y rendición de cuentas",
@@ -254,29 +290,37 @@ const Landing = () => {
                   "Facilita toma de decisiones basada en datos",
                   "Cumple estándares internacionales de calidad"
                 ].map((benefit, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-[#bcd256] flex-shrink-0" />
-                    <span className="text-lg">{benefit}</span>
+                  <div key={index} className="flex items-center space-x-4 group">
+                    <div className="flex-shrink-0 w-8 h-8 bg-[#bcd256]/20 rounded-full flex items-center justify-center group-hover:bg-[#bcd256]/30 transition-colors">
+                      <CheckCircle className="h-5 w-5 text-[#bcd256]" />
+                    </div>
+                    <span className="text-lg group-hover:text-[#bcd256] transition-colors">{benefit}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="bg-white rounded-2xl p-8 shadow-2xl">
-              <div className="text-center">
-                <Award className="h-16 w-16 text-[#00a587] mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Certificaciones y Estándares</h3>
-                <div className="space-y-2 text-gray-600">
-                  <div className="flex items-center justify-center space-x-2">
-                    <Shield className="h-4 w-4" />
-                    <span>ISO 27001 - Seguridad de la Información</span>
+            
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-3xl backdrop-blur-sm"></div>
+              <div className="relative bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/20">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#00a587] to-[#067f5f] rounded-full mb-6 shadow-lg">
+                    <Award className="h-10 w-10 text-white" />
                   </div>
-                  <div className="flex items-center justify-center space-x-2">
-                    <Globe className="h-4 w-4" />
-                    <span>GDPR Compliant</span>
-                  </div>
-                  <div className="flex items-center justify-center space-x-2">
-                    <Leaf className="h-4 w-4" />
-                    <span>ODS 2030 - Ciudades Sostenibles</span>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6">Certificaciones y Estándares</h3>
+                  <div className="space-y-4 text-gray-600">
+                    <div className="flex items-center justify-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <Shield className="h-5 w-5 text-[#00a587]" />
+                      <span>ISO 27001 - Seguridad de la Información</span>
+                    </div>
+                    <div className="flex items-center justify-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <Globe className="h-5 w-5 text-[#00a587]" />
+                      <span>GDPR Compliant</span>
+                    </div>
+                    <div className="flex items-center justify-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <Leaf className="h-5 w-5 text-[#00a587]" />
+                      <span>ODS 2030 - Ciudades Sostenibles</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -285,11 +329,15 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-gray-50">
+      {/* Pricing Section mejorado */}
+      <section id="pricing" className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00a587]/10 to-[#bcd256]/10 rounded-full px-4 py-2 mb-6">
+              <DollarSign className="h-4 w-4 text-[#00a587]" />
+              <span className="text-sm font-medium text-[#067f5f]">Planes flexibles</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
               Planes Diseñados para Cada Municipio
             </h2>
             <p className="text-xl text-gray-600">
@@ -297,34 +345,46 @@ const Landing = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {plans.map((plan, index) => (
-              <Card key={index} className={`relative ${plan.highlighted ? 'ring-2 ring-[#00a587] shadow-xl' : ''} ${plan.color} border-2`}>
+              <Card key={index} className={`relative group hover:scale-105 transition-all duration-500 ${
+                plan.highlighted 
+                  ? 'ring-2 ring-[#00a587] shadow-2xl bg-gradient-to-br from-white to-[#00a587]/5' 
+                  : 'shadow-lg hover:shadow-2xl bg-white'
+              } ${plan.color} border-2 overflow-hidden`}>
                 {plan.highlighted && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-[#00a587] text-white">
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00a587] to-[#bcd256]"></div>
+                )}
+                {plan.highlighted && (
+                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-[#00a587] to-[#067f5f] text-white shadow-lg">
                     Más Popular
                   </Badge>
                 )}
-                <CardHeader className="text-center">
-                  <CardTitle className="text-2xl font-bold text-gray-900">{plan.name}</CardTitle>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-[#00a587]">{plan.price}</span>
-                    <span className="text-gray-600">{plan.period}</span>
+                
+                <CardHeader className="text-center pb-6">
+                  <CardTitle className="text-2xl font-bold text-gray-900 group-hover:text-[#067f5f] transition-colors">
+                    {plan.name}
+                  </CardTitle>
+                  <div className="mt-6">
+                    <span className="text-5xl font-bold text-[#00a587]">{plan.price}</span>
+                    <span className="text-gray-600 text-lg">{plan.period}</span>
                   </div>
-                  <CardDescription className="mt-2">{plan.description}</CardDescription>
+                  <CardDescription className="mt-3 text-base">{plan.description}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
+                
+                <CardContent className="space-y-6">
+                  <ul className="space-y-4">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-center space-x-3">
-                        <CheckCircle className="h-4 w-4 text-[#00a587] flex-shrink-0" />
-                        <span className="text-sm text-gray-600">{feature}</span>
+                        <CheckCircle className="h-5 w-5 text-[#00a587] flex-shrink-0" />
+                        <span className="text-gray-600">{feature}</span>
                       </li>
                     ))}
                   </ul>
+                  
                   <Button 
-                    className={`w-full mt-6 ${plan.highlighted 
-                      ? 'bg-[#00a587] hover:bg-[#067f5f] text-white' 
+                    className={`w-full py-3 transition-all duration-300 hover:scale-105 ${plan.highlighted 
+                      ? 'bg-gradient-to-r from-[#00a587] to-[#067f5f] hover:from-[#067f5f] hover:to-[#00a587] text-white shadow-lg' 
                       : 'bg-white border-2 border-[#00a587] text-[#00a587] hover:bg-[#00a587] hover:text-white'
                     }`}
                   >
@@ -335,20 +395,24 @@ const Landing = () => {
             ))}
           </div>
 
-          <div className="text-center mt-12">
-            <p className="text-gray-600 mb-4">¿Necesitas un plan personalizado para tu gobierno estatal o consorcio municipal?</p>
-            <Button variant="outline" className="border-[#00a587] text-[#00a587] hover:bg-[#00a587] hover:text-white">
+          <div className="text-center mt-16">
+            <p className="text-gray-600 mb-6">¿Necesitas un plan personalizado para tu gobierno estatal o consorcio municipal?</p>
+            <Button variant="outline" className="border-2 border-[#00a587] text-[#00a587] hover:bg-[#00a587] hover:text-white transition-all duration-300 hover:scale-105 px-8 py-3">
               Contactar para Plan Gobierno
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 bg-white">
+      {/* Testimonials Section mejorado */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00a587]/10 to-[#bcd256]/10 rounded-full px-4 py-2 mb-6">
+              <Heart className="h-4 w-4 text-[#00a587]" />
+              <span className="text-sm font-medium text-[#067f5f]">Testimonios</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
               Lo que dicen nuestros clientes
             </h2>
           </div>
@@ -374,18 +438,19 @@ const Landing = () => {
                 city: "Mérida, Yucatán"
               }
             ].map((testimonial, index) => (
-              <Card key={index} className="border-l-4 border-l-[#bcd256]">
-                <CardContent className="pt-6">
-                  <div className="flex mb-4">
+              <Card key={index} className="group bg-gradient-to-br from-white to-gray-50 hover:shadow-2xl transition-all duration-500 hover:scale-105 border-0 shadow-lg overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#bcd256]/5 to-[#00a587]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <CardContent className="pt-8 relative">
+                  <div className="flex mb-6 justify-center">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
                     ))}
                   </div>
-                  <p className="text-gray-700 mb-4 italic">"{testimonial.quote}"</p>
-                  <div>
-                    <p className="font-semibold text-gray-900">{testimonial.author}</p>
-                    <p className="text-sm text-gray-600">{testimonial.position}</p>
-                    <p className="text-sm text-[#00a587]">{testimonial.city}</p>
+                  <p className="text-gray-700 mb-6 italic text-lg leading-relaxed">"{testimonial.quote}"</p>
+                  <div className="text-center">
+                    <p className="font-semibold text-gray-900 text-lg">{testimonial.author}</p>
+                    <p className="text-sm text-gray-600 mt-1">{testimonial.position}</p>
+                    <p className="text-sm text-[#00a587] font-medium mt-1">{testimonial.city}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -394,37 +459,42 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-20 bg-[#00a587]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Contact Section mejorado */}
+      <section id="contact" className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#00a587] to-[#067f5f]"></div>
+        <div className="absolute inset-0">
+          <div className="absolute top-10 right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl animate-pulse"></div>
+          <div className="absolute bottom-10 left-10 w-60 h-60 bg-[#bcd256]/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-white">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
               ¿Listo para transformar tu municipio?
             </h2>
-            <p className="text-xl mb-8 opacity-90">
+            <p className="text-xl mb-12 opacity-90 max-w-3xl mx-auto leading-relaxed">
               Comienza tu transformación digital hoy mismo con una demostración personalizada
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-              <div className="text-center">
-                <Phone className="h-8 w-8 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Llámanos</h3>
-                <p>+52 (33) 1234-5678</p>
-              </div>
-              <div className="text-center">
-                <Mail className="h-8 w-8 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Escríbenos</h3>
-                <p>ventas@parquesdemexico.com</p>
-              </div>
-              <div className="text-center">
-                <Heart className="h-8 w-8 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Soporte</h3>
-                <p>soporte@parquesdemexico.com</p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+              {[
+                { icon: Phone, title: "Llámanos", info: "+52 (33) 1234-5678" },
+                { icon: Mail, title: "Escríbenos", info: "ventas@parquesdemexico.com" },
+                { icon: Heart, title: "Soporte", info: "soporte@parquesdemexico.com" }
+              ].map((contact, index) => (
+                <div key={index} className="text-center group">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 hover:scale-105">
+                    <contact.icon className="h-8 w-8 mx-auto mb-4 group-hover:scale-110 transition-transform" />
+                    <h3 className="text-lg font-semibold mb-2">{contact.title}</h3>
+                    <p className="opacity-90">{contact.info}</p>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="mt-12">
-              <Button size="lg" className="bg-[#bcd256] hover:bg-white text-[#067f5f] font-semibold px-12 py-4 text-lg">
+            <div className="mt-16">
+              <Button size="lg" className="bg-[#bcd256] hover:bg-white text-[#067f5f] font-semibold px-12 py-4 text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+                <Sparkles className="mr-2 h-5 w-5" />
                 Solicitar Demo Gratuita
               </Button>
             </div>
@@ -432,45 +502,62 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#067f5f] text-white py-12">
+      {/* Footer mejorado */}
+      <footer className="bg-[#067f5f] text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <img src={logoPath} alt="Parques de México" className="h-12 w-auto mb-4 filter brightness-0 invert" />
-              <p className="text-sm opacity-80">
+              <img src={logoPath} alt="Parques de México" className="h-12 w-auto mb-6 filter brightness-0 invert transition-transform hover:scale-105" />
+              <p className="text-sm opacity-80 leading-relaxed">
                 Consultora especializada en espacio público, democratizando la gestión profesional de parques urbanos.
               </p>
             </div>
-            <div>
-              <h3 className="font-semibold mb-4">Producto</h3>
-              <ul className="space-y-2 text-sm opacity-80">
-                <li><a href="#features" className="hover:text-[#bcd256]">Características</a></li>
-                <li><a href="#pricing" className="hover:text-[#bcd256]">Precios</a></li>
-                <li><a href="#" className="hover:text-[#bcd256]">API</a></li>
-                <li><a href="#" className="hover:text-[#bcd256]">Integraciones</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Empresa</h3>
-              <ul className="space-y-2 text-sm opacity-80">
-                <li><a href="#" className="hover:text-[#bcd256]">Acerca de</a></li>
-                <li><a href="#" className="hover:text-[#bcd256]">Blog</a></li>
-                <li><a href="#" className="hover:text-[#bcd256]">Casos de Éxito</a></li>
-                <li><a href="#" className="hover:text-[#bcd256]">Careers</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Soporte</h3>
-              <ul className="space-y-2 text-sm opacity-80">
-                <li><a href="#" className="hover:text-[#bcd256]">Centro de Ayuda</a></li>
-                <li><a href="#contact" className="hover:text-[#bcd256]">Contacto</a></li>
-                <li><a href="#" className="hover:text-[#bcd256]">Status</a></li>
-                <li><a href="#" className="hover:text-[#bcd256]">Política de Privacidad</a></li>
-              </ul>
-            </div>
+            
+            {[
+              {
+                title: "Producto",
+                links: [
+                  { name: "Características", href: "#features" },
+                  { name: "Precios", href: "#pricing" },
+                  { name: "API", href: "#" },
+                  { name: "Integraciones", href: "#" }
+                ]
+              },
+              {
+                title: "Empresa",
+                links: [
+                  { name: "Acerca de", href: "#" },
+                  { name: "Blog", href: "#" },
+                  { name: "Casos de Éxito", href: "#" },
+                  { name: "Careers", href: "#" }
+                ]
+              },
+              {
+                title: "Soporte",
+                links: [
+                  { name: "Centro de Ayuda", href: "#" },
+                  { name: "Contacto", href: "#contact" },
+                  { name: "Status", href: "#" },
+                  { name: "Política de Privacidad", href: "#" }
+                ]
+              }
+            ].map((section, index) => (
+              <div key={index}>
+                <h3 className="font-semibold mb-6 text-lg">{section.title}</h3>
+                <ul className="space-y-3 text-sm opacity-80">
+                  {section.links.map((link, linkIndex) => (
+                    <li key={linkIndex}>
+                      <a href={link.href} className="hover:text-[#bcd256] transition-colors duration-300 hover:opacity-100">
+                        {link.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-          <div className="border-t border-[#00a587] mt-8 pt-8 text-center">
+          
+          <div className="border-t border-[#00a587]/30 mt-12 pt-8 text-center">
             <p className="text-sm opacity-80">
               © 2024 Parques de México. Todos los derechos reservados.
             </p>
