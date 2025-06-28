@@ -704,6 +704,15 @@ export const insertActivitySchema = createInsertSchema(activities).omit({
   updatedAt: true
 });
 
+export type ActivityImage = typeof activityImages.$inferSelect;
+export type InsertActivityImage = typeof activityImages.$inferInsert;
+
+export const insertActivityImageSchema = createInsertSchema(activityImages).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
 export type Comment = typeof comments.$inferSelect;
 export type InsertComment = typeof comments.$inferInsert;
 
@@ -2592,13 +2601,3 @@ export type InsertContractIncomeReport = z.infer<typeof insertContractIncomeRepo
 
 export type ContractMonthlyPayment = typeof contractMonthlyPayments.$inferSelect;
 export type InsertContractMonthlyPayment = z.infer<typeof insertContractMonthlyPaymentSchema>;
-
-// Esquemas de inserción y tipos para imágenes de actividades
-export const insertActivityImageSchema = createInsertSchema(activityImages).omit({ 
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-
-export type ActivityImage = typeof activityImages.$inferSelect;
-export type InsertActivityImage = z.infer<typeof insertActivityImageSchema>;
