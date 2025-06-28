@@ -944,9 +944,9 @@ async function initializeDatabaseAsync() {
     const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
     await createPayrollReceiptsTables();
     
-    // Crear datos de muestra para recibos
-    const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
-    await seedPayrollReceipts();
+    // Crear datos de muestra para recibos - TEMPORALMENTE DESHABILITADO
+    // const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
+    // await seedPayrollReceipts();
   } catch (error) {
     console.error("Error al crear tablas de recibos de nómina:", error);
   }
