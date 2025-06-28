@@ -15,17 +15,142 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <!-- Google Maps API con variable de entorno -->
-    <script type="module">
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-    </script>
+    <div class="min-h-screen bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600">
+      <div class="container mx-auto px-4 py-16">
+        <div class="text-center text-white">
+          <h1 class="text-5xl font-bold mb-6">
+            Agencia Metropolitana de Bosques Urbanos
+          </h1>
+          <h2 class="text-3xl font-semibold mb-4">
+            Guadalajara, Jalisco
+          </h2>
+          <p class="text-xl mb-8 opacity-90">
+            Democratizamos la gestión profesional de parques urbanos mediante tecnología accesible
+          </p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 max-w-4xl mx-auto">
+            <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 hover:bg-white/20 transition-all duration-300">
+              <div class="text-3xl mb-4">🌳</div>
+              <h3 class="text-2xl font-semibold mb-4">Gestión Integral</h3>
+              <p class="text-base opacity-90">
+                Sistema completo para administrar parques, actividades y recursos municipales
+              </p>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 hover:bg-white/20 transition-all duration-300">
+              <div class="text-3xl mb-4">💻</div>
+              <h3 class="text-2xl font-semibold mb-4">Tecnología Avanzada</h3>
+              <p class="text-base opacity-90">
+                Herramientas modernas para optimizar la gestión municipal y ciudadana
+              </p>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 hover:bg-white/20 transition-all duration-300">
+              <div class="text-3xl mb-4">🏛️</div>
+              <h3 class="text-2xl font-semibold mb-4">Acceso Universal</h3>
+              <p class="text-base opacity-90">
+                Plataforma accesible para todos los niveles de gobierno municipal
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+            <div class="bg-white/5 rounded-lg p-4">
+              <div class="text-2xl font-bold">150+</div>
+              <div class="text-sm opacity-75">Parques Administrados</div>
+            </div>
+            <div class="bg-white/5 rounded-lg p-4">
+              <div class="text-2xl font-bold">50K+</div>
+              <div class="text-sm opacity-75">Ciudadanos Beneficiados</div>
+            </div>
+            <div class="bg-white/5 rounded-lg p-4">
+              <div class="text-2xl font-bold">1,200+</div>
+              <div class="text-sm opacity-75">Actividades Anuales</div>
+            </div>
+            <div class="bg-white/5 rounded-lg p-4">
+              <div class="text-2xl font-bold">98%</div>
+              <div class="text-sm opacity-75">Satisfacción Ciudadana</div>
+            </div>
+          </div>
+
+          <div class="mt-12">
+            <button class="bg-white text-emerald-600 px-8 py-3 rounded-lg font-semibold hover:bg-emerald-50 transition-colors duration-300 mr-4">
+              Conocer Más
+            </button>
+            <button class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-colors duration-300">
+              Contactar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+      .container { max-width: 1200px; margin: 0 auto; }
+      .text-5xl { font-size: 3rem; line-height: 1; }
+      .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+      .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+      .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+      .text-base { font-size: 1rem; line-height: 1.5rem; }
+      .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+      .font-bold { font-weight: 700; }
+      .font-semibold { font-weight: 600; }
+      .text-center { text-align: center; }
+      .text-white { color: white; }
+      .text-emerald-600 { color: #059669; }
+      .bg-gradient-to-br { background-image: linear-gradient(to bottom right, var(--tw-gradient-stops)); }
+      .from-emerald-400 { --tw-gradient-from: #34d399; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(52, 211, 153, 0)); }
+      .via-teal-500 { --tw-gradient-stops: var(--tw-gradient-from), #14b8a6, var(--tw-gradient-to, rgba(20, 184, 166, 0)); }
+      .to-cyan-600 { --tw-gradient-to: #0891b2; }
+      .bg-white\/10 { background-color: rgba(255, 255, 255, 0.1); }
+      .bg-white\/5 { background-color: rgba(255, 255, 255, 0.05); }
+      .bg-white\/20 { background-color: rgba(255, 255, 255, 0.2); }
+      .bg-white { background-color: white; }
+      .bg-emerald-50 { background-color: #ecfdf5; }
+      .border-2 { border-width: 2px; }
+      .border-white { border-color: white; }
+      .rounded-lg { border-radius: 0.5rem; }
+      .p-6 { padding: 1.5rem; }
+      .p-4 { padding: 1rem; }
+      .px-4 { padding-left: 1rem; padding-right: 1rem; }
+      .py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+      .px-8 { padding-left: 2rem; padding-right: 2rem; }
+      .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+      .mb-6 { margin-bottom: 1.5rem; }
+      .mb-4 { margin-bottom: 1rem; }
+      .mb-8 { margin-bottom: 2rem; }
+      .mt-12 { margin-top: 3rem; }
+      .mt-16 { margin-top: 4rem; }
+      .mr-4 { margin-right: 1rem; }
+      .opacity-90 { opacity: 0.9; }
+      .opacity-75 { opacity: 0.75; }
+      .min-h-screen { min-height: 100vh; }
+      .max-w-4xl { max-width: 56rem; }
+      .mx-auto { margin-left: auto; margin-right: auto; }
+      .grid { display: grid; }
+      .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+      .gap-6 { gap: 1.5rem; }
+      .backdrop-blur-sm { backdrop-filter: blur(4px); }
+      .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+      .transition-colors { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+      .duration-300 { transition-duration: 300ms; }
+      .hover\:bg-white\/20:hover { background-color: rgba(255, 255, 255, 0.2); }
+      .hover\:bg-emerald-50:hover { background-color: #ecfdf5; }
+      .hover\:bg-white:hover { background-color: white; }
+      .hover\:text-emerald-600:hover { color: #059669; }
+      
+      @media (min-width: 768px) {
+        .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      
+      @media (min-width: 1024px) {
+        .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      }
+    </style>
+    <!-- Removed problematic Google Maps script that may cause URL encoding issues -->
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>
