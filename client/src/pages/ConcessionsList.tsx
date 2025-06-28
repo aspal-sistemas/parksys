@@ -30,11 +30,11 @@ export default function ConcessionsList() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  const { data: concessionsResponse = { data: [] }, isLoading } = useQuery({
-    queryKey: ['/api/all-concessions'],
+  const { data: concessionsResponse, isLoading } = useQuery({
+    queryKey: ['/api/concessions-list'],
   });
 
-  const concessions = concessionsResponse.data || [];
+  const concessions = (concessionsResponse as any)?.data || [];
 
   // Filtrar concesiones
   const filteredConcessions = concessions.filter((concession: Concession) => {
