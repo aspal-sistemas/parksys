@@ -353,5 +353,160 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
     }
   });
 
-  console.log('✅ Rutas de concesiones activas registradas exitosamente (versión simplificada)');
+  // ============================================================================
+  // RUTAS PARA GESTIÓN DE IMÁGENES DE CONCESIONES ACTIVAS
+  // ============================================================================
+
+  // Obtener imágenes de una concesión activa
+  apiRouter.get('/active-concessions/:id/images', async (req: Request, res: Response) => {
+    try {
+      const { pool } = await import('./db');
+      const { id } = req.params;
+      
+      const result = await pool.query(`
+        SELECT ci.id, ci.concession_id, ci.image_url, ci.caption, ci.is_primary, ci.created_at
+        FROM concession_images ci
+        WHERE ci.concession_id = $1
+        ORDER BY ci.is_primary DESC, ci.created_at DESC
+      `, [id]);
+
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error al obtener imágenes de concesión:', error);
+      res.status(500).json({ error: 'Error al obtener imágenes de concesión' });
+    }
+  });
+
+  // Configuración de multer para subida de imágenes de concesiones
+  const concessionUploadsDir = 'uploads/concession-images';
+  if (!fs.existsSync(concessionUploadsDir)) {
+    fs.mkdirSync(concessionUploadsDir, { recursive: true });
+  }
+  
+  const concessionImageStorage = multer.diskStorage({
+    destination: function (req: any, file: any, cb: any) {
+      cb(null, concessionUploadsDir);
+    },
+    filename: function (req: any, file: any, cb: any) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, 'concession-img-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+  
+  const concessionImageUpload = multer({ 
+    storage: concessionImageStorage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: function (req: any, file: any, cb: any) {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Solo se permiten archivos de imagen'), false);
+      }
+    }
+  });
+
+  // Subir nueva imagen para una concesión activa
+  apiRouter.post('/active-concessions/:id/images', isAuthenticated, upload.single('image'), async (req: Request, res: Response) => {
+    try {
+      const { pool } = await import('./db');
+      const { id } = req.params;
+      const { caption } = req.body;
+      const file = req.file as Express.Multer.File;
+
+      if (!file) {
+        return res.status(400).json({ error: 'No se proporcionó imagen' });
+      }
+
+      // Verificar que la concesión activa existe
+      const concessionCheck = await pool.query('SELECT id FROM active_concessions WHERE id = $1', [id]);
+      if (concessionCheck.rows.length === 0) {
+        return res.status(404).json({ error: 'Concesión activa no encontrada' });
+      }
+
+      const imageUrl = `/uploads/concession-images/${file.filename}`;
+      
+      // Si es la primera imagen, marcarla como principal
+      const existingImages = await pool.query('SELECT COUNT(*) as count FROM concession_images WHERE concession_id = $1', [id]);
+      const isPrimary = existingImages.rows[0].count === '0';
+
+      const result = await pool.query(
+        'INSERT INTO concession_images (concession_id, image_url, caption, is_primary) VALUES ($1, $2, $3, $4) RETURNING *',
+        [id, imageUrl, caption || null, isPrimary]
+      );
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error al subir imagen de concesión:', error);
+      res.status(500).json({ error: 'Error al subir imagen de concesión' });
+    }
+  });
+
+  // Eliminar imagen de concesión
+  apiRouter.delete('/concession-images/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { pool } = await import('./db');
+      const { id } = req.params;
+
+      // Obtener la imagen antes de eliminarla
+      const imageResult = await pool.query('SELECT * FROM concession_images WHERE id = $1', [id]);
+      if (imageResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Imagen no encontrada' });
+      }
+
+      const image = imageResult.rows[0];
+      const wasPrimary = image.is_primary;
+      const concessionId = image.concession_id;
+
+      // Eliminar la imagen de la base de datos
+      await pool.query('DELETE FROM concession_images WHERE id = $1', [id]);
+
+      // Si era la imagen principal, hacer principal a otra imagen
+      if (wasPrimary) {
+        await pool.query(
+          'UPDATE concession_images SET is_primary = true WHERE concession_id = $1 AND id = (SELECT id FROM concession_images WHERE concession_id = $1 ORDER BY created_at ASC LIMIT 1)',
+          [concessionId]
+        );
+      }
+
+      // Eliminar archivo físico
+      const filePath = path.join(process.cwd(), uploadsDir, path.basename(image.image_url));
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      res.json({ message: 'Imagen eliminada correctamente' });
+    } catch (error) {
+      console.error('Error al eliminar imagen de concesión:', error);
+      res.status(500).json({ error: 'Error al eliminar imagen de concesión' });
+    }
+  });
+
+  // Establecer imagen principal
+  apiRouter.post('/concession-images/:id/set-primary', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { pool } = await import('./db');
+      const { id } = req.params;
+
+      // Obtener la concesión de la imagen
+      const imageResult = await pool.query('SELECT concession_id FROM concession_images WHERE id = $1', [id]);
+      if (imageResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Imagen no encontrada' });
+      }
+
+      const concessionId = imageResult.rows[0].concession_id;
+
+      // Quitar principal de todas las imágenes de la concesión
+      await pool.query('UPDATE concession_images SET is_primary = false WHERE concession_id = $1', [concessionId]);
+
+      // Establecer esta imagen como principal
+      await pool.query('UPDATE concession_images SET is_primary = true WHERE id = $1', [id]);
+
+      res.json({ message: 'Imagen principal actualizada' });
+    } catch (error) {
+      console.error('Error al establecer imagen principal:', error);
+      res.status(500).json({ error: 'Error al establecer imagen principal' });
+    }
+  });
+
+  console.log('✅ Rutas de concesiones activas con gestión de imágenes registradas exitosamente');
 }
