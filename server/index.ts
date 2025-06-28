@@ -1310,19 +1310,21 @@ async function initializeDatabaseAsync() {
   
   let appServer;
 
-  // Setup Vite in development mode
+  // Setup Vite in development mode with error handling
   if (app.get("env") === "development") {
-    const { setupVite } = await import("./vite");
     console.log("Configurando servidor de desarrollo Vite...");
     
     appServer = app.listen(PORT, HOST, async () => {
       console.log(`Servidor ejecutándose en puerto ${PORT}`);
       
       try {
+        const { setupVite } = await import("./vite");
         await setupVite(app, appServer);
         console.log("✅ Servidor de desarrollo Vite listo - Aplicación web accesible");
       } catch (error) {
-        console.error("Error configurando Vite:", error);
+        console.error("Error configurando Vite (continuando sin Vite):", error);
+        // Continuar sin Vite si hay problemas
+        console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
       }
       
       // Inicializar base de datos después de que todo esté listo
@@ -1330,11 +1332,15 @@ async function initializeDatabaseAsync() {
         initializeDatabaseAsync().catch(error => {
           console.error("Error inicializando base de datos (no crítico):", error);
         });
-      }, 2000);
+      }, 3000);
     });
   } else {
     // Modo producción
-    serveStatic(app);
+    try {
+      serveStatic(app);
+    } catch (error) {
+      console.error("Error configurando archivos estáticos:", error);
+    }
     
     appServer = app.listen(PORT, HOST, () => {
       console.log(`Servidor en producción ejecutándose en puerto ${PORT}`);
