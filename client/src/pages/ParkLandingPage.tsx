@@ -18,6 +18,7 @@ import {
   Clock,
   Phone,
   Mail,
+  Store,
   User,
   ExternalLink,
   Users,
@@ -436,50 +437,66 @@ function ParkLandingPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Wrench className="h-5 w-5 text-blue-600" />
+                  <Store className="h-5 w-5 text-blue-600" />
                   Concesiones y Servicios
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {park.concessions && park.concessions.length > 0 ? (
-                  <div className="space-y-3">
-                    {park.concessions.map((concession) => (
-                      <div key={concession.id} className="border-l-4 border-blue-300 pl-4 py-3 bg-blue-50 rounded-r-lg">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-gray-800">{concession.vendorName}</h3>
-                          {concession.concessionType && (
-                            <Badge variant="outline" className="ml-2 border-blue-300 text-blue-700">
-                              {concession.concessionType}
-                            </Badge>
-                          )}
-                        </div>
-                        {concession.typeDescription && (
-                          <p className="text-gray-600 text-sm mb-2">{concession.typeDescription}</p>
-                        )}
-                        {concession.location && (
-                          <p className="text-gray-500 text-xs mb-1">
-                            <MapPin className="h-3 w-3 inline mr-1" />
-                            {concession.location}
-                          </p>
-                        )}
-                        <div className="flex items-center justify-between">
-                          <div className="text-xs text-gray-500">
-                            <Clock className="h-3 w-3 mr-1 inline" />
-                            Desde {format(new Date(concession.startDate), 'MMMM yyyy', { locale: es })}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {park.concessions.map((concession) => (
+                        <Link key={concession.id} href={`/concession/${concession.id}`}>
+                          <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow duration-200 cursor-pointer hover:border-blue-300">
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex items-center gap-2">
+                                <Store className="h-4 w-4 text-blue-600" />
+                                <h3 className="font-semibold text-gray-900 text-sm">{concession.vendorName}</h3>
+                              </div>
+                              {concession.concessionType && (
+                                <Badge variant="outline" className="text-xs border-blue-300 text-blue-700">
+                                  {concession.concessionType}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {concession.typeDescription && (
+                              <p className="text-gray-600 text-xs mb-2 line-clamp-2">{concession.typeDescription}</p>
+                            )}
+                            
+                            {concession.location && (
+                              <div className="flex items-center gap-1 text-gray-500 text-xs mb-2">
+                                <MapPin className="h-3 w-3" />
+                                <span className="truncate">{concession.location}</span>
+                              </div>
+                            )}
+                            
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-1 text-gray-500">
+                                <Clock className="h-3 w-3" />
+                                <span>Desde {format(new Date(concession.startDate), 'MMM yyyy', { locale: es })}</span>
+                              </div>
+                              {concession.vendorPhone && (
+                                <span className="text-blue-600 font-medium">{concession.vendorPhone}</span>
+                              )}
+                            </div>
                           </div>
-                          {concession.vendorPhone && (
-                            <Button variant="outline" size="sm" className="text-xs py-1 px-2 h-6">
-                              <Phone className="h-3 w-3 mr-1" />
-                              Contactar
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                        </Link>
+                      ))}
+                    </div>
+                    
+                    <div className="text-center pt-4 border-t">
+                      <Link href="/concessions">
+                        <Button variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50">
+                          <Store className="h-4 w-4 mr-2" />
+                          Ver todas las concesiones
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-6">
-                    <Wrench className="h-8 w-8 text-blue-400 mx-auto mb-2" />
+                    <Store className="h-8 w-8 text-blue-400 mx-auto mb-2" />
                     <p className="text-blue-600 text-sm">No hay concesiones activas en este parque</p>
                   </div>
                 )}
