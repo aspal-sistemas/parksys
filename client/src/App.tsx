@@ -649,6 +649,24 @@ function Router() {
           </Suspense>
         </Route>
 
+        <Route path="/admin/concessions/active">
+          <Suspense fallback={<div className="p-8 text-center">Cargando concesiones activas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/ActiveConcessionsList')))}
+          </Suspense>
+        </Route>
+
+        <Route path="/admin/concessions/active/new">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de nueva concesión...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/ActiveConcessionForm')))}
+          </Suspense>
+        </Route>
+
+        <Route path="/admin/concessions/active/:id/edit">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de edición...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/ActiveConcessionForm')))}
+          </Suspense>
+        </Route>
+
         {/* Rutas para el módulo financiero reestructurado */}
         <Route path="/admin/finance/dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard financiero...</div>}>
