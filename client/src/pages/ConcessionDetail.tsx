@@ -73,11 +73,18 @@ export default function ConcessionDetail() {
 
   // Parsear coordenadas si están disponibles
   const parseCoordinates = (coordinates: string): [number, number] | null => {
-    if (!coordinates) return null;
+    if (!coordinates) {
+      console.log('No coordinates available');
+      return null;
+    }
     try {
+      console.log('Parsing coordinates:', coordinates);
       const coords = coordinates.split(',').map(coord => parseFloat(coord.trim()));
+      console.log('Parsed coords array:', coords);
       if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
-        return [coords[0], coords[1]];
+        const result: [number, number] = [coords[0], coords[1]];
+        console.log('Valid coordinates result:', result);
+        return result;
       }
     } catch (error) {
       console.error('Error parsing coordinates:', error);
@@ -86,6 +93,7 @@ export default function ConcessionDetail() {
   };
 
   const coordinates = concession?.coordinates ? parseCoordinates(concession.coordinates) : null;
+  console.log('Final coordinates for map:', coordinates);
 
   if (isLoading) {
     return (
