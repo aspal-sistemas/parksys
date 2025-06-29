@@ -150,10 +150,18 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
       
       const concession = concessionResult.rows[0];
       
+      // Obtener todas las imágenes de la concesión
+      const imagesResult = await pool.query(`
+        SELECT id, image_url, title, description, image_type, is_primary, display_order
+        FROM active_concession_images 
+        WHERE concession_id = $1 
+        ORDER BY is_primary DESC, display_order ASC
+      `, [concessionId]);
+      
       // Mapear campos para consistencia
       concession.imageCount = parseInt(concession.imageCount?.toString()) || 0;
       concession.image_url = concession.primaryImage || null;
-      concession.images = [];
+      concession.images = imagesResult.rows || [];
       concession.documents = [];
 
       res.json({
