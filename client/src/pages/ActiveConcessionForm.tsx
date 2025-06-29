@@ -190,7 +190,27 @@ function ActiveConcessionForm() {
   });
 
   const onSubmit = (data: ActiveConcessionFormData) => {
-    saveMutation.mutate(data);
+    // Mapear los datos del frontend al formato esperado por el backend
+    const mappedData = {
+      name: data.name,
+      description: data.description,
+      concessionTypeId: data.concessionTypeId,
+      concessionaireId: data.concessionaireId,
+      parkId: data.parkId,
+      specificLocation: data.specificLocation,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      status: data.status,
+      priority: data.priority,
+      operatingHours: data.operatingHours,
+      operatingDays: data.operatingDays,
+      monthlyPayment: data.monthlyPayment,
+      emergencyContact: data.emergencyContact,
+      emergencyPhone: data.emergencyPhone,
+      termsConditions: data.specificTerms || data.notes || ''
+    };
+    
+    saveMutation.mutate(mappedData);
   };
 
   if (isEdit && loadingExisting) {
