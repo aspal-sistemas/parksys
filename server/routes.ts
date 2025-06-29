@@ -779,27 +779,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `, [parkId]);
       console.log(`Activos encontrados: ${assetsResult.rows.length}`);
 
-      // Obtener concesiones del parque
+      // Obtener concesiones activas del parque
       console.log('Paso 7.5: Consultando concesiones del parque...');
       const concessionsResult = await pool.query(`
         SELECT 
-          c.id,
-          c.vendor_name as "vendorName",
-          c.vendor_contact as "vendorContact", 
-          c.vendor_email as "vendorEmail",
-          c.vendor_phone as "vendorPhone",
-          c.start_date as "startDate",
-          c.end_date as "endDate",
-          c.status,
-          c.location,
-          c.notes,
+          ac.id,
+          ac.name as "vendorName",
+          ac.concessionaire_contact as "vendorContact", 
+          ac.concessionaire_email as "vendorEmail",
+          ac.concessionaire_phone as "vendorPhone",
+          ac.start_date as "startDate",
+          ac.end_date as "endDate",
+          ac.status,
+          ac.specific_location as "location",
+          ac.description as "notes",
           ct.name as "concessionType",
           ct.description as "typeDescription",
-          ct.impact_level as "impactLevel"
-        FROM concessions c
-        LEFT JOIN concession_types ct ON c.concession_type_id = ct.id
-        WHERE c.park_id = $1 AND c.status = 'activa'
-        ORDER BY c.start_date DESC
+          ct.category as "impactLevel"
+        FROM active_concessions ac
+        LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
+        WHERE ac.park_id = $1 AND ac.status = 'activa'
+        ORDER BY ac.start_date DESC
         LIMIT 10
       `, [parkId]);
       console.log(`Concesiones encontradas: ${concessionsResult.rows.length}`);
