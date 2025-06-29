@@ -191,8 +191,8 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
         emergency_contact: req.body.emergencyContact,
         emergency_phone: req.body.emergencyPhone,
         terms_conditions: req.body.termsConditions,
-        financial_guarantees: req.body.financialGuarantees,
-        insurance_policy: req.body.insurancePolicy,
+        
+        
         created_at: new Date(),
         updated_at: new Date()
       };
@@ -202,11 +202,10 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
           name, description, concession_type_id, concessionaire_id, park_id, 
           specific_location, start_date, end_date, status, priority, 
           operating_hours, operating_days, monthly_payment, emergency_contact, 
-          emergency_phone, terms_conditions, financial_guarantees, insurance_policy,
-          created_at, updated_at
+          emergency_phone, terms_conditions, created_at, updated_at
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 
-          $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+          $11, $12, $13, $14, $15, $16, $17, $18
         ) RETURNING *
       `, [
         concessionData.name, concessionData.description, concessionData.concession_type_id,
@@ -214,8 +213,7 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
         concessionData.start_date, concessionData.end_date, concessionData.status,
         concessionData.priority, concessionData.operating_hours, concessionData.operating_days,
         concessionData.monthly_payment, concessionData.emergency_contact, concessionData.emergency_phone,
-        concessionData.terms_conditions, concessionData.financial_guarantees, concessionData.insurance_policy,
-        concessionData.created_at, concessionData.updated_at
+        concessionData.terms_conditions, concessionData.created_at, concessionData.updated_at
       ]);
 
       res.status(201).json({
@@ -255,8 +253,8 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
         emergency_contact: req.body.emergencyContact,
         emergency_phone: req.body.emergencyPhone,
         terms_conditions: req.body.termsConditions,
-        financial_guarantees: req.body.financialGuarantees,
-        insurance_policy: req.body.insurancePolicy,
+        
+        
         updated_at: new Date()
       };
 
@@ -266,9 +264,8 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
           park_id = $5, specific_location = $6, start_date = $7, end_date = $8,
           status = $9, priority = $10, operating_hours = $11, operating_days = $12,
           monthly_payment = $13, emergency_contact = $14, emergency_phone = $15,
-          terms_conditions = $16, financial_guarantees = $17, insurance_policy = $18,
-          updated_at = $19
-        WHERE id = $20
+          terms_conditions = $16, updated_at = $17
+        WHERE id = $18
         RETURNING *
       `, [
         updateData.name, updateData.description, updateData.concession_type_id,
@@ -276,8 +273,7 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
         updateData.start_date, updateData.end_date, updateData.status,
         updateData.priority, updateData.operating_hours, updateData.operating_days,
         updateData.monthly_payment, updateData.emergency_contact, updateData.emergency_phone,
-        updateData.terms_conditions, updateData.financial_guarantees, updateData.insurance_policy,
-        updateData.updated_at, concessionId
+        updateData.terms_conditions, updateData.updated_at, concessionId
       ]);
 
       if (result.rows.length === 0) {
