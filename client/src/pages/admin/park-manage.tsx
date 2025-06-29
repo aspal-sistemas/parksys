@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Images, MapPin, Calendar, Users, TreePine, Wrench, AlertTriangle, FileText } from "lucide-react";
-import RoleBasedSidebar from "@/components/RoleBasedSidebar";
+import AdminLayout from "@/components/AdminLayout";
 import ParkMultimediaManager from "@/components/ParkMultimediaManager";
 import ParkAmenitiesManager from "@/components/ParkAmenitiesManager";
 import ParkTreeSpeciesManager from "@/components/ParkTreeSpeciesManager";
@@ -33,23 +33,21 @@ export default function ParkManage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen">
-        <RoleBasedSidebar />
-        <div className="flex-1 flex items-center justify-center">
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
             <p className="mt-2 text-gray-600">Cargando parque...</p>
           </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   if (error || !park) {
     return (
-      <div className="flex h-screen">
-        <RoleBasedSidebar />
-        <div className="flex-1 flex items-center justify-center">
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <p className="text-red-600">Error cargando el parque</p>
             <Link href="/admin/parks">
@@ -57,14 +55,12 @@ export default function ParkManage() {
             </Link>
           </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="flex h-screen">
-      <RoleBasedSidebar />
-      <div className="flex-1 overflow-auto">
+    <AdminLayout>
         <div className="container mx-auto p-6 space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -131,7 +127,7 @@ export default function ParkManage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ParkMultimediaManager parkId={parseInt(id)} />
+                  <ParkMultimediaManager parkId={parseInt(id || '0')} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -223,7 +219,6 @@ export default function ParkManage() {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
-    </div>
+    </AdminLayout>
   );
 }
