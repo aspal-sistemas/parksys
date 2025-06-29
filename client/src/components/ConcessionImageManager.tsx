@@ -239,7 +239,7 @@ const ConcessionImageManager: React.FC<ConcessionImageManagerProps> = ({ concess
                   <img
                     src={image.image_url}
                     alt={image.caption || 'Imagen de concesión'}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-48 object-contain bg-gray-50"
                   />
                   
                   {image.is_primary && (

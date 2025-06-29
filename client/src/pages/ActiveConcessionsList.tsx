@@ -244,7 +244,7 @@ function ActiveConcessionsList() {
                 <img 
                   src={concession.primaryImage} 
                   alt={concession.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain bg-gradient-to-br from-green-100 to-green-200"
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
