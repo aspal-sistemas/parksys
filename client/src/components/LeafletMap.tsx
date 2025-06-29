@@ -35,7 +35,7 @@ export default function LeafletMap({ latitude, longitude, title, location, area 
         // Crear el mapa
         const map = L.map(mapRef.current!, {
           center: [latitude, longitude],
-          zoom: 17,
+          zoom: 15,
           scrollWheelZoom: true,
           zoomControl: true
         });
@@ -48,8 +48,34 @@ export default function LeafletMap({ latitude, longitude, title, location, area 
           maxZoom: 19
         }).addTo(map);
 
+        // Crear icono personalizado para concesión
+        const concessionIcon = L.divIcon({
+          html: `<div style="
+            background-color: #00a587;
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 50% 0;
+            border: 3px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-45deg);
+          ">
+            <span style="
+              color: white;
+              font-size: 14px;
+              font-weight: bold;
+              transform: rotate(45deg);
+            ">🏪</span>
+          </div>`,
+          className: 'custom-marker',
+          iconSize: [30, 30],
+          iconAnchor: [15, 30]
+        });
+
         // Agregar marcador
-        const marker = L.marker([latitude, longitude]).addTo(map);
+        const marker = L.marker([latitude, longitude], { icon: concessionIcon }).addTo(map);
         
         // Agregar popup
         let popupContent = `<div style="text-align: center;">
@@ -62,7 +88,7 @@ export default function LeafletMap({ latitude, longitude, title, location, area 
         
         popupContent += `</div>`;
         
-        marker.bindPopup(popupContent);
+        marker.bindPopup(popupContent).openPopup();
 
         // Invalidar el tamaño del mapa para asegurar renderizado correcto
         setTimeout(() => {
