@@ -125,11 +125,19 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
           u.email as "concessionaireEmail",
           u.phone as "concessionairePhone",
           p.name as "parkName",
-          p.address as "parkLocation"
+          p.address as "parkLocation",
+          COALESCE(img_count.count, 0) as "imageCount",
+          primary_img.image_url as "primaryImage"
         FROM active_concessions ac
         LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
         LEFT JOIN users u ON ac.concessionaire_id = u.id
         LEFT JOIN parks p ON ac.park_id = p.id
+        LEFT JOIN (
+          SELECT concession_id, COUNT(*) as count
+          FROM active_concession_images 
+          GROUP BY concession_id
+        ) img_count ON ac.id = img_count.concession_id
+        LEFT JOIN active_concession_images primary_img ON ac.id = primary_img.concession_id AND primary_img.is_primary = true
         WHERE ac.id = $1
       `, [concessionId]);
 
@@ -141,6 +149,10 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
       }
       
       const concession = concessionResult.rows[0];
+      
+      // Mapear campos para consistencia
+      concession.imageCount = parseInt(concession.imageCount?.toString()) || 0;
+      concession.image_url = concession.primaryImage || null;
       concession.images = [];
       concession.documents = [];
 
