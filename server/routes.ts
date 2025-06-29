@@ -785,9 +785,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         SELECT 
           ac.id,
           ac.name as "vendorName",
-          ac.concessionaire_contact as "vendorContact", 
-          ac.concessionaire_email as "vendorEmail",
-          ac.concessionaire_phone as "vendorPhone",
+          con.contact_person as "vendorContact", 
+          con.email as "vendorEmail",
+          con.phone as "vendorPhone",
           ac.start_date as "startDate",
           ac.end_date as "endDate",
           ac.status,
@@ -798,6 +798,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ct.category as "impactLevel"
         FROM active_concessions ac
         LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
+        LEFT JOIN concessionaires con ON ac.concessionaire_id = con.id
         WHERE ac.park_id = $1 AND ac.status = 'activa'
         ORDER BY ac.start_date DESC
         LIMIT 10
