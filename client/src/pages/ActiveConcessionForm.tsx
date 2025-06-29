@@ -120,8 +120,8 @@ function ActiveConcessionForm() {
 
   // Cargar datos existentes si es edición
   useEffect(() => {
-    if (isEdit && existingConcession?.data) {
-      const data = existingConcession.data;
+    if (isEdit && existingConcession) {
+      const data = (existingConcession as any).data || existingConcession;
       form.reset({
         name: data.name || '',
         description: data.description || '',
@@ -153,16 +153,16 @@ function ActiveConcessionForm() {
 
   // Mutación para crear/actualizar
   const saveMutation = useMutation({
-    mutationFn: (data: ActiveConcessionFormData) => {
+    mutationFn: (mappedData: any) => {
       if (isEdit) {
         return apiRequest(`/api/active-concessions/${id}`, {
           method: 'PUT',
-          body: JSON.stringify(data)
+          data: mappedData
         });
       } else {
         return apiRequest('/api/active-concessions', {
           method: 'POST',
-          body: JSON.stringify(data)
+          data: mappedData
         });
       }
     },
@@ -198,16 +198,24 @@ function ActiveConcessionForm() {
       concessionaireId: data.concessionaireId,
       parkId: data.parkId,
       specificLocation: data.specificLocation,
+      coordinates: data.coordinates,
+      area: data.area,
       startDate: data.startDate,
       endDate: data.endDate,
       status: data.status,
       priority: data.priority,
       operatingHours: data.operatingHours,
       operatingDays: data.operatingDays,
+      specificTerms: data.specificTerms,
+      specialRequirements: data.specialRequirements,
+      contractNumber: data.contractNumber,
       monthlyPayment: data.monthlyPayment,
+      revenuePercentage: data.revenuePercentage,
+      deposit: data.deposit,
       emergencyContact: data.emergencyContact,
       emergencyPhone: data.emergencyPhone,
-      termsConditions: data.specificTerms || data.notes || ''
+      notes: data.notes,
+      internalNotes: data.internalNotes
     };
     
     saveMutation.mutate(mappedData);
