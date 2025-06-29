@@ -8,20 +8,30 @@ import { Button } from "@/components/ui/button";
 
 interface Concession {
   id: number;
-  vendorName: string;
-  vendorContact: string;
-  vendorEmail: string;
-  vendorPhone: string;
-  startDate: string;
-  endDate: string;
+  name: string;
+  description: string;
+  concession_type_id: number;
+  concessionaire_id: number;
+  park_id: number;
+  specific_location: string;
+  start_date: string;
+  end_date: string;
   status: string;
-  location: string;
-  notes: string;
-  concessionType: string;
-  typeDescription: string;
+  priority: string;
+  monthly_payment: string;
+  operating_hours: string;
+  operating_days: string;
+  emergency_contact: string;
+  emergency_phone: string;
+  concessionTypeName: string;
+  concessionTypeDescription: string;
   impactLevel: string;
+  concessionaireName: string;
+  concessionaireEmail: string;
+  concessionairePhone?: string;
   parkName: string;
-  parkId: number;
+  parkLocation: string;
+  imageCount: number;
   primaryImage?: string;
 }
 
@@ -33,18 +43,18 @@ export default function ConcessionsList() {
   const itemsPerPage = 12;
 
   const { data: concessionsResponse, isLoading } = useQuery({
-    queryKey: ['/api/concessions-list'],
+    queryKey: ['/api/active-concessions'],
   });
 
   const concessions = (concessionsResponse as any)?.data || [];
 
   // Filtrar concesiones
   const filteredConcessions = concessions.filter((concession: Concession) => {
-    const matchesSearch = concession.vendorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         concession.concessionType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         concession.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (concession.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (concession.concessionTypeName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (concession.specific_location || "").toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesType = typeFilter === "all" || concession.concessionType.includes(typeFilter);
+    const matchesType = typeFilter === "all" || (concession.concessionTypeName || "").includes(typeFilter);
     const matchesStatus = statusFilter === "all" || concession.status === statusFilter;
     
     return matchesSearch && matchesType && matchesStatus;
@@ -168,20 +178,20 @@ export default function ConcessionsList() {
                 {concession.primaryImage ? (
                   <img
                     src={concession.primaryImage}
-                    alt={concession.vendorName}
-                    className="w-full h-full object-cover"
+                    alt={concession.name}
+                    className="w-full h-full object-contain bg-gradient-to-br from-[#00a587] via-[#067f5f] to-[#8498a5]"
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-white">
                     <div className="text-center">
                       <Building className="w-12 h-12 mx-auto mb-2 opacity-80" />
-                      <p className="text-sm font-medium opacity-90">{concession.concessionType}</p>
+                      <p className="text-sm font-medium opacity-90">{concession.concessionTypeName}</p>
                     </div>
                   </div>
                 )}
                 <div className="absolute top-3 right-3">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    concession.status === 'activa' 
+                    concession.status === 'activa' || concession.status === 'active'
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-gray-100 text-gray-800'
                   }`}>
@@ -193,15 +203,15 @@ export default function ConcessionsList() {
               {/* Content Section */}
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {concession.vendorName}
+                  {concession.name}
                 </h3>
                 
-                <p className="text-sm text-[#00a587] font-medium mb-3">{concession.concessionType}</p>
+                <p className="text-sm text-[#00a587] font-medium mb-3">{concession.concessionTypeName}</p>
                 
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex items-center">
                     <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                    <span>{concession.location}</span>
+                    <span>{concession.specific_location}</span>
                   </div>
                   <div className="flex items-center">
                     <Building className="w-4 h-4 mr-2 text-gray-400" />
@@ -209,11 +219,11 @@ export default function ConcessionsList() {
                   </div>
                   <div className="flex items-center">
                     <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                    <span>{concession.vendorPhone}</span>
+                    <span>{concession.emergency_phone}</span>
                   </div>
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                    <span>{new Date(concession.startDate).toLocaleDateString('es-ES')} - {new Date(concession.endDate).toLocaleDateString('es-ES')}</span>
+                    <span>{new Date(concession.start_date).toLocaleDateString('es-ES')} - {new Date(concession.end_date).toLocaleDateString('es-ES')}</span>
                   </div>
                 </div>
                 
