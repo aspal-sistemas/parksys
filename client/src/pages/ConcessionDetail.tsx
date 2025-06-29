@@ -140,8 +140,35 @@ export default function ConcessionDetail() {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Galería de fotos */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
+            {/* Imagen principal - ocupa 2x2 */}
+            <div className="col-span-2 row-span-2 relative">
+              <img 
+                src={concession.image_url || '/api/placeholder/400/400'} 
+                alt={`${concession.name} - Imagen principal`}
+                className="w-full h-full object-contain rounded-lg shadow-lg"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 rounded-lg cursor-pointer" />
+            </div>
+            
+            {/* 4 imágenes secundarias - cada una ocupa 1x1 */}
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="relative">
+                <img 
+                  src={'/api/placeholder/200/200'} 
+                  alt={`${concession.name} - Imagen ${index + 2}`}
+                  className="w-full h-full object-contain rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 rounded-lg cursor-pointer" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+      {/* Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Información principal */}
           <div className="lg:col-span-2 space-y-6">
@@ -182,42 +209,7 @@ export default function ConcessionDetail() {
               </CardContent>
             </Card>
 
-            {/* Información comercial */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Store className="h-5 w-5 text-gray-600" />
-                  Información Comercial
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Tipo de concesión</label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" className="text-sm">
-                        {concession.concessionTypeName}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Pago mensual</label>
-                    <p className="text-lg font-semibold text-green-600 mt-1">
-                      ${parseFloat(concession.monthly_payment || '0').toLocaleString()} MXN
-                    </p>
-                  </div>
-                </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Ubicación en el parque</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <MapPin className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">{concession.specific_location}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Sidebar */}
@@ -273,69 +265,6 @@ export default function ConcessionDetail() {
               </CardContent>
             </Card>
 
-            {/* Vigencia del contrato */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-gray-600" />
-                  Vigencia
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Fecha de inicio</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Clock className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">
-                      {new Date(concession.start_date).toLocaleDateString('es-MX', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Fecha de término</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Clock className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">
-                      {new Date(concession.end_date).toLocaleDateString('es-MX', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Tiempo restante */}
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Tiempo restante</label>
-                  <div className="mt-1">
-                    {(() => {
-                      const endDate = new Date(concession.end_date);
-                      const today = new Date();
-                      const diffTime = endDate.getTime() - today.getTime();
-                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                      
-                      if (diffDays < 0) {
-                        return <span className="text-red-600 font-medium">Vencido</span>;
-                      } else if (diffDays <= 30) {
-                        return <span className="text-yellow-600 font-medium">{diffDays} días</span>;
-                      } else if (diffDays <= 365) {
-                        const months = Math.floor(diffDays / 30);
-                        return <span className="text-green-600 font-medium">{months} meses</span>;
-                      } else {
-                        const years = Math.floor(diffDays / 365);
-                        return <span className="text-green-600 font-medium">{years} años</span>;
-                      }
-                    })()}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Parque */}
             {concession.parkName && (
