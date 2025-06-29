@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, MapPin, User, Phone, Mail, Building, Clock, ChevronLeft, ChevronRight, Plus, Search, Filter, Eye, Edit, Trash2, Images } from 'lucide-react';
+import { Calendar, MapPin, User, Phone, Mail, Building, Clock, ChevronLeft, ChevronRight, Plus, Search, Filter, Eye, Edit, Trash2, Images, RefreshCw } from 'lucide-react';
 import { Link } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
 import AdminLayout from '@/components/AdminLayout';
@@ -154,13 +154,21 @@ function ActiveConcessionsList() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
+          <div className="flex gap-2">
             <Link href="/admin/concessions/active/new">
               <Button className="bg-green-600 hover:bg-green-700 text-white">
                 <Plus className="h-4 w-4 mr-2" />
                 Nueva Concesión Activa
               </Button>
             </Link>
+            <Button 
+              variant="outline" 
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/active-concessions'] })}
+              className="border-green-600 text-green-600 hover:bg-green-50"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualizar
+            </Button>
           </div>
         </div>
 
