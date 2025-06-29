@@ -294,7 +294,7 @@ export default function ConcessionDetail() {
                               <h3 className="font-semibold text-sm">{concession.name}</h3>
                               <p className="text-xs text-gray-600 mt-1">{concession.specific_location}</p>
                               {concession.area && (
-                                <p className="text-xs text-gray-500 mt-1">Área: {concession.area}</p>
+                                <p className="text-xs text-gray-500 mt-1">Área: {concession.area} m²</p>
                               )}
                             </div>
                           </Popup>
@@ -304,7 +304,7 @@ export default function ConcessionDetail() {
                     <div className="text-sm text-gray-600">
                       <p><strong>Ubicación específica:</strong> {concession.specific_location}</p>
                       {concession.area && (
-                        <p><strong>Área:</strong> {concession.area}</p>
+                        <p><strong>Área:</strong> {concession.area} m²</p>
                       )}
                       <p className="text-xs text-gray-500 mt-1">
                         Coordenadas: {coordinates[0]}, {coordinates[1]}
