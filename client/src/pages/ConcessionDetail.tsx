@@ -275,7 +275,7 @@ export default function ConcessionDetail() {
             </Card>
 
             {/* Mapa de Ubicación */}
-            {coordinates && (
+            {coordinates && concession && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -285,12 +285,14 @@ export default function ConcessionDetail() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="h-64 w-full rounded-lg overflow-hidden border">
+                    <div className="h-64 w-full rounded-lg overflow-hidden border relative">
                       <MapContainer
+                        key={`map-${concession.id}-${coordinates[0]}-${coordinates[1]}`}
                         center={coordinates}
                         zoom={17}
                         style={{ height: '100%', width: '100%' }}
                         className="z-0"
+                        scrollWheelZoom={false}
                       >
                         <TileLayer
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -319,6 +321,23 @@ export default function ConcessionDetail() {
                       </p>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Debug info - remover después */}
+            {!coordinates && concession && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-gray-600" />
+                    Ubicación (Debug)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-red-600">Coordenadas no disponibles</p>
+                  <p className="text-sm text-gray-600">Coordenadas raw: {concession.coordinates}</p>
+                  <p className="text-sm text-gray-600">Parsed: {JSON.stringify(coordinates)}</p>
                 </CardContent>
               </Card>
             )}
