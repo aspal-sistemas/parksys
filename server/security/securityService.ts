@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { db } from '../storage';
+import { db } from '../db';
 import { 
   auditLogs, 
   loginAttempts, 

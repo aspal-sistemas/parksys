@@ -1060,6 +1060,22 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar API de integraciones financieras:", error);
   }
 
+  // Registrar módulo de seguridad
+  try {
+    console.log("🔒 Registrando módulo de seguridad...");
+    
+    const { initSecurityTables, seedSecurityData } = await import('./security/initSecurityTables');
+    await initSecurityTables();
+    await seedSecurityData();
+    
+    const securityRouter = await import('./security/securityRoutes');
+    app.use('/api/security', securityRouter.default);
+    
+    console.log("✅ Módulo de seguridad registrado correctamente");
+  } catch (error) {
+    console.error("❌ Error al registrar módulo de seguridad:", error);
+  }
+
   // Rutas para servir archivos del recibo - ANTES de Vite
   app.get('/api/recibo-nomina', (req: Request, res: Response) => {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
