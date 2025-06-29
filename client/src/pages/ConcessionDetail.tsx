@@ -233,34 +233,39 @@ export default function ConcessionDetail() {
               <CardContent className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Concesionario</label>
-                  <p className="text-gray-900 font-medium mt-1">{concession.vendorName}</p>
+                  <p className="text-gray-900 font-medium mt-1">{concession.concessionaireName}</p>
                 </div>
 
-                {concession.contactPhone && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Contacto de emergencia</label>
+                  <p className="text-gray-900 font-medium mt-1">{concession.emergency_contact}</p>
+                </div>
+
+                {concession.emergency_phone && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Teléfono</label>
+                    <label className="text-sm font-medium text-gray-500">Teléfono de emergencia</label>
                     <div className="flex items-center gap-2 mt-1">
                       <Phone className="h-4 w-4 text-gray-400" />
                       <a 
-                        href={`tel:${concession.contactPhone}`}
+                        href={`tel:${concession.emergency_phone}`}
                         className="text-green-600 hover:text-green-700 font-medium"
                       >
-                        {concession.contactPhone}
+                        {concession.emergency_phone}
                       </a>
                     </div>
                   </div>
                 )}
 
-                {concession.contactEmail && (
+                {concession.concessionaireEmail && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Email</label>
                     <div className="flex items-center gap-2 mt-1">
                       <Mail className="h-4 w-4 text-gray-400" />
                       <a 
-                        href={`mailto:${concession.contactEmail}`}
+                        href={`mailto:${concession.concessionaireEmail}`}
                         className="text-green-600 hover:text-green-700 font-medium break-all"
                       >
-                        {concession.contactEmail}
+                        {concession.concessionaireEmail}
                       </a>
                     </div>
                   </div>
@@ -282,7 +287,7 @@ export default function ConcessionDetail() {
                   <div className="flex items-center gap-2 mt-1">
                     <Clock className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-900">
-                      {new Date(concession.startDate).toLocaleDateString('es-MX', {
+                      {new Date(concession.start_date).toLocaleDateString('es-MX', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -296,7 +301,7 @@ export default function ConcessionDetail() {
                   <div className="flex items-center gap-2 mt-1">
                     <Clock className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-900">
-                      {new Date(concession.endDate).toLocaleDateString('es-MX', {
+                      {new Date(concession.end_date).toLocaleDateString('es-MX', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -310,7 +315,7 @@ export default function ConcessionDetail() {
                   <label className="text-sm font-medium text-gray-500">Tiempo restante</label>
                   <div className="mt-1">
                     {(() => {
-                      const endDate = new Date(concession.endDate);
+                      const endDate = new Date(concession.end_date);
                       const today = new Date();
                       const diffTime = endDate.getTime() - today.getTime();
                       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -342,7 +347,7 @@ export default function ConcessionDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Link href={`/parque/${concession.parkName.toLowerCase().replace(/\s+/g, '-')}-${concession.parkId}`}>
+                  <Link href={`/parque/${concession.parkName.toLowerCase().replace(/\s+/g, '-')}-${concession.park_id}`}>
                     <div className="flex items-center gap-2 p-3 rounded-lg border hover:bg-gray-50 transition-colors cursor-pointer">
                       <Building2 className="h-4 w-4 text-gray-400" />
                       <span className="text-green-600 hover:text-green-700 font-medium">
