@@ -2,8 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Mail, Calendar, Building2, Clock, ArrowLeft, Store, User, FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { MapPin, Phone, Mail, Calendar, Building2, Clock, ArrowLeft, Store, User, FileText, X } from "lucide-react";
 import { Link, useParams } from "wouter";
+import { useState } from "react";
 
 interface ConcessionImage {
   id: number;
@@ -47,6 +49,7 @@ interface ConcessionDetail {
 
 export default function ConcessionDetail() {
   const { id } = useParams();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const { data: concessionResponse, isLoading, error } = useQuery({
     queryKey: [`/api/active-concessions/${id}`],
@@ -156,35 +159,35 @@ export default function ConcessionDetail() {
         <div className="mb-8">
           <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
             {/* Imagen principal - ocupa 2x2 */}
-            <div className="col-span-2 row-span-2 relative">
+            <div className="col-span-2 row-span-2 relative cursor-pointer" onClick={() => setSelectedImage(concession.image_url)}>
               <img 
                 src={concession.image_url || '/api/placeholder/400/400'} 
                 alt={`${concession.name} - Imagen principal`}
                 className="w-full h-full object-contain rounded-lg shadow-lg"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 rounded-lg cursor-pointer" />
+              <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
             </div>
             
             {/* 4 imágenes secundarias - cada una ocupa 1x1 */}
             {concession.images && concession.images
-              .filter(img => !img.is_primary)
+              .filter((img: ConcessionImage) => !img.is_primary)
               .slice(0, 4)
-              .map((image, index) => (
-                <div key={image.id} className="relative">
+              .map((image: ConcessionImage, index: number) => (
+                <div key={image.id} className="relative cursor-pointer" onClick={() => setSelectedImage(image.image_url)}>
                   <img 
                     src={image.image_url} 
                     alt={`${concession.name} - Imagen ${index + 2}`}
                     className="w-full h-full object-contain rounded-lg shadow-md"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 rounded-lg cursor-pointer" />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
                 </div>
               ))
             }
             
             {/* Relleno con placeholders si hay menos de 4 imágenes secundarias */}
             {concession.images && 
-              concession.images.filter(img => !img.is_primary).length < 4 &&
-              [...Array(4 - concession.images.filter(img => !img.is_primary).length)].map((_, index) => (
+              concession.images.filter((img: ConcessionImage) => !img.is_primary).length < 4 &&
+              [...Array(4 - concession.images.filter((img: ConcessionImage) => !img.is_primary).length)].map((_, index) => (
                 <div key={`placeholder-${index}`} className="relative bg-gray-100 rounded-lg flex items-center justify-center">
                   <span className="text-gray-400 text-sm">Sin imagen</span>
                 </div>
@@ -314,6 +317,27 @@ export default function ConcessionDetail() {
           </div>
         </div>
       </div>
+
+      {/* Modal lightbox para mostrar imágenes en grande */}
+      {selectedImage && (
+        <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+          <DialogContent className="max-w-4xl w-full h-[80vh] p-0 bg-black/95">
+            <div className="relative w-full h-full flex items-center justify-center">
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+              <img
+                src={selectedImage}
+                alt="Imagen ampliada"
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
