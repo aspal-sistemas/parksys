@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { MapPin, Phone, Mail, Calendar, Building2, Clock, ArrowLeft, Store, User, FileText, X } from "lucide-react";
 import { Link, useParams } from "wouter";
 import { useState, useEffect } from "react";
-import LeafletMap from "@/components/LeafletMap";
+import SimpleMap from "@/components/SimpleMap";
 
 interface ConcessionImage {
   id: number;
@@ -275,7 +275,7 @@ export default function ConcessionDetail() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <LeafletMap
+                    <SimpleMap
                       latitude={coordinates[0]}
                       longitude={coordinates[1]}
                       title={concession.name}
