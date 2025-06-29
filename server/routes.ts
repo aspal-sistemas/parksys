@@ -795,7 +795,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ac.description as "notes",
           ct.name as "concessionType",
           ct.description as "typeDescription",
-          ct.category as "impactLevel"
+          ct.impact_level as "impactLevel"
         FROM active_concessions ac
         LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
         LEFT JOIN concessionaires con ON ac.concessionaire_id = con.id
