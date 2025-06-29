@@ -265,7 +265,6 @@ export default function ConcessionDetail() {
               </CardContent>
             </Card>
 
-
             {/* Parque */}
             {concession.parkName && (
               <Card>
