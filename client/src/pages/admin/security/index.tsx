@@ -4,25 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Shield, Lock, Activity, Settings } from 'lucide-react';
 import SecurityDashboard from './SecurityDashboard';
 import ChangePassword from './ChangePassword';
+import AdminLayout from '@/components/AdminLayout';
 
 export default function SecurityModule() {
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header principal */}
-      <div className="flex items-center space-x-3 mb-6">
-        <div className="p-2 bg-[#00a587] rounded-lg">
-          <Shield className="h-6 w-6 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Módulo de Seguridad</h1>
-          <p className="text-gray-600">
-            Centro de control de seguridad y monitoreo del sistema
-          </p>
-        </div>
-      </div>
-
-      {/* Navegación por pestañas */}
-      <Tabs defaultValue="dashboard" className="space-y-6">
+    <AdminLayout title="Módulo de Seguridad" subtitle="Centro de control de seguridad y monitoreo del sistema">
+      <div className="space-y-6">
+        {/* Navegación por pestañas */}
+        <Tabs defaultValue="dashboard" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="dashboard" className="flex items-center space-x-2">
             <Activity className="h-4 w-4" />
@@ -94,6 +83,7 @@ export default function SecurityModule() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
