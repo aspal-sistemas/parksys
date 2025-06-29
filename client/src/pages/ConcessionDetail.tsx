@@ -5,6 +5,16 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, Calendar, Building2, Clock, ArrowLeft, Store, User, FileText } from "lucide-react";
 import { Link, useParams } from "wouter";
 
+interface ConcessionImage {
+  id: number;
+  image_url: string;
+  title?: string;
+  description?: string;
+  image_type: string;
+  is_primary: boolean;
+  display_order: number;
+}
+
 interface ConcessionDetail {
   id: number;
   name: string;
@@ -32,6 +42,7 @@ interface ConcessionDetail {
   parkLocation: string;
   imageCount: number;
   primaryImage?: string;
+  images: ConcessionImage[];
 }
 
 export default function ConcessionDetail() {
@@ -155,16 +166,30 @@ export default function ConcessionDetail() {
             </div>
             
             {/* 4 imágenes secundarias - cada una ocupa 1x1 */}
-            {[...Array(4)].map((_, index) => (
-              <div key={index} className="relative">
-                <img 
-                  src={'/api/placeholder/200/200'} 
-                  alt={`${concession.name} - Imagen ${index + 2}`}
-                  className="w-full h-full object-contain rounded-lg shadow-md"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 rounded-lg cursor-pointer" />
-              </div>
-            ))}
+            {concession.images && concession.images
+              .filter(img => !img.is_primary)
+              .slice(0, 4)
+              .map((image, index) => (
+                <div key={image.id} className="relative">
+                  <img 
+                    src={image.image_url} 
+                    alt={`${concession.name} - Imagen ${index + 2}`}
+                    className="w-full h-full object-contain rounded-lg shadow-md"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 rounded-lg cursor-pointer" />
+                </div>
+              ))
+            }
+            
+            {/* Relleno con placeholders si hay menos de 4 imágenes secundarias */}
+            {concession.images && 
+              concession.images.filter(img => !img.is_primary).length < 4 &&
+              [...Array(4 - concession.images.filter(img => !img.is_primary).length)].map((_, index) => (
+                <div key={`placeholder-${index}`} className="relative bg-gray-100 rounded-lg flex items-center justify-center">
+                  <span className="text-gray-400 text-sm">Sin imagen</span>
+                </div>
+              ))
+            }
           </div>
         </div>
 
