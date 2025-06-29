@@ -785,7 +785,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         SELECT 
           ac.id,
           ac.name as "vendorName",
-          con.contact_person as "vendorContact", 
+          con.name as "vendorContact", 
           con.email as "vendorEmail",
           con.phone as "vendorPhone",
           ac.start_date as "startDate",
