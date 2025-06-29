@@ -6,9 +6,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { MapPin, Phone, Mail, Calendar, Building2, Clock, ArrowLeft, Store, User, FileText, X } from "lucide-react";
 import { Link, useParams } from "wouter";
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import LeafletMap from "@/components/LeafletMap";
 
 interface ConcessionImage {
   id: number;
@@ -51,14 +49,6 @@ interface ConcessionDetail {
   primaryImage?: string;
   images: ConcessionImage[];
 }
-
-// Fix para iconos de Leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
 
 export default function ConcessionDetail() {
   const { id } = useParams();
@@ -285,32 +275,13 @@ export default function ConcessionDetail() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="h-64 w-full rounded-lg overflow-hidden border relative">
-                      <MapContainer
-                        key={`map-${concession.id}-${coordinates[0]}-${coordinates[1]}`}
-                        center={coordinates}
-                        zoom={17}
-                        style={{ height: '100%', width: '100%' }}
-                        className="z-0"
-                        scrollWheelZoom={false}
-                      >
-                        <TileLayer
-                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        />
-                        <Marker position={coordinates}>
-                          <Popup>
-                            <div className="text-center">
-                              <h3 className="font-semibold text-sm">{concession.name}</h3>
-                              <p className="text-xs text-gray-600 mt-1">{concession.specific_location}</p>
-                              {concession.area && (
-                                <p className="text-xs text-gray-500 mt-1">Área: {concession.area} m²</p>
-                              )}
-                            </div>
-                          </Popup>
-                        </Marker>
-                      </MapContainer>
-                    </div>
+                    <LeafletMap
+                      latitude={coordinates[0]}
+                      longitude={coordinates[1]}
+                      title={concession.name}
+                      location={concession.specific_location}
+                      area={concession.area?.toString()}
+                    />
                     <div className="text-sm text-gray-600">
                       <p><strong>Ubicación específica:</strong> {concession.specific_location}</p>
                       {concession.area && (
