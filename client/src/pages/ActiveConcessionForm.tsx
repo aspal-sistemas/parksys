@@ -83,9 +83,14 @@ function ActiveConcessionForm() {
 
   // Obtener datos existentes si es edición
   const { data: existingConcession, isLoading: loadingExisting } = useQuery({
-    queryKey: [`/api/active-concessions/${id}`],
-    queryFn: () => apiRequest(`/api/active-concessions/${id}`),
-    enabled: isEdit
+    queryKey: [`active-concession-edit`, id],
+    queryFn: async () => {
+      const response = await fetch(`/api/active-concessions/${id}`);
+      if (!response.ok) throw new Error('Error fetching concession data');
+      return response.json();
+    },
+    enabled: isEdit,
+    staleTime: 0 // Forzar nueva consulta
   });
 
   const form = useForm<ActiveConcessionFormData>({
@@ -120,10 +125,9 @@ function ActiveConcessionForm() {
 
   // Cargar datos existentes si es edición
   useEffect(() => {
-    if (isEdit && existingConcession) {
-      const data = (existingConcession as any).data || existingConcession;
-      console.log('🔍 Datos de concesión cargados:', data);
-      console.log('🔍 existingConcession completo:', existingConcession);
+    if (isEdit && existingConcession?.data) {
+      const data = existingConcession.data;
+      console.log('🔍 Datos JSON parseados:', data);
       form.reset({
         name: data.name || '',
         description: data.description || '',
