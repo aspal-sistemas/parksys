@@ -7,31 +7,42 @@ import { Link, useParams } from "wouter";
 
 interface ConcessionDetail {
   id: number;
-  vendorName: string;
-  businessName: string;
-  concessionType: string;
-  location: string;
-  contactPhone?: string;
-  contactEmail?: string;
-  startDate: string;
-  endDate: string;
-  parkId: number;
-  parkName?: string;
+  name: string;
+  description: string;
+  concession_type_id: number;
+  concessionaire_id: number;
+  park_id: number;
+  specific_location: string;
+  start_date: string;
+  end_date: string;
   status: string;
-  description?: string;
-  monthlyRent?: number;
-  contractDetails?: string;
+  priority: string;
+  monthly_payment: string;
+  operating_hours: string;
+  operating_days: string;
+  emergency_contact: string;
+  emergency_phone: string;
+  concessionTypeName: string;
+  concessionTypeDescription: string;
+  impactLevel: string;
+  concessionaireName: string;
+  concessionaireEmail: string;
+  concessionairePhone?: string;
+  parkName: string;
+  parkLocation: string;
+  imageCount: number;
+  primaryImage?: string;
 }
 
 export default function ConcessionDetail() {
   const { id } = useParams();
 
   const { data: concessionResponse, isLoading, error } = useQuery({
-    queryKey: [`/api/concessions/${id}`],
+    queryKey: [`/api/active-concessions/${id}`],
     enabled: !!id,
   });
 
-  const concession = concessionResponse?.data;
+  const concession = (concessionResponse as any)?.data;
 
   if (isLoading) {
     return (
@@ -110,13 +121,13 @@ export default function ConcessionDetail() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-2xl">{getTypeIcon(concession.concessionType)}</span>
+                <span className="text-2xl">{getTypeIcon(concession.concessionTypeName)}</span>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  {concession.businessName}
+                  {concession.name}
                 </h1>
               </div>
               <p className="text-lg text-gray-600">
-                Operado por: {concession.vendorName}
+                Operado por: {concession.concessionaireName}
               </p>
             </div>
             
@@ -151,22 +162,25 @@ export default function ConcessionDetail() {
               </Card>
             )}
 
-            {/* Detalles del contrato */}
-            {concession.contractDetails && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-gray-600" />
-                    Detalles del Contrato
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700 leading-relaxed">
-                    {concession.contractDetails}
+            {/* Horarios de Operación */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-gray-600" />
+                  Horarios de Operación
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p className="text-gray-700">
+                    <strong>Horarios:</strong> {concession.operating_hours}
                   </p>
-                </CardContent>
-              </Card>
-            )}
+                  <p className="text-gray-700">
+                    <strong>Días:</strong> {concession.operating_days}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Información comercial */}
             <Card>
@@ -182,26 +196,24 @@ export default function ConcessionDetail() {
                     <label className="text-sm font-medium text-gray-500">Tipo de concesión</label>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="outline" className="text-sm">
-                        {concession.concessionType}
+                        {concession.concessionTypeName}
                       </Badge>
                     </div>
                   </div>
                   
-                  {concession.monthlyRent && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">Renta mensual</label>
-                      <p className="text-lg font-semibold text-green-600 mt-1">
-                        ${concession.monthlyRent.toLocaleString()} MXN
-                      </p>
-                    </div>
-                  )}
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Pago mensual</label>
+                    <p className="text-lg font-semibold text-green-600 mt-1">
+                      ${parseFloat(concession.monthly_payment || '0').toLocaleString()} MXN
+                    </p>
+                  </div>
                 </div>
 
                 <div>
                   <label className="text-sm font-medium text-gray-500">Ubicación en el parque</label>
                   <div className="flex items-center gap-2 mt-1">
                     <MapPin className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">{concession.location}</span>
+                    <span className="text-gray-900">{concession.specific_location}</span>
                   </div>
                 </div>
               </CardContent>
