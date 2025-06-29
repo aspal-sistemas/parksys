@@ -122,6 +122,8 @@ function ActiveConcessionForm() {
   useEffect(() => {
     if (isEdit && existingConcession) {
       const data = (existingConcession as any).data || existingConcession;
+      console.log('🔍 Datos de concesión cargados:', data);
+      console.log('🔍 existingConcession completo:', existingConcession);
       form.reset({
         name: data.name || '',
         description: data.description || '',
