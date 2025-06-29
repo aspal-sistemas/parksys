@@ -842,6 +842,9 @@ app.get("/api/users-direct", async (req: Request, res: Response) => {
 // Servir archivos estáticos de la carpeta de uploads
 app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 
+// Servir archivos estáticos de concesiones y otros uploads directos
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
 
 
 // Logging middleware temporalmente desactivado debido a problemas de estabilidad
