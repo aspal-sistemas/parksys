@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { MapPin, Phone, Mail, Calendar, Building2, Clock, ArrowLeft, Store, User, FileText, X } from "lucide-react";
 import { Link, useParams } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 interface ConcessionImage {
   id: number;
@@ -34,6 +37,8 @@ interface ConcessionDetail {
   operating_days: string;
   emergency_contact: string;
   emergency_phone: string;
+  coordinates: string;
+  area: string;
   concessionTypeName: string;
   concessionTypeDescription: string;
   impactLevel: string;
@@ -47,6 +52,14 @@ interface ConcessionDetail {
   images: ConcessionImage[];
 }
 
+// Fix para iconos de Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
 export default function ConcessionDetail() {
   const { id } = useParams();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -57,6 +70,22 @@ export default function ConcessionDetail() {
   });
 
   const concession = (concessionResponse as any)?.data;
+
+  // Parsear coordenadas si están disponibles
+  const parseCoordinates = (coordinates: string): [number, number] | null => {
+    if (!coordinates) return null;
+    try {
+      const coords = coordinates.split(',').map(coord => parseFloat(coord.trim()));
+      if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+        return [coords[0], coords[1]];
+      }
+    } catch (error) {
+      console.error('Error parsing coordinates:', error);
+    }
+    return null;
+  };
+
+  const coordinates = concession?.coordinates ? parseCoordinates(concession.coordinates) : null;
 
   if (isLoading) {
     return (
@@ -236,6 +265,55 @@ export default function ConcessionDetail() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Mapa de Ubicación */}
+            {coordinates && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-gray-600" />
+                    Ubicación
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="h-64 w-full rounded-lg overflow-hidden border">
+                      <MapContainer
+                        center={coordinates}
+                        zoom={17}
+                        style={{ height: '100%', width: '100%' }}
+                        className="z-0"
+                      >
+                        <TileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                        <Marker position={coordinates}>
+                          <Popup>
+                            <div className="text-center">
+                              <h3 className="font-semibold text-sm">{concession.name}</h3>
+                              <p className="text-xs text-gray-600 mt-1">{concession.specific_location}</p>
+                              {concession.area && (
+                                <p className="text-xs text-gray-500 mt-1">Área: {concession.area}</p>
+                              )}
+                            </div>
+                          </Popup>
+                        </Marker>
+                      </MapContainer>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <p><strong>Ubicación específica:</strong> {concession.specific_location}</p>
+                      {concession.area && (
+                        <p><strong>Área:</strong> {concession.area}</p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Coordenadas: {coordinates[0]}, {coordinates[1]}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
 
           </div>
