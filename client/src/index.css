@@ -7,13 +7,32 @@
     @apply text-green-500;
   }
   
-  /* Leaflet map z-index fixes */
+  /* Leaflet map styles and fixes */
   .leaflet-container {
     z-index: 1 !important;
+    height: 100% !important;
+    width: 100% !important;
+    background: #f0f0f0;
   }
   
   .leaflet-control-container {
     z-index: 10 !important;
+  }
+  
+  .leaflet-tile {
+    max-width: none !important;
+  }
+  
+  .leaflet-tile-pane {
+    z-index: 2 !important;
+  }
+  
+  .leaflet-marker-pane {
+    z-index: 6 !important;
+  }
+  
+  .leaflet-popup-pane {
+    z-index: 7 !important;
   }
   
   /* Ensure dropdowns appear above map */
