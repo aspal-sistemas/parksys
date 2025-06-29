@@ -171,6 +171,7 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/volunteers')) return ['volunteers'];
     if (location.startsWith('/admin/trees')) return ['trees'];
     if (location.startsWith('/admin/communications')) return ['communications'];
+    if (location.startsWith('/admin/security')) return ['security'];
     if (location.startsWith('/admin/settings') || location.startsWith('/admin/analytics') || location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
     return []; // Sin módulos abiertos por defecto
   };
@@ -719,6 +720,21 @@ const AdminSidebarComplete: React.FC = () => {
               active={location.startsWith('/admin/communications/analytics')}
             >
               Análisis
+            </NavItem>
+          </ModuleNav>
+
+          {/* Módulo de Seguridad */}
+          <ModuleNav 
+            title="Seguridad" 
+            icon={<Shield className="h-5 w-5" />}
+            value="security"
+          >
+            <NavItem 
+              href="/admin/security" 
+              icon={<Activity className="h-5 w-5" />}
+              active={location === '/admin/security'}
+            >
+              Centro de Seguridad
             </NavItem>
           </ModuleNav>
 

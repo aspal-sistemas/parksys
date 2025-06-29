@@ -407,6 +407,13 @@ function Router() {
           </Suspense>
         </Route>
 
+        {/* Rutas para el módulo de seguridad */}
+        <Route path="/admin/security">
+          <Suspense fallback={<div className="p-8 text-center">Cargando módulo de seguridad...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/security')))}
+          </Suspense>
+        </Route>
+
         {/* Rutas para el módulo de activos */}
         <Route path="/admin/assets/dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de activos...</div>}>
