@@ -234,13 +234,15 @@ const ConcessionImageManager: React.FC<ConcessionImageManagerProps> = ({ concess
               {images.map((image: ConcessionImage) => (
                 <div
                   key={image.id}
-                  className="relative border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                  className="relative border rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-gray-50"
                 >
-                  <img
-                    src={image.image_url}
-                    alt={image.caption || 'Imagen de concesión'}
-                    className="w-full h-48 object-contain bg-gray-50"
-                  />
+                  <div className="aspect-video flex items-center justify-center min-h-48">
+                    <img
+                      src={image.image_url}
+                      alt={image.caption || 'Imagen de concesión'}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
                   
                   {image.is_primary && (
                     <Badge className="absolute top-2 left-2 bg-yellow-500 hover:bg-yellow-600">
