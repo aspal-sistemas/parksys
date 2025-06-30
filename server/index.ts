@@ -1369,12 +1369,12 @@ async function initializeDatabaseAsync() {
         console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
       }
       
-      // Inicializar base de datos después de que todo esté listo - REDUCED DELAY
-      setTimeout(() => {
+      // Inicializar base de datos de forma completamente no bloqueante
+      setImmediate(() => {
         initializeDatabaseAsync().catch(error => {
           console.error("Error inicializando base de datos (no crítico):", error);
         });
-      }, 1000);
+      });
     });
   } else {
     // Modo producción
@@ -1387,11 +1387,12 @@ async function initializeDatabaseAsync() {
     appServer = app.listen(PORT, HOST, () => {
       console.log(`Servidor en producción ejecutándose en puerto ${PORT}`);
       
-      setTimeout(() => {
+      // Inicializar base de datos de forma completamente no bloqueante
+      setImmediate(() => {
         initializeDatabaseAsync().catch(error => {
           console.error("Error inicializando base de datos (no crítico):", error);
         });
-      }, 1000);
+      });
     });
   }
 
