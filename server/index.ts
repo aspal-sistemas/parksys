@@ -879,11 +879,13 @@ async function initializeDatabaseAsync() {
   }
 }
 
-// Main server initialization function - no async wrapper to prevent early exit
-async function startServer() {
-  // Registrar rutas de Recursos Humanos integradas con Finanzas DESPUÉS de endpoints directos
-  try {
-    const { registerHRRoutes } = await import("./hr-routes");
+// Main server initialization function that returns a Promise when server is ready
+function startServer(): Promise<void> {
+  return new Promise<void>(async (resolve, reject) => {
+    try {
+      // Registrar rutas de Recursos Humanos integradas con Finanzas DESPUÉS de endpoints directos
+      try {
+        const { registerHRRoutes } = await import("./hr-routes");
     const router = express.Router();
     
     // Aplicar middleware JSON específicamente al router HR
@@ -1316,80 +1318,84 @@ async function startServer() {
   
   let appServer: any;
 
-  // Return a Promise that resolves when server is listening
-  return new Promise<void>((resolve, reject) => {
-    // Setup Vite in development mode with error handling
-    if (app.get("env") === "development") {
-      console.log("Configurando servidor de desarrollo Vite...");
-      
-      appServer = app.listen(PORT, HOST, async () => {
-        console.log(`Servidor ejecutándose en puerto ${PORT}`);
+  // Setup Vite in development mode with error handling
+      if (app.get("env") === "development") {
+        console.log("Configurando servidor de desarrollo Vite...");
         
+        appServer = app.listen(PORT, HOST, async () => {
+          console.log(`Servidor ejecutándose en puerto ${PORT}`);
+          
+          try {
+            const { setupVite } = await import("./vite");
+            await setupVite(app, appServer);
+            console.log("✅ Servidor de desarrollo Vite listo - Aplicación web accesible");
+          } catch (error) {
+            console.error("Error configurando Vite (continuando sin Vite):", error);
+            // Continuar sin Vite si hay problemas
+            console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
+          }
+          
+          // Inicializar base de datos de forma completamente no bloqueante
+          setImmediate(() => {
+            initializeDatabaseAsync().catch(error => {
+              console.error("Error inicializando base de datos (no crítico):", error);
+            });
+          });
+          
+          // Server is ready - resolve Promise
+          resolve();
+        });
+
+        appServer.on('error', (error: any) => {
+          console.error('Server error:', error);
+          reject(error);
+        });
+      } else {
+        // Modo producción - configuración optimizada para despliegue
         try {
-          const { setupVite } = await import("./vite");
-          await setupVite(app, appServer);
-          console.log("✅ Servidor de desarrollo Vite listo - Aplicación web accesible");
+          const { serveStatic } = await import("./vite");
+          serveStatic(app);
+          console.log("✅ Archivos estáticos configurados para producción");
         } catch (error) {
-          console.error("Error configurando Vite (continuando sin Vite):", error);
-          // Continuar sin Vite si hay problemas
-          console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
+          console.error("⚠️ Error configurando archivos estáticos (continuando):", error);
         }
         
-        // Inicializar base de datos de forma completamente no bloqueante
-        setImmediate(() => {
-          initializeDatabaseAsync().catch(error => {
-            console.error("Error inicializando base de datos (no crítico):", error);
+        appServer = app.listen(PORT, HOST, () => {
+          console.log(`✅ Servidor en producción ejecutándose en puerto ${PORT}`);
+          console.log(`🌐 Health check endpoints disponibles: /, /health, /api/health, /api/status`);
+          
+          // Inicializar base de datos de forma completamente no bloqueante
+          setImmediate(() => {
+            initializeDatabaseAsync().catch(error => {
+              console.error("⚠️ Error inicializando base de datos (no crítico):", error);
+            });
           });
+          
+          // Server is ready - resolve Promise
+          resolve();
         });
-        
-        // Resolve the Promise to indicate server is ready
-        resolve();
-      });
 
-      appServer.on('error', (error: any) => {
-        console.error('Server error:', error);
-        reject(error);
-      });
-    } else {
-      // Modo producción - configuración optimizada para despliegue
-      try {
-        serveStatic(app);
-        console.log("✅ Archivos estáticos configurados para producción");
-      } catch (error) {
-        console.error("⚠️ Error configurando archivos estáticos (continuando):", error);
+        appServer.on('error', (error: any) => {
+          console.error('Server error:', error);
+          reject(error);
+        });
       }
+
+      // Setup graceful shutdown
+      process.on('SIGTERM', () => {
+        console.log('SIGTERM received, shutting down gracefully');
+        if (appServer) {
+          appServer.close(() => {
+            console.log('Process terminated');
+            process.exit(0);
+          });
+        }
+      });
       
-      appServer = app.listen(PORT, HOST, () => {
-        console.log(`✅ Servidor en producción ejecutándose en puerto ${PORT}`);
-        console.log(`🌐 Health check endpoints disponibles: /, /health, /api/health, /api/status`);
-        
-        // Inicializar base de datos de forma completamente no bloqueante
-        setImmediate(() => {
-          initializeDatabaseAsync().catch(error => {
-            console.error("⚠️ Error inicializando base de datos (no crítico):", error);
-          });
-        });
-        
-        // Resolve the Promise to indicate server is ready
-        resolve();
-      });
-
-      appServer.on('error', (error: any) => {
-        console.error('Server error:', error);
-        reject(error);
-      });
+    } catch (error) {
+      console.error('Error during server initialization:', error);
+      reject(error);
     }
-
-    // Setup graceful shutdown inside the Promise
-    process.on('SIGTERM', () => {
-      console.log('SIGTERM received, shutting down gracefully');
-      if (appServer) {
-        appServer.close(() => {
-          console.log('Process terminated');
-          process.exit(0);
-        });
-      }
-    });
   });
 }
 
