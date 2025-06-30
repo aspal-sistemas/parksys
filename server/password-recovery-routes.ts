@@ -274,7 +274,7 @@ router.post('/password/reset', async (req: Request, res: Response) => {
       // Marcar token como usado
       await pool.query(`
         UPDATE password_reset_tokens 
-        SET is_used = true, used_at = NOW() 
+        SET is_used = true 
         WHERE token = $1
       `, [token]);
       
