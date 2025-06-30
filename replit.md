@@ -83,6 +83,7 @@ The system uses environment variables for database connection and supports both 
 ## Changelog
 
 - June 30, 2025. Deployment configuration completely fixed for Replit production - Server properly configured to listen on port 5000 with 0.0.0.0 host binding. Multiple health check endpoints added (/api/status, /health, /api/health) for robust deployment monitoring. Production environment properly configured with graceful shutdown handling and optimized startup sequence. All deployment requirements satisfied for autoscale deployment target
+- June 30, 2025. Critical deployment fixes applied for health check failures - Added root health check endpoint (/) that responds immediately with 200 status. Moved database initialization to after server startup to prevent blocking. Optimized cash flow matrix endpoint placement after middleware setup. Reduced database initialization delays (3s→1s dev, 1s prod). Fixed host binding to always use 0.0.0.0 for Replit compatibility. Server startup sequence completely optimized for production deployment with non-blocking initialization
 - June 16, 2025. Initial setup
 - June 16, 2025. Sistema completo de internacionalización implementado - Soporte para español, inglés y portugués con selector de idioma integrado
 - June 16, 2025. Traducciones completas del sidebar aplicadas - Todo el sistema de navegación responde al cambio de idioma
