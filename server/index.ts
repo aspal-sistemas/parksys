@@ -1069,6 +1069,10 @@ async function initializeDatabaseAsync() {
     const { registerInstructorEvaluationRoutes } = await import('./instructor-evaluations-routes');
     registerInstructorEvaluationRoutes(app, apiRouter);
     
+    // Importar y registrar rutas de concesionarios
+    const { registerConcessionairesRoutes } = await import('./concessionaires-routes');
+    registerConcessionairesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
     app.use("/api", apiRouter);
     console.log("API de integraciones financieras múltiples registrada correctamente");
     
