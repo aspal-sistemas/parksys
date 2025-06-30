@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import ParkCard from '@/components/ParkCard';
 import { ExtendedPark } from '@shared/schema';
+import logoImage from '@assets/logo_1751306368691.png';
 
 const Home: React.FC = () => {
   // Fetch a few featured parks
@@ -267,82 +268,135 @@ const Home: React.FC = () => {
         </div>
       </section>
       
-      {/* 📞 FOOTER RENOVADO */}
-      <footer className="bg-gradient-to-r from-gray-900 via-slate-900 to-gray-900 text-gray-300 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-            <div>
-              <h3 className="text-white font-bold text-2xl mb-6 bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                ParkSys
-              </h3>
-              <p className="text-gray-400 leading-relaxed mb-6">
-                Sistema de información de parques públicos y espacios verdes en México. Conectando ciudadanos con la naturaleza urbana.
-              </p>
-              <div className="flex space-x-4">
-                <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center">
-                  <Trees className="h-5 w-5 text-emerald-400" />
-                </div>
-                <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
-                  <Map className="h-5 w-5 text-blue-400" />
-                </div>
-                <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
-                  <Users className="h-5 w-5 text-purple-400" />
-                </div>
+      {/* Footer inspirado en bosquesamg.mx */}
+      <footer className="bg-gradient-to-b from-[#067f5f] to-[#00a587] text-white">
+        {/* Logo y descripción principal */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center mb-12">
+            <img 
+              src={logoImage} 
+              alt="Agencia Metropolitana de Bosques Urbanos" 
+              className="h-16 w-auto mx-auto mb-6 filter brightness-0 invert"
+            />
+            <h2 className="text-2xl font-bold mb-4">Agencia Metropolitana de Bosques Urbanos</h2>
+            <p className="text-lg text-emerald-100 max-w-3xl mx-auto">
+              Fortalecemos el tejido social a través de espacios verdes que conectan comunidades, 
+              promueven la sostenibilidad y mejoran la calidad de vida en nuestra área metropolitana.
+            </p>
+          </div>
+
+          {/* Enlaces organizados en grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
+            {/* Columna 1 */}
+            <div className="space-y-3">
+              <Link href="/" className="block text-white hover:text-[#bcd256] transition-colors">
+                Inicio
+              </Link>
+              <Link href="/about" className="block text-white hover:text-[#bcd256] transition-colors">
+                Nosotros
+              </Link>
+              <Link href="/activities" className="block text-white hover:text-[#bcd256] transition-colors">
+                Eventos
+              </Link>
+            </div>
+
+            {/* Columna 2 */}
+            <div className="space-y-3">
+              <Link href="/parks" className="block text-white hover:text-[#bcd256] transition-colors">
+                Bosques Urbanos
+              </Link>
+              <Link href="/education" className="block text-white hover:text-[#bcd256] transition-colors">
+                Educación Ambiental
+              </Link>
+              <Link href="/wildlife-rescue" className="block text-white hover:text-[#bcd256] transition-colors">
+                Rescate de Fauna
+              </Link>
+            </div>
+
+            {/* Columna 3 */}
+            <div className="space-y-3">
+              <Link href="/transparency" className="block text-white hover:text-[#bcd256] transition-colors">
+                Transparencia
+              </Link>
+              <Link href="/bids" className="block text-white hover:text-[#bcd256] transition-colors">
+                Licitaciones
+              </Link>
+              <Link href="/blog" className="block text-white hover:text-[#bcd256] transition-colors">
+                Blog
+              </Link>
+            </div>
+
+            {/* Columna 4 */}
+            <div className="space-y-3">
+              <Link href="/faq" className="block text-white hover:text-[#bcd256] transition-colors">
+                Preguntas Frecuentes
+              </Link>
+              <Link href="/help" className="block text-white hover:text-[#bcd256] transition-colors">
+                Quiero Ayudar
+              </Link>
+              <Link href="/contact" className="block text-white hover:text-[#bcd256] transition-colors">
+                Contacto
+              </Link>
+            </div>
+
+            {/* Columna 5 - Servicios */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-[#bcd256] mb-2">Servicios</h4>
+              <Link href="/instructors" className="block text-white hover:text-[#bcd256] transition-colors">
+                Instructores
+              </Link>
+              <Link href="/concessions" className="block text-white hover:text-[#bcd256] transition-colors">
+                Concesiones
+              </Link>
+              <Link href="/tree-species" className="block text-white hover:text-[#bcd256] transition-colors">
+                Especies Arbóreas
+              </Link>
+            </div>
+
+            {/* Columna 6 - Participación */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-[#bcd256] mb-2">Participa</h4>
+              <Link href="/volunteers" className="block text-white hover:text-[#bcd256] transition-colors">
+                Voluntariado
+              </Link>
+              <Link href="/reports" className="block text-white hover:text-[#bcd256] transition-colors">
+                Reportar Incidentes
+              </Link>
+              <Link href="/suggestions" className="block text-white hover:text-[#bcd256] transition-colors">
+                Sugerencias
+              </Link>
+            </div>
+          </div>
+
+          {/* Información de contacto */}
+          <div className="border-t border-emerald-500/30 pt-8 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div>
+                <h4 className="font-semibold text-[#bcd256] mb-2">Dirección</h4>
+                <p className="text-emerald-100 text-sm">
+                  Av. Alcalde 1351, Miraflores<br/>
+                  44270 Guadalajara, Jalisco
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-[#bcd256] mb-2">Contacto</h4>
+                <p className="text-emerald-100 text-sm">
+                  Tel: (33) 3837-4400<br/>
+                  bosques@guadalajara.gob.mx
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-[#bcd256] mb-2">Horarios</h4>
+                <p className="text-emerald-100 text-sm">
+                  Lunes a Viernes: 8:00 - 15:00<br/>
+                  Fines de semana: Espacios abiertos
+                </p>
               </div>
             </div>
             
-            {[
-              {
-                title: "Navegación",
-                links: [
-                  { name: "Inicio", href: "/" },
-                  { name: "Parques", href: "/parks" },
-                  { name: "Actividades", href: "/activities" },
-                  { name: "Instructores", href: "/instructors" }
-                ]
-              },
-              {
-                title: "Información",
-                links: [
-                  { name: "Términos de uso", href: "#" },
-                  { name: "Política de privacidad", href: "#" },
-                  { name: "Aviso legal", href: "#" },
-                  { name: "Accesibilidad", href: "#" }
-                ]
-              },
-              {
-                title: "Contacto",
-                links: [
-                  { name: "contacto@parksys.mx", href: "mailto:contacto@parksys.mx" },
-                  { name: "+52 (33) 1234-5678", href: "tel:+523312345678" },
-                  { name: "Guadalajara, Jalisco", href: "#" },
-                  { name: "Soporte técnico", href: "#" }
-                ]
-              }
-            ].map((section, index) => (
-              <div key={index}>
-                <h3 className="text-white font-semibold text-lg mb-6">{section.title}</h3>
-                <ul className="space-y-3">
-                  {section.links.map((link, linkIndex) => (
-                    <li key={linkIndex}>
-                      <a href={link.href} className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 hover:underline">
-                        {link.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-16 pt-8 border-t border-gray-800">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-400 text-sm">
-                &copy; {new Date().getFullYear()} ParkSys. Todos los derechos reservados.
-              </p>
-              <p className="text-gray-500 text-sm mt-4 md:mt-0">
-                Hecho con 💚 para las ciudades de México
-              </p>
+            <div className="text-sm text-emerald-200">
+              © {new Date().getFullYear()} Agencia Metropolitana de Bosques Urbanos de Guadalajara. 
+              Todos los derechos reservados.
             </div>
           </div>
         </div>
