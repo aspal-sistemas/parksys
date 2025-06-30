@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Save, Info, MapPin, Building } from "lucide-react";
 import { MapSelector } from "@/components/ui/map-selector";
-import RoleBasedSidebar from "@/components/RoleBasedSidebar";
+import AdminLayout from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -218,10 +218,8 @@ export default function ParkEditSimple() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <RoleBasedSidebar />
-      <div className="flex-1 overflow-auto">
-        <div className="p-8">
+    <AdminLayout title="Editar Parque" subtitle={park?.name}>
+      <div className="max-w-4xl mx-auto">
           <div className="mb-6">
             <div className="flex items-center gap-4 mb-4">
               <Link href={`/admin/parks/${id}/view`}>
