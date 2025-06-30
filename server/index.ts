@@ -880,13 +880,12 @@ async function initializeDatabaseAsync() {
 }
 
 // Main server initialization function that returns a Promise when server is ready
-function startServer(): Promise<void> {
-  return new Promise<void>(async (resolve, reject) => {
+async function startServer(): Promise<void> {
+  try {
+    // Registrar rutas de Recursos Humanos integradas con Finanzas DESPUÉS de endpoints directos
     try {
-      // Registrar rutas de Recursos Humanos integradas con Finanzas DESPUÉS de endpoints directos
-      try {
-        const { registerHRRoutes } = await import("./hr-routes");
-    const router = express.Router();
+      const { registerHRRoutes } = await import("./hr-routes");
+      const router = express.Router();
     
     // Aplicar middleware JSON específicamente al router HR
     router.use(express.json({ limit: '50mb' }));
@@ -1341,14 +1340,11 @@ function startServer(): Promise<void> {
               console.error("Error inicializando base de datos (no crítico):", error);
             });
           });
-          
-          // Server is ready - resolve Promise
-          resolve();
         });
 
         appServer.on('error', (error: any) => {
           console.error('Server error:', error);
-          reject(error);
+          throw error;
         });
       } else {
         // Modo producción - configuración optimizada para despliegue
@@ -1370,14 +1366,11 @@ function startServer(): Promise<void> {
               console.error("⚠️ Error inicializando base de datos (no crítico):", error);
             });
           });
-          
-          // Server is ready - resolve Promise
-          resolve();
         });
 
         appServer.on('error', (error: any) => {
           console.error('Server error:', error);
-          reject(error);
+          throw error;
         });
       }
 
@@ -1394,36 +1387,12 @@ function startServer(): Promise<void> {
       
     } catch (error) {
       console.error('Error during server initialization:', error);
-      reject(error);
+      throw error;
     }
-  });
 }
 
-// Start the server immediately for Cloud Run deployment
-async function main() {
-  try {
-    await startServer();
-    console.log('✅ Server started successfully and running continuously');
-    
-    // Keep the process alive - prevent exit with code 0
-    const keepAlive = setInterval(() => {
-      // Optional: perform health checks or maintenance tasks
-      // console.log('Server health check: OK');
-    }, 30000); // Check every 30 seconds
-    
-    // Handle cleanup on exit signals
-    const cleanup = () => {
-      clearInterval(keepAlive);
-    };
-    
-    process.on('SIGINT', cleanup);
-    process.on('SIGTERM', cleanup);
-    
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
-  }
-}
-
-// Call main function - this ensures the server runs continuously
-main();
+// Start the server immediately - simplified for deployment
+startServer().catch(error => {
+  console.error('❌ Failed to start server:', error);
+  process.exit(1);
+});
