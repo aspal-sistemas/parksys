@@ -232,41 +232,7 @@ const Home: React.FC = () => {
         </div>
       </section>
       
-      {/* 🏛️ MUNICIPALITIES CTA RENOVADO */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-800 via-gray-800 to-slate-900"></div>
-        <div className="absolute inset-0">
-          <div className="absolute top-10 left-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-2xl animate-pulse"></div>
-          <div className="absolute bottom-10 right-10 w-60 h-60 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-            <div className="text-white max-w-2xl">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                <Users className="h-4 w-4 text-emerald-300" />
-                <span className="text-sm font-medium">Para Instituciones</span>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                ¿Eres un municipio o 
-                <span className="block text-emerald-300">gestor de parques?</span>
-              </h2>
-              <p className="text-xl text-gray-300 leading-relaxed">
-                Gestiona tus espacios verdes, publica eventos y conecta con la ciudadanía a través de nuestra plataforma integral.
-              </p>
-            </div>
-            
-            <div className="text-center lg:text-right">
-              <Link href="/admin/login">
-                <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold px-12 py-6 text-xl rounded-2xl transition-all duration-300 hover:scale-110 hover:shadow-2xl">
-                  <Zap className="mr-3 h-6 w-6" />
-                  Acceso Institucional
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+
       
       {/* Footer inspirado en bosquesamg.mx */}
       <footer className="bg-gradient-to-b from-[#067f5f] to-[#00a587] text-white">
