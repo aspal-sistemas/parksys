@@ -41,9 +41,8 @@ const resetPasswordSchema = z.object({
 /**
  * Registra las rutas de recuperación de contraseña
  */
-export function registerPasswordRecoveryRoutes(app: any, apiRouter: any) {
-  // Solicitar recuperación de contraseña
-  apiRouter.post('/password/forgot', async (req: Request, res: Response) => {
+// Solicitar recuperación de contraseña
+router.post('/password/forgot', async (req: Request, res: Response) => {
     try {
       const { email } = forgotPasswordSchema.parse(req.body);
       
@@ -72,7 +71,7 @@ export function registerPasswordRecoveryRoutes(app: any, apiRouter: any) {
       console.log(`🔑 Token generado para usuario ${user.id}: ${resetToken}`);
       
       // Guardar token en base de datos (usando la tabla de password_reset_tokens del módulo de seguridad)
-      await db.execute(`
+      await pool.query(`
         INSERT INTO password_reset_tokens (user_id, token, expires_at)
         VALUES ($1, $2, $3)
         ON CONFLICT (user_id) 
@@ -96,7 +95,7 @@ export function registerPasswordRecoveryRoutes(app: any, apiRouter: any) {
             </div>
             
             <div style="padding: 30px; background: #ffffff;">
-              <h2 style="color: #333; margin-bottom: 20px;">Hola ${user.firstName || user.fullName || user.username},</h2>
+              <h2 style="color: #333; margin-bottom: 20px;">Hola ${user.fullName || user.username},</h2>
               
               <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
                 Recibimos una solicitud para restablecer la contraseña de tu cuenta en ParkSys. 
@@ -137,7 +136,7 @@ export function registerPasswordRecoveryRoutes(app: any, apiRouter: any) {
         text: `
           Recuperación de Contraseña - ParkSys
           
-          Hola ${user.firstName || user.fullName || user.username},
+          Hola ${user.fullName || user.username},
           
           Recibimos una solicitud para restablecer tu contraseña. 
           Visita el siguiente enlace para crear una nueva contraseña:
@@ -182,8 +181,8 @@ export function registerPasswordRecoveryRoutes(app: any, apiRouter: any) {
       console.log(`🔍 Verificando token: ${token}`);
       
       // Buscar token válido
-      const result = await db.execute(`
-        SELECT prt.*, u.email, u.username, u.firstName, u.fullName
+      const result = await pool.query(`
+        SELECT prt.*, u.email, u.username, u.fullName
         FROM password_reset_tokens prt
         JOIN users u ON prt.user_id = u.id
         WHERE prt.token = $1 AND prt.expires_at > NOW() AND prt.used = false
@@ -205,7 +204,7 @@ export function registerPasswordRecoveryRoutes(app: any, apiRouter: any) {
         user: {
           email: tokenData.email,
           username: tokenData.username,
-          name: tokenData.firstName || tokenData.fullName || tokenData.username
+          name: tokenData.fullName || tokenData.username
         }
       });
       
@@ -226,7 +225,7 @@ export function registerPasswordRecoveryRoutes(app: any, apiRouter: any) {
       console.log(`🔄 Restableciendo contraseña con token: ${token}`);
       
       // Buscar token válido
-      const result = await db.execute(`
+      const result = await pool.query(`
         SELECT prt.*, u.id as user_id, u.email
         FROM password_reset_tokens prt
         JOIN users u ON prt.user_id = u.id
@@ -248,16 +247,14 @@ export function registerPasswordRecoveryRoutes(app: any, apiRouter: any) {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       
       // Actualizar contraseña del usuario
-      await db
-        .update(users)
-        .set({ 
-          password: hashedPassword,
-          updatedAt: new Date()
-        })
-        .where(eq(users.id, tokenData.user_id));
+      await pool.query(`
+        UPDATE users 
+        SET password = $1, updated_at = NOW() 
+        WHERE id = $2
+      `, [hashedPassword, tokenData.user_id]);
       
       // Marcar token como usado
-      await db.execute(`
+      await pool.query(`
         UPDATE password_reset_tokens 
         SET used = true, used_at = NOW() 
         WHERE token = $1

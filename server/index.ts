@@ -1073,8 +1073,8 @@ async function initializeDatabaseAsync() {
     
     // Registrar rutas de recuperación de contraseña
     console.log("🔑 Registrando rutas de recuperación de contraseña...");
-    const { registerPasswordRecoveryRoutes } = await import('./password-recovery-routes');
-    registerPasswordRecoveryRoutes(app, apiRouter);
+    const passwordRecoveryRouter = await import('./password-recovery-routes');
+    app.use('/api', passwordRecoveryRouter.default);
     
     console.log("✅ Módulo de seguridad registrado correctamente");
   } catch (error) {
