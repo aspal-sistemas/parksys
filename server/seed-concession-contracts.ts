@@ -181,15 +181,11 @@ export async function seedConcessionContracts() {
   }
 }
 
-// Ejecutar directamente si el archivo se ejecuta solo
-if (require.main === module) {
-  seedConcessionContracts()
-    .then(() => {
-      console.log('🎉 Proceso de creación de contratos completado');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('💥 Error en el proceso:', error);
-      process.exit(1);
-    });
-}
+// Ejecutar directamente
+seedConcessionContracts()
+  .then(() => {
+    console.log('🎉 Proceso de creación de contratos completado');
+  })
+  .catch((error) => {
+    console.error('💥 Error en el proceso:', error);
+  });
