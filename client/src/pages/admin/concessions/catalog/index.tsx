@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
@@ -11,7 +11,9 @@ import {
   X, 
   FileText, 
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -79,6 +81,8 @@ export default function ConcessionTypeCatalog() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentConcessionType, setCurrentConcessionType] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -260,6 +264,33 @@ export default function ConcessionTypeCatalog() {
   const handleToggleStatus = (id: number) => {
     toggleStatusMutation.mutate(id);
   };
+
+  // Cálculos de paginación
+  const paginatedData = useMemo(() => {
+    if (!concessionTypes || concessionTypes.length === 0) {
+      return {
+        data: [],
+        totalItems: 0,
+        totalPages: 0,
+        startIndex: 0,
+        endIndex: 0,
+      };
+    }
+
+    const totalItems = concessionTypes.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+    const data = concessionTypes.slice(startIndex, endIndex);
+
+    return {
+      data,
+      totalItems,
+      totalPages,
+      startIndex: startIndex + 1,
+      endIndex,
+    };
+  }, [concessionTypes, currentPage, itemsPerPage]);
 
   // Función para obtener el color de la badge según el nivel de impacto
   const getImpactLevelColor = (level: string) => {
@@ -469,21 +500,22 @@ export default function ConcessionTypeCatalog() {
               <div className="flex justify-center items-center py-8">
                 <p>Cargando catálogo de concesiones...</p>
               </div>
-            ) : concessionTypes && concessionTypes.length > 0 ? (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nombre</TableHead>
-                      <TableHead>Descripción</TableHead>
-                      <TableHead>Nivel de impacto</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className="text-right">Acciones</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {concessionTypes.map((concessionType: any) => (
-                      <TableRow key={concessionType.id}>
+            ) : paginatedData.totalItems > 0 ? (
+              <>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nombre</TableHead>
+                        <TableHead>Descripción</TableHead>
+                        <TableHead>Nivel de impacto</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedData.data.map((concessionType: any) => (
+                        <TableRow key={concessionType.id}>
                         <TableCell className="font-medium">{concessionType.name}</TableCell>
                         <TableCell className="max-w-[300px] truncate">
                           {concessionType.description}
@@ -533,6 +565,60 @@ export default function ConcessionTypeCatalog() {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Controles de paginación */}
+              {paginatedData.totalPages > 1 && (
+                <div className="flex items-center justify-between px-2 py-4">
+                  <div className="text-sm text-muted-foreground">
+                    Mostrando {paginatedData.startIndex} a {paginatedData.endIndex} de {paginatedData.totalItems} tipos de concesiones
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="gap-1"
+                    >
+                      <ChevronLeft size={16} />
+                      Anterior
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, paginatedData.totalPages) }, (_, i) => {
+                        const startPage = Math.max(1, currentPage - 2);
+                        const pageNumber = startPage + i;
+                        
+                        if (pageNumber > paginatedData.totalPages) return null;
+                        
+                        return (
+                          <Button
+                            key={pageNumber}
+                            variant={pageNumber === currentPage ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(pageNumber)}
+                            className={pageNumber === currentPage ? "bg-[#00a587] hover:bg-[#067f5f]" : ""}
+                          >
+                            {pageNumber}
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === paginatedData.totalPages}
+                      className="gap-1"
+                    >
+                      Siguiente
+                      <ChevronRight size={16} />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <AlertTriangle className="h-12 w-12 text-muted-foreground mb-4" />
