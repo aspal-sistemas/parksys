@@ -5,20 +5,31 @@ import { pool } from './db';
 import { users } from '../shared/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
-// Función simple de envío de email usando el servicio existente
+// Función simple de envío de email usando Nodemailer directamente
+import nodemailer from 'nodemailer';
+
 async function sendEmail(params: { to: string; subject: string; html: string; text: string }): Promise<boolean> {
   try {
-    const response = await fetch('/api/communications/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        recipients: [params.to],
-        subject: params.subject,
-        body: params.html,
-        type: 'html'
-      })
+    // Configurar transporter de Nodemailer con Gmail
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
+      }
     });
-    return response.ok;
+
+    // Enviar email
+    const info = await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to: params.to,
+      subject: params.subject,
+      html: params.html,
+      text: params.text
+    });
+
+    console.log(`✅ Email enviado correctamente a ${params.to}. Message ID: ${info.messageId}`);
+    return true;
   } catch (error) {
     console.error('Error enviando email:', error);
     return false;
