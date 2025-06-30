@@ -547,18 +547,18 @@ const AdminSidebarComplete: React.FC = () => {
               Concesionarios
             </NavItem>
             <NavItem 
-              href="/admin/concessions/active" 
-              icon={<Handshake className="h-5 w-5" />}
-              active={location.startsWith('/admin/concessions/active')}
-            >
-              Concesiones Activas
-            </NavItem>
-            <NavItem 
               href="/admin/concessions/contracts" 
               icon={<FileText className="h-5 w-5" />}
               active={location.startsWith('/admin/concessions/contracts')}
             >
               {t('navigation.contracts')}
+            </NavItem>
+            <NavItem 
+              href="/admin/concessions/active" 
+              icon={<Handshake className="h-5 w-5" />}
+              active={location.startsWith('/admin/concessions/active')}
+            >
+              Concesiones Activas
             </NavItem>
             <NavItem 
               href="/admin/concessions/reports" 
