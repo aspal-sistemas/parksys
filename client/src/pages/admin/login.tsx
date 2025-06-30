@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, Loader } from 'lucide-react';
+import { Eye, EyeOff, Loader, Mail, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,19 +16,33 @@ const loginSchema = z.object({
   password: z.string().min(1, { message: 'La contraseña es requerida' }),
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email({ message: 'Email inválido' }),
+});
+
 type LoginFormValues = z.infer<typeof loginSchema>;
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 const AdminLogin: React.FC = () => {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       username: '',
       password: '',
+    },
+  });
+
+  const forgotPasswordForm = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: '',
     },
   });
   
@@ -80,6 +94,43 @@ const AdminLogin: React.FC = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const onForgotPasswordSubmit = async (data: ForgotPasswordFormValues) => {
+    try {
+      setForgotPasswordLoading(true);
+      
+      const response = await fetch('/api/password/forgot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+        credentials: 'include'
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: '✅ Email enviado',
+          description: result.message,
+        });
+        setShowForgotPassword(false);
+        forgotPasswordForm.reset();
+      } else {
+        throw new Error(result.message || 'Error al enviar email');
+      }
+    } catch (error) {
+      console.error('Error en recuperación:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo enviar el email de recuperación. Inténtalo más tarde.',
+        variant: 'destructive',
+      });
+    } finally {
+      setForgotPasswordLoading(false);
     }
   };
   

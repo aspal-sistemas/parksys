@@ -173,8 +173,8 @@ router.post('/password/forgot', async (req: Request, res: Response) => {
     }
   });
   
-  // Verificar token de recuperación
-  apiRouter.get('/password/verify-token/:token', async (req: Request, res: Response) => {
+// Verificar token de recuperación
+router.get('/password/verify-token/:token', async (req: Request, res: Response) => {
     try {
       const { token } = req.params;
       
@@ -217,8 +217,8 @@ router.post('/password/forgot', async (req: Request, res: Response) => {
     }
   });
   
-  // Restablecer contraseña
-  apiRouter.post('/password/reset', async (req: Request, res: Response) => {
+// Restablecer contraseña
+router.post('/password/reset', async (req: Request, res: Response) => {
     try {
       const { token, newPassword } = resetPasswordSchema.parse(req.body);
       
@@ -276,7 +276,6 @@ router.post('/password/forgot', async (req: Request, res: Response) => {
     }
   });
   
-  console.log('🔑 Rutas de recuperación de contraseña registradas correctamente');
-}
+console.log('🔑 Rutas de recuperación de contraseña registradas correctamente');
 
-export { router as passwordRecoveryRouter };
+export default router;
