@@ -17,15 +17,20 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
-// Root health check endpoint - HIGHEST PRIORITY for deployment
-app.get('/', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    status: 'ok',
-    message: 'ParkSys - Sistema de Parques de México',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    environment: process.env.NODE_ENV || 'development'
-  });
+// Root health check endpoint - Only for API requests, not HTML
+app.get('/', (req: Request, res: Response, next: NextFunction) => {
+  // If this is an API request (JSON accept header), return JSON health check
+  if (req.headers.accept && req.headers.accept.includes('application/json')) {
+    return res.status(200).json({ 
+      status: 'ok',
+      message: 'ParkSys - Sistema de Parques de México',
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+      environment: process.env.NODE_ENV || 'development'
+    });
+  }
+  // For HTML requests, let Vite handle it
+  next();
 });
 
 // Simple API health check - priority over static files
