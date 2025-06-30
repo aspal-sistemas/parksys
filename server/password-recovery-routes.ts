@@ -247,7 +247,7 @@ router.post('/password/reset', async (req: Request, res: Response) => {
         SELECT prt.*, u.id as user_id, u.email
         FROM password_reset_tokens prt
         JOIN users u ON prt.user_id = u.id
-        WHERE prt.token = $1 AND prt.expires_at > NOW() AND prt.used = false
+        WHERE prt.token = $1 AND prt.expires_at > NOW() AND prt.is_used = false
       `, [token]);
       
       if (result.rows.length === 0) {
@@ -274,7 +274,7 @@ router.post('/password/reset', async (req: Request, res: Response) => {
       // Marcar token como usado
       await pool.query(`
         UPDATE password_reset_tokens 
-        SET used = true, used_at = NOW() 
+        SET is_used = true, used_at = NOW() 
         WHERE token = $1
       `, [token]);
       
