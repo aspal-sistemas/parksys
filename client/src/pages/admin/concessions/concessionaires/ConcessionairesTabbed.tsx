@@ -37,12 +37,90 @@ type ConcessionaireFormValues = z.infer<typeof concessionaireSchema>;
 
 
 
+// Esquema de validación para el formulario de nuevo pago
+const paymentSchema = z.object({
+  contractId: z.string().min(1, { message: "Debes seleccionar un contrato" }),
+  concept: z.string().min(3, { message: "El concepto debe tener al menos 3 caracteres" }),
+  amount: z.number().min(1, { message: "El monto debe ser mayor a 0" }),
+  dueDate: z.string().min(1, { message: "La fecha de vencimiento es obligatoria" }),
+  paymentDate: z.string().optional(),
+  status: z.enum(["pending", "paid", "late"], {
+    required_error: "Debes seleccionar un estado",
+  }),
+  notes: z.string().optional(),
+});
+
+type PaymentFormValues = z.infer<typeof paymentSchema>;
+
 // Componente para la pestaña de gestión financiera
 const PaymentsTab = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ["/api/concession-payments"],
     enabled: true,
   });
+
+  const { data: contracts = [] } = useQuery({
+    queryKey: ["/api/concession-contracts"],
+    enabled: true,
+  });
+
+  const form = useForm<PaymentFormValues>({
+    resolver: zodResolver(paymentSchema),
+    defaultValues: {
+      contractId: "",
+      concept: "",
+      amount: 0,
+      dueDate: "",
+      paymentDate: "",
+      status: "pending",
+      notes: "",
+    },
+  });
+
+  const createPaymentMutation = useMutation({
+    mutationFn: async (data: PaymentFormValues) => {
+      const response = await fetch("/api/concession-payments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al crear el pago");
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Pago creado",
+        description: "El pago se ha registrado correctamente.",
+      });
+      setIsDialogOpen(false);
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["/api/concession-payments"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Error al crear el pago",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (data: PaymentFormValues) => {
+    createPaymentMutation.mutate({
+      ...data,
+      amount: Number(data.amount),
+    });
+  };
 
   if (isLoading) {
     return (
@@ -75,10 +153,184 @@ const PaymentsTab = () => {
             Administra los pagos y facturación de las concesiones
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus size={16} />
-          Nuevo Pago
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus size={16} />
+              Nuevo Pago
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Nuevo Pago de Concesión</DialogTitle>
+              <DialogDescription>
+                Registra un nuevo pago para una concesión existente
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="contractId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Contrato de Concesión</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona un contrato" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {Array.isArray(contracts) && contracts.map((contract: any) => (
+                              <SelectItem key={contract.id} value={contract.id.toString()}>
+                                Contrato #{contract.id} - {contract.concessionaire?.name || "Sin concesionario"}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Estado</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona el estado" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="pending">Pendiente</SelectItem>
+                            <SelectItem value="paid">Pagado</SelectItem>
+                            <SelectItem value="late">Atrasado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="concept"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Concepto del Pago</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ej: Renta mensual de enero 2025" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="amount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Monto ($)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.01"
+                            placeholder="0.00" 
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="dueDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fecha de Vencimiento</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="paymentDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fecha de Pago (Opcional)</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Solo completar si el pago ya fue realizado
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notas (Opcional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Información adicional sobre el pago..."
+                          className="resize-none"
+                          rows={3}
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <DialogFooter>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsDialogOpen(false)}
+                    disabled={createPaymentMutation.isPending}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={createPaymentMutation.isPending}
+                    className="gap-2"
+                  >
+                    {createPaymentMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                    Crear Pago
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
