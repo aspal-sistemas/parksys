@@ -70,18 +70,22 @@ router.post('/password/forgot', async (req: Request, res: Response) => {
       
       console.log(`🔑 Token generado para usuario ${user.id}: ${resetToken}`);
       
-      // Guardar token en base de datos (usando la tabla de password_reset_tokens del módulo de seguridad)
+      // Limpiar tokens anteriores del usuario
       await pool.query(`
-        INSERT INTO password_reset_tokens (user_id, token, expires_at)
-        VALUES ($1, $2, $3)
-        ON CONFLICT (user_id) 
-        DO UPDATE SET token = $2, expires_at = $3, created_at = NOW()
-      `, [user.id, resetToken, expiresAt]);
+        DELETE FROM password_reset_tokens 
+        WHERE user_id = $1 OR expires_at < NOW()
+      `, [user.id]);
+      
+      // Guardar token en base de datos
+      await pool.query(`
+        INSERT INTO password_reset_tokens (user_id, email, token, expires_at, is_used, created_at)
+        VALUES ($1, $2, $3, $4, false, NOW())
+      `, [user.id, email, resetToken, expiresAt]);
       
       console.log(`🔑 Token guardado en base de datos para usuario ${user.id}`);
       
       // Crear enlace de recuperación
-      const resetLink = `${req.protocol}://${req.get('host')}/admin/reset-password?token=${resetToken}`;
+      const resetLink = `${req.protocol}://${req.get('host')}/reset-password?token=${resetToken}`;
       
       // Enviar email de recuperación
       const emailSent = await sendEmail({
