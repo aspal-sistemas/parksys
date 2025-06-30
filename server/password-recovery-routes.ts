@@ -197,10 +197,10 @@ router.get('/password/verify-token/:token', async (req: Request, res: Response) 
       
       // Buscar token válido
       const result = await pool.query(`
-        SELECT prt.*, u.email, u.username, u.fullName
+        SELECT prt.*, u.email, u.username, u.full_name
         FROM password_reset_tokens prt
         JOIN users u ON prt.user_id = u.id
-        WHERE prt.token = $1 AND prt.expires_at > NOW() AND prt.used = false
+        WHERE prt.token = $1 AND prt.expires_at > NOW() AND prt.is_used = false
       `, [token]);
       
       if (result.rows.length === 0) {
