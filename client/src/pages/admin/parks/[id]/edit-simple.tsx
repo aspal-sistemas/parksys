@@ -229,10 +229,6 @@ export default function ParkEditSimple() {
                 </Button>
               </Link>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Editar Parque</h1>
-            <p className="text-muted-foreground">
-              Modifica la información del parque "{park.name}"
-            </p>
           </div>
 
           <Form {...form}>
@@ -628,8 +624,7 @@ export default function ParkEditSimple() {
               </div>
             </form>
           </Form>
-        </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
