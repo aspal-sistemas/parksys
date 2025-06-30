@@ -17,65 +17,56 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
+// Root health check endpoint - HIGHEST PRIORITY for deployment
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).json({ 
+    status: 'ok',
+    message: 'ParkSys - Sistema de Parques de México',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Simple API health check - priority over static files
 app.get('/api/status', (req: Request, res: Response) => {
-  try {
-    res.status(200).json({ 
-      status: 'ok', 
-      message: 'ParkSys - Parques de México API',
-      timestamp: new Date().toISOString(),
-      port: process.env.PORT || 5000,
-      environment: process.env.NODE_ENV || 'development'
-    });
-  } catch (error) {
-    res.status(503).json({ 
-      status: 'error', 
-      message: 'Service temporarily unavailable',
-      timestamp: new Date().toISOString()
-    });
-  }
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'ParkSys - Parques de México API',
+    timestamp: new Date().toISOString(),
+    port: process.env.PORT || 5000,
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // Health check endpoint for deployment (API route)
 app.get('/api/health', (req: Request, res: Response) => {
-  try {
-    res.status(200).json({ 
-      status: 'ok', 
-      message: 'ParkSys API is running',
-      timestamp: new Date().toISOString(),
-      port: process.env.PORT || 5000,
-      environment: process.env.NODE_ENV || 'development'
-    });
-  } catch (error) {
-    res.status(503).json({ 
-      status: 'error', 
-      message: 'Service temporarily unavailable',
-      timestamp: new Date().toISOString()
-    });
-  }
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'ParkSys API is running',
+    timestamp: new Date().toISOString(),
+    port: process.env.PORT || 5000,
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // Additional health check endpoint
 app.get('/health', (req: Request, res: Response) => {
-  try {
-    res.status(200).json({ 
-      status: 'healthy',
-      uptime: process.uptime(),
-      timestamp: new Date().toISOString(),
-      memory: process.memoryUsage()
-    });
-  } catch (error) {
-    res.status(503).json({ 
-      status: 'unhealthy',
-      timestamp: new Date().toISOString()
-    });
-  }
+  res.status(200).json({ 
+    status: 'healthy',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    memory: process.memoryUsage()
+  });
 });
 
 // Servir archivos estáticos del directorio public ANTES de otras rutas
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-// ENDPOINT COMBINADO para la matriz de flujo de efectivo
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// ENDPOINT COMBINADO para la matriz de flujo de efectivo - MOVED AFTER MIDDLEWARE
 app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
   try {
     console.log("=== OBTENIENDO DATOS PARA MATRIZ DE FLUJO DE EFECTIVO ===");
@@ -105,9 +96,6 @@ app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
     });
   }
 });
-
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Global request logging for debugging - AFTER JSON parsing
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -1358,7 +1346,7 @@ async function initializeDatabaseAsync() {
 
   // Use environment port for deployment compatibility - ensure port 5000
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
-  const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '0.0.0.0';
+  const HOST = '0.0.0.0'; // Always bind to 0.0.0.0 for Replit deployment compatibility
   
   console.log(`🚀 Starting server on ${HOST}:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
   
@@ -1381,12 +1369,12 @@ async function initializeDatabaseAsync() {
         console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
       }
       
-      // Inicializar base de datos después de que todo esté listo
+      // Inicializar base de datos después de que todo esté listo - REDUCED DELAY
       setTimeout(() => {
         initializeDatabaseAsync().catch(error => {
           console.error("Error inicializando base de datos (no crítico):", error);
         });
-      }, 3000);
+      }, 1000);
     });
   } else {
     // Modo producción
