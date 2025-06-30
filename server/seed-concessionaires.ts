@@ -244,13 +244,13 @@ export async function seedConcessionaires() {
       // Crear el perfil de concesionario
       await db.insert(schema.concessionaireProfiles).values({
         userId: newUser.id,
-        type: concessionaireData.profile.type as "persona_fisica" | "persona_moral",
+        type: concessionaireData.profile.type,
         rfc: concessionaireData.profile.rfc,
         taxAddress: concessionaireData.profile.taxAddress,
         legalRepresentative: concessionaireData.profile.legalRepresentative,
         notes: concessionaireData.profile.notes,
-        isActive: true,
-        registrationDate: new Date().toISOString(),
+        status: "activo",
+        registrationDate: new Date().toISOString().split('T')[0], // Solo fecha sin hora
         createdAt: new Date(),
         updatedAt: new Date()
       });
