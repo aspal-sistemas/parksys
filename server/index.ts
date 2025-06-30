@@ -17,7 +17,26 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
-// Health check endpoint for deployment (moved to API route)
+// Simple API health check - priority over static files
+app.get('/api/status', (req: Request, res: Response) => {
+  try {
+    res.status(200).json({ 
+      status: 'ok', 
+      message: 'ParkSys - Parques de México API',
+      timestamp: new Date().toISOString(),
+      port: process.env.PORT || 5000,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'error', 
+      message: 'Service temporarily unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Health check endpoint for deployment (API route)
 app.get('/api/health', (req: Request, res: Response) => {
   try {
     res.status(200).json({ 
@@ -1337,11 +1356,13 @@ async function initializeDatabaseAsync() {
 
 
 
-  // Use environment port for deployment compatibility
+  // Use environment port for deployment compatibility - ensure port 5000
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
-  const HOST = '0.0.0.0';
+  const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '0.0.0.0';
   
-  let appServer;
+  console.log(`🚀 Starting server on ${HOST}:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  
+  let appServer: any;
 
   // Setup Vite in development mode with error handling
   if (app.get("env") === "development") {
