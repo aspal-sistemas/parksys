@@ -134,6 +134,71 @@ const AdminLogin: React.FC = () => {
     }
   };
   
+  if (showForgotPassword) {
+    return (
+      <div className="h-screen w-screen fixed inset-0 flex items-center justify-center bg-gray-50 px-4 z-[60]">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <div className="flex items-center justify-center mb-4">
+              <svg className="h-10 w-10 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M5 16c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm4 8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm7.5-4c.28 0 .5.22.5.5s-.22.5-.5.5-.5-.22-.5-.5.22-.5.5-.5zM5 12c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm7 0c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm1-8.5c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zM17 12c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm2-5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-7-10c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-4-8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path>
+              </svg>
+              <span className="ml-2 text-2xl font-heading font-semibold text-gray-900">ParkSys</span>
+            </div>
+            <CardTitle className="text-xl">Recuperar Contraseña</CardTitle>
+            <CardDescription>
+              Ingresa tu email para recibir un enlace de recuperación
+            </CardDescription>
+          </CardHeader>
+          <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPasswordSubmit)}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="tu@email.com"
+                    className="pl-10"
+                    {...forgotPasswordForm.register('email')}
+                  />
+                </div>
+                {forgotPasswordForm.formState.errors.email && (
+                  <p className="text-sm text-red-500">{forgotPasswordForm.formState.errors.email.message}</p>
+                )}
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-2">
+              <Button className="w-full" type="submit" disabled={forgotPasswordLoading}>
+                {forgotPasswordLoading ? (
+                  <>
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Enviar Enlace
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowForgotPassword(false)}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Volver al Login
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen w-screen fixed inset-0 flex items-center justify-center bg-gray-50 px-4 z-[60]">
       <Card className="w-full max-w-md">
@@ -188,6 +253,15 @@ const AdminLogin: React.FC = () => {
               {form.formState.errors.password && (
                 <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
               )}
+              <div className="text-right">
+                <button
+                  type="button"
+                  className="text-sm text-primary hover:underline"
+                  onClick={() => setShowForgotPassword(true)}
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col">
