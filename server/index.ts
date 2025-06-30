@@ -17,70 +17,78 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
-// Root health check endpoint - Only for API requests, not HTML
-app.get('/', (req: Request, res: Response, next: NextFunction) => {
-  // If this is an API request (JSON accept header), return JSON health check
-  if (req.headers.accept && req.headers.accept.includes('application/json')) {
-    return res.status(200).json({ 
-      status: 'ok',
-      message: 'ParkSys - Sistema de Parques de México',
-      timestamp: new Date().toISOString(),
-      version: '1.0.0',
-      environment: process.env.NODE_ENV || 'development'
-    });
-  }
-  // For HTML requests, let Vite handle it
-  next();
-});
-
 // Simple API health check - priority over static files
 app.get('/api/status', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    status: 'ok', 
-    message: 'ParkSys - Parques de México API',
-    timestamp: new Date().toISOString(),
-    port: process.env.PORT || 5000,
-    environment: process.env.NODE_ENV || 'development'
-  });
+  try {
+    res.status(200).json({ 
+      status: 'ok', 
+      message: 'ParkSys - Parques de México API',
+      timestamp: new Date().toISOString(),
+      port: process.env.PORT || 5000,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'error', 
+      message: 'Service temporarily unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Health check endpoint for deployment (API route)
 app.get('/api/health', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    status: 'ok', 
-    message: 'ParkSys API is running',
-    timestamp: new Date().toISOString(),
-    port: process.env.PORT || 5000,
-    environment: process.env.NODE_ENV || 'development'
-  });
+  try {
+    res.status(200).json({ 
+      status: 'ok', 
+      message: 'ParkSys API is running',
+      timestamp: new Date().toISOString(),
+      port: process.env.PORT || 5000,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'error', 
+      message: 'Service temporarily unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Additional health check endpoint
 app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    status: 'healthy',
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-    memory: process.memoryUsage()
-  });
+  try {
+    res.status(200).json({ 
+      status: 'healthy',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      memory: process.memoryUsage()
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'unhealthy',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Servir archivos estáticos del directorio public ANTES de otras rutas
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// ENDPOINT COMBINADO para la matriz de flujo de efectivo - MOVED AFTER MIDDLEWARE
+// ENDPOINT COMBINADO para la matriz de flujo de efectivo
 app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
   try {
-    // Return empty data during startup to prevent blocking
+    console.log("=== OBTENIENDO DATOS PARA MATRIZ DE FLUJO DE EFECTIVO ===");
+    
+    const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
+    const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+    
+    console.log(`Matriz - Ingresos: ${incomeCategsList.length}, Egresos: ${expenseCategsList.length}`);
+    
     const result = {
-      incomeCategories: [],
-      expenseCategories: [],
-      timestamp: new Date().toISOString(),
-      message: "Sistema inicializando",
-      status: "starting"
+      incomeCategories: incomeCategsList,
+      expenseCategories: expenseCategsList,
+      timestamp: new Date().toISOString()
     };
     
     res.setHeader('Content-Type', 'application/json');
@@ -92,11 +100,14 @@ app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
     res.status(200).json({ 
       incomeCategories: [],
       expenseCategories: [],
-      message: "Sistema inicializando",
+      message: "Base de datos inicializando",
       status: "initializing"
     });
   }
 });
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Global request logging for debugging - AFTER JSON parsing
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -866,31 +877,62 @@ import { initializeDatabase } from "./initialize-db";
 // Database initialization function that runs after server starts
 async function initializeDatabaseAsync() {
   try {
-    console.log("✅ Inicialización básica de base de datos de forma asíncrona...");
+    console.log("Inicializando estructura de la base de datos de forma asíncrona...");
+    await initializeDatabase();
     
-    // Only basic database verification - no complex operations during deployment
-    const initResult = await initializeDatabase();
-    if (initResult) {
-      console.log("✅ Conexión a base de datos verificada");
+    // Intentar inicializar los datos predeterminados con protección extra
+    try {
+      await seedDatabase();
+    } catch (error) {
+      console.error("Error al cargar datos iniciales (continuando):", error);
     }
     
-    // Skip all seeding operations for deployment stability
-    console.log("🚀 Database seeding disabled for deployment stability");
-    console.log("✅ Sistema completamente operativo - API endpoints disponibles");
+    // Crear tablas del módulo de arbolado con protección
+    try {
+      await createTreeTables();
+    } catch (error) {
+      console.error("Error al crear tablas de arbolado (continuando):", error);
+    }
     
+    // Cargar especies de árboles de muestra con protección
+    try {
+      await seedTreeSpecies();
+    } catch (error) {
+      console.error("Error al cargar especies de árboles (continuando):", error);
+    }
+    
+    // Inicializar integración HR-Finanzas con protección mejorada - TEMPORALMENTE DESHABILITADO PARA DESPLIEGUE
+    try {
+      console.log("HR-Finance integration seeding temporarily disabled for deployment stability");
+      // const { seedHRFinanceIntegration } = await import("./seed-hr-finance-integration");
+      // await seedHRFinanceIntegration();
+    } catch (error) {
+      console.error("Error al inicializar integración HR-Finanzas (continuando):", error);
+    }
+    
+    // Inicializar recibos de nómina con protección contra duplicados - TEMPORALMENTE DESHABILITADO PARA DESPLIEGUE
+    try {
+      console.log("Payroll receipts seeding temporarily disabled for deployment stability");
+      // const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
+      // await seedPayrollReceipts();
+    } catch (error) {
+      console.error("Error al inicializar recibos de nómina (continuando):", error);
+    }
+    
+    console.log("Inicialización de base de datos completada exitosamente");
   } catch (error) {
-    console.error("⚠️ Error durante inicialización de base de datos (no crítico):", error);
-    console.log("✅ Servidor API completamente funcional");
+    console.error("Error crítico al inicializar la base de datos (servidor continuará funcionando):", error);
   }
 }
 
-// Main server initialization function that returns a Promise when server is ready
-async function startServer(): Promise<void> {
+(async () => {
+  
+
+
+  // Registrar rutas de Recursos Humanos integradas con Finanzas DESPUÉS de endpoints directos
   try {
-    // Registrar rutas de Recursos Humanos integradas con Finanzas DESPUÉS de endpoints directos
-    try {
-      const { registerHRRoutes } = await import("./hr-routes");
-      const router = express.Router();
+    const { registerHRRoutes } = await import("./hr-routes");
+    const router = express.Router();
     
     // Aplicar middleware JSON específicamente al router HR
     router.use(express.json({ limit: '50mb' }));
@@ -919,13 +961,14 @@ async function startServer(): Promise<void> {
     console.error("Error al registrar rutas de vacaciones y control de horas:", error);
   }
 
-  // Crear tablas de recibos de nómina - DISABLED FOR DEPLOYMENT STABILITY
+  // Crear tablas de recibos de nómina
   try {
-    console.log("🚀 Payroll receipts initialization disabled for deployment stability");
-    // const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
-    // await createPayrollReceiptsTables();
-    // const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
-    // await seedPayrollReceipts();
+    const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
+    await createPayrollReceiptsTables();
+    
+    // Crear datos de muestra para recibos
+    const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
+    await seedPayrollReceipts();
   } catch (error) {
     console.error("Error al crear tablas de recibos de nómina:", error);
   }
@@ -946,7 +989,7 @@ async function startServer(): Promise<void> {
     console.error("Error al registrar rutas de Recibos de Nómina:", error);
   }
 
-  // Registrar rutas de Eventos AMBU con manejo robusto de errores
+  // Registrar rutas de Eventos AMBU
   try {
     const { registerEventosAmbuRoutes } = await import("./eventos-ambu-routes");
     const eventosAmbuRouter = express.Router();
@@ -959,8 +1002,7 @@ async function startServer(): Promise<void> {
     app.use("/api", eventosAmbuRouter);
     console.log("Rutas de Eventos AMBU registradas correctamente");
   } catch (error) {
-    console.error("Error al registrar rutas de Eventos AMBU (continuando):", error instanceof Error ? error.message : error);
-    // Continue without failing - this won't block server startup
+    console.error("Error al registrar rutas de Eventos AMBU:", error);
   }
 
   // Registrar rutas del sistema de email
@@ -1316,88 +1358,63 @@ async function startServer(): Promise<void> {
 
   // Use environment port for deployment compatibility - ensure port 5000
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
-  const HOST = '0.0.0.0'; // Always bind to 0.0.0.0 for Replit deployment compatibility
+  const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '0.0.0.0';
   
   console.log(`🚀 Starting server on ${HOST}:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
   
   let appServer: any;
 
   // Setup Vite in development mode with error handling
-      if (app.get("env") === "development") {
-        console.log("Configurando servidor de desarrollo Vite...");
-        
-        appServer = app.listen(PORT, HOST, async () => {
-          console.log(`Servidor ejecutándose en puerto ${PORT}`);
-          
-          try {
-            const { setupVite } = await import("./vite");
-            await setupVite(app, appServer);
-            console.log("✅ Servidor de desarrollo Vite listo - Aplicación web accesible");
-          } catch (error) {
-            console.error("Error configurando Vite (continuando sin Vite):", error);
-            // Continuar sin Vite si hay problemas
-            console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
-          }
-          
-          // Inicializar base de datos de forma completamente no bloqueante
-          setImmediate(() => {
-            initializeDatabaseAsync().catch(error => {
-              console.error("Error inicializando base de datos (no crítico):", error);
-            });
-          });
-        });
-
-        appServer.on('error', (error: any) => {
-          console.error('Server error:', error);
-          throw error;
-        });
-      } else {
-        // Modo producción - configuración optimizada para despliegue
-        try {
-          const { serveStatic } = await import("./vite");
-          serveStatic(app);
-          console.log("✅ Archivos estáticos configurados para producción");
-        } catch (error) {
-          console.error("⚠️ Error configurando archivos estáticos (continuando):", error);
-        }
-        
-        appServer = app.listen(PORT, HOST, () => {
-          console.log(`✅ Servidor en producción ejecutándose en puerto ${PORT}`);
-          console.log(`🌐 Health check endpoints disponibles: /, /health, /api/health, /api/status`);
-          
-          // Inicializar base de datos de forma completamente no bloqueante
-          setImmediate(() => {
-            initializeDatabaseAsync().catch(error => {
-              console.error("⚠️ Error inicializando base de datos (no crítico):", error);
-            });
-          });
-        });
-
-        appServer.on('error', (error: any) => {
-          console.error('Server error:', error);
-          throw error;
-        });
-      }
-
-      // Setup graceful shutdown
-      process.on('SIGTERM', () => {
-        console.log('SIGTERM received, shutting down gracefully');
-        if (appServer) {
-          appServer.close(() => {
-            console.log('Process terminated');
-            process.exit(0);
-          });
-        }
-      });
+  if (app.get("env") === "development") {
+    console.log("Configurando servidor de desarrollo Vite...");
+    
+    appServer = app.listen(PORT, HOST, async () => {
+      console.log(`Servidor ejecutándose en puerto ${PORT}`);
       
+      try {
+        const { setupVite } = await import("./vite");
+        await setupVite(app, appServer);
+        console.log("✅ Servidor de desarrollo Vite listo - Aplicación web accesible");
+      } catch (error) {
+        console.error("Error configurando Vite (continuando sin Vite):", error);
+        // Continuar sin Vite si hay problemas
+        console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
+      }
+      
+      // Inicializar base de datos después de que todo esté listo
+      setTimeout(() => {
+        initializeDatabaseAsync().catch(error => {
+          console.error("Error inicializando base de datos (no crítico):", error);
+        });
+      }, 3000);
+    });
+  } else {
+    // Modo producción
+    try {
+      serveStatic(app);
     } catch (error) {
-      console.error('Error during server initialization:', error);
-      throw error;
+      console.error("Error configurando archivos estáticos:", error);
     }
-}
+    
+    appServer = app.listen(PORT, HOST, () => {
+      console.log(`Servidor en producción ejecutándose en puerto ${PORT}`);
+      
+      setTimeout(() => {
+        initializeDatabaseAsync().catch(error => {
+          console.error("Error inicializando base de datos (no crítico):", error);
+        });
+      }, 1000);
+    });
+  }
 
-// Start the server immediately - simplified for deployment
-startServer().catch(error => {
-  console.error('❌ Failed to start server:', error);
-  process.exit(1);
-});
+  // Ensure graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    if (appServer) {
+      appServer.close(() => {
+        console.log('Process terminated');
+        process.exit(0);
+      });
+    }
+  });
+})();
