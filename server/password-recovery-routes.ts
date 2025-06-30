@@ -206,6 +206,7 @@ router.get('/password/verify-token/:token', async (req: Request, res: Response) 
       if (result.rows.length === 0) {
         console.log(`❌ Token inválido o expirado: ${token}`);
         return res.status(400).json({ 
+          valid: false,
           success: false, 
           message: 'Token inválido o expirado' 
         });
@@ -215,6 +216,7 @@ router.get('/password/verify-token/:token', async (req: Request, res: Response) 
       console.log(`✅ Token válido para usuario: ${tokenData.email}`);
       
       res.json({ 
+        valid: true,
         success: true, 
         user: {
           email: tokenData.email,
@@ -226,6 +228,7 @@ router.get('/password/verify-token/:token', async (req: Request, res: Response) 
     } catch (error) {
       console.error('Error verificando token:', error);
       res.status(500).json({ 
+        valid: false,
         success: false, 
         message: 'Error interno del servidor' 
       });
