@@ -35,114 +35,7 @@ const concessionaireSchema = z.object({
 
 type ConcessionaireFormValues = z.infer<typeof concessionaireSchema>;
 
-// Componente para la pestaña de ubicaciones
-const LocationsTab = () => {
-  const { data: locations = [], isLoading } = useQuery({
-    queryKey: ["/api/concession-locations"],
-    enabled: true,
-  });
 
-  const { data: parks = [] } = useQuery({
-    queryKey: ["/api/parks"],
-  });
-
-  const { data: contracts = [] } = useQuery({
-    queryKey: ["/api/concession-contracts"],
-  });
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Cargando ubicaciones...</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-semibold">Ubicaciones de Concesiones</h3>
-          <p className="text-sm text-muted-foreground">
-            Gestiona las ubicaciones georreferenciadas de las concesiones
-          </p>
-        </div>
-        <Button className="gap-2">
-          <Plus size={16} />
-          Nueva Ubicación
-        </Button>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            Ubicaciones Registradas
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Contrato</TableHead>
-                  <TableHead>Parque</TableHead>
-                  <TableHead>Zona</TableHead>
-                  <TableHead>Área (m²)</TableHead>
-                  <TableHead>Coordenadas</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Array.isArray(locations) && locations.length > 0 ? (
-                  locations.map((location: any) => (
-                    <TableRow key={location.id}>
-                      <TableCell className="font-medium">
-                        Contrato #{location.contractId}
-                      </TableCell>
-                      <TableCell>{location.parkName || "N/A"}</TableCell>
-                      <TableCell>{location.zoneName || "N/A"}</TableCell>
-                      <TableCell>{location.area || "N/A"}</TableCell>
-                      <TableCell>
-                        {location.latitude && location.longitude 
-                          ? `${location.latitude}, ${location.longitude}`
-                          : "N/A"
-                        }
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={location.isActive ? "default" : "secondary"}>
-                          {location.isActive ? "Activa" : "Inactiva"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <MapPin className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                      No hay ubicaciones registradas
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
 
 // Componente para la pestaña de gestión financiera
 const PaymentsTab = () => {
@@ -691,14 +584,10 @@ export default function ConcessionairesTabbed() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="concessionaires" className="flex items-center gap-2">
               <Building className="h-4 w-4" />
               Concesionarios
-            </TabsTrigger>
-            <TabsTrigger value="locations" className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Ubicaciones
             </TabsTrigger>
             <TabsTrigger value="payments" className="flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
@@ -815,9 +704,7 @@ export default function ConcessionairesTabbed() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="locations">
-            <LocationsTab />
-          </TabsContent>
+
 
           <TabsContent value="payments">
             <PaymentsTab />
