@@ -267,7 +267,9 @@ export default function ConcessionTypeCatalog() {
 
   // Cálculos de paginación
   const paginatedData = useMemo(() => {
-    if (!concessionTypes || concessionTypes.length === 0) {
+    const concessionTypesArray = Array.isArray(concessionTypes) ? concessionTypes : [];
+    
+    if (concessionTypesArray.length === 0) {
       return {
         data: [],
         totalItems: 0,
@@ -277,11 +279,11 @@ export default function ConcessionTypeCatalog() {
       };
     }
 
-    const totalItems = concessionTypes.length;
+    const totalItems = concessionTypesArray.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-    const data = concessionTypes.slice(startIndex, endIndex);
+    const data = concessionTypesArray.slice(startIndex, endIndex);
 
     return {
       data,
