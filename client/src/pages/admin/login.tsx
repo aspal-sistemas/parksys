@@ -115,8 +115,30 @@ const AdminLogin: React.FC = () => {
       if (result.success) {
         toast({
           title: '✅ Email enviado',
-          description: result.message,
+          description: result.message + ' También puedes acceder directamente desde aquí.',
         });
+        
+        // Obtener el token más reciente para navegar directamente
+        setTimeout(async () => {
+          try {
+            const tokenResponse = await fetch(`/api/password/get-latest-token/${data.email}`, {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include'
+            });
+            
+            if (tokenResponse.ok) {
+              const tokenData = await tokenResponse.json();
+              if (tokenData.token) {
+                // Navegar directamente al reset sin usar localhost
+                setLocation(`/auth/reset-password?token=${tokenData.token}`);
+              }
+            }
+          } catch (error) {
+            console.error('Error obteniendo token:', error);
+          }
+        }, 1000);
+        
         setShowForgotPassword(false);
         forgotPasswordForm.reset();
       } else {

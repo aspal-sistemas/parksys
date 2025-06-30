@@ -290,6 +290,46 @@ router.post('/password/reset', async (req: Request, res: Response) => {
       });
     }
   });
+
+// Endpoint para obtener el token más reciente (para navegación directa)
+router.get('/password/get-latest-token/:email', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.params;
+    
+    console.log(`🔍 Obteniendo token más reciente para: ${email}`);
+    
+    // Buscar el token más reciente válido
+    const result = await pool.query(`
+      SELECT token
+      FROM password_reset_tokens 
+      WHERE email = $1 AND expires_at > NOW() AND is_used = false
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `, [email]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'No hay tokens válidos disponibles' 
+      });
+    }
+    
+    const token = result.rows[0].token;
+    console.log(`✅ Token encontrado para ${email}`);
+    
+    res.json({ 
+      success: true, 
+      token: token 
+    });
+    
+  } catch (error) {
+    console.error('Error obteniendo token más reciente:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor' 
+    });
+  }
+});
   
 console.log('🔑 Rutas de recuperación de contraseña registradas correctamente');
 
