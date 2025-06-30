@@ -414,6 +414,13 @@ function Router() {
           </Suspense>
         </Route>
 
+        {/* Ruta para reset de contraseña */}
+        <Route path="/reset-password">
+          <Suspense fallback={<div className="p-8 text-center">Cargando página de recuperación...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/auth/ResetPassword')))}
+          </Suspense>
+        </Route>
+
         {/* Rutas para el módulo de activos */}
         <Route path="/admin/assets/dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de activos...</div>}>
