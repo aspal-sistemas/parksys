@@ -414,8 +414,13 @@ function Router() {
           </Suspense>
         </Route>
 
-        {/* Ruta para reset de contraseña */}
+        {/* Rutas para reset de contraseña */}
         <Route path="/reset-password">
+          <Suspense fallback={<div className="p-8 text-center">Cargando página de recuperación...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/auth/ResetPassword')))}
+          </Suspense>
+        </Route>
+        <Route path="/auth/reset-password">
           <Suspense fallback={<div className="p-8 text-center">Cargando página de recuperación...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/auth/ResetPassword')))}
           </Suspense>
