@@ -95,11 +95,8 @@ router.post('/password/forgot', async (req: Request, res: Response) => {
       
       console.log(`🔑 Token guardado en base de datos para usuario ${user.id}`);
       
-      // Crear enlace de recuperación - apunta al cliente React
-      const baseUrl = process.env.NODE_ENV === 'production' 
-        ? `${req.protocol}://${req.get('host')}`
-        : 'http://localhost:5000';
-      const resetLink = `${baseUrl}/auth/reset-password?token=${resetToken}`;
+      // Crear enlace de recuperación - usa el host actual del request
+      const resetLink = `${req.protocol}://${req.get('host')}/auth/reset-password?token=${resetToken}`;
       
       // Enviar email de recuperación
       const emailSent = await sendEmail({
