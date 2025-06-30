@@ -23,6 +23,7 @@ import AdminActivities from "@/pages/admin/activities";
 import AdminAmenities from "@/pages/admin/amenities";
 import AdminSettings from "@/pages/admin/settings";
 import AdminLogin from "@/pages/admin/login";
+import TestAccess from "@/pages/test-access";
 import AdminVolunteers from "@/pages/admin/volunteers";
 import Landing from "@/pages/Landing";
 // El import de AdminVolunteerNew ha sido eliminado
@@ -242,6 +243,7 @@ function Router() {
           </Suspense>
         </Route>
         <Route path="/admin/login" component={AdminLogin} />
+        <Route path="/test-access" component={TestAccess} />
         <Route path="/admin/permissions">
           <Suspense fallback={<div className="p-8 text-center">Cargando gestión de permisos...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/permissions')))}
