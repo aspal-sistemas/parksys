@@ -1,4 +1,5 @@
 import { storage } from "./storage";
+import bcrypt from "bcryptjs";
 
 /**
  * Función que autentica al usuario directamente
@@ -25,8 +26,9 @@ export async function authenticateUser(username: string, password: string) {
     if (dbUser) {
       console.log("Usuario encontrado en la base de datos:", dbUser.username);
         
-      // Verificar si la contraseña coincide
-      if (dbUser.password === password) {
+      // Verificar si la contraseña coincide usando bcrypt
+      const passwordMatch = await bcrypt.compare(password, dbUser.password);
+      if (passwordMatch) {
         console.log("Contraseña correcta, autenticación exitosa");
         user = dbUser;
       } else {
