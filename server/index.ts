@@ -879,10 +879,8 @@ async function initializeDatabaseAsync() {
   }
 }
 
-(async () => {
-  
-
-
+// Main server initialization function - no async wrapper to prevent early exit
+async function startServer() {
   // Registrar rutas de Recursos Humanos integradas con Finanzas DESPUÉS de endpoints directos
   try {
     const { registerHRRoutes } = await import("./hr-routes");
@@ -1374,4 +1372,10 @@ async function initializeDatabaseAsync() {
       });
     }
   });
-})();
+}
+
+// Start the server - no await to prevent blocking
+startServer().catch(error => {
+  console.error('Error starting server:', error);
+  process.exit(1);
+});
