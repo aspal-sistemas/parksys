@@ -15,10 +15,14 @@ import { Input } from '@/components/ui/input';
 // Categorías de actividades
 const CATEGORIAS_ACTIVIDADES = [
   { value: "todas", label: "Todas las Actividades" },
-  { value: "artecultura", label: "Arte y Cultura" },
-  { value: "recreacionbienestar", label: "Recreación y Bienestar" },
-  { value: "temporada", label: "Eventos de Temporada" },
-  { value: "naturalezaciencia", label: "Naturaleza, Ciencia y Conservación" }
+  { value: "Arte y Cultura", label: "Arte y Cultura" },
+  { value: "Recreación y Bienestar", label: "Recreación y Bienestar" },
+  { value: "Eventos de Temporada", label: "Eventos de Temporada" },
+  { value: "Naturaleza y Ciencia", label: "Naturaleza y Ciencia" },
+  { value: "Deportivo", label: "Deportivo" },
+  { value: "Comunidad", label: "Comunidad" },
+  { value: "Fitness y Ejercicio", label: "Fitness y Ejercicio" },
+  { value: "Actividades Familiares", label: "Actividades Familiares" }
 ];
 
 // Tipo para las actividades según la estructura actual de datos
@@ -28,6 +32,7 @@ interface Actividad {
   description: string;    // Descripción
   category: string;       // Categoría
   parkId: number;         // ID del parque
+  parkName?: string;      // Nombre del parque (del backend)
   parqueNombre?: string;  // Nombre del parque (agregado desde la consulta de parques)
   startDate: string;      // Fecha de inicio
   endDate?: string;       // Fecha fin (opcional)
@@ -68,21 +73,21 @@ const VerActividadesPage = () => {
   });
 
   // Filtrar actividades por categoría
-  const actividadesPorCategoria = actividades.filter(act => 
-    // Si es "todas", mostrar todas las actividades, si no, filtrar por categoría
-    (categoriaActiva === "todas" || 
-     act.category === categoriaActiva || 
-     (act.category && act.category.includes(categoriaActiva)) ||
-     (categoriaActiva === "artecultura" && act.category && act.category.toLowerCase().includes("arte"))) &&
+  const actividadesPorCategoria = actividades.filter(act => {
+    // Filtro por categoría
+    const categoriaCoincide = categoriaActiva === "todas" || act.category === categoriaActiva;
+    
     // Filtro de búsqueda por texto
-    (busqueda === "" || 
+    const busquedaCoincide = busqueda === "" || 
       (act.title && act.title.toLowerCase().includes(busqueda.toLowerCase())) || 
-      (act.description && act.description.toLowerCase().includes(busqueda.toLowerCase()))
-    ) &&
+      (act.description && act.description.toLowerCase().includes(busqueda.toLowerCase()));
+    
     // Filtro por parque
-    (parqueFiltro === "todos" || parqueFiltro === "" || 
-     (act.parkId && act.parkId.toString() === parqueFiltro))
-  );
+    const parqueCoincide = parqueFiltro === "todos" || parqueFiltro === "" || 
+      (act.parkId && act.parkId.toString() === parqueFiltro);
+    
+    return categoriaCoincide && busquedaCoincide && parqueCoincide;
+  });
 
   // Función para renderizar la badge de estado de una actividad
   const renderEstadoBadge = (actividad: Actividad) => {
@@ -147,7 +152,7 @@ const VerActividadesPage = () => {
         onValueChange={(value) => setCategoriaActiva(value)}
         className="w-full"
       >
-        <TabsList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-1 mb-6 h-auto p-2">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 mb-6 h-auto p-2">
           {CATEGORIAS_ACTIVIDADES.map((categoria) => (
             <TabsTrigger 
               key={categoria.value} 
