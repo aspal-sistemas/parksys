@@ -1447,8 +1447,8 @@ DatabaseStorage.prototype.updateActivity = async function(id: number, activityDa
     if (activityData.requirements) updateData.requirements = activityData.requirements;
     if (activityData.isRecurring !== undefined) updateData.isRecurring = Boolean(activityData.isRecurring);
     if (activityData.recurringDays) updateData.recurringDays = activityData.recurringDays;
-    if (activityData.targetMarket) updateData.targetMarket = activityData.targetMarket;
-    if (activityData.specialNeeds) updateData.specialNeeds = activityData.specialNeeds;
+    if (activityData.targetMarket) updateData.targetMarket = JSON.stringify(activityData.targetMarket);
+    if (activityData.specialNeeds) updateData.specialNeeds = JSON.stringify(activityData.specialNeeds);
     
     // Campos específicos que necesitan mapeo especial
     if (activityData.category) {
