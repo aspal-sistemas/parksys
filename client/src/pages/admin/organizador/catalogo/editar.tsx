@@ -83,7 +83,7 @@ const activitySchema = z.object({
   specialNeeds: z.array(z.string()).optional(),
   
   // Campo para seleccionar al instructor por su ID e información adicional
-  instructorId: z.coerce.number().int().positive().optional(),
+  instructorId: z.any().optional(),
   instructorName: z.string().optional(),
   instructorContact: z.string().optional(),
 });
@@ -261,7 +261,7 @@ const EditarActividadPage = () => {
         recurringDays: Array.isArray(data.recurringDays) ? data.recurringDays : [],
         targetMarket: Array.isArray(data.targetMarket) ? data.targetMarket : [],
         specialNeeds: Array.isArray(data.specialNeeds) ? data.specialNeeds : [],
-        instructorId: data.instructorId && data.instructorId !== 0 ? Number(data.instructorId) : null,
+        instructorId: data.instructorId && data.instructorId !== 0 ? Number(data.instructorId) : undefined,
         instructorName: data.instructorName || "",
         instructorContact: data.instructorContact || "",
         duration: Number(data.duration) || calcularDuracionEnMinutos(startTime, endTime),
@@ -304,11 +304,18 @@ const EditarActividadPage = () => {
       
       // Agregar datos del instructor si se seleccionó uno
       let instructorData = {};
-      if (values.instructorId) {
+      if (values.instructorId && values.instructorId !== 0) {
         instructorData = {
           instructorId: values.instructorId,
           instructorName: values.instructorName,
           instructorContact: values.instructorContact
+        };
+      } else {
+        // Asegurar que los campos de instructor se envíen como null cuando no hay instructor
+        instructorData = {
+          instructorId: null,
+          instructorName: null,
+          instructorContact: null
         };
       }
       
@@ -1101,7 +1108,7 @@ const EditarActividadPage = () => {
                       <Select
                         onValueChange={(value) => {
                           if (value === "0") {
-                            field.onChange(null);
+                            field.onChange(undefined);
                             form.setValue("instructorName", "");
                             form.setValue("instructorContact", "");
                           } else {
@@ -1140,7 +1147,7 @@ const EditarActividadPage = () => {
                   )}
                 />
                 
-                {form.watch("instructorId") && form.watch("instructorId") !== 0 && form.watch("instructorId") !== null && (
+                {form.watch("instructorId") && form.watch("instructorId") !== 0 && form.watch("instructorId") !== undefined && (
                   <>
                     <FormField
                       control={form.control}
