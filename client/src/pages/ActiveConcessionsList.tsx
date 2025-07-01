@@ -45,7 +45,7 @@ function ActiveConcessionsList() {
   const [selectedConcession, setSelectedConcession] = useState<ActiveConcession | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   
-  const itemsPerPage = 8;
+  const itemsPerPage = 10;
   const queryClient = useQueryClient();
 
   // Obtener concesiones activas
