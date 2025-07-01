@@ -76,7 +76,7 @@ function ActiveConcessionsList() {
 
   const concessions: ActiveConcession[] = concessionsData?.data || [];
   
-  // Debug logging
+  // Image URLs have been fixed in database
 
   const parks = parksData?.data || [];
 
@@ -249,11 +249,14 @@ function ActiveConcessionsList() {
           <Card key={concession.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
             {/* Imagen Principal */}
             <div className="h-48 bg-gradient-to-br from-green-100 to-green-200 relative">
-              {concession.primaryImage ? (
+              {(concession as any).primaryImage ? (
                 <img 
-                  src={concession.primaryImage} 
+                  src={(concession as any).primaryImage} 
                   alt={concession.name}
-                  className="w-full h-full object-contain bg-gradient-to-br from-green-100 to-green-200"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
