@@ -80,6 +80,12 @@ function ActiveConcessionsList() {
   console.log('Raw concessions data:', concessionsData);
   console.log('Concessions array:', concessions);
   console.log('Concessions length:', concessions.length);
+  
+  // Look for specific concessions
+  const cafeVerde = concessions.find(c => c.name.includes('Café Verde'));
+  const foodTruck = concessions.find(c => c.name.includes('Food Truck'));
+  console.log('Café Verde found:', cafeVerde);
+  console.log('Food Truck found:', foodTruck);
   const parks = parksData?.data || [];
 
   // Filtrar concesiones
