@@ -49,20 +49,9 @@ const AdminActivities = () => {
   const [filterCategory, setFilterCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   
-  // States for edit/delete functionality
+  // States for delete functionality
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
-  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [editFormData, setEditFormData] = useState({
-    title: '',
-    description: '',
-    activityType: '',
-    categoryId: '',
-    startDate: '',
-    endDate: '',
-    location: '',
-    capacity: ''
-  });
   
   const activitiesPerPage = 10;
   const { toast } = useToast();
@@ -80,31 +69,7 @@ const AdminActivities = () => {
     queryKey: ['/api/activity-categories'],
   });
 
-  // Mutations for edit and delete
-  const editMutation = useMutation({
-    mutationFn: async (data: { id: number; updates: any }) => {
-      return await apiRequest(`/api/activities/${data.id}`, {
-        method: 'PUT',
-        data: data.updates,
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Actividad actualizada",
-        description: "La actividad se ha actualizado correctamente.",
-      });
-      setShowEditDialog(false);
-      setSelectedActivity(null);
-      refetch();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "No se pudo actualizar la actividad.",
-        variant: "destructive",
-      });
-    },
-  });
+  // Mutation for delete
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -237,20 +202,9 @@ const AdminActivities = () => {
     setFilterCategory('all');
   };
 
-  // Handle edit functionality
+  // Handle edit functionality - redirigir al formulario completo del organizador
   const handleEdit = (activity: any) => {
-    setSelectedActivity(activity);
-    setEditFormData({
-      title: activity.title || '',
-      description: activity.description || '',
-      activityType: activity.activityType || '',
-      categoryId: activity.categoryId ? activity.categoryId.toString() : '',
-      startDate: activity.startDate ? new Date(activity.startDate).toISOString().slice(0, 16) : '',
-      endDate: activity.endDate ? new Date(activity.endDate).toISOString().slice(0, 16) : '',
-      location: activity.location || '',
-      capacity: activity.capacity ? activity.capacity.toString() : ''
-    });
-    setShowEditDialog(true);
+    setLocation(`/admin/organizador/catalogo/editar/${activity.id}`);
   };
 
   // Handle delete functionality
@@ -259,31 +213,7 @@ const AdminActivities = () => {
     setShowDeleteDialog(true);
   };
 
-  // Handle form input changes
-  const handleInputChange = (field: string, value: string) => {
-    setEditFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
 
-  // Handle save edit
-  const handleSaveEdit = () => {
-    if (!selectedActivity) return;
-    
-    const updates = {
-      title: editFormData.title,
-      description: editFormData.description,
-      activityType: editFormData.activityType,
-      categoryId: editFormData.categoryId ? parseInt(editFormData.categoryId) : null,
-      startDate: editFormData.startDate,
-      endDate: editFormData.endDate || null,
-      location: editFormData.location || null,
-      capacity: editFormData.capacity ? parseInt(editFormData.capacity) : null
-    };
-
-    editMutation.mutate({ id: selectedActivity.id, updates });
-  };
 
   // Handle confirm delete
   const handleConfirmDelete = () => {
