@@ -69,12 +69,14 @@ interface Activity {
   location?: string;
 }
 
-// Colores para categorías de actividades
+// Colores para categorías de actividades (6 categorías oficiales)
 const categoryColors: Record<string, string> = {
-  'Arte y Cultura': 'bg-pink-100 text-pink-800 hover:bg-pink-200',
-  'Recreación y Bienestar': 'bg-green-100 text-green-800 hover:bg-green-200',
-  'Eventos de Temporada': 'bg-amber-100 text-amber-800 hover:bg-amber-200',
-  'Naturaleza, Ciencia y Conservación': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+  'Arte y Cultura': 'bg-green-100 text-green-800 hover:bg-green-200',
+  'Recreación y Bienestar': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+  'Eventos de Temporada': 'bg-orange-100 text-orange-800 hover:bg-orange-200',
+  'Deportivo': 'bg-red-100 text-red-800 hover:bg-red-200',
+  'Comunidad': 'bg-purple-100 text-purple-800 hover:bg-purple-200',
+  'Naturaleza y Ciencia': 'bg-teal-100 text-teal-800 hover:bg-teal-200',
   'default': 'bg-gray-100 text-gray-800 hover:bg-gray-200',
 };
 
