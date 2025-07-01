@@ -361,13 +361,13 @@ const EditarActividadPage = () => {
   
   // Días de la semana para actividades recurrentes
   const diasSemana = [
-    { id: "lunes", label: "Lunes" },
-    { id: "martes", label: "Martes" },
-    { id: "miercoles", label: "Miércoles" },
-    { id: "jueves", label: "Jueves" },
-    { id: "viernes", label: "Viernes" },
-    { id: "sabado", label: "Sábado" },
-    { id: "domingo", label: "Domingo" }
+    { id: "Lunes", label: "Lunes" },
+    { id: "Martes", label: "Martes" },
+    { id: "Miércoles", label: "Miércoles" },
+    { id: "Jueves", label: "Jueves" },
+    { id: "Viernes", label: "Viernes" },
+    { id: "Sábado", label: "Sábado" },
+    { id: "Domingo", label: "Domingo" }
   ];
   
   // Opciones de mercado meta para la segmentación
@@ -773,24 +773,21 @@ const EditarActividadPage = () => {
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                             {diasSemana.map((dia) => (
                               <FormField
-                                key={dia.value}
+                                key={dia.id}
                                 control={form.control}
                                 name="recurringDays"
                                 render={({ field }) => {
                                   return (
-                                    <FormItem
-                                      key={dia.value}
-                                      className="flex flex-row items-start space-x-3 space-y-0"
-                                    >
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                       <FormControl>
                                         <Checkbox
-                                          checked={field.value?.includes(dia.value)}
+                                          checked={field.value?.includes(dia.id)}
                                           onCheckedChange={(checked) => {
                                             return checked
-                                              ? field.onChange([...field.value || [], dia.value])
+                                              ? field.onChange([...field.value || [], dia.id])
                                               : field.onChange(
                                                   field.value?.filter(
-                                                    (value) => value !== dia.value
+                                                    (value) => value !== dia.id
                                                   )
                                                 );
                                           }}
@@ -989,24 +986,21 @@ const EditarActividadPage = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {mercadoObjetivo.map((grupo) => (
                           <FormField
-                            key={grupo.value}
+                            key={grupo.id}
                             control={form.control}
                             name="targetMarket"
                             render={({ field }) => {
                               return (
-                                <FormItem
-                                  key={grupo.value}
-                                  className="flex flex-row items-start space-x-3 space-y-0"
-                                >
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
-                                      checked={field.value?.includes(grupo.value)}
+                                      checked={field.value?.includes(grupo.id)}
                                       onCheckedChange={(checked) => {
                                         return checked
-                                          ? field.onChange([...field.value || [], grupo.value])
+                                          ? field.onChange([...field.value || [], grupo.id])
                                           : field.onChange(
                                               field.value?.filter(
-                                                (value) => value !== grupo.value
+                                                (value) => value !== grupo.id
                                               )
                                             );
                                       }}
@@ -1043,24 +1037,21 @@ const EditarActividadPage = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {necesidadesEspeciales.map((necesidad) => (
                           <FormField
-                            key={necesidad.value}
+                            key={necesidad.id}
                             control={form.control}
                             name="specialNeeds"
                             render={({ field }) => {
                               return (
-                                <FormItem
-                                  key={necesidad.value}
-                                  className="flex flex-row items-start space-x-3 space-y-0"
-                                >
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
-                                      checked={field.value?.includes(necesidad.value)}
+                                      checked={field.value?.includes(necesidad.id)}
                                       onCheckedChange={(checked) => {
                                         return checked
-                                          ? field.onChange([...field.value || [], necesidad.value])
+                                          ? field.onChange([...field.value || [], necesidad.id])
                                           : field.onChange(
                                               field.value?.filter(
-                                                (value) => value !== necesidad.value
+                                                (value) => value !== necesidad.id
                                               )
                                             );
                                       }}
