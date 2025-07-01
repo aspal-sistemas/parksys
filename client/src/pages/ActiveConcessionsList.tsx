@@ -86,6 +86,9 @@ function ActiveConcessionsList() {
   const foodTruck = concessions.find(c => c.name.includes('Food Truck'));
   console.log('Café Verde found:', cafeVerde);
   console.log('Food Truck found:', foodTruck);
+  
+  // Debug filtering
+  console.log('Current filters:', { searchTerm, statusFilter, parkFilter });
   const parks = parksData?.data || [];
 
   // Filtrar concesiones
@@ -105,10 +108,20 @@ function ActiveConcessionsList() {
     return matchesSearch && matchesStatus && matchesPark;
   });
 
+  // Debug filtering results
+  console.log('Filtered concessions:', filteredConcessions);
+  console.log('Filtered length:', filteredConcessions.length);
+
   // Paginación
   const totalPages = Math.ceil(filteredConcessions.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedConcessions = filteredConcessions.slice(startIndex, startIndex + itemsPerPage);
+  
+  console.log('Paginated concessions:', paginatedConcessions);
+  console.log('Paginated length:', paginatedConcessions.length);
+  console.log('Current page:', currentPage);
+  console.log('Start index:', startIndex);
+  console.log('Items per page:', itemsPerPage);
 
   // Resetear página cuando cambian filtros
   const handleFiltersChange = () => {
@@ -317,18 +330,18 @@ function ActiveConcessionsList() {
               </div>
 
               {/* Horarios */}
-              {concession.operatingHours && (
+              {(concession as any).operating_hours && (
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-600">{concession.operatingHours}</span>
+                  <span className="text-gray-600">{(concession as any).operating_hours}</span>
                 </div>
               )}
 
               {/* Pago mensual */}
-              {concession.monthlyPayment && (
+              {(concession as any).monthly_payment && (
                 <div className="text-sm">
                   <span className="font-medium text-green-600">
-                    {formatCurrency(concession.monthlyPayment)}/mes
+                    {formatCurrency((concession as any).monthly_payment)}/mes
                   </span>
                 </div>
               )}
