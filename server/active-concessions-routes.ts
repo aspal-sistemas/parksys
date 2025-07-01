@@ -64,17 +64,16 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
           ct.name as "concessionTypeName",
           ct.description as "concessionTypeDescription",
           ct.impact_level as "impactLevel",
-          u.username as "concessionaireUsername",
-          u.full_name as "concessionaireName",
-          u.email as "concessionaireEmail",
-          u.phone as "concessionairePhone",
+          cn.name as "concessionaireName",
+          cn.email as "concessionaireEmail",
+          cn.phone as "concessionairePhone",
           p.name as "parkName",
           p.address as "parkLocation",
           COALESCE(img_count.count, 0) as "imageCount",
           primary_img.image_url as "primaryImage"
         FROM active_concessions ac
         LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
-        LEFT JOIN users u ON ac.concessionaire_id = u.id
+        LEFT JOIN concessionaires cn ON ac.concessionaire_id = cn.id
         LEFT JOIN parks p ON ac.park_id = p.id
         LEFT JOIN (
           SELECT concession_id, COUNT(*) as count
@@ -120,17 +119,16 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
           ct.name as "concessionTypeName",
           ct.description as "concessionTypeDescription",
           ct.impact_level as "impactLevel",
-          u.username as "concessionaireUsername",
-          u.full_name as "concessionaireName",
-          u.email as "concessionaireEmail",
-          u.phone as "concessionairePhone",
+          cn.name as "concessionaireName",
+          cn.email as "concessionaireEmail",
+          cn.phone as "concessionairePhone",
           p.name as "parkName",
           p.address as "parkLocation",
           COALESCE(img_count.count, 0) as "imageCount",
           primary_img.image_url as "primaryImage"
         FROM active_concessions ac
         LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
-        LEFT JOIN users u ON ac.concessionaire_id = u.id
+        LEFT JOIN concessionaires cn ON ac.concessionaire_id = cn.id
         LEFT JOIN parks p ON ac.park_id = p.id
         LEFT JOIN (
           SELECT concession_id, COUNT(*) as count
