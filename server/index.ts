@@ -153,6 +153,10 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
 
     const activity = result.rows[0];
     
+    console.log("🔍 Raw activity data from DB:");
+    console.log("target_market raw:", activity.target_market, typeof activity.target_market);
+    console.log("special_needs raw:", activity.special_needs, typeof activity.special_needs);
+    
     // Parsear campos JSON
     let targetMarket = [];
     let specialNeeds = [];
