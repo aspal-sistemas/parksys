@@ -2523,6 +2523,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ message: "Test endpoint funcionando", data: req.body });
   });
 
+  // Helper function para mapear categorías
+  const mapCategoryToName = (categoryId: any, categoryString: any): string => {
+    const categoryMapping: { [key: string]: string } = {
+      '1': 'Deportivo',
+      '2': 'Recreación y Bienestar',
+      '3': 'Arte y Cultura',
+      '4': 'Naturaleza y Ciencia',
+      '5': 'Comunidad',
+      '6': 'Eventos de Temporada'
+    };
+    
+    // Prioridad: category_id -> category si es string numérico -> category normal
+    if (categoryId) return categoryMapping[categoryId.toString()] || 'Recreación y Bienestar';
+    if (categoryMapping[categoryString]) return categoryMapping[categoryString];
+    return categoryString || 'Recreación y Bienestar';
+  };
+
   // Endpoint directo para crear actividades - SIN AUTENTICACIÓN TEMPORAL
   apiRouter.post("/activities", async (req: Request, res: Response) => {
     console.log("🔥🔥🔥 ENDPOINT ACTIVITIES EJECUTÁNDOSE EN ROUTES.TS 🔥🔥🔥");
