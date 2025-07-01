@@ -2398,8 +2398,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/activities", async (_req: Request, res: Response) => {
     try {
       console.log("Obteniendo todas las actividades en GET /api/activities");
-      const activities = await storage.getAllActivities();
+      
+      // Usar la misma consulta que actividades-fotos para garantizar consistencia
+      const { pool } = await import("./db");
+      
+      const result = await pool.query(`
+        SELECT 
+          a.id,
+          a.title,
+          a.description,
+          a.start_date as "startDate",
+          a.end_date as "endDate",
+          a.category,
+          a.category_id as "categoryId",
+          a.park_id as "parkId",
+          a.location,
+          a.capacity,
+          a.price,
+          a.instructor_id as "instructorId",
+          a.created_at as "createdAt",
+          p.name as "parkName",
+          c.name as "categoryName",
+          i.full_name as "instructorName",
+          img.image_url as "imageUrl",
+          img.caption as "imageCaption"
+        FROM activities a
+        LEFT JOIN parks p ON a.park_id = p.id
+        LEFT JOIN activity_categories c ON a.category_id = c.id
+        LEFT JOIN instructors i ON a.instructor_id = i.id
+        LEFT JOIN activity_images img ON a.id = img.activity_id AND img.is_primary = true
+        ORDER BY a.created_at DESC
+      `);
+      
+      const activities = result.rows.map(row => ({
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        startDate: row.startDate,
+        endDate: row.endDate,
+        category: row.category,
+        categoryId: row.categoryId,
+        parkId: row.parkId,
+        parkName: row.parkName,
+        location: row.location,
+        capacity: row.capacity,
+        price: row.price,
+        instructorId: row.instructorId,
+        instructorName: row.instructorName,
+        createdAt: row.createdAt,
+        imageUrl: row.imageUrl,
+        imageCaption: row.imageCaption
+      }));
+      
       console.log(`Actividades encontradas: ${activities.length}`);
+      console.log(`Primeras 3 actividades:`, activities.slice(0, 3).map(a => ({ id: a.id, title: a.title, createdAt: a.createdAt })));
+      
       res.json(activities);
     } catch (error) {
       console.error("Error al obtener actividades:", error);
