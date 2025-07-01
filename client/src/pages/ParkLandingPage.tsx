@@ -111,8 +111,8 @@ function ParkLandingPage() {
 
   // Check if park should show Green Flag Award logo
   const shouldShowGreenFlag = (parkId: number) => {
-    // Solo Bosque Los Colomos (ID:5) y Parque Metropolitano de Guadalajara (ID:2)
-    return parkId === 5 || parkId === 2;
+    // Bosque Los Colomos (ID: 5), Parque Metropolitano (ID: 2), Parque Alcalde (ID: 4), Bosque Urbano Tlaquepaque (ID: 18)
+    return parkId === 5 || parkId === 2 || parkId === 4 || parkId === 18;
   };
 
   return (
@@ -133,7 +133,7 @@ function ParkLandingPage() {
               <img 
                 src={greenFlagLogo} 
                 alt="Green Flag Award" 
-                className="h-10 w-15 object-contain"
+                className="h-20 w-30 object-contain bg-white rounded-md p-2 shadow-lg border-2 border-green-500"
                 title="Green Flag Award - Parque Certificado"
               />
             )}
