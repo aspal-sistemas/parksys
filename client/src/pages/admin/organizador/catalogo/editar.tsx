@@ -249,7 +249,7 @@ const EditarActividadPage = () => {
         endDate: data.endDate ? format(new Date(data.endDate), 'yyyy-MM-dd') : "",
         startTime: startTime || "09:00",
         endTime: endTime || "10:00",
-        category: data.category || "",
+        category: data.categoryId ? data.categoryId.toString() : "",
         location: data.location || "",
         capacity: Number(data.capacity) || 20,
         price: Number(data.price) || 0,
