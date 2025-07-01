@@ -39,6 +39,7 @@ interface Actividad {
   // Campos adicionales que mostraremos si están disponibles
   capacity?: number;
   price?: number;
+  isFree?: boolean;       // Si es gratuita o no
   materials?: string;
   requirements?: string;
   duration?: number;      // Duración en minutos
@@ -255,14 +256,24 @@ const VerActividadesPage = () => {
                         </div>
                       )}
 
-                      {/* Precio - Mostramos un valor por defecto */}
+                      {/* Precio - Lógica corregida usando isFree */}
                       <div className="mt-4">
-                        {actividad.price ? (
-                          <Badge variant="outline" className="text-yellow-700">
-                            Precio: ${actividad.price.toFixed(2)} MXN
-                          </Badge>
+                        {actividad.isFree === false ? (
+                          actividad.price ? (
+                            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                              Precio: ${Number(actividad.price).toFixed(2)} MXN
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                              Precio: Consultar
+                            </Badge>
+                          )
+                        ) : actividad.isFree === true ? (
+                          <Badge className="bg-green-50 text-green-700 border-green-200 border">Gratuita</Badge>
                         ) : (
-                          <Badge className="bg-green-50 text-green-700 border-0">Gratuita</Badge>
+                          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+                            Sin información de precio
+                          </Badge>
                         )}
                       </div>
                     </CardContent>

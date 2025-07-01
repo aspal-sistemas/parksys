@@ -2471,6 +2471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           a.location,
           a.capacity,
           a.price,
+          a.is_free as "isFree",
           a.instructor_id as "instructorId",
           a.created_at as "createdAt",
           p.name as "parkName",
