@@ -126,7 +126,18 @@ function ParkLandingPage() {
               Volver a parques
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">{park.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-gray-900">{park.name}</h1>
+            {/* Green Flag Award Logo - Solo para parques certificados */}
+            {shouldShowGreenFlag(park.id) && (
+              <img 
+                src={greenFlagLogo} 
+                alt="Green Flag Award" 
+                className="h-8 w-12 object-contain"
+                title="Green Flag Award - Parque Certificado"
+              />
+            )}
+          </div>
           <p className="text-gray-600 flex items-center mt-2">
             <MapPin className="h-4 w-4 mr-1" />
             {park.municipality?.name || 'Guadalajara'}, {park.municipality?.state || 'Jalisco'}
