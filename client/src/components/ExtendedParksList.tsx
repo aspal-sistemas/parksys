@@ -200,14 +200,12 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                 
                 {/* Green Flag Award Logo - Solo para parques específicos */}
                 {shouldShowGreenFlag(park.id) && (
-                  <div className="flex items-center">
-                    <img 
-                      src={greenFlagLogo} 
-                      alt="Green Flag Award" 
-                      className="h-20 w-30 object-contain bg-white rounded-md p-2 shadow-lg border-2 border-green-500"
-                      title="Green Flag Award"
-                    />
-                  </div>
+                  <img 
+                    src={greenFlagLogo} 
+                    alt="Green Flag Award" 
+                    className="h-20 w-30 object-contain bg-white rounded-md p-2 shadow-lg border-2 border-green-500"
+                    title="Green Flag Award"
+                  />
                 )}
               </div>
             </div>
