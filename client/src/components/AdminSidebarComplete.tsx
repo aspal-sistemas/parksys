@@ -490,9 +490,9 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
             {/* 4. NUEVA ACTIVIDAD */}
             <NavItem 
-              href="/admin/activities/new" 
+              href="/admin/organizador/catalogo/crear" 
               icon={<Plus className="h-5 w-5" />}
-              active={location.startsWith('/admin/activities/new')}
+              active={location.startsWith('/admin/organizador/catalogo/crear')}
             >
               Nueva Actividad
             </NavItem>

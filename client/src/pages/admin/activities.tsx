@@ -330,8 +330,8 @@ const AdminActivities = () => {
           <Button 
             className="bg-[#00a587] hover:bg-[#067f5f]"
             onClick={() => {
-              console.log('Botón Nueva Actividad clickeado - activities.tsx');
-              setLocation('/admin/activities/new');
+              console.log('Botón Nueva Actividad clickeado - redirigiendo al organizador');
+              setLocation('/admin/organizador/catalogo/crear');
             }}
           >
             <Plus className="h-4 w-4 mr-2" />

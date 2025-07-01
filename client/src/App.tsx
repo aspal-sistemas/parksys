@@ -156,11 +156,7 @@ function Router() {
           </Suspense>
         </Route>
         <Route path="/admin/activities" component={AdminActivities} />
-        <Route path="/admin/activities/new">
-          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de nueva actividad...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/organizador/nueva-actividad')))}
-          </Suspense>
-        </Route>
+
         <Route path="/admin/activities/categories">
           <Suspense fallback={<div className="p-8 text-center">Cargando gestión de categorías...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/organizador/categorias')))}
