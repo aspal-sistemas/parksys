@@ -12,17 +12,15 @@ import { Calendar, Clock, MapPin, Users, AlertCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 
-// Categorías de actividades
+// Categorías oficiales de actividades (deben coincidir con /admin/activities/categories)
 const CATEGORIAS_ACTIVIDADES = [
   { value: "todas", label: "Todas las Actividades" },
-  { value: "Arte y Cultura", label: "Arte y Cultura" },
-  { value: "Recreación y Bienestar", label: "Recreación y Bienestar" },
-  { value: "Eventos de Temporada", label: "Eventos de Temporada" },
-  { value: "Naturaleza y Ciencia", label: "Naturaleza y Ciencia" },
   { value: "Deportivo", label: "Deportivo" },
+  { value: "Recreación y Bienestar", label: "Recreación y Bienestar" },
+  { value: "Arte y Cultura", label: "Arte y Cultura" },
+  { value: "Naturaleza y Ciencia", label: "Naturaleza y Ciencia" },
   { value: "Comunidad", label: "Comunidad" },
-  { value: "Fitness y Ejercicio", label: "Fitness y Ejercicio" },
-  { value: "Actividades Familiares", label: "Actividades Familiares" }
+  { value: "Eventos de Temporada", label: "Eventos de Temporada" }
 ];
 
 // Tipo para las actividades según la estructura actual de datos
@@ -152,7 +150,7 @@ const VerActividadesPage = () => {
         onValueChange={(value) => setCategoriaActiva(value)}
         className="w-full"
       >
-        <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 mb-6 h-auto p-2">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-1 mb-6 h-auto p-2">
           {CATEGORIAS_ACTIVIDADES.map((categoria) => (
             <TabsTrigger 
               key={categoria.value} 
