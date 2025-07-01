@@ -187,7 +187,17 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
               </div>
 
               {/* Botón de acción y Green Flag Award */}
-              <div className="flex-shrink-0 flex items-center gap-3">
+              <div className="flex-shrink-0 flex flex-col items-center gap-2">
+                <Link href={`/parque/${generateParkSlug(park.name, park.id)}`}>
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    className="w-32 bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    Ir al Parque
+                  </Button>
+                </Link>
+                
                 {/* Green Flag Award Logo - Solo para parques específicos */}
                 {shouldShowGreenFlag(park.id) && (
                   <div className="flex items-center">
@@ -199,16 +209,6 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                     />
                   </div>
                 )}
-                
-                <Link href={`/parque/${generateParkSlug(park.name, park.id)}`}>
-                  <Button 
-                    variant="default" 
-                    size="sm"
-                    className="w-32 bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    Ir al Parque
-                  </Button>
-                </Link>
               </div>
             </div>
           </div>
