@@ -18,13 +18,7 @@ import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Checkbox } from '@/components/ui/checkbox';
 import LocationSelector from '@/components/LocationSelector';
 
-// Categorías de actividades
-const CATEGORIAS_ACTIVIDADES = [
-  { value: "artecultura", label: "Arte y Cultura" },
-  { value: "recreacionbienestar", label: "Recreación y Bienestar" },
-  { value: "temporada", label: "Eventos de Temporada" },
-  { value: "naturalezaciencia", label: "Naturaleza, Ciencia y Conservación" }
-];
+// Las categorías se cargan dinámicamente desde la API
 
 // Días de la semana para actividades recurrentes
 const DIAS_SEMANA = [
@@ -149,6 +143,11 @@ const CrearActividadPage = () => {
     queryKey: ['/api/parks'],
   });
   
+  // Consulta para obtener las categorías de actividades
+  const { data: categorias = [] } = useQuery<{ id: number, name: string, color: string }[]>({
+    queryKey: ['/api/activity-categories'],
+  });
+  
   // Consulta para obtener la lista de usuarios con rol de instructor
   const { data: instructores = [] } = useQuery<any[]>({
     queryKey: ['/api/users'],
@@ -222,7 +221,7 @@ const CrearActividadPage = () => {
         endDate: values.endDate || null,
         startTime: values.startTime,
         endTime: values.endTime,
-        category: values.category,
+        category_id: parseInt(values.category), // Convertir a number para la API
         location: values.location || null,
         capacity: values.capacity || null,
         duration: duracion || null,
@@ -344,9 +343,9 @@ const CrearActividadPage = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {CATEGORIAS_ACTIVIDADES.map((cat) => (
-                              <SelectItem key={cat.value} value={cat.value}>
-                                {cat.label}
+                            {categorias.map((categoria) => (
+                              <SelectItem key={categoria.id} value={categoria.id.toString()}>
+                                {categoria.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
