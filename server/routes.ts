@@ -795,10 +795,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ac.description as "notes",
           ct.name as "concessionType",
           ct.description as "typeDescription",
-          ct.impact_level as "impactLevel"
+          ct.impact_level as "impactLevel",
+          aci.image_url as "primaryImage"
         FROM active_concessions ac
         LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
         LEFT JOIN concessionaires con ON ac.concessionaire_id = con.id
+        LEFT JOIN active_concession_images aci ON ac.id = aci.concession_id AND aci.is_primary = true
         WHERE ac.park_id = $1 AND ac.status = 'active'
         ORDER BY ac.start_date DESC
         LIMIT 10
