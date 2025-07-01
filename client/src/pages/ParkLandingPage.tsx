@@ -35,6 +35,7 @@ import AmenityIcon from '@/components/ui/amenity-icon';
 import TreeSpeciesIcon from '@/components/ui/tree-species-icon';
 import TreePhotoViewer from '@/components/TreePhotoViewer';
 import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
+import greenFlagLogo from '@assets/PHOTO-2025-07-01-12-36-16_1751396336894.jpg';
 
 function ParkLandingPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -106,6 +107,12 @@ function ParkLandingPage() {
       'temático': 'Temático'
     };
     return typeMap[type] || type;
+  };
+
+  // Check if park should show Green Flag Award logo
+  const shouldShowGreenFlag = (parkId: number) => {
+    // Solo Bosque Los Colomos (ID:5) y Parque Metropolitano de Guadalajara (ID:2)
+    return parkId === 5 || parkId === 2;
   };
 
   return (

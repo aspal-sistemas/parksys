@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileImage } from 'lucide-react';
 import AmenityIcon from '@/components/ui/amenity-icon';
+import greenFlagLogo from '@assets/PHOTO-2025-07-01-12-36-16_1751396336894.jpg';
 
 interface ParkCardProps {
   park: ExtendedPark;
@@ -30,6 +31,12 @@ const generateParkSlug = (parkName: string, parkId: number) => {
 };
 
 const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
+  // Función para verificar si el parque debe mostrar el Green Flag Award
+  const shouldShowGreenFlag = (parkId: number) => {
+    // Solo Bosque Los Colomos (ID: 5) y Parque Metropolitano (ID: 2)
+    return parkId === 5 || parkId === 2;
+  };
+
   // Determine park type label
   const getParkTypeLabel = (type: string) => {
     const typeMap: Record<string, string> = {
@@ -59,7 +66,7 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
   };
 
   return (
-    <Card className="park-card overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col">
+    <Card className="park-card overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col relative">
       {/* Park image */}
       <div className="w-full h-40 overflow-hidden relative">
         {park.primaryImage || park.mainImageUrl ? (
@@ -78,6 +85,18 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
           </div>
         )}
       </div>
+
+      {/* Green Flag Award Logo - Solo para parques específicos */}
+      {shouldShowGreenFlag(park.id) && (
+        <div className="absolute bottom-2 right-2 z-10">
+          <img 
+            src={greenFlagLogo} 
+            alt="Green Flag Award" 
+            className="w-12 h-8 object-contain bg-white/90 rounded-md p-1 shadow-sm"
+            title="Green Flag Award"
+          />
+        </div>
+      )}
       
       <CardContent className="p-4 flex-1 flex flex-col">
         <div className="flex justify-between items-start mb-2">
