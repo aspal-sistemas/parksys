@@ -1420,7 +1420,73 @@ DatabaseStorage.prototype.createActivity = async function(activityData: any): Pr
 };
 
 DatabaseStorage.prototype.getActivity = async function(id: number): Promise<any> {
-  return null;
+  console.log("🎯 GET ACTIVITY ENDPOINT - ID:", id);
+  
+  try {
+    const result = await pool.query(`
+      SELECT 
+        a.id,
+        a.title,
+        a.description,
+        a.start_date as "startDate",
+        a.end_date as "endDate", 
+        a.start_time as "startTime",
+        a.end_time as "endTime",
+        a.category,
+        a.category_id as "categoryId",
+        a.park_id as "parkId",
+        a.location,
+        a.capacity,
+        a.duration,
+        a.price,
+        a.is_free as "isFree",
+        a.materials,
+        a.requirements,
+        a.is_recurring as "isRecurring",
+        a.recurring_days as "recurringDays",
+        a.target_market as "targetMarket",
+        a.special_needs as "specialNeeds",
+        a.instructor_id as "instructorId",
+        a.created_at as "createdAt",
+        p.name as "parkName",
+        ac.name as "category",
+        i.full_name as "instructorName"
+      FROM activities a
+      LEFT JOIN parks p ON a.park_id = p.id
+      LEFT JOIN activity_categories ac ON a.category_id = ac.id
+      LEFT JOIN instructors i ON a.instructor_id = i.id
+      WHERE a.id = $1
+    `, [id]);
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    const activity = result.rows[0];
+    
+    // Parsear campos JSON
+    if (activity.targetMarket) {
+      try {
+        activity.targetMarket = JSON.parse(activity.targetMarket);
+      } catch (e) {
+        activity.targetMarket = [];
+      }
+    }
+    
+    if (activity.specialNeeds) {
+      try {
+        activity.specialNeeds = JSON.parse(activity.specialNeeds);
+      } catch (e) {
+        activity.specialNeeds = [];
+      }
+    }
+
+    console.log("🎯 Actividad encontrada:", activity);
+    return activity;
+  } catch (error) {
+    console.error("Error obteniendo actividad:", error);
+    return null;
+  }
 };
 
 DatabaseStorage.prototype.updateActivity = async function(id: number, activityData: any): Promise<any> {
