@@ -26,6 +26,16 @@ interface Activity {
   instructorId?: number;
   instructorName?: string;
   instructorAvatar?: string;
+  startTime?: string;
+  endTime?: string;
+  duration?: number;
+  materials?: string;
+  requirements?: string;
+  isFree?: boolean;
+  isRecurring?: boolean;
+  recurringDays?: string[];
+  targetMarket?: string[];
+  specialNeeds?: string[];
 }
 
 const CalendarPage: React.FC = () => {
@@ -526,8 +536,16 @@ const CalendarPage: React.FC = () => {
                         </div>
                         <div className="flex items-center">
                           <Clock className="h-4 w-4 mr-2 text-primary" />
-                          <span>{format(parseISO(selectedActivity.startDate), 'HH:mm', { locale: es })}</span>
+                          <span>
+                            {selectedActivity.startTime && `Inicio: ${selectedActivity.startTime}`}
+                            {selectedActivity.endTime && ` - Fin: ${selectedActivity.endTime}`}
+                          </span>
                         </div>
+                        {selectedActivity.duration && (
+                          <div className="text-xs text-gray-500">
+                            Duración: {selectedActivity.duration} minutos
+                          </div>
+                        )}
                       </div>
                     </div>
                     
@@ -573,11 +591,54 @@ const CalendarPage: React.FC = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* Información adicional */}
+                  {(selectedActivity.isRecurring || selectedActivity.targetMarket || selectedActivity.specialNeeds) && (
+                    <div className="space-y-3 pt-4 border-t border-gray-100">
+                      {selectedActivity.isRecurring && (
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">Recurrencia</h4>
+                          <p className="text-sm text-gray-600">
+                            {selectedActivity.recurringDays?.length > 0 
+                              ? `Se repite: ${selectedActivity.recurringDays.join(', ')}`
+                              : 'Actividad recurrente'
+                            }
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedActivity.targetMarket?.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">Público Objetivo</h4>
+                          <p className="text-sm text-gray-600">
+                            {selectedActivity.targetMarket.join(', ')}
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedActivity.specialNeeds?.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">Requerimientos Especiales</h4>
+                          <div className="space-y-1">
+                            {selectedActivity.specialNeeds.map((need, index) => (
+                              <p key={index} className="text-sm text-gray-600 flex items-center gap-2">
+                                <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                                {need}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex gap-3 pt-4">
                   <Button 
                     className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    onClick={() => {
+                      window.open(`/activity/${selectedActivity.id}`, '_blank');
+                    }}
                   >
                     Más Información
                   </Button>
