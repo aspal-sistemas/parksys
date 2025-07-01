@@ -2576,18 +2576,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...otherData
       } = req.body;
       
-      // Mapear category_id numérico a nombre de categoría
-      const categoryMapping: { [key: number]: string } = {
-        1: 'Deportivo',
-        2: 'Recreación y Bienestar',
-        3: 'Arte y Cultura',
-        4: 'Naturaleza y Ciencia',
-        5: 'Comunidad',
-        6: 'Eventos de Temporada'
-      };
-      
-      // Determinar la categoría final: usar category_id mapeado si existe, si no usar category
-      const finalCategory = category_id ? categoryMapping[category_id] : category;
+      // Usar helper function para mapear categoría
+      const finalCategory = mapCategoryToName(category_id, category);
       
       // Convertir las fechas explícitamente a objetos Date
       let parsedStartDate: Date;
@@ -2758,18 +2748,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Extraer los datos
       const { startDate, endDate, parkId, category, category_id, ...otherData } = req.body;
       
-      // Mapear category_id numérico a nombre de categoría
-      const categoryMapping: { [key: number]: string } = {
-        1: 'Deportivo',
-        2: 'Recreación y Bienestar',
-        3: 'Arte y Cultura',
-        4: 'Naturaleza y Ciencia',
-        5: 'Comunidad',
-        6: 'Eventos de Temporada'
-      };
-      
-      // Determinar la categoría final: usar category_id mapeado si existe, si no usar category
-      const finalCategory = category_id ? categoryMapping[category_id] : category;
+      // Usar helper function para mapear categoría
+      const finalCategory = mapCategoryToName(category_id, category);
       
       // Convertir las fechas explícitamente a objetos Date
       let parsedStartDate: Date;
