@@ -193,7 +193,7 @@ const EditarActividadPage = () => {
       recurringDays: [],
       targetMarket: [],
       specialNeeds: [],
-      instructorId: 0,
+      instructorId: null,
       instructorName: "",
       instructorContact: "",
       duration: 60,
@@ -1100,17 +1100,23 @@ const EditarActividadPage = () => {
                       <FormLabel>Instructor</FormLabel>
                       <Select
                         onValueChange={(value) => {
-                          const instructorId = parseInt(value);
-                          field.onChange(instructorId);
-                          
-                          // Encontrar el instructor seleccionado
-                          const instructor = instructores?.find((i: any) => i.id === instructorId);
-                          if (instructor) {
-                            form.setValue("instructorName", instructor.fullName || `${instructor.firstName} ${instructor.lastName}`);
-                            form.setValue("instructorContact", instructor.email || instructor.contactEmail || '');
+                          if (value === "0") {
+                            field.onChange(null);
+                            form.setValue("instructorName", "");
+                            form.setValue("instructorContact", "");
+                          } else {
+                            const instructorId = parseInt(value);
+                            field.onChange(instructorId);
+                            
+                            // Encontrar el instructor seleccionado
+                            const instructor = instructores?.find((i: any) => i.id === instructorId);
+                            if (instructor) {
+                              form.setValue("instructorName", instructor.fullName || `${instructor.firstName} ${instructor.lastName}`);
+                              form.setValue("instructorContact", instructor.email || instructor.contactEmail || '');
+                            }
                           }
                         }}
-                        value={field.value?.toString() || "0"}
+                        value={field.value ? field.value.toString() : "0"}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -1118,7 +1124,7 @@ const EditarActividadPage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="0">Ninguno</SelectItem>
+                          <SelectItem value="0">Sin instructor asignado</SelectItem>
                           {instructores?.map((instructor: any) => (
                             <SelectItem key={instructor.id} value={instructor.id.toString()}>
                               {instructor.fullName || `${instructor.firstName} ${instructor.lastName}`}
