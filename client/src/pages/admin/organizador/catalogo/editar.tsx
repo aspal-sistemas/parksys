@@ -261,7 +261,7 @@ const EditarActividadPage = () => {
         recurringDays: Array.isArray(data.recurringDays) ? data.recurringDays : [],
         targetMarket: Array.isArray(data.targetMarket) ? data.targetMarket : [],
         specialNeeds: Array.isArray(data.specialNeeds) ? data.specialNeeds : [],
-        instructorId: Number(data.instructorId) || 0,
+        instructorId: data.instructorId && data.instructorId !== 0 ? Number(data.instructorId) : null,
         instructorName: data.instructorName || "",
         instructorContact: data.instructorContact || "",
         duration: Number(data.duration) || calcularDuracionEnMinutos(startTime, endTime),
@@ -287,7 +287,7 @@ const EditarActividadPage = () => {
         endDate: values.endDate ? formatearFechaParaAPI(values.endDate) : null,
         startTime: values.startTime,
         endTime: values.endTime,
-        category: values.category,
+        category_id: parseInt(values.category),
         location: values.location || null,
         capacity: values.capacity || null,
         duration: values.duration || calcularDuracionEnMinutos(values.startTime, values.endTime),
@@ -1140,7 +1140,7 @@ const EditarActividadPage = () => {
                   )}
                 />
                 
-                {form.watch("instructorId") && (
+                {form.watch("instructorId") && form.watch("instructorId") !== 0 && form.watch("instructorId") !== null && (
                   <>
                     <FormField
                       control={form.control}
