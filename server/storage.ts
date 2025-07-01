@@ -1465,20 +1465,33 @@ DatabaseStorage.prototype.getActivity = async function(id: number): Promise<any>
     const activity = result.rows[0];
     
     // Parsear campos JSON
+    console.log("🔍 targetMarket raw:", activity.targetMarket);
+    console.log("🔍 specialNeeds raw:", activity.specialNeeds);
+    
     if (activity.targetMarket) {
       try {
         activity.targetMarket = JSON.parse(activity.targetMarket);
+        console.log("✅ targetMarket parsed:", activity.targetMarket);
       } catch (e) {
+        console.log("❌ Error parsing targetMarket:", e);
         activity.targetMarket = [];
       }
+    } else {
+      console.log("⚠️ targetMarket is null/undefined");
+      activity.targetMarket = [];
     }
     
     if (activity.specialNeeds) {
       try {
         activity.specialNeeds = JSON.parse(activity.specialNeeds);
+        console.log("✅ specialNeeds parsed:", activity.specialNeeds);
       } catch (e) {
+        console.log("❌ Error parsing specialNeeds:", e);
         activity.specialNeeds = [];
       }
+    } else {
+      console.log("⚠️ specialNeeds is null/undefined");
+      activity.specialNeeds = [];
     }
 
     console.log("🎯 Actividad encontrada:", activity);
