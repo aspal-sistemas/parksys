@@ -114,18 +114,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
               </div>
 
               {/* Información del parque */}
-              <div className="flex-1 min-w-0 relative">
-                {/* Green Flag Award Logo - Solo para parques específicos */}
-                {shouldShowGreenFlag(park.id) && (
-                  <div className="absolute bottom-3 right-3 z-20">
-                    <img 
-                      src={greenFlagLogo} 
-                      alt="Green Flag Award" 
-                      className="h-10 w-15 object-contain bg-white rounded-md p-1 shadow-lg border-2 border-green-500"
-                      title="Green Flag Award"
-                    />
-                  </div>
-                )}
+              <div className="flex-1 min-w-0">
                 
                 <div className="flex items-start justify-between mb-3">
                   <div>
@@ -197,8 +186,20 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                 </div>
               </div>
 
-              {/* Botón de acción */}
-              <div className="flex-shrink-0 flex justify-center">
+              {/* Botón de acción y Green Flag Award */}
+              <div className="flex-shrink-0 flex items-center gap-3">
+                {/* Green Flag Award Logo - Solo para parques específicos */}
+                {shouldShowGreenFlag(park.id) && (
+                  <div className="flex items-center">
+                    <img 
+                      src={greenFlagLogo} 
+                      alt="Green Flag Award" 
+                      className="h-20 w-30 object-contain bg-white rounded-md p-2 shadow-lg border-2 border-green-500"
+                      title="Green Flag Award"
+                    />
+                  </div>
+                )}
+                
                 <Link href={`/parque/${generateParkSlug(park.name, park.id)}`}>
                   <Button 
                     variant="default" 
