@@ -64,9 +64,10 @@ const ParksList: React.FC<ParksListProps> = ({
             </div>
           ))
         ) : parks.length > 0 ? (
-          parks.map(park => (
-            <ParkCard key={park.id} park={park} />
-          ))
+          parks.map(park => {
+            console.log(`Rendering park ID ${park.id}: ${park.name}`);
+            return <ParkCard key={park.id} park={park} />;
+          })
         ) : (
           <div className="col-span-full text-center py-10">
             <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron parques</h3>
