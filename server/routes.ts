@@ -799,7 +799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         FROM active_concessions ac
         LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
         LEFT JOIN concessionaires con ON ac.concessionaire_id = con.id
-        WHERE ac.park_id = $1 AND ac.status = 'activa'
+        WHERE ac.park_id = $1 AND ac.status = 'active'
         ORDER BY ac.start_date DESC
         LIMIT 10
       `, [parkId]);
