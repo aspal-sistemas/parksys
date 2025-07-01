@@ -2500,6 +2500,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         location: row.location,
         capacity: row.capacity,
         price: row.price,
+        isFree: row.isFree,
         instructorId: row.instructorId,
         instructorName: row.instructorName,
         createdAt: row.createdAt,

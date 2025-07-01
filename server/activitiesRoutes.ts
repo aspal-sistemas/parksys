@@ -103,8 +103,8 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
       const result = await db.execute(
         sql`SELECT a.id, a.park_id as "parkId", a.title, a.description, 
                  a.start_date as "startDate", a.end_date as "endDate", 
-                 a.category, a.location, a.capacity, a.category_id as "categoryId",
-                 a.created_at as "createdAt",
+                 a.category, a.location, a.capacity, a.price, a.is_free as "isFree", 
+                 a.category_id as "categoryId", a.created_at as "createdAt",
                  p.name as "parkName",
                  ac.name as "categoryName"
              FROM activities a
