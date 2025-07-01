@@ -1201,7 +1201,7 @@ const EditarActividadPage = () => {
 
         {/* Gestión de Imágenes */}
         <div className="mt-8">
-          <ActivityImageManager activityId={parseInt(id || '0')} />
+          <ActivityImageManager activityId={parseInt(params.id || '0')} />
         </div>
       </div>
     </AdminLayout>
