@@ -75,15 +75,26 @@ function ActiveConcessionsList() {
   });
 
   const concessions: ActiveConcession[] = concessionsData?.data || [];
+  
+  // Debug logging
+  console.log('Raw concessions data:', concessionsData);
+  console.log('Concessions array:', concessions);
+  console.log('Concessions length:', concessions.length);
   const parks = parksData?.data || [];
 
   // Filtrar concesiones
   const filteredConcessions = concessions.filter(concession => {
-    const matchesSearch = concession.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         concession.concessionTypeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         concession.parkName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || concession.status === statusFilter;
-    const matchesPark = parkFilter === 'all' || concession.parkName === parkFilter;
+    // Asegurar que los campos existen antes de usarlos
+    const name = concession.name || '';
+    const typeName = concession.concessionTypeName || '';
+    const parkName = concession.parkName || '';
+    const status = concession.status || '';
+    
+    const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         typeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         parkName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || status === statusFilter;
+    const matchesPark = parkFilter === 'all' || parkName === parkFilter;
     
     return matchesSearch && matchesStatus && matchesPark;
   });
@@ -200,10 +211,10 @@ function ActiveConcessionsList() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="activa">Activa</SelectItem>
-                <SelectItem value="suspendida">Suspendida</SelectItem>
-                <SelectItem value="vencida">Vencida</SelectItem>
-                <SelectItem value="renovacion">En Renovación</SelectItem>
+                <SelectItem value="active">Activa</SelectItem>
+                <SelectItem value="suspended">Suspendida</SelectItem>
+                <SelectItem value="expired">Vencida</SelectItem>
+                <SelectItem value="renewal">En Renovación</SelectItem>
               </SelectContent>
             </Select>
 

@@ -142,9 +142,9 @@ export default function ConcessionsList() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="activa">Activa</SelectItem>
-                <SelectItem value="por vencer">Por vencer</SelectItem>
-                <SelectItem value="vencida">Vencida</SelectItem>
+                <SelectItem value="active">Activa</SelectItem>
+                <SelectItem value="expiring">Por vencer</SelectItem>
+                <SelectItem value="expired">Vencida</SelectItem>
               </SelectContent>
             </Select>
 
