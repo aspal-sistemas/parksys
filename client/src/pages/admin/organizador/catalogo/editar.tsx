@@ -164,6 +164,11 @@ const EditarActividadPage = () => {
   const { data: instructores, isLoading: isLoadingInstructores } = useQuery({
     queryKey: ['/api/instructors'],
   });
+
+  // Obtener las categorías dinámicamente desde la API
+  const { data: categoriesData = [] } = useQuery({
+    queryKey: ['/api/activity-categories'],
+  });
   
   // Inicializar el formulario con valores por defecto completos
   const form = useForm({
@@ -352,13 +357,7 @@ const EditarActividadPage = () => {
     actualizarActividad.mutate(values);
   };
   
-  // Categorías de actividades
-  const categorias = [
-    { value: "artecultura", label: "Arte y Cultura" },
-    { value: "recreacionbienestar", label: "Recreación y Bienestar" },
-    { value: "temporada", label: "Eventos de Temporada" },
-    { value: "naturalezaciencia", label: "Naturaleza, Ciencia y Conservación" }
-  ];
+
   
   // Días de la semana para actividades recurrentes
   const diasSemana = [
@@ -538,9 +537,9 @@ const EditarActividadPage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {categorias.map((categoria) => (
-                            <SelectItem key={categoria.value} value={categoria.value}>
-                              {categoria.label}
+                          {Array.isArray(categoriesData) && categoriesData.map((category: any) => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                              {category.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
