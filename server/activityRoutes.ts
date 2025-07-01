@@ -13,18 +13,57 @@ const activityRouter = Router();
 // Obtener todas las actividades
 activityRouter.get("/activities", async (_req: Request, res: Response) => {
   try {
+    console.log("🎯 ACTIVITYROUTES.TS - ENDPOINT CORREGIDO EJECUTÁNDOSE");
+    
     // Usar SQL directo para evitar problemas con el esquema
     const result = await db.execute(
       sql`SELECT a.id, a.park_id as "parkId", a.title, a.description, 
                a.start_date as "startDate", a.end_date as "endDate", 
-               a.category, a.location, a.created_at as "createdAt",
-               p.name as "parkName"
+               a.category, a.category_id as "categoryId", a.location, 
+               a.capacity, a.price, a.is_free as "isFree", 
+               a.instructor_id as "instructorId", a.created_at as "createdAt",
+               p.name as "parkName",
+               c.name as "categoryName",
+               i.full_name as "instructorName"
            FROM activities a
            LEFT JOIN parks p ON a.park_id = p.id
-           ORDER BY a.start_date`
+           LEFT JOIN activity_categories c ON a.category_id = c.id
+           LEFT JOIN instructors i ON a.instructor_id = i.id
+           ORDER BY a.created_at DESC`
     );
     
-    res.json(result.rows);
+    // Mapear resultados para garantizar tipos correctos
+    const activities = result.rows.map(row => ({
+      id: row.id,
+      parkId: row.parkId,
+      title: row.title,
+      description: row.description,
+      startDate: row.startDate,
+      endDate: row.endDate,
+      category: row.category,
+      categoryId: row.categoryId,
+      location: row.location,
+      capacity: row.capacity,
+      price: row.price,
+      isFree: row.isFree,
+      instructorId: row.instructorId,
+      createdAt: row.createdAt,
+      parkName: row.parkName,
+      categoryName: row.categoryName,
+      instructorName: row.instructorName
+    }));
+    
+    console.log(`ACTIVITYROUTES.TS - Actividades encontradas: ${activities.length}`);
+    if (activities.length > 0) {
+      console.log('ACTIVITYROUTES.TS - Primera actividad con precio:', {
+        id: activities[0].id,
+        title: activities[0].title,
+        price: activities[0].price,
+        isFree: activities[0].isFree
+      });
+    }
+    
+    res.json(activities);
   } catch (error) {
     console.error("Error al obtener actividades:", error);
     res.status(500).json({ message: "Error al obtener actividades" });
