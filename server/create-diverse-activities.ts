@@ -431,10 +431,10 @@ export async function createDiverseActivities() {
   
   for (const activity of activitiesData) {
     try {
-      // Convertir arrays a strings JSON si es necesario
-      const targetMarketStr = activity.targetMarket ? JSON.stringify(activity.targetMarket) : null;
-      const specialNeedsStr = activity.specialNeeds ? JSON.stringify(activity.specialNeeds) : null;
-      const recurringDaysStr = activity.recurringDays ? JSON.stringify(activity.recurringDays) : null;
+      // Convertir arrays a JSON si es necesario
+      const targetMarketJson = activity.targetMarket ? JSON.stringify(activity.targetMarket) : null;
+      const specialNeedsJson = activity.specialNeeds ? JSON.stringify(activity.specialNeeds) : null;
+      const recurringDaysArray = activity.recurringDays || null;
 
       const result = await pool.query(`
         INSERT INTO activities (
@@ -459,9 +459,9 @@ export async function createDiverseActivities() {
         activity.price,
         activity.isFree,
         activity.isRecurring,
-        recurringDaysStr,
-        targetMarketStr,
-        specialNeedsStr,
+        recurringDaysArray,
+        targetMarketJson,
+        specialNeedsJson,
         activity.materials,
         activity.requirements
       ]);
@@ -469,12 +469,15 @@ export async function createDiverseActivities() {
       const activityId = result.rows[0].id;
       
       // Agregar imagen a la actividad
+      const imageFileName = `activity-${activityId}-primary.jpg`;
       await pool.query(`
-        INSERT INTO activity_images (activity_id, image_url, is_primary, caption)
-        VALUES ($1, $2, true, $3)
+        INSERT INTO activity_images (activity_id, image_url, file_name, mime_type, is_primary, caption)
+        VALUES ($1, $2, $3, $4, true, $5)
       `, [
         activityId,
         activity.imageUrl,
+        imageFileName,
+        'image/jpeg',
         `Imagen principal de ${activity.title}`
       ]);
 
