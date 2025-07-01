@@ -153,6 +153,34 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
 
     const activity = result.rows[0];
     
+    // Parsear campos JSON
+    let targetMarket = [];
+    let specialNeeds = [];
+    
+    if (activity.target_market) {
+      try {
+        targetMarket = JSON.parse(activity.target_market);
+        console.log("✅ targetMarket parsed:", targetMarket);
+      } catch (e) {
+        console.log("❌ Error parsing targetMarket:", e);
+        targetMarket = [];
+      }
+    } else {
+      console.log("⚠️ targetMarket is null/undefined");
+    }
+    
+    if (activity.special_needs) {
+      try {
+        specialNeeds = JSON.parse(activity.special_needs);
+        console.log("✅ specialNeeds parsed:", specialNeeds);
+      } catch (e) {
+        console.log("❌ Error parsing specialNeeds:", e);
+        specialNeeds = [];
+      }
+    } else {
+      console.log("⚠️ specialNeeds is null/undefined");
+    }
+
     // Formatear respuesta para que coincida con lo que espera el frontend
     const formattedActivity = {
       id: activity.id,
@@ -176,7 +204,9 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
       recurringDays: activity.recurring_days,
       instructorId: activity.instructor_id,
       instructorName: activity.instructor_name,
-      startTime: activity.start_time
+      startTime: activity.start_time,
+      targetMarket: targetMarket,
+      specialNeeds: specialNeeds
     };
 
     console.log("🎯 Actividad encontrada:", formattedActivity);
