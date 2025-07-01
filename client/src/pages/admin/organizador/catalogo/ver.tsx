@@ -62,6 +62,18 @@ const VerActividadesPage = () => {
   const { data: actividades = [], isLoading } = useQuery<Actividad[]>({
     queryKey: ['/api/activities'],
     select: (data) => {
+      // DEBUG: Verificar datos recibidos
+      console.log('🔍 Datos raw recibidos del API:', data);
+      if (data.length > 0) {
+        console.log('🔍 Primera actividad completa:', data[0]);
+        console.log('🔍 Campos de precio de primera actividad:', {
+          id: data[0].id,
+          title: data[0].title,
+          price: data[0].price,
+          isFree: data[0].isFree
+        });
+      }
+      
       // Transformar y enriquecer datos si es necesario
       return data.map(actividad => ({
         ...actividad,
