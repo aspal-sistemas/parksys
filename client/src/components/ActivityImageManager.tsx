@@ -37,7 +37,7 @@ const ActivityImageManager: React.FC<ActivityImageManagerProps> = ({
 
   // Consulta para obtener imágenes existentes (solo si tenemos activityId)
   const { data: images = [], isLoading } = useQuery<ActivityImage[]>({
-    queryKey: ['/api/activities', activityId, 'images'],
+    queryKey: [`/api/activities/${activityId}/images`],
     enabled: !!activityId && !showUploadOnly,
   });
 
@@ -78,7 +78,7 @@ const ActivityImageManager: React.FC<ActivityImageManagerProps> = ({
       }
 
       // Invalidar consultas relacionadas
-      queryClient.invalidateQueries({ queryKey: ['/api/activities', activityId, 'images'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/activities/${activityId}/images`] });
       
       // Callback para componente padre
       if (onImageUploaded) {
@@ -113,7 +113,7 @@ const ActivityImageManager: React.FC<ActivityImageManagerProps> = ({
         title: "Imagen eliminada",
         description: "La imagen se ha eliminado exitosamente",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/activities', activityId, 'images'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/activities/${activityId}/images`] });
     },
     onError: () => {
       toast({
@@ -145,7 +145,7 @@ const ActivityImageManager: React.FC<ActivityImageManagerProps> = ({
         title: "Imagen principal actualizada",
         description: "La imagen principal se ha actualizado exitosamente",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/activities', activityId, 'images'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/activities/${activityId}/images`] });
     },
     onError: () => {
       toast({
