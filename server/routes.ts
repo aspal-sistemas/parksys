@@ -2397,7 +2397,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Endpoint directo para obtener todas las actividades
   apiRouter.get("/activities", async (_req: Request, res: Response) => {
     try {
-      console.log("Obteniendo todas las actividades en GET /api/activities");
+      console.log("🔥 NUEVO ENDPOINT ACTIVITIES EJECUTÁNDOSE - GET /api/activities");
       
       // Usar la misma consulta que actividades-fotos para garantizar consistencia
       const { pool } = await import("./db");
@@ -3342,18 +3342,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get upcoming activities across all parks - for calendar integration
   publicRouter.get("/activities", async (req: Request, res: Response) => {
     try {
-      const allParks = await storage.getParks({ includeDeleted: false });
-      let allActivities: Activity[] = [];
+      console.log("🎯 ENDPOINT PÚBLICO ACTIVITIES EJECUTÁNDOSE");
       
-      // Collect activities from all parks
-      for (const park of allParks) {
-        const activities = await storage.getParkActivities(park.id);
-        if (activities.length > 0) {
-          allActivities = [...allActivities, ...activities];
-        }
-      }
+      // Usar la misma consulta SQL directa para consistencia
+      const { pool } = await import("./db");
       
-      // Sort by start date
+      const result = await pool.query(`
+        SELECT 
+          a.id,
+          a.title,
+          a.description,
+          a.start_date as "startDate",
+          a.end_date as "endDate",
+          a.category,
+          a.category_id as "categoryId",
+          a.park_id as "parkId",
+          a.location,
+          a.capacity,
+          a.price,
+          a.instructor_id as "instructorId",
+          a.created_at as "createdAt",
+          p.name as "parkName",
+          c.name as "categoryName",
+          i.full_name as "instructorName",
+          img.image_url as "imageUrl",
+          img.caption as "imageCaption"
+        FROM activities a
+        LEFT JOIN parks p ON a.park_id = p.id
+        LEFT JOIN activity_categories c ON a.category_id = c.id
+        LEFT JOIN instructors i ON a.instructor_id = i.id
+        LEFT JOIN activity_images img ON a.id = img.activity_id AND img.is_primary = true
+        ORDER BY a.created_at DESC
+      `);
+      
+      const allActivities = result.rows.map(row => ({
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        startDate: row.startDate,
+        endDate: row.endDate,
+        category: row.category,
+        categoryId: row.categoryId,
+        parkId: row.parkId,
+        parkName: row.parkName,
+        location: row.location,
+        capacity: row.capacity,
+        price: row.price,
+        instructorId: row.instructorId,
+        instructorName: row.instructorName,
+        createdAt: row.createdAt,
+        imageUrl: row.imageUrl,
+        imageCaption: row.imageCaption
+      }));
+      
+      console.log(`🎯 Actividades públicas encontradas: ${allActivities.length}`);
+      console.log(`🎯 Primeras 3: ${allActivities.slice(0, 3).map(a => `${a.id}-${a.title}`).join(', ')}`);
+      
+      // Sort by start date for public viewing
       allActivities.sort((a, b) => 
         new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
       );
