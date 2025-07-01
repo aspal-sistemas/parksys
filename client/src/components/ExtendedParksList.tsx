@@ -34,8 +34,8 @@ const generateParkSlug = (parkName: string, parkId: number) => {
 function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksListProps) {
   // Función para verificar si el parque debe mostrar el Green Flag Award
   const shouldShowGreenFlag = (parkId: number) => {
-    // Solo Bosque Los Colomos (ID: 5) y Parque Metropolitano (ID: 2)
-    return parkId === 5 || parkId === 2;
+    // Bosque Los Colomos (ID: 5), Parque Metropolitano (ID: 2), Parque Alcalde (ID: 4), Bosque Urbano Tlaquepaque (ID: 18)
+    return parkId === 5 || parkId === 2 || parkId === 4 || parkId === 18;
   };
 
   // Obtenemos las amenidades para mostrar los iconos

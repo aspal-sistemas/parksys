@@ -35,8 +35,8 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
   
   // Función para verificar si el parque debe mostrar el Green Flag Award
   const shouldShowGreenFlag = (parkId: number) => {
-    // Solo Bosque Los Colomos (ID: 5) y Parque Metropolitano (ID: 2)
-    const shouldShow = parkId === 5 || parkId === 2;
+    // Bosque Los Colomos (ID: 5), Parque Metropolitano (ID: 2), Parque Alcalde (ID: 4), Bosque Urbano Tlaquepaque (ID: 18)
+    const shouldShow = parkId === 5 || parkId === 2 || parkId === 4 || parkId === 18;
     console.log(`Green Flag check for park ID ${parkId}: ${shouldShow}`);
     return shouldShow;
   };
