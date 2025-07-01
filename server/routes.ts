@@ -2715,6 +2715,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const activityData = { 
         ...otherData,
         category: finalCategory,
+        categoryId: category_id || null,
         startDate: parsedStartDate,
         ...(parsedEndDate && { endDate: parsedEndDate })
       };
