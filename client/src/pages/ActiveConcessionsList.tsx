@@ -49,12 +49,14 @@ function ActiveConcessionsList() {
   const queryClient = useQueryClient();
 
   // Obtener concesiones activas
-  const { data: concessionsData, isLoading } = useQuery({
+  const { data: concessionsData, isLoading, refetch } = useQuery({
     queryKey: ['/api/active-concessions'],
     queryFn: async () => {
       const response = await fetch('/api/active-concessions');
       return response.json();
-    }
+    },
+    refetchOnWindowFocus: true,
+    staleTime: 30000 // Cache por 30 segundos para permitir actualizaciones más frecuentes
   });
 
   // Obtener parques para filtro
@@ -136,6 +138,11 @@ function ActiveConcessionsList() {
     }
   };
 
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/active-concessions'] });
+    refetch();
+  };
+
   const handleViewDetail = (concession: ActiveConcession) => {
     setSelectedConcession(concession);
     setShowDetailModal(true);
@@ -172,7 +179,7 @@ function ActiveConcessionsList() {
             </Link>
             <Button 
               variant="outline" 
-              onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/active-concessions'] })}
+              onClick={handleRefresh}
               className="border-green-600 text-green-600 hover:bg-green-50"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -251,18 +258,18 @@ function ActiveConcessionsList() {
             <div className="h-48 bg-gradient-to-br from-green-100 to-green-200 relative">
               {(concession as any).primaryImage ? (
                 <img 
-                  src={(concession as any).primaryImage} 
+                  src={`${(concession as any).primaryImage}${(concession as any).primaryImage.includes('?') ? '&' : '?'}t=${Date.now()}`}
                   alt={concession.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
                   }}
                 />
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Building className="h-16 w-16 text-green-600 opacity-50" />
-                </div>
-              )}
+              ) : null}
+              <div className={`fallback-icon flex items-center justify-center h-full ${(concession as any).primaryImage ? 'hidden' : ''}`}>
+                <Building className="h-16 w-16 text-green-600 opacity-50" />
+              </div>
               <div className="absolute top-4 right-4 flex gap-2">
                 {getStatusBadge(concession.status)}
               </div>
