@@ -458,7 +458,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* SECCIÓN DE ACTIVIDADES REORGANIZADA */}
+          {/* SECCIÓN DE ACTIVIDADES REORGANIZADA - ORDEN CORRECTO */}
           <ModuleNav 
             title={t('navigation.activities')} 
             icon={<Calendar className="h-5 w-5" />}
@@ -472,13 +472,13 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Dashboard
             </NavItem>
-            {/* 2. CALENDARIO */}
+            {/* 2. CATEGORÍAS */}
             <NavItem 
-              href="/admin/activities/calendar" 
-              icon={<Calendar className="h-5 w-5" />}
-              active={location.startsWith('/admin/activities/calendar')}
+              href="/admin/activities/categories" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location.startsWith('/admin/activities/categories')}
             >
-              Calendario
+              Categorías
             </NavItem>
             {/* 3. LISTADO */}
             <NavItem 
@@ -496,13 +496,13 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Nueva Actividad
             </NavItem>
-            {/* 5. CATEGORÍAS */}
+            {/* 5. CALENDARIO */}
             <NavItem 
-              href="/admin/activities/categories" 
-              icon={<Tag className="h-5 w-5" />}
-              active={location.startsWith('/admin/activities/categories')}
+              href="/admin/activities/calendar" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/activities/calendar')}
             >
-              Categorías
+              Calendario
             </NavItem>
             {/* 6. INSTRUCTORES */}
             <NavItem 
