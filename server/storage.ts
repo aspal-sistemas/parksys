@@ -1424,7 +1424,62 @@ DatabaseStorage.prototype.getActivity = async function(id: number): Promise<any>
 };
 
 DatabaseStorage.prototype.updateActivity = async function(id: number, activityData: any): Promise<any> {
-  return { id, ...activityData };
+  console.log("🔄 Actualizando actividad:", id, "con datos:", activityData);
+  
+  try {
+    // Mapear los campos del frontend al schema de la base de datos
+    const updateData: any = {};
+    
+    if (activityData.title) updateData.title = activityData.title;
+    if (activityData.description) updateData.description = activityData.description;
+    if (activityData.parkId) updateData.parkId = Number(activityData.parkId);
+    if (activityData.startDate) updateData.startDate = activityData.startDate;
+    if (activityData.endDate) updateData.endDate = activityData.endDate;
+    if (activityData.startTime) updateData.startTime = activityData.startTime;
+    if (activityData.endTime) updateData.endTime = activityData.endTime;
+    if (activityData.location) updateData.location = activityData.location;
+    if (activityData.capacity) updateData.capacity = Number(activityData.capacity);
+    if (activityData.duration !== undefined) updateData.duration = Number(activityData.duration);
+    if (activityData.price !== undefined) updateData.price = Number(activityData.price);
+    if (activityData.isFree !== undefined) updateData.isFree = Boolean(activityData.isFree);
+    if (activityData.isPriceRandom !== undefined) updateData.isPriceRandom = Boolean(activityData.isPriceRandom);
+    if (activityData.materials) updateData.materials = activityData.materials;
+    if (activityData.requirements) updateData.requirements = activityData.requirements;
+    if (activityData.isRecurring !== undefined) updateData.isRecurring = Boolean(activityData.isRecurring);
+    if (activityData.recurringDays) updateData.recurringDays = activityData.recurringDays;
+    if (activityData.targetMarket) updateData.targetMarket = activityData.targetMarket;
+    if (activityData.specialNeeds) updateData.specialNeeds = activityData.specialNeeds;
+    
+    // Campos específicos que necesitan mapeo especial
+    if (activityData.category) {
+      updateData.categoryId = Number(activityData.category);
+      updateData.category = null; // Limpiar el campo legacy
+    }
+    
+    if (activityData.instructorId) {
+      updateData.instructorId = Number(activityData.instructorId);
+    }
+    
+    console.log("📝 Datos mapeados para actualizar:", updateData);
+    
+    // Realizar la actualización usando Drizzle ORM
+    const result = await db
+      .update(activities)
+      .set(updateData)
+      .where(eq(activities.id, id))
+      .returning();
+    
+    console.log("✅ Actividad actualizada:", result[0]);
+    
+    if (result.length === 0) {
+      throw new Error("No se pudo actualizar la actividad");
+    }
+    
+    return result[0];
+  } catch (error) {
+    console.error("❌ Error actualizando actividad:", error);
+    throw error;
+  }
 };
 
 DatabaseStorage.prototype.deleteActivity = async function(id: number): Promise<boolean> {
