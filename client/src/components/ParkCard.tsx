@@ -92,14 +92,13 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
 
       {/* Green Flag Award Logo - Solo para parques específicos */}
       {shouldShowGreenFlag(park.id) && (
-        <div className="absolute top-2 right-2 z-20 bg-red-500 p-2">
+        <div className="absolute top-2 right-2 z-20">
           <img 
             src={greenFlagLogo} 
             alt="Green Flag Award" 
-            className="w-20 h-12 object-contain bg-white rounded-md p-1 shadow-lg border-4 border-yellow-500"
+            className="h-20 w-30 object-contain bg-white rounded-md p-2 shadow-lg border-2 border-green-500"
             title="Green Flag Award"
           />
-          <div className="text-white text-xs font-bold">LOGO AQUI</div>
         </div>
       )}
       
