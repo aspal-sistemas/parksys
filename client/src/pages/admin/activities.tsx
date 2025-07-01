@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Plus, Pencil, Trash, Search, ChevronLeft, ChevronRight, Calendar, X } from 'lucide-react';
+import { Plus, Pencil, Trash, Search, ChevronLeft, ChevronRight, Calendar, X, Image as ImageIcon } from 'lucide-react';
 import { useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -365,6 +365,15 @@ const AdminActivities = () => {
                       <TableCell>{formatDate(activity.startDate)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-green-600 hover:text-green-700"
+                            onClick={() => setLocation(`/admin/activities/${activity.id}/images`)}
+                            title="Gestionar imágenes"
+                          >
+                            <Image className="h-4 w-4" />
+                          </Button>
                           <Button 
                             variant="outline" 
                             size="sm" 

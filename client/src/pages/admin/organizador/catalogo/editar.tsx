@@ -47,6 +47,7 @@ import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Spinner } from '@/components/Spinner';
+import ActivityImageManager from '@/components/ActivityImageManager';
 
 // Esquema para validar el formulario
 const activitySchema = z.object({
@@ -1197,6 +1198,11 @@ const EditarActividadPage = () => {
             </div>
           </form>
         </Form>
+
+        {/* Gestión de Imágenes */}
+        <div className="mt-8">
+          <ActivityImageManager activityId={parseInt(id || '0')} />
+        </div>
       </div>
     </AdminLayout>
   );

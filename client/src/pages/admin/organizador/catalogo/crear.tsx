@@ -256,19 +256,19 @@ const CrearActividadPage = () => {
   
   return await response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Actividad creada",
-        description: "La actividad ha sido creada exitosamente",
+        description: "La actividad ha sido creada exitosamente. Ahora puedes agregar imágenes.",
         variant: "default"
       });
       
       // Invalidar todas las consultas relacionadas con actividades
       queryClient.invalidateQueries();
       
-      // Esperar un momento para que la invalidación surta efecto
+      // Redirigir a la página de gestión de imágenes de la nueva actividad
       setTimeout(() => {
-        setLocation('/admin/organizador/catalogo/ver');
+        setLocation(`/admin/activities/${data.id}/images`);
       }, 500);
     },
     onError: (error) => {
