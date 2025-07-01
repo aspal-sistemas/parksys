@@ -133,7 +133,7 @@ function ParkLandingPage() {
               <img 
                 src={greenFlagLogo} 
                 alt="Green Flag Award" 
-                className="h-8 w-12 object-contain"
+                className="h-10 w-15 object-contain"
                 title="Green Flag Award - Parque Certificado"
               />
             )}

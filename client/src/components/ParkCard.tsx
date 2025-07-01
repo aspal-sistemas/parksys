@@ -85,20 +85,19 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
           </div>
         )}
       </div>
-
-      {/* Green Flag Award Logo - Solo para parques específicos */}
-      {shouldShowGreenFlag(park.id) && (
-        <div className="absolute bottom-2 right-2 z-10">
-          <img 
-            src={greenFlagLogo} 
-            alt="Green Flag Award" 
-            className="w-12 h-8 object-contain bg-white/90 rounded-md p-1 shadow-sm"
-            title="Green Flag Award"
-          />
-        </div>
-      )}
       
       <CardContent className="p-4 flex-1 flex flex-col">
+        {/* Green Flag Award Logo - Solo para parques específicos */}
+        {shouldShowGreenFlag(park.id) && (
+          <div className="absolute bottom-3 right-3 z-10">
+            <img 
+              src={greenFlagLogo} 
+              alt="Green Flag Award" 
+              className="w-12 h-8 object-contain bg-white/90 rounded-md p-1 shadow-sm"
+              title="Green Flag Award"
+            />
+          </div>
+        )}
         <div className="flex justify-between items-start mb-2">
           <div>
             <h3 className="font-medium text-lg text-gray-900">{park.name}</h3>
