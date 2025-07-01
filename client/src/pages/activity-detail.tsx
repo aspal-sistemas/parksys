@@ -164,6 +164,18 @@ function ActivityDetailPage() {
               </div>
             </Card>
 
+            {/* Descripción */}
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle>Descripción</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700 leading-relaxed">
+                  {activity?.description || 'No hay descripción disponible para esta actividad.'}
+                </p>
+              </CardContent>
+            </Card>
+
             {/* Galería de imágenes adicionales */}
             {images && images.length > 1 && (
               <div className="mt-4">
@@ -313,17 +325,7 @@ function ActivityDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Descripción */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Descripción</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 leading-relaxed">
-                  {activity?.description || 'No hay descripción disponible para esta actividad.'}
-                </p>
-              </CardContent>
-            </Card>
+
 
             {/* Información adicional */}
             {(activity?.requirements || activity?.materials || (activity?.specialNeeds && activity.specialNeeds.length > 0)) && (
