@@ -458,37 +458,21 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* SECCIÓN DE ACTIVIDADES CON ORDEN CORREGIDO */}
+          {/* SECCIÓN DE ACTIVIDADES REORGANIZADA */}
           <ModuleNav 
             title={t('navigation.activities')} 
             icon={<Calendar className="h-5 w-5" />}
             value="activities"
           >
-            {/* 1. ORGANIZADOR PRIMERO */}
+            {/* 1. DASHBOARD */}
             <NavItem 
               href="/admin/organizador" 
-              icon={<UserCog className="h-5 w-5" />}
+              icon={<BarChart3 className="h-5 w-5" />}
               active={location.startsWith('/admin/organizador')}
             >
-              Organizador
+              Dashboard
             </NavItem>
-            {/* 2. LISTADO SEGUNDO */}
-            <NavItem 
-              href="/admin/activities" 
-              icon={<Activity className="h-5 w-5" />}
-              active={location === '/admin/activities'}
-            >
-              {t('navigation.listing')}
-            </NavItem>
-            {/* 3. NUEVA ACTIVIDAD TERCERO */}
-            <NavItem 
-              href="/admin/activities/new" 
-              icon={<Plus className="h-5 w-5" />}
-              active={location.startsWith('/admin/activities/new')}
-            >
-              Nueva Actividad
-            </NavItem>
-            {/* 4. CALENDARIO CUARTO */}
+            {/* 2. CALENDARIO */}
             <NavItem 
               href="/admin/activities/calendar" 
               icon={<Calendar className="h-5 w-5" />}
@@ -496,7 +480,31 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Calendario
             </NavItem>
-            {/* 5. INSTRUCTORES QUINTO */}
+            {/* 3. LISTADO */}
+            <NavItem 
+              href="/admin/activities" 
+              icon={<Activity className="h-5 w-5" />}
+              active={location === '/admin/activities'}
+            >
+              {t('navigation.listing')}
+            </NavItem>
+            {/* 4. NUEVA ACTIVIDAD */}
+            <NavItem 
+              href="/admin/activities/new" 
+              icon={<Plus className="h-5 w-5" />}
+              active={location.startsWith('/admin/activities/new')}
+            >
+              Nueva Actividad
+            </NavItem>
+            {/* 5. CATEGORÍAS */}
+            <NavItem 
+              href="/admin/activities/categories" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location.startsWith('/admin/activities/categories')}
+            >
+              Categorías
+            </NavItem>
+            {/* 6. INSTRUCTORES */}
             <NavItem 
               href="/admin/instructors" 
               icon={<GraduationCap className="h-5 w-5" />}
