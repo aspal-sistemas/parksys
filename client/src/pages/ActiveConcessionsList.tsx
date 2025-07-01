@@ -108,20 +108,10 @@ function ActiveConcessionsList() {
     return matchesSearch && matchesStatus && matchesPark;
   });
 
-  // Debug filtering results
-  console.log('Filtered concessions:', filteredConcessions);
-  console.log('Filtered length:', filteredConcessions.length);
-
   // Paginación
   const totalPages = Math.ceil(filteredConcessions.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedConcessions = filteredConcessions.slice(startIndex, startIndex + itemsPerPage);
-  
-  console.log('Paginated concessions:', paginatedConcessions);
-  console.log('Paginated length:', paginatedConcessions.length);
-  console.log('Current page:', currentPage);
-  console.log('Start index:', startIndex);
-  console.log('Items per page:', itemsPerPage);
 
   // Resetear página cuando cambian filtros
   const handleFiltersChange = () => {
@@ -311,7 +301,7 @@ function ActiveConcessionsList() {
                 <MapPin className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium">{concession.parkName}</p>
-                  <p className="text-gray-600">{concession.specificLocation}</p>
+                  <p className="text-gray-600">{(concession as any).specific_location}</p>
                 </div>
               </div>
 
@@ -325,7 +315,7 @@ function ActiveConcessionsList() {
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-gray-500" />
                 <span className="text-gray-600">
-                  {new Date(concession.startDate).toLocaleDateString()} - {new Date(concession.endDate).toLocaleDateString()}
+                  {new Date((concession as any).start_date).toLocaleDateString()} - {new Date((concession as any).end_date).toLocaleDateString()}
                 </span>
               </div>
 
