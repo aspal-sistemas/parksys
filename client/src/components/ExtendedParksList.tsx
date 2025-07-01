@@ -6,6 +6,7 @@ import { MapPin, Clock, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AmenityIcon from './AmenityIcon';
+import greenFlagLogo from '@assets/PHOTO-2025-07-01-12-36-16_1751396336894.jpg';
 
 interface ExtendedParksListProps {
   parks: ExtendedPark[];
@@ -31,6 +32,16 @@ const generateParkSlug = (parkName: string, parkId: number) => {
 };
 
 function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksListProps) {
+  console.log('ExtendedParksList: Renderizando lista de parques', parks.length);
+  
+  // Función para verificar si el parque debe mostrar el Green Flag Award
+  const shouldShowGreenFlag = (parkId: number) => {
+    // Solo Bosque Los Colomos (ID: 5) y Parque Metropolitano (ID: 2)
+    const shouldShow = parkId === 5 || parkId === 2;
+    console.log(`Green Flag check for park ID ${parkId}: ${shouldShow}`);
+    return shouldShow;
+  };
+
   // Obtenemos las amenidades para mostrar los iconos
   const { data: amenities = [] } = useQuery<Amenity[]>({
     queryKey: ['/api/amenities']
@@ -107,7 +118,20 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
               </div>
 
               {/* Información del parque */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 relative">
+                {/* Green Flag Award Logo - Solo para parques específicos */}
+                {shouldShowGreenFlag(park.id) && (
+                  <div className="absolute top-0 right-0 z-20 bg-red-500 p-2">
+                    <img 
+                      src={greenFlagLogo} 
+                      alt="Green Flag Award" 
+                      className="w-20 h-12 object-contain bg-white rounded-md p-1 shadow-lg border-4 border-yellow-500"
+                      title="Green Flag Award"
+                    />
+                    <div className="text-white text-xs font-bold">LOGO AQUI</div>
+                  </div>
+                )}
+                
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900">
