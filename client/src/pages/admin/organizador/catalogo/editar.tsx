@@ -254,7 +254,7 @@ const EditarActividadPage = () => {
         capacity: Number(data.capacity) || 20,
         price: Number(data.price) || 0,
         isPriceRandom: Boolean(data.isPriceRandom),
-        isFree: Boolean(data.isFree) || (Number(data.price) === 0),
+        isFree: Boolean(data.isFree),
         materials: data.materials || "",
         requirements: data.requirements || "",
         isRecurring: Boolean(data.isRecurring),
@@ -885,11 +885,21 @@ const EditarActividadPage = () => {
                             <FormControl>
                               <Input
                                 type="number"
-                                {...field}
                                 min={0}
                                 step="0.01"
                                 value={field.value || ''}
-                                onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (value === '') {
+                                    field.onChange(0);
+                                  } else {
+                                    const numericValue = parseFloat(value);
+                                    if (!isNaN(numericValue)) {
+                                      field.onChange(numericValue);
+                                    }
+                                  }
+                                }}
+                                placeholder="0.00"
                               />
                             </FormControl>
                             <FormMessage />
