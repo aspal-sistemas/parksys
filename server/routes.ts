@@ -2353,6 +2353,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           a.price,
           a.instructor_id as "instructorId",
           a.created_at as "createdAt",
+          a.materials,
+          a.requirements,
+          a.duration,
+          a.is_recurring as "isRecurring",
+          a.recurring_days as "recurringDays",
+          a.target_market as "targetMarket",
+          a.special_needs as "specialNeeds",
+          a.is_free as "isFree",
           p.name as "parkName",
           c.name as "categoryName",
           i.full_name as "instructorName",
@@ -2366,24 +2374,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ORDER BY a.created_at DESC
       `);
       
-      const activities = result.rows.map(row => ({
-        id: row.id,
-        title: row.title,
-        description: row.description,
-        startDate: row.startDate,
-        endDate: row.endDate,
-        category: row.categoryName || row.category,
-        categoryId: row.categoryId,
-        parkId: row.parkId,
-        parkName: row.parkName,
-        location: row.location,
-        capacity: row.capacity || 0,
-        price: row.price || 0,
-        instructorId: row.instructorId,
-        instructorName: row.instructorName,
-        imageUrl: row.imageUrl,
-        imageCaption: row.imageCaption
-      }));
+      const activities = result.rows.map(row => {
+        // Procesar targetMarket y specialNeeds de manera consistente
+        let targetMarket = row.targetMarket;
+        let specialNeeds = row.specialNeeds;
+        let recurringDays = row.recurringDays;
+        
+        if (targetMarket && typeof targetMarket === 'string') {
+          try {
+            targetMarket = JSON.parse(targetMarket);
+          } catch (e) {
+            targetMarket = [targetMarket]; // Si no es JSON válido, convertir a array
+          }
+        }
+        if (!Array.isArray(targetMarket)) {
+          targetMarket = targetMarket ? [targetMarket] : [];
+        }
+        
+        if (specialNeeds && typeof specialNeeds === 'string') {
+          try {
+            specialNeeds = JSON.parse(specialNeeds);
+          } catch (e) {
+            specialNeeds = [specialNeeds]; // Si no es JSON válido, convertir a array
+          }
+        }
+        if (!Array.isArray(specialNeeds)) {
+          specialNeeds = specialNeeds ? [specialNeeds] : [];
+        }
+        
+        if (recurringDays && typeof recurringDays === 'string') {
+          try {
+            recurringDays = JSON.parse(recurringDays);
+          } catch (e) {
+            recurringDays = [recurringDays]; // Si no es JSON válido, convertir a array
+          }
+        }
+        if (!Array.isArray(recurringDays)) {
+          recurringDays = recurringDays ? [recurringDays] : [];
+        }
+        
+        return {
+          id: row.id,
+          title: row.title,
+          description: row.description,
+          startDate: row.startDate,
+          endDate: row.endDate,
+          category: row.categoryName || row.category,
+          categoryId: row.categoryId,
+          parkId: row.parkId,
+          parkName: row.parkName,
+          location: row.location,
+          capacity: row.capacity || 0,
+          price: row.price || 0,
+          instructorId: row.instructorId,
+          instructorName: row.instructorName,
+          imageUrl: row.imageUrl,
+          imageCaption: row.imageCaption,
+          materials: row.materials,
+          requirements: row.requirements,
+          duration: row.duration,
+          isRecurring: row.isRecurring,
+          recurringDays: recurringDays,
+          targetMarket: targetMarket,
+          specialNeeds: specialNeeds,
+          isFree: row.isFree
+        };
+      });
       
       console.log(`🎯 Actividades encontradas: ${activities.length}`);
       console.log(`🎯 Actividades con imagen: ${activities.filter(a => a.imageUrl).length}`);

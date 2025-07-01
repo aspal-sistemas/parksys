@@ -47,6 +47,15 @@ interface ActivityData {
   instructorName?: string;
   imageUrl?: string;
   imageCaption?: string;
+  // Nuevos campos agregados
+  targetMarket?: string[];
+  specialNeeds?: string[];
+  materials?: string;
+  requirements?: string;
+  isRecurring?: boolean;
+  recurringDays?: string[];
+  duration?: number;
+  isFree?: boolean;
 }
 
 const categoryColors = {
@@ -117,6 +126,40 @@ function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode
                   <span>Instructor: {activity.instructorName}</span>
                 </div>
               )}
+              
+              {/* Información adicional */}
+              <div className="mt-3 space-y-2">
+                {activity.targetMarket && activity.targetMarket.length > 0 && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Trophy className="h-4 w-4 text-orange-600" />
+                    <span>Dirigido a: {activity.targetMarket.map(market => {
+                      const marketLabels: {[key: string]: string} = {
+                        'preescolar': 'Preescolar',
+                        'ninos': 'Niños',
+                        'adolescentes': 'Adolescentes', 
+                        'adultos': 'Adultos',
+                        'adultos_mayores': 'Adultos mayores',
+                        'familias': 'Familias'
+                      };
+                      return marketLabels[market] || market;
+                    }).join(', ')}</span>
+                  </div>
+                )}
+                
+                {activity.duration && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Clock className="h-4 w-4 text-blue-600" />
+                    <span>{activity.duration} minutos</span>
+                  </div>
+                )}
+                
+                {activity.isRecurring && activity.recurringDays && activity.recurringDays.length > 0 && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="h-4 w-4 text-green-600" />
+                    <span>Días: {activity.recurringDays.join(', ')}</span>
+                  </div>
+                )}
+              </div>
             </div>
             
             <div className="ml-4 flex flex-col gap-2">
@@ -220,6 +263,35 @@ function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode
               <span className="text-xs">{activity.instructorName}</span>
             </div>
           )}
+          
+          {/* Información adicional - vista grid */}
+          <div className="space-y-1 pt-2">
+            {activity.targetMarket && activity.targetMarket.length > 0 && (
+              <div className="flex items-center gap-2 text-gray-600">
+                <Trophy className="h-3 w-3 text-orange-600 flex-shrink-0" />
+                <span className="text-xs truncate">
+                  {activity.targetMarket.map(market => {
+                    const marketLabels: {[key: string]: string} = {
+                      'preescolar': 'Preescolar',
+                      'ninos': 'Niños',
+                      'adolescentes': 'Adolescentes', 
+                      'adultos': 'Adultos',
+                      'adultos_mayores': 'Adultos mayores',
+                      'familias': 'Familias'
+                    };
+                    return marketLabels[market] || market;
+                  }).join(', ')}
+                </span>
+              </div>
+            )}
+            
+            {activity.duration && (
+              <div className="flex items-center gap-2 text-gray-600">
+                <Clock className="h-3 w-3 text-blue-600 flex-shrink-0" />
+                <span className="text-xs">{activity.duration} min</span>
+              </div>
+            )}
+          </div>
         </div>
         
         <Button 
