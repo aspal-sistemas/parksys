@@ -159,11 +159,18 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
     
     if (activity.target_market) {
       try {
+        // Intentar parsear como JSON primero
         targetMarket = JSON.parse(activity.target_market);
-        console.log("✅ targetMarket parsed:", targetMarket);
+        console.log("✅ targetMarket parsed as JSON:", targetMarket);
       } catch (e) {
-        console.log("❌ Error parsing targetMarket:", e);
-        targetMarket = [];
+        // Si falla, tratar como string separado por comas
+        if (typeof activity.target_market === 'string') {
+          targetMarket = activity.target_market.split(',').map(s => s.trim()).filter(s => s.length > 0);
+          console.log("✅ targetMarket parsed as CSV:", targetMarket);
+        } else {
+          console.log("❌ Error parsing targetMarket:", e);
+          targetMarket = [];
+        }
       }
     } else {
       console.log("⚠️ targetMarket is null/undefined");
@@ -171,11 +178,18 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
     
     if (activity.special_needs) {
       try {
+        // Intentar parsear como JSON primero
         specialNeeds = JSON.parse(activity.special_needs);
-        console.log("✅ specialNeeds parsed:", specialNeeds);
+        console.log("✅ specialNeeds parsed as JSON:", specialNeeds);
       } catch (e) {
-        console.log("❌ Error parsing specialNeeds:", e);
-        specialNeeds = [];
+        // Si falla, tratar como string separado por comas
+        if (typeof activity.special_needs === 'string') {
+          specialNeeds = activity.special_needs.split(',').map(s => s.trim()).filter(s => s.length > 0);
+          console.log("✅ specialNeeds parsed as CSV:", specialNeeds);
+        } else {
+          console.log("❌ Error parsing specialNeeds:", e);
+          specialNeeds = [];
+        }
       }
     } else {
       console.log("⚠️ specialNeeds is null/undefined");
