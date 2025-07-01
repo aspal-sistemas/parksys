@@ -2721,6 +2721,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       console.log("Datos procesados para actualización:", activityData);
+      console.log("🔍 category_id recibido:", category_id);
+      console.log("🔍 finalCategory calculada:", finalCategory);
+      console.log("🔍 categoryId en activityData:", activityData.categoryId);
       
       // Validar los datos
       console.log("🔄 [ROUTES.TS] Llamando a storage.updateActivity con ID:", activityId);
