@@ -162,38 +162,46 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
     let specialNeeds = [];
     
     if (activity.target_market) {
-      try {
-        // Intentar parsear como JSON primero
-        targetMarket = JSON.parse(activity.target_market);
-        console.log("✅ targetMarket parsed as JSON:", targetMarket);
-      } catch (e) {
-        // Si falla, tratar como string separado por comas
-        if (typeof activity.target_market === 'string') {
+      if (Array.isArray(activity.target_market)) {
+        // Ya es un array, usarlo directamente
+        targetMarket = activity.target_market;
+        console.log("✅ targetMarket is already array:", targetMarket);
+      } else if (typeof activity.target_market === 'string') {
+        try {
+          // Intentar parsear como JSON
+          targetMarket = JSON.parse(activity.target_market);
+          console.log("✅ targetMarket parsed as JSON:", targetMarket);
+        } catch (e) {
+          // Si falla, tratar como string separado por comas
           targetMarket = activity.target_market.split(',').map(s => s.trim()).filter(s => s.length > 0);
           console.log("✅ targetMarket parsed as CSV:", targetMarket);
-        } else {
-          console.log("❌ Error parsing targetMarket:", e);
-          targetMarket = [];
         }
+      } else {
+        console.log("❌ targetMarket type unknown:", typeof activity.target_market);
+        targetMarket = [];
       }
     } else {
       console.log("⚠️ targetMarket is null/undefined");
     }
     
     if (activity.special_needs) {
-      try {
-        // Intentar parsear como JSON primero
-        specialNeeds = JSON.parse(activity.special_needs);
-        console.log("✅ specialNeeds parsed as JSON:", specialNeeds);
-      } catch (e) {
-        // Si falla, tratar como string separado por comas
-        if (typeof activity.special_needs === 'string') {
+      if (Array.isArray(activity.special_needs)) {
+        // Ya es un array, usarlo directamente
+        specialNeeds = activity.special_needs;
+        console.log("✅ specialNeeds is already array:", specialNeeds);
+      } else if (typeof activity.special_needs === 'string') {
+        try {
+          // Intentar parsear como JSON
+          specialNeeds = JSON.parse(activity.special_needs);
+          console.log("✅ specialNeeds parsed as JSON:", specialNeeds);
+        } catch (e) {
+          // Si falla, tratar como string separado por comas
           specialNeeds = activity.special_needs.split(',').map(s => s.trim()).filter(s => s.length > 0);
           console.log("✅ specialNeeds parsed as CSV:", specialNeeds);
-        } else {
-          console.log("❌ Error parsing specialNeeds:", e);
-          specialNeeds = [];
         }
+      } else {
+        console.log("❌ specialNeeds type unknown:", typeof activity.special_needs);
+        specialNeeds = [];
       }
     } else {
       console.log("⚠️ specialNeeds is null/undefined");
