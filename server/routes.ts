@@ -2540,6 +2540,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title,
         description,
         category,
+        category_id,
         parkId,
         startDate: fechaInicio,
         endDate: fechaFin,
@@ -2557,6 +2558,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recurringDays,
         ...otherData
       } = req.body;
+      
+      // Mapear category_id numérico a nombre de categoría
+      const categoryMapping: { [key: number]: string } = {
+        1: 'Deportivo',
+        2: 'Recreación y Bienestar',
+        3: 'Arte y Cultura',
+        4: 'Naturaleza y Ciencia',
+        5: 'Comunidad',
+        6: 'Eventos de Temporada'
+      };
+      
+      // Determinar la categoría final: usar category_id mapeado si existe, si no usar category
+      const finalCategory = category_id ? categoryMapping[category_id] : category;
       
       // Convertir las fechas explícitamente a objetos Date
       let parsedStartDate: Date;
@@ -2596,10 +2610,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const activityData = { 
         title,
         description,
+        category: finalCategory || 'Recreación y Bienestar', // Categoría por defecto si no se especifica
         parkId: Number(parkId),
         startDate: parsedStartDate,
         location: location || null,
-        categoryId: category ? parseInt(category) : null,
         instructorId: instructorId || null,
         startTime: startTime || null,
         duration: duration ? parseInt(duration) : null,
@@ -2725,7 +2739,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // TODO: Implementar verificación de permisos más estricta en producción
       
       // Extraer los datos
-      const { startDate, endDate, parkId, ...otherData } = req.body;
+      const { startDate, endDate, parkId, category, category_id, ...otherData } = req.body;
+      
+      // Mapear category_id numérico a nombre de categoría
+      const categoryMapping: { [key: number]: string } = {
+        1: 'Deportivo',
+        2: 'Recreación y Bienestar',
+        3: 'Arte y Cultura',
+        4: 'Naturaleza y Ciencia',
+        5: 'Comunidad',
+        6: 'Eventos de Temporada'
+      };
+      
+      // Determinar la categoría final: usar category_id mapeado si existe, si no usar category
+      const finalCategory = category_id ? categoryMapping[category_id] : category;
       
       // Convertir las fechas explícitamente a objetos Date
       let parsedStartDate: Date;
@@ -2754,6 +2781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Crear el objeto con los datos procesados
       const activityData = { 
         ...otherData,
+        category: finalCategory,
         startDate: parsedStartDate,
         ...(parsedEndDate && { endDate: parsedEndDate })
       };
