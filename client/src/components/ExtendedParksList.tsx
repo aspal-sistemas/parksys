@@ -32,14 +32,10 @@ const generateParkSlug = (parkName: string, parkId: number) => {
 };
 
 function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksListProps) {
-  console.log('ExtendedParksList: Renderizando lista de parques', parks.length);
-  
   // Función para verificar si el parque debe mostrar el Green Flag Award
   const shouldShowGreenFlag = (parkId: number) => {
     // Solo Bosque Los Colomos (ID: 5) y Parque Metropolitano (ID: 2)
-    const shouldShow = parkId === 5 || parkId === 2;
-    console.log(`Green Flag check for park ID ${parkId}: ${shouldShow}`);
-    return shouldShow;
+    return parkId === 5 || parkId === 2;
   };
 
   // Obtenemos las amenidades para mostrar los iconos
@@ -121,14 +117,13 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
               <div className="flex-1 min-w-0 relative">
                 {/* Green Flag Award Logo - Solo para parques específicos */}
                 {shouldShowGreenFlag(park.id) && (
-                  <div className="absolute top-0 right-0 z-20 bg-red-500 p-2">
+                  <div className="absolute bottom-3 right-3 z-20">
                     <img 
                       src={greenFlagLogo} 
                       alt="Green Flag Award" 
-                      className="w-20 h-12 object-contain bg-white rounded-md p-1 shadow-lg border-4 border-yellow-500"
+                      className="h-10 w-15 object-contain bg-white rounded-md p-1 shadow-lg border-2 border-green-500"
                       title="Green Flag Award"
                     />
-                    <div className="text-white text-xs font-bold">LOGO AQUI</div>
                   </div>
                 )}
                 
