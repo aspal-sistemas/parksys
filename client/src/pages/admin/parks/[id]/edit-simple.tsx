@@ -195,9 +195,10 @@ export default function ParkEditSimple() {
     console.log('Form values:', values);
     console.log('Form errors:', form.formState.errors);
     
-    // Validar que el formulario sea válido antes de enviar
-    if (!form.formState.isValid) {
-      console.error('Formulario inválido, no se puede enviar');
+    // Verificar errores específicos en lugar de usar isValid
+    const hasErrors = Object.keys(form.formState.errors).length > 0;
+    if (hasErrors) {
+      console.error('Formulario con errores:', form.formState.errors);
       toast({
         title: "Error de validación",
         description: "Por favor revisa los campos del formulario",
