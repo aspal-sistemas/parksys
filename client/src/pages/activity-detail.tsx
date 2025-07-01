@@ -21,11 +21,15 @@ interface ActivityData {
   instructorId?: number;
   instructorName?: string;
   startTime?: string;
+  endTime?: string;
   duration?: number;
   materials?: string;
   requirements?: string;
   isFree?: boolean;
   isRecurring?: boolean;
+  recurringDays?: string[];
+  targetMarket?: string[];
+  specialNeeds?: string[];
 }
 
 interface ActivityImage {
@@ -190,10 +194,11 @@ function ActivityDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Fecha y Horario */}
                 <div className="flex items-center gap-3">
                   <Calendar className="h-5 w-5 text-blue-600" />
                   <div>
-                    <p className="font-medium">Fecha</p>
+                    <p className="font-medium">Fecha y Horario</p>
                     <p className="text-sm text-gray-600">
                       {isMultiDay 
                         ? `${format(startDate, 'dd MMM', { locale: es })} - ${format(endDate, 'dd MMM yyyy', { locale: es })}`
@@ -203,44 +208,104 @@ function ActivityDetailPage() {
                   </div>
                 </div>
 
-                {activity?.startTime && (
+                {/* Hora de Inicio y Finalización */}
+                {(activity?.startTime || activity?.endTime) && (
                   <div className="flex items-center gap-3">
                     <Clock className="h-5 w-5 text-purple-600" />
                     <div>
-                      <p className="font-medium">Horario</p>
+                      <p className="font-medium">Hora de Inicio y Finalización</p>
                       <p className="text-sm text-gray-600">
-                        {activity.startTime}
-                        {activity?.duration && ` (${activity.duration} min)`}
+                        {activity?.startTime && `Inicio: ${activity.startTime}`}
+                        {activity?.startTime && activity?.endTime && ' • '}
+                        {activity?.endTime && `Fin: ${activity.endTime}`}
                       </p>
                     </div>
                   </div>
                 )}
 
+                {/* Duración */}
+                {activity?.duration && (
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-orange-600" />
+                    <div>
+                      <p className="font-medium">Duración</p>
+                      <p className="text-sm text-gray-600">{activity.duration} minutos</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Recurrencia */}
+                <div className="flex items-center gap-3">
+                  <Star className="h-5 w-5 text-pink-600" />
+                  <div>
+                    <p className="font-medium">Recurrencia</p>
+                    <p className="text-sm text-gray-600">
+                      {activity?.isRecurring ? (
+                        activity?.recurringDays && activity.recurringDays.length > 0 
+                          ? `Recurrente: ${activity.recurringDays.join(', ')}`
+                          : 'Actividad recurrente'
+                      ) : (
+                        'Actividad única'
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Capacidad */}
+                <div className="flex items-center gap-3">
+                  <Users className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="font-medium">Capacidad</p>
+                    <p className="text-sm text-gray-600">
+                      {activity?.capacity ? `${activity.capacity} personas` : 'Sin límite de capacidad'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Precio */}
                 <div className="flex items-center gap-3">
                   <DollarSign className="h-5 w-5 text-yellow-600" />
                   <div>
                     <p className="font-medium">Precio</p>
                     <p className="text-sm text-gray-600">
-                      {activity?.price && activity.price > 0 ? `$${activity.price}` : 'Gratis'}
+                      {activity?.isFree || !activity?.price || activity.price === 0 
+                        ? 'Gratuita' 
+                        : `$${activity.price} MXN`
+                      }
                     </p>
                   </div>
                 </div>
 
-                {activity?.capacity && (
+                {/* Público (Segmentación) */}
+                {activity?.targetMarket && activity.targetMarket.length > 0 && (
                   <div className="flex items-center gap-3">
-                    <Users className="h-5 w-5 text-green-600" />
+                    <Users className="h-5 w-5 text-teal-600" />
                     <div>
-                      <p className="font-medium">Capacidad</p>
-                      <p className="text-sm text-gray-600">{activity.capacity} personas</p>
+                      <p className="font-medium">Público</p>
+                      <p className="text-sm text-gray-600">
+                        {activity.targetMarket.join(', ')}
+                      </p>
                     </div>
                   </div>
                 )}
 
+                {/* Ubicación */}
+                {activity?.location && (
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-red-600" />
+                    <div>
+                      <p className="font-medium">Ubicación</p>
+                      <p className="text-sm text-gray-600">{activity.location}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Datos del Instructor */}
                 {activity?.instructorName && (
                   <div className="flex items-center gap-3">
                     <User className="h-5 w-5 text-indigo-600" />
                     <div>
-                      <p className="font-medium">Instructor</p>
+                      <p className="font-medium">Datos del Instructor</p>
                       <p className="text-sm text-gray-600">{activity.instructorName}</p>
                     </div>
                   </div>
@@ -261,7 +326,7 @@ function ActivityDetailPage() {
             </Card>
 
             {/* Información adicional */}
-            {(activity?.requirements || activity?.materials) && (
+            {(activity?.requirements || activity?.materials || (activity?.specialNeeds && activity.specialNeeds.length > 0)) && (
               <Card>
                 <CardHeader>
                   <CardTitle>Información Adicional</CardTitle>
@@ -277,6 +342,19 @@ function ActivityDetailPage() {
                     <div>
                       <h4 className="font-medium text-gray-900 mb-2">Materiales</h4>
                       <p className="text-sm text-gray-600">{activity.materials}</p>
+                    </div>
+                  )}
+                  {activity?.specialNeeds && activity.specialNeeds.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Requerimientos Especiales</h4>
+                      <div className="space-y-1">
+                        {activity.specialNeeds.map((need, index) => (
+                          <p key={index} className="text-sm text-gray-600 flex items-center gap-2">
+                            <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                            {need}
+                          </p>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </CardContent>
