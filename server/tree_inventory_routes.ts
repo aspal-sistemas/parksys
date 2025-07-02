@@ -114,36 +114,34 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
       const [tree] = await db
         .select({
           id: trees.id,
-          code: trees.code,
-          speciesId: trees.speciesId,
+          code: sql`CONCAT('ARB-', LPAD(${trees.id}::text, 5, '0'))`.as('code'),
+          speciesId: trees.species_id,
           speciesName: treeSpecies.commonName,
           scientificName: treeSpecies.scientificName,
-          parkId: trees.parkId,
+          parkId: trees.park_id,
           parkName: parks.name,
           latitude: trees.latitude,
           longitude: trees.longitude,
-          plantingDate: trees.plantingDate,
-          developmentStage: trees.developmentStage,
-          ageEstimate: trees.ageEstimate,
+          plantingDate: trees.planting_date,
           height: trees.height,
-          diameter: trees.diameter,
-          canopyCoverage: trees.canopyCoverage,
-          healthStatus: trees.healthStatus,
-          physicalCondition: trees.physicalCondition,
-          hasHollows: trees.hasHollows,
-          hasExposedRoots: trees.hasExposedRoots,
-          hasPests: trees.hasPests,
-          observations: trees.observations,
-          lastInspectionDate: trees.lastInspectionDate,
-          isProtected: trees.isProtected,
-          locationDescription: trees.locationDescription,
-          imageUrl: trees.imageUrl,
-          createdAt: trees.createdAt,
-          updatedAt: trees.updatedAt,
+          diameter: trees.trunk_diameter,
+          healthStatus: trees.health_status,
+          condition: trees.condition,
+          locationDescription: trees.location_description,
+          notes: trees.notes,
+          createdAt: trees.created_at,
+          updatedAt: trees.updated_at,
+          lastMaintenanceDate: trees.last_maintenance_date,
+          // Agregar campos de foto de la especie
+          speciesPhotoUrl: treeSpecies.photoUrl,
+          speciesImageUrl: treeSpecies.imageUrl,
+          speciesCustomIconUrl: treeSpecies.customIconUrl,
+          speciesDescription: treeSpecies.description,
+          speciesEcologicalBenefits: treeSpecies.ecologicalBenefits
         })
         .from(trees)
-        .leftJoin(treeSpecies, eq(trees.speciesId, treeSpecies.id))
-        .leftJoin(parks, eq(trees.parkId, parks.id))
+        .leftJoin(treeSpecies, eq(trees.species_id, treeSpecies.id))
+        .leftJoin(parks, eq(trees.park_id, parks.id))
         .where(eq(trees.id, treeId));
       
       if (!tree) {

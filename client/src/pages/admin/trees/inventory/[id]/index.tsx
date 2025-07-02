@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet';
@@ -260,6 +260,65 @@ function TreeDetailPage() {
     }
   };
 
+  // Componente para mostrar foto de la especie
+  const SpeciesPhotoDisplay = ({ tree }: { tree: any }) => {
+    const [speciesData, setSpeciesData] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+      if (tree.speciesId) {
+        setLoading(true);
+        // Obtener datos de la especie incluyendo la foto
+        fetch(`/api/tree-species/${tree.speciesId}`)
+          .then(response => response.json())
+          .then(data => {
+            setSpeciesData(data);
+            setLoading(false);
+          })
+          .catch(error => {
+            console.error('Error cargando especie:', error);
+            setLoading(false);
+          });
+      }
+    }, [tree.speciesId]);
+
+    if (loading) {
+      return (
+        <div className="aspect-square bg-gray-100 rounded-md flex items-center justify-center mb-4">
+          <Sprout className="h-16 w-16 text-gray-300 animate-pulse" />
+        </div>
+      );
+    }
+
+    // Mostrar foto de la especie si está disponible
+    if (speciesData && speciesData.photoUrl) {
+      return (
+        <div className="space-y-2 mb-4">
+          <div className="aspect-square overflow-hidden rounded-md">
+            <img 
+              src={speciesData.photoUrl} 
+              alt={`${speciesData.commonName} (${speciesData.scientificName})`}
+              className="object-cover w-full h-full"
+            />
+          </div>
+          <p className="text-sm text-gray-600 text-center">
+            Foto de la especie: {speciesData.commonName}
+          </p>
+        </div>
+      );
+    }
+
+    // Fallback: icono genérico
+    return (
+      <div className="aspect-square bg-gray-100 rounded-md flex items-center justify-center mb-4">
+        <TreeDeciduous className="h-16 w-16 text-gray-400" />
+        <div className="absolute bottom-2 bg-white/90 px-2 py-1 rounded text-xs text-gray-600">
+          Sin foto disponible
+        </div>
+      </div>
+    );
+  };
+
   // Si hay error al cargar
   if (error) {
     return (
@@ -492,19 +551,7 @@ function TreeDetailPage() {
                     <CardTitle>Información Adicional</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {tree.imageUrl ? (
-                      <div className="aspect-square overflow-hidden rounded-md mb-4">
-                        <img 
-                          src={tree.imageUrl} 
-                          alt={`Árbol ${tree.code}`} 
-                          className="object-cover w-full h-full"
-                        />
-                      </div>
-                    ) : (
-                      <div className="aspect-square bg-gray-100 rounded-md flex items-center justify-center mb-4">
-                        <Sprout className="h-16 w-16 text-gray-300" />
-                      </div>
-                    )}
+                    <SpeciesPhotoDisplay tree={tree} />
 
                     <div>
                       <h3 className="text-sm font-medium">Creado</h3>
