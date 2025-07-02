@@ -24,6 +24,11 @@ const Parks: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const parksPerPage = 10;
   
+  // Reset scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   // Build query string from filters
   const buildQueryString = () => {
     const params = new URLSearchParams();
