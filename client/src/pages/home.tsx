@@ -312,7 +312,7 @@ const Home: React.FC = () => {
             <div className="relative">
               <div className="aspect-[4/3] bg-gradient-to-br from-emerald-200 to-teal-200 rounded-3xl overflow-hidden shadow-2xl">
                 <img 
-                  src="https://images.unsplash.com/photo-1574263867128-87688b1c0e55?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                   alt="Centro de Conservación de Vida Silvestre"
                   className="w-full h-full object-cover"
                 />
