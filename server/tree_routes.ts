@@ -433,74 +433,10 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
     }
   });
   
-  // Ruta para obtener detalles de un árbol específico
-  apiRouter.get("/trees/:id", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      
-      // Validar que el ID sea un número válido
-      const treeId = parseInt(id);
-      if (isNaN(treeId)) {
-        return res.status(400).json({ error: "ID de árbol no válido" });
-      }
-      
-      // Obtener el árbol usando SQL directo
-      const treeResult = await db.execute(sql`
-        SELECT * FROM trees WHERE id = ${treeId}
-      `);
-      
-      if (!treeResult.rows || treeResult.rows.length === 0) {
-        return res.status(404).json({ error: "Árbol no encontrado" });
-      }
-      
-      const tree = treeResult.rows[0];
-      
-      // Obtener la especie del árbol
-      const speciesResult = await db.execute(sql`
-        SELECT * FROM tree_species WHERE id = ${tree.species_id}
-      `);
-      
-      // Obtener el parque del árbol
-      const parkResult = await db.execute(sql`
-        SELECT id, name FROM parks WHERE id = ${tree.park_id}
-      `);
-      
-      // Obtener los mantenimientos del árbol
-      const maintenancesResult = await db.execute(sql`
-        SELECT tm.*, u.username, u.full_name 
-        FROM tree_maintenances tm
-        LEFT JOIN users u ON tm.performed_by = u.id
-        WHERE tm.tree_id = ${parseInt(tree.id)}
-        ORDER BY tm.maintenance_date DESC
-      `);
-      
-      // Formatear el resultado
-      const treeDetails = {
-        id: tree.id,
-        code: `ARB-${tree.id.toString().padStart(5, '0')}`,
-        speciesId: tree.species_id,
-        parkId: tree.park_id,
-        speciesName: speciesResult.rows[0]?.common_name || 'Desconocida',
-        scientificName: speciesResult.rows[0]?.scientific_name || '',
-        parkName: parkResult.rows[0]?.name || 'Desconocido',
-        latitude: tree.latitude,
-        longitude: tree.longitude,
-        height: tree.height,
-        diameter: tree.trunk_diameter,
-        healthStatus: tree.health_status || 'No evaluado',
-        condition: tree.condition,
-        locationDescription: tree.location_description,
-        plantingDate: tree.planting_date,
-        notes: tree.notes,
-        maintenances: maintenancesResult.rows || []
-      };
-      
-      res.json({ data: treeDetails });
-    } catch (error) {
-      console.error("Error fetching tree details:", error);
-      res.status(500).json({ error: "Error al obtener detalles del árbol" });
-    }
-  });
+  // COMENTADO: Ruta conflictiva - ahora se usa tree_inventory_routes.ts que incluye TODOS los campos
+  // Esta ruta está deshabilitada porque tree_inventory_routes.ts tiene un endpoint más completo
+  // que incluye todos los campos nuevos: developmentStage, ageEstimate, canopyCoverage, 
+  // hasHollows, hasExposedRoots, hasPests, isProtected, imageUrl
   
   // Desactivar la ruta en tree_inventory_routes.ts que causa conflicto
   // Ya estamos usando getTreeDetails que es una implementación compatible con la estructura real

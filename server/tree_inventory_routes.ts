@@ -167,16 +167,7 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
         .where(eq(treeMaintenances.treeId, treeId))
         .orderBy(desc(treeMaintenances.maintenanceDate));
       
-      console.log('🌳 GET - Datos del árbol que se envían al frontend:', {
-        developmentStage: tree.developmentStage,
-        ageEstimate: tree.ageEstimate,
-        canopyCoverage: tree.canopyCoverage,
-        hasHollows: tree.hasHollows,
-        hasExposedRoots: tree.hasExposedRoots,
-        hasPests: tree.hasPests,
-        isProtected: tree.isProtected,
-        imageUrl: tree.imageUrl
-      });
+
       
       res.json({ 
         data: {
