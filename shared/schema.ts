@@ -1123,13 +1123,22 @@ export const trees = pgTable("trees", {
   // Datos físicos
   height: decimal("height"),
   trunk_diameter: decimal("trunk_diameter"),
+  age_estimate: integer("age_estimate"),
+  canopy_coverage: decimal("canopy_coverage", { precision: 5, scale: 2 }),
   // Datos administrativos
   planting_date: date("planting_date"),
   location_description: varchar("location_description", { length: 255 }),
   notes: text("notes"),
-  // Estado
+  // Estado físico y condiciones
   condition: varchar("condition", { length: 50 }),
-  health_status: varchar("health_status", { length: 50 })
+  development_stage: varchar("development_stage", { length: 50 }),
+  health_status: varchar("health_status", { length: 50 }),
+  has_hollows: boolean("has_hollows").default(false),
+  has_exposed_roots: boolean("has_exposed_roots").default(false),
+  has_pests: boolean("has_pests").default(false),
+  is_protected: boolean("is_protected").default(false),
+  // Multimedia
+  image_url: text("image_url")
 });
 
 export const treeMaintenances = pgTable("tree_maintenances", {

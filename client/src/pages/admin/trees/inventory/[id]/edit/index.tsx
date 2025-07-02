@@ -165,21 +165,21 @@ function EditTreePage() {
         latitude: tree.latitude || '',
         longitude: tree.longitude || '',
         plantingDate,
-        developmentStage: tree.condition || '',  // Mapear condition a developmentStage
-        ageEstimate: null, // No disponible en los datos actuales
+        developmentStage: tree.developmentStage || '',
+        ageEstimate: tree.ageEstimate ? Number(tree.ageEstimate) : null,
         height: tree.height ? Number(tree.height) : null,
         diameter: tree.diameter ? Number(tree.diameter) : null,
-        canopyCoverage: null, // No disponible en los datos actuales
+        canopyCoverage: tree.canopyCoverage ? Number(tree.canopyCoverage) : null,
         healthStatus: tree.healthStatus || 'Bueno',
         physicalCondition: tree.condition || '',
-        hasHollows: false, // No disponible en los datos actuales
-        hasExposedRoots: false, // No disponible en los datos actuales
-        hasPests: false, // No disponible en los datos actuales
+        hasHollows: tree.hasHollows || false,
+        hasExposedRoots: tree.hasExposedRoots || false,
+        hasPests: tree.hasPests || false,
         observations: tree.notes || '',
         lastInspectionDate,
-        isProtected: false, // No disponible en los datos actuales
+        isProtected: tree.isProtected || false,
         locationDescription: tree.locationDescription || '',
-        imageUrl: '', // No disponible en los datos actuales
+        imageUrl: tree.imageUrl || '',
       });
     }
   }, [tree, form]);

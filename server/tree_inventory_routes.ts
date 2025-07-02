@@ -127,10 +127,18 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
           latitude: trees.latitude,
           longitude: trees.longitude,
           plantingDate: trees.planting_date,
+          developmentStage: trees.development_stage,
+          ageEstimate: trees.age_estimate,
           height: trees.height,
           diameter: trees.trunk_diameter,
+          canopyCoverage: trees.canopy_coverage,
           healthStatus: trees.health_status,
           condition: trees.condition,
+          hasHollows: trees.has_hollows,
+          hasExposedRoots: trees.has_exposed_roots,
+          hasPests: trees.has_pests,
+          isProtected: trees.is_protected,
+          imageUrl: trees.image_url,
           locationDescription: trees.location_description,
           notes: trees.notes,
           createdAt: trees.created_at,
@@ -341,7 +349,7 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
         });
       }
       
-      console.log('🌳 Validación exitosa, procediendo con la actualización...');
+      // console.log('🌳 Validación exitosa, procediendo con la actualización...');
       
       // Preparar datos para la actualización
       const updateData = {
@@ -350,16 +358,24 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
         latitude,
         longitude,
         planting_date: plantingDate || null,
-        condition: physicalCondition || developmentStage || null,
+        condition: physicalCondition || null,
+        development_stage: developmentStage || null,
+        age_estimate: ageEstimate || null,
         height: height || null,
         trunk_diameter: diameter || null,
+        canopy_coverage: canopyCoverage || null,
         health_status: healthStatus || 'Bueno',
+        has_hollows: hasHollows || false,
+        has_exposed_roots: hasExposedRoots || false,
+        has_pests: hasPests || false,
+        is_protected: isProtected || false,
+        image_url: imageUrl || null,
         notes: observations || null,
         location_description: locationDescription || null,
         updated_at: new Date(),
       };
       
-      console.log('🌳 Datos preparados para actualización:', updateData);
+      // console.log('🌳 Datos preparados para actualización:', updateData);
       
       // Actualizar el árbol - mapear camelCase a snake_case para la base de datos
       console.log('🌳 Ejecutando query de actualización...');

@@ -68,15 +68,23 @@ const UserProfileImage: React.FC<UserProfileImageProps> = ({
       try {
         // Añadimos control para evitar que falle cuando el servidor no responde
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 segundos de timeout
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+        }, 3000); // 3 segundos de timeout
         
         // Agregar timestamp para evitar cache del navegador
         const response = await fetch(`/api/users/${userId}/profile-image?t=${currentTime}`, {
           signal: controller.signal
         }).catch(err => {
-          console.error("Error al obtener la imagen de perfil:", err);
+          // No mostrar error si es por abort timeout
+          if (err.name !== 'AbortError') {
+            console.error("Error al obtener la imagen de perfil:", err);
+          }
           return null;
         });
+        
+        // Limpiar el timeout si la petición se completó
+        clearTimeout(timeoutId);
         
         clearTimeout(timeoutId);
         
