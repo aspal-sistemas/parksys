@@ -460,8 +460,8 @@ function EditTreePage() {
                               <FormLabel>Fecha de Plantación</FormLabel>
                               <FormControl>
                                 <DatePicker
-                                  date={field.value}
-                                  setDate={field.onChange}
+                                  selected={field.value}
+                                  onSelect={field.onChange}
                                   placeholder="Selecciona una fecha"
                                 />
                               </FormControl>
@@ -818,8 +818,8 @@ function EditTreePage() {
                               <FormLabel>Fecha de Última Inspección</FormLabel>
                               <FormControl>
                                 <DatePicker
-                                  date={field.value}
-                                  setDate={field.onChange}
+                                  selected={field.value}
+                                  onSelect={field.onChange}
                                   placeholder="Selecciona una fecha"
                                 />
                               </FormControl>
