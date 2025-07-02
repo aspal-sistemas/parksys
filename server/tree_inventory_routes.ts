@@ -1,4 +1,4 @@
-import { Request, Response, Router } from 'express';
+import { Request, Response, Router, NextFunction } from 'express';
 import { db } from './db';
 import { trees, treeSpecies, parks, treeMaintenances } from '../shared/schema';
 import { eq, like, desc, and, or } from 'drizzle-orm';
@@ -264,8 +264,13 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
   });
 
   // PUT: Actualizar un árbol existente
-  apiRouter.put('/trees/:id', isAuthenticated, async (req: Request, res: Response) => {
-    console.log('🌳 PUT /trees/:id - Endpoint alcanzado');
+  apiRouter.put('/trees/:id', (req: Request, res: Response, next: NextFunction) => {
+    console.log('🌳 PUT /trees/:id - ANTES DE AUTENTICACIÓN');
+    console.log('🌳 URL:', req.url);
+    console.log('🌳 Method:', req.method);
+    next();
+  }, isAuthenticated, async (req: Request, res: Response) => {
+    console.log('🌳 PUT /trees/:id - DESPUÉS DE AUTENTICACIÓN');
     console.log('🌳 Tree ID:', req.params.id);
     console.log('🌳 Request body:', req.body);
     
