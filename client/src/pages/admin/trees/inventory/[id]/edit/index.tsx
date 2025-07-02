@@ -186,8 +186,12 @@ function EditTreePage() {
 
   // Manejar el envío del formulario
   const onSubmit = async (data: TreeFormValues) => {
+    console.log('🌳 onSubmit LLAMADO - Iniciando proceso de guardado');
+    console.log('🌳 Estado del formulario:', form.formState);
+    console.log('🌳 Errores del formulario:', form.formState.errors);
+    
     try {
-      console.log('Datos del formulario antes de formatear:', data);
+      console.log('🌳 Datos del formulario antes de formatear:', data);
       
       // Convertir IDs a números para la API
       const formattedData = {
@@ -196,8 +200,10 @@ function EditTreePage() {
         parkId: parseInt(data.parkId),
       };
 
-      console.log('Datos formateados que se enviarán:', formattedData);
+      console.log('🌳 Datos formateados que se enviarán:', formattedData);
 
+      console.log('🌳 Realizando petición PUT a:', `/api/trees/${treeId}`);
+      
       await apiRequest(`/api/trees/${treeId}`, {
         method: 'PUT',
         data: formattedData,
@@ -967,7 +973,11 @@ function EditTreePage() {
                           Anterior
                         </Button>
                       </div>
-                      <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                      <Button 
+                        type="submit" 
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => console.log('🌳 BOTÓN GUARDAR CLICKEADO')}
+                      >
                         Guardar Cambios
                       </Button>
                     </CardFooter>
