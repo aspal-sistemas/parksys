@@ -268,6 +268,8 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
     try {
       const treeId = Number(req.params.id);
       
+      console.log('Datos recibidos en el backend:', req.body);
+      
       // Verificar que el árbol exista
       const [treeExists] = await db
         .select({ id: trees.id })

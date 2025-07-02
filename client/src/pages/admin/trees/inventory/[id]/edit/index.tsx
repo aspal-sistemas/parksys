@@ -153,6 +153,8 @@ function EditTreePage() {
   // Llenar el formulario con los datos del árbol cuando se carguen
   useEffect(() => {
     if (tree) {
+      console.log('Datos del árbol recibidos de la API:', tree);
+      
       // Convertir fechas de string a objeto Date
       const plantingDate = tree.plantingDate ? new Date(tree.plantingDate) : null;
       const lastInspectionDate = null; // No disponible en datos actuales
@@ -185,12 +187,16 @@ function EditTreePage() {
   // Manejar el envío del formulario
   const onSubmit = async (data: TreeFormValues) => {
     try {
+      console.log('Datos del formulario antes de formatear:', data);
+      
       // Convertir IDs a números para la API
       const formattedData = {
         ...data,
         speciesId: parseInt(data.speciesId),
         parkId: parseInt(data.parkId),
       };
+
+      console.log('Datos formateados que se enviarán:', formattedData);
 
       await apiRequest(`/api/trees/${treeId}`, {
         method: 'PUT',
