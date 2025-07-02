@@ -307,6 +307,12 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
         imageUrl,
       } = req.body;
       
+      console.log('🌳 Campos extraídos:');
+      console.log('🌳 speciesId:', speciesId, typeof speciesId);
+      console.log('🌳 parkId:', parkId, typeof parkId);
+      console.log('🌳 latitude:', latitude, typeof latitude);
+      console.log('🌳 longitude:', longitude, typeof longitude);
+      
       // Verificar campos requeridos
       if (!speciesId || !parkId || !latitude || !longitude) {
         return res.status(400).json({ 
