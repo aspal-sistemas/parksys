@@ -269,6 +269,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/settings/index')))}
           </Suspense>
         </Route>
+        <Route path="/admin/volunteers/register">
+          <Suspense fallback={<div className="p-8 text-center">Cargando registro de voluntarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/register')))}
+          </Suspense>
+        </Route>
         
         {/* La ruta de registro y edición de voluntarios ha sido eliminada del módulo de Voluntarios
              ya que ahora se gestiona desde el módulo de Usuarios */}
