@@ -199,17 +199,6 @@ const Home: React.FC = () => {
               </CardContent>
             </Card>
           </div>
-          
-          {/* Call to Action */}
-          <div className="text-center mt-16">
-            <Link href="/parks">
-              <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-12 py-4 text-lg rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                <MapPin className="mr-3 h-6 w-6" />
-                Conoce Nuestros Parques
-                <ArrowRight className="ml-3 h-6 w-6" />
-              </Button>
-            </Link>
-          </div>
         </div>
       </section>
       
