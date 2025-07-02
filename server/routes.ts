@@ -26,6 +26,7 @@ import { registerTreeMaintenanceRoutes } from "./tree_maintenance_routes";
 // import { registerTreeInventoryRoutes } from "./tree_inventory_routes";
 import { registerTreeStatsRoutes } from "./tree_stats_routes";
 import { registerTreeDetailsRoutes } from "./tree_details_route";
+import { registerTreeInventoryGeneratorRoutes } from "./tree-inventory-generator-routes";
 import { activityRouter } from "./activityRoutes";
 import directRouter from "./directRoutes";
 import { registerConcessionRoutes } from "./concession-routes";
@@ -153,6 +154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas del módulo de arbolado
   registerTreeRoutes(app, apiRouter, isAuthenticated);
   registerTreeMaintenanceRoutes(app, apiRouter, isAuthenticated);
+  registerTreeInventoryGeneratorRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de eventos
   registerEventRoutes(app, apiRouter, isAuthenticated);

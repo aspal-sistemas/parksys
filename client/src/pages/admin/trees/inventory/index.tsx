@@ -51,7 +51,9 @@ import {
   CircleAlert, 
   Info,
   Sprout,
-  Trash2
+  Trash2,
+  Loader2,
+  TreePine
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -87,6 +89,41 @@ function TreeInventoryPage() {
   const [parkFilter, setParkFilter] = useState('all');
   const [healthFilter, setHealthFilter] = useState('all');
   const [speciesFilter, setSpeciesFilter] = useState('all');
+
+  // Mutación para generar inventario automático
+  const generateInventoryMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/tree-inventory/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('directToken')}`,
+        },
+        body: JSON.stringify({}),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al generar inventario');
+      }
+      
+      const result = await response.json();
+      return result;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Inventario generado exitosamente",
+        description: `Se han generado árboles automáticamente para todos los parques. ${data.stats?.totalTrees || ''} árboles totales.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/trees'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   // Consultar los parques para el filtro
   const { data: parks, isLoading: isLoadingParks } = useQuery({
@@ -383,6 +420,23 @@ function TreeInventoryPage() {
                     Total: {treeInventory.total} árboles
                   </div>
                 )}
+                <Button
+                  onClick={() => generateInventoryMutation.mutate()}
+                  disabled={generateInventoryMutation.isPending}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {generateInventoryMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generando...
+                    </>
+                  ) : (
+                    <>
+                      <TreePine className="mr-2 h-4 w-4" />
+                      Generar Inventario Automático
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
           </CardHeader>
