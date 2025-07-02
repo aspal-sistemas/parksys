@@ -222,11 +222,12 @@ const Home: React.FC = () => {
               <span className="text-sm font-semibold text-emerald-800">✨ Parques Destacados</span>
             </div>
             <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
-              Espacios Verdes 
-              <span className="block text-emerald-600">Imperdibles</span>
+              <span className="text-emerald-600">Bosques Urbanos</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Descubre los parques más populares y mejor valorados de la región
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              La Agencia Metropolitana de Bosques Urbanos es un organismo público 
+              descentralizado, dedicado a la administración pública de parques y bosques 
+              urbanos del área metropolitana de Guadalajara.
             </p>
           </div>
           
