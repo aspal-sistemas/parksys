@@ -150,6 +150,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas del módulo de actividades
   registerActivityRoutes(app, apiRouter, isAuthenticated, hasParkAccess);
   
+  // Middleware para capturar todas las peticiones PUT a trees
+  apiRouter.use('/trees/:id', (req: Request, res: Response, next: NextFunction) => {
+    if (req.method === 'PUT') {
+      console.log('🚨 INTERCEPTED PUT REQUEST TO /trees/:id');
+      console.log('🚨 URL:', req.url);
+      console.log('🚨 Body:', req.body);
+      console.log('🚨 Headers:', req.headers);
+    }
+    next();
+  });
+
   // Registramos las rutas del módulo de arbolado
   registerTreeRoutes(app, apiRouter, isAuthenticated);
   registerTreeMaintenanceRoutes(app, apiRouter, isAuthenticated);
