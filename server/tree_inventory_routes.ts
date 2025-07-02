@@ -265,6 +265,10 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
 
   // PUT: Actualizar un árbol existente
   apiRouter.put('/trees/:id', isAuthenticated, async (req: Request, res: Response) => {
+    console.log('🌳 PUT /trees/:id - Endpoint alcanzado');
+    console.log('🌳 Tree ID:', req.params.id);
+    console.log('🌳 Request body:', req.body);
+    
     try {
       const treeId = Number(req.params.id);
       
