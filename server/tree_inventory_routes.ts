@@ -13,14 +13,7 @@ import { sql } from 'drizzle-orm';
 export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
   console.log('🌳 Registrando rutas de inventario de árboles - PUT /trees/:id incluido');
   
-  // Agregar middleware de debugging específico para esta ruta
-  apiRouter.use('/trees/:id', (req: Request, res: Response, next: NextFunction) => {
-    console.log('🌲 MIDDLEWARE ESPECÍFICO - Capturado request a /trees/:id');
-    console.log('🌲 Method:', req.method);
-    console.log('🌲 URL:', req.url);
-    console.log('🌲 Route params:', req.params);
-    next();
-  });
+
   
   // GET: Listar árboles con paginación y filtros
   apiRouter.get('/trees', async (req: Request, res: Response) => {
