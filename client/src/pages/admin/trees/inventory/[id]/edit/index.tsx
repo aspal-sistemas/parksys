@@ -45,7 +45,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 // Esquema de validación para el formulario
 const treeSchema = z.object({
-  code: z.string().min(2, { message: 'El código debe tener al menos 2 caracteres' }),
   speciesId: z.string().min(1, { message: 'Debe seleccionar una especie' }),
   parkId: z.string().min(1, { message: 'Debe seleccionar un parque' }),
   latitude: z.string().min(1, { message: 'La latitud es obligatoria' }),
@@ -85,7 +84,6 @@ function EditTreePage() {
   const form = useForm<TreeFormValues>({
     resolver: zodResolver(treeSchema),
     defaultValues: {
-      code: '',
       speciesId: '',
       parkId: '',
       latitude: '',
@@ -160,7 +158,6 @@ function EditTreePage() {
       const lastInspectionDate = null; // No disponible en datos actuales
 
       form.reset({
-        code: tree.code || '',
         speciesId: (tree.speciesId?.toString()) || '',
         parkId: (tree.parkId?.toString()) || '',
         latitude: tree.latitude || '',
@@ -359,23 +356,6 @@ function EditTreePage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="code"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Código Identificador*</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Ej: AZU-0023" {...field} />
-                              </FormControl>
-                              <FormDescription>
-                                Código único del árbol en el inventario
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
                         <FormField
                           control={form.control}
                           name="parkId"

@@ -279,7 +279,6 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
       }
       
       const {
-        code,
         speciesId,
         parkId,
         latitude,
@@ -303,47 +302,27 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
       } = req.body;
       
       // Verificar campos requeridos
-      if (!code || !speciesId || !parkId || !latitude || !longitude) {
+      if (!speciesId || !parkId || !latitude || !longitude) {
         return res.status(400).json({ 
-          message: 'Los campos código, especie, parque, latitud y longitud son obligatorios' 
+          message: 'Los campos especie, parque, latitud y longitud son obligatorios' 
         });
       }
       
-      // Verificar que el código no esté duplicado (excepto para el mismo árbol)
-      const [codeExists] = await db
-        .select({ id: trees.id })
-        .from(trees)
-        .where(and(eq(trees.code, code), sql`${trees.id} != ${treeId}`));
-      
-      if (codeExists) {
-        return res.status(400).json({ message: 'Ya existe otro árbol con ese código identificador' });
-      }
-      
-      // Actualizar el árbol
+      // Actualizar el árbol - mapear camelCase a snake_case para la base de datos
       const [updatedTree] = await db.update(trees)
         .set({
-          code,
-          speciesId,
-          parkId,
+          species_id: speciesId,
+          park_id: parkId,
           latitude,
           longitude,
-          plantingDate: plantingDate || null,
-          developmentStage: developmentStage || null,
-          ageEstimate: ageEstimate || null,
+          planting_date: plantingDate || null,
+          condition: physicalCondition || developmentStage || null,
           height: height || null,
-          diameter: diameter || null,
-          canopyCoverage: canopyCoverage || null,
-          healthStatus: healthStatus || 'Bueno',
-          physicalCondition: physicalCondition || null,
-          hasHollows: hasHollows || false,
-          hasExposedRoots: hasExposedRoots || false,
-          hasPests: hasPests || false,
-          observations: observations || null,
-          lastInspectionDate: lastInspectionDate || null,
-          isProtected: isProtected || false,
-          locationDescription: locationDescription || null,
-          imageUrl: imageUrl || null,
-          updatedAt: new Date(),
+          trunk_diameter: diameter || null,
+          health_status: healthStatus || 'Bueno',
+          notes: observations || null,
+          location_description: locationDescription || null,
+          updated_at: new Date(),
         })
         .where(eq(trees.id, treeId))
         .returning();
