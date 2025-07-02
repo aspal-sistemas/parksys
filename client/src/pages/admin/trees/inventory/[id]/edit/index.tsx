@@ -154,31 +154,31 @@ function EditTreePage() {
   useEffect(() => {
     if (tree) {
       // Convertir fechas de string a objeto Date
-      const plantingDate = tree.plantingDate ? new Date(tree.plantingDate) : null;
-      const lastInspectionDate = tree.lastInspectionDate ? new Date(tree.lastInspectionDate) : null;
+      const plantingDate = (tree.plantingDate || tree.planting_date) ? new Date(tree.plantingDate || tree.planting_date) : null;
+      const lastInspectionDate = (tree.lastInspectionDate || tree.last_inspection_date) ? new Date(tree.lastInspectionDate || tree.last_inspection_date) : null;
 
       form.reset({
         code: tree.code,
-        speciesId: tree.speciesId.toString(),
-        parkId: tree.parkId.toString(),
+        speciesId: (tree.speciesId || tree.species_id)?.toString(),
+        parkId: (tree.parkId || tree.park_id)?.toString(),
         latitude: tree.latitude,
         longitude: tree.longitude,
         plantingDate,
-        developmentStage: tree.developmentStage || '',
-        ageEstimate: tree.ageEstimate,
+        developmentStage: tree.developmentStage || tree.development_stage || '',
+        ageEstimate: tree.ageEstimate || tree.age_estimate,
         height: tree.height,
         diameter: tree.diameter,
-        canopyCoverage: tree.canopyCoverage,
-        healthStatus: tree.healthStatus,
-        physicalCondition: tree.physicalCondition || '',
-        hasHollows: !!tree.hasHollows,
-        hasExposedRoots: !!tree.hasExposedRoots,
-        hasPests: !!tree.hasPests,
+        canopyCoverage: tree.canopyCoverage || tree.canopy_coverage,
+        healthStatus: tree.healthStatus || tree.health_status,
+        physicalCondition: tree.physicalCondition || tree.physical_condition || '',
+        hasHollows: !!(tree.hasHollows || tree.has_hollows),
+        hasExposedRoots: !!(tree.hasExposedRoots || tree.has_exposed_roots),
+        hasPests: !!(tree.hasPests || tree.has_pests),
         observations: tree.observations || '',
         lastInspectionDate,
-        isProtected: !!tree.isProtected,
-        locationDescription: tree.locationDescription || '',
-        imageUrl: tree.imageUrl || '',
+        isProtected: !!(tree.isProtected || tree.is_protected),
+        locationDescription: tree.locationDescription || tree.location_description || '',
+        imageUrl: tree.imageUrl || tree.image_url || '',
       });
     }
   }, [tree, form]);
