@@ -1,5 +1,5 @@
 import { Request, Response, Router, NextFunction } from 'express';
-import { db } from './db';
+import { db, pool } from './db';
 import { trees, treeSpecies, parks, treeMaintenances } from '../shared/schema';
 import { eq, like, desc, and, or } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
@@ -115,64 +115,72 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
     try {
       const treeId = Number(req.params.id);
       
-      const [tree] = await db
-        .select({
-          id: trees.id,
-          code: sql`CONCAT('ARB-', LPAD(${trees.id}::text, 5, '0'))`.as('code'),
-          speciesId: trees.species_id,
-          speciesName: treeSpecies.commonName,
-          scientificName: treeSpecies.scientificName,
-          parkId: trees.park_id,
-          parkName: parks.name,
-          latitude: trees.latitude,
-          longitude: trees.longitude,
-          plantingDate: trees.planting_date,
-          developmentStage: trees.development_stage,
-          ageEstimate: trees.age_estimate,
-          height: trees.height,
-          diameter: trees.trunk_diameter,
-          canopyCoverage: trees.canopy_coverage,
-          healthStatus: trees.health_status,
-          condition: trees.condition,
-          hasHollows: trees.has_hollows,
-          hasExposedRoots: trees.has_exposed_roots,
-          hasPests: trees.has_pests,
-          isProtected: trees.is_protected,
-          imageUrl: trees.image_url,
-          locationDescription: trees.location_description,
-          notes: trees.notes,
-          createdAt: trees.created_at,
-          updatedAt: trees.updated_at,
-          lastMaintenanceDate: trees.last_maintenance_date,
-          // Agregar campos de foto de la especie
-          speciesPhotoUrl: treeSpecies.photoUrl,
-          speciesImageUrl: treeSpecies.imageUrl,
-          speciesCustomIconUrl: treeSpecies.customIconUrl,
-          speciesDescription: treeSpecies.description,
-          speciesEcologicalBenefits: treeSpecies.ecologicalBenefits
-        })
-        .from(trees)
-        .leftJoin(treeSpecies, eq(trees.species_id, treeSpecies.id))
-        .leftJoin(parks, eq(trees.park_id, parks.id))
-        .where(eq(trees.id, treeId));
+      // Consulta directa con pool para evitar problemas de Drizzle
+      const result = await pool.query('SELECT * FROM trees WHERE id = $1 LIMIT 1', [treeId]);
       
-      if (!tree) {
+      if (result.rows.length === 0) {
         return res.status(404).json({ message: 'Árbol no encontrado' });
       }
       
-      // Obtener mantenimientos del árbol
-      const maintenances = await db
-        .select()
-        .from(treeMaintenances)
-        .where(eq(treeMaintenances.treeId, treeId))
-        .orderBy(desc(treeMaintenances.maintenanceDate));
+      const tree = result.rows[0];
       
-
+      // Crear código de árbol
+      const code = `ARB-${String(tree.id).padStart(5, '0')}`;
+      
+      // Obtener información de la especie
+      let speciesInfo = null;
+      try {
+        const speciesResult = await pool.query('SELECT * FROM tree_species WHERE id = $1', [tree.species_id]);
+        speciesInfo = speciesResult.rows[0] || null;
+      } catch (error) {
+        console.log('Error al obtener especie:', error);
+      }
+      
+      // Obtener información del parque
+      let parkInfo = null;
+      try {
+        const parkResult = await pool.query('SELECT * FROM parks WHERE id = $1', [tree.park_id]);
+        parkInfo = parkResult.rows[0] || null;
+      } catch (error) {
+        console.log('Error al obtener parque:', error);
+      }
       
       res.json({ 
         data: {
-          ...tree,
-          maintenances
+          id: tree.id,
+          code: code,
+          speciesId: tree.species_id,
+          speciesName: speciesInfo?.common_name || 'Especie no encontrada',
+          scientificName: speciesInfo?.scientific_name || '',
+          parkId: tree.park_id,
+          parkName: parkInfo?.name || 'Parque no encontrado',
+          latitude: tree.latitude,
+          longitude: tree.longitude,
+          plantingDate: tree.planting_date,
+          developmentStage: tree.development_stage,
+          ageEstimate: tree.age_estimate,
+          height: tree.height,
+          diameter: tree.trunk_diameter,
+          canopyCoverage: tree.canopy_coverage,
+          healthStatus: tree.health_status,
+          condition: tree.condition,
+          hasHollows: tree.has_hollows,
+          hasExposedRoots: tree.has_exposed_roots,
+          hasPests: tree.has_pests,
+          isProtected: tree.is_protected,
+          imageUrl: tree.image_url,
+          locationDescription: tree.location_description,
+          notes: tree.notes,
+          createdAt: tree.created_at,
+          updatedAt: tree.updated_at,
+          lastMaintenanceDate: tree.last_maintenance_date,
+          // Agregar campos de foto de la especie
+          speciesPhotoUrl: speciesInfo?.photo_url,
+          speciesImageUrl: speciesInfo?.image_url,
+          speciesCustomIconUrl: speciesInfo?.custom_icon_url,
+          speciesDescription: speciesInfo?.description,
+          speciesEcologicalBenefits: speciesInfo?.ecological_benefits,
+          maintenances: [] // Temporalmente vacío
         }
       });
     } catch (error) {
