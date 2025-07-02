@@ -581,3 +581,5 @@ export default function VolunteerRegisterPage() {
     </AdminLayout>
   );
 }
+
+export default RegisterVolunteer;

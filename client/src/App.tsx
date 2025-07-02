@@ -271,7 +271,7 @@ function Router() {
         </Route>
         <Route path="/admin/volunteers/register">
           <Suspense fallback={<div className="p-8 text-center">Cargando registro de voluntarios...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/register')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/register.tsx')))}
           </Suspense>
         </Route>
         
