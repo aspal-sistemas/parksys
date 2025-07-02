@@ -200,7 +200,7 @@ function EditTreePage() {
 
       await apiRequest(`/api/trees/${treeId}`, {
         method: 'PUT',
-        body: JSON.stringify(formattedData),
+        data: formattedData,
       });
 
       toast({
