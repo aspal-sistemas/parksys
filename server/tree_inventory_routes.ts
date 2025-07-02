@@ -11,6 +11,8 @@ import { sql } from 'drizzle-orm';
  * @param isAuthenticated Middleware de autenticación
  */
 export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
+  console.log('🌳 Registrando rutas de inventario de árboles - PUT /trees/:id incluido');
+  
   // GET: Listar árboles con paginación y filtros
   apiRouter.get('/trees', async (req: Request, res: Response) => {
     try {
@@ -320,6 +322,7 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
       
       // Verificar campos requeridos
       if (!speciesId || !parkId || !latitude || !longitude) {
+        console.log('🌳 ERROR - Campos faltantes detectados');
         return res.status(400).json({ 
           message: 'Los campos especie, parque, latitud y longitud son obligatorios' 
         });
