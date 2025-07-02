@@ -65,6 +65,20 @@ const Parks: React.FC = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [filters]);
+
+  // Function to scroll to results section
+  const scrollToResults = () => {
+    const resultsSection = document.getElementById('resultados-busqueda');
+    if (resultsSection) {
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Function to handle page change with scroll
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    setTimeout(scrollToResults, 100); // Small delay to ensure page change has occurred
+  };
   
   // Fetch detailed park data when selected
   const { data: selectedPark, isLoading: isLoadingPark } = useQuery<ExtendedPark>({
@@ -155,7 +169,7 @@ const Parks: React.FC = () => {
         </div>
 
         {/* Resultados */}
-        <div className="mb-8">
+        <div className="mb-8" id="resultados-busqueda">
           <div className="bg-white rounded-2xl shadow-sm border p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
@@ -191,7 +205,7 @@ const Parks: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                 disabled={currentPage === 1}
                 className="flex items-center gap-2 text-primary border-primary hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -217,7 +231,7 @@ const Parks: React.FC = () => {
                       key={pageNumber}
                       variant={currentPage === pageNumber ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setCurrentPage(pageNumber)}
+                      onClick={() => handlePageChange(pageNumber)}
                       className={`w-10 h-10 transition-all duration-200 ${
                         currentPage === pageNumber 
                           ? "bg-primary hover:bg-primary-600 text-white shadow-md" 
@@ -233,7 +247,7 @@ const Parks: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className="flex items-center gap-2 text-primary border-primary hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
