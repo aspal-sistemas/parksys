@@ -320,32 +320,53 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
       console.log('🌳 latitude:', latitude, typeof latitude);
       console.log('🌳 longitude:', longitude, typeof longitude);
       
-      // Verificar campos requeridos
-      if (!speciesId || !parkId || !latitude || !longitude) {
+      // Verificar campos requeridos (convertir a string para verificar)
+      const speciesIdValid = speciesId !== null && speciesId !== undefined && speciesId !== '';
+      const parkIdValid = parkId !== null && parkId !== undefined && parkId !== '';
+      const latitudeValid = latitude !== null && latitude !== undefined && latitude !== '';
+      const longitudeValid = longitude !== null && longitude !== undefined && longitude !== '';
+      
+      console.log('🌳 Validación de campos:');
+      console.log('🌳 speciesId válido:', speciesIdValid, '| valor:', speciesId);
+      console.log('🌳 parkId válido:', parkIdValid, '| valor:', parkId);
+      console.log('🌳 latitude válido:', latitudeValid, '| valor:', latitude);
+      console.log('🌳 longitude válido:', longitudeValid, '| valor:', longitude);
+      
+      if (!speciesIdValid || !parkIdValid || !latitudeValid || !longitudeValid) {
         console.log('🌳 ERROR - Campos faltantes detectados');
         return res.status(400).json({ 
           message: 'Los campos especie, parque, latitud y longitud son obligatorios' 
         });
       }
       
+      console.log('🌳 Validación exitosa, procediendo con la actualización...');
+      
+      // Preparar datos para la actualización
+      const updateData = {
+        species_id: speciesId,
+        park_id: parkId,
+        latitude,
+        longitude,
+        planting_date: plantingDate || null,
+        condition: physicalCondition || developmentStage || null,
+        height: height || null,
+        trunk_diameter: diameter || null,
+        health_status: healthStatus || 'Bueno',
+        notes: observations || null,
+        location_description: locationDescription || null,
+        updated_at: new Date(),
+      };
+      
+      console.log('🌳 Datos preparados para actualización:', updateData);
+      
       // Actualizar el árbol - mapear camelCase a snake_case para la base de datos
+      console.log('🌳 Ejecutando query de actualización...');
       const [updatedTree] = await db.update(trees)
-        .set({
-          species_id: speciesId,
-          park_id: parkId,
-          latitude,
-          longitude,
-          planting_date: plantingDate || null,
-          condition: physicalCondition || developmentStage || null,
-          height: height || null,
-          trunk_diameter: diameter || null,
-          health_status: healthStatus || 'Bueno',
-          notes: observations || null,
-          location_description: locationDescription || null,
-          updated_at: new Date(),
-        })
+        .set(updateData)
         .where(eq(trees.id, treeId))
         .returning();
+      
+      console.log('🌳 Árbol actualizado exitosamente:', updatedTree);
       
       res.json(updatedTree);
     } catch (error) {
