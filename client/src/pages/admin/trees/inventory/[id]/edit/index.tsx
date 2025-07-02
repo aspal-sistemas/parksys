@@ -111,7 +111,7 @@ function EditTreePage() {
 
   // Consultar información del árbol
   const {
-    data: tree,
+    data: treeResponse,
     isLoading: isLoadingTree,
     error: treeError,
   } = useQuery({
@@ -125,6 +125,8 @@ function EditTreePage() {
     },
     enabled: !!treeId,
   });
+
+  const tree = treeResponse?.data;
 
   // Cargar lista de especies
   const { data: species, isLoading: isLoadingSpecies } = useQuery({
@@ -154,31 +156,31 @@ function EditTreePage() {
   useEffect(() => {
     if (tree) {
       // Convertir fechas de string a objeto Date
-      const plantingDate = (tree.plantingDate || tree.planting_date) ? new Date(tree.plantingDate || tree.planting_date) : null;
-      const lastInspectionDate = (tree.lastInspectionDate || tree.last_inspection_date) ? new Date(tree.lastInspectionDate || tree.last_inspection_date) : null;
+      const plantingDate = tree.plantingDate ? new Date(tree.plantingDate) : null;
+      const lastInspectionDate = null; // No disponible en datos actuales
 
       form.reset({
-        code: tree.code,
-        speciesId: (tree.speciesId || tree.species_id)?.toString(),
-        parkId: (tree.parkId || tree.park_id)?.toString(),
-        latitude: tree.latitude,
-        longitude: tree.longitude,
+        code: tree.code || '',
+        speciesId: (tree.speciesId?.toString()) || '',
+        parkId: (tree.parkId?.toString()) || '',
+        latitude: tree.latitude || '',
+        longitude: tree.longitude || '',
         plantingDate,
-        developmentStage: tree.developmentStage || tree.development_stage || '',
-        ageEstimate: tree.ageEstimate || tree.age_estimate,
-        height: tree.height,
-        diameter: tree.diameter,
-        canopyCoverage: tree.canopyCoverage || tree.canopy_coverage,
-        healthStatus: tree.healthStatus || tree.health_status,
-        physicalCondition: tree.physicalCondition || tree.physical_condition || '',
-        hasHollows: !!(tree.hasHollows || tree.has_hollows),
-        hasExposedRoots: !!(tree.hasExposedRoots || tree.has_exposed_roots),
-        hasPests: !!(tree.hasPests || tree.has_pests),
-        observations: tree.observations || '',
+        developmentStage: tree.condition || '',  // Mapear condition a developmentStage
+        ageEstimate: null, // No disponible en los datos actuales
+        height: tree.height ? Number(tree.height) : null,
+        diameter: tree.diameter ? Number(tree.diameter) : null,
+        canopyCoverage: null, // No disponible en los datos actuales
+        healthStatus: tree.healthStatus || 'Bueno',
+        physicalCondition: tree.condition || '',
+        hasHollows: false, // No disponible en los datos actuales
+        hasExposedRoots: false, // No disponible en los datos actuales
+        hasPests: false, // No disponible en los datos actuales
+        observations: tree.notes || '',
         lastInspectionDate,
-        isProtected: !!(tree.isProtected || tree.is_protected),
-        locationDescription: tree.locationDescription || tree.location_description || '',
-        imageUrl: tree.imageUrl || tree.image_url || '',
+        isProtected: false, // No disponible en los datos actuales
+        locationDescription: tree.locationDescription || '',
+        imageUrl: '', // No disponible en los datos actuales
       });
     }
   }, [tree, form]);
