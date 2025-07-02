@@ -667,21 +667,21 @@ const AdminSidebarComplete: React.FC = () => {
               icon={<ClipboardCheck className="h-5 w-5" />}
               active={location.startsWith('/admin/volunteers/register')}
             >
-              {t('navigation.register')}
+              Registro
             </NavItem>
             <NavItem 
               href="/admin/volunteers/evaluations" 
               icon={<Star className="h-5 w-5" />}
               active={location.startsWith('/admin/volunteers/evaluations')}
             >
-              {t('navigation.evaluations')}
+              Evaluaciones
             </NavItem>
             <NavItem 
               href="/admin/volunteers/recognition" 
               icon={<Award className="h-5 w-5" />}
               active={location.startsWith('/admin/volunteers/recognition')}
             >
-              {t('navigation.recognition')}
+              Reconocimientos
             </NavItem>
           </ModuleNav>
 
