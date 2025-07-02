@@ -110,6 +110,102 @@ const Home: React.FC = () => {
         </div>
       </section>
       
+      {/* 🏛️ AGENCIA DE BOSQUES URBANOS SECTION */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Agencia Metropolitana de Bosques Urbanos
+            </h2>
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              Nuestro modelo de gestión está dividido en <span className="font-semibold text-emerald-600">4 ejes principales</span> 
+              que garantizan el desarrollo sustentable y la conservación de nuestros espacios verdes urbanos.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Eje 1: Gestión y Mantenimiento */}
+            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 hover:border-emerald-200">
+              <CardContent className="p-8 text-center h-full flex flex-col">
+                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <Trees className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Gestión y Mantenimiento</h3>
+                <p className="text-gray-600 leading-relaxed flex-grow">
+                  Administración integral de parques urbanos, mantenimiento preventivo y correctivo de áreas verdes, 
+                  infraestructura y equipamiento urbano.
+                </p>
+                <div className="mt-6 pt-4 border-t border-gray-100">
+                  <span className="text-sm font-medium text-emerald-600">Eje Principal 1</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Eje 2: Educación Ambiental */}
+            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 hover:border-blue-200">
+              <CardContent className="p-8 text-center h-full flex flex-col">
+                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <Users className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Educación Ambiental</h3>
+                <p className="text-gray-600 leading-relaxed flex-grow">
+                  Programas educativos, talleres de concienciación ambiental, formación ciudadana 
+                  y promoción de la cultura verde en la comunidad.
+                </p>
+                <div className="mt-6 pt-4 border-t border-gray-100">
+                  <span className="text-sm font-medium text-blue-600">Eje Principal 2</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Eje 3: Participación Ciudadana */}
+            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 hover:border-purple-200">
+              <CardContent className="p-8 text-center h-full flex flex-col">
+                <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <Calendar className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Participación Ciudadana</h3>
+                <p className="text-gray-600 leading-relaxed flex-grow">
+                  Fomento de la participación activa de la comunidad, programas de voluntariado, 
+                  eventos comunitarios y actividades recreativas.
+                </p>
+                <div className="mt-6 pt-4 border-t border-gray-100">
+                  <span className="text-sm font-medium text-purple-600">Eje Principal 3</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Eje 4: Desarrollo Sustentable */}
+            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 hover:border-amber-200">
+              <CardContent className="p-8 text-center h-full flex flex-col">
+                <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <TrendingUp className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Desarrollo Sustentable</h3>
+                <p className="text-gray-600 leading-relaxed flex-grow">
+                  Innovación en tecnologías verdes, proyectos de sustentabilidad, 
+                  gestión eficiente de recursos y desarrollo urbano sostenible.
+                </p>
+                <div className="mt-6 pt-4 border-t border-gray-100">
+                  <span className="text-sm font-medium text-amber-600">Eje Principal 4</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Call to Action */}
+          <div className="text-center mt-16">
+            <Link href="/parks">
+              <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-12 py-4 text-lg rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                <MapPin className="mr-3 h-6 w-6" />
+                Conoce Nuestros Parques
+                <ArrowRight className="ml-3 h-6 w-6" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+      
       {/* 🎯 FEATURED PARKS SECTION RENOVADO */}
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
