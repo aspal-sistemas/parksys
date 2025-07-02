@@ -107,28 +107,6 @@ const AdminDashboard: React.FC = () => {
       title="Dashboard Ejecutivo" 
       subtitle="Panel de control integral del sistema ParkSys"
     >
-      {/* Botones de acción rápida */}
-      <div className="flex items-center justify-end space-x-3 mb-6">
-        <Link href="/admin/parks/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Parque
-          </Button>
-        </Link>
-        <Link href="/admin/activities/new">
-          <Button variant="outline">
-            <Plus className="mr-2 h-4 w-4" />
-            Nueva Actividad
-          </Button>
-        </Link>
-        <Link href="/admin/hr/employees/new">
-          <Button variant="outline" className="bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200">
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Empleado
-          </Button>
-        </Link>
-      </div>
-      
       {/* Métricas principales */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {/* Parques */}
