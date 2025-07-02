@@ -757,7 +757,12 @@ const AdminSidebarComplete: React.FC = () => {
       <div className="p-4 border-t bg-gray-50">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <UserProfileImage user={user} size="sm" />
+            <UserProfileImage 
+              userId={(user as any)?.id || 0} 
+              role={(user as any)?.role || 'user'} 
+              name={(user as any)?.fullName || (user as any)?.username || 'Usuario'} 
+              size="sm" 
+            />
             <div className="flex flex-col">
               <span className="text-sm font-medium text-gray-900">
                 {user?.firstName && user?.lastName 
