@@ -217,10 +217,6 @@ const Home: React.FC = () => {
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-full px-6 py-3 mb-8 border border-emerald-200">
-              <Sparkles className="h-5 w-5 text-emerald-600" />
-              <span className="text-sm font-semibold text-emerald-800">✨ Parques Destacados</span>
-            </div>
             <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
               <span className="text-emerald-600">Bosques Urbanos</span>
             </h2>
