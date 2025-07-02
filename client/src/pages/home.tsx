@@ -262,65 +262,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
-      
-      {/* 🚀 HOW IT WORKS SECTION RENOVADO */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full px-6 py-3 mb-8 border border-blue-200">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
-              <span className="text-sm font-semibold text-blue-800">💡 Cómo Funciona</span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
-              Explora en 3 
-              <span className="block text-blue-600">Pasos Simples</span>
-            </h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {[
-              {
-                icon: Search,
-                title: "Busca",
-                description: "Encuentra parques utilizando filtros por zona, tipo o amenidades que buscas.",
-                color: "from-emerald-500 to-teal-500",
-                bgColor: "from-emerald-100 to-teal-100",
-                step: "01"
-              },
-              {
-                icon: MapPin,
-                title: "Explora", 
-                description: "Descubre información detallada, fotos, horarios y servicios de cada parque.",
-                color: "from-blue-500 to-indigo-500",
-                bgColor: "from-blue-100 to-indigo-100",
-                step: "02"
-              },
-              {
-                icon: Map,
-                title: "Visita",
-                description: "Obtén indicaciones para llegar y disfruta de los espacios verdes de tu ciudad.",
-                color: "from-purple-500 to-pink-500", 
-                bgColor: "from-purple-100 to-pink-100",
-                step: "03"
-              }
-            ].map((item, index) => (
-              <div key={index} className="text-center group">
-                <div className="relative mb-8">
-                  <div className={`w-24 h-24 bg-gradient-to-br ${item.bgColor} rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                    <item.icon className={`h-12 w-12 bg-gradient-to-br ${item.color} bg-clip-text text-transparent`} />
-                  </div>
-                  <div className={`absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br ${item.color} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
-                    {item.step}
-                  </div>
-                </div>
-                <h3 className="text-2xl font-bold mb-4 text-gray-900">{item.title}</h3>
-                <p className="text-gray-600 text-lg leading-relaxed">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      
+
 
       
       {/* Footer inspirado en bosquesamg.mx */}
