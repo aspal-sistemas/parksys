@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { db } from './db';
-import { trees, treeSpecies, parks } from '../shared/schema';
+import { trees, treeSpecies, parks, treeMaintenances } from '../shared/schema';
 import { eq, like, desc, and, or } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 
@@ -150,7 +150,19 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
         return res.status(404).json({ message: 'Árbol no encontrado' });
       }
       
-      res.json(tree);
+      // Obtener mantenimientos del árbol
+      const maintenances = await db
+        .select()
+        .from(treeMaintenances)
+        .where(eq(treeMaintenances.treeId, treeId))
+        .orderBy(desc(treeMaintenances.maintenanceDate));
+      
+      res.json({ 
+        data: {
+          ...tree,
+          maintenances
+        }
+      });
     } catch (error) {
       console.error('Error al obtener árbol:', error);
       res.status(500).json({ message: 'Error al obtener los detalles del árbol' });

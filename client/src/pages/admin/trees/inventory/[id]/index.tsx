@@ -69,7 +69,7 @@ function TreeDetailPage() {
 
   // Consultar información del árbol
   const {
-    data: tree,
+    data: treeResponse,
     isLoading,
     error,
   } = useQuery({
@@ -79,10 +79,14 @@ function TreeDetailPage() {
       if (!response.ok) {
         throw new Error('Error al cargar la información del árbol');
       }
-      return response.json();
+      const data = await response.json();
+      console.log('Datos del árbol:', data);
+      return data;
     },
     enabled: !!treeId,
   });
+
+  const tree = treeResponse?.data;
   
   // Consultar mantenimientos del árbol
   const {
