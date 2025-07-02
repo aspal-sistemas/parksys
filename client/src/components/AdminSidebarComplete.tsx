@@ -216,6 +216,7 @@ const AdminSidebarComplete: React.FC = () => {
             {t('navigation.dashboard')}
           </NavItem>
 
+          {/* 1. CONFIGURACIÓN */}
           <ModuleNav 
             title={t('navigation.settings')} 
             icon={<Settings className="h-5 w-5" />}
@@ -244,6 +245,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
+          {/* 2. PARQUES */}
           <ModuleNav 
             title={t('navigation.parks')} 
             icon={<Map className="h-5 w-5" />}
@@ -265,6 +267,43 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
+          {/* 3. ÁRBOLES */}
+          <ModuleNav 
+            title={t('navigation.trees')} 
+            icon={<TreePine className="h-5 w-5" />}
+            value="trees"
+          >
+            <NavItem 
+              href="/admin/trees/inventory" 
+              icon={<Archive className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/inventory')}
+            >
+              {t('navigation.inventory')}
+            </NavItem>
+            <NavItem 
+              href="/admin/trees/species" 
+              icon={<Leaf className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/species')}
+            >
+              {t('navigation.species')}
+            </NavItem>
+            <NavItem 
+              href="/admin/trees/maintenance" 
+              icon={<Scissors className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/maintenance')}
+            >
+              {t('navigation.maintenance')}
+            </NavItem>
+            <NavItem 
+              href="/admin/trees/planting" 
+              icon={<TreePine className="h-5 w-5" />}
+              active={location.startsWith('/admin/trees/planting')}
+            >
+              {t('navigation.planting')}
+            </NavItem>
+          </ModuleNav>
+
+          {/* 4. AMENIDADES */}
           <ModuleNav 
             title={t('navigation.amenities')} 
             icon={<Package className="h-5 w-5" />}
@@ -286,27 +325,57 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
+          {/* 5. ACTIVIDADES */}
           <ModuleNav 
-            title={t('navigation.incidents')} 
-            icon={<AlertTriangle className="h-5 w-5" />}
-            value="incidents"
+            title={t('navigation.activities')} 
+            icon={<Calendar className="h-5 w-5" />}
+            value="activities"
           >
             <NavItem 
-              href="/admin/incidents" 
-              icon={<ClipboardList className="h-5 w-5" />}
-              active={location === '/admin/incidents'}
+              href="/admin/organizador" 
+              icon={<BarChart3 className="h-5 w-5" />}
+              active={location.startsWith('/admin/organizador')}
+            >
+              Dashboard
+            </NavItem>
+            <NavItem 
+              href="/admin/activities/categories" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location.startsWith('/admin/activities/categories')}
+            >
+              Categorías
+            </NavItem>
+            <NavItem 
+              href="/admin/activities" 
+              icon={<Activity className="h-5 w-5" />}
+              active={location === '/admin/activities'}
             >
               {t('navigation.listing')}
             </NavItem>
             <NavItem 
-              href="/admin/incidents/categories" 
-              icon={<Tag className="h-5 w-5" />}
-              active={location === '/admin/incidents/categories'}
+              href="/admin/organizador/catalogo/crear" 
+              icon={<Plus className="h-5 w-5" />}
+              active={location.startsWith('/admin/organizador/catalogo/crear')}
             >
-              {t('navigation.categories')}
+              Nueva Actividad
+            </NavItem>
+            <NavItem 
+              href="/admin/activities/calendar" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/activities/calendar')}
+            >
+              Calendario
+            </NavItem>
+            <NavItem 
+              href="/admin/instructors" 
+              icon={<GraduationCap className="h-5 w-5" />}
+              active={location === '/admin/instructors'}
+            >
+              {t('navigation.instructors')}
             </NavItem>
           </ModuleNav>
 
+          {/* 6. ACTIVOS */}
           <ModuleNav 
             title={t('navigation.assets')} 
             icon={<Package className="h-5 w-5" />}
@@ -349,6 +418,29 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
+          {/* 7. INCIDENCIAS */}
+          <ModuleNav 
+            title={t('navigation.incidents')} 
+            icon={<AlertTriangle className="h-5 w-5" />}
+            value="incidents"
+          >
+            <NavItem 
+              href="/admin/incidents" 
+              icon={<ClipboardList className="h-5 w-5" />}
+              active={location === '/admin/incidents'}
+            >
+              {t('navigation.listing')}
+            </NavItem>
+            <NavItem 
+              href="/admin/incidents/categories" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location === '/admin/incidents/categories'}
+            >
+              {t('navigation.categories')}
+            </NavItem>
+          </ModuleNav>
+
+          {/* 8. FINANZAS */}
           <ModuleNav 
             title={t('navigation.finance')} 
             icon={<DollarSign className="h-5 w-5" />}
@@ -389,7 +481,6 @@ const AdminSidebarComplete: React.FC = () => {
             >
               {t('navigation.cashFlow')}
             </NavItem>
-
             <NavItem 
               href="/admin/finance/calculator" 
               icon={<Calculator className="h-5 w-5" />}
@@ -413,6 +504,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
+          {/* 9. EVENTOS */}
           <ModuleNav 
             title="Eventos" 
             icon={<CalendarDays className="h-5 w-5" />}
@@ -426,7 +518,6 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Nuevo Evento
             </NavItem>
-
             <NavItem 
               href="/admin/events/categories" 
               icon={<Tag className="h-5 w-5" />}
@@ -441,7 +532,6 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Eventos
             </NavItem>
-
             <NavItem 
               href="/admin/eventos-ambu/calendar" 
               icon={<Calendar className="h-5 w-5" />}
@@ -458,62 +548,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* SECCIÓN DE ACTIVIDADES REORGANIZADA - ORDEN CORRECTO */}
-          <ModuleNav 
-            title={t('navigation.activities')} 
-            icon={<Calendar className="h-5 w-5" />}
-            value="activities"
-          >
-            {/* 1. DASHBOARD */}
-            <NavItem 
-              href="/admin/organizador" 
-              icon={<BarChart3 className="h-5 w-5" />}
-              active={location.startsWith('/admin/organizador')}
-            >
-              Dashboard
-            </NavItem>
-            {/* 2. CATEGORÍAS */}
-            <NavItem 
-              href="/admin/activities/categories" 
-              icon={<Tag className="h-5 w-5" />}
-              active={location.startsWith('/admin/activities/categories')}
-            >
-              Categorías
-            </NavItem>
-            {/* 3. LISTADO */}
-            <NavItem 
-              href="/admin/activities" 
-              icon={<Activity className="h-5 w-5" />}
-              active={location === '/admin/activities'}
-            >
-              {t('navigation.listing')}
-            </NavItem>
-            {/* 4. NUEVA ACTIVIDAD */}
-            <NavItem 
-              href="/admin/organizador/catalogo/crear" 
-              icon={<Plus className="h-5 w-5" />}
-              active={location.startsWith('/admin/organizador/catalogo/crear')}
-            >
-              Nueva Actividad
-            </NavItem>
-            {/* 5. CALENDARIO */}
-            <NavItem 
-              href="/admin/activities/calendar" 
-              icon={<Calendar className="h-5 w-5" />}
-              active={location.startsWith('/admin/activities/calendar')}
-            >
-              Calendario
-            </NavItem>
-            {/* 6. INSTRUCTORES */}
-            <NavItem 
-              href="/admin/instructors" 
-              icon={<GraduationCap className="h-5 w-5" />}
-              active={location === '/admin/instructors'}
-            >
-              {t('navigation.instructors')}
-            </NavItem>
-          </ModuleNav>
-
+          {/* 10. MARKETING */}
           <ModuleNav 
             title="Marketing" 
             icon={<Megaphone className="h-5 w-5" />}
@@ -535,6 +570,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
+          {/* 11. CONCESIONES */}
           <ModuleNav 
             title={t('navigation.concessions')} 
             icon={<Store className="h-5 w-5" />}
@@ -577,6 +613,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
+          {/* 12. RECURSOS HUMANOS */}
           <ModuleNav 
             title="Recursos Humanos" 
             icon={<Users className="h-5 w-5" />}
@@ -612,6 +649,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
+          {/* VOLUNTARIOS */}
           <ModuleNav 
             title={t('navigation.volunteers')} 
             icon={<HeartHandshake className="h-5 w-5" />}
@@ -647,41 +685,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          <ModuleNav 
-            title={t('navigation.trees')} 
-            icon={<TreePine className="h-5 w-5" />}
-            value="trees"
-          >
-            <NavItem 
-              href="/admin/trees/inventory" 
-              icon={<Archive className="h-5 w-5" />}
-              active={location.startsWith('/admin/trees/inventory')}
-            >
-              {t('navigation.inventory')}
-            </NavItem>
-            <NavItem 
-              href="/admin/trees/species" 
-              icon={<Leaf className="h-5 w-5" />}
-              active={location.startsWith('/admin/trees/species')}
-            >
-              {t('navigation.species')}
-            </NavItem>
-            <NavItem 
-              href="/admin/trees/maintenance" 
-              icon={<Scissors className="h-5 w-5" />}
-              active={location.startsWith('/admin/trees/maintenance')}
-            >
-              {t('navigation.maintenance')}
-            </NavItem>
-            <NavItem 
-              href="/admin/trees/planting" 
-              icon={<TreePine className="h-5 w-5" />}
-              active={location.startsWith('/admin/trees/planting')}
-            >
-              {t('navigation.planting')}
-            </NavItem>
-          </ModuleNav>
-
+          {/* 13. COMUNICACIÓN */}
           <ModuleNav 
             title="Comunicación" 
             icon={<MessageSquare className="h-5 w-5" />}
@@ -731,7 +735,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* Módulo de Seguridad */}
+          {/* 14. SEGURIDAD */}
           <ModuleNav 
             title="Seguridad" 
             icon={<Shield className="h-5 w-5" />}
