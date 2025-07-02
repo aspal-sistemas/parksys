@@ -66,7 +66,7 @@ const Home: React.FC = () => {
                 </Button>
               </Link>
               <Link href="/activities">
-                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-gray-900 font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 backdrop-blur-sm">
+                <Button size="lg" className="bg-white/20 border-2 border-white/50 text-white hover:bg-white hover:text-gray-900 font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 backdrop-blur-md shadow-lg">
                   <Calendar className="mr-3 h-5 w-5" />
                   Ver Actividades
                 </Button>
