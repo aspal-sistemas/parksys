@@ -320,6 +320,25 @@ const UserDetail: React.FC<{
               body: JSON.stringify({ imageUrl: data.url })
             });
             console.log(`Imagen de perfil guardada en caché para el usuario ${userIdToUpdate}`);
+            
+            // Actualizar también el localStorage para forzar la actualización inmediata
+            const localStorageKey = `profile_image_${userIdToUpdate}`;
+            const cacheInvalidationKey = `profile_image_cache_${userIdToUpdate}`;
+            localStorage.setItem(localStorageKey, data.url);
+            localStorage.setItem(cacheInvalidationKey, Date.now().toString());
+            
+            // Disparar un evento personalizado para que los componentes de imagen se actualicen
+            window.dispatchEvent(new CustomEvent('profileImageUpdated', { 
+              detail: { userId: userIdToUpdate, imageUrl: data.url } 
+            }));
+            
+            // Mostrar notificación de éxito
+            toast({
+              title: "Imagen actualizada",
+              description: "La foto de perfil se ha actualizado correctamente.",
+              variant: "default",
+            });
+            
           } catch (error) {
             console.error('Error al guardar la URL en la caché:', error);
             // Continuamos aunque falle el guardado en caché

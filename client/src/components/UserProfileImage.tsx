@@ -36,6 +36,11 @@ const UserProfileImage: React.FC<UserProfileImageProps> = ({
         return;
       }
 
+      // Añadir timestamp para invalidar cache cuando sea necesario
+      const cacheInvalidationKey = `profile_image_cache_${userId}`;
+      const lastUpdate = localStorage.getItem(cacheInvalidationKey);
+      const currentTime = Date.now().toString();
+      
       // Primero verificamos si tenemos la imagen guardada en localStorage
       const localStorageKey = `profile_image_${userId}`;
       const localImageUrl = localStorage.getItem(localStorageKey);
@@ -58,22 +63,15 @@ const UserProfileImage: React.FC<UserProfileImageProps> = ({
           return;
         }
       }
-      
-      // Si encontramos una imagen en localStorage, la usamos
-      if (localImageUrl) {
-        console.log(`Usando imagen desde localStorage para usuario ${userId}`);
-        setImageUrl(localImageUrl);
-        setLoading(false);
-        return;
-      }
 
-      // Si no hay imagen en localStorage, intentamos obtenerla del servidor
+      // Siempre intentar obtener la imagen del servidor para estar seguro de tener la más reciente
       try {
         // Añadimos control para evitar que falle cuando el servidor no responde
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 segundos de timeout
         
-        const response = await fetch(`/api/users/${userId}/profile-image`, {
+        // Agregar timestamp para evitar cache del navegador
+        const response = await fetch(`/api/users/${userId}/profile-image?t=${currentTime}`, {
           signal: controller.signal
         }).catch(err => {
           console.error("Error al obtener la imagen de perfil:", err);
@@ -88,19 +86,48 @@ const UserProfileImage: React.FC<UserProfileImageProps> = ({
           
           // Guardamos también en localStorage como respaldo
           localStorage.setItem(localStorageKey, data.imageUrl);
+          localStorage.setItem(cacheInvalidationKey, currentTime);
         } else {
-          // Si no hay imagen en la caché, usamos el avatar generado
-          setError(true);
+          // Si no hay respuesta del servidor pero tenemos imagen en localStorage, usarla
+          if (localImageUrl) {
+            console.log(`Usando imagen desde localStorage para usuario ${userId}`);
+            setImageUrl(localImageUrl);
+          } else {
+            // Si no hay imagen en la caché, usamos el avatar generado
+            setError(true);
+          }
         }
       } catch (err) {
         console.error('Error al obtener la imagen de perfil:', err);
-        setError(true);
+        // En caso de error, intentar usar localStorage como fallback
+        if (localImageUrl) {
+          console.log(`Usando imagen desde localStorage como fallback para usuario ${userId}`);
+          setImageUrl(localImageUrl);
+        } else {
+          setError(true);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfileImage();
+
+    // Listener para actualización automática cuando se sube una nueva imagen
+    const handleProfileImageUpdate = (event: CustomEvent) => {
+      const { userId: eventUserId, imageUrl: newImageUrl } = event.detail;
+      if (eventUserId === userId) {
+        console.log(`Actualizando imagen de perfil para usuario ${userId}: ${newImageUrl}`);
+        setImageUrl(newImageUrl);
+        setError(false);
+      }
+    };
+
+    window.addEventListener('profileImageUpdated', handleProfileImageUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('profileImageUpdated', handleProfileImageUpdate as EventListener);
+    };
   }, [userId]);
 
   if (loading) {
