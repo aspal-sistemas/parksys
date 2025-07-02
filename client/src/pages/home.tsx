@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Map, ArrowRight, MapPin, Trees, Users, Calendar, Sparkles, TrendingUp, Zap } from 'lucide-react';
+import { Search, Map, ArrowRight, MapPin, Trees, Users, Calendar, Sparkles, TrendingUp, Zap, Leaf, Shield, Heart, BookOpen, GraduationCap, Target, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -263,6 +263,208 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* CENTRO METROPOLITANO DE CONSERVACIÓN DE VIDA SILVESTRE URBANO */}
+      <section className="py-24 bg-gradient-to-b from-emerald-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-16">
+            {/* Contenido */}
+            <div className="space-y-8">
+              <div>
+                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-full px-6 py-3 mb-6 border border-emerald-200">
+                  <Leaf className="h-5 w-5 text-emerald-600" />
+                  <span className="text-sm font-semibold text-emerald-800">🦎 Vida Silvestre</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                  Centro Metropolitano de 
+                  <span className="block text-emerald-600">Conservación de Vida Silvestre Urbano</span>
+                </h2>
+                <p className="text-xl text-gray-600 leading-relaxed mb-8">
+                  Dedicado a la protección, rehabilitación y conservación de especies nativas en el área metropolitana. 
+                  Trabajamos en la preservación de la biodiversidad urbana y la educación ambiental para las futuras generaciones.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
+                    <Shield className="h-6 w-6 text-emerald-600" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Rescate de Fauna</h3>
+                  <p className="text-gray-600">Atención especializada para animales silvestres heridos o en situación de riesgo</p>
+                </div>
+                
+                <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
+                    <Heart className="h-6 w-6 text-emerald-600" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Rehabilitación</h3>
+                  <p className="text-gray-600">Programas integrales de recuperación y reintegración al hábitat natural</p>
+                </div>
+              </div>
+              
+              <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105">
+                Conoce Más Sobre Conservación
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+            
+            {/* Imagen */}
+            <div className="relative">
+              <div className="aspect-[4/3] bg-gradient-to-br from-emerald-200 to-teal-200 rounded-3xl overflow-hidden shadow-2xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1574263867128-87688b1c0e55?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Centro de Conservación de Vida Silvestre"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-xl">
+                <Sparkles className="h-12 w-12 text-white" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* EDUCACIÓN AMBIENTAL */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-16">
+            {/* Imagen - Lado izquierdo */}
+            <div className="relative order-2 lg:order-1">
+              <div className="aspect-[4/3] bg-gradient-to-br from-blue-200 to-indigo-200 rounded-3xl overflow-hidden shadow-2xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1509062522246-3755977927d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Educación Ambiental"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-3xl flex items-center justify-center shadow-xl">
+                <BookOpen className="h-12 w-12 text-white" />
+              </div>
+            </div>
+            
+            {/* Contenido - Lado derecho */}
+            <div className="space-y-8 order-1 lg:order-2">
+              <div>
+                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full px-6 py-3 mb-6 border border-blue-200">
+                  <GraduationCap className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-semibold text-blue-800">📚 Aprendizaje</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                  <span className="text-blue-600">Educación</span>
+                  <span className="block">Ambiental</span>
+                </h2>
+                <p className="text-xl text-gray-600 leading-relaxed mb-8">
+                  Formamos ciudadanos conscientes del medio ambiente a través de programas educativos innovadores. 
+                  Nuestros talleres, cursos y actividades promueven la cultura ambiental en todas las edades.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                    <Users className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">Talleres Comunitarios</h3>
+                    <p className="text-gray-600">Actividades participativas para todas las edades enfocadas en sustentabilidad</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                    <Zap className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">Programas Escolares</h3>
+                    <p className="text-gray-600">Currículum ambiental integrado para instituciones educativas</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                    <Target className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">Capacitación Empresarial</h3>
+                    <p className="text-gray-600">Programas especializados para organizaciones comprometidas con el medio ambiente</p>
+                  </div>
+                </div>
+              </div>
+              
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105">
+                Explora Programas Educativos
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PATROCINADORES */}
+      <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full px-6 py-3 mb-8 border border-purple-200">
+              <Award className="h-5 w-5 text-purple-600" />
+              <span className="text-sm font-semibold text-purple-800">🤝 Alianzas Estratégicas</span>
+            </div>
+            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
+              Nuestros 
+              <span className="text-purple-600">Patrocinadores</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              Gracias al apoyo de organizaciones comprometidas con el medio ambiente, 
+              podemos continuar desarrollando proyectos que transforman nuestra ciudad en un espacio más verde y sostenible.
+            </p>
+          </div>
+          
+          {/* Grid de patrocinadores */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center">
+            {[
+              { name: "Gobierno de Jalisco", logo: "🏛️" },
+              { name: "Guadalajara", logo: "🌆" },
+              { name: "SEMADET", logo: "🌱" },
+              { name: "Universidad de Guadalajara", logo: "🎓" },
+              { name: "ITESO", logo: "📚" },
+              { name: "Fundación Gonzalez Gallo", logo: "🏢" },
+              { name: "CIATEJ", logo: "🔬" },
+              { name: "Bosque La Primavera", logo: "🌲" },
+              { name: "WWF México", logo: "🐼" },
+              { name: "Pronatura", logo: "🦋" },
+              { name: "Reforestamos México", logo: "🌳" },
+              { name: "Green Peace", logo: "🌍" }
+            ].map((sponsor, index) => (
+              <div key={index} className="group">
+                <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <div className="text-center">
+                    <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
+                      {sponsor.logo}
+                    </div>
+                    <p className="text-sm font-medium text-gray-700 group-hover:text-purple-600 transition-colors">
+                      {sponsor.name}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Call to action para patrocinadores */}
+          <div className="text-center mt-16">
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-8 shadow-xl">
+              <h3 className="text-2xl font-bold text-white mb-4">¿Quieres ser parte del cambio?</h3>
+              <p className="text-purple-100 mb-6 text-lg">
+                Únete a nuestras alianzas estratégicas y contribuye al desarrollo sostenible de la zona metropolitana
+              </p>
+              <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105">
+                Convertirse en Patrocinador
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       
       {/* Footer inspirado en bosquesamg.mx */}
