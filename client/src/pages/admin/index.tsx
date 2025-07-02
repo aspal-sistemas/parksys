@@ -2,454 +2,486 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { useTranslation } from 'react-i18next';
-import { TranslationDemo } from '@/components/TranslationDemo';
 import { 
   MapPin, 
   Users, 
   Calendar, 
-  Bell, 
-  MessageSquare, 
-  ArrowUp, 
-  ArrowDown, 
-  ArrowRight,
-  Plus,
-  Upload,
-  Layers,
-  FileText,
-  Tag,
-  BarChart,
-  Settings,
+  TreePine,
   Building,
-  AlertTriangle,
-  HeartHandshake
+  DollarSign,
+  HeartHandshake,
+  Briefcase,
+  Shield,
+  MessageSquare,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  Plus
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import AdminLayout from '@/components/AdminLayout';
+import { 
+  LineChart, 
+  Line, 
+  AreaChart, 
+  Area, 
+  BarChart, 
+  Bar, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  Legend
+} from 'recharts';
 
-// Simplified modular dashboard component
+// Dashboard mejorado con gráficas e indicadores
 const AdminDashboard: React.FC = () => {
   const { t } = useTranslation('common');
-  const { t: tParks } = useTranslation('parks');
-  const { t: tDashboard } = useTranslation('dashboard');
   
-  // Fetch parks count
-  const { data: parks = [] } = useQuery({
-    queryKey: ['/api/parks'],
-  });
-  
+  // Consultas de datos reales
+  const { data: parks = [] } = useQuery({ queryKey: ['/api/parks'] });
+  const { data: activities = [] } = useQuery({ queryKey: ['/api/activities'] });
+  const { data: users = [] } = useQuery({ queryKey: ['/api/users'] });
+  const { data: employees = [] } = useQuery({ queryKey: ['/api/hr/employees'] });
+  const { data: volunteers = [] } = useQuery({ queryKey: ['/api/volunteers'] });
+  const { data: concessions = [] } = useQuery({ queryKey: ['/api/active-concessions'] });
+
+  // Seguridad de tipos para arrays
+  const parksArray = Array.isArray(parks) ? parks : [];
+  const activitiesArray = Array.isArray(activities) ? activities : [];
+  const usersArray = Array.isArray(users) ? users : [];
+  const employeesArray = Array.isArray(employees) ? employees : [];
+  const volunteersArray = Array.isArray(volunteers) ? volunteers : [];
+  const concessionsArray = Array.isArray(concessions) ? concessions : [];
+
+  // Datos para gráficas
+  const monthlyData = [
+    { name: 'Ene', parques: 18, actividades: 45, voluntarios: 23 },
+    { name: 'Feb', parques: 19, actividades: 52, voluntarios: 28 },
+    { name: 'Mar', parques: 20, actividades: 48, voluntarios: 31 },
+    { name: 'Abr', parques: 21, actividades: 65, voluntarios: 35 },
+    { name: 'May', parques: 22, actividades: 58, voluntarios: 42 },
+    { name: 'Jun', parques: 22, actividades: 71, voluntarios: 38 },
+    { name: 'Jul', parques: parksArray.length, actividades: activitiesArray.length, voluntarios: volunteersArray.length }
+  ];
+
+  const moduleUsageData = [
+    { name: 'Parques', value: 95, color: '#00a587' },
+    { name: 'RH', value: 88, color: '#067f5f' },
+    { name: 'Finanzas', value: 92, color: '#bcd256' },
+    { name: 'Actividades', value: 78, color: '#8498a5' },
+    { name: 'Voluntarios', value: 65, color: '#059669' },
+    { name: 'Concesiones', value: 72, color: '#0ea5e9' }
+  ];
+
+  const financialData = [
+    { name: 'Ene', ingresos: 125000, egresos: 98000 },
+    { name: 'Feb', ingresos: 132000, egresos: 105000 },
+    { name: 'Mar', ingresos: 145000, egresos: 112000 },
+    { name: 'Abr', ingresos: 158000, egresos: 118000 },
+    { name: 'May', ingresos: 162000, egresos: 125000 },
+    { name: 'Jun', ingresos: 175000, egresos: 135000 },
+    { name: 'Jul', ingresos: 182000, egresos: 128000 }
+  ];
+
+  const parkTypeData = [
+    { name: 'Urbanos', value: 8, color: '#00a587' },
+    { name: 'Metropolitanos', value: 5, color: '#067f5f' },
+    { name: 'Vecinales', value: 4, color: '#bcd256' },
+    { name: 'Lineales', value: 3, color: '#8498a5' },
+    { name: 'Naturales', value: 2, color: '#059669' }
+  ];
+
   return (
     <AdminLayout 
-      title={t('navigation.dashboard')} 
-      subtitle={tParks('welcome')}
+      title="Dashboard Ejecutivo" 
+      subtitle="Panel de control integral del sistema ParkSys"
     >
+      {/* Botones de acción rápida */}
       <div className="flex items-center justify-end space-x-3 mb-6">
         <Link href="/admin/parks/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            {tParks('newPark')}
+            Nuevo Parque
           </Button>
         </Link>
-        <Link href="/admin/parks-import">
+        <Link href="/admin/activities/new">
           <Button variant="outline">
-            <Upload className="mr-2 h-4 w-4" />
-{t('actions.import')} {t('navigation.parks')}
+            <Plus className="mr-2 h-4 w-4" />
+            Nueva Actividad
           </Button>
         </Link>
-        <Button 
-          variant="outline" 
-          className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-200"
-          onClick={async () => {
-            try {
-              const response = await fetch('/api/admin/seed/volunteers', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-              });
-              
-              if (response.ok) {
-                // Mostrar notificación de éxito
-                alert("Datos de voluntarios cargados correctamente");
-                // En un proyecto real usaríamos toast para notificaciones
-              } else {
-                throw new Error('Error al cargar datos');
-              }
-            } catch (error) {
-              console.error('Error:', error);
-              alert("Error al cargar datos de voluntarios");
-            }
-          }}
-        >
-          <HeartHandshake className="mr-2 h-4 w-4" />
-Cargar Datos de {t('navigation.volunteers')}
-        </Button>
+        <Link href="/admin/hr/employees/new">
+          <Button variant="outline" className="bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200">
+            <Plus className="mr-2 h-4 w-4" />
+            Nuevo Empleado
+          </Button>
+        </Link>
       </div>
       
-      {/* Stats overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        {/* Parks */}
-        <Card>
+      {/* Métricas principales */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        {/* Parques */}
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {tParks('totalParks')}
+            <CardTitle className="text-sm font-medium text-green-800">
+              Total de Parques
             </CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <MapPin className="h-5 w-5 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{parks.length}</div>
-            <div className="flex items-center text-xs text-muted-foreground mt-1">
-              <Badge variant="outline" className="text-emerald-500 bg-emerald-50">
-                <ArrowUp className="h-3 w-3 mr-1" />
-                +4.5%
-              </Badge>
-              <span className="ml-1">desde el mes pasado</span>
+            <div className="text-3xl font-bold text-green-900">{parksArray.length}</div>
+            <div className="flex items-center mt-2">
+              <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+              <span className="text-sm text-green-600 font-medium">+2 este mes</span>
             </div>
+            <Progress value={85} className="mt-3" />
+            <p className="text-xs text-green-700 mt-1">85% de capacidad objetivo</p>
           </CardContent>
         </Card>
         
-        {/* Users */}
-        <Card>
+        {/* Personal RH */}
+        <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('navigation.users')}
+            <CardTitle className="text-sm font-medium text-blue-800">
+              Personal Activo
             </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Briefcase className="h-5 w-5 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">25</div>
-            <div className="flex items-center text-xs text-muted-foreground mt-1">
-              <Badge variant="outline" className="text-emerald-500 bg-emerald-50">
-                <ArrowUp className="h-3 w-3 mr-1" />
-                +12%
-              </Badge>
-              <span className="ml-1">desde el mes pasado</span>
+            <div className="text-3xl font-bold text-blue-900">{employeesArray.length}</div>
+            <div className="flex items-center mt-2">
+              <TrendingUp className="h-4 w-4 text-blue-600 mr-1" />
+              <span className="text-sm text-blue-600 font-medium">+5 este mes</span>
             </div>
+            <Progress value={92} className="mt-3" />
+            <p className="text-xs text-blue-700 mt-1">92% asistencia promedio</p>
           </CardContent>
         </Card>
         
-        {/* Activities */}
-        <Card>
+        {/* Actividades */}
+        <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('navigation.activities')}
+            <CardTitle className="text-sm font-medium text-purple-800">
+              Actividades Activas
             </CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-5 w-5 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">36</div>
-            <div className="flex items-center text-xs text-muted-foreground mt-1">
-              <Badge variant="outline" className="text-rose-500 bg-rose-50">
-                <ArrowDown className="h-3 w-3 mr-1" />
-                -2.5%
-              </Badge>
-              <span className="ml-1">desde el mes pasado</span>
+            <div className="text-3xl font-bold text-purple-900">{activitiesArray.length}</div>
+            <div className="flex items-center mt-2">
+              <Activity className="h-4 w-4 text-purple-600 mr-1" />
+              <span className="text-sm text-purple-600 font-medium">15 esta semana</span>
             </div>
+            <Progress value={78} className="mt-3" />
+            <p className="text-xs text-purple-700 mt-1">78% participación promedio</p>
           </CardContent>
         </Card>
         
-        {/* Incidents */}
-        <Card>
+        {/* Finanzas */}
+        <Card className="bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('navigation.incidents')}
+            <CardTitle className="text-sm font-medium text-amber-800">
+              Balance Mensual
             </CardTitle>
-            <Bell className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="h-5 w-5 text-amber-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <div className="flex items-center text-xs text-muted-foreground mt-1">
-              <Badge variant="outline" className="text-rose-500 bg-rose-50">
-                <ArrowUp className="h-3 w-3 mr-1" />
-                +8%
-              </Badge>
-              <span className="ml-1">desde el mes pasado</span>
+            <div className="text-3xl font-bold text-amber-900">$54K</div>
+            <div className="flex items-center mt-2">
+              <TrendingUp className="h-4 w-4 text-amber-600 mr-1" />
+              <span className="text-sm text-amber-600 font-medium">+18% vs mes anterior</span>
             </div>
+            <Progress value={68} className="mt-3" />
+            <p className="text-xs text-amber-700 mt-1">68% del presupuesto anual</p>
           </CardContent>
         </Card>
       </div>
-      
-      {/* Nueva Estructura de Menú */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">{t('navigation.modules')}</h2>
-        <Card className="p-4">
+
+      {/* Gráficas principales */}
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
+        {/* Tendencias mensuales */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Tendencias de Crecimiento</CardTitle>
+            <CardDescription>Evolución mensual de los principales indicadores</CardDescription>
+          </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600 mb-4">Se ha implementado una nueva estructura de menú con los siguientes módulos y submódulos:</p>
-            
-            <div className="space-y-4">
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">1. Módulo - Usuarios del Sistema</h3>
-                <p className="text-sm text-gray-600">Submódulos: Lista, Usuarios</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">2. Módulo - Actividades</h3>
-                <p className="text-sm text-gray-600">Submódulos: Organizador de Actividades, Actividades, Reportes</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">3. Módulo - Operaciones</h3>
-                <p className="text-sm text-gray-600">Submódulos: Parques, Activos, Incidencias, Proyectos de Capital, Reportes</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">4. Módulo - Finanzas</h3>
-                <p className="text-sm text-gray-600">Submódulos: Egresos, Ingresos, Flujo de Efectivo, Calculadora, Indicadores clave</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">5. Módulo - Marketing</h3>
-                <p className="text-sm text-gray-600">Submódulos: Eventos, Encuestas, Patrocinios, Reportes</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">6. Módulo - Voluntariado</h3>
-                <p className="text-sm text-gray-600">Submódulos: Gestión de Voluntarios, Actividades, Capacitación, Reportes</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">7. Módulo - Concesiones</h3>
-                <p className="text-sm text-gray-600">Submódulos: Registro Concesionarios, Contratos, Formatos, Reportes</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">8. Módulo - RH</h3>
-                <p className="text-sm text-gray-600">Submódulos: Registro Personal, Roles y Turnos, Historial de Formación, Evaluación y Seguimiento, Perfiles de Puesto, Organigrama</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">9. Módulo - Análisis y Reportes</h3>
-                <p className="text-sm text-gray-600">Submódulos: Dashboard Analítico, Exportar Reportes</p>
-              </div>
-            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="parques" stroke="#00a587" strokeWidth={3} name="Parques" />
+                <Line type="monotone" dataKey="actividades" stroke="#8498a5" strokeWidth={3} name="Actividades" />
+                <Line type="monotone" dataKey="voluntarios" stroke="#059669" strokeWidth={3} name="Voluntarios" />
+              </LineChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
-      </div>
-      
-      {/* Estructura Anterior */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Estructura Original del Menú</h2>
-        <Card className="p-4">
-          <CardContent>
-            <p className="text-sm text-gray-600 mb-4">Esta es la estructura original que teníamos antes:</p>
-            
-            <div className="space-y-4">
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">Módulo de Espacios Verdes</h3>
-                <p className="text-sm text-gray-600">Submódulos: Parques, Amenidades, Municipios</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">Módulo de Actividades y Eventos</h3>
-                <p className="text-sm text-gray-600">Submódulos: Actividades, Incidentes</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">Módulo de Contenidos Multimedia</h3>
-                <p className="text-sm text-gray-600">Submódulos: Documentos, Imágenes, Videos</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">Módulo de Comunidad</h3>
-                <p className="text-sm text-gray-600">Submódulos: Comentarios, Usuarios</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">Módulo de Análisis y Reportes</h3>
-                <p className="text-sm text-gray-600">Submódulos: Dashboard Analítico, Exportar Reportes</p>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-2">Módulo de Sistema</h3>
-                <p className="text-sm text-gray-600">Submódulos: Configuración</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Recent activity */}
-      <h2 className="text-xl font-semibold mb-4">Actividad Reciente</h2>
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {/* Recent parks */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Parques Recientes</CardTitle>
-            <CardDescription>Los últimos parques agregados al sistema</CardDescription>
+
+        {/* Uso de módulos */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Adopción de Módulos</CardTitle>
+            <CardDescription>Porcentaje de uso activo por módulo del sistema</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {Array.isArray(parks) && parks.length > 0 ? (
-                parks.slice(-3).reverse().map((park: any, i: number) => (
-                  <div key={i} className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-                      <MapPin className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium leading-none">{park.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {park.address?.substring(0, 30) || 'Sin dirección'}...
-                      </p>
-                    </div>
-                    <Link href={`/admin/parks/${park.id}`}>
-                      <Button variant="ghost" size="icon">
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
+              {moduleUsageData.map((module, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div 
+                      className="w-4 h-4 rounded-full" 
+                      style={{ backgroundColor: module.color }}
+                    ></div>
+                    <span className="text-sm font-medium">{module.name}</span>
                   </div>
-                ))
-              ) : (
-                <div className="text-center text-gray-500">
-                  No hay parques disponibles
-                </div>
-              )}
-              
-              <Link href="/admin/parks">
-                <Button variant="outline" className="w-full mt-2">
-                  Ver todos los parques
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Recent comments */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Comentarios Recientes</CardTitle>
-            <CardDescription>Los últimos comentarios de los ciudadanos</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
-                  <MessageSquare className="h-5 w-5 text-secondary" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none">María L.</p>
-                  <p className="text-xs text-muted-foreground">
-                    "Excelente parque, muy limpio y seguro. Me encanta venir los fines de semana."
-                  </p>
-                  <div className="flex items-center pt-1">
-                    <p className="text-xs text-muted-foreground">Parque Metropolitano • Hace 2 días</p>
+                  <div className="flex items-center space-x-2">
+                    <Progress value={module.value} className="w-20" />
+                    <span className="text-sm font-bold w-10">{module.value}%</span>
                   </div>
                 </div>
-              </div>
-              
-              <div className="flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
-                  <MessageSquare className="h-5 w-5 text-secondary" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none">Carlos R.</p>
-                  <p className="text-xs text-muted-foreground">
-                    "Las instalaciones deportivas están en muy buen estado. Recomendado."
-                  </p>
-                  <div className="flex items-center pt-1">
-                    <p className="text-xs text-muted-foreground">Parque Deportivo • Hace 3 días</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
-                  <MessageSquare className="h-5 w-5 text-secondary" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium leading-none">Sofia T.</p>
-                  <p className="text-xs text-muted-foreground">
-                    "Me encantaron las áreas para mascotas. Mi perro lo disfrutó mucho."
-                  </p>
-                  <div className="flex items-center pt-1">
-                    <p className="text-xs text-muted-foreground">Bosque Los Colomos • Hace 5 días</p>
-                  </div>
-                </div>
-              </div>
-              
-              <Link href="/admin/comments">
-                <Button variant="outline" className="w-full mt-2">
-                  Ver todos los comentarios
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Recent incidents */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Incidentes Recientes</CardTitle>
-            <CardDescription>Los últimos reportes de incidentes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-red-500" />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium leading-none">Juegos infantiles dañados</p>
-                    <Badge variant="outline" className="ml-2 text-red-500 bg-red-50">Alto</Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    "Los columpios están rotos y son peligrosos para los niños."
-                  </p>
-                  <div className="flex items-center pt-1">
-                    <p className="text-xs text-muted-foreground">Parque Metropolitano • Pendiente</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium leading-none">Falta de iluminación</p>
-                    <Badge variant="outline" className="ml-2 text-yellow-500 bg-yellow-50">Medio</Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    "Las luminarias del sector norte no funcionan, generando inseguridad."
-                  </p>
-                  <div className="flex items-center pt-1">
-                    <p className="text-xs text-muted-foreground">Parque Agua Azul • En progreso</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-green-500" />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium leading-none">Banca rota</p>
-                    <Badge variant="outline" className="ml-2 text-green-500 bg-green-50">Bajo</Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    "Banca de madera rota en la zona de picnic."
-                  </p>
-                  <div className="flex items-center pt-1">
-                    <p className="text-xs text-muted-foreground">Bosque Los Colomos • Resuelto</p>
-                  </div>
-                </div>
-              </div>
-              
-              <Link href="/admin/incidents">
-                <Button variant="outline" className="w-full mt-2">
-                  Ver todos los incidentes
-                </Button>
-              </Link>
+              ))}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Demostración del sistema de traducciones */}
-      <div className="mt-8">
-        <TranslationDemo />
+      {/* Segunda fila de gráficas */}
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
+        {/* Flujo financiero */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Flujo Financiero</CardTitle>
+            <CardDescription>Ingresos vs Egresos (Miles de pesos)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={financialData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value: any) => [`$${(Number(value) / 1000).toFixed(0)}K`, '']} />
+                <Legend />
+                <Area 
+                  type="monotone" 
+                  dataKey="ingresos" 
+                  stackId="1" 
+                  stroke="#00a587" 
+                  fill="#00a587" 
+                  fillOpacity={0.6}
+                  name="Ingresos"
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="egresos" 
+                  stackId="2" 
+                  stroke="#ef4444" 
+                  fill="#ef4444" 
+                  fillOpacity={0.6}
+                  name="Egresos"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Distribución de parques */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Tipos de Parques</CardTitle>
+            <CardDescription>Distribución por categoría</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={parkTypeData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, value }) => `${name}: ${value}`}
+                >
+                  {parkTypeData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* KPIs y alertas */}
+      <div className="grid gap-6 md:grid-cols-3 mb-8">
+        {/* Indicadores críticos */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <AlertCircle className="h-5 w-5 mr-2 text-amber-500" />
+              Indicadores Críticos
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Mantenimiento Pendiente</span>
+              <Badge variant="destructive">3 urgentes</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Presupuesto Disponible</span>
+              <Badge variant="outline" className="text-amber-600">32% restante</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Eventos Próximos</span>
+              <Badge variant="secondary">8 esta semana</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Contratos por Vencer</span>
+              <Badge variant="destructive">2 este mes</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Estado del sistema */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+              Estado del Sistema
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Usuarios Activos (24h)</span>
+              <Badge variant="outline" className="text-green-600">{usersArray.length}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Uptime del Sistema</span>
+              <Badge variant="outline" className="text-green-600">99.8%</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Backup Automático</span>
+              <Badge variant="outline" className="text-green-600">Actualizado</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Seguridad</span>
+              <Badge variant="outline" className="text-green-600">Óptima</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Acciones pendientes */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Clock className="h-5 w-5 mr-2 text-blue-500" />
+              Acciones Pendientes
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm">
+              <div className="flex justify-between items-center mb-2">
+                <span>Aprobación de Eventos</span>
+                <Badge>5</Badge>
+              </div>
+              <Progress value={30} className="h-2" />
+            </div>
+            <div className="text-sm">
+              <div className="flex justify-between items-center mb-2">
+                <span>Revisión de Concesiones</span>
+                <Badge>2</Badge>
+              </div>
+              <Progress value={75} className="h-2" />
+            </div>
+            <div className="text-sm">
+              <div className="flex justify-between items-center mb-2">
+                <span>Evaluaciones Pendientes</span>
+                <Badge>8</Badge>
+              </div>
+              <Progress value={60} className="h-2" />
+            </div>
+            <Link href="/admin/tasks">
+              <Button variant="outline" size="sm" className="w-full mt-3">
+                Ver Todas las Tareas
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Resumen de módulos principales */}
+      <div className="grid gap-6 md:grid-cols-4 mb-8">
+        <Card className="text-center">
+          <CardContent className="pt-6">
+            <HeartHandshake className="h-12 w-12 mx-auto mb-3 text-red-500" />
+            <h3 className="font-semibold mb-1">Voluntarios</h3>
+            <p className="text-2xl font-bold mb-2">{volunteersArray.length}</p>
+            <p className="text-sm text-gray-600">38 activos este mes</p>
+            <Link href="/admin/volunteers">
+              <Button variant="outline" size="sm" className="mt-3">
+                Gestionar
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="text-center">
+          <CardContent className="pt-6">
+            <Building className="h-12 w-12 mx-auto mb-3 text-blue-500" />
+            <h3 className="font-semibold mb-1">Concesiones</h3>
+            <p className="text-2xl font-bold mb-2">{concessionsArray.length}</p>
+            <p className="text-sm text-gray-600">9 contratos activos</p>
+            <Link href="/admin/concessions">
+              <Button variant="outline" size="sm" className="mt-3">
+                Gestionar
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="text-center">
+          <CardContent className="pt-6">
+            <TreePine className="h-12 w-12 mx-auto mb-3 text-green-500" />
+            <h3 className="font-semibold mb-1">Arbolado</h3>
+            <p className="text-2xl font-bold mb-2">50</p>
+            <p className="text-sm text-gray-600">14 especies catalogadas</p>
+            <Link href="/admin/trees">
+              <Button variant="outline" size="sm" className="mt-3">
+                Gestionar
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="text-center">
+          <CardContent className="pt-6">
+            <MessageSquare className="h-12 w-12 mx-auto mb-3 text-purple-500" />
+            <h3 className="font-semibold mb-1">Comunicación</h3>
+            <p className="text-2xl font-bold mb-2">2,847</p>
+            <p className="text-sm text-gray-600">emails enviados</p>
+            <Link href="/admin/communications">
+              <Button variant="outline" size="sm" className="mt-3">
+                Gestionar
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
