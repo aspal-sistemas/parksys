@@ -58,6 +58,7 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
           id: instructors.id,
           firstName: instructors.firstName,
           lastName: instructors.lastName,
+          fullName: instructors.fullName,
           email: instructors.email,
           phone: instructors.phone,
           specialties: instructors.specialties,
@@ -76,9 +77,15 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
         .from(instructors)
         .orderBy(desc(instructors.createdAt));
 
-      // Obtener nombres de parques preferidos si existen
+      // Obtener nombres de parques preferidos si existen y construir fullName si es null
       const instructorsWithParkNames = await Promise.all(
         result.map(async (instructor) => {
+          let updatedInstructor = {
+            ...instructor,
+            // Construir fullName si es null o vacío
+            fullName: instructor.fullName || `${instructor.firstName || ''} ${instructor.lastName || ''}`.trim()
+          };
+
           if (instructor.preferredParkId) {
             try {
               const parkResult = await db
@@ -87,16 +94,12 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
                 .where(eq(parks.id, instructor.preferredParkId))
                 .limit(1);
               
-              return {
-                ...instructor,
-                preferredParkName: parkResult[0]?.name || null
-              };
+              updatedInstructor.preferredParkName = parkResult[0]?.name || null;
             } catch (error) {
               console.error('Error fetching park name:', error);
-              return instructor;
             }
           }
-          return instructor;
+          return updatedInstructor;
         })
       );
 
