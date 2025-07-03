@@ -22,6 +22,7 @@ import {
   DollarSign,
   Trophy
 } from 'lucide-react';
+import heroImage from '@assets/park-with-lake-and-stone-bridge-old-european-town-2024-12-04-10-14-36-utc_1751508535544.jpg';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -365,8 +366,16 @@ function ActivitiesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       {/* Hero Section */}
-      <section className="relative py-20 px-4 text-center bg-gradient-to-r from-green-600 to-blue-600 text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
+      <section 
+        className="relative py-20 px-4 text-center text-white"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative max-w-4xl mx-auto">
           <div className="flex items-center justify-center gap-4 mb-6">
             <Activity className="h-12 w-12" />
