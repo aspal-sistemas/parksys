@@ -294,13 +294,6 @@ const AdminSidebarComplete: React.FC = () => {
             >
               {t('navigation.maintenance')}
             </NavItem>
-            <NavItem 
-              href="/admin/trees/planting" 
-              icon={<TreePine className="h-5 w-5" />}
-              active={location.startsWith('/admin/trees/planting')}
-            >
-              {t('navigation.planting')}
-            </NavItem>
           </ModuleNav>
 
           {/* 4. AMENIDADES */}
