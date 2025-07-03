@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Search, Filter, Grid, List, Star, Phone, Mail, Award, Clock, User, MessageSquare, Users, MapPin } from 'lucide-react';
 import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
+import heroImage from '@assets/cropped-shot-of-handsome-young-rugby-coach-standin-2025-04-06-09-42-40-utc_1751510249661.jpg';
 
 // Tipo de datos para un instructor
 interface Instructor {
@@ -167,9 +168,17 @@ const InstructorsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section con gradiente */}
-      <div className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
+      {/* Hero Section */}
+      <div 
+        className="relative text-white"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/50"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
