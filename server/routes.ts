@@ -142,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // registerInstructorRoutes(app, apiRouter, publicRouter, isAuthenticated); // Comentado - se usa instructor-routes.ts
   
   // Registramos las rutas del módulo de activos
-  registerAssetRoutes(app, apiRouter, isAuthenticated);
+  // registerAssetRoutes(app, apiRouter, isAuthenticated); // COMENTADO - categorías de activos manejadas por asset-categories-routes.ts
   registerMaintenanceRoutes(app, apiRouter, isAuthenticated);
   registerAssetAssignmentRoutes(app, apiRouter, isAuthenticated);
   registerAssetImageRoutes(app, apiRouter, isAuthenticated);
