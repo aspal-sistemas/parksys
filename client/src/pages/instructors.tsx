@@ -28,6 +28,8 @@ interface Instructor {
 const InstructorsPage: React.FC = () => {
   // Helper function para procesar especialidades
   const getSpecialtiesArray = (specialties: string | string[] | undefined) => {
+    console.log('Procesando especialidades:', specialties, typeof specialties);
+    
     if (!specialties) return [];
     
     // Si ya es un array, devolverlo
@@ -39,14 +41,18 @@ const InstructorsPage: React.FC = () => {
         // Intentar parsear como JSON array
         const parsed = JSON.parse(specialties);
         if (Array.isArray(parsed)) {
+          console.log('Especialidades parseadas:', parsed);
           return parsed;
         }
       } catch (e) {
+        console.log('Error parseando JSON, usando split:', e);
         // Si falla el parsing, tratar como string separado por comas
       }
       
       // Tratar como string separado por comas
-      return specialties.split(',').map(s => s.trim()).filter(s => s.length > 0);
+      const result = specialties.split(',').map(s => s.trim()).filter(s => s.length > 0);
+      console.log('Especialidades con split:', result);
+      return result;
     }
     
     return [];
