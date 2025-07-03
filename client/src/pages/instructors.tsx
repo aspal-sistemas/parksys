@@ -26,6 +26,32 @@ interface Instructor {
 }
 
 const InstructorsPage: React.FC = () => {
+  // Helper function para procesar especialidades
+  const getSpecialtiesArray = (specialties: string | string[] | undefined) => {
+    if (!specialties) return [];
+    
+    // Si ya es un array, devolverlo
+    if (Array.isArray(specialties)) return specialties;
+    
+    // Si es un string, intentar parsearlo como JSON primero
+    if (typeof specialties === 'string') {
+      try {
+        // Intentar parsear como JSON array
+        const parsed = JSON.parse(specialties);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      } catch (e) {
+        // Si falla el parsing, tratar como string separado por comas
+      }
+      
+      // Tratar como string separado por comas
+      return specialties.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    }
+    
+    return [];
+  };
+
   // Estados para filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('');
@@ -83,9 +109,7 @@ const InstructorsPage: React.FC = () => {
   const allSpecialties = new Set<string>();
   instructors.forEach(instructor => {
     if (instructor.specialties) {
-      const specialtiesArray = Array.isArray(instructor.specialties) 
-        ? instructor.specialties 
-        : instructor.specialties.split(',');
+      const specialtiesArray = getSpecialtiesArray(instructor.specialties);
       
       specialtiesArray.forEach(specialty => {
         const trimmed = typeof specialty === 'string' ? specialty.trim() : '';
@@ -128,11 +152,6 @@ const InstructorsPage: React.FC = () => {
 
   const openEvaluation = (instructor: Instructor) => {
     setEvaluationInstructor(instructor);
-  };
-
-  const getSpecialtiesArray = (specialties: string) => {
-    if (!specialties) return [];
-    return Array.isArray(specialties) ? specialties : specialties.split(',').map(s => s.trim());
   };
 
   const renderStars = (rating: number | null) => {
