@@ -123,11 +123,21 @@ const AssetCategoriesPage: React.FC = () => {
   // Crear categoría
   const createMutation = useMutation({
     mutationFn: (data: CategoryFormData) => apiRequest('/api/asset-categories', 'POST', data),
-    onSuccess: () => {
-      // Invalidar todas las queries relacionadas
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-categories/parents'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-categories/tree/structure'] });
+    onSuccess: (response) => {
+      console.log('Categoría creada exitosamente:', response);
+      
+      // Forzar refetch inmediato de todas las queries
+      queryClient.refetchQueries({ queryKey: ['/api/asset-categories'] });
+      queryClient.refetchQueries({ queryKey: ['/api/asset-categories/parents'] });
+      queryClient.refetchQueries({ queryKey: ['/api/asset-categories/tree/structure'] });
+      
+      // También invalidar después del refetch
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/asset-categories'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/asset-categories/parents'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/asset-categories/tree/structure'] });
+      }, 100);
+      
       setIsCreateDialogOpen(false);
       form.reset();
       toast({
@@ -149,10 +159,11 @@ const AssetCategoriesPage: React.FC = () => {
     mutationFn: ({ id, data }: { id: number; data: CategoryFormData }) => 
       apiRequest(`/api/asset-categories/${id}`, 'PUT', data),
     onSuccess: () => {
-      // Invalidar todas las queries relacionadas
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-categories/parents'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-categories/tree/structure'] });
+      // Forzar refetch inmediato
+      queryClient.refetchQueries({ queryKey: ['/api/asset-categories'] });
+      queryClient.refetchQueries({ queryKey: ['/api/asset-categories/parents'] });
+      queryClient.refetchQueries({ queryKey: ['/api/asset-categories/tree/structure'] });
+      
       setIsEditDialogOpen(false);
       setSelectedCategory(null);
       form.reset();
@@ -174,10 +185,11 @@ const AssetCategoriesPage: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: (id: number) => apiRequest(`/api/asset-categories/${id}`, 'DELETE'),
     onSuccess: () => {
-      // Invalidar todas las queries relacionadas
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-categories/parents'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-categories/tree/structure'] });
+      // Forzar refetch inmediato
+      queryClient.refetchQueries({ queryKey: ['/api/asset-categories'] });
+      queryClient.refetchQueries({ queryKey: ['/api/asset-categories/parents'] });
+      queryClient.refetchQueries({ queryKey: ['/api/asset-categories/tree/structure'] });
+      
       toast({
         title: "✅ Categoría eliminada",
         description: "La categoría se ha eliminado correctamente.",
