@@ -367,7 +367,7 @@ function ActivitiesPage() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       {/* Hero Section */}
       <section 
-        className="relative py-20 px-4 text-center text-white"
+        className="relative py-24 px-4 text-center text-white"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',

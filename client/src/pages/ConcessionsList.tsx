@@ -95,7 +95,7 @@ export default function ConcessionsList() {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div 
-        className="relative text-white py-16"
+        className="relative text-white py-24"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
