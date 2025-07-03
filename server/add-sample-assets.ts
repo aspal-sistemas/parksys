@@ -219,8 +219,8 @@ export async function addSampleAssets() {
             currentValue: (assetTemplate.price * (0.6 + Math.random() * 0.3)).toString(),
             manufacturer: assetTemplate.brand,
             model: assetTemplate.model,
-            status: getRandomItem(['active', 'maintenance']),
-            condition: getRandomItem(['excellent', 'good', 'fair']),
+            status: getRandomItem(['activo', 'mantenimiento']),
+            condition: getRandomItem(['excelente', 'bueno', 'regular']),
             maintenanceFrequency: getRandomItem(['weekly', 'monthly', 'quarterly']),
             notes: `Activo adquirido para mejora de servicios en ${randomPark.name}. Material: ${getRandomItem(['Acero inoxidable', 'Aluminio', 'Madera tratada', 'Plástico reciclado'])}`
           };
@@ -251,8 +251,8 @@ export async function addSampleAssets() {
         currentValue: (Math.floor(Math.random() * 40000) + 3000).toString(),
         manufacturer: getRandomItem(['GenericBrand', 'StandardEquip', 'UrbanSolutions']),
         model: `GEN-${Math.floor(Math.random() * 1000)}`,
-        status: getRandomItem(['active', 'maintenance', 'damaged']),
-        condition: getRandomItem(['excellent', 'good', 'fair', 'poor']),
+        status: getRandomItem(['activo', 'mantenimiento', 'dañado']),
+        condition: getRandomItem(['excelente', 'bueno', 'regular', 'malo']),
         maintenanceFrequency: getRandomItem(['monthly', 'quarterly', 'yearly']),
         notes: `Activo estándar para ${randomPark.name}. Material: ${getRandomItem(['Metal', 'Plástico', 'Madera', 'Concreto'])}`
       };

@@ -48,432 +48,350 @@ const formatDate = (dateString: string | null) => {
   if (!dateString) return 'N/A';
   return new Date(dateString).toLocaleDateString('es-MX', {
     year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+    month: '2-digit',
+    day: '2-digit'
   });
 };
 
-// Función para dar formato a valores monetarios
-const formatCurrency = (value: number | string | null) => {
-  if (value === null || value === undefined) return 'N/A';
-  const numValue = typeof value === 'string' ? parseFloat(value) : value;
-  if (isNaN(numValue)) return 'N/A';
-  return new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN'
-  }).format(numValue);
-};
-
-// Obtener el color de la badge por estado
+// Función para obtener el color del badge de estado
 const getStatusBadgeColor = (status: string) => {
   switch (status.toLowerCase()) {
-    case 'active':
     case 'activo':
-      return 'bg-green-100 text-green-800 hover:bg-green-100';
-    case 'maintenance':
+      return 'bg-green-100 text-green-800 hover:bg-green-200';
     case 'mantenimiento':
-      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100';
-    case 'retired':
+      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+    case 'dañado':
+      return 'bg-red-100 text-red-800 hover:bg-red-200';
     case 'retirado':
-      return 'bg-red-100 text-red-800 hover:bg-red-100';
-    case 'storage':
-    case 'almacenado':
-      return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
-    case 'en uso':
-      return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
     default:
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
   }
 };
 
-// Obtener el color de la badge por condición
+// Función para obtener el color del badge de condición
 const getConditionBadgeColor = (condition: string) => {
   switch (condition.toLowerCase()) {
-    case 'excellent':
     case 'excelente':
-      return 'bg-green-100 text-green-800 hover:bg-green-100';
-    case 'good':
+      return 'bg-green-100 text-green-800 hover:bg-green-200';
     case 'bueno':
-      return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
-    case 'fair':
+      return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
     case 'regular':
-      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100';
-    case 'poor':
+      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
     case 'malo':
-      return 'bg-orange-100 text-orange-800 hover:bg-orange-100';
-    case 'critical':
-    case 'crítico':
-      return 'bg-red-100 text-red-800 hover:bg-red-100';
+      return 'bg-red-100 text-red-800 hover:bg-red-200';
     default:
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
   }
 };
 
-// Interfaz para los datos de activos
-interface Asset {
-  id: number;
-  name: string;
-  description: string | null;
-  serialNumber: string | null;
-  acquisitionDate: string | null;
-  acquisitionCost: number | null;
-  parkId: number;
-  parkName?: string;
-  categoryId: number;
-  categoryName?: string;
-  status: string;
-  condition: string;
-  location: string | null;
-  lastMaintenanceDate: string | null;
-  nextMaintenanceDate: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
 const InventoryPage: React.FC = () => {
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Estados para filtros
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const [selectedCondition, setSelectedCondition] = useState<string>('');
-  const [selectedPark, setSelectedPark] = useState<string>('');
-  
-  // Consultar datos de activos
-  const { data: assets, isLoading, isError } = useQuery<Asset[]>({
-    queryKey: ['/api/assets'],
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedCondition, setSelectedCondition] = useState('all');
+  const [selectedPark, setSelectedPark] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Obtener datos de inventario
+  const { 
+    data: assetsData, 
+    isLoading, 
+    isError 
+  } = useQuery({
+    queryKey: ['/api/assets/inventory'],
+    enabled: true
   });
-  
-  // Consultar datos de parques
+
+  // Obtener parques para filtros
   const { data: parks } = useQuery({
     queryKey: ['/api/parks'],
+    enabled: true
   });
 
-  // Mutación para generar datos de muestra
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
-  const generateSampleData = useMutation({
-    mutationFn: () => apiRequest('/api/assets/generate-sample', { method: 'POST' }),
+  // Obtener categorías para filtros
+  const { data: categories } = useQuery({
+    queryKey: ['/api/asset-categories'],
+    enabled: true
+  });
+
+  const assets = assetsData?.assets || [];
+  const totalAssets = assetsData?.total || 0;
+
+  // Filtrar activos según criterios
+  const filteredAssets = assets.filter((asset: any) => {
+    const matchesSearch = searchTerm === '' || 
+      asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      asset.serialNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      asset.categoryName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      asset.parkName?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = selectedStatus === 'all' || asset.status === selectedStatus;
+    const matchesCondition = selectedCondition === 'all' || asset.condition === selectedCondition;
+    const matchesPark = selectedPark === 'all' || asset.parkId.toString() === selectedPark;
+    const matchesCategory = selectedCategory === 'all' || asset.categoryId.toString() === selectedCategory;
+
+    return matchesSearch && matchesStatus && matchesCondition && matchesPark && matchesCategory;
+  });
+
+  // Calcular datos de paginación
+  const totalItems = filteredAssets.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const paginatedAssets = filteredAssets.slice(startIndex, endIndex);
+
+  // Reset página cuando cambian filtros
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedStatus, selectedCondition, selectedPark, selectedCategory]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedStatus('all');
+    setSelectedCondition('all');
+    setSelectedPark('all');
+    setSelectedCategory('all');
+    setCurrentPage(1);
+  };
+
+  // Handlers para acciones
+  const handleView = (id: number) => {
+    setLocation(`/admin/assets/inventory/${id}`);
+  };
+
+  const handleEdit = (id: number) => {
+    setLocation(`/admin/assets/edit/${id}`);
+  };
+
+  const handleScheduleMaintenance = (id: number) => {
+    setLocation(`/admin/assets/maintenance/schedule/${id}`);
+  };
+
+  const handleReportIncident = (id: number) => {
+    setLocation(`/admin/incidents/new?assetId=${id}`);
+  };
+
+  const deleteAssetMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest(`/api/assets/${id}`, {
+        method: 'DELETE'
+      });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/assets/inventory'] });
       toast({
-        title: "Datos de muestra generados",
-        description: "Se han creado 100 activos ficticios distribuidos en todas las categorías y parques.",
+        title: "Activo eliminado",
+        description: "El activo ha sido eliminado correctamente.",
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error al generar datos",
-        description: error.message || "No se pudieron generar los datos de muestra",
-        variant: "destructive"
+        title: "Error",
+        description: error.message || "No se pudo eliminar el activo.",
+        variant: "destructive",
       });
-    }
+    },
   });
-  
-  // Estadísticas y valores calculados
-  const totalAssets = assets?.length || 0;
-  const totalValue = assets?.reduce((sum, asset) => {
-    const cost = typeof asset.acquisitionCost === 'string' 
-      ? parseFloat(asset.acquisitionCost) 
-      : (asset.acquisitionCost || 0);
-    return sum + cost;
-  }, 0) || 0;
-  
-  // Agrupar por categoría y calcular valores
-  const assetsByCategory = React.useMemo(() => {
-    if (!assets) return [];
-    
-    const categories = new Map();
-    
-    assets.forEach(asset => {
-      const categoryName = asset.categoryName || 'Sin categoría';
-      if (!categories.has(categoryName)) {
-        categories.set(categoryName, {
-          name: categoryName,
-          count: 0,
-          value: 0
-        });
-      }
-      
-      const category = categories.get(categoryName);
-      category.count++;
-      const cost = typeof asset.acquisitionCost === 'string' 
-        ? parseFloat(asset.acquisitionCost) 
-        : (asset.acquisitionCost || 0);
-      category.value += cost;
-    });
-    
-    return Array.from(categories.values()).sort((a, b) => b.count - a.count);
-  }, [assets]);
-  
-  // Agrupar por condición
-  const assetsByCondition = React.useMemo(() => {
-    if (!assets) return [];
-    
-    const conditions = new Map();
-    
-    assets.forEach(asset => {
-      if (!conditions.has(asset.condition)) {
-        conditions.set(asset.condition, {
-          name: asset.condition,
-          count: 0,
-          value: 0
-        });
-      }
-      
-      const condition = conditions.get(asset.condition);
-      condition.count++;
-      const cost = typeof asset.acquisitionCost === 'string' 
-        ? parseFloat(asset.acquisitionCost) 
-        : (asset.acquisitionCost || 0);
-      condition.value += cost;
-    });
-    
-    return Array.from(conditions.values());
-  }, [assets]);
-  
-  // Aplicar filtros al listado de activos
-  const filteredAssets = React.useMemo(() => {
-    if (!assets) return [];
-    
-    return assets.filter((asset) => {
-      // Filtrar por término de búsqueda
-      const matchesSearch = 
-        searchTerm === '' ||
-        asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (asset.serialNumber && asset.serialNumber.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      // Filtrar por estado
-      const matchesStatus = selectedStatus === '' || asset.status === selectedStatus;
-      
-      // Filtrar por condición
-      const matchesCondition = selectedCondition === '' || asset.condition === selectedCondition;
-      
-      // Filtrar por parque
-      const matchesPark = selectedPark === '' || asset.parkId.toString() === selectedPark;
-      
-      return matchesSearch && matchesStatus && matchesCondition && matchesPark;
-    });
-  }, [assets, searchTerm, selectedStatus, selectedCondition, selectedPark]);
-  
-  // Función para exportar el inventario a CSV
-  const exportToCSV = () => {
-    if (!assets) return;
-    
-    const headers = [
-      'ID',
-      'Nombre',
-      'Categoría',
-      'Parque',
-      'Número de Serie',
-      'Estado',
-      'Condición',
-      'Ubicación',
-      'Fecha de Adquisición',
-      'Costo de Adquisición',
-      'Último Mantenimiento',
-      'Próximo Mantenimiento'
-    ];
-    
-    const csvRows = [];
-    
-    // Agregar encabezados
-    csvRows.push(headers.join(','));
-    
-    // Agregar datos
-    for (const asset of assets) {
-      const values = [
-        asset.id,
-        `"${asset.name}"`,
-        `"${asset.categoryName || ''}"`,
-        `"${asset.parkName || ''}"`,
-        `"${asset.serialNumber || ''}"`,
-        `"${asset.status}"`,
-        `"${asset.condition}"`,
-        `"${asset.location || ''}"`,
-        asset.acquisitionDate ? formatDate(asset.acquisitionDate) : '',
-        asset.acquisitionCost !== null ? asset.acquisitionCost : '',
-        asset.lastMaintenanceDate ? formatDate(asset.lastMaintenanceDate) : '',
-        asset.nextMaintenanceDate ? formatDate(asset.nextMaintenanceDate) : ''
-      ];
-      
-      csvRows.push(values.join(','));
-    }
-    
-    // Crear y descargar el archivo CSV
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `inventario_activos_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-  
-  // Función para imprimir el inventario
-  const printInventory = () => {
-    window.print();
-  };
-  
-  // Función para limpiar todos los filtros
-  const clearFilters = () => {
-    setSearchTerm('');
-    setSelectedStatus('');
-    setSelectedCondition('');
-    setSelectedPark('');
-  };
 
-  // Handlers para las acciones
-  const handleViewDetails = (assetId: number) => {
-    setLocation(`/admin/assets/${assetId}`);
-  };
-
-  const handleEdit = (assetId: number) => {
-    setLocation(`/admin/assets/${assetId}/edit-enhanced`);
-  };
-
-  const handleReportIncident = (assetId: number) => {
-    setLocation(`/admin/incidents/new?assetId=${assetId}`);
-  };
-
-  const handleDelete = (assetId: number) => {
-    if (confirm('¿Estás seguro de que deseas eliminar este activo? Esta acción no se puede deshacer.')) {
-      // Aquí iría la lógica de eliminación
-      console.log('Eliminar activo:', assetId);
-      // TODO: Implementar llamada a la API para eliminar
+  const handleDelete = (id: number) => {
+    if (confirm('¿Estás seguro de que deseas eliminar este activo?')) {
+      deleteAssetMutation.mutate(id);
     }
   };
-  
+
   return (
     <AdminLayout>
       <Helmet>
-        <title>Inventario de Activos | ParquesMX</title>
-        <meta name="description" content="Gestión de inventario de activos físicos de los parques." />
+        <title>Inventario de Activos - ParkSys</title>
       </Helmet>
       
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Inventario de Activos</h1>
-          <p className="text-muted-foreground">
-            Gestión y reportes del inventario de activos físicos.
-          </p>
-        </div>
-        <div className="flex space-x-2">
-          <Button 
-            onClick={() => generateSampleData.mutate()} 
-            variant="outline"
-            disabled={generateSampleData.isPending}
-          >
-            <BarChart className="mr-2 h-4 w-4" />
-            {generateSampleData.isPending ? 'Generando...' : 'Generar Datos de Muestra'}
-          </Button>
-          <Button onClick={exportToCSV} variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Exportar CSV
-          </Button>
-          <Button onClick={printInventory} variant="outline">
-            <Printer className="mr-2 h-4 w-4" />
-            Imprimir
-          </Button>
-          <Button onClick={() => setLocation('/admin/assets/new')}>
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Activo
-          </Button>
-        </div>
-      </div>
-      
-      <div className="grid gap-4 md:grid-cols-2 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total de Activos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? <Skeleton className="h-8 w-16" /> : totalAssets}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Header con métricas rápidas */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Inventario de Activos
+        </h1>
+        <p className="text-gray-600 mb-4">
+          Gestión completa del inventario de activos de los parques
+        </p>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Valor Total del Inventario</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? (
-                <Skeleton className="h-8 w-24" />
-              ) : (
-                formatCurrency(totalValue)
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Métricas rápidas */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Total Activos</p>
+                  <p className="text-2xl font-bold text-gray-900">{totalAssets}</p>
+                </div>
+                <Tag className="h-8 w-8 text-blue-600" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Activos Activos</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {assets.filter((a: any) => a.status === 'activo').length}
+                  </p>
+                </div>
+                <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <div className="h-4 w-4 bg-green-600 rounded-full"></div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">En Mantenimiento</p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {assets.filter((a: any) => a.status === 'mantenimiento').length}
+                  </p>
+                </div>
+                <div className="h-8 w-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <div className="h-4 w-4 bg-yellow-600 rounded-full"></div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Valor Total</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    ${assets.reduce((sum: number, asset: any) => sum + (asset.acquisitionCost || 0), 0).toLocaleString()}
+                  </p>
+                </div>
+                <BarChart className="h-8 w-8 text-purple-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-      
+
+      {/* Acciones rápidas */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <Button 
+          onClick={() => setLocation('/admin/assets/new')}
+          className="bg-[#00a587] hover:bg-[#067f5f]"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Nuevo Activo
+        </Button>
+        <Button variant="outline">
+          <Download className="h-4 w-4 mr-2" />
+          Exportar Inventario
+        </Button>
+        <Button variant="outline">
+          <Upload className="h-4 w-4 mr-2" />
+          Importar Datos
+        </Button>
+        <Button variant="outline">
+          <Printer className="h-4 w-4 mr-2" />
+          Imprimir Reporte
+        </Button>
+        <Button variant="outline">
+          <BarChart className="h-4 w-4 mr-2" />
+          Analytics
+        </Button>
+      </div>
+
+      {/* Filtros avanzados */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Filtros de Inventario</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filtros de Búsqueda
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div className="lg:col-span-2">
               <Input
-                placeholder="Buscar por nombre o número de serie..."
+                placeholder="Buscar por nombre, número de serie, categoría..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
-                    {ASSET_STATUSES.map((status) => (
-                      <SelectItem key={status} value={status}>{status}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Select value={selectedCondition} onValueChange={setSelectedCondition}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Condición" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas las condiciones</SelectItem>
-                    {ASSET_CONDITIONS.map((condition) => (
-                      <SelectItem key={condition} value={condition}>{condition}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Select value={selectedPark} onValueChange={setSelectedPark}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Parque" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los parques</SelectItem>
-                    {parks?.map((park: any) => (
-                      <SelectItem key={park.id} value={park.id.toString()}>{park.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Button variant="outline" onClick={clearFilters}>
-                  Limpiar Filtros
-                </Button>
-              </div>
+            <div>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las categorías</SelectItem>
+                  {categories?.map((category: any) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los estados</SelectItem>
+                  {ASSET_STATUSES.map((status) => (
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Select value={selectedCondition} onValueChange={setSelectedCondition}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Condición" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las condiciones</SelectItem>
+                  {ASSET_CONDITIONS.map((condition) => (
+                    <SelectItem key={condition} value={condition}>{condition}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Select value={selectedPark} onValueChange={setSelectedPark}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Parque" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los parques</SelectItem>
+                  {parks?.map((park: any) => (
+                    <SelectItem key={park.id} value={park.id.toString()}>{park.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Button variant="outline" onClick={clearFilters}>
+                Limpiar Filtros
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -483,7 +401,7 @@ const InventoryPage: React.FC = () => {
         <CardHeader>
           <CardTitle>Inventario Detallado</CardTitle>
           <CardDescription>
-            {filteredAssets.length} activos mostrados de un total de {totalAssets}
+            Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{endIndex} de {totalItems} activos
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -497,7 +415,7 @@ const InventoryPage: React.FC = () => {
             <div className="text-center py-4 text-red-500">
               <p>Error al cargar los datos de inventario.</p>
             </div>
-          ) : filteredAssets.length === 0 ? (
+          ) : totalItems === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Tag className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p>No se encontraron activos con los criterios seleccionados.</p>
@@ -506,89 +424,146 @@ const InventoryPage: React.FC = () => {
               </Button>
             </div>
           ) : (
-            <div className="overflow-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead>Parque</TableHead>
-                    <TableHead>Núm. Serie</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Condición</TableHead>
-                    <TableHead>Fecha Adquisición</TableHead>
-                    <TableHead className="text-right">Valor</TableHead>
-                    <TableHead className="text-center">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAssets.map((asset) => (
-                    <TableRow key={asset.id}>
-                      <TableCell>{asset.id}</TableCell>
-                      <TableCell className="font-medium">{asset.name}</TableCell>
-                      <TableCell>{asset.categoryName}</TableCell>
-                      <TableCell>{asset.parkName}</TableCell>
-                      <TableCell>{asset.serialNumber || 'N/A'}</TableCell>
-                      <TableCell>
-                        <Badge className={getStatusBadgeColor(asset.status)}>
-                          {asset.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getConditionBadgeColor(asset.condition)}>
-                          {asset.condition}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(asset.acquisitionDate)}</TableCell>
-                      <TableCell className="text-right">
-                        {formatCurrency(asset.acquisitionCost)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            title="Ver detalles"
-                            onClick={() => handleViewDetails(asset.id)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            title="Editar"
-                            onClick={() => handleEdit(asset.id)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-orange-600 hover:text-orange-700"
-                            title="Reportar incidencia"
-                            onClick={() => handleReportIncident(asset.id)}
-                          >
-                            <AlertCircle className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                            title="Eliminar"
-                            onClick={() => handleDelete(asset.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+            <>
+              <div className="overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>Categoría</TableHead>
+                      <TableHead>Parque</TableHead>
+                      <TableHead>Núm. Serie</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Condición</TableHead>
+                      <TableHead>Fecha Adquisición</TableHead>
+                      <TableHead className="text-right">Valor</TableHead>
+                      <TableHead className="text-center">Acciones</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedAssets.map((asset) => (
+                      <TableRow key={asset.id}>
+                        <TableCell>{asset.id}</TableCell>
+                        <TableCell className="font-medium">{asset.name}</TableCell>
+                        <TableCell>{asset.categoryName}</TableCell>
+                        <TableCell>{asset.parkName}</TableCell>
+                        <TableCell>{asset.serialNumber || 'N/A'}</TableCell>
+                        <TableCell>
+                          <Badge className={getStatusBadgeColor(asset.status)}>
+                            {asset.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getConditionBadgeColor(asset.condition)}>
+                            {asset.condition}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{formatDate(asset.acquisitionDate)}</TableCell>
+                        <TableCell className="text-right">
+                          {asset.acquisitionCost ? `$${asset.acquisitionCost.toLocaleString()}` : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex justify-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
+                              title="Ver detalles"
+                              onClick={() => handleView(asset.id)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-gray-600 hover:text-gray-700"
+                              title="Programar mantenimiento"
+                              onClick={() => handleScheduleMaintenance(asset.id)}
+                            >
+                              <Clock className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
+                              title="Editar"
+                              onClick={() => handleEdit(asset.id)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-orange-600 hover:text-orange-700"
+                              title="Reportar incidencia"
+                              onClick={() => handleReportIncident(asset.id)}
+                            >
+                              <AlertCircle className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                              title="Eliminar"
+                              onClick={() => handleDelete(asset.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {/* Controles de paginación */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    Mostrando {startIndex + 1}-{endIndex} de {totalItems} activos
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Anterior
+                    </Button>
+                    
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const pageNumber = i + 1;
+                        return (
+                          <Button
+                            key={pageNumber}
+                            variant={currentPage === pageNumber ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(pageNumber)}
+                            className={currentPage === pageNumber ? "bg-[#00a587] hover:bg-[#067f5f]" : ""}
+                          >
+                            {pageNumber}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
