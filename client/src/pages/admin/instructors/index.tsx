@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  Search, Filter, RefreshCw, FileEdit, Eye, 
+  Search, Filter, RefreshCw, FileEdit, Eye, Edit, 
   Plus, AlertCircle, Download, Users, Book, BookOpen, 
   Calendar, Award, ArrowUpDown, ChevronDown, BookText,
   Briefcase, GraduationCap, UserCheck, Database, Trash2
@@ -484,8 +484,17 @@ export default function InstructorsListPage() {
                             variant="ghost"
                             size="icon"
                             onClick={() => setLocation(`/admin/instructors/detail/${instructor.id}`)}
+                            title="Ver detalles"
                           >
                             <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setLocation(`/admin/instructors/edit/${instructor.id}`)}
+                            title="Editar instructor"
+                          >
+                            <Edit className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
