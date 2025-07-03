@@ -11,91 +11,90 @@ import { sql } from 'drizzle-orm';
  * @param isAuthenticated Middleware de autenticación
  */
 export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
-  console.log('🌳 Registrando rutas de inventario de árboles - PUT /trees/:id incluido');
+  console.log('🌳 Registrando rutas de inventario de árboles - RUTAS ESPECÍFICAS PRIMERO');
   
-
-  
+  // RUTAS ESPECÍFICAS PRIMERO - antes que rutas con parámetros
   // GET: Listar árboles con paginación y filtros
-  apiRouter.get('/trees', async (req: Request, res: Response) => {
+  apiRouter.get('/trees/inventory', async (req: Request, res: Response) => {
     try {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 10;
       const offset = (page - 1) * limit;
       
+      // Función para corregir encoding UTF-8 
+      const fixEncoding = (text: string): string => {
+        // Corregir problemas comunes de encoding UTF-8
+        return text
+          .replace(/Ã¡/g, 'á')
+          .replace(/Ã©/g, 'é')
+          .replace(/Ã­/g, 'í')
+          .replace(/Ã³/g, 'ó')
+          .replace(/Ãº/g, 'ú')
+          .replace(/Ã±/g, 'ñ')
+          .replace(/Ã /g, 'à')
+          .replace(/Ã¨/g, 'è')
+          .replace(/Ã¬/g, 'ì')
+          .replace(/Ã²/g, 'ò')
+          .replace(/Ã¹/g, 'ù');
+      };
+
       // Filtros
       const parkId = req.query.parkId && req.query.parkId !== 'all' ? Number(req.query.parkId) : undefined;
       const speciesId = req.query.speciesId && req.query.speciesId !== 'all' ? Number(req.query.speciesId) : undefined;
       const healthStatus = req.query.healthStatus && req.query.healthStatus !== 'all' ? String(req.query.healthStatus) : undefined;
-      const searchTerm = req.query.search ? String(req.query.search) : undefined;
+      const searchTerm = req.query.search ? fixEncoding(String(req.query.search)) : undefined;
       
-      // Construir las condiciones de filtrado
-      let conditions = [];
+      // Usar SQL directo para evitar problemas de esquema inconsistente
       
-      if (parkId) {
-        conditions.push(eq(trees.parkId, parkId));
-      }
+      // Contar el total de registros para la paginación (incluyendo búsqueda en especies)
+      const countQuery = `
+        SELECT COUNT(*) as count
+        FROM trees t
+        LEFT JOIN tree_species ts ON t.species_id = ts.id
+        WHERE 1=1
+        ${parkId ? `AND t.park_id = ${parkId}` : ''}
+        ${speciesId ? `AND t.species_id = ${speciesId}` : ''}
+        ${healthStatus ? `AND t.health_status = '${healthStatus}'` : ''}
+        ${searchTerm ? `AND (t.location_description ILIKE '%${searchTerm}%' OR t.notes ILIKE '%${searchTerm}%' OR ts.common_name ILIKE '%${searchTerm}%' OR ts.scientific_name ILIKE '%${searchTerm}%')` : ''}
+      `;
       
-      if (speciesId) {
-        conditions.push(eq(trees.speciesId, speciesId));
-      }
+      const countResult = await pool.query(countQuery);
+      const totalCount = parseInt(countResult.rows[0].count);
       
-      if (healthStatus) {
-        conditions.push(eq(trees.healthStatus, healthStatus));
-      }
+      // Usar SQL directo para evitar problemas de esquema
+      const query = `
+        SELECT 
+          t.id,
+          t.species_id as "speciesId",
+          ts.common_name as "speciesName",
+          ts.scientific_name as "scientificName",
+          t.park_id as "parkId",
+          p.name as "parkName",
+          t.latitude,
+          t.longitude,
+          t.planting_date as "plantingDate",
+          t.development_stage as "developmentStage",
+          t.age_estimate as "ageEstimate",
+          t.height,
+          t.trunk_diameter as "diameter",
+          t.canopy_coverage as "canopyCoverage",
+          t.health_status as "healthStatus",
+          t.last_maintenance_date as "lastInspectionDate",
+          t.image_url as "imageUrl"
+        FROM trees t
+        LEFT JOIN tree_species ts ON t.species_id = ts.id
+        LEFT JOIN parks p ON t.park_id = p.id
+        WHERE 1=1
+        ${parkId ? `AND t.park_id = ${parkId}` : ''}
+        ${speciesId ? `AND t.species_id = ${speciesId}` : ''}
+        ${healthStatus ? `AND t.health_status = '${healthStatus}'` : ''}
+        ${searchTerm ? `AND (t.location_description ILIKE '%${searchTerm}%' OR t.notes ILIKE '%${searchTerm}%' OR ts.common_name ILIKE '%${searchTerm}%' OR ts.scientific_name ILIKE '%${searchTerm}%')` : ''}
+        ORDER BY t.updated_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `;
       
-      if (searchTerm) {
-        conditions.push(
-          or(
-            like(trees.code, `%${searchTerm}%`),
-            like(trees.locationDescription, `%${searchTerm}%`),
-            like(trees.observations, `%${searchTerm}%`)
-          )
-        );
-      }
-      
-      // Solo incluir árboles activos (no removidos)
-      conditions.push(eq(trees.isRemoved, false));
-      
-      // Consulta final
-      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-      
-      // Contar el total de registros para la paginación
-      const totalCountResult = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(trees)
-        .where(whereClause);
-      
-      const totalCount = totalCountResult[0].count;
-      
-      // Obtener los árboles con datos de especie y parque
-      const treesList = await db
-        .select({
-          id: trees.id,
-          code: trees.code,
-          speciesId: trees.speciesId,
-          speciesName: treeSpecies.commonName,
-          scientificName: treeSpecies.scientificName,
-          parkId: trees.parkId,
-          parkName: parks.name,
-          latitude: trees.latitude,
-          longitude: trees.longitude,
-          plantingDate: trees.plantingDate,
-          developmentStage: trees.developmentStage,
-          ageEstimate: trees.ageEstimate,
-          height: trees.height,
-          diameter: trees.diameter,
-          canopyCoverage: trees.canopyCoverage,
-          healthStatus: trees.healthStatus,
-          lastInspectionDate: trees.lastInspectionDate,
-          imageUrl: trees.imageUrl,
-        })
-        .from(trees)
-        .leftJoin(treeSpecies, eq(trees.speciesId, treeSpecies.id))
-        .leftJoin(parks, eq(trees.parkId, parks.id))
-        .where(whereClause)
-        .orderBy(desc(trees.updatedAt))
-        .limit(limit)
-        .offset(offset);
+      const treesResult = await pool.query(query);
+      const treesList = treesResult.rows;
       
       res.json({
         data: treesList,

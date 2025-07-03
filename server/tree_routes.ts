@@ -300,8 +300,8 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
     }
   });
   
-  // Usar la implementación de inventario adaptada a la estructura real de la tabla
-  apiRouter.get("/trees", getTreeInventory);
+  // ELIMINADO - RUTA CONFLICTIVA: apiRouter.get("/trees", getTreeInventory);
+  // ESTA RUTA INTERFIERE CON /trees/inventory DEL tree_inventory_routes.ts
   
   // Endpoint para estadísticas de mantenimiento (usado en reportes)
   apiRouter.get("/trees/maintenances/stats", getTreeMaintenanceStats);

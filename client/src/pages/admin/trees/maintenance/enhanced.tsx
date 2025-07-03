@@ -92,10 +92,15 @@ export default function EnhancedTreeMaintenancePage() {
     select: (data) => data.data,
   });
 
-  // Cargar inventario completo de árboles con filtros inteligentes
+  // Cargar inventario completo de árboles (sin filtros en query)
   const { data: allTrees, isLoading: loadingTrees } = useQuery({
-    queryKey: ['/api/trees/inventory', selectedParkId, selectedSpeciesId, selectedHealthStatus, searchTerm],
-    select: (data) => data.data || [],
+    queryKey: ['/api/trees/inventory-all'],
+    queryFn: async () => {
+      const response = await fetch('/api/trees/inventory?limit=1000');
+      if (!response.ok) throw new Error('Error al cargar árboles');
+      const data = await response.json();
+      return data.data || [];
+    },
   });
 
   // Filtrar árboles localmente para mejor performance
