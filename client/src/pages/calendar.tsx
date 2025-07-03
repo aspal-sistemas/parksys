@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, Clock, Users, Tag, BookOpen, User, X, Filter, Activity } from 'lucide-react';
+import heroImage from '@assets/People_23-02_1751509036801.jpg';
 
 // Tipo para las actividades
 interface Activity {
@@ -51,13 +52,10 @@ const CalendarPage: React.FC = () => {
   const [instructorFilter, setInstructorFilter] = useState('all');
   const [priceFilter, setPriceFilter] = useState('all');
   
-  // Consultar actividades desde la API pública
-  const { data: apiResponse = { data: [] }, isLoading } = useQuery<{ status: string, data: Activity[], count: number }>({
-    queryKey: ['/public-api/activities'],
+  // Consultar actividades desde la API
+  const { data: activities = [], isLoading } = useQuery<Activity[]>({
+    queryKey: ['/api/activities'],
   });
-
-  // Extraer los datos de actividades de la respuesta
-  const activities = apiResponse.data || [];
   
   // Extraer categorías, parques e instructores únicos para los filtros
   const categories = Array.from(new Set(activities.map(a => a.category || 'Sin categoría')));
@@ -141,6 +139,8 @@ const CalendarPage: React.FC = () => {
   
   // Generar color según categoría
   const getCategoryColor = (category: string) => {
+    if (!category) return 'bg-gray-100 text-gray-800 border-gray-200';
+    
     switch (category.toLowerCase()) {
       case 'arte y cultura':
         return 'bg-purple-100 text-purple-800 border-purple-200';
@@ -195,9 +195,17 @@ const CalendarPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section con gradiente */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
+      {/* Hero Section con imagen de fondo */}
+      <div 
+        className="relative text-white"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/50"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
