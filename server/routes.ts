@@ -2374,7 +2374,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         LEFT JOIN parks p ON a.park_id = p.id
         LEFT JOIN activity_categories c ON a.category_id = c.id
         LEFT JOIN instructors i ON a.instructor_id = i.id
-        LEFT JOIN activity_images img ON a.id = img.activity_id AND img.is_primary = true
+        LEFT JOIN (
+          SELECT DISTINCT ON (activity_id) 
+            activity_id, 
+            image_url,
+            caption
+          FROM activity_images 
+          ORDER BY activity_id, is_primary DESC, created_at DESC
+        ) img ON a.id = img.activity_id
         ORDER BY a.created_at DESC
       `);
       
