@@ -4,33 +4,33 @@ import { assets, assetCategories, assetMaintenances, assetHistory } from "@share
 import { eq, and, sql } from "drizzle-orm";
 
 export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
-  // Get all asset categories
-  apiRouter.get("/asset-categories", async (_req: Request, res: Response) => {
-    try {
-      const categories = await db.select().from(assetCategories);
-      res.json(categories);
-    } catch (error) {
-      console.error("Error al obtener categorías de activos:", error);
-      res.status(500).json({ message: "Error al obtener categorías de activos" });
-    }
-  });
+  // Get all asset categories - COMENTADO PARA EVITAR CONFLICTO CON asset-categories-routes.ts
+  // apiRouter.get("/asset-categories", async (_req: Request, res: Response) => {
+  //   try {
+  //     const categories = await db.select().from(assetCategories);
+  //     res.json(categories);
+  //   } catch (error) {
+  //     console.error("Error al obtener categorías de activos:", error);
+  //     res.status(500).json({ message: "Error al obtener categorías de activos" });
+  //   }
+  // });
 
-  // Get asset category by ID
-  apiRouter.get("/asset-categories/:id", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      const [category] = await db.select().from(assetCategories).where(eq(assetCategories.id, id));
-      
-      if (!category) {
-        return res.status(404).json({ message: "Categoría no encontrada" });
-      }
-      
-      res.json(category);
-    } catch (error) {
-      console.error("Error al obtener categoría:", error);
-      res.status(500).json({ message: "Error al obtener categoría de activo" });
-    }
-  });
+  // Get asset category by ID - COMENTADO PARA EVITAR CONFLICTO CON asset-categories-routes.ts
+  // apiRouter.get("/asset-categories/:id", async (req: Request, res: Response) => {
+  //   try {
+  //     const id = parseInt(req.params.id);
+  //     const [category] = await db.select().from(assetCategories).where(eq(assetCategories.id, id));
+  //     
+  //     if (!category) {
+  //       return res.status(404).json({ message: "Categoría no encontrada" });
+  //     }
+  //     
+  //     res.json(category);
+  //   } catch (error) {
+  //     console.error("Error al obtener categoría:", error);
+  //     res.status(500).json({ message: "Error al obtener categoría de activo" });
+  //   }
+  // });
 
   // Get all assets
   apiRouter.get("/assets", async (req: Request, res: Response) => {

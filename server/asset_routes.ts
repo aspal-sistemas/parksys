@@ -39,16 +39,16 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
       }
     }
   });
-  // Get all asset categories
-  apiRouter.get("/asset-categories", async (_req: Request, res: Response) => {
-    try {
-      const categories = await db.select().from(assetCategories);
-      res.json(categories);
-    } catch (error) {
-      console.error("Error al obtener categorías de activos:", error);
-      res.status(500).json({ message: "Error al obtener categorías de activos" });
-    }
-  });
+  // Get all asset categories - COMENTADO PARA EVITAR CONFLICTO CON asset-categories-routes.ts
+  // apiRouter.get("/asset-categories", async (_req: Request, res: Response) => {
+  //   try {
+  //     const categories = await db.select().from(assetCategories);
+  //     res.json(categories);
+  //   } catch (error) {
+  //     console.error("Error al obtener categorías de activos:", error);
+  //     res.status(500).json({ message: "Error al obtener categorías de activos" });
+  //   }
+  // });
 
   // NOTA: Ruta de categorías por ID movida a asset-categories-routes.ts
   // para evitar conflictos con rutas específicas como /parents
