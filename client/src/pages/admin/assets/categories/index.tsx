@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,7 +18,8 @@ import { AdminLayout } from '@/components/AdminLayout';
 import { 
   FolderPlus, Edit2, Trash2, Tag, FolderOpen, 
   TreePine, Settings, Plus, ChevronRight, Building2,
-  Wrench, Car, Lightbulb, Camera, Wifi
+  Wrench, Car, Lightbulb, Camera, Wifi, Search,
+  Filter, X, ChevronLeft
 } from 'lucide-react';
 
 // ===== TIPOS Y ESQUEMAS =====
@@ -88,6 +89,13 @@ const AssetCategoriesPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("hierarchy");
+  
+  // Estados para filtros y paginación
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState<'all' | 'principal' | 'subcategoria'>('all');
+  const [selectedIcon, setSelectedIcon] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Formulario
   const form = useForm<CategoryFormData>({
@@ -117,6 +125,55 @@ const AssetCategoriesPage: React.FC = () => {
   const { data: treeStructure = [] } = useQuery<AssetCategory[]>({
     queryKey: ['/api/asset-categories/tree/structure'],
   });
+
+  // ===== LÓGICA DE FILTROS Y PAGINACIÓN =====
+  
+  // Obtener iconos únicos de las categorías
+  const uniqueIcons = useMemo(() => {
+    const icons = Array.from(new Set(allCategories.map(cat => cat.icon)));
+    return icons.sort();
+  }, [allCategories]);
+
+  // Aplicar filtros
+  const filteredCategories = useMemo(() => {
+    let filtered = allCategories;
+
+    // Filtro por término de búsqueda
+    if (searchTerm) {
+      filtered = filtered.filter(category => 
+        category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (category.description?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (category.parentName?.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Filtro por tipo
+    if (selectedType !== 'all') {
+      filtered = filtered.filter(category => {
+        if (selectedType === 'principal') return category.parentId === null;
+        if (selectedType === 'subcategoria') return category.parentId !== null;
+        return true;
+      });
+    }
+
+    // Filtro por icono
+    if (selectedIcon !== 'all') {
+      filtered = filtered.filter(category => category.icon === selectedIcon);
+    }
+
+    return filtered;
+  }, [allCategories, searchTerm, selectedType, selectedIcon]);
+
+  // Paginación
+  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCategories = filteredCategories.slice(startIndex, endIndex);
+
+  // Reset página cuando cambian filtros
+  const resetPage = () => {
+    setCurrentPage(1);
+  };
 
   // ===== MUTACIONES =====
   
@@ -384,13 +441,212 @@ const AssetCategoriesPage: React.FC = () => {
           ))}
         </TabsContent>
 
-        {/* Lista Completa */}
-        <TabsContent value="list" className="space-y-4">
+        {/* Lista Completa con Filtros y Paginación */}
+        <TabsContent value="list" className="space-y-6">
+          {/* Panel de Filtros */}
+          <Card className="p-4 bg-gray-50">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Búsqueda */}
+              <div className="md:col-span-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                  <Input
+                    placeholder="Buscar por nombre, descripción o categoría padre..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      resetPage();
+                    }}
+                    className="pl-10"
+                  />
+                  {searchTerm && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSearchTerm('');
+                        resetPage();
+                      }}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                    >
+                      <X size={14} />
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Filtro por Tipo */}
+              <div>
+                <Select 
+                  value={selectedType} 
+                  onValueChange={(value: 'all' | 'principal' | 'subcategoria') => {
+                    setSelectedType(value);
+                    resetPage();
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      <div className="flex items-center gap-2">
+                        <Filter size={16} />
+                        Todos los tipos
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="principal">
+                      <div className="flex items-center gap-2">
+                        <FolderOpen size={16} />
+                        Principales
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="subcategoria">
+                      <div className="flex items-center gap-2">
+                        <ChevronRight size={16} />
+                        Subcategorías
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Filtro por Icono */}
+              <div>
+                <Select 
+                  value={selectedIcon} 
+                  onValueChange={(value) => {
+                    setSelectedIcon(value);
+                    resetPage();
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      <div className="flex items-center gap-2">
+                        <Tag size={16} />
+                        Todos los iconos
+                      </div>
+                    </SelectItem>
+                    {uniqueIcons.map(iconName => {
+                      const IconComponent = AVAILABLE_ICONS.find(i => i.value === iconName)?.icon || Tag;
+                      return (
+                        <SelectItem key={iconName} value={iconName}>
+                          <div className="flex items-center gap-2">
+                            <IconComponent size={16} />
+                            {AVAILABLE_ICONS.find(i => i.value === iconName)?.label || iconName}
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Estadísticas de Filtros */}
+            <div className="flex justify-between items-center mt-4 pt-4 border-t">
+              <div className="text-sm text-gray-600">
+                Mostrando {paginatedCategories.length} de {filteredCategories.length} categorías
+                {filteredCategories.length !== allCategories.length && 
+                  ` (${allCategories.length} en total)`
+                }
+              </div>
+              
+              {(searchTerm || selectedType !== 'all' || selectedIcon !== 'all') && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedType('all');
+                    setSelectedIcon('all');
+                    setCurrentPage(1);
+                  }}
+                  className="text-gray-600"
+                >
+                  <X size={14} className="mr-1" />
+                  Limpiar filtros
+                </Button>
+              )}
+            </div>
+          </Card>
+
+          {/* Grid de Categorías Filtradas */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {allCategories.map(category => (
+            {paginatedCategories.map(category => (
               <CategoryCard key={category.id} category={category} />
             ))}
           </div>
+
+          {/* Mensaje si no hay resultados */}
+          {filteredCategories.length === 0 && (
+            <Card className="p-8 text-center">
+              <div className="text-gray-500">
+                <Search size={48} className="mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium mb-2">No se encontraron categorías</h3>
+                <p>Prueba ajustando los filtros o términos de búsqueda</p>
+              </div>
+            </Card>
+          )}
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <Card className="p-4">
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-600">
+                  Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, filteredCategories.length)} de {filteredCategories.length} categorías
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  {/* Botón Anterior */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="flex items-center gap-1"
+                  >
+                    <ChevronLeft size={16} />
+                    Anterior
+                  </Button>
+
+                  {/* Números de página */}
+                  <div className="flex gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const pageNumber = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                      if (pageNumber > totalPages) return null;
+                      
+                      return (
+                        <Button
+                          key={pageNumber}
+                          variant={currentPage === pageNumber ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNumber)}
+                          className={currentPage === pageNumber ? "bg-green-600 hover:bg-green-700" : ""}
+                        >
+                          {pageNumber}
+                        </Button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Botón Siguiente */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center gap-1"
+                  >
+                    Siguiente
+                    <ChevronRight size={16} />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Estructura de Árbol */}
