@@ -30,6 +30,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PublicLayout from '@/components/PublicLayout';
 
 interface ActivityData {
   id: number;
@@ -364,7 +365,8 @@ function ActivitiesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    <PublicLayout>
+      <div className="bg-gradient-to-br from-green-50 to-blue-50">
       {/* Hero Section */}
       <section 
         className="relative py-24 px-4 text-center text-white"
@@ -564,7 +566,8 @@ function ActivitiesPage() {
           </>
         )}
       </section>
-    </div>
+      </div>
+    </PublicLayout>
   );
 }
 

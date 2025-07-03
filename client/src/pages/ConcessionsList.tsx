@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Search, MapPin, Building, Phone, Calendar } from "lucide-react";
@@ -40,6 +40,7 @@ export default function ConcessionsList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [parkFilter, setParkFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
@@ -47,7 +48,12 @@ export default function ConcessionsList() {
     queryKey: ['/api/active-concessions'],
   });
 
+  const { data: parksResponse } = useQuery({
+    queryKey: ['/api/parks'],
+  });
+
   const concessions = (concessionsResponse as any)?.data || [];
+  const parks = (parksResponse as any)?.data || [];
 
   // Filtrar concesiones
   const filteredConcessions = concessions.filter((concession: Concession) => {
@@ -57,8 +63,9 @@ export default function ConcessionsList() {
     
     const matchesType = typeFilter === "all" || (concession.concessionTypeName || "").includes(typeFilter);
     const matchesStatus = statusFilter === "all" || concession.status === statusFilter;
+    const matchesPark = parkFilter === "all" || concession.park_id?.toString() === parkFilter;
     
-    return matchesSearch && matchesType && matchesStatus;
+    return matchesSearch && matchesType && matchesStatus && matchesPark;
   });
 
   // Paginación
@@ -71,6 +78,7 @@ export default function ConcessionsList() {
     setSearchTerm("");
     setTypeFilter("all");
     setStatusFilter("all");
+    setParkFilter("all");
     setCurrentPage(1);
   };
 
@@ -119,7 +127,7 @@ export default function ConcessionsList() {
       {/* Filtros */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Búsqueda */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -155,6 +163,21 @@ export default function ConcessionsList() {
                 <SelectItem value="active">Activa</SelectItem>
                 <SelectItem value="expiring">Por vencer</SelectItem>
                 <SelectItem value="expired">Vencida</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Filtro por parque */}
+            <Select value={parkFilter} onValueChange={setParkFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Parque" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los parques</SelectItem>
+                {parks.map((park: any) => (
+                  <SelectItem key={park.id} value={park.id.toString()}>
+                    {park.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 

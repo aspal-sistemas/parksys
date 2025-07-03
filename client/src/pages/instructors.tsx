@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Search, Filter, Grid, List, Star, Phone, Mail, Award, Clock, User, MessageSquare, Users, MapPin } from 'lucide-react';
 import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
+import PublicLayout from '@/components/PublicLayout';
 import heroImage from '@assets/cropped-shot-of-handsome-young-rugby-coach-standin-2025-04-06-09-42-40-utc_1751510249661.jpg';
 
 // Tipo de datos para un instructor
@@ -196,7 +197,8 @@ const InstructorsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <PublicLayout>
+      <div className="bg-gray-50">
       {/* Hero Section */}
       <div 
         className="relative text-white"
@@ -647,7 +649,8 @@ const InstructorsPage: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </PublicLayout>
   );
 };
 

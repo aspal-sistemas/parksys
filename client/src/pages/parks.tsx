@@ -9,6 +9,7 @@ import ExtendedParksList from '@/components/ExtendedParksList';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
 import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1751508792698.jpg';
+import PublicLayout from '@/components/PublicLayout';
 
 const Parks: React.FC = () => {
   const [filters, setFilters] = useState<{
@@ -127,7 +128,8 @@ const Parks: React.FC = () => {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <PublicLayout>
+    <main className="bg-gray-50">
       {/* Hero Section con imagen de fondo */}
       <div 
         className="relative text-white"
@@ -328,6 +330,7 @@ const Parks: React.FC = () => {
         />
       )}
     </main>
+    </PublicLayout>
   );
 };
 

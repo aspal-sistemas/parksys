@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, Clock, Users, Tag, BookOpen, User, X, Filter, Activity } from 'lucide-react';
+import PublicLayout from '@/components/PublicLayout';
 import heroImage from '@assets/People_23-02_1751509036801.jpg';
 
 // Tipo para las actividades
@@ -196,7 +197,8 @@ const CalendarPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <PublicLayout>
+      <div className="bg-gray-50">
       {/* Hero Section con imagen de fondo */}
       <div 
         className="relative text-white"
@@ -665,7 +667,7 @@ const CalendarPage: React.FC = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </PublicLayout>
   );
 };
 
