@@ -8,6 +8,7 @@ import ParkDetail from '@/components/ParkDetail';
 import ExtendedParksList from '@/components/ExtendedParksList';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
+import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1751508792698.jpg';
 
 const Parks: React.FC = () => {
   const [filters, setFilters] = useState<{
@@ -127,9 +128,17 @@ const Parks: React.FC = () => {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* Hero Section con gradiente */}
-      <div className="relative bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
+      {/* Hero Section con imagen de fondo */}
+      <div 
+        className="relative text-white"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
