@@ -1,8 +1,5 @@
 import { Request, Response, Router } from "express";
-import { db, pool } from "./db";
-import { assetCategories } from "@shared/schema";
-import { eq, sql, isNull } from "drizzle-orm";
-import { isAuthenticated } from "./replitAuth";
+import { pool } from "./db";
 
 export function registerAssetCategoriesRoutes(app: any, apiRouter: Router) {
   
@@ -13,7 +10,7 @@ export function registerAssetCategoriesRoutes(app: any, apiRouter: Router) {
     try {
       console.log("🏷️ Obteniendo categorías de activos con estructura jerárquica");
       
-      // Consulta que obtiene todas las categorías y calcula si tienen hijos
+      // Consulta SQL directa usando pool para evitar problemas de Drizzle ORM
       const result = await pool.query(`
         SELECT 
           c.id,
@@ -48,327 +45,184 @@ export function registerAssetCategoriesRoutes(app: any, apiRouter: Router) {
     }
   });
 
-  // GET: Obtener solo categorías principales (sin padre) con conteo de hijos
-  apiRouter.get("/asset-categories/parents", async (_req: Request, res: Response) => {
+  // POST: Crear nueva categoría de activo
+  apiRouter.post("/asset-categories", async (req: Request, res: Response) => {
     try {
-      // Usar Drizzle ORM en lugar de SQL directo para evitar conflictos
-      const parentCategories = await db
-        .select()
-        .from(assetCategories)
-        .where(isNull(assetCategories.parentId))
-        .orderBy(assetCategories.name);
-
-      // Obtener conteo de subcategorías para cada categoría principal
-      const categoriesWithChildren = await Promise.all(
-        parentCategories.map(async (category) => {
-          const childrenCount = await db
-            .select({ count: sql`count(*)` })
-            .from(assetCategories)
-            .where(eq(assetCategories.parentId, category.id));
-
-          return {
-            id: category.id,
-            name: category.name,
-            description: category.description,
-            icon: category.icon,
-            color: category.color,
-            parentId: category.parentId,
-            createdAt: category.createdAt,
-            updatedAt: category.updatedAt,
-            childrenCount: Number(childrenCount[0]?.count || 0)
-          };
-        })
-      );
-
-      res.json(categoriesWithChildren);
-    } catch (error) {
-      console.error("❌ Error al obtener categorías principales:", error);
-      res.status(500).json({ message: "Error al obtener categorías principales" });
-    }
-  });
-
-  // GET: Obtener subcategorías de una categoría específica
-  apiRouter.get("/asset-categories/:parentId/children", async (req: Request, res: Response) => {
-    try {
-      const parentId = parseInt(req.params.parentId);
-      
-      const result = await pool.query(`
-        SELECT 
-          id, name, description, icon, color, parent_id as "parentId",
-          created_at as "createdAt", updated_at as "updatedAt"
-        FROM asset_categories
-        WHERE parent_id = $1
-        ORDER BY name
-      `, [parentId]);
-
-      res.json(result.rows);
-    } catch (error) {
-      console.error(`❌ Error al obtener subcategorías de ${req.params.parentId}:`, error);
-      res.status(500).json({ message: "Error al obtener subcategorías" });
-    }
-  });
-
-  // GET: Obtener categoría por ID
-  apiRouter.get("/asset-categories/:id", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      
-      const result = await pool.query(`
-        SELECT 
-          c.id,
-          c.name,
-          c.description,
-          c.icon,
-          c.color,
-          c.parent_id as "parentId",
-          c.created_at as "createdAt",
-          c.updated_at as "updatedAt",
-          parent.name as "parentName",
-          COUNT(children.id) as "childrenCount"
-        FROM asset_categories c
-        LEFT JOIN asset_categories parent ON parent.id = c.parent_id
-        LEFT JOIN asset_categories children ON children.parent_id = c.id
-        WHERE c.id = $1
-        GROUP BY c.id, c.name, c.description, c.icon, c.color, c.parent_id, c.created_at, c.updated_at, parent.name
-      `, [id]);
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ message: "Categoría no encontrada" });
-      }
-      
-      const category = {
-        ...result.rows[0],
-        childrenCount: parseInt(result.rows[0].childrenCount)
-      };
-      
-      res.json(category);
-    } catch (error) {
-      console.error("❌ Error al obtener categoría:", error);
-      res.status(500).json({ message: "Error al obtener categoría de activo" });
-    }
-  });
-
-  // POST: Crear nueva categoría
-  apiRouter.post("/asset-categories", isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      console.log("➕ Creando nueva categoría de activo:", req.body);
-      
       const { name, description, icon, color, parentId } = req.body;
+      
+      console.log("🆕 Creando nueva categoría de activo:", { name, parentId });
       
       // Validaciones básicas
       if (!name || name.trim() === '') {
-        return res.status(400).json({ message: "El nombre es requerido" });
+        return res.status(400).json({ message: "El nombre de la categoría es requerido" });
       }
 
-      // Si es subcategoría, validar que el padre existe
-      if (parentId) {
-        const parentCheck = await pool.query(`
-          SELECT id FROM asset_categories WHERE id = $1
-        `, [parentId]);
-        
-        if (parentCheck.rows.length === 0) {
-          return res.status(400).json({ message: "La categoría padre no existe" });
-        }
+      // Verificar que no existe una categoría con el mismo nombre y padre
+      const existingCheck = await pool.query(`
+        SELECT id FROM asset_categories 
+        WHERE name = $1 AND COALESCE(parent_id, 0) = COALESCE($2, 0)
+      `, [name.trim(), parentId || null]);
+
+      if (existingCheck.rows.length > 0) {
+        return res.status(400).json({ 
+          message: "Ya existe una categoría con ese nombre en el mismo nivel" 
+        });
       }
-      
+
+      // Insertar nueva categoría
       const result = await pool.query(`
-        INSERT INTO asset_categories (
-          name, description, icon, color, parent_id, created_at, updated_at
-        ) VALUES (
-          $1, $2, $3, $4, $5, NOW(), NOW()
-        ) RETURNING 
-          id, name, description, icon, color, parent_id as "parentId",
-          created_at as "createdAt", updated_at as "updatedAt"
-      `, [name.trim(), description?.trim() || null, icon || 'tag', color || '#3B82F6', parentId || null]);
-      
+        INSERT INTO asset_categories (name, description, icon, color, parent_id, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+        RETURNING id, name, description, icon, color, parent_id as "parentId", created_at as "createdAt", updated_at as "updatedAt"
+      `, [
+        name.trim(),
+        description?.trim() || null,
+        icon || null,
+        color || '#6b7280',
+        parentId || null
+      ]);
+
       const newCategory = result.rows[0];
       console.log("✅ Categoría creada exitosamente:", newCategory.id);
       
-      res.status(201).json(newCategory);
-    } catch (error) {
-      console.error("❌ Error al crear categoría de activo:", error);
-      
-      if (error.code === '23505') { // Unique constraint violation
-        res.status(400).json({ message: "Ya existe una categoría con ese nombre" });
-      } else {
-        res.status(500).json({ message: "Error al crear categoría de activo" });
-      }
+      res.status(201).json({
+        success: true,
+        category: newCategory,
+        message: "Categoría creada correctamente"
+      });
+    } catch (error: any) {
+      console.error("❌ Error al crear categoría:", error);
+      res.status(500).json({ 
+        message: "Error al crear categoría", 
+        details: error.message 
+      });
     }
   });
 
-  // PUT: Actualizar categoría
-  apiRouter.put("/asset-categories/:id", isAuthenticated, async (req: Request, res: Response) => {
+  // PUT: Actualizar categoría existente
+  apiRouter.put("/asset-categories/:id", async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
+      const categoryId = parseInt(req.params.id);
       const { name, description, icon, color, parentId } = req.body;
       
-      console.log(`📝 Actualizando categoría ${id}:`, req.body);
+      console.log("📝 Actualizando categoría:", categoryId);
       
+      // Validaciones
+      if (!name || name.trim() === '') {
+        return res.status(400).json({ message: "El nombre de la categoría es requerido" });
+      }
+
       // Verificar que la categoría existe
-      const existingCheck = await pool.query(`
+      const existingCategory = await pool.query(`
         SELECT id FROM asset_categories WHERE id = $1
-      `, [id]);
-      
-      if (existingCheck.rows.length === 0) {
+      `, [categoryId]);
+
+      if (existingCategory.rows.length === 0) {
         return res.status(404).json({ message: "Categoría no encontrada" });
       }
-      
-      // Validar que no se está convirtiendo en su propia subcategoría
-      if (parentId === id) {
+
+      // Verificar que no se está creando un ciclo (una categoría no puede ser padre de sí misma)
+      if (parentId === categoryId) {
         return res.status(400).json({ message: "Una categoría no puede ser subcategoría de sí misma" });
       }
-      
-      // Si se está asignando un padre, verificar que no cree un ciclo
-      if (parentId) {
-        const cycleCheck = await pool.query(`
-          WITH RECURSIVE category_tree AS (
-            SELECT id, parent_id, 0 as level
-            FROM asset_categories
-            WHERE id = $1
-            
-            UNION ALL
-            
-            SELECT c.id, c.parent_id, ct.level + 1
-            FROM asset_categories c
-            INNER JOIN category_tree ct ON c.parent_id = ct.id
-            WHERE ct.level < 10
-          )
-          SELECT COUNT(*) as cycle_count
-          FROM category_tree
-          WHERE id = $2
-        `, [parentId, id]);
-        
-        if (parseInt(cycleCheck.rows[0].cycle_count) > 0) {
-          return res.status(400).json({ message: "No se puede crear una referencia circular en las categorías" });
-        }
+
+      // Verificar duplicados (excluyendo la categoría actual)
+      const duplicateCheck = await pool.query(`
+        SELECT id FROM asset_categories 
+        WHERE name = $1 AND COALESCE(parent_id, 0) = COALESCE($2, 0) AND id != $3
+      `, [name.trim(), parentId || null, categoryId]);
+
+      if (duplicateCheck.rows.length > 0) {
+        return res.status(400).json({ 
+          message: "Ya existe otra categoría con ese nombre en el mismo nivel" 
+        });
       }
-      
+
+      // Actualizar categoría
       const result = await pool.query(`
-        UPDATE asset_categories
-        SET 
-          name = COALESCE($2, name),
-          description = COALESCE($3, description),
-          icon = COALESCE($4, icon),
-          color = COALESCE($5, color),
-          parent_id = $6,
-          updated_at = NOW()
-        WHERE id = $1
-        RETURNING 
-          id, name, description, icon, color, parent_id as "parentId",
-          created_at as "createdAt", updated_at as "updatedAt"
-      `, [id, name?.trim(), description?.trim(), icon, color, parentId || null]);
-      
+        UPDATE asset_categories 
+        SET name = $1, description = $2, icon = $3, color = $4, parent_id = $5, updated_at = NOW()
+        WHERE id = $6
+        RETURNING id, name, description, icon, color, parent_id as "parentId", created_at as "createdAt", updated_at as "updatedAt"
+      `, [
+        name.trim(),
+        description?.trim() || null,
+        icon || null,
+        color || '#6b7280',
+        parentId || null,
+        categoryId
+      ]);
+
       const updatedCategory = result.rows[0];
-      console.log("✅ Categoría actualizada exitosamente:", id);
+      console.log("✅ Categoría actualizada exitosamente:", categoryId);
       
-      res.json(updatedCategory);
-    } catch (error) {
-      console.error(`❌ Error al actualizar categoría ${req.params.id}:`, error);
-      
-      if (error.code === '23505') {
-        res.status(400).json({ message: "Ya existe una categoría con ese nombre" });
-      } else {
-        res.status(500).json({ message: "Error al actualizar categoría de activo" });
-      }
+      res.json({
+        success: true,
+        category: updatedCategory,
+        message: "Categoría actualizada correctamente"
+      });
+    } catch (error: any) {
+      console.error("❌ Error al actualizar categoría:", error);
+      res.status(500).json({ 
+        message: "Error al actualizar categoría", 
+        details: error.message 
+      });
     }
   });
 
   // DELETE: Eliminar categoría
-  apiRouter.delete("/asset-categories/:id", isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.delete("/asset-categories/:id", async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
+      const categoryId = parseInt(req.params.id);
       
-      console.log(`🗑️ Intentando eliminar categoría ${id}`);
+      console.log("🗑️ Eliminando categoría:", categoryId);
       
-      // Verificar si tiene activos asociados
-      const assetsCheck = await pool.query(`
-        SELECT COUNT(*) as asset_count
-        FROM assets
-        WHERE category_id = $1
-      `, [id]);
-      
-      const assetCount = parseInt(assetsCheck.rows[0].asset_count);
-      if (assetCount > 0) {
-        return res.status(400).json({ 
-          message: `No se puede eliminar la categoría porque tiene ${assetCount} activo(s) asociado(s)` 
-        });
-      }
-      
-      // Verificar si tiene subcategorías
-      const childrenCheck = await pool.query(`
-        SELECT COUNT(*) as children_count
-        FROM asset_categories
-        WHERE parent_id = $1
-      `, [id]);
-      
-      const childrenCount = parseInt(childrenCheck.rows[0].children_count);
-      if (childrenCount > 0) {
-        return res.status(400).json({ 
-          message: `No se puede eliminar la categoría porque tiene ${childrenCount} subcategoría(s)` 
-        });
-      }
-      
-      const result = await pool.query(`
-        DELETE FROM asset_categories
-        WHERE id = $1
-        RETURNING id, name
-      `, [id]);
-      
-      if (result.rows.length === 0) {
+      // Verificar que la categoría existe
+      const existingCategory = await pool.query(`
+        SELECT id, name FROM asset_categories WHERE id = $1
+      `, [categoryId]);
+
+      if (existingCategory.rows.length === 0) {
         return res.status(404).json({ message: "Categoría no encontrada" });
       }
-      
-      console.log(`✅ Categoría eliminada exitosamente: ${result.rows[0].name}`);
-      res.json({ message: "Categoría eliminada correctamente", category: result.rows[0] });
-    } catch (error) {
-      console.error(`❌ Error al eliminar categoría ${req.params.id}:`, error);
-      res.status(500).json({ message: "Error al eliminar categoría de activo" });
-    }
-  });
 
-  // GET: Obtener estructura de árbol completa
-  apiRouter.get("/asset-categories/tree/structure", async (_req: Request, res: Response) => {
-    try {
-      console.log("🌳 Generando estructura de árbol de categorías");
+      // Verificar que no tiene subcategorías
+      const childrenCheck = await pool.query(`
+        SELECT COUNT(*) as count FROM asset_categories WHERE parent_id = $1
+      `, [categoryId]);
+
+      if (parseInt(childrenCheck.rows[0].count) > 0) {
+        return res.status(400).json({ 
+          message: "No se puede eliminar una categoría que tiene subcategorías. Elimine primero las subcategorías." 
+        });
+      }
+
+      // Verificar que no tiene activos asociados
+      const assetsCheck = await pool.query(`
+        SELECT COUNT(*) as count FROM assets WHERE category_id = $1
+      `, [categoryId]);
+
+      if (parseInt(assetsCheck.rows[0].count) > 0) {
+        return res.status(400).json({ 
+          message: "No se puede eliminar una categoría que tiene activos asociados. Reasigne los activos a otra categoría primero." 
+        });
+      }
+
+      // Eliminar categoría
+      await pool.query(`DELETE FROM asset_categories WHERE id = $1`, [categoryId]);
       
-      const result = await pool.query(`
-        WITH RECURSIVE category_tree AS (
-          -- Categorías principales (nivel 0)
-          SELECT 
-            id, name, description, icon, color, parent_id,
-            created_at, updated_at, 0 as level,
-            ARRAY[id] as path,
-            name as path_names
-          FROM asset_categories
-          WHERE parent_id IS NULL
-          
-          UNION ALL
-          
-          -- Subcategorías (niveles siguientes)
-          SELECT 
-            c.id, c.name, c.description, c.icon, c.color, c.parent_id,
-            c.created_at, c.updated_at, ct.level + 1,
-            ct.path || c.id,
-            ct.path_names || ' > ' || c.name
-          FROM asset_categories c
-          INNER JOIN category_tree ct ON c.parent_id = ct.id
-          WHERE ct.level < 5 -- Máximo 5 niveles de profundidad
-        )
-        SELECT 
-          id, name, description, icon, color, parent_id as "parentId",
-          created_at as "createdAt", updated_at as "updatedAt",
-          level, path, path_names as "pathNames"
-        FROM category_tree
-        ORDER BY level, name
-      `);
+      console.log("✅ Categoría eliminada exitosamente:", categoryId);
       
-      const treeStructure = result.rows;
-      console.log(`📊 Estructura generada: ${treeStructure.length} nodos, ${Math.max(...treeStructure.map(n => n.level)) + 1} niveles`);
-      
-      res.json(treeStructure);
-    } catch (error) {
-      console.error("❌ Error al generar estructura de árbol:", error);
-      res.status(500).json({ message: "Error al generar estructura de categorías" });
+      res.json({
+        success: true,
+        message: "Categoría eliminada correctamente"
+      });
+    } catch (error: any) {
+      console.error("❌ Error al eliminar categoría:", error);
+      res.status(500).json({ 
+        message: "Error al eliminar categoría", 
+        details: error.message 
+      });
     }
   });
 
