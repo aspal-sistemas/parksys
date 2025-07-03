@@ -122,7 +122,10 @@ const AssetCategoriesPage: React.FC = () => {
   
   // Crear categoría
   const createMutation = useMutation({
-    mutationFn: (data: CategoryFormData) => apiRequest('/api/asset-categories', 'POST', data),
+    mutationFn: async (data: CategoryFormData) => {
+      const response = await apiRequest('/api/asset-categories', { method: 'POST', data });
+      return await response.json();
+    },
     onSuccess: (response) => {
       console.log('Categoría creada exitosamente:', response);
       
@@ -156,8 +159,10 @@ const AssetCategoriesPage: React.FC = () => {
 
   // Actualizar categoría
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CategoryFormData }) => 
-      apiRequest(`/api/asset-categories/${id}`, 'PUT', data),
+    mutationFn: async ({ id, data }: { id: number; data: CategoryFormData }) => {
+      const response = await apiRequest(`/api/asset-categories/${id}`, { method: 'PUT', data });
+      return await response.json();
+    },
     onSuccess: () => {
       // Forzar refetch inmediato
       queryClient.refetchQueries({ queryKey: ['/api/asset-categories'] });
@@ -183,7 +188,10 @@ const AssetCategoriesPage: React.FC = () => {
 
   // Eliminar categoría
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/asset-categories/${id}`, 'DELETE'),
+    mutationFn: async (id: number) => {
+      const response = await apiRequest(`/api/asset-categories/${id}`, { method: 'DELETE' });
+      return await response.json();
+    },
     onSuccess: () => {
       // Forzar refetch inmediato
       queryClient.refetchQueries({ queryKey: ['/api/asset-categories'] });
