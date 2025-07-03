@@ -146,10 +146,42 @@ const CreateAssetPage: React.FC = () => {
     },
   });
   
-  // Consultar categorías
-  const { data: categories, isLoading: isLoadingCategories } = useQuery({
-    queryKey: ['/api/asset-categories'],
+  // Consultar estructura jerárquica de categorías
+  const { data: categoriesTree, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['/api/asset-categories/tree/structure'],
   });
+
+  // Aplanar categorías para fácil acceso por ID
+  const allCategories = React.useMemo(() => {
+    if (!categoriesTree) return [];
+    const flattened: any[] = [];
+    categoriesTree.forEach((parent: any) => {
+      flattened.push(parent);
+      if (parent.children) {
+        parent.children.forEach((child: any) => {
+          flattened.push(child);
+        });
+      }
+    });
+    return flattened;
+  }, [categoriesTree]);
+
+  // Función helper para obtener nombre de categoría con jerarquía
+  const getCategoryDisplayName = (categoryId: number) => {
+    if (!allCategories || allCategories.length === 0) return '';
+    
+    const category = allCategories.find((cat: any) => cat.id === categoryId);
+    if (!category) return '';
+    
+    // Si es subcategoría, mostrar: "Padre → Subcategoría"
+    if (category.parentId) {
+      const parent = allCategories.find((cat: any) => cat.id === category.parentId);
+      return parent ? `${parent.name} → ${category.name}` : category.name;
+    }
+    
+    // Si es categoría principal
+    return category.name;
+  };
   
   // Consultar parques
   const { data: parks, isLoading: isLoadingParks } = useQuery({
@@ -264,7 +296,7 @@ const CreateAssetPage: React.FC = () => {
   };
   
   // Determinar si el formulario está listo para enviar
-  const isFormReady = !isLoadingCategories && !isLoadingParks && categories && parks;
+  const isFormReady = !isLoadingCategories && !isLoadingParks && categoriesTree && parks;
   
   return (
     <AdminLayout>
@@ -356,14 +388,33 @@ const CreateAssetPage: React.FC = () => {
                               <SelectValue placeholder="Seleccione una categoría" />
                             </SelectTrigger>
                             <SelectContent>
-                              {categories && Array.isArray(categories) ? categories.map((category: any) => (
-                                <SelectItem key={category.id} value={category.id.toString()}>
-                                  {category.name}
-                                </SelectItem>
-                              )) : null}
+                              {categoriesTree && Array.isArray(categoriesTree) ? categoriesTree.map((parentCategory: any) => [
+                                // Categoría principal
+                                <SelectItem key={parentCategory.id} value={parentCategory.id.toString()}>
+                                  <span className="font-semibold text-gray-900">
+                                    {parentCategory.name}
+                                  </span>
+                                </SelectItem>,
+                                // Subcategorías (si existen)
+                                ...(parentCategory.children && parentCategory.children.length > 0 
+                                  ? parentCategory.children.map((subCategory: any) => (
+                                      <SelectItem key={subCategory.id} value={subCategory.id.toString()}>
+                                        <span className="text-gray-600 ml-4">
+                                          ↳ {subCategory.name}
+                                        </span>
+                                      </SelectItem>
+                                    ))
+                                  : []
+                                )
+                              ]).flat() : null}
                             </SelectContent>
                           </Select>
                         </FormControl>
+                        {field.value && field.value > 0 && (
+                          <div className="text-sm text-gray-600 mt-2 p-2 bg-gray-50 rounded-md">
+                            <span className="font-medium">Categoría seleccionada:</span> {getCategoryDisplayName(field.value)}
+                          </div>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
