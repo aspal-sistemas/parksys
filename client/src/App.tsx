@@ -625,9 +625,16 @@ function Router() {
           </Suspense>
         </Route>
         
-        {/* Ruta para Gestión de Mantenimiento de Árboles */}
+        {/* Ruta para Gestión de Mantenimiento de Árboles - Versión Mejorada */}
         <Route path="/admin/trees/maintenance">
           <Suspense fallback={<div className="p-8 text-center">Cargando gestión de mantenimiento de árboles...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/maintenance/enhanced')))}
+          </Suspense>
+        </Route>
+        
+        {/* Ruta para Mantenimiento Básico - Legacy */}
+        <Route path="/admin/trees/maintenance/legacy">
+          <Suspense fallback={<div className="p-8 text-center">Cargando mantenimiento básico...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/trees/maintenance/index')))}
           </Suspense>
         </Route>

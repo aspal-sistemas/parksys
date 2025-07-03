@@ -21,21 +21,18 @@ export async function getTreeMaintenanceStats(req: Request, res: Response) {
     const totalResult = await pool.query(`
       SELECT COUNT(*) as total
       FROM tree_maintenances
-      WHERE status = 'active'
     `);
 
     const recentResult = await pool.query(`
       SELECT COUNT(*) as recent
       FROM tree_maintenances
-      WHERE status = 'active'
-      AND maintenance_date >= $1
+      WHERE maintenance_date >= $1
     `, [formattedDate]);
 
     // Obtener conteo por tipo de mantenimiento
     const byTypeResult = await pool.query(`
       SELECT maintenance_type as type, COUNT(*) as count
       FROM tree_maintenances
-      WHERE status = 'active'
       GROUP BY maintenance_type
       ORDER BY count DESC
     `);
@@ -47,7 +44,6 @@ export async function getTreeMaintenanceStats(req: Request, res: Response) {
         COUNT(*) as count
       FROM tree_maintenances tm
       JOIN trees t ON tm.tree_id = t.id
-      WHERE tm.status = 'active'
       GROUP BY t.health_status
     `);
 
