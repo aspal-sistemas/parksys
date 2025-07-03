@@ -132,9 +132,11 @@ const CalendarPage: React.FC = () => {
   const weekdays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   
   // Formatear precio
-  const formatPrice = (price?: number) => {
-    if (price === undefined || price === 0) return 'Gratis';
-    return `$${price.toFixed(2)} MXN`;
+  const formatPrice = (price?: number | string) => {
+    if (price === undefined || price === null || price === 0 || price === '0.00') return 'Gratis';
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(numPrice) || numPrice === 0) return 'Gratis';
+    return `$${numPrice.toFixed(2)} MXN`;
   };
   
   // Generar color según categoría
