@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 import { Helmet } from 'react-helmet';
 import { 
   Download, 
@@ -143,6 +145,28 @@ const InventoryPage: React.FC = () => {
   // Consultar datos de parques
   const { data: parks } = useQuery({
     queryKey: ['/api/parks'],
+  });
+
+  // Mutación para generar datos de muestra
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  const generateSampleData = useMutation({
+    mutationFn: () => apiRequest('/api/assets/generate-sample', { method: 'POST' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
+      toast({
+        title: "Datos de muestra generados",
+        description: "Se han creado 100 activos ficticios distribuidos en todas las categorías y parques.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al generar datos",
+        description: error.message || "No se pudieron generar los datos de muestra",
+        variant: "destructive"
+      });
+    }
   });
   
   // Estadísticas y valores calculados
@@ -337,6 +361,14 @@ const InventoryPage: React.FC = () => {
           </p>
         </div>
         <div className="flex space-x-2">
+          <Button 
+            onClick={() => generateSampleData.mutate()} 
+            variant="outline"
+            disabled={generateSampleData.isPending}
+          >
+            <BarChart className="mr-2 h-4 w-4" />
+            {generateSampleData.isPending ? 'Generando...' : 'Generar Datos de Muestra'}
+          </Button>
           <Button onClick={exportToCSV} variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Exportar CSV

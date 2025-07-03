@@ -679,4 +679,28 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
       res.status(500).json({ message: "Error al obtener estadísticas de activos" });
     }
   });
+
+  // Generate sample assets
+  apiRouter.post("/assets/generate-sample", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      console.log('🏗️ Iniciando generación de activos de muestra...');
+      
+      // Import the sample data generator
+      const { addSampleAssets } = await import('./add-sample-assets');
+      const result = await addSampleAssets();
+      
+      console.log('✅ Activos de muestra generados exitosamente');
+      res.json({ 
+        message: "100 activos ficticios creados exitosamente",
+        success: true,
+        created: result.created
+      });
+    } catch (error) {
+      console.error("❌ Error al generar activos de muestra:", error);
+      res.status(500).json({ 
+        message: "Error al generar activos de muestra",
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      });
+    }
+  });
 }
