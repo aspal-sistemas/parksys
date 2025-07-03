@@ -1009,6 +1009,10 @@ async function initializeDatabaseAsync() {
     const { registerConcessionairesRoutes } = await import('./concessionaires-routes');
     registerConcessionairesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
     
+    // Importar y registrar rutas de categorías de activos
+    const { registerAssetCategoriesRoutes } = await import('./asset-categories-routes');
+    registerAssetCategoriesRoutes(app, apiRouter);
+    
     app.use("/api", apiRouter);
     console.log("API de integraciones financieras múltiples registrada correctamente");
     

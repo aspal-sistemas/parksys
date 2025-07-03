@@ -50,22 +50,8 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
     }
   });
 
-  // Get asset category by ID
-  apiRouter.get("/asset-categories/:id", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      const [category] = await db.select().from(assetCategories).where(eq(assetCategories.id, id));
-      
-      if (!category) {
-        return res.status(404).json({ message: "Categoría no encontrada" });
-      }
-      
-      res.json(category);
-    } catch (error) {
-      console.error("Error al obtener categoría:", error);
-      res.status(500).json({ message: "Error al obtener categoría de activo" });
-    }
-  });
+  // NOTA: Ruta de categorías por ID movida a asset-categories-routes.ts
+  // para evitar conflictos con rutas específicas como /parents
 
   // Get all assets
   apiRouter.get("/assets", async (req: Request, res: Response) => {
