@@ -412,7 +412,12 @@ const AssetCategoriesPage: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="hierarchy">Vista Jerárquica</TabsTrigger>
-          <TabsTrigger value="list">Lista Completa</TabsTrigger>
+          <TabsTrigger value="list">
+            <div className="flex items-center gap-2">
+              Lista Completa
+              <Filter size={14} className="text-blue-500" />
+            </div>
+          </TabsTrigger>
           <TabsTrigger value="tree">Estructura de Árbol</TabsTrigger>
         </TabsList>
 
