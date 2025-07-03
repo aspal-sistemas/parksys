@@ -28,31 +28,35 @@ interface Instructor {
 const InstructorsPage: React.FC = () => {
   // Helper function para procesar especialidades
   const getSpecialtiesArray = (specialties: string | string[] | undefined) => {
-    console.log('Procesando especialidades:', specialties, typeof specialties);
-    
     if (!specialties) return [];
     
     // Si ya es un array, devolverlo
     if (Array.isArray(specialties)) return specialties;
     
-    // Si es un string, intentar parsearlo como JSON primero
+    // Si es un string, procesar diferentes formatos
     if (typeof specialties === 'string') {
+      // Formato PostgreSQL array: {"Yoga","Danzas Ocultas"}
+      if (specialties.startsWith('{') && specialties.endsWith('}')) {
+        // Remover llaves y dividir por comas, luego limpiar comillas
+        const cleanedString = specialties.slice(1, -1); // Quitar { y }
+        return cleanedString
+          .split(',')
+          .map(s => s.trim().replace(/^"/, '').replace(/"$/, '')) // Quitar comillas
+          .filter(s => s.length > 0);
+      }
+      
+      // Intentar parsear como JSON array estándar
       try {
-        // Intentar parsear como JSON array
         const parsed = JSON.parse(specialties);
         if (Array.isArray(parsed)) {
-          console.log('Especialidades parseadas:', parsed);
           return parsed;
         }
       } catch (e) {
-        console.log('Error parseando JSON, usando split:', e);
-        // Si falla el parsing, tratar como string separado por comas
+        // Si falla el parsing JSON, usar split por comas
       }
       
-      // Tratar como string separado por comas
-      const result = specialties.split(',').map(s => s.trim()).filter(s => s.length > 0);
-      console.log('Especialidades con split:', result);
-      return result;
+      // Formato separado por comas: "Yoga,Meditación,Bienestar"
+      return specialties.split(',').map(s => s.trim()).filter(s => s.length > 0);
     }
     
     return [];
@@ -364,7 +368,7 @@ const InstructorsPage: React.FC = () => {
 
                   {/* Rating */}
                   <div className="flex justify-center mb-4">
-                    {renderStars(instructor.rating)}
+                    {renderStars(instructor.rating || 0)}
                   </div>
 
                   {/* Botones de acción */}
@@ -396,7 +400,10 @@ const InstructorsPage: React.FC = () => {
                             Comparte tu experiencia con este instructor
                           </DialogDescription>
                         </DialogHeader>
-                        <PublicInstructorEvaluationForm instructorId={instructor.id} />
+                        <PublicInstructorEvaluationForm 
+                          instructorId={instructor.id} 
+                          instructorName={instructor.full_name}
+                        />
                       </DialogContent>
                     </Dialog>
                   </div>
@@ -437,7 +444,7 @@ const InstructorsPage: React.FC = () => {
                             </Badge>
                           ))}
                         </div>
-                        {renderStars(instructor.rating)}
+                        {renderStars(instructor.rating || 0)}
                       </div>
                     </div>
 
@@ -467,7 +474,10 @@ const InstructorsPage: React.FC = () => {
                               Comparte tu experiencia con este instructor
                             </DialogDescription>
                           </DialogHeader>
-                          <PublicInstructorEvaluationForm instructorId={instructor.id} />
+                          <PublicInstructorEvaluationForm 
+                            instructorId={instructor.id} 
+                            instructorName={instructor.full_name}
+                          />
                         </DialogContent>
                       </Dialog>
                     </div>

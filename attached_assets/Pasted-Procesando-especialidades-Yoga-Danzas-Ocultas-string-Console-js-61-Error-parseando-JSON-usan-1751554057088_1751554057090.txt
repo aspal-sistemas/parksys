@@ -1,0 +1,572 @@
+Procesando especialidades: {"Yoga","Danzas Ocultas"} string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Expected ':' after property name in JSON at position 7 (line 1 column 8)
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:118:32
+    at Array.forEach (<anonymous>)
+    at InstructorsPage (instructors.tsx:116:15)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (2) ['{"Yoga"', '"Danzas Ocultas"}']
+Console.js:61 Procesando especialidades: {"Yoga","Meditación"} string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Expected ':' after property name in JSON at position 7 (line 1 column 8)
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:118:32
+    at Array.forEach (<anonymous>)
+    at InstructorsPage (instructors.tsx:116:15)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (2) ['{"Yoga"', '"Meditación"}']
+Console.js:61 Procesando especialidades: Yoga,Meditación,Bienestar string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'Y', "Yoga,Medit"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:118:32
+    at Array.forEach (<anonymous>)
+    at InstructorsPage (instructors.tsx:116:15)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Yoga', 'Meditación', 'Bienestar']
+Console.js:61 Procesando especialidades: Fútbol,Deportes,Entrenamiento físico string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'F', "Fútbol,Dep"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:118:32
+    at Array.forEach (<anonymous>)
+    at InstructorsPage (instructors.tsx:116:15)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Fútbol', 'Deportes', 'Entrenamiento físico']
+Console.js:61 Procesando especialidades: Natación,Deportes acuáticos,Salvavidas string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'N', "Natación,D"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:118:32
+    at Array.forEach (<anonymous>)
+    at InstructorsPage (instructors.tsx:116:15)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Natación', 'Deportes acuáticos', 'Salvavidas']
+Console.js:61 Procesando especialidades: Danza,Ballet,Danza folclórica string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'D', "Danza,Ball"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:118:32
+    at Array.forEach (<anonymous>)
+    at InstructorsPage (instructors.tsx:116:15)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Danza', 'Ballet', 'Danza folclórica']
+Console.js:61 Procesando especialidades: {"Yoga","Danzas Ocultas"} string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Expected ':' after property name in JSON at position 7 (line 1 column 8)
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:352:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (2) ['{"Yoga"', '"Danzas Ocultas"}']
+Console.js:61 Procesando especialidades: {"Yoga","Danzas Ocultas"} string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Expected ':' after property name in JSON at position 7 (line 1 column 8)
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:357:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (2) ['{"Yoga"', '"Danzas Ocultas"}']
+Console.js:61 Procesando especialidades: {"Yoga","Meditación"} string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Expected ':' after property name in JSON at position 7 (line 1 column 8)
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:352:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (2) ['{"Yoga"', '"Meditación"}']
+Console.js:61 Procesando especialidades: {"Yoga","Meditación"} string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Expected ':' after property name in JSON at position 7 (line 1 column 8)
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:357:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (2) ['{"Yoga"', '"Meditación"}']
+Console.js:61 Procesando especialidades: Yoga,Meditación,Bienestar string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'Y', "Yoga,Medit"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:352:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Yoga', 'Meditación', 'Bienestar']
+Console.js:61 Procesando especialidades: Yoga,Meditación,Bienestar string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'Y', "Yoga,Medit"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:357:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Yoga', 'Meditación', 'Bienestar']
+Console.js:61 Procesando especialidades: Yoga,Meditación,Bienestar string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'Y', "Yoga,Medit"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:359:29
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Yoga', 'Meditación', 'Bienestar']
+Console.js:61 Procesando especialidades: Fútbol,Deportes,Entrenamiento físico string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'F', "Fútbol,Dep"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:352:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Fútbol', 'Deportes', 'Entrenamiento físico']
+Console.js:61 Procesando especialidades: Fútbol,Deportes,Entrenamiento físico string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'F', "Fútbol,Dep"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:357:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Fútbol', 'Deportes', 'Entrenamiento físico']
+Console.js:61 Procesando especialidades: Fútbol,Deportes,Entrenamiento físico string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'F', "Fútbol,Dep"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:359:29
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Fútbol', 'Deportes', 'Entrenamiento físico']
+Console.js:61 Procesando especialidades: Natación,Deportes acuáticos,Salvavidas string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'N', "Natación,D"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:352:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Natación', 'Deportes acuáticos', 'Salvavidas']
+Console.js:61 Procesando especialidades: Natación,Deportes acuáticos,Salvavidas string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'N', "Natación,D"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:357:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Natación', 'Deportes acuáticos', 'Salvavidas']
+Console.js:61 Procesando especialidades: Natación,Deportes acuáticos,Salvavidas string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'N', "Natación,D"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:359:29
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Natación', 'Deportes acuáticos', 'Salvavidas']
+Console.js:61 Procesando especialidades: Danza,Ballet,Danza folclórica string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'D', "Danza,Ball"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:352:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Danza', 'Ballet', 'Danza folclórica']
+Console.js:61 Procesando especialidades: Danza,Ballet,Danza folclórica string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'D', "Danza,Ball"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:357:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Danza', 'Ballet', 'Danza folclórica']
+Console.js:61 Procesando especialidades: Danza,Ballet,Danza folclórica string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'D', "Danza,Ball"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:359:29
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Danza', 'Ballet', 'Danza folclórica']
+Console.js:61 Procesando especialidades: {"Yoga","Danzas Ocultas"} string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Expected ':' after property name in JSON at position 7 (line 1 column 8)
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:118:32
+    at Array.forEach (<anonymous>)
+    at InstructorsPage (instructors.tsx:116:15)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (2) ['{"Yoga"', '"Danzas Ocultas"}']
+Console.js:61 Procesando especialidades: {"Yoga","Meditación"} string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Expected ':' after property name in JSON at position 7 (line 1 column 8)
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:118:32
+    at Array.forEach (<anonymous>)
+    at InstructorsPage (instructors.tsx:116:15)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (2) ['{"Yoga"', '"Meditación"}']
+Console.js:61 Procesando especialidades: Yoga,Meditación,Bienestar string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'Y', "Yoga,Medit"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:118:32
+    at Array.forEach (<anonymous>)
+    at InstructorsPage (instructors.tsx:116:15)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Yoga', 'Meditación', 'Bienestar']
+Console.js:61 Procesando especialidades: Fútbol,Deportes,Entrenamiento físico string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'F', "Fútbol,Dep"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:118:32
+    at Array.forEach (<anonymous>)
+    at InstructorsPage (instructors.tsx:116:15)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Fútbol', 'Deportes', 'Entrenamiento físico']
+Console.js:61 Procesando especialidades: Natación,Deportes acuáticos,Salvavidas string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'N', "Natación,D"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:118:32
+    at Array.forEach (<anonymous>)
+    at InstructorsPage (instructors.tsx:116:15)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Natación', 'Deportes acuáticos', 'Salvavidas']
+Console.js:61 Procesando especialidades: Danza,Ballet,Danza folclórica string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'D', "Danza,Ball"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:118:32
+    at Array.forEach (<anonymous>)
+    at InstructorsPage (instructors.tsx:116:15)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Danza', 'Ballet', 'Danza folclórica']
+Console.js:61 Procesando especialidades: {"Yoga","Danzas Ocultas"} string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Expected ':' after property name in JSON at position 7 (line 1 column 8)
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:352:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (2) ['{"Yoga"', '"Danzas Ocultas"}']
+Console.js:61 Procesando especialidades: {"Yoga","Danzas Ocultas"} string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Expected ':' after property name in JSON at position 7 (line 1 column 8)
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:357:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (2) ['{"Yoga"', '"Danzas Ocultas"}']
+Console.js:61 Procesando especialidades: {"Yoga","Meditación"} string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Expected ':' after property name in JSON at position 7 (line 1 column 8)
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:352:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (2) ['{"Yoga"', '"Meditación"}']
+Console.js:61 Procesando especialidades: {"Yoga","Meditación"} string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Expected ':' after property name in JSON at position 7 (line 1 column 8)
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:357:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (2) ['{"Yoga"', '"Meditación"}']
+Console.js:61 Procesando especialidades: Yoga,Meditación,Bienestar string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'Y', "Yoga,Medit"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:352:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Yoga', 'Meditación', 'Bienestar']
+Console.js:61 Procesando especialidades: Yoga,Meditación,Bienestar string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'Y', "Yoga,Medit"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:357:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Yoga', 'Meditación', 'Bienestar']
+Console.js:61 Procesando especialidades: Yoga,Meditación,Bienestar string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'Y', "Yoga,Medit"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:359:29
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Yoga', 'Meditación', 'Bienestar']
+Console.js:61 Procesando especialidades: Fútbol,Deportes,Entrenamiento físico string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'F', "Fútbol,Dep"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:352:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Fútbol', 'Deportes', 'Entrenamiento físico']
+Console.js:61 Procesando especialidades: Fútbol,Deportes,Entrenamiento físico string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'F', "Fútbol,Dep"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:357:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Fútbol', 'Deportes', 'Entrenamiento físico']
+Console.js:61 Procesando especialidades: Fútbol,Deportes,Entrenamiento físico string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'F', "Fútbol,Dep"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:359:29
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Fútbol', 'Deportes', 'Entrenamiento físico']
+Console.js:61 Procesando especialidades: Natación,Deportes acuáticos,Salvavidas string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'N', "Natación,D"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:352:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Natación', 'Deportes acuáticos', 'Salvavidas']
+Console.js:61 Procesando especialidades: Natación,Deportes acuáticos,Salvavidas string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'N', "Natación,D"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:357:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Natación', 'Deportes acuáticos', 'Salvavidas']
+Console.js:61 Procesando especialidades: Natación,Deportes acuáticos,Salvavidas string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'N', "Natación,D"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:359:29
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Natación', 'Deportes acuáticos', 'Salvavidas']
+Console.js:61 Procesando especialidades: Danza,Ballet,Danza folclórica string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'D', "Danza,Ball"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:352:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Danza', 'Ballet', 'Danza folclórica']
+Console.js:61 Procesando especialidades: Danza,Ballet,Danza folclórica string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'D', "Danza,Ball"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:357:24
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Danza', 'Ballet', 'Danza folclórica']
+Console.js:61 Procesando especialidades: Danza,Ballet,Danza folclórica string
+Console.js:61 Error parseando JSON, usando split: SyntaxError: Unexpected token 'D', "Danza,Ball"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at getSpecialtiesArray (instructors.tsx:42:29)
+    at instructors.tsx:359:29
+    at Array.map (<anonymous>)
+    at InstructorsPage (instructors.tsx:327:33)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=d9acbbb7:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=d9acbbb7:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=d9acbbb7:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=d9acbbb7:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=d9acbbb7:19198:20)
+Console.js:61 Especialidades con split: (3) ['Danza', 'Ballet', 'Danza folclórica']
