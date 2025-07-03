@@ -149,7 +149,7 @@ function TreeInventoryPage() {
     },
   });
 
-  // Consultar el inventario de árboles
+  // Consultar el inventario de árboles con paginación de 10 registros por página
   const {
     data: treeInventory,
     isLoading: isLoadingTrees,
@@ -157,7 +157,7 @@ function TreeInventoryPage() {
   } = useQuery({
     queryKey: ['/api/trees', page, searchTerm, parkFilter, healthFilter, speciesFilter],
     queryFn: async () => {
-      let url = `/api/trees?page=${page}`;
+      let url = `/api/trees?page=${page}&limit=10`;
       
       if (searchTerm) {
         url += `&search=${encodeURIComponent(searchTerm)}`;
@@ -240,8 +240,13 @@ function TreeInventoryPage() {
 
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
-    // La búsqueda se activará automáticamente por el cambio en searchTerm
+    setPage(1); // Resetear a la primera página al buscar
   };
+
+  // Resetear página cuando cambian los filtros
+  React.useEffect(() => {
+    setPage(1);
+  }, [searchTerm, parkFilter, healthFilter, speciesFilter]);
 
   const getHealthStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
@@ -290,7 +295,7 @@ function TreeInventoryPage() {
 
   // Determinar si hay datos para mostrar
   const hasData = treeInventory && treeInventory.data && treeInventory.data.length > 0;
-  const totalPages = treeInventory ? Math.ceil(treeInventory.total / treeInventory.perPage) : 1;
+  const totalPages = treeInventory?.pagination?.totalPages || 1;
 
   return (
     <AdminLayout>
@@ -417,7 +422,14 @@ function TreeInventoryPage() {
               <div className="flex items-center gap-3">
                 {treeInventory && (
                   <div className="text-sm text-gray-500">
-                    Total: {treeInventory.total} árboles
+                    {treeInventory.pagination ? (
+                      <>
+                        Página {treeInventory.pagination.page} de {treeInventory.pagination.totalPages} - 
+                        Mostrando {((treeInventory.pagination.page - 1) * 10) + 1}-{Math.min(treeInventory.pagination.page * 10, treeInventory.pagination.total)} de {treeInventory.pagination.total} árboles
+                      </>
+                    ) : (
+                      <>Total: {treeInventory.total || treeInventory.data?.length || 0} árboles</>
+                    )}
                   </div>
                 )}
                 <Button
