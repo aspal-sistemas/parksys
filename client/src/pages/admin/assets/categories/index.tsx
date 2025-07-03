@@ -19,7 +19,7 @@ import {
   FolderPlus, Edit2, Trash2, Tag, FolderOpen, 
   TreePine, Settings, Plus, ChevronRight, Building2,
   Wrench, Car, Lightbulb, Camera, Wifi, Search,
-  Filter, X, ChevronLeft
+  Filter, X, ChevronLeft, LayoutGrid, List
 } from 'lucide-react';
 
 // ===== TIPOS Y ESQUEMAS =====
@@ -88,12 +88,13 @@ const AssetCategoriesPage: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState("hierarchy");
+  const [activeTab, setActiveTab] = useState("list");
   
   // Estados para filtros y paginación
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<'all' | 'principal' | 'subcategoria'>('all');
   const [selectedIcon, setSelectedIcon] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'compact' | 'extended'>('compact');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -379,6 +380,86 @@ const AssetCategoriesPage: React.FC = () => {
     </Card>
   );
 
+  // Componente para vista extendida de categorías
+  const ExtendedCategoryCard = ({ category }: { category: AssetCategory }) => (
+    <Card className="transition-all hover:shadow-md">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 rounded-lg" style={{ backgroundColor: `${category.color}20`, color: category.color }}>
+                {renderIcon(category.icon, 24)}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
+                  <Badge 
+                    variant={category.parentId ? "secondary" : "default"}
+                    className="text-xs"
+                  >
+                    {category.parentId ? "Subcategoría" : "Principal"}
+                  </Badge>
+                </div>
+                {category.description && (
+                  <p className="text-gray-600 text-sm leading-relaxed">{category.description}</p>
+                )}
+                {category.parentName && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs text-gray-500">Categoría padre:</span>
+                    <Badge variant="outline" className="text-xs">
+                      {category.parentName}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-6 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                <Tag size={14} />
+                <span>ID: {category.id}</span>
+              </div>
+              {category.childrenCount && category.childrenCount > 0 && (
+                <div className="flex items-center gap-2">
+                  <ChevronRight size={14} />
+                  <span>{category.childrenCount} subcategorías</span>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2 ml-4">
+            {!category.parentId && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => openCreateDialog(category.id)}
+                className="text-blue-600 hover:bg-blue-50"
+              >
+                <Plus size={16} className="mr-1" />
+                Subcategoría
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleEdit(category)}
+              className="text-green-600 hover:bg-green-50"
+            >
+              <Edit2 size={16} />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleDelete(category)}
+              className="text-red-600 hover:bg-red-50"
+            >
+              <Trash2 size={16} />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -411,13 +492,13 @@ const AssetCategoriesPage: React.FC = () => {
       {/* Tabs de navegación */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="hierarchy">Vista Jerárquica</TabsTrigger>
           <TabsTrigger value="list">
             <div className="flex items-center gap-2">
               Lista Completa
               <Filter size={14} className="text-blue-500" />
             </div>
           </TabsTrigger>
+          <TabsTrigger value="hierarchy">Vista Jerárquica</TabsTrigger>
           <TabsTrigger value="tree">Estructura de Árbol</TabsTrigger>
         </TabsList>
 
@@ -578,12 +659,50 @@ const AssetCategoriesPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Grid de Categorías Filtradas */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {paginatedCategories.map(category => (
-              <CategoryCard key={category.id} category={category} />
-            ))}
+          {/* Controles de Vista */}
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-gray-600">
+              Mostrando {startIndex + 1}-{Math.min(endIndex, filteredCategories.length)} de {filteredCategories.length} categorías
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Vista:</span>
+              <div className="flex border rounded-md">
+                <Button
+                  variant={viewMode === 'compact' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('compact')}
+                  className="rounded-r-none border-r-0"
+                >
+                  <LayoutGrid size={16} className="mr-1" />
+                  Compacta
+                </Button>
+                <Button
+                  variant={viewMode === 'extended' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('extended')}
+                  className="rounded-l-none"
+                >
+                  <List size={16} className="mr-1" />
+                  Extendida
+                </Button>
+              </div>
+            </div>
           </div>
+
+          {/* Grid/Lista de Categorías Filtradas */}
+          {viewMode === 'compact' ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {paginatedCategories.map(category => (
+                <CategoryCard key={category.id} category={category} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {paginatedCategories.map(category => (
+                <ExtendedCategoryCard key={category.id} category={category} />
+              ))}
+            </div>
+          )}
 
           {/* Mensaje si no hay resultados */}
           {filteredCategories.length === 0 && (
