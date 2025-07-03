@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AdminLayout } from '@/components/AdminLayout';
 import { 
   FolderPlus, Edit2, Trash2, Tag, FolderOpen, 
   TreePine, Settings, Plus, ChevronRight, Building2,
@@ -304,21 +305,22 @@ const AssetCategoriesPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Categorías de Activos</h1>
-          <p className="text-gray-600 mt-1">Gestiona las categorías jerárquicas para organizar tus activos</p>
+    <AdminLayout>
+      <div className="p-6 max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Categorías de Activos</h1>
+            <p className="text-gray-600 mt-1">Gestiona las categorías jerárquicas para organizar tus activos</p>
+          </div>
+          <Button 
+            onClick={() => openCreateDialog()}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <FolderPlus className="mr-2" size={20} />
+            Nueva Categoría Principal
+          </Button>
         </div>
-        <Button 
-          onClick={() => openCreateDialog()}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          <FolderPlus className="mr-2" size={20} />
-          Nueva Categoría Principal
-        </Button>
-      </div>
 
       {/* Tabs de navegación */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -590,7 +592,8 @@ const AssetCategoriesPage: React.FC = () => {
           </Form>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
