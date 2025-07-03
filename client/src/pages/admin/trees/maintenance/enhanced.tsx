@@ -205,7 +205,7 @@ export default function EnhancedTreeMaintenancePage() {
   const handleSelectTree = (tree: TreeOption) => {
     setSelectedTreeId(tree.id);
     setSelectedTree(tree);
-    setOpen(true);
+    // No cerrar el modal si ya está abierto, solo actualizar la selección
   };
 
   const handleCloseDialog = () => {
@@ -253,6 +253,13 @@ export default function EnhancedTreeMaintenancePage() {
               Sistema escalable para gestión de mantenimiento con inventarios grandes
             </p>
           </div>
+          <Button 
+            onClick={() => setOpen(true)}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Nuevo Mantenimiento
+          </Button>
         </div>
 
         {/* Estadísticas */}
@@ -539,74 +546,140 @@ export default function EnhancedTreeMaintenancePage() {
 
       {/* Dialog para registrar mantenimiento */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
             <DialogTitle>Registrar Mantenimiento</DialogTitle>
             <DialogDescription>
-              {selectedTree && (
+              {selectedTree ? (
                 <div className="mt-2 p-3 bg-accent rounded-lg">
                   <div className="font-medium">{selectedTree.code}</div>
                   <div className="text-sm text-muted-foreground">
                     {selectedTree.speciesName} - {selectedTree.parkName}
                   </div>
                 </div>
+              ) : (
+                "Selecciona un árbol para registrar mantenimiento"
               )}
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="maintenanceType">Tipo de Mantenimiento *</Label>
-              <Select 
-                onValueChange={(value) => setMaintenanceData({...maintenanceData, maintenanceType: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Poda">Poda</SelectItem>
-                  <SelectItem value="Riego">Riego</SelectItem>
-                  <SelectItem value="Fertilización">Fertilización</SelectItem>
-                  <SelectItem value="Control de plagas">Control de plagas</SelectItem>
-                  <SelectItem value="Tratamiento de enfermedades">Tratamiento de enfermedades</SelectItem>
-                  <SelectItem value="Inspección">Inspección</SelectItem>
-                  <SelectItem value="Otro">Otro</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {!selectedTree && (
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label>Buscar Árbol</Label>
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Código, especie o parque..."
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                {filteredTrees.length > 0 && (
+                  <div className="border rounded-lg max-h-48 overflow-y-auto">
+                    <div className="text-xs text-muted-foreground p-2 border-b">
+                      {filteredTrees.length} árbol(es) encontrado(s)
+                    </div>
+                    {filteredTrees.slice(0, 10).map((tree) => (
+                      <div
+                        key={tree.id}
+                        className="p-2 hover:bg-accent cursor-pointer border-b last:border-b-0"
+                        onClick={() => handleSelectTree(tree)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-sm">{tree.code}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {tree.speciesName} • {tree.parkName}
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {tree.healthStatus}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             
-            <div className="grid gap-2">
-              <Label htmlFor="performedBy">Realizado por *</Label>
-              <Input 
-                id="performedBy" 
-                placeholder="Nombre del responsable"
-                value={maintenanceData.performedBy}
-                onChange={(e) => setMaintenanceData({...maintenanceData, performedBy: e.target.value})}
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="notes">Notas del Mantenimiento</Label>
-              <Textarea 
-                id="notes" 
-                placeholder="Detalles del mantenimiento realizado..."
-                rows={3}
-                value={maintenanceData.notes}
-                onChange={(e) => setMaintenanceData({...maintenanceData, notes: e.target.value})}
-              />
-            </div>
+            {selectedTree && (
+              <>
+                <div className="flex justify-between items-center">
+                  <Label className="text-base font-medium">Árbol Seleccionado</Label>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setSelectedTree(null);
+                      setSelectedTreeId(null);
+                    }}
+                  >
+                    Cambiar Árbol
+                  </Button>
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="maintenanceType">Tipo de Mantenimiento *</Label>
+                  <Select 
+                    onValueChange={(value) => setMaintenanceData({...maintenanceData, maintenanceType: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Poda">Poda</SelectItem>
+                      <SelectItem value="Riego">Riego</SelectItem>
+                      <SelectItem value="Fertilización">Fertilización</SelectItem>
+                      <SelectItem value="Control de plagas">Control de plagas</SelectItem>
+                      <SelectItem value="Tratamiento de enfermedades">Tratamiento de enfermedades</SelectItem>
+                      <SelectItem value="Inspección">Inspección</SelectItem>
+                      <SelectItem value="Otro">Otro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="performedBy">Realizado por *</Label>
+                  <Input 
+                    id="performedBy" 
+                    placeholder="Nombre del responsable"
+                    value={maintenanceData.performedBy}
+                    onChange={(e) => setMaintenanceData({...maintenanceData, performedBy: e.target.value})}
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="notes">Notas del Mantenimiento</Label>
+                  <Textarea 
+                    id="notes" 
+                    placeholder="Detalles del mantenimiento realizado..."
+                    rows={3}
+                    value={maintenanceData.notes}
+                    onChange={(e) => setMaintenanceData({...maintenanceData, notes: e.target.value})}
+                  />
+                </div>
+              </>
+            )}
           </div>
           
           <DialogFooter>
             <Button variant="outline" onClick={handleCloseDialog}>
               Cancelar
             </Button>
-            <Button 
-              onClick={handleAddMaintenance}
-              disabled={addMaintenanceMutation.isPending}
-            >
-              {addMaintenanceMutation.isPending ? 'Guardando...' : 'Guardar Mantenimiento'}
-            </Button>
+            {selectedTree && (
+              <Button 
+                onClick={handleAddMaintenance}
+                disabled={addMaintenanceMutation.isPending}
+              >
+                {addMaintenanceMutation.isPending ? 'Guardando...' : 'Guardar Mantenimiento'}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
