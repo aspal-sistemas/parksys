@@ -382,6 +382,13 @@ const AdminSidebarComplete: React.FC = () => {
               {t('navigation.operativeSummary')}
             </NavItem>
             <NavItem 
+              href="/admin/assets/categories" 
+              icon={<Tag className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/categories')}
+            >
+              Categorías
+            </NavItem>
+            <NavItem 
               href="/admin/assets/inventory" 
               icon={<Archive className="h-5 w-5" />}
               active={location.startsWith('/admin/assets/inventory')}
