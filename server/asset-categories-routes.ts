@@ -226,5 +226,109 @@ export function registerAssetCategoriesRoutes(app: any, apiRouter: Router) {
     }
   });
 
+  // GET: Obtener solo categorías principales (sin padre)
+  apiRouter.get("/asset-categories/parents", async (_req: Request, res: Response) => {
+    try {
+      console.log("🏷️ Obteniendo categorías principales (sin padre)");
+      
+      const result = await pool.query(`
+        SELECT 
+          c.id,
+          c.name,
+          c.description,
+          c.icon,
+          c.color,
+          c.created_at as "createdAt",
+          c.updated_at as "updatedAt",
+          COUNT(children.id) as "childrenCount"
+        FROM asset_categories c
+        LEFT JOIN asset_categories children ON children.parent_id = c.id
+        WHERE c.parent_id IS NULL
+        GROUP BY c.id, c.name, c.description, c.icon, c.color, c.created_at, c.updated_at
+        ORDER BY c.name
+      `);
+
+      const categories = result.rows.map(cat => ({
+        ...cat,
+        childrenCount: parseInt(cat.childrenCount),
+        hasChildren: parseInt(cat.childrenCount) > 0
+      }));
+
+      console.log(`📊 Encontradas ${categories.length} categorías principales`);
+      res.json(categories);
+    } catch (error) {
+      console.error("❌ Error al obtener categorías principales:", error);
+      res.status(500).json({ message: "Error al obtener categorías principales" });
+    }
+  });
+
+  // GET: Obtener subcategorías de una categoría específica
+  apiRouter.get("/asset-categories/:parentId/children", async (req: Request, res: Response) => {
+    try {
+      const parentId = parseInt(req.params.parentId);
+      console.log("🏷️ Obteniendo subcategorías para categoría:", parentId);
+      
+      const result = await pool.query(`
+        SELECT 
+          id,
+          name,
+          description,
+          icon,
+          color,
+          parent_id as "parentId",
+          created_at as "createdAt",
+          updated_at as "updatedAt"
+        FROM asset_categories 
+        WHERE parent_id = $1
+        ORDER BY name
+      `, [parentId]);
+
+      console.log(`📊 Encontradas ${result.rows.length} subcategorías para categoría ${parentId}`);
+      res.json(result.rows);
+    } catch (error) {
+      console.error("❌ Error al obtener subcategorías:", error);
+      res.status(500).json({ message: "Error al obtener subcategorías" });
+    }
+  });
+
+  // GET: Obtener estructura de árbol completa
+  apiRouter.get("/asset-categories/tree/structure", async (_req: Request, res: Response) => {
+    try {
+      console.log("🏷️ Generando estructura de árbol de categorías");
+      
+      // Obtener todas las categorías
+      const result = await pool.query(`
+        SELECT 
+          id,
+          name,
+          description,
+          icon,
+          color,
+          parent_id as "parentId",
+          created_at as "createdAt",
+          updated_at as "updatedAt"
+        FROM asset_categories 
+        ORDER BY 
+          CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END,
+          name
+      `);
+
+      // Organizar en estructura de árbol
+      const categories = result.rows;
+      const parents = categories.filter(cat => !cat.parentId);
+      
+      const treeStructure = parents.map(parent => ({
+        ...parent,
+        children: categories.filter(cat => cat.parentId === parent.id)
+      }));
+
+      console.log(`🌳 Estructura generada: ${parents.length} categorías principales con ${categories.filter(c => c.parentId).length} subcategorías`);
+      res.json(treeStructure);
+    } catch (error) {
+      console.error("❌ Error al generar estructura de árbol:", error);
+      res.status(500).json({ message: "Error al generar estructura de categorías" });
+    }
+  });
+
   console.log("🏷️ Rutas de categorías de activos registradas exitosamente");
 }
