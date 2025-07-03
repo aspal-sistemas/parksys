@@ -21,7 +21,7 @@ interface ExtendedAmenity {
   createdAt: Date;
 }
 import AmenityIcon from './AmenityIcon';
-import parkIllustration from '@assets/park-0-people_1750438283360.png';
+import parkIllustration from '@assets/park-11-people-leisure_1751550622926.jpg';
 
 interface SimpleFilterSidebarProps {
   onApplyFilters: (filters: {
@@ -154,19 +154,19 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
       {/* Nuevo layout intercambiado: Columna izquierda con ilustración, columna derecha con búsqueda y tipos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
         
-        {/* Columna Izquierda: Ilustración Parques de México */}
+        {/* Columna Izquierda: Ilustración Bosques Urbanos de Guadalajara */}
         <div className="bg-white rounded-lg border border-gray-300 shadow-sm overflow-hidden">
           <div className="bg-[#bcd256] text-gray-800 p-3 rounded-t-lg">
             <h3 className="text-base font-semibold flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              Parques de México
+              Bosques Urbanos de Guadalajara
             </h3>
           </div>
           <div className="p-4">
             <div className="relative">
               <img
                 src={parkIllustration}
-                alt="Ilustración de parque con lagos, senderos, áreas verdes y espacios recreativos"
+                alt="Ilustración isométrica de espacios verdes urbanos con familias, actividades recreativas, lagos, árboles y bancas"
                 className="w-full h-64 object-cover rounded-lg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg"></div>
