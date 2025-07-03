@@ -1,167 +1,290 @@
-import React, { useEffect } from 'react';
-import { useParams, useLocation } from 'wouter';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import AdminLayout from '@/components/AdminLayout';
+import React, { useState, useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
+import { AdminLayout } from '@/components/AdminLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, RefreshCw, AlertCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { 
+  User, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Award, 
+  Upload, 
+  X, 
+  FileSymlink,
+  Calendar,
+  DollarSign,
+  Clock,
+  ArrowLeft,
+  Save
+} from 'lucide-react';
 
-// Interface para los datos del instructor recibidos del backend
-interface InstructorData {
-  id: number;
+// Interface para los datos del instructor
+interface InstructorFormData {
   firstName: string;
   lastName: string;
   email: string;
   phone?: string;
+  specialties: string[];
   experienceYears: number;
-  specialties?: string[] | string;
   bio?: string;
-  status?: string;
-  profileImageUrl?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  preferredParkId?: number;
+  profileImageFile?: File | null;
+  qualifications?: string;
+  availability?: string;
+  hourlyRate?: number;
+  experience?: string;
+  curriculumFile?: File | null;
 }
 
-// Schema de validación para el formulario
-const instructorEditSchema = z.object({
-  firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  lastName: z.string().min(2, 'El apellido debe tener al menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
-  phone: z.string().optional(),
-  experienceYears: z.number().min(0, 'La experiencia debe ser un número positivo'),
-  specialties: z.string().min(1, 'Debe especificar al menos una especialidad'),
-  bio: z.string().optional(),
-  status: z.enum(['active', 'inactive', 'pending']),
-});
-
-type InstructorFormData = z.infer<typeof instructorEditSchema>;
-
 export default function EditInstructorPage() {
-  const { id } = useParams<{ id: string }>();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Extraer ID de la URL
+  const pathParts = location.split('/');
+  const id = pathParts[pathParts.length - 1];
+  
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
+  const [specialtyInput, setSpecialtyInput] = useState('');
+  const [formData, setFormData] = useState<InstructorFormData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    specialties: [],
+    experienceYears: 1,
+    bio: '',
+    preferredParkId: undefined,
+    qualifications: '',
+    availability: '',
+    hourlyRate: 0,
+    experience: '',
+    profileImageFile: null,
+    curriculumFile: null,
+  });
 
   // Obtener datos del instructor
-  const { data: instructor, isLoading, isError } = useQuery<InstructorData>({
+  const { data: instructor, isLoading, isError } = useQuery({
     queryKey: [`/api/instructors/${id}`],
     enabled: !!id,
   });
 
-  // Configurar formulario
-  const form = useForm<InstructorFormData>({
-    resolver: zodResolver(instructorEditSchema),
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      experienceYears: 0,
-      specialties: '',
-      bio: '',
-      status: 'active',
-    },
+  // Obtener lista de parques para selector
+  const { data: parks = [] } = useQuery({
+    queryKey: ['/api/parks'],
   });
 
-  // Llenar formulario cuando se cargan los datos
+  // Cargar datos del instructor en el formulario
   useEffect(() => {
     if (instructor && typeof instructor === 'object') {
-      const instructorData = instructor as any; // Usar any temporalmente para evitar errores de tipo
+      const instructorData = instructor as any;
       
-      form.reset({
+      // Procesar especialidades
+      let processedSpecialties: string[] = [];
+      if (instructorData.specialties) {
+        if (Array.isArray(instructorData.specialties)) {
+          processedSpecialties = instructorData.specialties;
+        } else if (typeof instructorData.specialties === 'string') {
+          try {
+            // Intentar parsear como JSON
+            if (instructorData.specialties.startsWith('[') || instructorData.specialties.startsWith('{')) {
+              const parsed = JSON.parse(instructorData.specialties);
+              processedSpecialties = Array.isArray(parsed) ? parsed : [parsed];
+            } else if (instructorData.specialties.includes(',')) {
+              // Separar por comas
+              processedSpecialties = instructorData.specialties.split(',').map((s: string) => s.trim());
+            } else {
+              // Un solo elemento
+              processedSpecialties = [instructorData.specialties.trim()];
+            }
+          } catch (e) {
+            // Si falla el parsing, usar como está
+            processedSpecialties = [instructorData.specialties];
+          }
+        }
+      }
+
+      setFormData({
         firstName: instructorData.firstName || '',
         lastName: instructorData.lastName || '',
         email: instructorData.email || '',
         phone: instructorData.phone || '',
-        experienceYears: instructorData.experienceYears || 0,
-        specialties: Array.isArray(instructorData.specialties) 
-          ? instructorData.specialties.join(', ') 
-          : instructorData.specialties || '',
+        specialties: processedSpecialties,
+        experienceYears: instructorData.experienceYears || 1,
         bio: instructorData.bio || '',
-        status: (instructorData.status as 'active' | 'inactive' | 'pending') || 'active',
+        preferredParkId: instructorData.preferredParkId || undefined,
+        qualifications: instructorData.qualifications || '',
+        availability: instructorData.availability || '',
+        hourlyRate: instructorData.hourlyRate || 0,
+        experience: instructorData.experience || '',
+        profileImageFile: null,
+        curriculumFile: null,
       });
+
+      // Cargar imagen de perfil existente
+      if (instructorData.profileImageUrl) {
+        setProfileImagePreview(instructorData.profileImageUrl);
+      }
     }
-  }, [instructor, form]);
+  }, [instructor]);
 
   // Mutación para actualizar instructor
   const updateInstructorMutation = useMutation({
     mutationFn: async (data: InstructorFormData) => {
-      const updateData = {
-        ...data,
-        specialties: data.specialties.split(',').map(s => s.trim()).filter(s => s.length > 0),
-      };
+      // Preparar FormData para envío con archivos
+      const formDataToSend = new FormData();
       
-      return await apiRequest(`/api/instructors/${id}`, {
+      // Agregar campos básicos
+      formDataToSend.append('firstName', data.firstName);
+      formDataToSend.append('lastName', data.lastName);
+      formDataToSend.append('email', data.email);
+      formDataToSend.append('phone', data.phone || '');
+      formDataToSend.append('specialties', JSON.stringify(data.specialties));
+      formDataToSend.append('experienceYears', data.experienceYears.toString());
+      formDataToSend.append('bio', data.bio || '');
+      formDataToSend.append('qualifications', data.qualifications || '');
+      formDataToSend.append('availability', data.availability || '');
+      formDataToSend.append('hourlyRate', (data.hourlyRate || 0).toString());
+      formDataToSend.append('experience', data.experience || '');
+      
+      if (data.preferredParkId) {
+        formDataToSend.append('preferredParkId', data.preferredParkId.toString());
+      }
+      
+      // Agregar archivos si existen
+      if (data.profileImageFile) {
+        formDataToSend.append('profileImage', data.profileImageFile);
+      }
+      
+      if (data.curriculumFile) {
+        formDataToSend.append('curriculum', data.curriculumFile);
+      }
+
+      const response = await fetch(`/api/instructors/${id}`, {
         method: 'PUT',
-        data: updateData,
+        body: formDataToSend,
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al actualizar instructor');
+      }
+
+      return await response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Instructor actualizado",
-        description: "La información del instructor se ha actualizado correctamente.",
+        title: 'Instructor actualizado',
+        description: 'Los datos del instructor han sido actualizados exitosamente.',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/instructors'] });
       queryClient.invalidateQueries({ queryKey: [`/api/instructors/${id}`] });
       setLocation('/admin/instructors');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
-        title: "Error al actualizar",
-        description: error.message || "Ocurrió un error al actualizar el instructor.",
-        variant: "destructive",
+        title: 'Error al actualizar',
+        description: error.message,
+        variant: 'destructive',
       });
     },
   });
 
-  // Manejar envío del formulario
-  const onSubmit = (data: InstructorFormData) => {
-    updateInstructorMutation.mutate(data);
+  // Manejar cambios en el formulario
+  const handleChange = (field: keyof InstructorFormData, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Manejar imagen de perfil
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => setProfileImagePreview(e.target?.result as string);
+      reader.readAsDataURL(file);
+      handleChange('profileImageFile', file);
+    }
+  };
+
+  // Manejar curriculum
+  const handleCurriculumUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleChange('curriculumFile', file);
+    }
+  };
+
+  // Manejar especialidades
+  const addSpecialty = () => {
+    if (specialtyInput.trim() && !formData.specialties.includes(specialtyInput.trim())) {
+      const newSpecialties = [...formData.specialties, specialtyInput.trim()];
+      handleChange('specialties', newSpecialties);
+      setSpecialtyInput('');
+    }
+  };
+
+  const removeSpecialty = (specialty: string) => {
+    const newSpecialties = formData.specialties.filter(s => s !== specialty);
+    handleChange('specialties', newSpecialties);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validaciones básicas
+    if (!formData.firstName || !formData.lastName || !formData.email) {
+      toast({
+        title: 'Campos requeridos',
+        description: 'Por favor completa los campos de nombre, apellido y email.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (formData.specialties.length === 0) {
+      toast({
+        title: 'Especialidades requeridas',
+        description: 'Por favor agrega al menos una especialidad.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    updateInstructorMutation.mutate(formData);
   };
 
   if (isLoading) {
     return (
-      <AdminLayout>
-        <div className="container mx-auto p-6">
-          <div className="text-center py-8">
-            <RefreshCw className="h-8 w-8 animate-spin mx-auto text-gray-400" />
-            <p className="mt-2 text-gray-500">Cargando datos del instructor...</p>
+      <AdminLayout title="Cargando...">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587] mx-auto mb-4"></div>
+            <p>Cargando datos del instructor...</p>
           </div>
         </div>
       </AdminLayout>
     );
   }
 
-  if (isError || !instructor) {
+  if (isError) {
     return (
-      <AdminLayout>
-        <div className="container mx-auto p-6">
-          <div className="text-center py-8">
-            <AlertCircle className="h-8 w-8 mx-auto text-red-500" />
-            <p className="mt-2 text-red-500">Error al cargar el instructor</p>
-            <Button variant="outline" size="sm" className="mt-2" onClick={() => setLocation('/admin/instructors')}>
+      <AdminLayout title="Error">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">Error al cargar los datos del instructor</p>
+            <Button onClick={() => setLocation('/admin/instructors')}>
               Volver a la lista
             </Button>
           </div>
@@ -171,14 +294,14 @@ export default function EditInstructorPage() {
   }
 
   return (
-    <AdminLayout>
-      <div className="container mx-auto p-6 max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+    <AdminLayout title="Editar Instructor">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="mb-8">
+          <div className="flex items-center mb-4">
             <Button
               variant="ghost"
               onClick={() => setLocation('/admin/instructors')}
+              className="mr-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Volver
@@ -192,193 +315,332 @@ export default function EditInstructorPage() {
           </div>
         </div>
 
-        {/* Formulario */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Información del Instructor</CardTitle>
-            <CardDescription>
-              Modifica los datos del instructor. Los campos marcados con * son obligatorios.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Información Personal */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nombre del instructor" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Columna izquierda - Foto de perfil */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <User className="mr-2 h-5 w-5" />
+                    Foto de Perfil
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-col items-center space-y-4">
+                    <Avatar className="h-32 w-32">
+                      <AvatarImage src={profileImagePreview || undefined} />
+                      <AvatarFallback className="text-2xl">
+                        {formData.firstName?.[0]}{formData.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                        id="profile-image"
+                      />
+                      <label htmlFor="profile-image">
+                        <Button type="button" variant="outline" size="sm" asChild>
+                          <span className="cursor-pointer">
+                            <Upload className="mr-2 h-4 w-4" />
+                            Cambiar foto
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
+                    
+                    <p className="text-xs text-gray-500 text-center">
+                      Formatos: JPG, PNG. Máx: 5MB
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Apellido *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Apellido del instructor" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+            {/* Columna derecha - Formulario principal */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Información personal */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <User className="mr-2 h-5 w-5" />
+                    Información Personal
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="firstName" className="text-sm font-medium">Nombre *</label>
+                    <Input
+                      id="firstName"
+                      placeholder="Nombre del instructor"
+                      value={formData.firstName}
+                      onChange={(e) => handleChange('firstName', e.target.value)}
+                      required
+                    />
+                  </div>
 
-                {/* Información de Contacto */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email *</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="instructor@email.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-2">
+                    <label htmlFor="lastName" className="text-sm font-medium">Apellido *</label>
+                    <Input
+                      id="lastName"
+                      placeholder="Apellido del instructor"
+                      value={formData.lastName}
+                      onChange={(e) => handleChange('lastName', e.target.value)}
+                      required
+                    />
+                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Teléfono</FormLabel>
-                        <FormControl>
-                          <Input placeholder="(33) 1234-5678" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="text-sm font-medium">Email *</label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="email@ejemplo.com"
+                      value={formData.email}
+                      onChange={(e) => handleChange('email', e.target.value)}
+                      required
+                    />
+                  </div>
 
-                {/* Experiencia y Estado */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="experienceYears"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Años de Experiencia *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            min="0" 
-                            placeholder="0" 
-                            {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-2">
+                    <label htmlFor="phone" className="text-sm font-medium">Teléfono</label>
+                    <Input
+                      id="phone"
+                      placeholder="(33) 1234-5678"
+                      value={formData.phone}
+                      onChange={(e) => handleChange('phone', e.target.value)}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Estado *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar estado" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="active">Activo</SelectItem>
-                            <SelectItem value="inactive">Inactivo</SelectItem>
-                            <SelectItem value="pending">Pendiente</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+              {/* Información profesional */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Award className="mr-2 h-5 w-5" />
+                    Información Profesional
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="experienceYears" className="text-sm font-medium">Años de Experiencia</label>
+                      <Input
+                        id="experienceYears"
+                        type="number"
+                        min="0"
+                        max="50"
+                        value={formData.experienceYears}
+                        onChange={(e) => handleChange('experienceYears', parseInt(e.target.value) || 0)}
+                      />
+                    </div>
 
-                {/* Especialidades */}
-                <FormField
-                  control={form.control}
-                  name="specialties"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Especialidades *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Yoga, Danza, Deportes (separadas por comas)" 
-                          {...field} 
+                    <div className="space-y-2">
+                      <label htmlFor="hourlyRate" className="text-sm font-medium">Tarifa por Hora (MXN)</label>
+                      <Input
+                        id="hourlyRate"
+                        type="number"
+                        min="0"
+                        placeholder="0"
+                        value={formData.hourlyRate}
+                        onChange={(e) => handleChange('hourlyRate', parseFloat(e.target.value) || 0)}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="availability" className="text-sm font-medium">Disponibilidad</label>
+                      <Select value={formData.availability} onValueChange={(value) => handleChange('availability', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona disponibilidad" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="full-time">Tiempo completo</SelectItem>
+                          <SelectItem value="part-time">Medio tiempo</SelectItem>
+                          <SelectItem value="weekends">Fines de semana</SelectItem>
+                          <SelectItem value="evenings">Tardes</SelectItem>
+                          <SelectItem value="mornings">Mañanas</SelectItem>
+                          <SelectItem value="flexible">Flexible</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Especialidades */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Especialidades *</label>
+                    <div className="space-y-2">
+                      <div className="flex space-x-2">
+                        <Input
+                          placeholder="Ej: Yoga, Danza, Deportes acuáticos"
+                          value={specialtyInput}
+                          onChange={(e) => setSpecialtyInput(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSpecialty())}
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <Button type="button" onClick={addSpecialty} variant="outline">
+                          Agregar
+                        </Button>
+                      </div>
+                      
+                      {formData.specialties.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {formData.specialties.map((specialty, index) => (
+                            <Badge key={index} variant="secondary" className="bg-[#00a587]/10 text-[#00a587]">
+                              {specialty}
+                              <button
+                                type="button"
+                                onClick={() => removeSpecialty(specialty)}
+                                className="ml-2 hover:text-red-600"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Agrega las especialidades una por una
+                    </p>
+                  </div>
 
-                {/* Biografía */}
-                <FormField
-                  control={form.control}
-                  name="bio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Biografía</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Información adicional sobre el instructor..."
-                          className="min-h-[100px]"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  {/* Curriculum */}
+                  <div className="space-y-2">
+                    <label htmlFor="curriculumFile" className="text-sm font-medium">Curriculum Vitae</label>
+                    <div className="border border-gray-300 rounded-md p-4 bg-gray-50">
+                      {formData.curriculumFile ? (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileSymlink className="h-5 w-5 text-blue-500" />
+                            <span className="text-sm text-gray-700 truncate max-w-[200px]">
+                              {formData.curriculumFile.name}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() => handleChange('curriculumFile', null)}
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <label
+                            htmlFor="curriculumUpload"
+                            className="cursor-pointer inline-flex items-center gap-2 py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          >
+                            <FileSymlink className="h-4 w-4" />
+                            Subir CV
+                            <input
+                              id="curriculumUpload"
+                              type="file"
+                              accept=".pdf,.doc,.docx"
+                              className="hidden"
+                              onChange={handleCurriculumUpload}
+                            />
+                          </label>
+                          <p className="text-xs text-gray-500 mt-2">
+                            Formatos: PDF, DOC, DOCX. Máx: 5MB
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-                {/* Botones */}
-                <div className="flex gap-4 pt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setLocation('/admin/instructors')}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={updateInstructorMutation.isPending}
-                    className="bg-[#00a587] hover:bg-[#067f5f]"
-                  >
-                    {updateInstructorMutation.isPending ? (
-                      <>
-                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        Guardando...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Guardar Cambios
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+              {/* Información adicional */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <MapPin className="mr-2 h-5 w-5" />
+                    Información Adicional
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label htmlFor="preferredParkId" className="text-sm font-medium">Parque Preferido (Opcional)</label>
+                    <Select value={formData.preferredParkId?.toString()} onValueChange={(value) => handleChange('preferredParkId', parseInt(value))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un parque" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {parks.map((park: any) => (
+                          <SelectItem key={park.id} value={park.id.toString()}>
+                            {park.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500">
+                      El parque donde el instructor prefiere dar sus actividades
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="qualifications" className="text-sm font-medium">Certificaciones y Cualificaciones</label>
+                    <Textarea
+                      id="qualifications"
+                      placeholder="Describe las certificaciones, títulos o cualificaciones del instructor..."
+                      value={formData.qualifications}
+                      onChange={(e) => handleChange('qualifications', e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="experience" className="text-sm font-medium">Experiencia Profesional</label>
+                    <Textarea
+                      id="experience"
+                      placeholder="Describe la experiencia profesional, logros y áreas de especialización..."
+                      value={formData.experience}
+                      onChange={(e) => handleChange('experience', e.target.value)}
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="bio" className="text-sm font-medium">Biografía</label>
+                    <Textarea
+                      id="bio"
+                      placeholder="Describe la filosofía y enfoque del instructor..."
+                      value={formData.bio}
+                      onChange={(e) => handleChange('bio', e.target.value)}
+                      rows={3}
+                    />
+                    <p className="text-xs text-gray-500">
+                      Esta información será visible en el perfil público del instructor
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Botones de acción */}
+          <div className="flex justify-end space-x-4 pt-6 border-t">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setLocation('/admin/instructors')}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={updateInstructorMutation.isPending}
+              className="bg-[#00a587] hover:bg-[#067f5f]"
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {updateInstructorMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
+            </Button>
+          </div>
+        </form>
       </div>
     </AdminLayout>
   );
