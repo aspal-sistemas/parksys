@@ -1002,10 +1002,7 @@ async function initializeDatabaseAsync() {
     const { registerInstructorRoutes } = await import('./instructor-routes');
     registerInstructorRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
     
-    // Importar y registrar rutas de categorías de activos
-    const { registerAssetCategoriesRoutes } = await import('./asset-categories-routes');
-    registerAssetCategoriesRoutes(app, apiRouter);
-    console.log("🏷️ Rutas de categorías de activos registradas exitosamente");
+    // Rutas de categorías de activos registradas más abajo en la sección de integraciones financieras
     
     const { registerInstructorEvaluationRoutes } = await import('./instructor-evaluations-routes');
     registerInstructorEvaluationRoutes(app, apiRouter);
@@ -1014,9 +1011,10 @@ async function initializeDatabaseAsync() {
     const { registerConcessionairesRoutes } = await import('./concessionaires-routes');
     registerConcessionairesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
     
-    // Importar y registrar rutas de categorías de activos - TEMPORALMENTE COMENTADO PARA EVITAR DUPLICACIÓN
-    // const { registerAssetCategoriesRoutes } = await import('./asset-categories-routes');
-    // registerAssetCategoriesRoutes(app, apiRouter);
+    // Importar y registrar rutas de categorías de activos
+    const { registerAssetCategoriesRoutes } = await import('./asset-categories-routes');
+    registerAssetCategoriesRoutes(app, apiRouter);
+    console.log("🏷️ Rutas de categorías de activos registradas desde sección de integraciones");
     
     app.use("/api", apiRouter);
     console.log("API de integraciones financieras múltiples registrada correctamente");
