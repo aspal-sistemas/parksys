@@ -800,6 +800,8 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 // Servir archivos estáticos de concesiones y otros uploads directos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
+console.log('✅ [TEST] Llegando a la sección de rutas de mantenimiento...');
+
 // === REGISTRO DIRECTO DE RUTAS DE MANTENIMIENTO ===
 console.log('🔧 [DIRECT] Registrando rutas de mantenimiento directamente...');
 
