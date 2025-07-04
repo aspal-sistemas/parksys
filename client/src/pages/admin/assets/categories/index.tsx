@@ -19,7 +19,7 @@ import {
   FolderPlus, Edit2, Trash2, Tag, FolderOpen, 
   TreePine, Settings, Plus, ChevronRight, Building2,
   Wrench, Car, Lightbulb, Camera, Wifi, Search,
-  Filter, X, ChevronLeft, LayoutGrid, List
+  Filter, X, ChevronLeft, LayoutGrid, List, ChevronDown
 } from 'lucide-react';
 
 // ===== TIPOS Y ESQUEMAS =====
@@ -89,6 +89,9 @@ const AssetCategoriesPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("list");
+  
+  // Estado para manejar categorías expandidas en vista jerárquica
+  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
   
   // Estados para filtros y paginación
   const [searchTerm, setSearchTerm] = useState('');
@@ -315,6 +318,29 @@ const AssetCategoriesPage: React.FC = () => {
     setIsCreateDialogOpen(true);
   };
 
+  // Funciones para expandir/contraer categorías
+  const toggleExpanded = (categoryId: number) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryId)) {
+      newExpanded.delete(categoryId);
+    } else {
+      newExpanded.add(categoryId);
+    }
+    setExpandedCategories(newExpanded);
+  };
+
+  const expandAll = () => {
+    const allParentIds = parentCategories.filter(cat => {
+      const children = allCategories.filter(child => child.parentId === cat.id);
+      return children.length > 0;
+    }).map(cat => cat.id);
+    setExpandedCategories(new Set(allParentIds));
+  };
+
+  const collapseAll = () => {
+    setExpandedCategories(new Set());
+  };
+
   // ===== COMPONENTES DE RENDERIZADO =====
   
   const renderIcon = (iconName: string, size = 20) => {
@@ -504,16 +530,152 @@ const AssetCategoriesPage: React.FC = () => {
 
         {/* Vista Jerárquica */}
         <TabsContent value="hierarchy" className="space-y-6">
+          {/* Controles de expandir/contraer */}
+          <div className="flex gap-2 mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={expandAll}
+              className="text-blue-600 hover:bg-blue-50"
+            >
+              <ChevronDown size={16} className="mr-2" />
+              Expandir Todo
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={collapseAll}
+              className="text-gray-600 hover:bg-gray-50"
+            >
+              <ChevronRight size={16} className="mr-2" />
+              Contraer Todo
+            </Button>
+          </div>
+
           {parentCategories.map(parent => {
             const children = allCategories.filter(cat => cat.parentId === parent.id);
+            const hasChildren = children.length > 0;
+            const isExpanded = expandedCategories.has(parent.id);
             
             return (
-              <div key={parent.id} className="space-y-4">
-                <CategoryCard category={parent} />
-                {children.length > 0 && (
-                  <div className="space-y-2">
+              <div key={parent.id} className="space-y-2">
+                {/* Categoría padre con botón de expandir/contraer */}
+                <Card className="transition-all hover:shadow-md border-l-4" 
+                      style={{ borderLeftColor: parent.color }}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {/* Botón expandir/contraer */}
+                        {hasChildren && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleExpanded(parent.id)}
+                            className="p-1 h-8 w-8 hover:bg-gray-100"
+                          >
+                            {isExpanded ? (
+                              <ChevronDown size={16} className="text-blue-600" />
+                            ) : (
+                              <ChevronRight size={16} className="text-gray-600" />
+                            )}
+                          </Button>
+                        )}
+                        {!hasChildren && <div className="w-8" />}
+                        
+                        <div className="p-2 rounded-lg" style={{ backgroundColor: `${parent.color}20`, color: parent.color }}>
+                          {renderIcon(parent.icon, 24)}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg">{parent.name}</h3>
+                          {parent.description && (
+                            <p className="text-sm text-gray-600 mt-1">{parent.description}</p>
+                          )}
+                          <div className="flex gap-2 mt-2">
+                            <Badge variant="secondary" className="text-xs">
+                              Principal
+                            </Badge>
+                            {hasChildren && (
+                              <Badge variant="outline" className="text-xs">
+                                {children.length} subcategoría(s)
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openCreateDialog(parent.id)}
+                          className="text-blue-600 hover:bg-blue-50"
+                        >
+                          <Plus size={16} className="mr-1" />
+                          Subcategoría
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(parent)}
+                          className="text-green-600 hover:bg-green-50"
+                        >
+                          <Edit2 size={16} />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDelete(parent)}
+                          className="text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Subcategorías (se muestran solo si está expandido) */}
+                {hasChildren && isExpanded && (
+                  <div className="ml-8 space-y-2 border-l-2 border-gray-200 pl-4">
                     {children.map(child => (
-                      <CategoryCard key={child.id} category={child} isSubcategory={true} />
+                      <Card key={child.id} className="transition-all hover:shadow-sm border-l-4" 
+                            style={{ borderLeftColor: child.color }}>
+                        <CardContent className="p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="p-1.5 rounded-lg" style={{ backgroundColor: `${child.color}20`, color: child.color }}>
+                                {renderIcon(child.icon, 20)}
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-base">{child.name}</h4>
+                                {child.description && (
+                                  <p className="text-sm text-gray-600 mt-1">{child.description}</p>
+                                )}
+                                <Badge variant="outline" className="text-xs mt-1">
+                                  Subcategoría
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEdit(child)}
+                                className="text-green-600 hover:bg-green-50 h-8 w-8 p-0"
+                              >
+                                <Edit2 size={14} />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDelete(child)}
+                                className="text-red-600 hover:bg-red-50 h-8 w-8 p-0"
+                              >
+                                <Trash2 size={14} />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
                 )}
