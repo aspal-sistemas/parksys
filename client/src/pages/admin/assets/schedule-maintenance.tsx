@@ -151,8 +151,12 @@ const ScheduleMaintenancePage = () => {
         description: 'El mantenimiento ha sido programado correctamente',
       });
 
-      // Redirigir al calendario de mantenimiento
-      setLocation('/admin/assets/maintenance/calendar');
+      // Redirigir según el origen: si viene del inventario (con ID), volver al inventario
+      if (id) {
+        setLocation('/admin/assets/inventory');
+      } else {
+        setLocation('/admin/assets/maintenance/calendar');
+      }
     } catch (error) {
       console.error('Error al programar mantenimiento:', error);
       toast({
@@ -174,6 +178,12 @@ const ScheduleMaintenancePage = () => {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Volver al Calendario
             </Button>
+            {id && (
+              <Button variant="outline" onClick={() => setLocation('/admin/assets/inventory')}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Volver al Inventario
+              </Button>
+            )}
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Programar Mantenimiento</h1>
               <p className="text-muted-foreground">
