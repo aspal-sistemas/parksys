@@ -237,7 +237,7 @@ const EditAssetPage = () => {
   // Mutación para actualizar el activo
   const updateMutation = useMutation({
     mutationFn: (data: AssetFormValues) => {
-      return apiRequest(`/api/simple-assets/${id}`, 'PUT', data);
+      return apiRequest(`/api/assets/${id}`, 'PUT', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/assets/${id}`] });
@@ -789,10 +789,11 @@ const EditAssetPage = () => {
                                 {...field} 
                                 value={field.value?.toString() || ''}
                                 onChange={(e) => {
-                                  field.onChange(e.target.value);
+                                  const cleanValue = e.target.value.trim().replace(/,+$/, ''); // Eliminar comas finales y espacios
+                                  field.onChange(cleanValue);
                                   // Actualizar posición del mapa si hay valores válidos
-                                  const lat = parseFloat(e.target.value);
-                                  const lng = parseFloat(form.getValues('longitude'));
+                                  const lat = parseFloat(cleanValue);
+                                  const lng = parseFloat(form.getValues('longitude').toString().trim().replace(/^[\s,]+/, ''));
                                   if (!isNaN(lat) && !isNaN(lng)) {
                                     setSelectedPosition([lat, lng]);
                                     setMapCenter([lat, lng]);
@@ -820,10 +821,11 @@ const EditAssetPage = () => {
                                 {...field} 
                                 value={field.value?.toString() || ''}
                                 onChange={(e) => {
-                                  field.onChange(e.target.value);
+                                  const cleanValue = e.target.value.trim().replace(/^[\s,]+/, ''); // Eliminar espacios y comas iniciales
+                                  field.onChange(cleanValue);
                                   // Actualizar posición del mapa si hay valores válidos
-                                  const lng = parseFloat(e.target.value);
-                                  const lat = parseFloat(form.getValues('latitude'));
+                                  const lng = parseFloat(cleanValue);
+                                  const lat = parseFloat(form.getValues('latitude').toString().trim().replace(/,+$/, ''));
                                   if (!isNaN(lat) && !isNaN(lng)) {
                                     setSelectedPosition([lat, lng]);
                                     setMapCenter([lat, lng]);

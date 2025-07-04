@@ -277,6 +277,8 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         locationDescription: req.body.location || null, // Map location to locationDescription
         acquisitionDate: req.body.acquisitionDate || null,
         acquisitionCost: req.body.acquisitionCost ? req.body.acquisitionCost.toString() : null,
+        currentValue: req.body.currentValue ? req.body.currentValue.toString() : null,
+        notes: req.body.notes || null,
         updatedAt: new Date()
       };
 
@@ -299,12 +301,17 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         updateData.amenityId = null;
       }
 
+      // Handle latitude and longitude with proper cleanup
       if (req.body.latitude) {
-        updateData.latitude = req.body.latitude;
+        let cleanLat = req.body.latitude.toString().trim().replace(/,+$/, ''); // Remove trailing commas
+        updateData.latitude = cleanLat;
+        console.log(`Latitud limpiada: "${req.body.latitude}" -> "${cleanLat}"`);
       }
 
       if (req.body.longitude) {
-        updateData.longitude = req.body.longitude;
+        let cleanLng = req.body.longitude.toString().trim().replace(/^[\s,]+/, ''); // Remove leading spaces and commas
+        updateData.longitude = cleanLng;
+        console.log(`Longitud limpiada: "${req.body.longitude}" -> "${cleanLng}"`);
       }
 
       console.log("Datos de actualización preparados:", JSON.stringify(updateData, null, 2));
