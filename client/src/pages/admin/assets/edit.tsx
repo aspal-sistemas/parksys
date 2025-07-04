@@ -221,6 +221,15 @@ const EditAssetPage = () => {
         lng: asset.longitude ? String(asset.longitude) : ''
       });
       
+      // Forzar actualización inmediata de campos individuales
+      setTimeout(() => {
+        form.setValue('latitude', asset.latitude ? String(asset.latitude) : '');
+        form.setValue('longitude', asset.longitude ? String(asset.longitude) : '');
+        console.log('=== VALORES FORZADOS EN CAMPOS ===');
+        console.log('Latitud forzada:', asset.latitude ? String(asset.latitude) : '');
+        console.log('Longitud forzada:', asset.longitude ? String(asset.longitude) : '');
+      }, 100);
+      
       // Actualizar también la posición del mapa si hay coordenadas
       if (asset.latitude && asset.longitude) {
         const lat = parseFloat(asset.latitude);
@@ -228,6 +237,8 @@ const EditAssetPage = () => {
         if (!isNaN(lat) && !isNaN(lng)) {
           setSelectedPosition([lat, lng]);
           setMapCenter([lat, lng]);
+          console.log('=== MAPA ACTUALIZADO ===');
+          console.log('Nueva posición del mapa:', [lat, lng]);
         }
       }
     }
@@ -268,6 +279,20 @@ const EditAssetPage = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/assets', id] });
       // Forzar refetch inmediato
       queryClient.refetchQueries({ queryKey: [`/api/assets/${id}`] });
+      
+      // Actualizar campos inmediatamente con datos de respuesta
+      if (response.latitude && response.longitude) {
+        form.setValue('latitude', String(response.latitude));
+        form.setValue('longitude', String(response.longitude));
+        const lat = parseFloat(response.latitude);
+        const lng = parseFloat(response.longitude);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          setSelectedPosition([lat, lng]);
+          setMapCenter([lat, lng]);
+        }
+        console.log('=== CAMPOS ACTUALIZADOS INMEDIATAMENTE ===');
+        console.log('Nuevas coordenadas aplicadas:', { lat: response.latitude, lng: response.longitude });
+      }
       
       toast({
         title: "Activo actualizado",
