@@ -460,11 +460,11 @@ const AssetDetailPage: React.FC = () => {
             <h1 className="text-3xl font-bold tracking-tight">
               {isLoading ? <Skeleton className="h-9 w-64" /> : asset?.name || 'Detalle de Activo'}
             </h1>
-            <p className="text-muted-foreground">
+            <div className="text-muted-foreground">
               {isLoading ? <Skeleton className="h-5 w-96 mt-1" /> : (
-                `ID: ${asset?.id} • ${currentCategory?.name || 'Categoría sin especificar'}`
+                <span>{`ID: ${asset?.id} • ${currentCategory?.name || 'Categoría sin especificar'}`}</span>
               )}
-            </p>
+            </div>
           </div>
         </div>
         <div className="flex space-x-2">
