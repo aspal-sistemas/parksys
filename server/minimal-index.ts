@@ -57,14 +57,18 @@ app.put("/api/assets/:id", async (req: Request, res: Response) => {
     
     if (req.body.name !== undefined) updateData.name = req.body.name;
     if (req.body.description !== undefined) updateData.description = req.body.description;
+    if (req.body.serialNumber !== undefined) updateData.serialNumber = req.body.serialNumber;
     if (req.body.parkId !== undefined) updateData.parkId = req.body.parkId;
     if (req.body.categoryId !== undefined) updateData.categoryId = req.body.categoryId;
+    if (req.body.amenityId !== undefined) updateData.amenityId = req.body.amenityId;
     if (req.body.status !== undefined) updateData.status = req.body.status;
     if (req.body.condition !== undefined) updateData.condition = req.body.condition;
+    if (req.body.acquisitionDate !== undefined) updateData.acquisitionDate = req.body.acquisitionDate;
     if (req.body.acquisitionCost !== undefined) updateData.acquisitionCost = req.body.acquisitionCost;
+    if (req.body.currentValue !== undefined) updateData.currentValue = req.body.currentValue;
     if (req.body.latitude !== undefined) updateData.latitude = req.body.latitude;
     if (req.body.longitude !== undefined) updateData.longitude = req.body.longitude;
-    if (req.body.location !== undefined) updateData.location = req.body.location;
+    if (req.body.location !== undefined) updateData.locationDescription = req.body.location;
     if (req.body.notes !== undefined) updateData.notes = req.body.notes;
     
     updateData.updatedAt = new Date();
