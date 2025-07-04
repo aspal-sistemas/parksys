@@ -46,9 +46,11 @@ app.get("/api/assets/:id", async (req: Request, res: Response) => {
 // Ruta específica para actualizar un activo
 app.put("/api/assets/:id", async (req: Request, res: Response) => {
   try {
+    console.log("🔥🔥🔥 MINIMAL-INDEX.TS - ENDPOINT PUT INTERCEPTADO 🔥🔥🔥");
     console.log("=== ACTUALIZANDO ACTIVO ===");
     console.log("ID:", req.params.id);
     console.log("Body:", req.body);
+    console.log("Coordenadas recibidas - lat:", req.body.latitude, "lng:", req.body.longitude);
     
     const id = parseInt(req.params.id);
     
