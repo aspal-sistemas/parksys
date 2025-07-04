@@ -796,21 +796,64 @@ const AssetDetailPage: React.FC = () => {
                             </div>
                             
                             <div className="md:col-span-2">
-                              <p>{maintenance.description}</p>
+                              <p className="mb-3">{maintenance.description}</p>
+                              
+                              {maintenance.findings && (
+                                <div className="mb-3">
+                                  <span className="font-medium text-gray-700 block mb-1">Hallazgos:</span>
+                                  <p className="text-gray-600 text-sm bg-gray-50 p-2 rounded">{maintenance.findings}</p>
+                                </div>
+                              )}
+                              
+                              {maintenance.actions && (
+                                <div className="mb-3">
+                                  <span className="font-medium text-gray-700 block mb-1">Acciones realizadas:</span>
+                                  <p className="text-gray-600 text-sm bg-blue-50 p-2 rounded">{maintenance.actions}</p>
+                                </div>
+                              )}
+                              
+                              {maintenance.notes && (
+                                <div className="mb-3">
+                                  <span className="font-medium text-gray-700 block mb-1">Notas adicionales:</span>
+                                  <p className="text-gray-600 text-sm bg-yellow-50 p-2 rounded">{maintenance.notes}</p>
+                                </div>
+                              )}
                               
                               <div className="mt-4 flex flex-wrap gap-4 text-sm">
                                 {maintenance.cost !== null && (
-                                  <div>
+                                  <div className="flex items-center">
                                     <span className="font-medium text-gray-500">Costo:</span>
-                                    <span className="ml-2">{formatCurrency(maintenance.cost)}</span>
+                                    <span className="ml-2 font-semibold text-green-600">{formatCurrency(maintenance.cost)}</span>
+                                  </div>
+                                )}
+                                
+                                {maintenance.status && (
+                                  <div className="flex items-center">
+                                    <span className="font-medium text-gray-500">Estado:</span>
+                                    <Badge 
+                                      className="ml-2" 
+                                      variant={maintenance.status === 'completed' ? 'default' : maintenance.status === 'scheduled' ? 'secondary' : 'outline'}
+                                    >
+                                      {maintenance.status === 'completed' ? 'Completado' : 
+                                       maintenance.status === 'scheduled' ? 'Programado' :
+                                       maintenance.status === 'in_progress' ? 'En progreso' : maintenance.status}
+                                    </Badge>
                                   </div>
                                 )}
                                 
                                 {maintenance.nextMaintenanceDate && (
-                                  <div>
+                                  <div className="flex items-center">
                                     <span className="font-medium text-gray-500">Próximo mantenimiento:</span>
-                                    <span className="ml-2">{formatDate(maintenance.nextMaintenanceDate)}</span>
+                                    <span className="ml-2 font-medium text-blue-600">{formatDate(maintenance.nextMaintenanceDate)}</span>
                                   </div>
+                                )}
+                              </div>
+                              
+                              {/* Información adicional de fechas */}
+                              <div className="mt-4 pt-3 border-t text-xs text-gray-400 flex justify-between">
+                                <span>Registrado: {formatDate(maintenance.createdAt)}</span>
+                                {maintenance.createdAt !== maintenance.updatedAt && (
+                                  <span>Actualizado: {formatDate(maintenance.updatedAt)}</span>
                                 )}
                               </div>
                             </div>

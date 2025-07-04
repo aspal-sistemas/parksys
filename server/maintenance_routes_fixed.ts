@@ -36,11 +36,28 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
 
   // Obtener mantenimientos de un activo específico
   apiRouter.get('/assets/:id/maintenances', async (req: Request, res: Response) => {
+    console.log(`🔧 MAINTENANCE_ROUTES_FIXED - Endpoint ejecutándose para activo ${req.params.id}`);
     try {
       const assetId = parseInt(req.params.id);
 
       const query = `
-        SELECT *
+        SELECT 
+          id,
+          asset_id as "assetId",
+          maintenance_type as "maintenanceType",
+          description,
+          date,
+          performed_by as "performedBy",
+          performer_id as "performerId",
+          cost,
+          findings,
+          actions,
+          next_maintenance_date as "nextMaintenanceDate",
+          photos,
+          status,
+          notes,
+          created_at as "createdAt",
+          updated_at as "updatedAt"
         FROM asset_maintenances
         WHERE asset_id = $1
         ORDER BY created_at DESC
@@ -48,24 +65,8 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
 
       const result = await pool.query(query, [assetId]);
       
-      // Mapear campos snake_case a camelCase
-      const maintenances = result.rows.map(row => ({
-        id: row.id,
-        assetId: row.asset_id,
-        date: row.date,
-        maintenanceType: row.maintenance_type,
-        description: row.description,
-        cost: row.cost,
-        performedBy: row.performed_by,
-        nextMaintenanceDate: row.next_maintenance_date,
-        status: row.status,
-        notes: row.notes,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at
-      }));
-      
-      console.log(`📋 Devolviendo ${maintenances.length} mantenimientos para activo ${assetId}`);
-      res.json(maintenances);
+      console.log(`📋 Devolviendo ${result.rows.length} mantenimientos para activo ${assetId}`);
+      res.json(result.rows);
     } catch (error) {
       console.error('Error fetching asset maintenances:', error);
       res.status(500).json({ error: 'Error interno del servidor' });

@@ -396,7 +396,9 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
     }
   });
 
+  // COMENTADO - usar maintenance_routes_fixed.ts en su lugar
   // Get asset maintenances
+  /*
   apiRouter.get("/assets/:id/maintenances", async (req: Request, res: Response) => {
     try {
       const assetId = parseInt(req.params.id);
@@ -421,8 +423,11 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
       res.status(500).json({ message: "Error al obtener mantenimientos del activo" });
     }
   });
+  */
 
+  // COMENTADO - usar maintenance_routes_fixed.ts en su lugar
   // Create new maintenance record
+  /*
   apiRouter.post("/assets/:id/maintenances", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const assetId = parseInt(req.params.id);
@@ -453,6 +458,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
       res.status(500).json({ message: "Error al registrar mantenimiento" });
     }
   });
+  */
 
   // Update maintenance record
   apiRouter.put("/asset-maintenances/:id", isAuthenticated, async (req: Request, res: Response) => {
