@@ -1090,6 +1090,7 @@ const AssetCategoriesPage: React.FC = () => {
                 Mostrando: {treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length} de {treeStructure.length} categorías
               </span>
               <span>
+                Estado: {showSubcategoriesInTree ? 'EXPANDIDO' : 'CONTRAÍDO'} | 
                 {showSubcategoriesInTree ? 
                   `${treeStructure.filter(n => (n.level || 0) === 0).length} principales + ${treeStructure.filter(n => (n.level || 0) > 0).length} subcategorías` :
                   `Solo ${treeStructure.filter(n => (n.level || 0) === 0).length} categorías principales`
