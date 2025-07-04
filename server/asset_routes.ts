@@ -53,6 +53,96 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
   // NOTA: Ruta de categorías por ID movida a asset-categories-routes.ts
   // para evitar conflictos con rutas específicas como /parents
 
+  // Get all assets for inventory with filtering and pagination
+  apiRouter.get("/assets/inventory", async (req: Request, res: Response) => {
+    try {
+      const {
+        page = 1,
+        limit = 10,
+        search = '',
+        status = 'all',
+        condition = 'all',
+        park = 'all',
+        category = 'all'
+      } = req.query;
+
+      let query = db
+        .select({
+          id: assets.id,
+          name: assets.name,
+          description: assets.description,
+          serialNumber: assets.serialNumber,
+          acquisitionDate: assets.acquisitionDate,
+          acquisitionCost: assets.acquisitionCost,
+          parkId: assets.parkId,
+          categoryId: assets.categoryId,
+          status: assets.status,
+          condition: assets.condition,
+          locationDescription: assets.locationDescription,
+          latitude: assets.latitude,
+          longitude: assets.longitude,
+          lastMaintenanceDate: assets.lastMaintenanceDate,
+          nextMaintenanceDate: assets.nextMaintenanceDate,
+          createdAt: assets.createdAt,
+          updatedAt: assets.updatedAt,
+          categoryName: assetCategories.name,
+          parkName: parks.name
+        })
+        .from(assets)
+        .leftJoin(assetCategories, eq(assets.categoryId, assetCategories.id))
+        .leftJoin(parks, eq(assets.parkId, parks.id));
+
+      // Apply filters
+      if (search) {
+        query = query.where(
+          sql`LOWER(${assets.name}) LIKE LOWER('%${search}%') OR LOWER(${assets.description}) LIKE LOWER('%${search}%')`
+        );
+      }
+      
+      if (status !== 'all') {
+        query = query.where(eq(assets.status, status as string));
+      }
+      
+      if (condition !== 'all') {
+        query = query.where(eq(assets.condition, condition as string));
+      }
+      
+      if (park !== 'all') {
+        query = query.where(eq(assets.parkId, parseInt(park as string)));
+      }
+      
+      if (category !== 'all') {
+        query = query.where(eq(assets.categoryId, parseInt(category as string)));
+      }
+
+      // Get total count for pagination
+      const countQuery = db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(assets);
+
+      const [countResult] = await countQuery;
+      const totalAssets = countResult.count;
+
+      // Apply pagination
+      const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+      const paginatedAssets = await query
+        .limit(parseInt(limit as string))
+        .offset(offset)
+        .orderBy(assets.createdAt);
+
+      res.json({
+        assets: paginatedAssets,
+        totalAssets,
+        totalPages: Math.ceil(totalAssets / parseInt(limit as string)),
+        currentPage: parseInt(page as string),
+        itemsPerPage: parseInt(limit as string)
+      });
+    } catch (error) {
+      console.error("Error al obtener inventario de activos:", error);
+      res.status(500).json({ message: "Error al obtener inventario de activos" });
+    }
+  });
+
   // Get all assets
   apiRouter.get("/assets", async (req: Request, res: Response) => {
     try {
@@ -89,9 +179,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
     }
   });
 
-
-
-  // Get asset by ID
+  // Get asset by ID - DEBE IR DESPUÉS DE RUTAS ESPECÍFICAS
   apiRouter.get("/assets/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
