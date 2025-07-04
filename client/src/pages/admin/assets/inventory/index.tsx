@@ -296,7 +296,10 @@ const InventoryPage: React.FC = () => {
                 <div>
                   <p className="text-sm text-gray-600">Valor Total</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    ${assets.reduce((sum: number, asset: any) => sum + (asset.acquisitionCost || 0), 0).toLocaleString()}
+                    ${(assetsData?.totalValue || 0).toLocaleString('es-MX', { 
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2 
+                    })}
                   </p>
                 </div>
                 <BarChart className="h-8 w-8 text-purple-600" />

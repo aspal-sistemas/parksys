@@ -115,13 +115,17 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         query = query.where(eq(assets.categoryId, parseInt(category as string)));
       }
 
-      // Get total count for pagination
+      // Get total count and total value for pagination
       const countQuery = db
-        .select({ count: sql<number>`COUNT(*)` })
+        .select({ 
+          count: sql<number>`COUNT(*)`,
+          totalValue: sql<number>`COALESCE(SUM(CAST(${assets.acquisitionCost} AS DECIMAL(10,2))), 0)`
+        })
         .from(assets);
 
       const [countResult] = await countQuery;
       const totalAssets = countResult.count;
+      const totalValue = countResult.totalValue;
 
       // Apply pagination
       const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
@@ -133,6 +137,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
       res.json({
         assets: paginatedAssets,
         totalAssets,
+        totalValue,
         totalPages: Math.ceil(totalAssets / parseInt(limit as string)),
         currentPage: parseInt(page as string),
         itemsPerPage: parseInt(limit as string)
