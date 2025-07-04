@@ -93,6 +93,9 @@ const AssetCategoriesPage: React.FC = () => {
   // Estado para manejar categorías expandidas en vista jerárquica
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
   
+  // Estado para controlar expansión en Estructura de Árbol
+  const [showSubcategoriesInTree, setShowSubcategoriesInTree] = useState(true);
+  
   // Estados para filtros y paginación
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<'all' | 'principal' | 'subcategoria'>('all');
@@ -1055,17 +1058,60 @@ const AssetCategoriesPage: React.FC = () => {
         {/* Estructura de Árbol */}
         <TabsContent value="tree" className="space-y-2">
           <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-semibold text-blue-900 mb-2">¿Cómo funciona la Estructura de Árbol?</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Muestra TODAS las categorías en una vista plana</li>
-              <li>• La indentación indica el nivel jerárquico (más indentado = más profundo)</li>
-              <li>• Categorías principales están alineadas a la izquierda</li>
-              <li>• Subcategorías están indentadas y muestran una flecha →</li>
-              <li>• Útil para ver toda la estructura de un vistazo</li>
-            </ul>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="font-semibold text-blue-900 mb-2">¿Cómo funciona la Estructura de Árbol?</h3>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Muestra TODAS las categorías en una vista plana</li>
+                  <li>• La indentación indica el nivel jerárquico (más indentado = más profundo)</li>
+                  <li>• Categorías principales están alineadas a la izquierda</li>
+                  <li>• Subcategorías están indentadas y muestran una flecha →</li>
+                  <li>• Útil para ver toda la estructura de un vistazo</li>
+                </ul>
+              </div>
+              
+              {/* Control de Expansión Global */}
+              <div className="ml-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowSubcategoriesInTree(!showSubcategoriesInTree)}
+                  className="flex items-center gap-2"
+                >
+                  {showSubcategoriesInTree ? (
+                    <>
+                      <ChevronDown size={16} />
+                      Contraer Todo
+                    </>
+                  ) : (
+                    <>
+                      <ChevronRight size={16} />
+                      Expandir Todo
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
 
-          {treeStructure.map(node => (
+          {/* Contador de elementos visibles */}
+          <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <div className="flex items-center justify-between text-sm text-gray-600">
+              <span>
+                Mostrando: {treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length} de {treeStructure.length} categorías
+              </span>
+              <span>
+                {showSubcategoriesInTree ? 
+                  `${treeStructure.filter(n => (n.level || 0) === 0).length} principales + ${treeStructure.filter(n => (n.level || 0) > 0).length} subcategorías` :
+                  `Solo ${treeStructure.filter(n => (n.level || 0) === 0).length} categorías principales`
+                }
+              </span>
+            </div>
+          </div>
+
+          {treeStructure
+            .filter(node => showSubcategoriesInTree || node.level === 0)
+            .map(node => (
             <Card key={node.id} className="transition-all hover:shadow-md border-l-4" 
                   style={{ borderLeftColor: node.color }}>
               <CardContent className="p-4">
@@ -1125,6 +1171,16 @@ const AssetCategoriesPage: React.FC = () => {
                         Sub
                       </Button>
                     )}
+                    
+                    {/* Indicador de subcategorías ocultas */}
+                    {node.level === 0 && !showSubcategoriesInTree && (
+                      allCategories.filter(c => c.parentId === node.id).length > 0 && (
+                        <Badge variant="outline" className="text-xs bg-yellow-50 border-yellow-300 text-yellow-700">
+                          +{allCategories.filter(c => c.parentId === node.id).length} sub
+                        </Badge>
+                      )
+                    )}
+                    
                     <Button
                       size="sm"
                       variant="outline"
