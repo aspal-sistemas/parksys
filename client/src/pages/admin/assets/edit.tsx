@@ -142,6 +142,8 @@ const EditAssetPage = () => {
   const { data: asset, isLoading: assetLoading } = useQuery({
     queryKey: [`/api/assets/${id}`],
     enabled: !!id,
+    staleTime: 0, // Siempre considera los datos como obsoletos
+    cacheTime: 0, // No cachear los datos
   });
 
   // Efecto para inicializar la posición del mapa cuando se cargan los datos del activo
@@ -251,8 +253,13 @@ const EditAssetPage = () => {
     onSuccess: (response) => {
       console.log('=== RESPUESTA EXITOSA DEL SERVIDOR ===');
       console.log('Respuesta:', response);
+      // Invalidar cache con múltiples estrategias
       queryClient.invalidateQueries({ queryKey: [`/api/assets/${id}`] });
       queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/assets', id] });
+      // Forzar refetch inmediato
+      queryClient.refetchQueries({ queryKey: [`/api/assets/${id}`] });
+      
       toast({
         title: "Activo actualizado",
         description: "El activo se ha actualizado correctamente.",
