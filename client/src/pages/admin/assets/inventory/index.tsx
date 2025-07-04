@@ -101,13 +101,30 @@ const InventoryPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Obtener datos de inventario
+  // Obtener datos de inventario con parámetros de paginación
   const { 
     data: assetsData, 
     isLoading, 
     isError 
   } = useQuery({
-    queryKey: ['/api/assets/inventory'],
+    queryKey: ['/api/assets/inventory', currentPage, searchTerm, selectedStatus, selectedCondition, selectedPark, selectedCategory],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString(),
+        search: searchTerm,
+        status: selectedStatus,
+        condition: selectedCondition,
+        park: selectedPark,
+        category: selectedCategory
+      });
+      
+      const response = await fetch(`/api/assets/inventory?${params}`);
+      if (!response.ok) {
+        throw new Error('Error al cargar inventario');
+      }
+      return response.json();
+    },
     enabled: true
   });
 
@@ -125,29 +142,12 @@ const InventoryPage: React.FC = () => {
 
   const assets = assetsData?.assets || [];
   const totalAssets = assetsData?.total || 0;
-
-  // Filtrar activos según criterios
-  const filteredAssets = assets.filter((asset: any) => {
-    const matchesSearch = searchTerm === '' || 
-      asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.serialNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.categoryName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.parkName?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = selectedStatus === 'all' || asset.status === selectedStatus;
-    const matchesCondition = selectedCondition === 'all' || asset.condition === selectedCondition;
-    const matchesPark = selectedPark === 'all' || asset.parkId.toString() === selectedPark;
-    const matchesCategory = selectedCategory === 'all' || asset.categoryId.toString() === selectedCategory;
-
-    return matchesSearch && matchesStatus && matchesCondition && matchesPark && matchesCategory;
-  });
-
-  // Calcular datos de paginación
-  const totalItems = filteredAssets.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-  const paginatedAssets = filteredAssets.slice(startIndex, endIndex);
+  
+  // Los datos ya vienen filtrados y paginados del backend
+  const totalPages = Math.ceil(totalAssets / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage + 1;
+  const endIndex = Math.min(currentPage * itemsPerPage, totalAssets);
+  const paginatedAssets = assets; // Ya están paginados del backend
 
   // Reset página cuando cambian filtros
   React.useEffect(() => {
@@ -401,7 +401,7 @@ const InventoryPage: React.FC = () => {
         <CardHeader>
           <CardTitle>Inventario Detallado</CardTitle>
           <CardDescription>
-            Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{endIndex} de {totalItems} activos
+            Página {currentPage} de {totalPages} - Mostrando {startIndex}-{endIndex} de {totalAssets} activos
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -415,7 +415,7 @@ const InventoryPage: React.FC = () => {
             <div className="text-center py-4 text-red-500">
               <p>Error al cargar los datos de inventario.</p>
             </div>
-          ) : totalItems === 0 ? (
+          ) : totalAssets === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Tag className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p>No se encontraron activos con los criterios seleccionados.</p>
@@ -522,7 +522,7 @@ const InventoryPage: React.FC = () => {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4 pt-4 border-t">
                   <div className="text-sm text-muted-foreground">
-                    Mostrando {startIndex + 1}-{endIndex} de {totalItems} activos
+                    Mostrando {startIndex}-{endIndex} de {totalAssets} activos
                   </div>
                   
                   <div className="flex items-center space-x-2">
@@ -537,7 +537,16 @@ const InventoryPage: React.FC = () => {
                     
                     <div className="flex items-center space-x-1">
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        const pageNumber = i + 1;
+                        let pageNumber;
+                        if (totalPages <= 5) {
+                          pageNumber = i + 1;
+                        } else {
+                          const start = Math.max(1, currentPage - 2);
+                          const end = Math.min(totalPages, start + 4);
+                          pageNumber = start + i;
+                          if (pageNumber > end) return null;
+                        }
+                        
                         return (
                           <Button
                             key={pageNumber}
@@ -549,7 +558,7 @@ const InventoryPage: React.FC = () => {
                             {pageNumber}
                           </Button>
                         );
-                      })}
+                      }).filter(Boolean)}
                     </div>
                     
                     <Button
