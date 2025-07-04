@@ -143,7 +143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de activos
   registerAssetRoutes(app, apiRouter, isAuthenticated); // RESTAURADO - rutas POST de mantenimientos están comentadas en asset_routes.ts
-  registerMaintenanceRoutes(app, apiRouter, isAuthenticated);
+  // registerMaintenanceRoutes(app, apiRouter, isAuthenticated); // COMENTADO - conflicto con rutas directas de mantenimiento
   registerAssetAssignmentRoutes(app, apiRouter, isAuthenticated);
   registerAssetImageRoutes(app, apiRouter, isAuthenticated);
   
