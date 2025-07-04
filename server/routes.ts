@@ -296,7 +296,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get('/users/:id/profile-image', async (req: Request, res: Response) => {
     try {
       const userId = Number(req.params.id);
-      const imageUrl = getProfileImage(userId);
+      // Primero intentar obtener de la caché
+      let imageUrl = getProfileImage(userId);
+      
+      // Si no está en caché, consultar la base de datos
+      if (!imageUrl) {
+        try {
+          const result = await pool.query('SELECT profile_image_url FROM users WHERE id = $1', [userId]);
+          if (result.rows.length > 0 && result.rows[0].profile_image_url) {
+            imageUrl = result.rows[0].profile_image_url;
+            // Guardar en caché para futuras consultas
+            saveProfileImage(userId, imageUrl);
+          }
+        } catch (dbError) {
+          console.error('Error al consultar la base de datos:', dbError);
+        }
+      }
       
       if (!imageUrl) {
         return res.status(404).json({ 

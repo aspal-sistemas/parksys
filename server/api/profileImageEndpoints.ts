@@ -41,8 +41,24 @@ export function registerProfileImageEndpoints(app: any, apiRouter: Router) {
     try {
       const userId = Number(req.params.id);
       
-      // Obtener la URL de la caché
-      const imageUrl = getProfileImage(userId);
+      // Primero intentar obtener de la caché
+      let imageUrl = getProfileImage(userId);
+      
+      // Si no está en caché, consultar la base de datos
+      if (!imageUrl) {
+        const { pool } = require('../db');
+        
+        try {
+          const result = await pool.query('SELECT profile_image_url FROM users WHERE id = $1', [userId]);
+          if (result.rows.length > 0 && result.rows[0].profile_image_url) {
+            imageUrl = result.rows[0].profile_image_url;
+            // Guardar en caché para futuras consultas
+            saveProfileImage(userId, imageUrl);
+          }
+        } catch (dbError) {
+          console.error('Error al consultar la base de datos:', dbError);
+        }
+      }
       
       if (!imageUrl) {
         return res.status(404).json({ 
