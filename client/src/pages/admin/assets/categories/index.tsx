@@ -981,16 +981,7 @@ const AssetCategoriesPage: React.FC = () => {
             </div>
           )}
 
-          {/* Debug temporal */}
-          <Card className="p-4 bg-yellow-50 border-yellow-200">
-            <p className="text-sm">
-              <strong>Debug:</strong> Total categorías: {allCategories.length} | 
-              Filtradas: {filteredCategories.length} | 
-              Paginadas: {paginatedCategories.length} | 
-              Vista: {viewMode} | 
-              Página: {currentPage}
-            </p>
-          </Card>
+
 
           {/* Mensaje si no hay resultados */}
           {filteredCategories.length === 0 && (
@@ -1063,26 +1054,109 @@ const AssetCategoriesPage: React.FC = () => {
 
         {/* Estructura de Árbol */}
         <TabsContent value="tree" className="space-y-2">
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="font-semibold text-blue-900 mb-2">¿Cómo funciona la Estructura de Árbol?</h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Muestra TODAS las categorías en una vista plana</li>
+              <li>• La indentación indica el nivel jerárquico (más indentado = más profundo)</li>
+              <li>• Categorías principales están alineadas a la izquierda</li>
+              <li>• Subcategorías están indentadas y muestran una flecha →</li>
+              <li>• Útil para ver toda la estructura de un vistazo</li>
+            </ul>
+          </div>
+
           {treeStructure.map(node => (
-            <Card key={node.id} className="transition-all hover:shadow-sm">
-              <CardContent className="p-3">
-                <div className="flex items-center gap-2">
-                  <div style={{ marginLeft: `${(node.level || 0) * 24}px` }} className="flex items-center gap-2">
+            <Card key={node.id} className="transition-all hover:shadow-md border-l-4" 
+                  style={{ borderLeftColor: node.color }}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div style={{ marginLeft: `${(node.level || 0) * 32}px` }} className="flex items-center gap-3">
+                    {/* Indicador de nivel */}
                     {node.level && node.level > 0 && (
-                      <ChevronRight size={16} className="text-gray-400" />
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: node.level }, (_, i) => (
+                          <div key={i} className="w-1 h-4 bg-gray-300 rounded"></div>
+                        ))}
+                        <ChevronRight size={16} className="text-gray-500" />
+                      </div>
                     )}
-                    <div className="p-1 rounded" style={{ backgroundColor: `${node.color}20`, color: node.color }}>
-                      {renderIcon(node.icon, 16)}
+                    
+                    {/* Icono y contenido */}
+                    <div className="p-2 rounded-lg" style={{ backgroundColor: `${node.color}20`, color: node.color }}>
+                      {renderIcon(node.icon, 20)}
                     </div>
-                    <span className="font-medium">{node.name}</span>
-                    {node.pathNames && (
-                      <span className="text-xs text-gray-500">({node.pathNames})</span>
+                    
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold text-lg">{node.name}</span>
+                        
+                        {/* Badge de nivel */}
+                        <Badge variant={node.level === 0 ? "default" : "secondary"} className="text-xs">
+                          {node.level === 0 ? "Principal" : `Nivel ${node.level}`}
+                        </Badge>
+                        
+                        {/* Ruta jerárquica */}
+                        {node.pathNames && (
+                          <Badge variant="outline" className="text-xs">
+                            📁 {node.pathNames}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {/* Descripción si existe */}
+                      {allCategories.find(c => c.id === node.id)?.description && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          {allCategories.find(c => c.id === node.id)?.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Botones de acción */}
+                  <div className="flex gap-2 ml-4">
+                    {node.level === 0 && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openCreateDialog(node.id)}
+                        className="text-blue-600 hover:bg-blue-50"
+                      >
+                        <Plus size={14} className="mr-1" />
+                        Sub
+                      </Button>
                     )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEdit(allCategories.find(c => c.id === node.id)!)}
+                      className="text-green-600 hover:bg-green-50"
+                    >
+                      <Edit2 size={14} />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDelete(allCategories.find(c => c.id === node.id)!)}
+                      className="text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 size={14} />
+                    </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
           ))}
+          
+          {/* Mensaje si no hay estructura */}
+          {treeStructure.length === 0 && (
+            <Card className="p-8 text-center">
+              <div className="text-gray-500">
+                <TreePine size={48} className="mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium mb-2">No hay estructura de árbol disponible</h3>
+                <p>Crea algunas categorías principales y subcategorías para ver la estructura</p>
+              </div>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
 
