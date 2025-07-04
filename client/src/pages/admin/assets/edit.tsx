@@ -236,11 +236,29 @@ const EditAssetPage = () => {
   
   // Mutación para actualizar el activo
   const updateMutation = useMutation({
-    mutationFn: (data: AssetFormValues) => {
+    mutationFn: async (data: AssetFormValues) => {
       console.log('=== ENVIANDO DATOS AL SERVIDOR ===');
       console.log('URL:', `/api/assets/${id}`);
       console.log('Datos enviados:', JSON.stringify(data, null, 2));
-      return apiRequest(`/api/assets/${id}`, 'PUT', data);
+      
+      try {
+        const response = await apiRequest(`/api/assets/${id}`, {
+          method: 'PUT',
+          data: data
+        });
+        
+        console.log('🔍 Response status:', response.status);
+        console.log('🔍 Response headers:', response.headers);
+        console.log('🔍 Response ok:', response.ok);
+        
+        const jsonData = await response.json();
+        console.log('🔍 Response JSON data:', jsonData);
+        
+        return jsonData;
+      } catch (error) {
+        console.error('🚨 Error en mutationFn:', error);
+        throw error;
+      }
     },
     onSuccess: (response) => {
       console.log('=== RESPUESTA EXITOSA DEL SERVIDOR ===');
