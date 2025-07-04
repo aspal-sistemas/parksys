@@ -270,22 +270,24 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         return res.status(404).json({ message: "Activo no encontrado" });
       }
 
-      // Prepare update data with proper handling of fields
+      // Prepare update data - only include fields that are actually being sent
       const updateData: any = {
-        name: req.body.name,
-        description: req.body.description || null,
-        serialNumber: req.body.serialNumber || null,
-        categoryId: req.body.categoryId,
-        parkId: req.body.parkId,
-        status: req.body.status,
-        condition: req.body.condition,
-        locationDescription: req.body.location || null, // Map location to locationDescription
-        acquisitionDate: req.body.acquisitionDate || null,
-        acquisitionCost: req.body.acquisitionCost ? req.body.acquisitionCost.toString() : null,
-        currentValue: req.body.currentValue ? req.body.currentValue.toString() : null,
-        notes: req.body.notes || null,
         updatedAt: new Date()
       };
+      
+      // Only update fields that are explicitly provided
+      if (req.body.name !== undefined) updateData.name = req.body.name;
+      if (req.body.description !== undefined) updateData.description = req.body.description || null;
+      if (req.body.serialNumber !== undefined) updateData.serialNumber = req.body.serialNumber || null;
+      if (req.body.categoryId !== undefined) updateData.categoryId = req.body.categoryId;
+      if (req.body.parkId !== undefined) updateData.parkId = req.body.parkId;
+      if (req.body.status !== undefined) updateData.status = req.body.status;
+      if (req.body.condition !== undefined) updateData.condition = req.body.condition;
+      if (req.body.location !== undefined) updateData.locationDescription = req.body.location || null;
+      if (req.body.acquisitionDate !== undefined) updateData.acquisitionDate = req.body.acquisitionDate || null;
+      if (req.body.acquisitionCost !== undefined) updateData.acquisitionCost = req.body.acquisitionCost ? req.body.acquisitionCost.toString() : null;
+      if (req.body.currentValue !== undefined) updateData.currentValue = req.body.currentValue ? req.body.currentValue.toString() : null;
+      if (req.body.notes !== undefined) updateData.notes = req.body.notes || null;
 
       // Handle amenityId - convert from park_amenities.id to amenities.id
       if (req.body.amenityId !== undefined && req.body.amenityId !== null) {
@@ -307,13 +309,13 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
       }
 
       // Handle latitude and longitude with proper cleanup
-      if (req.body.latitude) {
+      if (req.body.latitude !== undefined) {
         let cleanLat = req.body.latitude.toString().trim().replace(/,+$/, ''); // Remove trailing commas
         updateData.latitude = cleanLat;
         console.log(`Latitud limpiada: "${req.body.latitude}" -> "${cleanLat}"`);
       }
 
-      if (req.body.longitude) {
+      if (req.body.longitude !== undefined) {
         let cleanLng = req.body.longitude.toString().trim().replace(/^[\s,]+/, ''); // Remove leading spaces and commas
         updateData.longitude = cleanLng;
         console.log(`Longitud limpiada: "${req.body.longitude}" -> "${cleanLng}"`);
