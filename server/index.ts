@@ -1314,26 +1314,39 @@ async function initializeDatabaseAsync() {
   if (app.get("env") === "development") {
     console.log("Configurando servidor de desarrollo Vite...");
     
-    appServer = app.listen(PORT, HOST, async () => {
-      console.log(`Servidor ejecutándose en puerto ${PORT}`);
-      
-      try {
-        const { setupVite } = await import("./vite");
-        await setupVite(app, appServer);
-        console.log("✅ Servidor de desarrollo Vite listo - Aplicación web accesible");
-      } catch (error) {
-        console.error("Error configurando Vite (continuando sin Vite):", error);
-        // Continuar sin Vite si hay problemas
-        console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
-      }
-      
-      // Inicializar base de datos después de que todo esté listo
-      setTimeout(() => {
-        initializeDatabaseAsync().catch(error => {
-          console.error("Error inicializando base de datos (no crítico):", error);
-        });
-      }, 3000);
-    });
+    // Configurar Vite antes de iniciar el servidor
+    try {
+      const { setupVite } = await import("./vite");
+      appServer = app.listen(PORT, HOST, async () => {
+        console.log(`Servidor ejecutándose en puerto ${PORT}`);
+        
+        try {
+          await setupVite(app, appServer);
+          console.log("✅ Servidor de desarrollo Vite listo - Aplicación web accesible");
+        } catch (error) {
+          console.error("Error configurando Vite (continuando sin Vite):", error);
+          console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
+        }
+        
+        // Inicializar base de datos después de que todo esté listo
+        setTimeout(() => {
+          initializeDatabaseAsync().catch(error => {
+            console.error("Error inicializando base de datos (no crítico):", error);
+          });
+        }, 3000);
+      });
+    } catch (error) {
+      console.error("Error importando Vite, iniciando servidor sin frontend:", error);
+      appServer = app.listen(PORT, HOST, () => {
+        console.log(`Servidor ejecutándose en puerto ${PORT} (solo API)`);
+        
+        setTimeout(() => {
+          initializeDatabaseAsync().catch(error => {
+            console.error("Error inicializando base de datos (no crítico):", error);
+          });
+        }, 3000);
+      });
+    }
   } else {
     // Modo producción
     try {
