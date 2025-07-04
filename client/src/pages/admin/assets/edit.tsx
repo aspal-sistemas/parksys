@@ -237,9 +237,14 @@ const EditAssetPage = () => {
   // Mutación para actualizar el activo
   const updateMutation = useMutation({
     mutationFn: (data: AssetFormValues) => {
+      console.log('=== ENVIANDO DATOS AL SERVIDOR ===');
+      console.log('URL:', `/api/assets/${id}`);
+      console.log('Datos enviados:', JSON.stringify(data, null, 2));
       return apiRequest(`/api/assets/${id}`, 'PUT', data);
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      console.log('=== RESPUESTA EXITOSA DEL SERVIDOR ===');
+      console.log('Respuesta:', response);
       queryClient.invalidateQueries({ queryKey: [`/api/assets/${id}`] });
       queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
       toast({
@@ -249,6 +254,8 @@ const EditAssetPage = () => {
       setLocation(`/admin/assets/${id}`);
     },
     onError: (error) => {
+      console.log('=== ERROR DEL SERVIDOR ===');
+      console.log('Error completo:', error);
       toast({
         title: "Error",
         description: "Ha ocurrido un error al actualizar el activo.",
@@ -853,13 +860,14 @@ const EditAssetPage = () => {
                     Cancelar
                   </Button>
                   <Button 
-                    type="submit" 
+                    type="button" 
                     disabled={updateMutation.isPending}
                     onClick={() => {
                       console.log("=== BOTÓN GUARDAR CLICKEADO ===");
                       console.log("Errores de validación:", form.formState.errors);
                       console.log("Estado del formulario válido:", form.formState.isValid);
                       console.log("Valores actuales del formulario:", form.getValues());
+                      handleDirectSubmit();
                     }}
                   >
                     {updateMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
