@@ -75,6 +75,8 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
 
   // Crear nuevo mantenimiento
   apiRouter.post('/assets/:id/maintenances', isAuthenticated, async (req: Request, res: Response) => {
+    console.log('🔧 POST /assets/:id/maintenances - Solicitud recibida para activo:', req.params.id);
+    console.log('🔧 Body de la solicitud:', req.body);
     try {
       const assetId = parseInt(req.params.id);
       const {
