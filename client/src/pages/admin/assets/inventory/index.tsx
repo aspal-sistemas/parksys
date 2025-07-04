@@ -141,7 +141,7 @@ const InventoryPage: React.FC = () => {
   });
 
   const assets = assetsData?.assets || [];
-  const totalAssets = assetsData?.total || 0;
+  const totalAssets = parseInt(assetsData?.totalAssets || '0', 10);
   
   // Los datos ya vienen filtrados y paginados del backend
   const totalPages = Math.ceil(totalAssets / itemsPerPage);
