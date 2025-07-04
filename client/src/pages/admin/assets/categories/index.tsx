@@ -406,85 +406,168 @@ const AssetCategoriesPage: React.FC = () => {
     </Card>
   );
 
-  // Componente para vista extendida de categorías
-  const ExtendedCategoryCard = ({ category }: { category: AssetCategory }) => (
-    <Card className="transition-all hover:shadow-md">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="p-3 rounded-lg" style={{ backgroundColor: `${category.color}20`, color: category.color }}>
-                {renderIcon(category.icon, 24)}
-              </div>
+  // Componente para vista extendida de categorías con expandir/contraer
+  const ExtendedCategoryCard = ({ category }: { category: AssetCategory }) => {
+    const children = allCategories.filter(cat => cat.parentId === category.id);
+    const hasChildren = children.length > 0;
+    const isExpanded = expandedCategories.has(category.id);
+    
+    // Si es una subcategoría, mostrar vista simple
+    if (category.parentId) {
+      return (
+        <Card className="transition-all hover:shadow-md ml-8 border-l-4" 
+              style={{ borderLeftColor: category.color }}>
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
-                  <Badge 
-                    variant={category.parentId ? "secondary" : "default"}
-                    className="text-xs"
-                  >
-                    {category.parentId ? "Subcategoría" : "Principal"}
-                  </Badge>
-                </div>
-                {category.description && (
-                  <p className="text-gray-600 text-sm leading-relaxed">{category.description}</p>
-                )}
-                {category.parentName && (
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs text-gray-500">Categoría padre:</span>
-                    <Badge variant="outline" className="text-xs">
-                      {category.parentName}
-                    </Badge>
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: `${category.color}20`, color: category.color }}>
+                    {renderIcon(category.icon, 20)}
                   </div>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-6 text-sm text-gray-500">
-              <div className="flex items-center gap-2">
-                <Tag size={14} />
-                <span>ID: {category.id}</span>
-              </div>
-              {category.childrenCount && category.childrenCount > 0 && (
-                <div className="flex items-center gap-2">
-                  <ChevronRight size={14} />
-                  <span>{category.childrenCount} subcategorías</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="text-base font-medium text-gray-900">{category.name}</h4>
+                      <Badge variant="secondary" className="text-xs">
+                        Subcategoría
+                      </Badge>
+                    </div>
+                    {category.description && (
+                      <p className="text-gray-600 text-sm">{category.description}</p>
+                    )}
+                  </div>
                 </div>
-              )}
+                <div className="flex items-center gap-4 text-xs text-gray-500 ml-11">
+                  <div className="flex items-center gap-1">
+                    <Tag size={12} />
+                    <span>ID: {category.id}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-1 ml-4">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleEdit(category)}
+                  className="text-green-600 hover:bg-green-50 h-8 w-8 p-0"
+                >
+                  <Edit2 size={14} />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleDelete(category)}
+                  className="text-red-600 hover:bg-red-50 h-8 w-8 p-0"
+                >
+                  <Trash2 size={14} />
+                </Button>
+              </div>
             </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    // Vista para categorías principales con expandir/contraer
+    return (
+      <div className="space-y-2">
+        <Card className="transition-all hover:shadow-md border-l-4" 
+              style={{ borderLeftColor: category.color }}>
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-4 mb-4">
+                  {/* Botón expandir/contraer para categorías con hijos */}
+                  {hasChildren && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleExpanded(category.id)}
+                      className="p-1 h-8 w-8 hover:bg-gray-100 self-start"
+                    >
+                      {isExpanded ? (
+                        <ChevronDown size={16} className="text-blue-600" />
+                      ) : (
+                        <ChevronRight size={16} className="text-gray-600" />
+                      )}
+                    </Button>
+                  )}
+                  {!hasChildren && <div className="w-8" />}
+                  
+                  <div className="p-3 rounded-lg" style={{ backgroundColor: `${category.color}20`, color: category.color }}>
+                    {renderIcon(category.icon, 24)}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
+                      <Badge variant="default" className="text-xs">
+                        Principal
+                      </Badge>
+                      {hasChildren && (
+                        <Badge variant="outline" className="text-xs">
+                          {children.length} subcategoría(s)
+                        </Badge>
+                      )}
+                    </div>
+                    {category.description && (
+                      <p className="text-gray-600 text-sm leading-relaxed">{category.description}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-6 text-sm text-gray-500 ml-12">
+                  <div className="flex items-center gap-2">
+                    <Tag size={14} />
+                    <span>ID: {category.id}</span>
+                  </div>
+                  {hasChildren && (
+                    <div className="flex items-center gap-2">
+                      <ChevronRight size={14} />
+                      <span>{children.length} subcategorías</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-2 ml-4">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openCreateDialog(category.id)}
+                  className="text-blue-600 hover:bg-blue-50"
+                >
+                  <Plus size={16} className="mr-1" />
+                  Subcategoría
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleEdit(category)}
+                  className="text-green-600 hover:bg-green-50"
+                >
+                  <Edit2 size={16} />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleDelete(category)}
+                  className="text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Subcategorías expandidas */}
+        {hasChildren && isExpanded && (
+          <div className="space-y-2 border-l-2 border-gray-200 pl-4 ml-4">
+            {children.map(child => (
+              <ExtendedCategoryCard key={child.id} category={child} />
+            ))}
           </div>
-          <div className="flex gap-2 ml-4">
-            {!category.parentId && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => openCreateDialog(category.id)}
-                className="text-blue-600 hover:bg-blue-50"
-              >
-                <Plus size={16} className="mr-1" />
-                Subcategoría
-              </Button>
-            )}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleEdit(category)}
-              className="text-green-600 hover:bg-green-50"
-            >
-              <Edit2 size={16} />
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleDelete(category)}
-              className="text-red-600 hover:bg-red-50"
-            >
-              <Trash2 size={16} />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+        )}
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -826,27 +909,53 @@ const AssetCategoriesPage: React.FC = () => {
             <div className="text-sm text-gray-600">
               Mostrando {startIndex + 1}-{Math.min(endIndex, filteredCategories.length)} de {filteredCategories.length} categorías
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Vista:</span>
-              <div className="flex border rounded-md">
-                <Button
-                  variant={viewMode === 'compact' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('compact')}
-                  className="rounded-r-none border-r-0"
-                >
-                  <LayoutGrid size={16} className="mr-1" />
-                  Compacta
-                </Button>
-                <Button
-                  variant={viewMode === 'extended' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('extended')}
-                  className="rounded-l-none"
-                >
-                  <List size={16} className="mr-1" />
-                  Extendida
-                </Button>
+            <div className="flex items-center gap-4">
+              {/* Controles de expandir/contraer para vista extendida */}
+              {viewMode === 'extended' && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={expandAll}
+                    className="text-blue-600 hover:bg-blue-50"
+                  >
+                    <ChevronDown size={14} className="mr-1" />
+                    Expandir Todo
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={collapseAll}
+                    className="text-gray-600 hover:bg-gray-50"
+                  >
+                    <ChevronRight size={14} className="mr-1" />
+                    Contraer Todo
+                  </Button>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Vista:</span>
+                <div className="flex border rounded-md">
+                  <Button
+                    variant={viewMode === 'compact' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('compact')}
+                    className="rounded-r-none border-r-0"
+                  >
+                    <LayoutGrid size={16} className="mr-1" />
+                    Compacta
+                  </Button>
+                  <Button
+                    variant={viewMode === 'extended' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('extended')}
+                    className="rounded-l-none"
+                  >
+                    <List size={16} className="mr-1" />
+                    Extendida
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -860,9 +969,13 @@ const AssetCategoriesPage: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {paginatedCategories.map(category => (
-                <ExtendedCategoryCard key={category.id} category={category} />
-              ))}
+              {/* En vista extendida, solo mostrar categorías principales - las subcategorías se expanden */}
+              {paginatedCategories
+                .filter(category => !category.parentId)
+                .map(category => (
+                  <ExtendedCategoryCard key={category.id} category={category} />
+                ))
+              }
             </div>
           )}
 
