@@ -96,6 +96,9 @@ const AssetCategoriesPage: React.FC = () => {
   // Estado para controlar expansión en Estructura de Árbol
   const [showSubcategoriesInTree, setShowSubcategoriesInTree] = useState(true);
   
+  // Estado para paginación en Estructura de Árbol
+  const [treeCurrentPage, setTreeCurrentPage] = useState(1);
+  
   // Estados para filtros y paginación
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<'all' | 'principal' | 'subcategoria'>('all');
@@ -1065,7 +1068,10 @@ const AssetCategoriesPage: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowSubcategoriesInTree(!showSubcategoriesInTree)}
+                onClick={() => {
+                  setShowSubcategoriesInTree(!showSubcategoriesInTree);
+                  setTreeCurrentPage(1); // Reset a página 1 cuando cambie el estado
+                }}
                 className="flex items-center gap-2"
               >
                 {showSubcategoriesInTree ? (
@@ -1087,20 +1093,18 @@ const AssetCategoriesPage: React.FC = () => {
           <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between text-sm text-gray-600">
               <span>
-                Mostrando: {treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length} de {treeStructure.length} categorías
+                Mostrando: {Math.min(itemsPerPage, treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length - (treeCurrentPage - 1) * itemsPerPage)} de {treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length} categorías
               </span>
               <span>
                 Estado: {showSubcategoriesInTree ? 'EXPANDIDO' : 'CONTRAÍDO'} | 
-                {showSubcategoriesInTree ? 
-                  `${treeStructure.filter(n => (n.level || 0) === 0).length} principales + ${treeStructure.filter(n => (n.level || 0) > 0).length} subcategorías` :
-                  `Solo ${treeStructure.filter(n => (n.level || 0) === 0).length} categorías principales`
-                }
+                Página {treeCurrentPage} de {Math.ceil(treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length / itemsPerPage)}
               </span>
             </div>
           </div>
 
           {treeStructure
             .filter(node => showSubcategoriesInTree || node.level === 0)
+            .slice((treeCurrentPage - 1) * itemsPerPage, treeCurrentPage * itemsPerPage)
             .map(node => (
             <Card key={node.id} className="transition-all hover:shadow-md border-l-4" 
                   style={{ borderLeftColor: node.color }}>
@@ -1192,6 +1196,69 @@ const AssetCategoriesPage: React.FC = () => {
               </CardContent>
             </Card>
           ))}
+
+          {/* Controles de paginación para Estructura de Árbol */}
+          {treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length > itemsPerPage && (
+            <div className="mt-6 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Página {treeCurrentPage} de {Math.ceil(treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length / itemsPerPage)} - Mostrando {((treeCurrentPage - 1) * itemsPerPage) + 1}-{Math.min(treeCurrentPage * itemsPerPage, treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length)} de {treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length} categorías
+              </div>
+              
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setTreeCurrentPage(Math.max(1, treeCurrentPage - 1))}
+                  disabled={treeCurrentPage === 1}
+                  className="flex items-center gap-1"
+                >
+                  <ChevronLeft size={16} />
+                  Anterior
+                </Button>
+                
+                {/* Números de página */}
+                <div className="flex gap-1">
+                  {Array.from({ length: Math.min(5, Math.ceil(treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length / itemsPerPage)) }, (_, i) => {
+                    const totalPages = Math.ceil(treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length / itemsPerPage);
+                    let startPage = Math.max(1, treeCurrentPage - 2);
+                    let endPage = Math.min(totalPages, startPage + 4);
+                    
+                    if (endPage - startPage < 4) {
+                      startPage = Math.max(1, endPage - 4);
+                    }
+                    
+                    const pageNumber = startPage + i;
+                    
+                    if (pageNumber <= totalPages) {
+                      return (
+                        <Button
+                          key={pageNumber}
+                          variant={pageNumber === treeCurrentPage ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setTreeCurrentPage(pageNumber)}
+                          className={pageNumber === treeCurrentPage ? "bg-green-600 hover:bg-green-700" : ""}
+                        >
+                          {pageNumber}
+                        </Button>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setTreeCurrentPage(Math.min(Math.ceil(treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length / itemsPerPage), treeCurrentPage + 1))}
+                  disabled={treeCurrentPage >= Math.ceil(treeStructure.filter(node => showSubcategoriesInTree || node.level === 0).length / itemsPerPage)}
+                  className="flex items-center gap-1"
+                >
+                  Siguiente
+                  <ChevronRight size={16} />
+                </Button>
+              </div>
+            </div>
+          )}
           
           {/* Mensaje si no hay estructura */}
           {treeStructure.length === 0 && (
