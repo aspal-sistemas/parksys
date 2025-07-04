@@ -405,9 +405,16 @@ const AdminSidebarComplete: React.FC = () => {
             <NavItem 
               href="/admin/assets/maintenance" 
               icon={<Wrench className="h-5 w-5" />}
-              active={location.startsWith('/admin/assets/maintenance')}
+              active={location.startsWith('/admin/assets/maintenance') && !location.includes('/calendar')}
             >
               {t('navigation.maintenance')}
+            </NavItem>
+            <NavItem 
+              href="/admin/assets/maintenance/calendar" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/assets/maintenance/calendar')}
+            >
+              Calendario de Mantenimiento
             </NavItem>
             <NavItem 
               href="/admin/assets/assignments" 
