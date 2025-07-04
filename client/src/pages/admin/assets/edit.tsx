@@ -241,24 +241,12 @@ const EditAssetPage = () => {
       console.log('URL:', `/api/assets/${id}`);
       console.log('Datos enviados:', JSON.stringify(data, null, 2));
       
-      try {
-        const response = await apiRequest(`/api/assets/${id}`, {
-          method: 'PUT',
-          data: data
-        });
-        
-        console.log('🔍 Response status:', response.status);
-        console.log('🔍 Response headers:', response.headers);
-        console.log('🔍 Response ok:', response.ok);
-        
-        const jsonData = await response.json();
-        console.log('🔍 Response JSON data:', jsonData);
-        
-        return jsonData;
-      } catch (error) {
-        console.error('🚨 Error en mutationFn:', error);
-        throw error;
-      }
+      const response = await apiRequest(`/api/assets/${id}`, {
+        method: 'PUT',
+        data: data
+      });
+      
+      return await response.json();
     },
     onSuccess: (response) => {
       console.log('=== RESPUESTA EXITOSA DEL SERVIDOR ===');

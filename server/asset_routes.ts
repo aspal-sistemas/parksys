@@ -249,10 +249,6 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
 
   // Update asset
   apiRouter.put("/assets/:id", async (req: Request, res: Response) => {
-    console.log("🔥 ENDPOINT PUT /api/assets/:id INTERCEPTADO CORRECTAMENTE");
-    console.log("🔥 URL completa:", req.url);
-    console.log("🔥 Método:", req.method);
-    console.log("🔥 Parámetros:", req.params);
     
     try {
       const id = parseInt(req.params.id);
