@@ -1006,6 +1006,12 @@ async function initializeDatabaseAsync() {
     const { registerAssetCategoriesRoutes } = await import('./asset-categories-routes');
     registerAssetCategoriesRoutes(app, apiRouter);
     
+    // Importar y registrar rutas de mantenimiento de activos
+    console.log('🔧 Registrando rutas de mantenimiento de activos...');
+    const { registerMaintenanceRoutes } = await import('./maintenance_routes_fixed');
+    registerMaintenanceRoutes(app, apiRouter, isAuthenticated);
+    console.log('✅ Rutas de mantenimiento de activos registradas correctamente');
+    
     const { registerInstructorEvaluationRoutes } = await import('./instructor-evaluations-routes');
     registerInstructorEvaluationRoutes(app, apiRouter);
     
