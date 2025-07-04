@@ -316,13 +316,22 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
 
       console.log("Datos de actualización preparados:", JSON.stringify(updateData, null, 2));
 
+      console.log("=== INICIANDO ACTUALIZACIÓN EN BASE DE DATOS ===");
+      console.log(`Actualizando activo ID: ${id} con:`, updateData);
+      
       const [updatedAsset] = await db
         .update(assets)
         .set(updateData)
         .where(eq(assets.id, id))
         .returning();
 
+      console.log("=== ACTUALIZACIÓN COMPLETADA ===");
       console.log("Activo actualizado exitosamente:", updatedAsset.id);
+      console.log("Coordenadas actualizadas:", {
+        latitude: updatedAsset.latitude,
+        longitude: updatedAsset.longitude
+      });
+      
       res.json(updatedAsset);
     } catch (error) {
       console.error("Error detallado al actualizar activo:", error);
