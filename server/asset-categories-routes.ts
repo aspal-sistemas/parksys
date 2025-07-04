@@ -291,10 +291,10 @@ export function registerAssetCategoriesRoutes(app: any, apiRouter: Router) {
     }
   });
 
-  // GET: Obtener estructura de árbol completa
+  // GET: Obtener estructura de árbol completa (lista plana con niveles)
   apiRouter.get("/asset-categories/tree/structure", async (_req: Request, res: Response) => {
     try {
-      console.log("🏷️ Generando estructura de árbol de categorías");
+      console.log("🏷️ Generando estructura de árbol de categorías (formato plano)");
       
       // Obtener todas las categorías
       const result = await pool.query(`
@@ -313,17 +313,51 @@ export function registerAssetCategoriesRoutes(app: any, apiRouter: Router) {
           name
       `);
 
-      // Organizar en estructura de árbol
       const categories = result.rows;
-      const parents = categories.filter(cat => !cat.parentId);
-      
-      const treeStructure = parents.map(parent => ({
-        ...parent,
-        children: categories.filter(cat => cat.parentId === parent.id)
-      }));
+      const flatStructure = [];
 
-      console.log(`🌳 Estructura generada: ${parents.length} categorías principales con ${categories.filter(c => c.parentId).length} subcategorías`);
-      res.json(treeStructure);
+      // Función para generar ruta jerárquica
+      const buildPath = (category, allCategories) => {
+        const path = [category.name];
+        let current = category;
+        
+        while (current.parentId) {
+          const parent = allCategories.find(c => c.id === current.parentId);
+          if (parent) {
+            path.unshift(parent.name);
+            current = parent;
+          } else {
+            break;
+          }
+        }
+        
+        return path.join(' > ');
+      };
+
+      // Primero agregar categorías principales (nivel 0)
+      const parentCategories = categories.filter(cat => !cat.parentId);
+      parentCategories.forEach(parent => {
+        flatStructure.push({
+          ...parent,
+          level: 0,
+          pathNames: parent.name
+        });
+        
+        // Luego agregar sus subcategorías (nivel 1)
+        const children = categories.filter(cat => cat.parentId === parent.id);
+        children.forEach(child => {
+          flatStructure.push({
+            ...child,
+            level: 1,
+            pathNames: buildPath(child, categories)
+          });
+        });
+      });
+
+      console.log(`🌳 Estructura plana generada: ${parentCategories.length} categorías principales con ${categories.filter(c => c.parentId).length} subcategorías`);
+      console.log(`📋 Total elementos en estructura plana: ${flatStructure.length}`);
+      
+      res.json(flatStructure);
     } catch (error) {
       console.error("❌ Error al generar estructura de árbol:", error);
       res.status(500).json({ message: "Error al generar estructura de categorías" });
