@@ -221,7 +221,7 @@ export default function AssetsFinanceDemo() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  ${assetsData.totalValue.toLocaleString()}
+                  ${assetsData.totalValue.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Valor de inventario
@@ -236,7 +236,7 @@ export default function AssetsFinanceDemo() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  ${financeStats.totalExpenses.toLocaleString()}
+                  ${financeStats.totalExpenses.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Gastos integrados automáticamente
@@ -322,7 +322,7 @@ export default function AssetsFinanceDemo() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">${transaction.amount.toLocaleString()}</p>
+                      <p className="font-semibold">${transaction.amount.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
                       <div className="flex items-center space-x-2">
                         <Badge variant={transaction.status === 'completed' ? 'default' : 'secondary'}>
                           {transaction.badge}

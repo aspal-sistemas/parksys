@@ -297,8 +297,8 @@ const InventoryPage: React.FC = () => {
                   <p className="text-sm text-gray-600">Valor Total</p>
                   <p className="text-2xl font-bold text-gray-900">
                     ${(assetsData?.totalValue || 0).toLocaleString('es-MX', { 
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2 
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0 
                     })}
                   </p>
                 </div>
@@ -487,7 +487,7 @@ const InventoryPage: React.FC = () => {
                         </TableCell>
                         <TableCell>{formatDate(asset.acquisitionDate)}</TableCell>
                         <TableCell className="text-right">
-                          {asset.acquisitionCost ? `$${asset.acquisitionCost.toLocaleString()}` : 'N/A'}
+                          {asset.acquisitionCost ? `$${Number(asset.acquisitionCost).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : 'N/A'}
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="flex justify-center gap-1">

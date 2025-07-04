@@ -35,7 +35,9 @@ const formatCurrency = (value: number | string | null) => {
   if (isNaN(numValue)) return 'N/A';
   return new Intl.NumberFormat('es-MX', {
     style: 'currency',
-    currency: 'MXN'
+    currency: 'MXN',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(numValue);
 };
 
