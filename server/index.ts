@@ -800,7 +800,24 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 // Servir archivos estáticos de concesiones y otros uploads directos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-
+// === REGISTRO DE RUTAS PRINCIPALES ===
+// Registrar rutas de mantenimiento de activos INMEDIATAMENTE
+(async () => {
+  try {
+    console.log('🔧 [STARTUP] Registrando rutas de mantenimiento de activos...');
+    const { registerMaintenanceRoutes } = await import('./maintenance_routes_fixed');
+    const apiRouter = express.Router();
+    
+    // Middleware básico de autenticación simulado
+    const dummyAuth = (req: any, res: any, next: any) => next();
+    
+    registerMaintenanceRoutes(app, apiRouter, dummyAuth);
+    app.use("/api", apiRouter);
+    console.log('✅ [STARTUP] Rutas de mantenimiento registradas correctamente');
+  } catch (error) {
+    console.error('❌ [STARTUP] Error registrando rutas de mantenimiento:', error);
+  }
+})();
 
 // Logging middleware temporalmente desactivado debido a problemas de estabilidad
 
@@ -1013,13 +1030,8 @@ async function initializeDatabaseAsync() {
     const { registerConcessionairesRoutes } = await import('./concessionaires-routes');
     registerConcessionairesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
     
-    // Importar y registrar rutas de mantenimiento de activos
-    console.log('🔧 Registrando rutas de mantenimiento de activos...');
-    const { registerMaintenanceRoutes } = await import('./maintenance_routes_fixed');
-    registerMaintenanceRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    console.log('✅ Rutas de mantenimiento de activos registradas correctamente');
-    
     // CATEGORÍAS DE ACTIVOS: Registradas en la sección principal arriba para evitar duplicación
+    // MANTENIMIENTO DE ACTIVOS: Registradas en la sección principal de startup para evitar duplicación
     
     app.use("/api", apiRouter);
     console.log("API de integraciones financieras múltiples registrada correctamente");
