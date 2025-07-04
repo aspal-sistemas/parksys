@@ -76,13 +76,32 @@ import { Separator } from '@/components/ui/separator';
 // Función para formatear fechas
 const formatDate = (dateString: string | null) => {
   if (!dateString) return 'N/A';
-  // Agregar tiempo para evitar problemas de zona horaria
-  const date = new Date(dateString + 'T00:00:00');
-  return date.toLocaleDateString('es-MX', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  
+  try {
+    // Manejar diferentes formatos de fecha
+    let date: Date;
+    
+    if (dateString.includes('T') || dateString.includes(' ')) {
+      // Ya incluye tiempo
+      date = new Date(dateString);
+    } else {
+      // Solo fecha, agregar tiempo para evitar problemas de zona horaria
+      date = new Date(dateString + 'T00:00:00');
+    }
+    
+    // Verificar si la fecha es válida
+    if (isNaN(date.getTime())) {
+      return 'Fecha inválida';
+    }
+    
+    return date.toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  } catch (error) {
+    return 'Fecha inválida';
+  }
 };
 
 // Función para formatear moneda
@@ -264,17 +283,35 @@ const AssetDetailPage: React.FC = () => {
   });
 
   // Calcular fechas de mantenimiento basándose en los registros
-  const lastMaintenanceDate = maintenances && maintenances.length > 0 
-    ? maintenances
-        .filter(m => m.status === 'completed')
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]?.date
-    : null;
+  const lastMaintenanceDate = React.useMemo(() => {
+    if (!maintenances || maintenances.length === 0) return null;
+    
+    const completedMaintenances = maintenances.filter(m => m.status === 'completed');
+    console.log('Completed maintenances:', completedMaintenances);
+    
+    if (completedMaintenances.length === 0) return null;
+    
+    const lastMaintenance = completedMaintenances
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+    
+    console.log('Last maintenance date:', lastMaintenance?.date);
+    return lastMaintenance?.date || null;
+  }, [maintenances]);
 
-  const nextMaintenanceDate = maintenances && maintenances.length > 0
-    ? maintenances
-        .filter(m => m.nextMaintenanceDate)
-        .sort((a, b) => new Date(a.nextMaintenanceDate!).getTime() - new Date(b.nextMaintenanceDate!).getTime())[0]?.nextMaintenanceDate
-    : null;
+  const nextMaintenanceDate = React.useMemo(() => {
+    if (!maintenances || maintenances.length === 0) return null;
+    
+    const maintenancesWithNext = maintenances.filter(m => m.nextMaintenanceDate);
+    console.log('Maintenances with next date:', maintenancesWithNext);
+    
+    if (maintenancesWithNext.length === 0) return null;
+    
+    const nextMaintenance = maintenancesWithNext
+      .sort((a, b) => new Date(a.nextMaintenanceDate!).getTime() - new Date(b.nextMaintenanceDate!).getTime())[0];
+    
+    console.log('Next maintenance date:', nextMaintenance?.nextMaintenanceDate);
+    return nextMaintenance?.nextMaintenanceDate || null;
+  }, [maintenances]);
 
   // Calcular si el mantenimiento está vencido
   const isMaintenanceDue = nextMaintenanceDate 
