@@ -85,6 +85,9 @@ app.put("/api/assets/:id", async (req: Request, res: Response) => {
     
     console.log("Activo actualizado:", updatedAsset);
     
+    console.log("🎯 ENVIANDO RESPUESTA JSON AL FRONTEND");
+    console.log("JSON Response:", JSON.stringify(updatedAsset, null, 2));
+    
     res.json(updatedAsset);
   } catch (error) {
     console.error("Error al actualizar activo:", error);
