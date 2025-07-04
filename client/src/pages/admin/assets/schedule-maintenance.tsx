@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation } from 'wouter';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useParams } from 'wouter';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useQuery } from '@tanstack/react-query';
@@ -26,6 +26,7 @@ import { queryClient } from '@/lib/queryClient';
 
 const ScheduleMaintenancePage = () => {
   const [_, setLocation] = useLocation();
+  const { id } = useParams<{ id: string }>();
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [maintenanceType, setMaintenanceType] = useState('preventivo');
   const [priority, setPriority] = useState('medium');
@@ -33,7 +34,7 @@ const ScheduleMaintenancePage = () => {
   const [notes, setNotes] = useState('');
   const [estimatedCost, setEstimatedCost] = useState('');
   const [assignedToId, setAssignedToId] = useState('');
-  const [selectedAssetId, setSelectedAssetId] = useState('');
+  const [selectedAssetId, setSelectedAssetId] = useState(id || '');
   const [submitting, setSubmitting] = useState(false);
 
   // Obtener lista de activos
@@ -71,6 +72,13 @@ const ScheduleMaintenancePage = () => {
   // Determinar qué datos utilizar (API o muestra)
   const displayAssets = assets.length > 0 ? assets : sampleAssets;
   const displayUsers = relevantUsers.length > 0 ? relevantUsers : sampleUsers;
+
+  // Efecto para preseleccionar el activo cuando se pasa el ID en la URL
+  useEffect(() => {
+    if (id) {
+      setSelectedAssetId(id);
+    }
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

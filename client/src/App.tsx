@@ -471,7 +471,7 @@ function Router() {
           </Suspense>
         </Route>
         
-        <Route path="/admin/assets/maintenance/schedule">
+        <Route path="/admin/assets/maintenance/schedule/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando formulario de mantenimiento...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/schedule-maintenance')))}
           </Suspense>
