@@ -29,7 +29,11 @@ async function safeApiRequest(url: string, options: any = {}) {
   requestHeaders["X-User-Id"] = userId;
   requestHeaders["X-User-Role"] = userRole;
 
-  const res = await fetch(url, {
+  // En desarrollo, asegurar que las peticiones van al servidor correcto
+  const fullUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+  console.log(`🌐 [SAFE API] ${method} ${fullUrl}`);
+  
+  const res = await fetch(fullUrl, {
     method,
     headers: requestHeaders,
     body: data ? JSON.stringify(data) : undefined,
@@ -114,7 +118,11 @@ export async function apiRequest(
     }
   }
 
-  const res = await fetch(url, {
+  // En desarrollo, asegurar que las peticiones van al servidor correcto
+  const fullUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+  console.log(`🌐 [API REQUEST] ${method} ${fullUrl}`);
+  
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body,
@@ -172,7 +180,12 @@ export const getQueryFn: <T>(options: {
     };
 
     try {
-      const res = await fetch(queryKey[0] as string, {
+      // En desarrollo, asegurar que las peticiones van al servidor correcto
+      const url = queryKey[0] as string;
+      const fullUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+      console.log(`🌐 [QUERY] GET ${fullUrl}`);
+      
+      const res = await fetch(fullUrl, {
         credentials: "include",
         headers,
         signal: AbortSignal.timeout(30000) // 30 second timeout
