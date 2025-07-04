@@ -134,8 +134,8 @@ const EditAssetPage = () => {
   // Función para manejar la selección de ubicación en el mapa
   const handleLocationSelect = (lat: number, lng: number) => {
     setSelectedPosition([lat, lng]);
-    form.setValue('latitude', lat);
-    form.setValue('longitude', lng);
+    form.setValue('latitude', lat.toString());
+    form.setValue('longitude', lng.toString());
   };
 
   // Obtener datos del activo
@@ -788,11 +788,20 @@ const EditAssetPage = () => {
                                 placeholder="Ej: 20.659698" 
                                 {...field} 
                                 value={field.value?.toString() || ''}
-                                readOnly
+                                onChange={(e) => {
+                                  field.onChange(e.target.value);
+                                  // Actualizar posición del mapa si hay valores válidos
+                                  const lat = parseFloat(e.target.value);
+                                  const lng = parseFloat(form.getValues('longitude'));
+                                  if (!isNaN(lat) && !isNaN(lng)) {
+                                    setSelectedPosition([lat, lng]);
+                                    setMapCenter([lat, lng]);
+                                  }
+                                }}
                               />
                             </FormControl>
                             <FormDescription>
-                              Se actualiza automáticamente al seleccionar en el mapa
+                              Edita manualmente o selecciona en el mapa
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -810,11 +819,20 @@ const EditAssetPage = () => {
                                 placeholder="Ej: -103.349609" 
                                 {...field} 
                                 value={field.value?.toString() || ''}
-                                readOnly
+                                onChange={(e) => {
+                                  field.onChange(e.target.value);
+                                  // Actualizar posición del mapa si hay valores válidos
+                                  const lng = parseFloat(e.target.value);
+                                  const lat = parseFloat(form.getValues('latitude'));
+                                  if (!isNaN(lat) && !isNaN(lng)) {
+                                    setSelectedPosition([lat, lng]);
+                                    setMapCenter([lat, lng]);
+                                  }
+                                }}
                               />
                             </FormControl>
                             <FormDescription>
-                              Se actualiza automáticamente al seleccionar en el mapa
+                              Edita manualmente o selecciona en el mapa
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
