@@ -800,24 +800,96 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 // Servir archivos estáticos de concesiones y otros uploads directos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-// === REGISTRO DE RUTAS PRINCIPALES ===
-// Registrar rutas de mantenimiento de activos INMEDIATAMENTE
-(async () => {
+// === REGISTRO DIRECTO DE RUTAS DE MANTENIMIENTO ===
+console.log('🔧 [DIRECT] Registrando rutas de mantenimiento directamente...');
+
+// Rutas de mantenimiento integradas directamente
+app.get('/api/assets/:id/maintenances', async (req: Request, res: Response) => {
+  console.log('🔧 [DIRECT] GET /api/assets/:id/maintenances - Solicitud recibida para activo:', req.params.id);
   try {
-    console.log('🔧 [STARTUP] Registrando rutas de mantenimiento de activos...');
-    const { registerMaintenanceRoutes } = await import('./maintenance_routes_fixed');
-    const apiRouter = express.Router();
+    const assetId = parseInt(req.params.id);
+    const { pool } = await import("./db");
     
-    // Middleware básico de autenticación simulado
-    const dummyAuth = (req: any, res: any, next: any) => next();
+    const query = `
+      SELECT 
+        id,
+        asset_id as "assetId",
+        maintenance_type as "maintenanceType",
+        description,
+        date,
+        status,
+        cost,
+        performed_by as "performedBy",
+        findings,
+        actions,
+        next_maintenance_date as "nextMaintenanceDate",
+        notes,
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM asset_maintenances 
+      WHERE asset_id = $1 
+      ORDER BY date DESC
+    `;
     
-    registerMaintenanceRoutes(app, apiRouter, dummyAuth);
-    app.use("/api", apiRouter);
-    console.log('✅ [STARTUP] Rutas de mantenimiento registradas correctamente');
+    const result = await pool.query(query, [assetId]);
+    console.log(`📋 [DIRECT] Devolviendo ${result.rows.length} mantenimientos para activo ${assetId}`);
+    res.json(result.rows);
   } catch (error) {
-    console.error('❌ [STARTUP] Error registrando rutas de mantenimiento:', error);
+    console.error('❌ [DIRECT] Error en GET mantenimientos:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
-})();
+});
+
+app.post('/api/assets/:id/maintenances', async (req: Request, res: Response) => {
+  console.log('🔧 [DIRECT] POST /api/assets/:id/maintenances - Solicitud recibida para activo:', req.params.id);
+  console.log('🔧 [DIRECT] Body de la solicitud:', req.body);
+  try {
+    const assetId = parseInt(req.params.id);
+    const {
+      maintenanceType,
+      description,
+      date,
+      status = 'completado',
+      cost,
+      performedBy,
+      nextMaintenanceDate,
+      notes
+    } = req.body;
+
+    const { pool } = await import("./db");
+    
+    const query = `
+      INSERT INTO asset_maintenances (
+        asset_id, maintenance_type, description, date, status, cost, 
+        performed_by, next_maintenance_date, notes, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
+      RETURNING *
+    `;
+
+    const values = [
+      assetId,
+      maintenanceType,
+      description,
+      date,
+      status,
+      cost,
+      performedBy,
+      nextMaintenanceDate,
+      notes
+    ];
+
+    console.log('🔧 [DIRECT] Ejecutando INSERT con valores:', values);
+    const result = await pool.query(query, values);
+    
+    console.log('✅ [DIRECT] Mantenimiento creado exitosamente, ID:', result.rows[0].id);
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('❌ [DIRECT] Error en POST mantenimiento:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+console.log('✅ [DIRECT] Rutas de mantenimiento registradas directamente');
 
 // Logging middleware temporalmente desactivado debido a problemas de estabilidad
 
