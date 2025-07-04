@@ -582,4 +582,3 @@ export default function VolunteerRegisterPage() {
   );
 }
 
-export default RegisterVolunteer;

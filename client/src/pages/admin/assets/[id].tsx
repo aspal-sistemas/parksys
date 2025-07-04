@@ -262,6 +262,24 @@ const AssetDetailPage: React.FC = () => {
     queryKey: [`/api/assets/${id}/history`],
     enabled: !!id,
   });
+
+  // Calcular fechas de mantenimiento basándose en los registros
+  const lastMaintenanceDate = maintenances && maintenances.length > 0 
+    ? maintenances
+        .filter(m => m.status === 'completed')
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]?.date
+    : null;
+
+  const nextMaintenanceDate = maintenances && maintenances.length > 0
+    ? maintenances
+        .filter(m => m.nextMaintenanceDate)
+        .sort((a, b) => new Date(a.nextMaintenanceDate!).getTime() - new Date(b.nextMaintenanceDate!).getTime())[0]?.nextMaintenanceDate
+    : null;
+
+  // Calcular si el mantenimiento está vencido
+  const isMaintenanceDue = nextMaintenanceDate 
+    ? new Date(nextMaintenanceDate) < new Date() 
+    : false;
   
   // Formulario para editar el activo
   const form = useForm<z.infer<typeof assetUpdateSchema>>({
@@ -423,13 +441,7 @@ const AssetDetailPage: React.FC = () => {
     maintenanceMutation.mutate(values);
   };
   
-  // Verificar si el mantenimiento está pendiente
-  const isMaintenanceDue = React.useMemo(() => {
-    if (!asset || !asset.nextMaintenanceDate) return false;
-    const nextMaintenance = new Date(asset.nextMaintenanceDate);
-    const today = new Date();
-    return nextMaintenance <= today;
-  }, [asset]);
+
   
   // Obtener la categoría actual
   const currentCategory = React.useMemo(() => {
@@ -661,7 +673,7 @@ const AssetDetailPage: React.FC = () => {
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="font-medium text-gray-500">Último Mantenimiento:</span>
-                        <span>{formatDate(asset?.lastMaintenanceDate)}</span>
+                        <span>{formatDate(lastMaintenanceDate)}</span>
                       </div>
                       
                       <div className="flex justify-between items-center">
@@ -670,7 +682,7 @@ const AssetDetailPage: React.FC = () => {
                           {isMaintenanceDue && (
                             <AlertTriangle className="h-4 w-4 mr-2 text-yellow-500" />
                           )}
-                          <span>{formatDate(asset?.nextMaintenanceDate)}</span>
+                          <span>{formatDate(nextMaintenanceDate)}</span>
                         </div>
                       </div>
                       
@@ -695,21 +707,21 @@ const AssetDetailPage: React.FC = () => {
                         </div>
                       )}
                       
-                      {!isMaintenanceDue && asset?.nextMaintenanceDate && (
+                      {!isMaintenanceDue && nextMaintenanceDate && (
                         <div className="bg-green-50 p-4 rounded-md text-green-800 mt-4">
                           <div className="flex">
                             <Check className="h-5 w-5 mr-2" />
                             <div>
                               <h4 className="font-medium">Mantenimiento al día</h4>
                               <p className="text-sm">
-                                El próximo mantenimiento está programado para {formatDate(asset.nextMaintenanceDate)}.
+                                El próximo mantenimiento está programado para {formatDate(nextMaintenanceDate)}.
                               </p>
                             </div>
                           </div>
                         </div>
                       )}
                       
-                      {!asset?.lastMaintenanceDate && !asset?.nextMaintenanceDate && (
+                      {!lastMaintenanceDate && !nextMaintenanceDate && (
                         <div className="bg-blue-50 p-4 rounded-md text-blue-800 mt-4">
                           <div className="flex">
                             <Tag className="h-5 w-5 mr-2" />

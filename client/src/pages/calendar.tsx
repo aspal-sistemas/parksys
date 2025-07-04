@@ -199,7 +199,7 @@ const CalendarPage: React.FC = () => {
   return (
     <PublicLayout>
       <div className="bg-gray-50">
-      {/* Hero Section con imagen de fondo */}
+        {/* Hero Section con imagen de fondo */}
       <div 
         className="relative text-white"
         style={{
@@ -666,6 +666,7 @@ const CalendarPage: React.FC = () => {
             )}
           </DialogContent>
         </Dialog>
+      </div>
       </div>
     </PublicLayout>
   );
