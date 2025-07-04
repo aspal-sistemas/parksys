@@ -414,7 +414,7 @@ const AdminSidebarComplete: React.FC = () => {
               icon={<Calendar className="h-5 w-5" />}
               active={location.startsWith('/admin/assets/maintenance/calendar')}
             >
-              Calendario de Mantenimiento
+              Calendario
             </NavItem>
             <NavItem 
               href="/admin/assets/assignments" 
