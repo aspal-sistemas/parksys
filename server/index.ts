@@ -845,6 +845,7 @@ app.get('/api/assets/:id/maintenances', async (req: Request, res: Response) => {
 app.post('/api/assets/:id/maintenances', async (req: Request, res: Response) => {
   console.log('🔧 [DIRECT] POST /api/assets/:id/maintenances - Solicitud recibida para activo:', req.params.id);
   console.log('🔧 [DIRECT] Body de la solicitud:', req.body);
+  console.log('🔧 [DIRECT] Headers de la solicitud:', req.headers['content-type']);
   try {
     const assetId = parseInt(req.params.id);
     const {
