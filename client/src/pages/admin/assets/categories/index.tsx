@@ -120,6 +120,8 @@ const AssetCategoriesPage: React.FC = () => {
     queryKey: ['/api/asset-categories'],
   });
 
+
+
   // Categorías principales
   const { data: parentCategories = [] } = useQuery<AssetCategory[]>({
     queryKey: ['/api/asset-categories/parents'],
@@ -978,6 +980,17 @@ const AssetCategoriesPage: React.FC = () => {
               }
             </div>
           )}
+
+          {/* Debug temporal */}
+          <Card className="p-4 bg-yellow-50 border-yellow-200">
+            <p className="text-sm">
+              <strong>Debug:</strong> Total categorías: {allCategories.length} | 
+              Filtradas: {filteredCategories.length} | 
+              Paginadas: {paginatedCategories.length} | 
+              Vista: {viewMode} | 
+              Página: {currentPage}
+            </p>
+          </Card>
 
           {/* Mensaje si no hay resultados */}
           {filteredCategories.length === 0 && (
