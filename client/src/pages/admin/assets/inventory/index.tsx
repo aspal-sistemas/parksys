@@ -53,6 +53,27 @@ const formatDate = (dateString: string | null) => {
   });
 };
 
+// Funciones para traducir estados y condiciones
+const translateStatus = (status: string) => {
+  const statusMap: { [key: string]: string } = {
+    'active': 'Activo',
+    'maintenance': 'Mantenimiento',
+    'retired': 'Retirado',
+    'damaged': 'Dañado'
+  };
+  return statusMap[status] || status;
+};
+
+const translateCondition = (condition: string) => {
+  const conditionMap: { [key: string]: string } = {
+    'excellent': 'Excelente',
+    'good': 'Bueno',
+    'fair': 'Regular',
+    'poor': 'Malo'
+  };
+  return conditionMap[condition] || condition;
+};
+
 // Función para obtener el color del badge de estado
 const getStatusBadgeColor = (status: string) => {
   switch (status.toLowerCase()) {
@@ -243,7 +264,7 @@ const InventoryPage: React.FC = () => {
                 <div>
                   <p className="text-sm text-gray-600">Activos Activos</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {assets.filter((a: any) => a.status === 'activo').length}
+                    {assets.filter((a: any) => a.status === 'active').length}
                   </p>
                 </div>
                 <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -259,7 +280,7 @@ const InventoryPage: React.FC = () => {
                 <div>
                   <p className="text-sm text-gray-600">En Mantenimiento</p>
                   <p className="text-2xl font-bold text-yellow-600">
-                    {assets.filter((a: any) => a.status === 'mantenimiento').length}
+                    {assets.filter((a: any) => a.status === 'maintenance').length}
                   </p>
                 </div>
                 <div className="h-8 w-8 bg-yellow-100 rounded-full flex items-center justify-center">
@@ -353,9 +374,10 @@ const InventoryPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los estados</SelectItem>
-                  {ASSET_STATUSES.map((status) => (
-                    <SelectItem key={status} value={status}>{status}</SelectItem>
-                  ))}
+                  <SelectItem value="active">Activo</SelectItem>
+                  <SelectItem value="maintenance">Mantenimiento</SelectItem>
+                  <SelectItem value="retired">Retirado</SelectItem>
+                  <SelectItem value="damaged">Dañado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -367,9 +389,10 @@ const InventoryPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas las condiciones</SelectItem>
-                  {ASSET_CONDITIONS.map((condition) => (
-                    <SelectItem key={condition} value={condition}>{condition}</SelectItem>
-                  ))}
+                  <SelectItem value="excellent">Excelente</SelectItem>
+                  <SelectItem value="good">Bueno</SelectItem>
+                  <SelectItem value="fair">Regular</SelectItem>
+                  <SelectItem value="poor">Malo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -451,12 +474,12 @@ const InventoryPage: React.FC = () => {
                         <TableCell>{asset.serialNumber || 'N/A'}</TableCell>
                         <TableCell>
                           <Badge className={getStatusBadgeColor(asset.status)}>
-                            {asset.status}
+                            {translateStatus(asset.status)}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge className={getConditionBadgeColor(asset.condition)}>
-                            {asset.condition}
+                            {translateCondition(asset.condition)}
                           </Badge>
                         </TableCell>
                         <TableCell>{formatDate(asset.acquisitionDate)}</TableCell>
