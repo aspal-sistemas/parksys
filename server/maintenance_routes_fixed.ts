@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { db } from './db';
+import { db, pool } from './db';
 import { eq, desc } from 'drizzle-orm';
 
 /**
@@ -26,7 +26,7 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         ORDER BY am.created_at DESC
       `;
 
-      const result = await db.execute(query);
+      const result = await pool.query(query);
       res.json(result.rows);
     } catch (error) {
       console.error('Error fetching asset maintenances:', error);
@@ -46,8 +46,26 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         ORDER BY created_at DESC
       `;
 
-      const result = await db.execute(query, [assetId]);
-      res.json(result.rows);
+      const result = await pool.query(query, [assetId]);
+      
+      // Mapear campos snake_case a camelCase
+      const maintenances = result.rows.map(row => ({
+        id: row.id,
+        assetId: row.asset_id,
+        date: row.date,
+        maintenanceType: row.maintenance_type,
+        description: row.description,
+        cost: row.cost,
+        performedBy: row.performed_by,
+        nextMaintenanceDate: row.next_maintenance_date,
+        status: row.status,
+        notes: row.notes,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }));
+      
+      console.log(`📋 Devolviendo ${maintenances.length} mantenimientos para activo ${assetId}`);
+      res.json(maintenances);
     } catch (error) {
       console.error('Error fetching asset maintenances:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
@@ -64,16 +82,21 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         date,
         status,
         cost,
-        performedBy
+        performedBy,
+        nextMaintenanceDate,
+        notes
       } = req.body;
 
       console.log('🔧 Datos de mantenimiento recibidos en backend:', {
+        assetId,
         maintenanceType,
         description,
         date,
         status,
         cost,
-        performedBy
+        performedBy,
+        nextMaintenanceDate,
+        notes
       });
 
       const query = `
@@ -84,23 +107,43 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
           date, 
           status, 
           cost, 
-          performed_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+          performed_by,
+          next_maintenance_date,
+          notes
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *
       `;
 
-      const result = await db.execute(query, [
+      const result = await pool.query(query, [
         assetId,
         maintenanceType,
         description,
         date,
-        status || 'scheduled',
+        status || 'completed',
         cost || null,
-        performedBy || null
+        performedBy || null,
+        nextMaintenanceDate || null,
+        notes || null
       ]);
 
-      console.log('✅ Mantenimiento creado en BD:', result.rows[0]);
-      res.status(201).json(result.rows[0]);
+      // Mapear respuesta a camelCase
+      const maintenance = {
+        id: result.rows[0].id,
+        assetId: result.rows[0].asset_id,
+        date: result.rows[0].date,
+        maintenanceType: result.rows[0].maintenance_type,
+        description: result.rows[0].description,
+        cost: result.rows[0].cost,
+        performedBy: result.rows[0].performed_by,
+        nextMaintenanceDate: result.rows[0].next_maintenance_date,
+        status: result.rows[0].status,
+        notes: result.rows[0].notes,
+        createdAt: result.rows[0].created_at,
+        updatedAt: result.rows[0].updated_at
+      };
+
+      console.log('✅ Mantenimiento creado en BD:', maintenance);
+      res.status(201).json(maintenance);
     } catch (error) {
       console.error('Error creating maintenance:', error);
       res.status(500).json({ error: 'Error al crear el mantenimiento' });
@@ -134,7 +177,7 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         RETURNING *
       `;
 
-      const result = await db.execute(query, [
+      const result = await pool.query(query, [
         maintenanceType,
         description,
         date,
@@ -168,7 +211,7 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         RETURNING *
       `;
 
-      const result = await db.execute(query, [status, maintenanceId]);
+      const result = await pool.query(query, [status, maintenanceId]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Mantenimiento no encontrado' });
@@ -192,7 +235,7 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         RETURNING *
       `;
 
-      const result = await db.execute(query, [maintenanceId]);
+      const result = await pool.query(query, [maintenanceId]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Mantenimiento no encontrado' });
@@ -217,7 +260,7 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         GROUP BY status, maintenance_type
       `;
 
-      const result = await db.execute(query);
+      const result = await pool.query(query);
       
       const stats = result.rows.reduce((acc: any, row: any) => {
         acc.total = (acc.total || 0) + parseInt(row.total);
