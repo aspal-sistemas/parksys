@@ -287,14 +287,11 @@ const AssetDetailPage: React.FC = () => {
     if (!maintenances || maintenances.length === 0) return null;
     
     const completedMaintenances = maintenances.filter(m => m.status === 'completed');
-    console.log('Completed maintenances:', completedMaintenances);
-    
     if (completedMaintenances.length === 0) return null;
     
     const lastMaintenance = completedMaintenances
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
     
-    console.log('Last maintenance date:', lastMaintenance?.date);
     return lastMaintenance?.date || null;
   }, [maintenances]);
 
@@ -302,14 +299,11 @@ const AssetDetailPage: React.FC = () => {
     if (!maintenances || maintenances.length === 0) return null;
     
     const maintenancesWithNext = maintenances.filter(m => m.nextMaintenanceDate);
-    console.log('Maintenances with next date:', maintenancesWithNext);
-    
     if (maintenancesWithNext.length === 0) return null;
     
     const nextMaintenance = maintenancesWithNext
       .sort((a, b) => new Date(a.nextMaintenanceDate!).getTime() - new Date(b.nextMaintenanceDate!).getTime())[0];
     
-    console.log('Next maintenance date:', nextMaintenance?.nextMaintenanceDate);
     return nextMaintenance?.nextMaintenanceDate || null;
   }, [maintenances]);
 
@@ -399,9 +393,11 @@ const AssetDetailPage: React.FC = () => {
   // Mutación para registrar mantenimiento
   const maintenanceMutation = useMutation({
     mutationFn: (maintenance: z.infer<typeof maintenanceSchema>) => {
+      console.log('Enviando mantenimiento:', maintenance);
       return apiRequest(`/api/assets/${id}/maintenances`, 'POST', maintenance);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Mantenimiento creado exitosamente:', data);
       queryClient.invalidateQueries({ queryKey: [`/api/assets/${id}/maintenances`] });
       queryClient.invalidateQueries({ queryKey: [`/api/assets/${id}`] });
       setIsMaintenanceDialogOpen(false);
@@ -420,12 +416,12 @@ const AssetDetailPage: React.FC = () => {
       });
     },
     onError: (error) => {
+      console.error('Error al registrar mantenimiento:', error);
       toast({
         title: "Error",
-        description: "Ha ocurrido un error al registrar el mantenimiento.",
+        description: `Ha ocurrido un error al registrar el mantenimiento: ${error.message || error}`,
         variant: "destructive",
       });
-      console.error('Error al registrar mantenimiento:', error);
     }
   });
   
@@ -475,6 +471,8 @@ const AssetDetailPage: React.FC = () => {
   
   // Manejar envío del formulario de mantenimiento
   const handleMaintenanceSubmit = (values: z.infer<typeof maintenanceSchema>) => {
+    console.log('Datos del formulario de mantenimiento:', values);
+    console.log('Estado del formulario:', maintenanceForm.formState.errors);
     maintenanceMutation.mutate(values);
   };
   
