@@ -143,7 +143,7 @@ const EditAssetPage = () => {
     queryKey: [`/api/assets/${id}`],
     enabled: !!id,
     staleTime: 0, // Siempre considera los datos como obsoletos
-    cacheTime: 0, // No cachear los datos
+    gcTime: 0, // No cachear los datos (TanStack Query v5)
   });
 
   // Efecto para inicializar la posición del mapa cuando se cargan los datos del activo
@@ -194,6 +194,10 @@ const EditAssetPage = () => {
   // Actualizar valores por defecto cuando se carguen los datos
   useEffect(() => {
     if (asset) {
+      console.log('=== CARGANDO DATOS DEL ACTIVO EN FORMULARIO ===');
+      console.log('Asset recibido:', asset);
+      console.log('Coordenadas del asset:', { lat: asset.latitude, lng: asset.longitude });
+      
       form.reset({
         name: asset.name || '',
         description: asset.description || '',
@@ -210,6 +214,11 @@ const EditAssetPage = () => {
         latitude: asset.latitude ? String(asset.latitude) : '',
         longitude: asset.longitude ? String(asset.longitude) : '',
         notes: asset.notes || ''
+      });
+      
+      console.log('Formulario reseteado con coordenadas:', {
+        lat: asset.latitude ? String(asset.latitude) : '',
+        lng: asset.longitude ? String(asset.longitude) : ''
       });
       
       // Actualizar también la posición del mapa si hay coordenadas
