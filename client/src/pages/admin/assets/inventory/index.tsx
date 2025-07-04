@@ -190,7 +190,7 @@ const InventoryPage: React.FC = () => {
   };
 
   const handleEdit = (id: number) => {
-    setLocation(`/admin/assets/edit/${id}`);
+    setLocation(`/admin/assets/${id}/edit`);
   };
 
   const handleScheduleMaintenance = (id: number) => {
