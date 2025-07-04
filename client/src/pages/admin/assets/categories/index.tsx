@@ -1057,40 +1057,29 @@ const AssetCategoriesPage: React.FC = () => {
 
         {/* Estructura de Árbol */}
         <TabsContent value="tree" className="space-y-2">
-          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-semibold text-blue-900 mb-2">¿Cómo funciona la Estructura de Árbol?</h3>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Muestra TODAS las categorías en una vista plana</li>
-                  <li>• La indentación indica el nivel jerárquico (más indentado = más profundo)</li>
-                  <li>• Categorías principales están alineadas a la izquierda</li>
-                  <li>• Subcategorías están indentadas y muestran una flecha →</li>
-                  <li>• Útil para ver toda la estructura de un vistazo</li>
-                </ul>
-              </div>
+          <div className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900">Estructura de Árbol de Categorías</h3>
               
               {/* Control de Expansión Global */}
-              <div className="ml-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowSubcategoriesInTree(!showSubcategoriesInTree)}
-                  className="flex items-center gap-2"
-                >
-                  {showSubcategoriesInTree ? (
-                    <>
-                      <ChevronDown size={16} />
-                      Contraer Todo
-                    </>
-                  ) : (
-                    <>
-                      <ChevronRight size={16} />
-                      Expandir Todo
-                    </>
-                  )}
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowSubcategoriesInTree(!showSubcategoriesInTree)}
+                className="flex items-center gap-2"
+              >
+                {showSubcategoriesInTree ? (
+                  <>
+                    <ChevronDown size={16} />
+                    Contraer Todo
+                  </>
+                ) : (
+                  <>
+                    <ChevronRight size={16} />
+                    Expandir Todo
+                  </>
+                )}
+              </Button>
             </div>
           </div>
 
