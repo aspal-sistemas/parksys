@@ -90,13 +90,18 @@ const NewIncidentPage = () => {
   // Mutación para crear incidencia
   const createMutation = useMutation({
     mutationFn: async (data: IncidentFormData) => {
+      // Mapear campos del frontend a lo que espera el backend
       const incidentData = {
-        ...data,
-        date: selectedDate.toISOString(),
-        status: 'reported',
+        title: data.title,
+        description: data.description,
         assetId: data.assetId && data.assetId !== 'none' ? parseInt(data.assetId) : null,
         parkId: parseInt(data.parkId),
         categoryId: parseInt(data.categoryId),
+        severity: data.priority, // priority -> severity
+        location: data.location,
+        reporterName: data.reportedBy, // reportedBy -> reporterName
+        reporterEmail: data.contactInfo, // contactInfo -> reporterEmail
+        status: 'pending' // El servidor espera 'pending', no 'reported'
       };
       
       console.log('📝 Datos del formulario a enviar:', data);
