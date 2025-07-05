@@ -11,12 +11,9 @@ import {
   BarChart, 
   Filter, 
   Tag,
-  Clock,
-  Eye,
   Edit,
   Trash2,
   AlertCircle,
-  MoreHorizontal,
   Plus
 } from 'lucide-react';
 
@@ -185,16 +182,8 @@ const InventoryPage: React.FC = () => {
   };
 
   // Handlers para acciones
-  const handleView = (id: number) => {
-    setLocation(`/admin/assets/${id}`);
-  };
-
   const handleEdit = (id: number) => {
     setLocation(`/admin/assets/${id}/edit`);
-  };
-
-  const handleScheduleMaintenance = (id: number) => {
-    setLocation(`/admin/assets/maintenance/schedule/${id}`);
   };
 
   const handleReportIncident = (id: number) => {
@@ -494,26 +483,8 @@ const InventoryPage: React.FC = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
-                              title="Ver detalles"
-                              onClick={() => handleView(asset.id)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-gray-600 hover:text-gray-700"
-                              title="Programar mantenimiento"
-                              onClick={() => handleScheduleMaintenance(asset.id)}
-                            >
-                              <Clock className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
                               className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
-                              title="Editar"
+                              title="Gestionar activo (editar, ver detalles, programar mantenimiento)"
                               onClick={() => handleEdit(asset.id)}
                             >
                               <Edit className="h-4 w-4" />
