@@ -119,6 +119,9 @@ const IncidentsPage = () => {
     }
   });
 
+  // Debug para ver las categorías cargadas
+  console.log('🔥 Categorías cargadas:', categories);
+
   // Consulta para obtener usuarios para asignación
   const { data: users = [] } = useQuery({
     queryKey: ['/api/users'],
@@ -264,7 +267,10 @@ const IncidentsPage = () => {
 
   // Obtener etiqueta de categoría
   const getCategoryLabel = (categoryId: number | string) => {
+    console.log('🔍 getCategoryLabel llamada con:', categoryId, 'categories:', categories);
+    
     if (!categories || categories.length === 0) {
+      console.log('⚠️ No hay categorías cargadas, usando por defecto');
       // Categorías por defecto si no hay datos
       const defaultCategories: Record<string, string> = {
         'damage': 'Daño',
@@ -283,9 +289,11 @@ const IncidentsPage = () => {
     if (typeof categoryId === 'string' && categoryId.startsWith('category_')) {
       const idNumber = categoryId.replace('category_', '');
       actualCategoryId = parseInt(idNumber, 10);
+      console.log('🔄 Convertido de', categoryId, 'a', actualCategoryId);
     }
     
     const category = categories.find((c: any) => c.id === actualCategoryId);
+    console.log('🎯 Categoría encontrada:', category);
     return category ? category.name : categoryId;
   };
 
