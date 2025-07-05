@@ -94,7 +94,7 @@ const NewIncidentPage = () => {
         ...data,
         date: selectedDate.toISOString(),
         status: 'reported',
-        assetId: data.assetId ? parseInt(data.assetId) : null,
+        assetId: data.assetId && data.assetId !== 'none' ? parseInt(data.assetId) : null,
         parkId: parseInt(data.parkId),
         categoryId: parseInt(data.categoryId),
       };
@@ -121,17 +121,6 @@ const NewIncidentPage = () => {
     },
   });
 
-  // Preseleccionar el activo si viene de la URL
-  useEffect(() => {
-    if (assetIdFromUrl && assets.length > 0) {
-      const asset = assets.find((a: any) => a.id === parseInt(assetIdFromUrl));
-      if (asset) {
-        form.setValue('assetId', assetIdFromUrl);
-        form.setValue('parkId', asset.parkId?.toString() || '');
-      }
-    }
-  }, [assetIdFromUrl, assets, form]);
-
   const onSubmit = (data: IncidentFormData) => {
     createMutation.mutate(data);
   };
@@ -145,7 +134,52 @@ const NewIncidentPage = () => {
     { id: 5, name: 'Vandalismo', description: 'Actos de vandalismo' },
   ];
 
-  const displayCategories = categories.length > 0 ? categories : sampleCategories;
+  // Filtros defensivos para datos con valores válidos
+  const safeCategories = React.useMemo(() => {
+    const categoriesToUse = categories.length > 0 ? categories : sampleCategories;
+    return categoriesToUse.filter((category: any) => 
+      category && 
+      category.id && 
+      category.name && 
+      category.name.trim() !== '' &&
+      category.id.toString().trim() !== ''
+    );
+  }, [categories]);
+
+  const safeParks = React.useMemo(() => {
+    if (!Array.isArray(parks)) return [];
+    return parks.filter((park: any) => 
+      park && 
+      park.id && 
+      park.name && 
+      park.name.trim() !== '' &&
+      park.id.toString().trim() !== ''
+    );
+  }, [parks]);
+
+  const safeAssets = React.useMemo(() => {
+    if (!Array.isArray(assets)) return [];
+    return assets.filter((asset: any) => 
+      asset && 
+      asset.id && 
+      asset.name && 
+      asset.name.trim() !== '' &&
+      asset.id.toString().trim() !== ''
+    );
+  }, [assets]);
+
+  const displayCategories = safeCategories;
+
+  // Preseleccionar el activo si viene de la URL
+  useEffect(() => {
+    if (assetIdFromUrl && safeAssets.length > 0) {
+      const asset = safeAssets.find((a: any) => a.id === parseInt(assetIdFromUrl));
+      if (asset) {
+        form.setValue('assetId', assetIdFromUrl);
+        form.setValue('parkId', asset.parkId?.toString() || '');
+      }
+    }
+  }, [assetIdFromUrl, safeAssets, form]);
 
   return (
     <AdminLayout>
@@ -252,7 +286,7 @@ const NewIncidentPage = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {parks.map((park: any) => (
+                            {safeParks.map((park: any) => (
                               <SelectItem key={park.id} value={park.id.toString()}>
                                 {park.name}
                               </SelectItem>
@@ -265,7 +299,7 @@ const NewIncidentPage = () => {
                   />
 
                   {/* Activo (opcional) */}
-                  {assets.length > 0 && (
+                  {safeAssets.length > 0 && (
                     <FormField
                       control={form.control}
                       name="assetId"
@@ -279,8 +313,8 @@ const NewIncidentPage = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">Sin activo específico</SelectItem>
-                              {assets.map((asset: any) => (
+                              <SelectItem value="none">Sin activo específico</SelectItem>
+                              {safeAssets.map((asset: any) => (
                                 <SelectItem key={asset.id} value={asset.id.toString()}>
                                   {asset.name}
                                 </SelectItem>
