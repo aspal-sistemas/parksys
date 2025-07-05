@@ -3210,10 +3210,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "ID de incidencia inválido" });
       }
       
-      // Por ahora devolvemos un array vacío ya que no existe la tabla de comentarios
-      res.json([]);
+      const { pool } = await import("./db");
+      
+      const query = `
+        SELECT 
+          ic.id,
+          ic.comment_text as "commentText",
+          ic.is_internal as "isInternal",
+          ic.is_public as "isPublic",
+          ic.created_at as "createdAt",
+          ic.updated_at as "updatedAt",
+          u.full_name as "authorName",
+          u.username as "authorUsername"
+        FROM incident_comments ic
+        LEFT JOIN users u ON ic.user_id = u.id
+        WHERE ic.incident_id = $1
+        ORDER BY ic.created_at ASC
+      `;
+      
+      const result = await pool.query(query, [incidentId]);
+      console.log(`📝 Encontrados ${result.rows.length} comentarios para incidencia ${incidentId}`);
+      res.json(result.rows);
+      
     } catch (error) {
       console.error('Error al obtener comentarios:', error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Agregar comentario a una incidencia
+  apiRouter.post("/incidents/:id/comments", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      const { commentText, isInternal = false, isPublic = true } = req.body;
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+
+      if (!commentText || commentText.trim().length === 0) {
+        return res.status(400).json({ message: "El comentario no puede estar vacío" });
+      }
+
+      const { pool } = await import("./db");
+      const userId = req.headers['x-user-id'] || 4;
+      
+      const query = `
+        INSERT INTO incident_comments (incident_id, user_id, comment_text, is_internal, is_public, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+        RETURNING 
+          id,
+          comment_text as "commentText",
+          is_internal as "isInternal",
+          is_public as "isPublic",
+          created_at as "createdAt",
+          updated_at as "updatedAt"
+      `;
+      
+      const result = await pool.query(query, [incidentId, userId, commentText.trim(), isInternal, isPublic]);
+      
+      // Registrar en el historial
+      await pool.query(`
+        INSERT INTO incident_history (incident_id, user_id, action_type, notes, created_at)
+        VALUES ($1, $2, 'comment_added', $3, NOW())
+      `, [incidentId, userId, `Comentario agregado: ${commentText.trim().substring(0, 50)}...`]);
+      
+      console.log(`✅ Comentario agregado a incidencia ${incidentId}`);
+      res.status(201).json(result.rows[0]);
+      
+    } catch (error) {
+      console.error('Error agregando comentario:', error);
       res.status(500).json({ message: "Error interno del servidor" });
     }
   });
@@ -3227,37 +3293,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "ID de incidencia inválido" });
       }
       
-      // Por ahora devolvemos un array vacío ya que no existe la tabla de historial
-      res.json([]);
+      const { pool } = await import("./db");
+      
+      const query = `
+        SELECT 
+          ih.id,
+          ih.action_type as "actionType",
+          ih.old_value as "oldValue",
+          ih.new_value as "newValue",
+          ih.field_name as "fieldName",
+          ih.notes,
+          ih.created_at as "createdAt",
+          u.full_name as "authorName",
+          u.username as "authorUsername"
+        FROM incident_history ih
+        LEFT JOIN users u ON ih.user_id = u.id
+        WHERE ih.incident_id = $1
+        ORDER BY ih.created_at DESC
+      `;
+      
+      const result = await pool.query(query, [incidentId]);
+      console.log(`📋 Encontrado historial de ${result.rows.length} acciones para incidencia ${incidentId}`);
+      res.json(result.rows);
+      
     } catch (error) {
       console.error('Error al obtener historial:', error);
       res.status(500).json({ message: "Error interno del servidor" });
     }
   });
 
-  // Actualizar estado de una incidencia
+  // Actualizar estado de una incidencia - VERSION MEJORADA
   apiRouter.put("/incidents/:id/status", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const incidentId = Number(req.params.id);
-      const { status } = req.body;
+      const { status, notes } = req.body;
       
-      if (!status || !["pending", "in_progress", "resolved", "rejected"].includes(status)) {
-        return res.status(400).json({ message: "Estado de incidencia inválido" });
+      const validStatuses = ['pending', 'assigned', 'in_progress', 'review', 'resolved', 'closed', 'rejected'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: "Estado inválido" });
       }
+
+      const { pool } = await import("./db");
+      const userId = req.headers['x-user-id'] || 4;
       
-      // Verificamos si la incidencia existe en la base de datos
-      const incident = await storage.getIncident(incidentId);
-      if (!incident) {
+      // Obtener estado actual
+      const currentIncident = await pool.query('SELECT status FROM incidents WHERE id = $1', [incidentId]);
+      if (currentIncident.rows.length === 0) {
         return res.status(404).json({ message: "Incidencia no encontrada" });
       }
       
-      // Actualizamos el estado de la incidencia
-      const updatedIncident = await storage.updateIncidentStatus(incidentId, status);
+      const oldStatus = currentIncident.rows[0].status;
       
-      res.json(updatedIncident);
+      // Actualizar estado
+      const updateQuery = `
+        UPDATE incidents 
+        SET status = $1, updated_at = NOW()
+        WHERE id = $2
+        RETURNING *
+      `;
+      
+      const result = await pool.query(updateQuery, [status, incidentId]);
+      
+      // Registrar en historial
+      await pool.query(`
+        INSERT INTO incident_history (incident_id, user_id, action_type, old_value, new_value, field_name, notes, created_at)
+        VALUES ($1, $2, 'status_change', $3, $4, 'status', $5, NOW())
+      `, [incidentId, userId, oldStatus, status, notes || `Estado cambiado de ${oldStatus} a ${status}`]);
+      
+      console.log(`✅ Estado de incidencia ${incidentId} cambiado de ${oldStatus} a ${status}`);
+      res.json(result.rows[0]);
+      
     } catch (error) {
-      console.error("Error al actualizar incidencia:", error);
-      res.status(500).json({ message: "Error al actualizar el estado de la incidencia" });
+      console.error("Error al actualizar estado:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Asignar incidencia a usuario
+  apiRouter.put("/incidents/:id/assign", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      const { assignedToUserId, department, dueDate, notes } = req.body;
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+
+      const { pool } = await import("./db");
+      const userId = req.headers['x-user-id'] || 4;
+      
+      // Crear asignación
+      const assignmentQuery = `
+        INSERT INTO incident_assignments (incident_id, assigned_to_user_id, assigned_by_user_id, department, due_date, notes, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+        RETURNING id
+      `;
+      
+      const assignmentResult = await pool.query(assignmentQuery, [
+        incidentId, 
+        assignedToUserId || null, 
+        userId, 
+        department || null, 
+        dueDate || null, 
+        notes || null
+      ]);
+      
+      // Actualizar incidencia
+      await pool.query(`
+        UPDATE incidents 
+        SET assigned_to_user_id = $1, status = CASE WHEN status = 'pending' THEN 'assigned' ELSE status END, updated_at = NOW()
+        WHERE id = $2
+      `, [assignedToUserId, incidentId]);
+      
+      // Registrar en historial
+      await pool.query(`
+        INSERT INTO incident_history (incident_id, user_id, action_type, new_value, field_name, notes, created_at)
+        VALUES ($1, $2, 'assignment', $3, 'assigned_to_user_id', $4, NOW())
+      `, [incidentId, userId, assignedToUserId?.toString() || department, notes || 'Incidencia asignada']);
+      
+      console.log(`✅ Incidencia ${incidentId} asignada exitosamente`);
+      res.json({ success: true, assignmentId: assignmentResult.rows[0].id });
+      
+    } catch (error) {
+      console.error("Error asignando incidencia:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Obtener archivos adjuntos de una incidencia
+  apiRouter.get("/incidents/:id/attachments", async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+
+      const { pool } = await import("./db");
+      
+      const query = `
+        SELECT 
+          ia.id,
+          ia.file_name as "fileName",
+          ia.file_path as "filePath",
+          ia.file_type as "fileType",
+          ia.file_size as "fileSize",
+          ia.attachment_type as "attachmentType",
+          ia.is_before_photo as "isBeforePhoto",
+          ia.is_after_photo as "isAfterPhoto",
+          ia.created_at as "createdAt",
+          u.full_name as "uploadedByName"
+        FROM incident_attachments ia
+        LEFT JOIN users u ON ia.uploaded_by_user_id = u.id
+        WHERE ia.incident_id = $1
+        ORDER BY ia.created_at DESC
+      `;
+      
+      const result = await pool.query(query, [incidentId]);
+      console.log(`📎 Encontrados ${result.rows.length} archivos para incidencia ${incidentId}`);
+      res.json(result.rows);
+      
+    } catch (error) {
+      console.error("Error obteniendo archivos adjuntos:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
     }
   });
   

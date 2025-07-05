@@ -203,7 +203,7 @@ function Router() {
         </Route>
         <Route path="/admin/incidents/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando detalles de incidencia...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/incidents/[id]')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/incidents/DetailedIncidentPage')))}
           </Suspense>
         </Route>
         {/* Página de acceso directo al dashboard */}
