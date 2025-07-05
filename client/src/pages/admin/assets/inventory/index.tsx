@@ -217,7 +217,7 @@ const InventoryPage: React.FC = () => {
   };
 
   const handleScheduleMaintenance = (id: number) => {
-    setLocation(`/admin/assets/${id}/edit`);
+    setLocation(`/admin/assets/${id}`);
   };
 
   const deleteAssetMutation = useMutation({
