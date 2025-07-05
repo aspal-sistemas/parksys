@@ -3458,6 +3458,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error interno del servidor" });
     }
   });
+
+  // Obtener asignaciones de una incidencia
+  apiRouter.get("/incidents/:id/assignments", async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+
+      const { pool } = await import("./db");
+      
+      const query = `
+        SELECT 
+          ia.id,
+          ia.department,
+          ia.due_date as "dueDate",
+          ia.notes,
+          ia.status as "assignmentStatus",
+          ia.created_at as "createdAt",
+          ia.updated_at as "updatedAt",
+          assigned.full_name as "assignedToName",
+          assigned.username as "assignedToUsername",
+          assigned.email as "assignedToEmail",
+          assigner.full_name as "assignedByName",
+          assigner.username as "assignedByUsername"
+        FROM incident_assignments ia
+        LEFT JOIN users assigned ON ia.assigned_to_user_id = assigned.id
+        LEFT JOIN users assigner ON ia.assigned_by_user_id = assigner.id
+        WHERE ia.incident_id = $1
+        ORDER BY ia.created_at DESC
+      `;
+      
+      const result = await pool.query(query, [incidentId]);
+      console.log(`👥 Encontradas ${result.rows.length} asignaciones para incidencia ${incidentId}`);
+      res.json(result.rows);
+      
+    } catch (error) {
+      console.error("Error obteniendo asignaciones:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Actualizar estado de asignación
+  apiRouter.put("/incidents/:incidentId/assignments/:assignmentId", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { incidentId, assignmentId } = req.params;
+      const { status, notes } = req.body;
+      
+      if (!incidentId || !assignmentId) {
+        return res.status(400).json({ message: "IDs requeridos" });
+      }
+
+      const { pool } = await import("./db");
+      const userId = req.headers['x-user-id'] || 4;
+      
+      const query = `
+        UPDATE incident_assignments 
+        SET status = $1, notes = COALESCE($2, notes), updated_at = NOW()
+        WHERE id = $3 AND incident_id = $4
+        RETURNING *
+      `;
+      
+      const result = await pool.query(query, [status, notes, assignmentId, incidentId]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Asignación no encontrada" });
+      }
+      
+      // Registrar en historial
+      await pool.query(`
+        INSERT INTO incident_history (incident_id, user_id, action_type, new_value, field_name, notes, created_at)
+        VALUES ($1, $2, 'assignment_updated', $3, 'assignment_status', $4, NOW())
+      `, [incidentId, userId, status, notes || `Estado de asignación actualizado a ${status}`]);
+      
+      console.log(`✅ Asignación ${assignmentId} actualizada exitosamente`);
+      res.json(result.rows[0]);
+      
+    } catch (error) {
+      console.error("Error actualizando asignación:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Crear nueva asignación para una incidencia
+  apiRouter.post("/incidents/:id/assignments", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      const { assignedToUserId, department, dueDate, notes } = req.body;
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+
+      if (!assignedToUserId) {
+        return res.status(400).json({ message: "Usuario asignado es requerido" });
+      }
+
+      const { pool } = await import("./db");
+      const assignedByUserId = req.headers['x-user-id'] || 4;
+      
+      const query = `
+        INSERT INTO incident_assignments (
+          incident_id, assigned_to_user_id, assigned_by_user_id, 
+          department, due_date, notes, status, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, 'active', NOW(), NOW())
+        RETURNING *
+      `;
+      
+      const result = await pool.query(query, [
+        incidentId, assignedToUserId, assignedByUserId, 
+        department || 'General', dueDate, notes
+      ]);
+      
+      // Actualizar la incidencia para reflejar la asignación
+      await pool.query(`
+        UPDATE incidents 
+        SET assigned_to_user_id = $1, status = CASE 
+          WHEN status = 'pending' THEN 'assigned' 
+          ELSE status 
+        END, updated_at = NOW()
+        WHERE id = $2
+      `, [assignedToUserId, incidentId]);
+      
+      // Registrar en historial
+      await pool.query(`
+        INSERT INTO incident_history (incident_id, user_id, action_type, new_value, field_name, notes, created_at)
+        VALUES ($1, $2, 'assignment_created', $3, 'assigned_to_user_id', $4, NOW())
+      `, [incidentId, assignedByUserId, assignedToUserId, notes || 'Nueva asignación creada']);
+      
+      console.log(`✅ Nueva asignación creada para incidencia ${incidentId}`);
+      res.status(201).json(result.rows[0]);
+      
+    } catch (error) {
+      console.error("Error creando asignación:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
   
   // Get incidents for a specific park
   apiRouter.get("/parks/:id/incidents", isAuthenticated, async (req: Request, res: Response) => {

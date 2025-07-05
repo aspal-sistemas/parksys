@@ -183,6 +183,7 @@ const DetailedIncidentPage = () => {
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [assignmentNotes, setAssignmentNotes] = useState('');
   const [assignmentDueDate, setAssignmentDueDate] = useState('');
+  const [assignmentDepartment, setAssignmentDepartment] = useState('');
   
   // Consultas para obtener datos
   const { 
@@ -215,6 +216,14 @@ const DetailedIncidentPage = () => {
     isLoading: isLoadingAttachments
   } = useQuery({
     queryKey: [`/api/incidents/${incidentId}/attachments`],
+    enabled: !!incidentId
+  });
+  
+  const { 
+    data: assignments = [], 
+    isLoading: isLoadingAssignments
+  } = useQuery({
+    queryKey: [`/api/incidents/${incidentId}/assignments`],
     enabled: !!incidentId
   });
   
@@ -309,6 +318,37 @@ const DetailedIncidentPage = () => {
     }
   });
 
+  // Mutación para crear nueva asignación
+  const createAssignmentMutation = useMutation({
+    mutationFn: async (data: { assignedToUserId: number; department?: string; dueDate?: string; notes?: string }) => {
+      return await apiRequest(`/api/incidents/${incidentId}/assignments`, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/incidents/${incidentId}/assignments`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/incidents/${incidentId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/incidents/${incidentId}/history`] });
+      setShowAssignDialog(false);
+      setSelectedUserId('');
+      setAssignmentNotes('');
+      setAssignmentDueDate('');
+      setAssignmentDepartment('');
+      toast({
+        title: "Asignación creada",
+        description: "La nueva asignación se ha creado correctamente."
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo crear la asignación.",
+        variant: "destructive"
+      });
+    }
+  });
+
   // Manejadores de eventos
   const handleAddComment = () => {
     if (!newComment.trim()) return;
@@ -331,8 +371,9 @@ const DetailedIncidentPage = () => {
   const handleAssignIncident = () => {
     if (!selectedUserId) return;
     
-    assignIncidentMutation.mutate({
+    createAssignmentMutation.mutate({
       assignedToUserId: parseInt(selectedUserId),
+      department: assignmentDepartment || 'General',
       notes: assignmentNotes || undefined,
       dueDate: assignmentDueDate || undefined
     });
@@ -454,10 +495,14 @@ const DetailedIncidentPage = () => {
 
             {/* Tabs con información adicional */}
             <Tabs defaultValue="comments" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="comments">
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Comentarios
+                </TabsTrigger>
+                <TabsTrigger value="assignments">
+                  <Users className="w-4 h-4 mr-2" />
+                  Asignaciones
                 </TabsTrigger>
                 <TabsTrigger value="history">
                   <History className="w-4 h-4 mr-2" />
@@ -541,6 +586,134 @@ const DetailedIncidentPage = () => {
                                 )}
                               </div>
                               <p className="text-gray-700 mt-1">{comment.commentText}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* Pestaña de Asignaciones */}
+              <TabsContent value="assignments" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Nueva Asignación</CardTitle>
+                    <CardDescription>
+                      Crea una nueva asignación para esta incidencia
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Usuario</Label>
+                        <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar usuario" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.isArray(users) && users.map((user: User) => (
+                              <SelectItem key={user.id} value={user.id.toString()}>
+                                {user.fullName} ({user.username})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Departamento</Label>
+                        <Select value={assignmentDepartment} onValueChange={setAssignmentDepartment}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar departamento" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="General">General</SelectItem>
+                            <SelectItem value="Mantenimiento">Mantenimiento</SelectItem>
+                            <SelectItem value="Seguridad">Seguridad</SelectItem>
+                            <SelectItem value="Jardinería">Jardinería</SelectItem>
+                            <SelectItem value="Limpieza">Limpieza</SelectItem>
+                            <SelectItem value="Infraestructura">Infraestructura</SelectItem>
+                            <SelectItem value="Atención al Público">Atención al Público</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Fecha límite (opcional)</Label>
+                        <Input
+                          type="datetime-local"
+                          value={assignmentDueDate}
+                          onChange={(e) => setAssignmentDueDate(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label>Notas (opcional)</Label>
+                        <Textarea
+                          value={assignmentNotes}
+                          onChange={(e) => setAssignmentNotes(e.target.value)}
+                          placeholder="Instrucciones o notas para el usuario asignado..."
+                        />
+                      </div>
+                      <Button 
+                        onClick={handleAssignIncident}
+                        disabled={!selectedUserId || createAssignmentMutation.isPending}
+                        className="w-full"
+                      >
+                        {createAssignmentMutation.isPending ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Creando asignación...
+                          </>
+                        ) : (
+                          <>
+                            <Users className="w-4 h-4 mr-2" />
+                            Crear Asignación
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Lista de asignaciones existentes */}
+                <div className="space-y-3">
+                  <h3 className="text-lg font-medium">Asignaciones Existentes</h3>
+                  {isLoadingAssignments ? (
+                    <div className="text-center py-4">Cargando asignaciones...</div>
+                  ) : assignments.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      No hay asignaciones registradas
+                    </div>
+                  ) : (
+                    assignments.map((assignment: any) => (
+                      <Card key={assignment.id}>
+                        <CardContent className="pt-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <div className="font-medium">{assignment.assignedToName}</div>
+                                <Badge variant="outline">{assignment.department}</Badge>
+                                <Badge 
+                                  variant={assignment.status === 'pending' ? 'secondary' : 
+                                           assignment.status === 'in_progress' ? 'default' : 
+                                           assignment.status === 'completed' ? 'success' : 'destructive'}
+                                >
+                                  {assignment.status === 'pending' ? 'Pendiente' : 
+                                   assignment.status === 'in_progress' ? 'En Progreso' : 
+                                   assignment.status === 'completed' ? 'Completado' : 'Cancelado'}
+                                </Badge>
+                              </div>
+                              {assignment.dueDate && (
+                                <div className="text-sm text-gray-600 mb-1">
+                                  Fecha límite: {format(new Date(assignment.dueDate), 'dd/MM/yyyy HH:mm', { locale: es })}
+                                </div>
+                              )}
+                              {assignment.notes && (
+                                <p className="text-sm text-gray-700">{assignment.notes}</p>
+                              )}
+                              <div className="text-xs text-gray-500 mt-2">
+                                Creado: {format(new Date(assignment.createdAt), 'dd/MM/yyyy HH:mm', { locale: es })}
+                              </div>
                             </div>
                           </div>
                         </CardContent>
@@ -688,6 +861,23 @@ const DetailedIncidentPage = () => {
                                     {user.fullName} ({user.username})
                                   </SelectItem>
                                 ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label>Departamento</Label>
+                            <Select value={assignmentDepartment} onValueChange={setAssignmentDepartment}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Seleccionar departamento" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="General">General</SelectItem>
+                                <SelectItem value="Mantenimiento">Mantenimiento</SelectItem>
+                                <SelectItem value="Seguridad">Seguridad</SelectItem>
+                                <SelectItem value="Jardinería">Jardinería</SelectItem>
+                                <SelectItem value="Limpieza">Limpieza</SelectItem>
+                                <SelectItem value="Infraestructura">Infraestructura</SelectItem>
+                                <SelectItem value="Atención al Público">Atención al Público</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
