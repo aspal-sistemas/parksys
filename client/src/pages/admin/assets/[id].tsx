@@ -113,6 +113,30 @@ const formatCurrency = (value: number | null) => {
   }).format(value);
 };
 
+// Función para traducir estados de inglés a español
+const translateStatus = (status: string) => {
+  const statusMap: { [key: string]: string } = {
+    'active': 'Activo',
+    'maintenance': 'Mantenimiento',
+    'retired': 'Retirado',
+    'damaged': 'Dañado',
+    'storage': 'Almacenado'
+  };
+  return statusMap[status] || status;
+};
+
+// Función para traducir condiciones de inglés a español
+const translateCondition = (condition: string) => {
+  const conditionMap: { [key: string]: string } = {
+    'excellent': 'Excelente',
+    'good': 'Bueno',
+    'fair': 'Regular',
+    'poor': 'Malo',
+    'critical': 'Crítico'
+  };
+  return conditionMap[condition] || condition;
+};
+
 // Interfaces para los datos
 interface Asset {
   id: number;
@@ -615,14 +639,14 @@ const AssetDetailPage: React.FC = () => {
                       <div className="flex justify-between items-center">
                         <span className="font-medium text-gray-500">Estado:</span>
                         <Badge className={getStatusBadgeColor(asset?.status || '')}>
-                          {asset?.status}
+                          {translateStatus(asset?.status || '')}
                         </Badge>
                       </div>
                       
                       <div className="flex justify-between items-center">
                         <span className="font-medium text-gray-500">Condición:</span>
                         <Badge className={getConditionBadgeColor(asset?.condition || '')}>
-                          {asset?.condition}
+                          {translateCondition(asset?.condition || '')}
                         </Badge>
                       </div>
                       
