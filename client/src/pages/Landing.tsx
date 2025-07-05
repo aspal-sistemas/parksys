@@ -186,17 +186,17 @@ const Landing = () => {
             
             {/* Título principal renovado */}
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight">
-              Democratizamos la 
+              El Futuro de los 
               <span className="block bg-gradient-to-r from-yellow-300 via-green-200 to-emerald-100 bg-clip-text text-transparent relative">
-                Gestión de Parques
+                Bosques Urbanos
                 <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-48 h-2 bg-gradient-to-r from-transparent via-yellow-300/60 to-transparent rounded-full"></div>
               </span>
             </h1>
             
-            {/* Subtítulo mejorado */}
+            {/* Subtítulo específico para Guadalajara */}
             <p className="text-xl md:text-3xl mb-12 max-w-5xl mx-auto text-green-50 leading-relaxed font-light">
-              Tecnología accesible que permite a <span className="font-semibold text-yellow-200">cualquier municipio</span>, 
-              sin importar su tamaño o presupuesto, ofrecer espacios públicos de calidad mundial.
+              Plataforma integral diseñada para la <span className="font-semibold text-yellow-200">Agencia de Bosques Urbanos de Guadalajara</span>. 
+              Gestiona de manera inteligente los <span className="font-bold text-yellow-300">13 parques principales</span> de la ciudad con tecnología de vanguardia.
             </p>
             
             {/* Botones CTA renovados */}
@@ -214,9 +214,9 @@ const Landing = () => {
             {/* Stats destacados */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
               {[
-                { number: "500+", label: "Municipios" },
-                { number: "2,000+", label: "Parques" },
-                { number: "50K+", label: "Usuarios" },
+                { number: "13", label: "Parques" },
+                { number: "2,100+", label: "Árboles" },
+                { number: "156", label: "Actividades" },
                 { number: "99.9%", label: "Uptime" }
               ].map((stat, index) => (
                 <div key={index} className="text-center">
@@ -224,6 +224,127 @@ const Landing = () => {
                   <div className="text-sm text-green-100 font-medium">{stat.label}</div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 🚀 NUEVA SECCIÓN: Demo Interactivo en Vivo */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full px-6 py-3 mb-8 border border-blue-200">
+              <Zap className="h-5 w-5 text-blue-600" />
+              <span className="text-sm font-semibold text-blue-800">🎯 Sistema en funcionamiento</span>
+            </div>
+            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
+              Ve el Sistema
+              <span className="block text-blue-600">En Acción</span>
+            </h2>
+            <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed mb-12">
+              Explora las funcionalidades reales con datos de parques de Guadalajara
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+            {/* Dashboard Preview */}
+            <div className="space-y-6">
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-8 border border-emerald-200">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center">
+                    <BarChart3 className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900">Dashboard Ejecutivo</h3>
+                    <p className="text-emerald-700">Métricas en tiempo real</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+                    <div className="text-2xl font-bold text-emerald-600">13</div>
+                    <div className="text-sm text-gray-600">Parques Activos</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+                    <div className="text-2xl font-bold text-blue-600">156</div>
+                    <div className="text-sm text-gray-600">Actividades</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+                    <div className="text-2xl font-bold text-purple-600">45</div>
+                    <div className="text-sm text-gray-600">Voluntarios</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+                    <div className="text-2xl font-bold text-orange-600">2,100+</div>
+                    <div className="text-sm text-gray-600">Árboles</div>
+                  </div>
+                </div>
+                <Link href="/admin">
+                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+                    Ver Dashboard Completo
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Live System Access */}
+            <div className="space-y-6">
+              <h3 className="text-3xl font-bold text-gray-900 mb-8">Explora el Sistema Real</h3>
+              
+              <div className="space-y-4">
+                <Link href="/parks">
+                  <div className="bg-white border-2 border-gray-200 hover:border-emerald-400 rounded-xl p-6 transition-all duration-300 hover:shadow-lg group cursor-pointer">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-emerald-100 group-hover:bg-emerald-200 rounded-lg flex items-center justify-center transition-colors">
+                        <MapPin className="h-6 w-6 text-emerald-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-lg font-bold text-gray-900">Parques Públicos</h4>
+                        <p className="text-gray-600">13 parques de Guadalajara con información completa</p>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-emerald-600 transition-colors" />
+                    </div>
+                  </div>
+                </Link>
+
+                <Link href="/activities">
+                  <div className="bg-white border-2 border-gray-200 hover:border-blue-400 rounded-xl p-6 transition-all duration-300 hover:shadow-lg group cursor-pointer">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center transition-colors">
+                        <Calendar className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-lg font-bold text-gray-900">Actividades y Eventos</h4>
+                        <p className="text-gray-600">Programación completa con registro de participantes</p>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                    </div>
+                  </div>
+                </Link>
+
+                <Link href="/instructors">
+                  <div className="bg-white border-2 border-gray-200 hover:border-purple-400 rounded-xl p-6 transition-all duration-300 hover:shadow-lg group cursor-pointer">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-purple-100 group-hover:bg-purple-200 rounded-lg flex items-center justify-center transition-colors">
+                        <Users className="h-6 w-6 text-purple-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-lg font-bold text-gray-900">Instructores</h4>
+                        <p className="text-gray-600">Perfiles públicos con evaluaciones ciudadanas</p>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
+                    </div>
+                  </div>
+                </Link>
+              </div>
+
+              <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl p-6 text-center">
+                <h4 className="text-xl font-bold text-gray-900 mb-2">Demo Administrativo</h4>
+                <p className="text-gray-800 mb-4">Accede al panel completo de administración</p>
+                <Link href="/admin/login">
+                  <Button variant="outline" className="bg-white/20 border-white/30 text-gray-900 hover:bg-white/30">
+                    Iniciar Demo Admin
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
