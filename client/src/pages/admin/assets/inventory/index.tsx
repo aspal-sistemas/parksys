@@ -15,12 +15,17 @@ import {
   Trash2,
   AlertCircle,
   Plus,
-  Calendar
+  Calendar,
+  FileText,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
 import {
   Table,
   TableBody,
@@ -119,6 +124,16 @@ const InventoryPage: React.FC = () => {
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Estados para importación CSV
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [importProgress, setImportProgress] = useState(0);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importResults, setImportResults] = useState<{
+    success: number;
+    errors: Array<{ row: number; message: string }>;
+  } | null>(null);
 
   // Obtener datos de inventario con parámetros de paginación
   const { 
@@ -373,6 +388,133 @@ const InventoryPage: React.FC = () => {
     }
   };
 
+  // Función para procesar importación de CSV
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'text/csv') {
+      setCsvFile(file);
+      setImportResults(null);
+    } else {
+      toast({
+        title: "Archivo inválido",
+        description: "Por favor selecciona un archivo CSV válido.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Función para importar datos desde CSV
+  const importFromCSV = async () => {
+    if (!csvFile) {
+      toast({
+        title: "No hay archivo",
+        description: "Por favor selecciona un archivo CSV primero.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsImporting(true);
+    setImportProgress(0);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', csvFile);
+
+      // Simular progreso mientras se procesa
+      const progressInterval = setInterval(() => {
+        setImportProgress(prev => Math.min(prev + 10, 90));
+      }, 100);
+
+      const response = await fetch('/api/assets/import', {
+        method: 'POST',
+        body: formData,
+      });
+
+      clearInterval(progressInterval);
+      setImportProgress(100);
+
+      if (!response.ok) {
+        throw new Error('Error al procesar el archivo');
+      }
+
+      const result = await response.json();
+      
+      setImportResults({
+        success: result.success || 0,
+        errors: result.errors || []
+      });
+
+      // Invalidar cache para actualizar la lista
+      queryClient.invalidateQueries({ queryKey: ['/api/assets/inventory'] });
+
+      toast({
+        title: "Importación completada",
+        description: `Se procesaron ${result.success} registros exitosamente.`,
+      });
+
+    } catch (error) {
+      console.error('Error al importar CSV:', error);
+      toast({
+        title: "Error de importación",
+        description: "Hubo un problema al procesar el archivo CSV.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsImporting(false);
+      setImportProgress(0);
+    }
+  };
+
+  // Función para descargar plantilla CSV
+  const downloadTemplate = () => {
+    const headers = [
+      'ID',
+      'Nombre',
+      'Descripción',
+      'Número de Serie',
+      'Categoría',
+      'Parque',
+      'Amenidad',
+      'Ubicación Descripción',
+      'Latitud',
+      'Longitud',
+      'Estado',
+      'Condición',
+      'Fabricante',
+      'Modelo',
+      'Fecha de Adquisición',
+      'Costo de Adquisición (MXN)',
+      'Valor Actual (MXN)',
+      'Frecuencia de Mantenimiento',
+      'Último Mantenimiento',
+      'Próximo Mantenimiento',
+      'Vida Útil Esperada (meses)',
+      'Código QR',
+      'Persona Responsable',
+      'Notas',
+      'Fecha de Creación',
+      'Última Actualización'
+    ];
+
+    const csvContent = '\uFEFF' + headers.join(',') + '\r\n'; // UTF-8 BOM
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'plantilla_importacion_activos.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Plantilla descargada",
+      description: "Usa esta plantilla para preparar tus datos de importación.",
+    });
+  };
+
   return (
     <AdminLayout>
       <Helmet>
@@ -466,10 +608,140 @@ const InventoryPage: React.FC = () => {
           <Download className="h-4 w-4 mr-2" />
           Exportar Inventario
         </Button>
-        <Button variant="outline">
-          <Upload className="h-4 w-4 mr-2" />
-          Importar Datos
-        </Button>
+        <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline">
+              <Upload className="h-4 w-4 mr-2" />
+              Importar Datos
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Importar Inventario de Activos</DialogTitle>
+              <DialogDescription>
+                Importa datos masivamente desde un archivo CSV usando el mismo formato de la exportación.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {/* Descarga de plantilla */}
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-900 mb-2">1. Descarga la Plantilla</h4>
+                <p className="text-sm text-blue-700 mb-3">
+                  Usa la plantilla oficial con los 26 campos requeridos y formato correcto.
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={downloadTemplate}
+                  className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Descargar Plantilla CSV
+                </Button>
+              </div>
+
+              {/* Selección de archivo */}
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h4 className="font-medium text-gray-900 mb-2">2. Selecciona tu Archivo</h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  Sube el archivo CSV preparado con los datos de inventario.
+                </p>
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileUpload}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#00a587] file:text-white hover:file:bg-[#067f5f] file:cursor-pointer cursor-pointer"
+                />
+                {csvFile && (
+                  <div className="mt-2 flex items-center text-sm text-green-600">
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    Archivo seleccionado: {csvFile.name}
+                  </div>
+                )}
+              </div>
+
+              {/* Progreso de importación */}
+              {isImporting && (
+                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                  <h4 className="font-medium text-yellow-900 mb-2">Procesando Importación...</h4>
+                  <Progress value={importProgress} className="w-full" />
+                  <p className="text-sm text-yellow-700 mt-2">
+                    {importProgress}% completado
+                  </p>
+                </div>
+              )}
+
+              {/* Resultados de importación */}
+              {importResults && (
+                <div className={`p-4 rounded-lg border ${
+                  importResults.errors.length === 0 
+                    ? 'bg-green-50 border-green-200' 
+                    : 'bg-orange-50 border-orange-200'
+                }`}>
+                  <h4 className={`font-medium mb-2 ${
+                    importResults.errors.length === 0 
+                      ? 'text-green-900' 
+                      : 'text-orange-900'
+                  }`}>
+                    Resultados de la Importación
+                  </h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center text-sm">
+                      <CheckCircle className="h-4 w-4 mr-1 text-green-600" />
+                      <span className="text-green-700">
+                        {importResults.success} registros procesados exitosamente
+                      </span>
+                    </div>
+                    {importResults.errors.length > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex items-center text-sm">
+                          <XCircle className="h-4 w-4 mr-1 text-red-600" />
+                          <span className="text-red-700">
+                            {importResults.errors.length} errores encontrados:
+                          </span>
+                        </div>
+                        <div className="max-h-32 overflow-y-auto bg-white p-2 rounded border">
+                          {importResults.errors.slice(0, 5).map((error, index) => (
+                            <div key={index} className="text-xs text-red-600">
+                              Fila {error.row}: {error.message}
+                            </div>
+                          ))}
+                          {importResults.errors.length > 5 && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              ... y {importResults.errors.length - 5} errores más
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Botones de acción */}
+              <div className="flex justify-between pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsImportDialogOpen(false);
+                    setCsvFile(null);
+                    setImportResults(null);
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={importFromCSV}
+                  disabled={!csvFile || isImporting}
+                  className="bg-[#00a587] hover:bg-[#067f5f]"
+                >
+                  {isImporting ? 'Procesando...' : 'Importar Datos'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
         <Button variant="outline">
           <Printer className="h-4 w-4 mr-2" />
           Imprimir Reporte

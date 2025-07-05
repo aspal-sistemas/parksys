@@ -918,4 +918,190 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
       });
     }
   });
+
+  // Configurar multer para importación de CSV
+  const csvUpload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Solo se permiten archivos CSV'));
+      }
+    }
+  });
+
+  // Endpoint para importar activos desde CSV
+  apiRouter.post("/assets/import", isAuthenticated, csvUpload.single('file'), async (req: Request, res: Response) => {
+    try {
+      console.log('📥 Iniciando importación de activos desde CSV');
+
+      if (!req.file) {
+        return res.status(400).json({ 
+          message: "No se proporcionó archivo CSV",
+          success: 0,
+          errors: []
+        });
+      }
+
+      // Importar csv-parse
+      const { parse } = await import('csv-parse/sync');
+      
+      // Parsear el CSV
+      const csvContent = req.file.buffer.toString('utf8');
+      
+      // Detectar y remover BOM si existe
+      const cleanContent = csvContent.replace(/^\uFEFF/, '');
+      
+      const records = parse(cleanContent, {
+        columns: true,
+        skip_empty_lines: true,
+        delimiter: ',',
+        quote: '"',
+        escape: '"'
+      });
+
+      console.log(`📊 CSV parseado exitosamente: ${records.length} filas`);
+
+      const results = {
+        success: 0,
+        errors: [] as Array<{ row: number; message: string }>
+      };
+
+      // Obtener datos de referencia
+      const [categoriesData, parksData, amenitiesData] = await Promise.all([
+        pool.query('SELECT id, name FROM asset_categories WHERE parent_id IS NULL'),
+        pool.query('SELECT id, name FROM parks'),
+        pool.query('SELECT id, name FROM park_amenities')
+      ]);
+
+      const categoriesMap = new Map(categoriesData.rows.map(cat => [cat.name, cat.id]));
+      const parksMap = new Map(parksData.rows.map(park => [park.name, park.id]));
+      const amenitiesMap = new Map(amenitiesData.rows.map(amenity => [amenity.name, amenity.id]));
+
+      // Procesar cada fila
+      for (let i = 0; i < records.length; i++) {
+        const row = records[i];
+        const rowNumber = i + 2; // +2 porque empezamos desde 1 y hay header
+
+        try {
+          // Validar campos requeridos
+          if (!row.Nombre?.trim()) {
+            throw new Error('Nombre del activo es requerido');
+          }
+
+          // Mapear nombres a IDs
+          const categoryId = categoriesMap.get(row.Categoría?.trim());
+          const parkId = parksMap.get(row.Parque?.trim());
+          const amenityId = amenitiesMap.get(row.Amenidad?.trim());
+
+          if (!categoryId) {
+            throw new Error(`Categoría '${row.Categoría}' no encontrada`);
+          }
+          if (!parkId) {
+            throw new Error(`Parque '${row.Parque}' no encontrado`);
+          }
+
+          // Preparar datos del activo
+          const assetData = {
+            name: row.Nombre?.trim(),
+            description: row.Descripción?.trim() || null,
+            serial_number: row['Número de Serie']?.trim() || null,
+            category_id: categoryId,
+            park_id: parkId,
+            amenity_id: amenityId || null,
+            location_description: row['Ubicación Descripción']?.trim() || null,
+            latitude: row.Latitud ? parseFloat(row.Latitud) : null,
+            longitude: row.Longitud ? parseFloat(row.Longitud) : null,
+            status: translateStatusFromSpanish(row.Estado?.trim()) || 'active',
+            condition: translateConditionFromSpanish(row.Condición?.trim()) || 'good',
+            manufacturer: row.Fabricante?.trim() || null,
+            model: row.Modelo?.trim() || null,
+            acquisition_date: row['Fecha de Adquisición'] ? new Date(row['Fecha de Adquisición']) : null,
+            acquisition_cost: row['Costo de Adquisición (MXN)'] ? parseFloat(row['Costo de Adquisición (MXN)'].replace(/[$,]/g, '')) : null,
+            current_value: row['Valor Actual (MXN)'] ? parseFloat(row['Valor Actual (MXN)'].replace(/[$,]/g, '')) : null,
+            maintenance_frequency: row['Frecuencia de Mantenimiento']?.trim() || null,
+            expected_lifespan: row['Vida Útil Esperada (meses)'] ? parseInt(row['Vida Útil Esperada (meses)']) : null,
+            qr_code: row['Código QR']?.trim() || null,
+            notes: row.Notas?.trim() || null,
+            created_at: new Date(),
+            updated_at: new Date()
+          };
+
+          // Insertar en base de datos
+          const query = `
+            INSERT INTO assets (
+              name, description, serial_number, category_id, park_id, amenity_id,
+              location_description, latitude, longitude, status, condition,
+              manufacturer, model, acquisition_date, acquisition_cost, current_value,
+              maintenance_frequency, expected_lifespan, qr_code, notes,
+              created_at, updated_at
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22
+            )
+          `;
+
+          await pool.query(query, [
+            assetData.name, assetData.description, assetData.serial_number,
+            assetData.category_id, assetData.park_id, assetData.amenity_id,
+            assetData.location_description, assetData.latitude, assetData.longitude,
+            assetData.status, assetData.condition, assetData.manufacturer,
+            assetData.model, assetData.acquisition_date, assetData.acquisition_cost,
+            assetData.current_value, assetData.maintenance_frequency,
+            assetData.expected_lifespan, assetData.qr_code, assetData.notes,
+            assetData.created_at, assetData.updated_at
+          ]);
+
+          results.success++;
+
+        } catch (error) {
+          console.error(`Error en fila ${rowNumber}:`, error);
+          results.errors.push({
+            row: rowNumber,
+            message: error instanceof Error ? error.message : 'Error desconocido'
+          });
+        }
+      }
+
+      console.log(`✅ Importación completada: ${results.success} éxitos, ${results.errors.length} errores`);
+
+      res.json({
+        message: 'Importación procesada',
+        success: results.success,
+        errors: results.errors,
+        total: records.length
+      });
+
+    } catch (error) {
+      console.error("❌ Error en importación de CSV:", error);
+      res.status(500).json({ 
+        message: "Error al procesar archivo CSV",
+        error: error instanceof Error ? error.message : 'Error desconocido',
+        success: 0,
+        errors: []
+      });
+    }
+  });
+
+  // Funciones auxiliares para traducir valores del español al inglés
+  function translateStatusFromSpanish(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'Activo': 'active',
+      'Mantenimiento': 'maintenance',
+      'Retirado': 'retired',
+      'Dañado': 'damaged'
+    };
+    return statusMap[status] || status.toLowerCase();
+  }
+
+  function translateConditionFromSpanish(condition: string): string {
+    const conditionMap: { [key: string]: string } = {
+      'Excelente': 'excellent',
+      'Bueno': 'good',
+      'Regular': 'fair',
+      'Malo': 'poor',
+      'Crítico': 'critical'
+    };
+    return conditionMap[condition] || condition.toLowerCase();
+  }
 }
