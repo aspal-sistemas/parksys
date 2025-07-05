@@ -194,6 +194,57 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
     }
   });
 
+  // Export all assets endpoint (sin paginación)
+  apiRouter.get("/assets/export", async (req: Request, res: Response) => {
+    try {
+      const exportQuery = `
+        SELECT 
+          a.id,
+          a.name,
+          a.description,
+          a.serial_number as "serialNumber",
+          a.acquisition_date as "acquisitionDate",
+          a.acquisition_cost as "acquisitionCost",
+          a.current_value as "currentValue",
+          a.manufacturer,
+          a.model,
+          a.park_id as "parkId",
+          a.category_id as "categoryId",
+          a.amenity_id as "amenityId",
+          a.status,
+          a.condition,
+          a.location_description as "locationDescription",
+          a.latitude,
+          a.longitude,
+          a.maintenance_frequency as "maintenanceFrequency",
+          a.last_maintenance_date as "lastMaintenanceDate",
+          a.next_maintenance_date as "nextMaintenanceDate",
+          a.expected_lifespan as "expectedLifespan",
+          a.qr_code as "qrCode",
+          a.responsible_person_id as "responsiblePersonId",
+          a.notes,
+          a.created_at as "createdAt",
+          a.updated_at as "updatedAt",
+          ac.name as "categoryName",
+          p.name as "parkName",
+          am.name as "amenityName",
+          u.full_name as "responsiblePersonName"
+        FROM assets a
+        LEFT JOIN asset_categories ac ON a.category_id = ac.id
+        LEFT JOIN parks p ON a.park_id = p.id
+        LEFT JOIN amenities am ON a.amenity_id = am.id
+        LEFT JOIN users u ON a.responsible_person_id = u.id
+        ORDER BY a.created_at DESC
+      `;
+
+      const result = await pool.query(exportQuery);
+      res.json(result.rows);
+    } catch (error) {
+      console.error("Error al exportar activos:", error);
+      res.status(500).json({ message: "Error al exportar activos" });
+    }
+  });
+
   // Get all assets
   apiRouter.get("/assets", async (req: Request, res: Response) => {
     try {
