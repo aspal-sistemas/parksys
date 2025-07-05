@@ -1037,8 +1037,9 @@ async function initializeDatabaseAsync() {
   // RUTAS DIRECTAS DE MANTENIMIENTO - DEBEN IR DESPUÉS DE registerRoutes para tener prioridad
   app.post('/api/assets/:id/maintenances', async (req: Request, res: Response) => {
     console.log('🔧 [DIRECT] POST /api/assets/:id/maintenances - Solicitud recibida para activo:', req.params.id);
-    console.log('🔧 [DIRECT] Body de la solicitud:', req.body);
+    console.log('🔧 [DIRECT] Body de la solicitud:', JSON.stringify(req.body, null, 2));
     console.log('🔧 [DIRECT] Headers de la solicitud:', req.headers['content-type']);
+    console.log('🔧 [DIRECT] Body keys:', Object.keys(req.body));
     try {
       const assetId = parseInt(req.params.id);
       const {
