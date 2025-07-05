@@ -3545,14 +3545,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Crear nueva asignación para una incidencia
   apiRouter.post("/incidents/:id/assignments", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      console.log("🔧 POST /api/incidents/:id/assignments - Request body:", req.body);
+      console.log("🔧 Content-Type:", req.headers['content-type']);
+      console.log("🔧 Request headers:", req.headers);
+      
       const incidentId = Number(req.params.id);
       const { assignedToUserId, department, dueDate, notes } = req.body;
       
+      console.log("🔧 Extracted data:", { incidentId, assignedToUserId, department, dueDate, notes });
+      
       if (!incidentId || isNaN(incidentId)) {
+        console.log("❌ Error: ID de incidencia inválido");
         return res.status(400).json({ message: "ID de incidencia inválido" });
       }
 
       if (!assignedToUserId) {
+        console.log("❌ Error: Usuario asignado es requerido");
         return res.status(400).json({ message: "Usuario asignado es requerido" });
       }
 

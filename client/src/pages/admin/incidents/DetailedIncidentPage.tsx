@@ -266,7 +266,7 @@ const DetailedIncidentPage = () => {
     mutationFn: async (data: { status: string; notes?: string }) => {
       return await apiRequest(`/api/incidents/${incidentId}/status`, {
         method: 'PUT',
-        body: JSON.stringify(data)
+        data: data
       });
     },
     onSuccess: () => {
@@ -294,7 +294,7 @@ const DetailedIncidentPage = () => {
     mutationFn: async (data: { assignedToUserId?: number; notes?: string; dueDate?: string }) => {
       return await apiRequest(`/api/incidents/${incidentId}/assign`, {
         method: 'PUT',
-        body: JSON.stringify(data)
+        data: data
       });
     },
     onSuccess: () => {
@@ -323,7 +323,7 @@ const DetailedIncidentPage = () => {
     mutationFn: async (data: { assignedToUserId: number; department?: string; dueDate?: string; notes?: string }) => {
       return await apiRequest(`/api/incidents/${incidentId}/assignments`, {
         method: 'POST',
-        body: JSON.stringify(data)
+        data: data
       });
     },
     onSuccess: () => {
