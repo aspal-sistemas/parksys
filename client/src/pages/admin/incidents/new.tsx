@@ -170,13 +170,45 @@ const NewIncidentPage = () => {
 
   const displayCategories = safeCategories;
 
-  // Preseleccionar el activo si viene de la URL
+  // Preseleccionar el activo y cargar información automáticamente si viene de la URL
   useEffect(() => {
     if (assetIdFromUrl && safeAssets.length > 0) {
       const asset = safeAssets.find((a: any) => a.id === parseInt(assetIdFromUrl));
       if (asset) {
+        // Cargar datos del activo automáticamente
         form.setValue('assetId', assetIdFromUrl);
         form.setValue('parkId', asset.parkId?.toString() || '');
+        
+        // Construir ubicación automática basada en la información del activo
+        let locationDescription = '';
+        
+        // Incluir ubicación descriptiva si existe
+        if (asset.locationDescription && asset.locationDescription.trim()) {
+          locationDescription = asset.locationDescription.trim();
+        }
+        
+        // Agregar coordenadas si existen
+        if (asset.latitude && asset.longitude) {
+          const coords = `${parseFloat(asset.latitude).toFixed(6)}, ${parseFloat(asset.longitude).toFixed(6)}`;
+          locationDescription = locationDescription 
+            ? `${locationDescription} (Coordenadas: ${coords})`
+            : `Coordenadas: ${coords}`;
+        }
+        
+        // Si no hay ubicación específica, usar información básica del activo
+        if (!locationDescription) {
+          locationDescription = `Área del activo: ${asset.name}`;
+        }
+        
+        form.setValue('location', locationDescription);
+        
+        console.log('🎯 Datos del activo cargados automáticamente:', {
+          assetId: asset.id,
+          assetName: asset.name,
+          parkId: asset.parkId,
+          location: locationDescription,
+          coordinates: asset.latitude && asset.longitude ? `${asset.latitude}, ${asset.longitude}` : 'No disponibles'
+        });
       }
     }
   }, [assetIdFromUrl, safeAssets, form]);
@@ -278,10 +310,21 @@ const NewIncidentPage = () => {
                     name="parkId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Parque</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel className="flex items-center gap-2">
+                          Parque
+                          {assetIdFromUrl && (
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                              Cargado automáticamente
+                            </span>
+                          )}
+                        </FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                          disabled={!!assetIdFromUrl}
+                        >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className={assetIdFromUrl ? "bg-gray-50 cursor-not-allowed" : ""}>
                               <SelectValue placeholder="Seleccionar parque" />
                             </SelectTrigger>
                           </FormControl>
@@ -293,6 +336,11 @@ const NewIncidentPage = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        {assetIdFromUrl && (
+                          <p className="text-xs text-gray-600">
+                            El parque se cargó automáticamente desde el activo seleccionado
+                          </p>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -333,10 +381,27 @@ const NewIncidentPage = () => {
                     name="location"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Ubicación Específica</FormLabel>
+                        <FormLabel className="flex items-center gap-2">
+                          Ubicación Específica
+                          {assetIdFromUrl && (
+                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                              Incluye coordenadas
+                            </span>
+                          )}
+                        </FormLabel>
                         <FormControl>
-                          <Input placeholder="Ej: Área de juegos infantiles" {...field} />
+                          <Input 
+                            placeholder="Ej: Área de juegos infantiles" 
+                            {...field}
+                            readOnly={!!assetIdFromUrl}
+                            className={assetIdFromUrl ? "bg-gray-50 cursor-not-allowed" : ""}
+                          />
                         </FormControl>
+                        {assetIdFromUrl && (
+                          <p className="text-xs text-gray-600">
+                            La ubicación se cargó automáticamente del activo con coordenadas precisas
+                          </p>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
