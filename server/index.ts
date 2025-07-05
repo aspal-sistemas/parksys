@@ -1025,59 +1025,7 @@ async function initializeDatabaseAsync() {
 
 
 
-  // RUTAS DIRECTAS DE MANTENIMIENTO - DEBEN IR DESPUÉS DE registerRoutes para tener prioridad
-  app.post('/api/assets/:id/maintenances', async (req: Request, res: Response) => {
-    console.log('🔧 [DIRECT] POST /api/assets/:id/maintenances - Solicitud recibida para activo:', req.params.id);
-    console.log('🔧 [DIRECT] Body de la solicitud:', JSON.stringify(req.body, null, 2));
-    console.log('🔧 [DIRECT] Headers de la solicitud:', req.headers['content-type']);
-    console.log('🔧 [DIRECT] Body keys:', Object.keys(req.body));
-    try {
-      const assetId = parseInt(req.params.id);
-      const {
-        maintenanceType,
-        description,
-        date,
-        status = 'completado',
-        cost,
-        performedBy,
-        nextMaintenanceDate,
-        notes
-      } = req.body;
-
-      const { pool } = await import("./db");
-      
-      const query = `
-        INSERT INTO asset_maintenances (
-          asset_id, maintenance_type, description, date, status, cost, 
-          performed_by, next_maintenance_date, notes, created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
-        RETURNING *
-      `;
-
-      const values = [
-        assetId,
-        maintenanceType,
-        description,
-        date,
-        status,
-        cost,
-        performedBy,
-        nextMaintenanceDate,
-        notes
-      ];
-
-      console.log('🔧 [DIRECT] Ejecutando INSERT con valores:', values);
-      const result = await pool.query(query, values);
-      
-      console.log('✅ [DIRECT] Mantenimiento creado exitosamente, ID:', result.rows[0].id);
-      res.status(201).json(result.rows[0]);
-    } catch (error) {
-      console.error('❌ [DIRECT] Error en POST mantenimiento:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
-    }
-  });
-
-  console.log('✅ [DIRECT] Rutas de mantenimiento registradas DESPUÉS de registerRoutes para máxima prioridad');
+  // ENDPOINT DIRECTO ELIMINADO - Usando exclusivamente maintenance_routes_fixed.ts
 
   // Registrar API de integraciones financieras múltiples
   try {
