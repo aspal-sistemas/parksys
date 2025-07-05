@@ -158,6 +158,31 @@ const InventoryPage: React.FC = () => {
     enabled: true
   });
 
+  // Safely filter data to prevent SelectItem errors
+  const safeCategories = React.useMemo(() => {
+    if (!Array.isArray(categories)) return [];
+    return categories.filter(category => 
+      category && 
+      typeof category === 'object' && 
+      category.id && 
+      category.name && 
+      category.id.toString().trim() !== '' &&
+      category.name.trim() !== ''
+    );
+  }, [categories]);
+
+  const safeParks = React.useMemo(() => {
+    if (!Array.isArray(parks)) return [];
+    return parks.filter(park => 
+      park && 
+      typeof park === 'object' && 
+      park.id && 
+      park.name && 
+      park.id.toString().trim() !== '' &&
+      park.name.trim() !== ''
+    );
+  }, [parks]);
+
   const assets = assetsData?.assets || [];
   const totalAssets = parseInt(assetsData?.totalAssets || '0', 10);
   
@@ -350,7 +375,7 @@ const InventoryPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas las categorías</SelectItem>
-                  {categories?.map((category: any) => (
+                  {safeCategories.map((category: any) => (
                     <SelectItem key={category.id} value={category.id.toString()}>
                       {category.name}
                     </SelectItem>
@@ -396,7 +421,7 @@ const InventoryPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los parques</SelectItem>
-                  {parks?.map((park: any) => (
+                  {safeParks.map((park: any) => (
                     <SelectItem key={park.id} value={park.id.toString()}>{park.name}</SelectItem>
                   ))}
                 </SelectContent>
