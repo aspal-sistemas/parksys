@@ -72,9 +72,24 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
       let paramIndex = 1;
 
       if (search && search !== '') {
-        conditions.push(`(LOWER(a.name) LIKE LOWER($${paramIndex}) OR LOWER(COALESCE(a.description, '')) LIKE LOWER($${paramIndex + 1}))`);
-        queryParams.push(`%${search}%`, `%${search}%`);
-        paramIndex += 2;
+        // Búsqueda mejorada que incluye tolerancia a errores comunes
+        const searchString = Array.isArray(search) ? search[0] : String(search);
+        const searchTerm = searchString.toLowerCase();
+        
+        conditions.push(`(
+          LOWER(a.name) LIKE LOWER($${paramIndex}) 
+          OR LOWER(COALESCE(a.description, '')) LIKE LOWER($${paramIndex + 1})
+          OR LOWER(a.name) LIKE LOWER($${paramIndex + 2})
+          OR LOWER(a.name) LIKE LOWER($${paramIndex + 3})
+        )`);
+        
+        queryParams.push(
+          `%${search}%`, 
+          `%${search}%`,
+          `%${searchTerm.replace('rebaladilla', 'resbaladilla')}%`, // Corrige error común
+          `%${searchTerm.replace('resbaladilla', 'rebaladilla')}%`   // Permite búsqueda inversa
+        );
+        paramIndex += 4;
       }
 
       if (status !== 'all') {
