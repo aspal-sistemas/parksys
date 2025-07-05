@@ -2971,78 +2971,189 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("📣 RECIBIDA PETICIÓN DE INCIDENTES:", req.headers);
       const parkId = req.query.parkId ? Number(req.query.parkId) : undefined;
       
-      // Hard-coded sample incidents for development
-      const hardCodedIncidents = [
-        {
-          id: 1,
-          parkId: 1,
-          title: "Juegos infantiles dañados",
-          description: "Los columpios están rotos y son peligrosos para los niños",
-          status: "pending",
-          severity: "high", 
-          reporterName: "Ana López",
-          reporterEmail: "ana@example.com",
-          location: "Área de juegos",
-          category: "damage",
-          createdAt: "2023-08-15T10:30:00.000Z",
-          updatedAt: "2023-08-15T10:30:00.000Z",
-          park: {
-            id: 1,
-            name: "Parque Metropolitano"
-          }
-        },
-        {
-          id: 2,
-          parkId: 2,
-          title: "Falta de iluminación",
-          description: "Las luminarias del sector norte no funcionan, generando inseguridad",
-          status: "in_progress",
-          severity: "medium",
-          reporterName: "Carlos Mendoza",
-          reporterEmail: "carlos@example.com",
-          location: "Sendero norte",
-          category: "safety",
-          createdAt: "2023-09-02T14:20:00.000Z",
-          updatedAt: "2023-09-05T09:15:00.000Z",
-          park: {
-            id: 2,
-            name: "Parque Agua Azul"
-          }
-        },
-        {
-          id: 3,
-          parkId: 3,
-          title: "Banca rota",
-          description: "Banca de madera rota en la zona de picnic",
-          status: "resolved",
-          severity: "low",
-          reporterName: "María Sánchez",
-          reporterEmail: "maria@example.com",
-          location: "Área de picnic",
-          category: "maintenance",
-          createdAt: "2023-07-20T08:45:00.000Z",
-          updatedAt: "2023-07-28T16:30:00.000Z",
-          park: {
-            id: 3,
-            name: "Parque Colomos"
-          }
-        }
-      ];
+      // Construir consulta SQL para obtener incidentes reales de la base de datos
+      let query = `
+        SELECT 
+          i.id,
+          i.asset_id as "assetId",
+          i.park_id as "parkId",
+          i.title,
+          i.description,
+          i.status,
+          i.severity,
+          i.reporter_name as "reporterName",
+          i.reporter_email as "reporterEmail",
+          i.location,
+          i.category,
+          i.created_at as "createdAt",
+          i.updated_at as "updatedAt",
+          p.name as "parkName",
+          a.name as "assetName"
+        FROM incidents i
+        LEFT JOIN parks p ON i.park_id = p.id
+        LEFT JOIN assets a ON i.asset_id = a.id
+        WHERE 1=1
+      `;
       
-      console.log("⚠️ Enviando incidentes de muestra (hardcoded):", hardCodedIncidents.length);
+      const params = [];
       
-      // Si se especificó un parkId, filtramos los incidentes por ese parque
+      // Si se especificó un parkId, filtramos por ese parque
       if (parkId) {
-        const filteredIncidents = hardCodedIncidents.filter(inc => inc.parkId === parkId);
-        console.log(`⚠️ Filtrando incidentes por parque ${parkId}:`, filteredIncidents.length);
-        return res.json(filteredIncidents);
+        query += " AND i.park_id = $1";
+        params.push(parkId);
       }
       
-      // Respondemos con todos los incidentes de muestra
-      return res.json(hardCodedIncidents);
+      query += " ORDER BY i.created_at DESC";
+      
+      console.log("🔍 Ejecutando consulta SQL:", query);
+      console.log("🔍 Parámetros:", params);
+      
+      const result = await pool.query(query, params);
+      
+      // Formatear datos para incluir información del parque
+      const incidents = result.rows.map(row => ({
+        id: row.id,
+        assetId: row.assetId,
+        parkId: row.parkId,
+        title: row.title,
+        description: row.description,
+        status: row.status,
+        severity: row.severity,
+        reporterName: row.reporterName,
+        reporterEmail: row.reporterEmail,
+        location: row.location,
+        category: row.category,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        park: {
+          id: row.parkId,
+          name: row.parkName
+        },
+        asset: row.assetId ? {
+          id: row.assetId,
+          name: row.assetName
+        } : null
+      }));
+      
+      console.log("✅ Incidentes encontrados en BD:", incidents.length);
+      
+      return res.json(incidents);
     } catch (error) {
       console.error("Error obteniendo incidentes:", error);
       return res.status(500).json({ message: "Error al obtener incidentes" });
+    }
+  });
+
+  // Create a new incident
+  apiRouter.post("/incidents", async (req: Request, res: Response) => {
+    try {
+      console.log("📝 CREANDO NUEVA INCIDENCIA:", req.body);
+      
+      const {
+        title,
+        description,
+        assetId,
+        parkId,
+        categoryId,
+        severity = 'medium',
+        location,
+        reporterName,
+        reporterEmail,
+        reporterPhone,
+        status = 'pending'
+      } = req.body;
+      
+      // Validar campos requeridos
+      if (!title || !description || !parkId || !reporterName) {
+        return res.status(400).json({
+          message: "Faltan campos requeridos: title, description, parkId, reporterName"
+        });
+      }
+      
+      // Insertar la nueva incidencia
+      const query = `
+        INSERT INTO incidents (
+          title, description, asset_id, park_id, category, severity, 
+          location, reporter_name, reporter_email, reporter_phone, 
+          status, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()
+        ) RETURNING *
+      `;
+      
+      const values = [
+        title,
+        description,
+        assetId || null,
+        parkId,
+        categoryId ? `category_${categoryId}` : null,
+        severity,
+        location || null,
+        reporterName,
+        reporterEmail || null,
+        reporterPhone || null,
+        status
+      ];
+      
+      console.log("🔍 Ejecutando INSERT:", query);
+      console.log("🔍 Valores:", values);
+      
+      const result = await pool.query(query, values);
+      const newIncident = result.rows[0];
+      
+      console.log("✅ Incidencia creada:", newIncident);
+      
+      // Obtener información adicional del parque y activo
+      let enrichedIncident = { ...newIncident };
+      
+      // Obtener nombre del parque
+      if (newIncident.park_id) {
+        const parkQuery = await pool.query(
+          "SELECT name FROM parks WHERE id = $1", 
+          [newIncident.park_id]
+        );
+        if (parkQuery.rows.length > 0) {
+          enrichedIncident.parkName = parkQuery.rows[0].name;
+        }
+      }
+      
+      // Obtener nombre del activo
+      if (newIncident.asset_id) {
+        const assetQuery = await pool.query(
+          "SELECT name FROM assets WHERE id = $1", 
+          [newIncident.asset_id]
+        );
+        if (assetQuery.rows.length > 0) {
+          enrichedIncident.assetName = assetQuery.rows[0].name;
+        }
+      }
+      
+      return res.status(201).json({
+        id: enrichedIncident.id,
+        assetId: enrichedIncident.asset_id,
+        parkId: enrichedIncident.park_id,
+        title: enrichedIncident.title,
+        description: enrichedIncident.description,
+        status: enrichedIncident.status,
+        severity: enrichedIncident.severity,
+        reporterName: enrichedIncident.reporter_name,
+        reporterEmail: enrichedIncident.reporter_email,
+        location: enrichedIncident.location,
+        category: enrichedIncident.category,
+        createdAt: enrichedIncident.created_at,
+        updatedAt: enrichedIncident.updated_at,
+        park: {
+          id: enrichedIncident.park_id,
+          name: enrichedIncident.parkName
+        },
+        asset: enrichedIncident.asset_id ? {
+          id: enrichedIncident.asset_id,
+          name: enrichedIncident.assetName
+        } : null
+      });
+    } catch (error) {
+      console.error("Error creando incidencia:", error);
+      return res.status(500).json({ message: "Error al crear la incidencia" });
     }
   });
   
