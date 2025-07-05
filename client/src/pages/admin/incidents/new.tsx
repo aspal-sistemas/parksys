@@ -99,9 +99,12 @@ const NewIncidentPage = () => {
         categoryId: parseInt(data.categoryId),
       };
       
+      console.log('📝 Datos del formulario a enviar:', data);
+      console.log('📝 Datos procesados para envío:', incidentData);
+      
       return apiRequest('/api/incidents', {
         method: 'POST',
-        body: JSON.stringify(incidentData),
+        data: incidentData,
       });
     },
     onSuccess: () => {
