@@ -11,39 +11,60 @@ export function registerAssetAssignmentRoutes(app: any, apiRouter: Router, isAut
   apiRouter.get('/asset-assignments', async (req: Request, res: Response) => {
     try {
       const { search, status } = req.query;
+      const { pool } = await import("./db");
 
-      const assignments = await db
-        .select({
-          id: assetAssignments.id,
-          assetId: assetAssignments.assetId,
-          assetName: assets.name,
-          instructorId: assetAssignments.instructorId,
-          instructorName: instructors.firstName,
-          instructorLastName: instructors.lastName,
-          activityId: assetAssignments.activityId,
-          activityName: activities.name,
-          assignmentDate: assetAssignments.assignmentDate,
-          returnDate: assetAssignments.returnDate,
-          purpose: assetAssignments.purpose,
-          condition: assetAssignments.condition,
-          status: assetAssignments.status,
-          notes: assetAssignments.notes,
-          createdAt: assetAssignments.createdAt,
-        })
-        .from(assetAssignments)
-        .leftJoin(assets, eq(assetAssignments.assetId, assets.id))
-        .leftJoin(instructors, eq(assetAssignments.instructorId, instructors.id))
-        .leftJoin(activities, eq(assetAssignments.activityId, activities.id))
-        .orderBy(desc(assetAssignments.createdAt));
+      let query = `
+        SELECT 
+          aa.id,
+          aa.asset_id as "assetId",
+          aa.instructor_id as "instructorId", 
+          aa.activity_id as "activityId",
+          aa.assignment_date as "assignmentDate",
+          aa.return_date as "returnDate",
+          aa.purpose,
+          aa.condition,
+          aa.status,
+          aa.notes,
+          aa.created_at as "createdAt",
+          a.name as "assetName",
+          i.first_name as "instructorFirstName",
+          i.last_name as "instructorLastName",
+          act.title as "activityName"
+        FROM asset_assignments aa
+        LEFT JOIN assets a ON aa.asset_id = a.id
+        LEFT JOIN instructors i ON aa.instructor_id = i.id
+        LEFT JOIN activities act ON aa.activity_id = act.id
+        WHERE 1=1
+      `;
+
+      const params = [];
+      let paramCount = 0;
+
+      if (search) {
+        paramCount++;
+        query += ` AND (a.name ILIKE $${paramCount} OR i.first_name ILIKE $${paramCount} OR i.last_name ILIKE $${paramCount})`;
+        params.push(`%${search}%`);
+      }
+
+      if (status && status !== 'all') {
+        paramCount++;
+        query += ` AND aa.status = $${paramCount}`;
+        params.push(status);
+      }
+
+      query += ` ORDER BY aa.created_at DESC`;
+
+      const result = await pool.query(query, params);
 
       // Formatear los datos para incluir nombres completos
-      const formattedAssignments = assignments.map(assignment => ({
+      const formattedAssignments = result.rows.map(assignment => ({
         ...assignment,
-        instructorName: assignment.instructorName && assignment.instructorLastName 
-          ? `${assignment.instructorName} ${assignment.instructorLastName}`
+        instructorName: assignment.instructorFirstName && assignment.instructorLastName 
+          ? `${assignment.instructorFirstName} ${assignment.instructorLastName}`
           : null,
       }));
 
+      console.log(`📋 Encontradas ${formattedAssignments.length} asignaciones de activos`);
       res.json(formattedAssignments);
     } catch (error) {
       console.error('Error fetching asset assignments:', error);
@@ -64,21 +85,38 @@ export function registerAssetAssignmentRoutes(app: any, apiRouter: Router, isAut
         notes
       } = req.body;
 
-      const newAssignment = await db
-        .insert(assetAssignments)
-        .values({
-          assetId: parseInt(assetId),
-          instructorId: instructorId ? parseInt(instructorId) : null,
-          activityId: activityId ? parseInt(activityId) : null,
-          assignmentDate: new Date(assignmentDate),
+      const { pool } = await import("./db");
+
+      const query = `
+        INSERT INTO asset_assignments (
+          asset_id, instructor_id, activity_id, assignment_date, 
+          purpose, condition, status, notes, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, 'active', $7, NOW(), NOW())
+        RETURNING 
+          id,
+          asset_id as "assetId",
+          instructor_id as "instructorId",
+          activity_id as "activityId", 
+          assignment_date as "assignmentDate",
           purpose,
           condition,
-          status: 'active',
+          status,
           notes,
-        })
-        .returning();
+          created_at as "createdAt"
+      `;
 
-      res.status(201).json(newAssignment[0]);
+      const result = await pool.query(query, [
+        parseInt(assetId),
+        instructorId ? parseInt(instructorId) : null,
+        activityId ? parseInt(activityId) : null,
+        assignmentDate,
+        purpose,
+        condition,
+        notes
+      ]);
+
+      console.log(`✅ Nueva asignación creada con ID: ${result.rows[0].id}`);
+      res.status(201).json(result.rows[0]);
     } catch (error) {
       console.error('Error creating assignment:', error);
       res.status(500).json({ error: 'Error al crear la asignación' });
@@ -89,25 +127,29 @@ export function registerAssetAssignmentRoutes(app: any, apiRouter: Router, isAut
   apiRouter.get('/instructors/:id/asset-assignments', async (req: Request, res: Response) => {
     try {
       const instructorId = parseInt(req.params.id);
+      const { pool } = await import("./db");
 
-      const assignments = await db
-        .select({
-          id: assetAssignments.id,
-          assetId: assetAssignments.assetId,
-          assetName: assets.name,
-          assignmentDate: assetAssignments.assignmentDate,
-          returnDate: assetAssignments.returnDate,
-          purpose: assetAssignments.purpose,
-          condition: assetAssignments.condition,
-          status: assetAssignments.status,
-          notes: assetAssignments.notes,
-        })
-        .from(assetAssignments)
-        .leftJoin(assets, eq(assetAssignments.assetId, assets.id))
-        .where(eq(assetAssignments.instructorId, instructorId))
-        .orderBy(desc(assetAssignments.createdAt));
+      const query = `
+        SELECT 
+          aa.id,
+          aa.asset_id as "assetId",
+          aa.assignment_date as "assignmentDate",
+          aa.return_date as "returnDate",
+          aa.purpose,
+          aa.condition,
+          aa.status,
+          aa.notes,
+          aa.created_at as "createdAt",
+          a.name as "assetName"
+        FROM asset_assignments aa
+        LEFT JOIN assets a ON aa.asset_id = a.id
+        WHERE aa.instructor_id = $1
+        ORDER BY aa.created_at DESC
+      `;
 
-      res.json(assignments);
+      const result = await pool.query(query, [instructorId]);
+      console.log(`📋 Encontradas ${result.rows.length} asignaciones para instructor ${instructorId}`);
+      res.json(result.rows);
     } catch (error) {
       console.error('Error fetching instructor assignments:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
@@ -118,36 +160,41 @@ export function registerAssetAssignmentRoutes(app: any, apiRouter: Router, isAut
   apiRouter.get('/assets/:id/assignments', async (req: Request, res: Response) => {
     try {
       const assetId = parseInt(req.params.id);
+      const { pool } = await import("./db");
 
-      const assignments = await db
-        .select({
-          id: assetAssignments.id,
-          instructorId: assetAssignments.instructorId,
-          instructorName: instructors.firstName,
-          instructorLastName: instructors.lastName,
-          activityId: assetAssignments.activityId,
-          activityName: activities.name,
-          assignmentDate: assetAssignments.assignmentDate,
-          returnDate: assetAssignments.returnDate,
-          purpose: assetAssignments.purpose,
-          condition: assetAssignments.condition,
-          status: assetAssignments.status,
-          notes: assetAssignments.notes,
-        })
-        .from(assetAssignments)
-        .leftJoin(instructors, eq(assetAssignments.instructorId, instructors.id))
-        .leftJoin(activities, eq(assetAssignments.activityId, activities.id))
-        .where(eq(assetAssignments.assetId, assetId))
-        .orderBy(desc(assetAssignments.createdAt));
+      const query = `
+        SELECT 
+          aa.id,
+          aa.instructor_id as "instructorId",
+          aa.activity_id as "activityId",
+          aa.assignment_date as "assignmentDate",
+          aa.return_date as "returnDate",
+          aa.purpose,
+          aa.condition,
+          aa.status,
+          aa.notes,
+          aa.created_at as "createdAt",
+          i.first_name as "instructorFirstName",
+          i.last_name as "instructorLastName",
+          act.title as "activityName"
+        FROM asset_assignments aa
+        LEFT JOIN instructors i ON aa.instructor_id = i.id
+        LEFT JOIN activities act ON aa.activity_id = act.id
+        WHERE aa.asset_id = $1
+        ORDER BY aa.created_at DESC
+      `;
+
+      const result = await pool.query(query, [assetId]);
 
       // Formatear los datos
-      const formattedAssignments = assignments.map(assignment => ({
+      const formattedAssignments = result.rows.map(assignment => ({
         ...assignment,
-        instructorName: assignment.instructorName && assignment.instructorLastName 
-          ? `${assignment.instructorName} ${assignment.instructorLastName}`
+        instructorName: assignment.instructorFirstName && assignment.instructorLastName 
+          ? `${assignment.instructorFirstName} ${assignment.instructorLastName}`
           : null,
       }));
 
+      console.log(`📋 Encontradas ${formattedAssignments.length} asignaciones para activo ${assetId}`);
       res.json(formattedAssignments);
     } catch (error) {
       console.error('Error fetching asset assignments:', error);
@@ -170,27 +217,52 @@ export function registerAssetAssignmentRoutes(app: any, apiRouter: Router, isAut
         notes
       } = req.body;
 
-      const updatedAssignment = await db
-        .update(assetAssignments)
-        .set({
-          instructorId: instructorId ? parseInt(instructorId) : null,
-          activityId: activityId ? parseInt(activityId) : null,
-          assignmentDate: assignmentDate ? new Date(assignmentDate) : undefined,
-          returnDate: returnDate ? new Date(returnDate) : null,
+      const { pool } = await import("./db");
+
+      const query = `
+        UPDATE asset_assignments SET
+          instructor_id = $2,
+          activity_id = $3,
+          assignment_date = $4,
+          return_date = $5,
+          purpose = $6,
+          condition = $7,
+          status = $8,
+          notes = $9,
+          updated_at = NOW()
+        WHERE id = $1
+        RETURNING 
+          id,
+          asset_id as "assetId",
+          instructor_id as "instructorId",
+          activity_id as "activityId",
+          assignment_date as "assignmentDate",
+          return_date as "returnDate",
           purpose,
           condition,
           status,
           notes,
-          updatedAt: new Date(),
-        })
-        .where(eq(assetAssignments.id, assignmentId))
-        .returning();
+          updated_at as "updatedAt"
+      `;
 
-      if (updatedAssignment.length === 0) {
+      const result = await pool.query(query, [
+        assignmentId,
+        instructorId ? parseInt(instructorId) : null,
+        activityId ? parseInt(activityId) : null,
+        assignmentDate,
+        returnDate,
+        purpose,
+        condition,
+        status,
+        notes
+      ]);
+
+      if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Asignación no encontrada' });
       }
 
-      res.json(updatedAssignment[0]);
+      console.log(`✅ Asignación ${assignmentId} actualizada`);
+      res.json(result.rows[0]);
     } catch (error) {
       console.error('Error updating assignment:', error);
       res.status(500).json({ error: 'Error al actualizar la asignación' });
@@ -203,23 +275,38 @@ export function registerAssetAssignmentRoutes(app: any, apiRouter: Router, isAut
       const assignmentId = parseInt(req.params.id);
       const { condition, notes } = req.body;
 
-      const updatedAssignment = await db
-        .update(assetAssignments)
-        .set({
-          status: 'returned',
-          returnDate: new Date(),
-          condition,
-          notes,
-          updatedAt: new Date(),
-        })
-        .where(eq(assetAssignments.id, assignmentId))
-        .returning();
+      const { pool } = await import("./db");
 
-      if (updatedAssignment.length === 0) {
+      const query = `
+        UPDATE asset_assignments SET
+          status = 'returned',
+          return_date = NOW(),
+          condition = $2,
+          notes = $3,
+          updated_at = NOW()
+        WHERE id = $1
+        RETURNING 
+          id,
+          asset_id as "assetId",
+          instructor_id as "instructorId",
+          activity_id as "activityId",
+          assignment_date as "assignmentDate",
+          return_date as "returnDate",
+          purpose,
+          condition,
+          status,
+          notes,
+          updated_at as "updatedAt"
+      `;
+
+      const result = await pool.query(query, [assignmentId, condition, notes]);
+
+      if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Asignación no encontrada' });
       }
 
-      res.json(updatedAssignment[0]);
+      console.log(`✅ Activo devuelto - Asignación ${assignmentId}`);
+      res.json(result.rows[0]);
     } catch (error) {
       console.error('Error returning asset:', error);
       res.status(500).json({ error: 'Error al procesar la devolución' });
@@ -232,21 +319,36 @@ export function registerAssetAssignmentRoutes(app: any, apiRouter: Router, isAut
       const assignmentId = parseInt(req.params.id);
       const { condition, notes } = req.body;
 
-      const updatedAssignment = await db
-        .update(assetAssignments)
-        .set({
-          condition,
-          notes,
-          updatedAt: new Date(),
-        })
-        .where(eq(assetAssignments.id, assignmentId))
-        .returning();
+      const { pool } = await import("./db");
 
-      if (updatedAssignment.length === 0) {
+      const query = `
+        UPDATE asset_assignments SET
+          condition = $2,
+          notes = $3,
+          updated_at = NOW()
+        WHERE id = $1
+        RETURNING 
+          id,
+          asset_id as "assetId",
+          instructor_id as "instructorId",
+          activity_id as "activityId",
+          assignment_date as "assignmentDate",
+          return_date as "returnDate",
+          purpose,
+          condition,
+          status,
+          notes,
+          updated_at as "updatedAt"
+      `;
+
+      const result = await pool.query(query, [assignmentId, condition, notes]);
+
+      if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Asignación no encontrada' });
       }
 
-      res.json(updatedAssignment[0]);
+      console.log(`⚠️ Problema reportado - Asignación ${assignmentId}`);
+      res.json(result.rows[0]);
     } catch (error) {
       console.error('Error reporting issue:', error);
       res.status(500).json({ error: 'Error al reportar el problema' });
@@ -257,16 +359,21 @@ export function registerAssetAssignmentRoutes(app: any, apiRouter: Router, isAut
   apiRouter.delete('/asset-assignments/:id', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const assignmentId = parseInt(req.params.id);
+      const { pool } = await import("./db");
 
-      const deletedAssignment = await db
-        .delete(assetAssignments)
-        .where(eq(assetAssignments.id, assignmentId))
-        .returning();
+      const query = `
+        DELETE FROM asset_assignments 
+        WHERE id = $1 
+        RETURNING id
+      `;
 
-      if (deletedAssignment.length === 0) {
+      const result = await pool.query(query, [assignmentId]);
+
+      if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Asignación no encontrada' });
       }
 
+      console.log(`🗑️ Asignación ${assignmentId} eliminada`);
       res.json({ message: 'Asignación eliminada correctamente' });
     } catch (error) {
       console.error('Error deleting assignment:', error);
@@ -277,27 +384,41 @@ export function registerAssetAssignmentRoutes(app: any, apiRouter: Router, isAut
   // Obtener estadísticas de asignaciones
   apiRouter.get('/assignment-stats', async (req: Request, res: Response) => {
     try {
-      const stats = await db
-        .select({
-          total: assetAssignments.id,
-          status: assetAssignments.status,
-          condition: assetAssignments.condition,
-        })
-        .from(assetAssignments);
+      const { pool } = await import("./db");
+
+      const query = `
+        SELECT 
+          COUNT(*) as total,
+          status,
+          condition
+        FROM asset_assignments
+        GROUP BY status, condition
+        ORDER BY status, condition
+      `;
+
+      const result = await pool.query(query);
 
       // Procesar estadísticas
-      const statusCounts = stats.reduce((acc: any, item) => {
-        acc[item.status] = (acc[item.status] || 0) + 1;
-        return acc;
-      }, {});
+      const statusCounts: Record<string, number> = {};
+      const conditionCounts: Record<string, number> = {};
+      let total = 0;
 
-      const conditionCounts = stats.reduce((acc: any, item) => {
-        acc[item.condition] = (acc[item.condition] || 0) + 1;
-        return acc;
-      }, {});
+      result.rows.forEach((row: any) => {
+        const count = parseInt(row.total);
+        total += count;
+        
+        if (row.status) {
+          statusCounts[row.status] = (statusCounts[row.status] || 0) + count;
+        }
+        
+        if (row.condition) {
+          conditionCounts[row.condition] = (conditionCounts[row.condition] || 0) + count;
+        }
+      });
 
+      console.log(`📊 Estadísticas de asignaciones: ${total} total`);
       res.json({
-        total: stats.length,
+        total,
         byStatus: statusCounts,
         byCondition: conditionCounts,
       });
