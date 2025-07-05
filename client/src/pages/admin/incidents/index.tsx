@@ -111,16 +111,23 @@ const IncidentsPage = () => {
   });
 
   // Consulta para obtener categorías de incidentes
-  const { data: categories = [] } = useQuery({
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError, refetch: refetchCategories } = useQuery({
     queryKey: ['/api/incident-categories'],
-    // Si falla, mostramos categorías ficticias
-    onError: (err) => {
-      console.error("Error al cargar categorías:", err);
-    }
+    staleTime: 0  // Force fresh data
   });
 
   // Debug para ver las categorías cargadas
   console.log('🔥 Categorías cargadas:', categories);
+  console.log('📊 Categories loading:', categoriesLoading);
+  console.log('❌ Categories error:', categoriesError);
+
+  // Force refetch categories on mount
+  useEffect(() => {
+    if (!categories || categories.length === 0) {
+      console.log('🔄 Forcing category refetch...');
+      refetchCategories();
+    }
+  }, [categories, refetchCategories]);
 
   // Consulta para obtener usuarios para asignación
   const { data: users = [] } = useQuery({
