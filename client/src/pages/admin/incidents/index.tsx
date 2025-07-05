@@ -278,7 +278,14 @@ const IncidentsPage = () => {
       return defaultCategories[categoryId as string] || categoryId;
     }
     
-    const category = categories.find((c: any) => c.id === categoryId);
+    // Si categoryId viene como "category_X", extraer el número
+    let actualCategoryId = categoryId;
+    if (typeof categoryId === 'string' && categoryId.startsWith('category_')) {
+      const idNumber = categoryId.replace('category_', '');
+      actualCategoryId = parseInt(idNumber, 10);
+    }
+    
+    const category = categories.find((c: any) => c.id === actualCategoryId);
     return category ? category.name : categoryId;
   };
 
