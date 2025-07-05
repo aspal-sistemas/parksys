@@ -18,7 +18,11 @@ import {
   Calendar,
   FileText,
   CheckCircle,
-  XCircle
+  XCircle,
+  TrendingUp,
+  DollarSign,
+  Activity,
+  X
 } from 'lucide-react';
 
 import AdminLayout from '@/components/AdminLayout';
@@ -45,6 +49,21 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ASSET_CONDITIONS, ASSET_STATUSES } from '@/lib/constants';
+import { 
+  BarChart as RechartsBarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  LineChart, 
+  Line 
+} from 'recharts';
 
 // Función para formatear fechas
 const formatDate = (dateString: string | null) => {
@@ -134,6 +153,9 @@ const InventoryPage: React.FC = () => {
     success: number;
     errors: Array<{ row: number; message: string }>;
   } | null>(null);
+  
+  // Estado para Analytics
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
 
   // Obtener datos de inventario con parámetros de paginación
   const { 
@@ -206,6 +228,74 @@ const InventoryPage: React.FC = () => {
   const totalPages = Math.ceil(totalAssets / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage + 1;
   const endIndex = Math.min(currentPage * itemsPerPage, totalAssets);
+
+  // Datos para Analytics - Calculados desde los activos reales
+  const analyticsData = React.useMemo(() => {
+    if (!assets || assets.length === 0) return null;
+    
+    // Distribución por estado
+    const statusDistribution = assets.reduce((acc: any, asset: any) => {
+      const status = translateStatus(asset.status);
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Distribución por condición
+    const conditionDistribution = assets.reduce((acc: any, asset: any) => {
+      const condition = translateCondition(asset.condition);
+      acc[condition] = (acc[condition] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Distribución por categoría
+    const categoryDistribution = assets.reduce((acc: any, asset: any) => {
+      const category = asset.categoryName || 'Sin categoría';
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Valor total por categoría
+    const valueByCategory = assets.reduce((acc: any, asset: any) => {
+      const category = asset.categoryName || 'Sin categoría';
+      const cost = parseFloat(asset.acquisitionCost) || 0;
+      acc[category] = (acc[category] || 0) + cost;
+      return acc;
+    }, {});
+
+    // Valor total por parque
+    const valueByPark = assets.reduce((acc: any, asset: any) => {
+      const park = asset.parkName || 'Sin parque';
+      const cost = parseFloat(asset.acquisitionCost) || 0;
+      acc[park] = (acc[park] || 0) + cost;
+      return acc;
+    }, {});
+
+    return {
+      statusData: Object.entries(statusDistribution).map(([name, value]) => ({ name, value })),
+      conditionData: Object.entries(conditionDistribution).map(([name, value]) => ({ name, value })),
+      categoryData: Object.entries(categoryDistribution).map(([name, value]) => ({ name, value })),
+      categoryValueData: Object.entries(valueByCategory).map(([name, value]) => ({ 
+        name, 
+        value: value as number,
+        formattedValue: new Intl.NumberFormat('es-MX', { 
+          style: 'currency', 
+          currency: 'MXN',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0 
+        }).format(value as number)
+      })),
+      parkValueData: Object.entries(valueByPark).map(([name, value]) => ({ 
+        name, 
+        value: value as number,
+        formattedValue: new Intl.NumberFormat('es-MX', { 
+          style: 'currency', 
+          currency: 'MXN',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0 
+        }).format(value as number)
+      }))
+    };
+  }, [assets]);
   const paginatedAssets = assets; // Ya están paginados del backend
 
   // Reset página cuando cambian filtros
@@ -985,9 +1075,9 @@ const InventoryPage: React.FC = () => {
         </Dialog>
         <Button variant="outline" onClick={generateExecutiveReport}>
           <Printer className="h-4 w-4 mr-2" />
-          Imprimir Reporte
+          Exportar Reporte
         </Button>
-        <Button variant="outline">
+        <Button variant="outline" onClick={() => setIsAnalyticsOpen(true)}>
           <BarChart className="h-4 w-4 mr-2" />
           Analytics
         </Button>
@@ -1250,6 +1340,270 @@ const InventoryPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Modal de Analytics */}
+      <Dialog open={isAnalyticsOpen} onOpenChange={setIsAnalyticsOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-[#00a587] flex items-center gap-2">
+              <BarChart className="h-6 w-6" />
+              Analytics de Inventario de Activos
+            </h2>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsAnalyticsOpen(false)}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          {analyticsData ? (
+            <div className="space-y-8 mt-6">
+              {/* KPIs Principales */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Total Activos</p>
+                        <p className="text-2xl font-bold text-[#00a587]">{totalAssets}</p>
+                      </div>
+                      <Activity className="h-8 w-8 text-[#00a587]" />
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Valor Total</p>
+                        <p className="text-lg font-bold text-[#00a587]">
+                          {new Intl.NumberFormat('es-MX', { 
+                            style: 'currency', 
+                            currency: 'MXN',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0 
+                          }).format(
+                            assets.reduce((sum, asset) => sum + (parseFloat(asset.acquisitionCost) || 0), 0)
+                          )}
+                        </p>
+                      </div>
+                      <DollarSign className="h-8 w-8 text-[#00a587]" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Categorías</p>
+                        <p className="text-2xl font-bold text-[#00a587]">{analyticsData.categoryData.length}</p>
+                      </div>
+                      <Tag className="h-8 w-8 text-[#00a587]" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Parques</p>
+                        <p className="text-2xl font-bold text-[#00a587]">{analyticsData.parkValueData.length}</p>
+                      </div>
+                      <TrendingUp className="h-8 w-8 text-[#00a587]" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Gráficas en Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Distribución por Estado */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-[#00a587]">Distribución por Estado</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={analyticsData.statusData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({ name, value }) => `${name}: ${value}`}
+                        >
+                          {analyticsData.statusData.map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={['#00a587', '#bcd256', '#f39c12', '#e74c3c'][index % 4]} 
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                {/* Distribución por Condición */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-[#00a587]">Distribución por Condición</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={analyticsData.conditionData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({ name, value }) => `${name}: ${value}`}
+                        >
+                          {analyticsData.conditionData.map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={['#2ecc71', '#3498db', '#f39c12', '#e74c3c'][index % 4]} 
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                {/* Cantidad por Categoría */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-[#00a587]">Cantidad de Activos por Categoría</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <RechartsBarChart data={analyticsData.categoryData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="name" 
+                          angle={-45}
+                          textAnchor="end"
+                          height={100}
+                        />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="value" fill="#00a587" />
+                      </RechartsBarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                {/* Valor por Categoría */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-[#00a587]">Valor Monetario por Categoría</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <RechartsBarChart data={analyticsData.categoryValueData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="name" 
+                          angle={-45}
+                          textAnchor="end"
+                          height={100}
+                        />
+                        <YAxis 
+                          tickFormatter={(value) => 
+                            new Intl.NumberFormat('es-MX', { 
+                              style: 'currency', 
+                              currency: 'MXN',
+                              notation: 'compact',
+                              maximumFractionDigits: 1 
+                            }).format(value)
+                          }
+                        />
+                        <Tooltip 
+                          formatter={(value: any) => [
+                            new Intl.NumberFormat('es-MX', { 
+                              style: 'currency', 
+                              currency: 'MXN',
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0 
+                            }).format(value), 
+                            'Valor'
+                          ]}
+                        />
+                        <Bar dataKey="value" fill="#067f5f" />
+                      </RechartsBarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Valor por Parque - Gráfica Horizontal */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-[#00a587]">Distribución de Valor por Parque</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={400}>
+                    <RechartsBarChart 
+                      data={analyticsData.parkValueData.slice(0, 10)} 
+                      layout="horizontal"
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        type="number"
+                        tickFormatter={(value) => 
+                          new Intl.NumberFormat('es-MX', { 
+                            style: 'currency', 
+                            currency: 'MXN',
+                            notation: 'compact',
+                            maximumFractionDigits: 1 
+                          }).format(value)
+                        }
+                      />
+                      <YAxis 
+                        type="category" 
+                        dataKey="name" 
+                        width={150}
+                      />
+                      <Tooltip 
+                        formatter={(value: any) => [
+                          new Intl.NumberFormat('es-MX', { 
+                            style: 'currency', 
+                            currency: 'MXN',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0 
+                          }).format(value), 
+                          'Valor Total'
+                        ]}
+                      />
+                      <Bar dataKey="value" fill="#bcd256" />
+                    </RechartsBarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <BarChart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No hay datos disponibles para mostrar analytics</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
