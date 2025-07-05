@@ -80,14 +80,21 @@ interface MapClickHandlerProps {
 }
 
 // Componente para actualizar la vista del mapa
-function MapUpdater({ center }: { center: [number, number] }) {
+function MapUpdater({ center, selectedPosition }: { center: [number, number], selectedPosition: [number, number] | null }) {
   const map = useMap();
   
   useEffect(() => {
-    if (center) {
+    if (center && center[0] !== 0 && center[1] !== 0) {
+      console.log('MapUpdater: Centrando mapa en:', center);
       map.setView(center, 16);
     }
   }, [center, map]);
+
+  useEffect(() => {
+    if (selectedPosition && selectedPosition[0] !== 0 && selectedPosition[1] !== 0) {
+      console.log('MapUpdater: Actualizando posición seleccionada a:', selectedPosition);
+    }
+  }, [selectedPosition]);
 
   return null;
 }
@@ -152,6 +159,8 @@ const EditAssetPage = () => {
       const lat = parseFloat(asset.latitude);
       const lng = parseFloat(asset.longitude);
       if (!isNaN(lat) && !isNaN(lng)) {
+        console.log('=== COORDINADAS DETECTADAS EN ASSET ===');
+        console.log('Asset coords:', { lat, lng });
         setSelectedPosition([lat, lng]);
         setMapCenter([lat, lng]);
       }
@@ -806,7 +815,49 @@ const EditAssetPage = () => {
 
                     {/* Mapa Interactivo */}
                     <div className="space-y-2">
-                      <FormLabel>Seleccionar ubicación en el mapa</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Seleccionar ubicación en el mapa</FormLabel>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              if (asset?.latitude && asset?.longitude) {
+                                const lat = parseFloat(asset.latitude);
+                                const lng = parseFloat(asset.longitude);
+                                if (!isNaN(lat) && !isNaN(lng)) {
+                                  setSelectedPosition([lat, lng]);
+                                  setMapCenter([lat, lng]);
+                                  console.log('Mapa recentrado manualmente a:', [lat, lng]);
+                                }
+                              }
+                            }}
+                          >
+                            📍 Recentrar
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const lat = form.getValues('latitude');
+                              const lng = form.getValues('longitude');
+                              if (lat && lng) {
+                                const latNum = parseFloat(lat);
+                                const lngNum = parseFloat(lng);
+                                if (!isNaN(latNum) && !isNaN(lngNum)) {
+                                  setSelectedPosition([latNum, lngNum]);
+                                  setMapCenter([latNum, lngNum]);
+                                  console.log('Sincronizando desde campos:', [latNum, lngNum]);
+                                }
+                              }
+                            }}
+                          >
+                            🔄 Sincronizar
+                          </Button>
+                        </div>
+                      </div>
                       <div className="h-96 w-full border rounded-lg overflow-hidden">
                         <MapContainer
                           center={mapCenter}
@@ -818,7 +869,7 @@ const EditAssetPage = () => {
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                           />
-                          <MapUpdater center={mapCenter} />
+                          <MapUpdater center={mapCenter} selectedPosition={selectedPosition} />
                           <MapClickHandler onLocationSelect={handleLocationSelect} />
                           {selectedPosition && (
                             <Marker position={selectedPosition} />
@@ -826,7 +877,8 @@ const EditAssetPage = () => {
                         </MapContainer>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Haz clic en el mapa para seleccionar la ubicación exacta del activo
+                        Haz clic en el mapa para seleccionar la ubicación exacta del activo. 
+                        Usa los botones "Recentrar" o "Sincronizar" si las coordenadas no coinciden.
                       </p>
                     </div>
 
