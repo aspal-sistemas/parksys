@@ -248,7 +248,7 @@ const InventoryPage: React.FC = () => {
     }
   };
 
-  // Función para exportar el inventario a CSV
+  // Función para exportar el inventario completo a CSV
   const exportToCSV = () => {
     if (!assets || assets.length === 0) {
       toast({
@@ -259,19 +259,34 @@ const InventoryPage: React.FC = () => {
       return;
     }
     
+    // Headers completos con todos los campos de clasificación de activos
     const headers = [
       'ID',
       'Nombre',
+      'Descripción',
+      'Número de Serie',
       'Categoría',
       'Parque',
-      'Número de Serie',
+      'Amenidad',
+      'Ubicación Descripción',
+      'Latitud',
+      'Longitud',
       'Estado',
       'Condición',
-      'Ubicación',
+      'Fabricante',
+      'Modelo',
       'Fecha de Adquisición',
-      'Costo de Adquisición',
+      'Costo de Adquisición (MXN)',
+      'Valor Actual (MXN)',
+      'Frecuencia de Mantenimiento',
       'Último Mantenimiento',
-      'Próximo Mantenimiento'
+      'Próximo Mantenimiento',
+      'Vida Útil Esperada (meses)',
+      'Código QR',
+      'Persona Responsable',
+      'Notas',
+      'Fecha de Creación',
+      'Última Actualización'
     ];
     
     const csvRows = [];
@@ -279,41 +294,64 @@ const InventoryPage: React.FC = () => {
     // Agregar encabezados
     csvRows.push(headers.join(','));
     
-    // Agregar datos
+    // Agregar datos con todos los campos disponibles
     for (const asset of assets) {
       const values = [
-        asset.id,
-        `"${asset.name}"`,
-        `"${asset.categoryName || ''}"`,
-        `"${asset.parkName || ''}"`,
-        `"${asset.serialNumber || ''}"`,
+        asset.id || '',
+        `"${(asset.name || '').replace(/"/g, '""')}"`,
+        `"${(asset.description || '').replace(/"/g, '""')}"`,
+        `"${(asset.serialNumber || '').replace(/"/g, '""')}"`,
+        `"${(asset.categoryName || '').replace(/"/g, '""')}"`,
+        `"${(asset.parkName || '').replace(/"/g, '""')}"`,
+        `"${(asset.amenityName || '').replace(/"/g, '""')}"`,
+        `"${(asset.locationDescription || '').replace(/"/g, '""')}"`,
+        `"${asset.latitude || ''}"`,
+        `"${asset.longitude || ''}"`,
         `"${translateStatus(asset.status)}"`,
         `"${translateCondition(asset.condition)}"`,
-        `"${asset.locationDescription || ''}"`,
+        `"${(asset.manufacturer || '').replace(/"/g, '""')}"`,
+        `"${(asset.model || '').replace(/"/g, '""')}"`,
         asset.acquisitionDate ? formatDate(asset.acquisitionDate) : '',
-        asset.acquisitionCost !== null ? asset.acquisitionCost : '',
+        asset.acquisitionCost !== null && asset.acquisitionCost !== undefined ? 
+          `"$${Number(asset.acquisitionCost).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}"` : '',
+        asset.currentValue !== null && asset.currentValue !== undefined ? 
+          `"$${Number(asset.currentValue).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}"` : '',
+        `"${(asset.maintenanceFrequency || '').replace(/"/g, '""')}"`,
         asset.lastMaintenanceDate ? formatDate(asset.lastMaintenanceDate) : '',
-        asset.nextMaintenanceDate ? formatDate(asset.nextMaintenanceDate) : ''
+        asset.nextMaintenanceDate ? formatDate(asset.nextMaintenanceDate) : '',
+        asset.expectedLifespan || '',
+        `"${(asset.qrCode || '').replace(/"/g, '""')}"`,
+        `"${(asset.responsiblePersonName || '').replace(/"/g, '""')}"`,
+        `"${(asset.notes || '').replace(/"/g, '""')}"`,
+        asset.createdAt ? formatDate(asset.createdAt) : '',
+        asset.updatedAt ? formatDate(asset.updatedAt) : ''
       ];
       
       csvRows.push(values.join(','));
     }
     
-    // Crear y descargar el archivo CSV
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Crear contenido CSV con BOM para UTF-8
+    const csvContent = csvRows.join('\r\n');
+    const BOM = '\uFEFF'; // UTF-8 BOM para corregir acentos en Excel
+    const finalContent = BOM + csvContent;
+    
+    // Crear y descargar el archivo CSV con codificación UTF-8
+    const blob = new Blob([finalContent], { 
+      type: 'text/csv;charset=utf-8;' 
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `inventario_activos_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `inventario_completo_activos_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     
     toast({
       title: "Exportación exitosa",
-      description: `Se ha exportado el inventario con ${assets.length} activos.`,
+      description: `Se ha exportado el inventario completo con ${assets.length} activos y ${headers.length} campos.`,
     });
   };
 
