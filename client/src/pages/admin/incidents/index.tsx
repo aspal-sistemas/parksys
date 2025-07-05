@@ -352,68 +352,37 @@ const IncidentsPage = () => {
 
   return (
     <AdminLayout>
-      {/* Botones fijos en la parte superior derecha */}
-      <div className="fixed top-24 right-6 z-50 flex flex-col gap-3">
-        <Button 
-          variant="default" 
-          className="w-full bg-blue-600 hover:bg-blue-700 text-lg px-6 py-3 h-auto font-bold shadow-lg"
-          onClick={handleViewDashboard}
-        >
-          <BarChart className="h-5 w-5 mr-2" />
-          Dashboard
-        </Button>
-        
-        <Button 
-          variant="default" 
-          className="w-full bg-green-600 hover:bg-green-700 text-lg px-6 py-3 h-auto font-bold shadow-lg"
-          onClick={handleManageCategories}
-        >
-          <Bookmark className="h-5 w-5 mr-2" />
-          Categorías
-        </Button>
-      </div>
       <div className="container mx-auto py-6">
         <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center mb-6">
           <h1 className="text-2xl font-bold">Gestión de Incidencias</h1>
           
           {/* Botones de acción principales */}
           <div className="flex flex-wrap gap-3">
-            <a href="/admin/incidents/dashboard" className="no-underline w-full sm:w-auto mb-4 sm:mb-0 block">
-              <Button 
-                variant="default" 
-                className="w-full bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3 h-auto border-4 border-blue-300"
-              >
-                <BarChart className="h-6 w-6 mr-3" />
-                Dashboard de Incidencias
-              </Button>
-            </a>
+            <Button 
+              variant="default" 
+              onClick={handleViewDashboard}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <BarChart className="h-4 w-4 mr-2" />
+              Dashboard
+            </Button>
             
             <Button 
               variant="outline" 
               onClick={handleManageCategories}
-              className="text-lg px-5 py-2 h-auto"
             >
-              <Bookmark className="h-5 w-5 mr-2" />
+              <Bookmark className="h-4 w-4 mr-2" />
               Categorías
             </Button>
             
             <Button 
               onClick={handleNewIncident}
-              className="text-lg px-5 py-2 h-auto"
+              className="bg-green-600 hover:bg-green-700 text-white"
             >
-              <Plus className="h-5 w-5 mr-2" />
+              <Plus className="h-4 w-4 mr-2" />
               Nueva Incidencia
             </Button>
-            
-            {/* Se eliminó el enlace duplicado para evitar elementos repetidos */}
           </div>
-        </div>
-        
-        <div className="flex items-center justify-between mb-4">
-          <a href="/admin/incidents/dashboard" className="inline-flex items-center px-4 py-2 ml-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 no-underline">
-            <BarChart className="h-4 w-4 mr-2" />
-            Ver Dashboard
-          </a>
         </div>
           
         <Tabs defaultValue="all" className="flex-1">
