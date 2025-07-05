@@ -25,7 +25,8 @@ import {
   Mail,
   Star,
   Sparkles,
-  TrendingUp
+  TrendingUp,
+  Settings
 } from 'lucide-react';
 import logoPath from '@assets/PHOTO-2025-06-16-16-11-35_1750112001756.jpg';
 
@@ -205,7 +206,7 @@ const Landing = () => {
                 <Zap className="mr-3 h-6 w-6" />
                 Comenzar Gratis Ahora
               </Button>
-              <Button size="lg" variant="outline" className="border-3 border-white/50 text-white hover:bg-white/10 hover:border-white px-12 py-6 text-xl rounded-2xl transition-all duration-300 hover:scale-110 hover:shadow-2xl backdrop-blur-md">
+              <Button size="lg" variant="outline" className="border-3 border-white/50 text-white hover:bg-white/10 hover:border-white px-12 py-6 text-xl rounded-2xl transition-all duration-300 hover:scale-110 hover:shadow-2xl backdrop-blur-md" onClick={() => window.open('/parks', '_blank')}>
                 <ArrowRight className="mr-3 h-6 w-6" />
                 Ver Demo en Vivo
               </Button>
@@ -299,6 +300,21 @@ const Landing = () => {
                       <div className="flex-1">
                         <h4 className="text-lg font-bold text-gray-900">Parques Públicos</h4>
                         <p className="text-gray-600">13 parques de Guadalajara con información completa</p>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-emerald-600 transition-colors" />
+                    </div>
+                  </div>
+                </Link>
+
+                <Link href="/parks-module">
+                  <div className="bg-gradient-to-r from-emerald-50 to-blue-50 border-2 border-emerald-300 hover:border-emerald-500 rounded-xl p-6 transition-all duration-300 hover:shadow-lg group cursor-pointer">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-lg flex items-center justify-center transition-colors">
+                        <Settings className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-lg font-bold text-gray-900">🔥 Módulo de Gestión de Parques</h4>
+                        <p className="text-gray-600">Arquitectura completa: Admin → Base de Datos → Páginas Públicas</p>
                       </div>
                       <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-emerald-600 transition-colors" />
                     </div>

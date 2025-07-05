@@ -26,6 +26,7 @@ import AdminLogin from "@/pages/admin/login";
 import TestAccess from "@/pages/test-access";
 import AdminVolunteers from "@/pages/admin/volunteers";
 import Landing from "@/pages/Landing";
+import ParksModuleShowcase from "@/pages/ParksModuleShowcase";
 // El import de AdminVolunteerNew ha sido eliminado
 import AdminVolunteerParticipations from "@/pages/admin/volunteers/participations";
 import AdminParticipationEdit from "@/pages/admin/volunteers/participations/edit";
@@ -47,6 +48,7 @@ function Router() {
         <Route path="/home" component={Home} />
         <Route path="/ventas" component={Landing} />
         <Route path="/landing" component={Landing} />
+        <Route path="/parks-module" component={ParksModuleShowcase} />
         <Route path="/parks" component={Parks} />
         <Route path="/parks/:id" component={ParkDetail} />
         <Route path="/parque/:slug">
