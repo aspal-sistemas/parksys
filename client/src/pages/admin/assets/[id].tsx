@@ -394,7 +394,7 @@ const AssetDetailPage: React.FC = () => {
   const maintenanceMutation = useMutation({
     mutationFn: (maintenance: z.infer<typeof maintenanceSchema>) => {
       console.log('Enviando mantenimiento:', maintenance);
-      return apiRequest(`/api/assets/${id}/maintenances`, 'POST', maintenance);
+      return apiRequest(`/api/assets/${id}/maintenances`, { method: 'POST' }, maintenance);
     },
     onSuccess: (data) => {
       console.log('Mantenimiento creado exitosamente:', data);
