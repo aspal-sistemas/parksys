@@ -106,6 +106,7 @@ app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
   }
 });
 
+// IMPORTANTE: Configurar middleware de parseo JSON ANTES de cualquier ruta
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
