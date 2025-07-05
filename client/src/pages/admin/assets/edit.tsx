@@ -93,8 +93,10 @@ function MapUpdater({ center, selectedPosition }: { center: [number, number], se
   useEffect(() => {
     if (selectedPosition && selectedPosition[0] !== 0 && selectedPosition[1] !== 0) {
       console.log('MapUpdater: Actualizando posición seleccionada a:', selectedPosition);
+      // También centrar el mapa en la posición seleccionada
+      map.setView(selectedPosition, 16);
     }
-  }, [selectedPosition]);
+  }, [selectedPosition, map]);
 
   return null;
 }
@@ -161,8 +163,14 @@ const EditAssetPage = () => {
       if (!isNaN(lat) && !isNaN(lng)) {
         console.log('=== COORDINADAS DETECTADAS EN ASSET ===');
         console.log('Asset coords:', { lat, lng });
-        setSelectedPosition([lat, lng]);
-        setMapCenter([lat, lng]);
+        
+        // Forzar actualización inmediata del estado del mapa
+        setTimeout(() => {
+          setSelectedPosition([lat, lng]);
+          setMapCenter([lat, lng]);
+          console.log('=== MAPA FORZADO A COORDENADAS ===');
+          console.log('Posición forzada:', [lat, lng]);
+        }, 500); // Mayor delay para asegurar que el mapa esté listo
       }
     }
   }, [asset]);
@@ -856,6 +864,20 @@ const EditAssetPage = () => {
                           >
                             🔄 Sincronizar
                           </Button>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              // Forzar recarga completa de datos
+                              queryClient.invalidateQueries({ queryKey: [`/api/assets/${id}`] });
+                              setTimeout(() => {
+                                window.location.reload();
+                              }, 1000);
+                            }}
+                          >
+                            🔃 Recargar
+                          </Button>
                         </div>
                       </div>
                       <div className="h-96 w-full border rounded-lg overflow-hidden">
@@ -876,10 +898,16 @@ const EditAssetPage = () => {
                           )}
                         </MapContainer>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Haz clic en el mapa para seleccionar la ubicación exacta del activo. 
-                        Usa los botones "Recentrar" o "Sincronizar" si las coordenadas no coinciden.
-                      </p>
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <span>
+                          Haz clic en el mapa para seleccionar la ubicación exacta del activo.
+                        </span>
+                        {selectedPosition && (
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-md text-xs">
+                            ✓ Mapa sincronizado ({selectedPosition[0].toFixed(6)}, {selectedPosition[1].toFixed(6)})
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
