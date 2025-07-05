@@ -3157,6 +3157,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Obtener una incidencia por ID
+  apiRouter.get("/incidents/:id", async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+      
+      // Consulta directa a la base de datos
+      const result = await pool.query(`
+        SELECT 
+          i.id,
+          i.asset_id as "assetId",
+          i.park_id as "parkId",
+          i.title,
+          i.description,
+          i.status,
+          i.severity,
+          i.reporter_name as "reporterName",
+          i.reporter_email as "reporterEmail",
+          i.location,
+          i.category,
+          i.created_at as "createdAt",
+          i.updated_at as "updatedAt",
+          p.name as "parkName",
+          a.name as "assetName"
+        FROM incidents i
+        LEFT JOIN parks p ON i.park_id = p.id
+        LEFT JOIN assets a ON i.asset_id = a.id
+        WHERE i.id = $1
+      `, [incidentId]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Incidencia no encontrada" });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error al obtener incidencia:', error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Obtener comentarios de una incidencia
+  apiRouter.get("/incidents/:id/comments", async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+      
+      // Por ahora devolvemos un array vacío ya que no existe la tabla de comentarios
+      res.json([]);
+    } catch (error) {
+      console.error('Error al obtener comentarios:', error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Obtener historial de una incidencia
+  apiRouter.get("/incidents/:id/history", async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+      
+      // Por ahora devolvemos un array vacío ya que no existe la tabla de historial
+      res.json([]);
+    } catch (error) {
+      console.error('Error al obtener historial:', error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
   // Actualizar estado de una incidencia
   apiRouter.put("/incidents/:id/status", isAuthenticated, async (req: Request, res: Response) => {
     try {
