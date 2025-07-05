@@ -235,6 +235,31 @@ const NewIncidentPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Banner informativo cuando viene de un activo */}
+            {assetIdFromUrl && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <div className="p-1 bg-blue-100 rounded">
+                    <AlertTriangle className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-blue-900 mb-1">
+                      Formulario configurado automáticamente
+                    </h4>
+                    <p className="text-sm text-blue-700 mb-2">
+                      Los campos de activo, parque y ubicación se han completado automáticamente 
+                      basándose en el activo seleccionado desde el inventario.
+                    </p>
+                    <div className="text-xs text-blue-600 space-y-1">
+                      <div>• <strong>Activo:</strong> {safeAssets.find((a: any) => a.id === parseInt(assetIdFromUrl))?.name || 'Cargando...'}</div>
+                      <div>• <strong>Parque:</strong> {safeParks.find((p: any) => p.id === parseInt(form.watch('parkId')))?.name || 'Cargando...'}</div>
+                      <div>• <strong>Ubicación:</strong> Incluye coordenadas precisas del activo</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -353,10 +378,21 @@ const NewIncidentPage = () => {
                       name="assetId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Activo Relacionado (Opcional)</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormLabel className="flex items-center gap-2">
+                            Activo Relacionado {assetIdFromUrl ? '' : '(Opcional)'}
+                            {assetIdFromUrl && (
+                              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                                Preseleccionado
+                              </span>
+                            )}
+                          </FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            defaultValue={field.value}
+                            disabled={!!assetIdFromUrl}
+                          >
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className={assetIdFromUrl ? "bg-gray-50 cursor-not-allowed" : ""}>
                                 <SelectValue placeholder="Seleccionar activo" />
                               </SelectTrigger>
                             </FormControl>
@@ -369,6 +405,11 @@ const NewIncidentPage = () => {
                               ))}
                             </SelectContent>
                           </Select>
+                          {assetIdFromUrl && (
+                            <p className="text-xs text-gray-600">
+                              El activo fue preseleccionado desde el inventario de activos
+                            </p>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}
