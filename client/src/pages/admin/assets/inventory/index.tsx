@@ -248,6 +248,75 @@ const InventoryPage: React.FC = () => {
     }
   };
 
+  // Función para exportar el inventario a CSV
+  const exportToCSV = () => {
+    if (!assets || assets.length === 0) {
+      toast({
+        title: "Sin datos",
+        description: "No hay activos para exportar.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const headers = [
+      'ID',
+      'Nombre',
+      'Categoría',
+      'Parque',
+      'Número de Serie',
+      'Estado',
+      'Condición',
+      'Ubicación',
+      'Fecha de Adquisición',
+      'Costo de Adquisición',
+      'Último Mantenimiento',
+      'Próximo Mantenimiento'
+    ];
+    
+    const csvRows = [];
+    
+    // Agregar encabezados
+    csvRows.push(headers.join(','));
+    
+    // Agregar datos
+    for (const asset of assets) {
+      const values = [
+        asset.id,
+        `"${asset.name}"`,
+        `"${asset.categoryName || ''}"`,
+        `"${asset.parkName || ''}"`,
+        `"${asset.serialNumber || ''}"`,
+        `"${translateStatus(asset.status)}"`,
+        `"${translateCondition(asset.condition)}"`,
+        `"${asset.locationDescription || ''}"`,
+        asset.acquisitionDate ? formatDate(asset.acquisitionDate) : '',
+        asset.acquisitionCost !== null ? asset.acquisitionCost : '',
+        asset.lastMaintenanceDate ? formatDate(asset.lastMaintenanceDate) : '',
+        asset.nextMaintenanceDate ? formatDate(asset.nextMaintenanceDate) : ''
+      ];
+      
+      csvRows.push(values.join(','));
+    }
+    
+    // Crear y descargar el archivo CSV
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `inventario_activos_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Exportación exitosa",
+      description: `Se ha exportado el inventario con ${assets.length} activos.`,
+    });
+  };
+
   return (
     <AdminLayout>
       <Helmet>
@@ -337,7 +406,7 @@ const InventoryPage: React.FC = () => {
           <Plus className="h-4 w-4 mr-2" />
           Nuevo Activo
         </Button>
-        <Button variant="outline">
+        <Button variant="outline" onClick={exportToCSV}>
           <Download className="h-4 w-4 mr-2" />
           Exportar Inventario
         </Button>
