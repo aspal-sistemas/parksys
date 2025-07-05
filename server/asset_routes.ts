@@ -1083,15 +1083,12 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
     }
   });
 
-  // Endpoint para generar reporte ejecutivo en PDF
-  apiRouter.post("/assets/executive-report", isAuthenticated, async (req: Request, res: Response) => {
+  // Endpoint para obtener datos del reporte ejecutivo
+  apiRouter.post("/assets/report-data", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      console.log('📊 Iniciando generación de reporte ejecutivo');
+      console.log('📊 Obteniendo datos para reporte ejecutivo');
 
       const { filters } = req.body;
-      
-      // Importar html-pdf-node
-      const pdf = await import('html-pdf-node');
       
       // Construir query SQL con filtros
       let whereConditions = ['1=1']; // Base condition
@@ -1138,22 +1135,11 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
 
       // Consultas para obtener datos del reporte
       const [
-        assetsResult,
         statisticsResult,
         categoriesResult,
         parksResult,
         financialResult
       ] = await Promise.all([
-        // Assets totales con filtros
-        pool.query(`
-          SELECT a.*, c.name as category_name, p.name as park_name
-          FROM assets a
-          LEFT JOIN asset_categories c ON a.category_id = c.id
-          LEFT JOIN parks p ON a.park_id = p.id
-          WHERE ${whereClause}
-          ORDER BY a.created_at DESC
-        `, queryParams),
-
         // Estadísticas generales
         pool.query(`
           SELECT 
@@ -1175,8 +1161,8 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
           SELECT c.name as category, COUNT(a.id) as count,
                  COALESCE(SUM(a.current_value), 0) as total_value
           FROM asset_categories c
-          LEFT JOIN assets a ON c.id = a.category_id
-          WHERE c.parent_id IS NULL AND (${whereClause.replace(/a\./g, 'a.')})
+          LEFT JOIN assets a ON c.id = a.category_id AND (${whereClause.replace(/a\./g, 'a.')})
+          WHERE c.parent_id IS NULL
           GROUP BY c.name
           ORDER BY count DESC
         `, queryParams),
@@ -1186,8 +1172,7 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
           SELECT p.name as park, COUNT(a.id) as count,
                  COALESCE(SUM(a.current_value), 0) as total_value
           FROM parks p
-          LEFT JOIN assets a ON p.id = a.park_id
-          WHERE ${whereClause.replace(/a\./g, 'a.')}
+          LEFT JOIN assets a ON p.id = a.park_id AND (${whereClause.replace(/a\./g, 'a.')})
           GROUP BY p.name
           ORDER BY count DESC
         `, queryParams),
@@ -1206,246 +1191,25 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         `, queryParams)
       ]);
 
-      const assets = assetsResult.rows;
-      const stats = statisticsResult.rows[0];
+      const statistics = statisticsResult.rows[0];
       const categoriesStats = categoriesResult.rows;
       const parksStats = parksResult.rows;
       const financialStats = financialResult.rows;
 
-      // Generar HTML del reporte
-      const reportDate = new Date().toLocaleDateString('es-MX', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+      // Enviar datos JSON
+      res.json({
+        statistics,
+        categoriesStats,
+        parksStats,
+        financialStats
       });
 
-      const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-MX', {
-          style: 'currency',
-          currency: 'MXN',
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 0
-        }).format(amount);
-      };
-
-      const html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
-            .header { text-align: center; border-bottom: 3px solid #00a587; padding-bottom: 20px; margin-bottom: 30px; }
-            .header h1 { color: #00a587; margin: 0; font-size: 28px; }
-            .header p { color: #666; margin: 5px 0; }
-            .summary { display: flex; justify-content: space-between; margin-bottom: 30px; }
-            .summary-card { background: #f8f9fa; border-left: 4px solid #00a587; padding: 15px; width: 22%; }
-            .summary-card h3 { margin: 0 0 10px 0; color: #00a587; font-size: 14px; }
-            .summary-card .value { font-size: 24px; font-weight: bold; color: #333; }
-            .chart-section { margin: 30px 0; }
-            .chart-section h2 { color: #00a587; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-            .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 20px 0; }
-            .chart-item { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 20px; }
-            .bar { height: 20px; background: #00a587; margin: 5px 0; border-radius: 3px; }
-            .bar-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
-            .table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-            .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 11px; }
-            .table th { background: #00a587; color: white; }
-            .table tr:nth-child(even) { background: #f9f9f9; }
-            .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 10px; color: #666; }
-            .status-active { color: #16a34a; font-weight: bold; }
-            .status-maintenance { color: #ea580c; font-weight: bold; }
-            .condition-excellent { color: #16a34a; }
-            .condition-good { color: #059669; }
-            .condition-fair { color: #d97706; }
-            .condition-poor { color: #dc2626; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>Reporte Ejecutivo de Inventario</h1>
-            <p>Bosques Urbanos de Guadalajara</p>
-            <p>Generado el ${reportDate}</p>
-          </div>
-
-          <div class="summary">
-            <div class="summary-card">
-              <h3>TOTAL DE ACTIVOS</h3>
-              <div class="value">${stats.total_assets}</div>
-            </div>
-            <div class="summary-card">
-              <h3>ACTIVOS ACTIVOS</h3>
-              <div class="value">${stats.active_assets}</div>
-            </div>
-            <div class="summary-card">
-              <h3>EN MANTENIMIENTO</h3>
-              <div class="value">${stats.maintenance_assets}</div>
-            </div>
-            <div class="summary-card">
-              <h3>VALOR TOTAL</h3>
-              <div class="value">${formatCurrency(stats.total_current_value)}</div>
-            </div>
-          </div>
-
-          <div class="chart-section">
-            <h2>Análisis por Categorías</h2>
-            <div class="chart-grid">
-              <div class="chart-item">
-                <h3>Distribución de Activos</h3>
-                ${categoriesStats.map(cat => {
-                  const percentage = stats.total_assets > 0 ? (cat.count / stats.total_assets * 100) : 0;
-                  return `
-                    <div class="bar-label">
-                      <span>${cat.category}</span>
-                      <span>${cat.count} (${percentage.toFixed(1)}%)</span>
-                    </div>
-                    <div class="bar" style="width: ${percentage}%"></div>
-                  `;
-                }).join('')}
-              </div>
-              <div class="chart-item">
-                <h3>Valor por Categoría</h3>
-                ${categoriesStats.map(cat => {
-                  const percentage = stats.total_current_value > 0 ? (cat.total_value / stats.total_current_value * 100) : 0;
-                  return `
-                    <div class="bar-label">
-                      <span>${cat.category}</span>
-                      <span>${formatCurrency(cat.total_value)}</span>
-                    </div>
-                    <div class="bar" style="width: ${Math.max(percentage, 5)}%"></div>
-                  `;
-                }).join('')}
-              </div>
-            </div>
-          </div>
-
-          <div class="chart-section">
-            <h2>Distribución por Parques</h2>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Parque</th>
-                  <th>Cantidad de Activos</th>
-                  <th>Valor Total</th>
-                  <th>Porcentaje</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${parksStats.map(park => {
-                  const percentage = stats.total_assets > 0 ? (park.count / stats.total_assets * 100) : 0;
-                  return `
-                    <tr>
-                      <td>${park.park}</td>
-                      <td>${park.count}</td>
-                      <td>${formatCurrency(park.total_value)}</td>
-                      <td>${percentage.toFixed(1)}%</td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
-          </div>
-
-          <div class="chart-section">
-            <h2>Estado y Condición de Activos</h2>
-            <div class="chart-grid">
-              <div class="chart-item">
-                <h3>Estado Operativo</h3>
-                <div class="bar-label">
-                  <span>Activos</span>
-                  <span class="status-active">${stats.active_assets} activos</span>
-                </div>
-                <div class="bar" style="width: ${stats.total_assets > 0 ? (stats.active_assets / stats.total_assets * 100) : 0}%"></div>
-                <div class="bar-label">
-                  <span>En Mantenimiento</span>
-                  <span class="status-maintenance">${stats.maintenance_assets} activos</span>
-                </div>
-                <div class="bar" style="width: ${stats.total_assets > 0 ? (stats.maintenance_assets / stats.total_assets * 100) : 0}%; background: #ea580c;"></div>
-              </div>
-              <div class="chart-item">
-                <h3>Condición Física</h3>
-                <div class="bar-label">
-                  <span>Excelente</span>
-                  <span class="condition-excellent">${stats.excellent_condition}</span>
-                </div>
-                <div class="bar" style="width: ${stats.total_assets > 0 ? (stats.excellent_condition / stats.total_assets * 100) : 0}%"></div>
-                <div class="bar-label">
-                  <span>Bueno</span>
-                  <span class="condition-good">${stats.good_condition}</span>
-                </div>
-                <div class="bar" style="width: ${stats.total_assets > 0 ? (stats.good_condition / stats.total_assets * 100) : 0}%; background: #059669;"></div>
-                <div class="bar-label">
-                  <span>Regular</span>
-                  <span class="condition-fair">${stats.fair_condition}</span>
-                </div>
-                <div class="bar" style="width: ${stats.total_assets > 0 ? (stats.fair_condition / stats.total_assets * 100) : 0}%; background: #d97706;"></div>
-                <div class="bar-label">
-                  <span>Malo</span>
-                  <span class="condition-poor">${stats.poor_condition}</span>
-                </div>
-                <div class="bar" style="width: ${stats.total_assets > 0 ? (stats.poor_condition / stats.total_assets * 100) : 0}%; background: #dc2626;"></div>
-              </div>
-            </div>
-          </div>
-
-          ${financialStats.length > 0 ? `
-          <div class="chart-section">
-            <h2>Análisis Financiero por Año</h2>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Año</th>
-                  <th>Activos Adquiridos</th>
-                  <th>Inversión Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${financialStats.map(year => `
-                  <tr>
-                    <td>${year.year}</td>
-                    <td>${year.assets_count}</td>
-                    <td>${formatCurrency(year.total_invested)}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-          ` : ''}
-
-          <div class="footer">
-            <p>Sistema de Gestión de Activos - Bosques Urbanos de Guadalajara</p>
-            <p>Av. Alcalde 1351, Guadalajara, Jalisco | Tel: 33 3837-4400 | bosques@guadalajara.gob.mx</p>
-          </div>
-        </body>
-        </html>
-      `;
-
-      // Configurar opciones del PDF
-      const options = {
-        format: 'A4',
-        orientation: 'portrait',
-        border: {
-          top: '0.5in',
-          right: '0.5in',
-          bottom: '0.5in',
-          left: '0.5in'
-        }
-      };
-
-      // Generar PDF
-      const pdfBuffer = await pdf.generatePdf({ content: html }, options);
-
-      // Enviar PDF como respuesta
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=reporte_ejecutivo_inventario_${new Date().toISOString().split('T')[0]}.pdf`);
-      res.send(pdfBuffer);
-
-      console.log('✅ Reporte ejecutivo generado exitosamente');
+      console.log('✅ Datos de reporte obtenidos exitosamente');
 
     } catch (error) {
-      console.error("❌ Error al generar reporte ejecutivo:", error);
+      console.error("❌ Error al obtener datos del reporte:", error);
       res.status(500).json({ 
-        message: "Error al generar reporte ejecutivo",
+        message: "Error al obtener datos del reporte",
         error: error instanceof Error ? error.message : 'Error desconocido'
       });
     }

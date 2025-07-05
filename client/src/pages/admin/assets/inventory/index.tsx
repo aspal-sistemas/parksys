@@ -474,7 +474,8 @@ const InventoryPage: React.FC = () => {
         description: "Preparando reporte ejecutivo de inventario...",
       });
 
-      const response = await fetch('/api/assets/executive-report', {
+      // Obtener datos para el reporte
+      const response = await fetch('/api/assets/report-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -491,23 +492,205 @@ const InventoryPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Error al generar el reporte');
+        throw new Error('Error al obtener datos del reporte');
       }
 
-      // Descargar el PDF
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
+      const reportData = await response.json();
+
+      // Importar jsPDF dinámicamente
+      const { jsPDF } = await import('jspdf');
       
-      const now = new Date();
-      const timestamp = now.toISOString().split('T')[0];
-      link.download = `reporte_ejecutivo_inventario_${timestamp}.pdf`;
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
       
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      // Configuración de estilos
+      const primaryColor = '#00a587';
+      const margin = 20;
+      let currentY = margin;
+
+      // Header del reporte
+      pdf.setFontSize(22);
+      pdf.setTextColor(0, 165, 135); // Color primario
+      pdf.text('Reporte Ejecutivo de Inventario', pageWidth / 2, currentY, { align: 'center' });
+      
+      currentY += 10;
+      pdf.setFontSize(14);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text('Bosques Urbanos de Guadalajara', pageWidth / 2, currentY, { align: 'center' });
+      
+      currentY += 8;
+      const reportDate = new Date().toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      pdf.text(`Generado el ${reportDate}`, pageWidth / 2, currentY, { align: 'center' });
+      
+      // Línea separadora
+      currentY += 15;
+      pdf.setDrawColor(0, 165, 135);
+      pdf.setLineWidth(1);
+      pdf.line(margin, currentY, pageWidth - margin, currentY);
+      currentY += 15;
+
+      // Métricas principales
+      pdf.setFontSize(16);
+      pdf.setTextColor(0, 165, 135);
+      pdf.text('Resumen Ejecutivo', margin, currentY);
+      currentY += 15;
+
+      const stats = reportData.statistics;
+      const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('es-MX', {
+          style: 'currency',
+          currency: 'MXN',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        }).format(amount);
+      };
+
+      // Grid de métricas 2x2
+      const metrics = [
+        { label: 'Total de Activos', value: stats.total_assets },
+        { label: 'Activos Activos', value: stats.active_assets },
+        { label: 'En Mantenimiento', value: stats.maintenance_assets },
+        { label: 'Valor Total', value: formatCurrency(stats.total_current_value) }
+      ];
+
+      pdf.setFontSize(12);
+      const cardWidth = (pageWidth - margin * 2 - 10) / 2;
+      const cardHeight = 25;
+
+      metrics.forEach((metric, index) => {
+        const row = Math.floor(index / 2);
+        const col = index % 2;
+        const x = margin + col * (cardWidth + 10);
+        const y = currentY + row * (cardHeight + 10);
+
+        // Fondo de la tarjeta
+        pdf.setFillColor(248, 249, 250);
+        pdf.rect(x, y, cardWidth, cardHeight, 'F');
+        
+        // Borde izquierdo
+        pdf.setFillColor(0, 165, 135);
+        pdf.rect(x, y, 3, cardHeight, 'F');
+
+        // Texto de la métrica
+        pdf.setTextColor(0, 165, 135);
+        pdf.setFontSize(10);
+        pdf.text(metric.label, x + 8, y + 8);
+        
+        pdf.setTextColor(50, 50, 50);
+        pdf.setFontSize(14);
+        pdf.text(metric.value.toString(), x + 8, y + 18);
+      });
+
+      currentY += 70;
+
+      // Distribución por categorías
+      pdf.setFontSize(16);
+      pdf.setTextColor(0, 165, 135);
+      pdf.text('Distribución por Categorías', margin, currentY);
+      currentY += 15;
+
+      pdf.setFontSize(12);
+      pdf.setTextColor(50, 50, 50);
+      
+      // Encabezados de tabla
+      const colWidths = [80, 40, 60];
+      const startX = margin;
+      
+      pdf.setFillColor(0, 165, 135);
+      pdf.rect(startX, currentY, colWidths[0] + colWidths[1] + colWidths[2], 8, 'F');
+      
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(10);
+      pdf.text('Categoría', startX + 2, currentY + 6);
+      pdf.text('Cantidad', startX + colWidths[0] + 2, currentY + 6);
+      pdf.text('Valor Total', startX + colWidths[0] + colWidths[1] + 2, currentY + 6);
+      
+      currentY += 10;
+
+      // Datos de categorías
+      reportData.categoriesStats.forEach((category: any, index: number) => {
+        if (currentY > pageHeight - 30) {
+          pdf.addPage();
+          currentY = margin;
+        }
+
+        const rowY = currentY + index * 8;
+        
+        // Fila alternada
+        if (index % 2 === 0) {
+          pdf.setFillColor(249, 249, 249);
+          pdf.rect(startX, rowY, colWidths[0] + colWidths[1] + colWidths[2], 8, 'F');
+        }
+
+        pdf.setTextColor(50, 50, 50);
+        pdf.setFontSize(9);
+        pdf.text(category.category || 'Sin categoría', startX + 2, rowY + 6);
+        pdf.text(category.count.toString(), startX + colWidths[0] + 2, rowY + 6);
+        pdf.text(formatCurrency(category.total_value), startX + colWidths[0] + colWidths[1] + 2, rowY + 6);
+      });
+
+      currentY += reportData.categoriesStats.length * 8 + 20;
+
+      // Estado y condición
+      if (currentY > pageHeight - 60) {
+        pdf.addPage();
+        currentY = margin;
+      }
+
+      pdf.setFontSize(16);
+      pdf.setTextColor(0, 165, 135);
+      pdf.text('Estado y Condición de Activos', margin, currentY);
+      currentY += 15;
+
+      // Estado operativo
+      pdf.setFontSize(12);
+      pdf.setTextColor(50, 50, 50);
+      pdf.text('Estado Operativo:', margin, currentY);
+      currentY += 8;
+
+      pdf.setFontSize(10);
+      const activePercentage = stats.total_assets > 0 ? (stats.active_assets / stats.total_assets * 100).toFixed(1) : '0';
+      const maintenancePercentage = stats.total_assets > 0 ? (stats.maintenance_assets / stats.total_assets * 100).toFixed(1) : '0';
+
+      pdf.text(`• Activos: ${stats.active_assets} (${activePercentage}%)`, margin + 10, currentY);
+      currentY += 6;
+      pdf.text(`• En Mantenimiento: ${stats.maintenance_assets} (${maintenancePercentage}%)`, margin + 10, currentY);
+      currentY += 15;
+
+      // Condición física
+      pdf.setFontSize(12);
+      pdf.text('Condición Física:', margin, currentY);
+      currentY += 8;
+
+      pdf.setFontSize(10);
+      const conditions = [
+        { name: 'Excelente', count: stats.excellent_condition },
+        { name: 'Bueno', count: stats.good_condition },
+        { name: 'Regular', count: stats.fair_condition },
+        { name: 'Malo', count: stats.poor_condition }
+      ];
+
+      conditions.forEach(condition => {
+        const percentage = stats.total_assets > 0 ? (condition.count / stats.total_assets * 100).toFixed(1) : '0';
+        pdf.text(`• ${condition.name}: ${condition.count} (${percentage}%)`, margin + 10, currentY);
+        currentY += 6;
+      });
+
+      // Footer
+      currentY = pageHeight - 20;
+      pdf.setFontSize(8);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text('Sistema de Gestión de Activos - Bosques Urbanos de Guadalajara', pageWidth / 2, currentY, { align: 'center' });
+      pdf.text('Av. Alcalde 1351, Guadalajara, Jalisco | Tel: 33 3837-4400 | bosques@guadalajara.gob.mx', pageWidth / 2, currentY + 4, { align: 'center' });
+
+      // Guardar PDF
+      const timestamp = new Date().toISOString().split('T')[0];
+      pdf.save(`reporte_ejecutivo_inventario_${timestamp}.pdf`);
 
       toast({
         title: "Reporte generado",
