@@ -1022,17 +1022,7 @@ async function initializeDatabaseAsync() {
 
   const routeServer = await registerRoutes(app);
 
-  // MIDDLEWARE DE DEBUG - Capturar TODAS las peticiones POST para identificar interceptores
-  app.use('/api/assets/:id/maintenances', (req: Request, res: Response, next: NextFunction) => {
-    if (req.method === 'POST') {
-      console.log('🚨 [DEBUG MIDDLEWARE] Interceptada petición POST a /api/assets/:id/maintenances');
-      console.log('🚨 [DEBUG] Método:', req.method);
-      console.log('🚨 [DEBUG] URL:', req.url);
-      console.log('🚨 [DEBUG] Params:', req.params);
-      console.log('🚨 [DEBUG] Body:', req.body);
-    }
-    next();
-  });
+
 
   // RUTAS DIRECTAS DE MANTENIMIENTO - DEBEN IR DESPUÉS DE registerRoutes para tener prioridad
   app.post('/api/assets/:id/maintenances', async (req: Request, res: Response) => {
