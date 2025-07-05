@@ -66,76 +66,94 @@ export function registerAssetRoutes(app: any, apiRouter: Router, isAuthenticated
         category = 'all'
       } = req.query;
 
-      let query = db
-        .select({
-          id: assets.id,
-          name: assets.name,
-          description: assets.description,
-          serialNumber: assets.serialNumber,
-          acquisitionDate: assets.acquisitionDate,
-          acquisitionCost: assets.acquisitionCost,
-          parkId: assets.parkId,
-          categoryId: assets.categoryId,
-          status: assets.status,
-          condition: assets.condition,
-          locationDescription: assets.locationDescription,
-          latitude: assets.latitude,
-          longitude: assets.longitude,
-          lastMaintenanceDate: assets.lastMaintenanceDate,
-          nextMaintenanceDate: assets.nextMaintenanceDate,
-          createdAt: assets.createdAt,
-          updatedAt: assets.updatedAt,
-          categoryName: assetCategories.name,
-          parkName: parks.name
-        })
-        .from(assets)
-        .leftJoin(assetCategories, eq(assets.categoryId, assetCategories.id))
-        .leftJoin(parks, eq(assets.parkId, parks.id));
+      // Build WHERE conditions
+      const conditions = [];
+      const queryParams = [];
+      let paramIndex = 1;
 
-      // Apply filters
-      if (search) {
-        query = query.where(
-          sql`LOWER(${assets.name}) LIKE LOWER('%${search}%') OR LOWER(${assets.description}) LIKE LOWER('%${search}%')`
-        );
+      if (search && search !== '') {
+        conditions.push(`(LOWER(a.name) LIKE LOWER($${paramIndex}) OR LOWER(COALESCE(a.description, '')) LIKE LOWER($${paramIndex + 1}))`);
+        queryParams.push(`%${search}%`, `%${search}%`);
+        paramIndex += 2;
       }
-      
+
       if (status !== 'all') {
-        query = query.where(eq(assets.status, status as string));
+        conditions.push(`a.status = $${paramIndex}`);
+        queryParams.push(status);
+        paramIndex++;
       }
-      
+
       if (condition !== 'all') {
-        query = query.where(eq(assets.condition, condition as string));
+        conditions.push(`a.condition = $${paramIndex}`);
+        queryParams.push(condition);
+        paramIndex++;
       }
-      
+
       if (park !== 'all') {
-        query = query.where(eq(assets.parkId, parseInt(park as string)));
+        conditions.push(`a.park_id = $${paramIndex}`);
+        queryParams.push(parseInt(park as string));
+        paramIndex++;
       }
-      
+
       if (category !== 'all') {
-        query = query.where(eq(assets.categoryId, parseInt(category as string)));
+        conditions.push(`a.category_id = $${paramIndex}`);
+        queryParams.push(parseInt(category as string));
+        paramIndex++;
       }
 
-      // Get total count and total value for pagination
-      const countQuery = db
-        .select({ 
-          count: sql<number>`COUNT(*)`,
-          totalValue: sql<number>`COALESCE(SUM(CAST(${assets.acquisitionCost} AS DECIMAL(10,2))), 0)`
-        })
-        .from(assets);
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-      const [countResult] = await countQuery;
-      const totalAssets = countResult.count;
-      const totalValue = countResult.totalValue;
+      // Get total count and total value
+      const countQuery = `
+        SELECT 
+          COUNT(*) as count,
+          COALESCE(SUM(CAST(a.acquisition_cost AS DECIMAL(10,2))), 0) as total_value
+        FROM assets a
+        LEFT JOIN asset_categories ac ON a.category_id = ac.id
+        LEFT JOIN parks p ON a.park_id = p.id
+        ${whereClause}
+      `;
 
-      // Apply pagination
+      const countResult = await pool.query(countQuery, queryParams);
+      const totalAssets = parseInt(countResult.rows[0]?.count || '0');
+      const totalValue = parseFloat(countResult.rows[0]?.total_value || '0');
+
+      // Get paginated results
       const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
-      const paginatedAssets = await query
-        .limit(parseInt(limit as string))
-        .offset(offset)
-        .orderBy(assets.createdAt);
+      const assetsQuery = `
+        SELECT 
+          a.id,
+          a.name,
+          a.description,
+          a.serial_number as "serialNumber",
+          a.acquisition_date as "acquisitionDate",
+          a.acquisition_cost as "acquisitionCost",
+          a.park_id as "parkId",
+          a.category_id as "categoryId",
+          a.status,
+          a.condition,
+          a.location_description as "locationDescription",
+          a.latitude,
+          a.longitude,
+          a.last_maintenance_date as "lastMaintenanceDate",
+          a.next_maintenance_date as "nextMaintenanceDate",
+          a.created_at as "createdAt",
+          a.updated_at as "updatedAt",
+          ac.name as "categoryName",
+          p.name as "parkName"
+        FROM assets a
+        LEFT JOIN asset_categories ac ON a.category_id = ac.id
+        LEFT JOIN parks p ON a.park_id = p.id
+        ${whereClause}
+        ORDER BY a.created_at DESC
+        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+      `;
+
+      queryParams.push(parseInt(limit as string), offset);
+      const assetsResult = await pool.query(assetsQuery, queryParams);
 
       res.json({
-        assets: paginatedAssets,
+        assets: assetsResult.rows,
         totalAssets,
         totalValue,
         totalPages: Math.ceil(totalAssets / parseInt(limit as string)),
