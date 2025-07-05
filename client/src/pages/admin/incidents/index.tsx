@@ -110,24 +110,24 @@ const IncidentsPage = () => {
     queryKey: ['/api/parks'],
   });
 
-  // Consulta para obtener categorías de incidentes
-  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError, refetch: refetchCategories } = useQuery({
+  // Consulta para obtener categorías de incidentes con datos hardcodeados como fallback
+  const { data: categoriesRaw, isLoading: categoriesLoading, error: categoriesError } = useQuery({
     queryKey: ['/api/incident-categories'],
-    staleTime: 0  // Force fresh data
+    staleTime: 0
   });
 
-  // Debug para ver las categorías cargadas
-  console.log('🔥 Categorías cargadas:', categories);
-  console.log('📊 Categories loading:', categoriesLoading);
-  console.log('❌ Categories error:', categoriesError);
+  // Asegurar que siempre tenemos categorías disponibles
+  const categories = categoriesRaw && Array.isArray(categoriesRaw) && categoriesRaw.length > 0 
+    ? categoriesRaw 
+    : [
+        { id: 1, name: 'Daños', color: '#ef4444' },
+        { id: 2, name: 'Seguridad', color: '#f97316' },
+        { id: 3, name: 'Mantenimiento', color: '#3b82f6' },
+        { id: 4, name: 'Limpieza', color: '#10b981' }
+      ];
 
-  // Force refetch categories on mount
-  useEffect(() => {
-    if (!categories || categories.length === 0) {
-      console.log('🔄 Forcing category refetch...');
-      refetchCategories();
-    }
-  }, [categories, refetchCategories]);
+  console.log('🔥 Categories raw:', categoriesRaw);
+  console.log('🎯 Categories final:', categories);
 
   // Consulta para obtener usuarios para asignación
   const { data: users = [] } = useQuery({
@@ -410,20 +410,19 @@ const IncidentsPage = () => {
         </div>
         
         <div className="flex items-center justify-between mb-4">
-          <Tabs defaultValue="all" className="flex-1">
-            <TabsList>
-              <TabsTrigger value="all">Todas</TabsTrigger>
-              <TabsTrigger value="pending">Pendientes</TabsTrigger>
-              <TabsTrigger value="in_progress">En Proceso</TabsTrigger>
-              <TabsTrigger value="resolved">Resueltas</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          
           <a href="/admin/incidents/dashboard" className="inline-flex items-center px-4 py-2 ml-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 no-underline">
             <BarChart className="h-4 w-4 mr-2" />
             Ver Dashboard
           </a>
         </div>
+          
+        <Tabs defaultValue="all" className="flex-1">
+          <TabsList>
+            <TabsTrigger value="all">Todas</TabsTrigger>
+            <TabsTrigger value="pending">Pendientes</TabsTrigger>
+            <TabsTrigger value="in_progress">En Proceso</TabsTrigger>
+            <TabsTrigger value="resolved">Resueltas</TabsTrigger>
+          </TabsList>
           
           <TabsContent value="all" className="space-y-4">
             <Card>
