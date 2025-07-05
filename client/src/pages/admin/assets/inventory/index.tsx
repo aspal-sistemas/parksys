@@ -466,6 +466,64 @@ const InventoryPage: React.FC = () => {
     }
   };
 
+  // Función para generar reporte ejecutivo
+  const generateExecutiveReport = async () => {
+    try {
+      toast({
+        title: "Generando reporte",
+        description: "Preparando reporte ejecutivo de inventario...",
+      });
+
+      const response = await fetch('/api/assets/executive-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filters: {
+            search: searchTerm,
+            status: selectedStatus,
+            condition: selectedCondition,
+            park: selectedPark,
+            category: selectedCategory
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al generar el reporte');
+      }
+
+      // Descargar el PDF
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const now = new Date();
+      const timestamp = now.toISOString().split('T')[0];
+      link.download = `reporte_ejecutivo_inventario_${timestamp}.pdf`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Reporte generado",
+        description: "El reporte ejecutivo se ha descargado exitosamente.",
+      });
+
+    } catch (error) {
+      console.error('Error al generar reporte:', error);
+      toast({
+        title: "Error en reporte",
+        description: "Hubo un problema al generar el reporte ejecutivo.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Función para descargar plantilla CSV
   const downloadTemplate = () => {
     const headers = [
@@ -742,7 +800,7 @@ const InventoryPage: React.FC = () => {
             </div>
           </DialogContent>
         </Dialog>
-        <Button variant="outline">
+        <Button variant="outline" onClick={generateExecutiveReport}>
           <Printer className="h-4 w-4 mr-2" />
           Imprimir Reporte
         </Button>
