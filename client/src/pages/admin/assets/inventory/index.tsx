@@ -14,7 +14,8 @@ import {
   Edit,
   Trash2,
   AlertCircle,
-  Plus
+  Plus,
+  Calendar
 } from 'lucide-react';
 
 import AdminLayout from '@/components/AdminLayout';
@@ -213,6 +214,10 @@ const InventoryPage: React.FC = () => {
 
   const handleReportIncident = (id: number) => {
     setLocation(`/admin/incidents/new?assetId=${id}`);
+  };
+
+  const handleScheduleMaintenance = (id: number) => {
+    setLocation(`/admin/assets/${id}/edit`);
   };
 
   const deleteAssetMutation = useMutation({
@@ -509,10 +514,19 @@ const InventoryPage: React.FC = () => {
                               variant="ghost"
                               size="sm"
                               className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
-                              title="Gestionar activo (editar, ver detalles, programar mantenimiento)"
+                              title="Gestionar activo (editar, ver detalles)"
                               onClick={() => handleEdit(asset.id)}
                             >
                               <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
+                              title="Programar mantenimiento"
+                              onClick={() => handleScheduleMaintenance(asset.id)}
+                            >
+                              <Calendar className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
