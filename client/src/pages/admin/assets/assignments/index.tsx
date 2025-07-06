@@ -88,11 +88,30 @@ interface Assignment {
 }
 
 const ASSIGNMENT_CONDITIONS = [
-  { value: 'excelente', label: 'Excelente' },
-  { value: 'bueno', label: 'Bueno' },
-  { value: 'regular', label: 'Regular' },
-  { value: 'malo', label: 'Malo' }
+  { value: 'excellent', label: 'Excelente' },
+  { value: 'good', label: 'Bueno' },
+  { value: 'fair', label: 'Regular' },
+  { value: 'poor', label: 'Malo' }
 ];
+
+// Función para traducir condiciones del backend
+const translateCondition = (condition: string): string => {
+  const translations: { [key: string]: string } = {
+    'excellent': 'Excelente',
+    'good': 'Bueno', 
+    'fair': 'Regular',
+    'poor': 'Malo',
+    'critical': 'Crítico',
+    // Valores en español (por si acaso)
+    'excelente': 'Excelente',
+    'bueno': 'Bueno',
+    'regular': 'Regular',
+    'malo': 'Malo',
+    'crítico': 'Crítico'
+  };
+  
+  return translations[condition.toLowerCase()] || condition;
+};
 
 const STATUS_TYPES = [
   { value: 'active', label: 'Activa', color: 'bg-blue-100 text-blue-800', icon: Clock },
@@ -463,7 +482,7 @@ const AssetsAssignmentsPage: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {ASSIGNMENT_CONDITIONS.find(c => c.value === assignment.condition)?.label || assignment.condition}
+                            {translateCondition(assignment.condition)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -559,7 +578,7 @@ const AssetsAssignmentsPage: React.FC = () => {
                     <label className="text-sm font-medium text-muted-foreground">Condición</label>
                     <div className="mt-1">
                       <Badge variant="outline">
-                        {ASSIGNMENT_CONDITIONS.find(c => c.value === selectedAssignment.condition)?.label || selectedAssignment.condition}
+                        {translateCondition(selectedAssignment.condition)}
                       </Badge>
                     </div>
                   </div>
