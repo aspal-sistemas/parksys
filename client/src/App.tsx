@@ -519,6 +519,31 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/edit-location')))}
           </Suspense>
         </Route>
+
+        {/* RUTAS RESERVAS DE ESPACIOS */}
+        <Route path="/admin/space-reservations">
+          <Suspense fallback={<div className="p-8 text-center">Cargando reservas de espacios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/space-reservations/index')))}
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin/space-reservations/spaces">
+          <Suspense fallback={<div className="p-8 text-center">Cargando espacios disponibles...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/space-reservations/spaces')))}
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin/space-reservations/new">
+          <Suspense fallback={<div className="p-8 text-center">Cargando nueva reserva...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/space-reservations/new')))}
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin/space-reservations/calendar">
+          <Suspense fallback={<div className="p-8 text-center">Cargando calendario de reservas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/space-reservations/calendar')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/assets/:id/edit">
           <Suspense fallback={<div className="p-8 text-center">Cargando editor de activo...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/edit')))}

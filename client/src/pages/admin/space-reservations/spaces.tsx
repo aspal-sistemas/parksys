@@ -1,0 +1,466 @@
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Eye, Edit, Calendar, Search, Plus } from 'lucide-react';
+import { useLocation } from 'wouter';
+
+interface ReservableSpace {
+  id: number;
+  park_id: number;
+  park_name: string;
+  municipality_id: number;
+  name: string;
+  description: string;
+  space_type: string;
+  capacity: number;
+  hourly_rate: string;
+  minimum_hours: number;
+  maximum_hours: number;
+  amenities: string;
+  rules: string;
+  is_active: boolean;
+  requires_approval: boolean;
+  advance_booking_days: number;
+  images: string | null;
+  coordinates: string;
+  created_at: string;
+  updated_at: string;
+}
+
+const spaceTypeLabels = {
+  playground: 'Área de Juegos',
+  kiosk: 'Kiosco',
+  picnic_area: 'Área de Picnic',
+  open_area: 'Área Abierta',
+  pavilion: 'Pabellón'
+};
+
+const spaceTypeColors = {
+  playground: 'bg-green-100 text-green-800',
+  kiosk: 'bg-blue-100 text-blue-800',
+  picnic_area: 'bg-yellow-100 text-yellow-800',
+  open_area: 'bg-purple-100 text-purple-800',
+  pavilion: 'bg-red-100 text-red-800'
+};
+
+export default function ReservableSpacesPage() {
+  const [location, setLocation] = useLocation();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [parkFilter, setParkFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedSpace, setSelectedSpace] = useState<ReservableSpace | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(9);
+
+  const { data: spaces = [], isLoading, error } = useQuery<ReservableSpace[]>({
+    queryKey: ['/api/reservable-spaces'],
+    queryFn: async () => {
+      const response = await fetch('/api/reservable-spaces');
+      if (!response.ok) {
+        throw new Error('Error al cargar los espacios reservables');
+      }
+      return response.json();
+    }
+  });
+
+  const { data: parks = [] } = useQuery({
+    queryKey: ['/api/parks'],
+    queryFn: async () => {
+      const response = await fetch('/api/parks');
+      if (!response.ok) {
+        throw new Error('Error al cargar los parques');
+      }
+      return response.json();
+    }
+  });
+
+  const filteredSpaces = spaces.filter(space => {
+    const matchesSearch = 
+      space.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      space.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      space.park_name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesPark = parkFilter === 'all' || space.park_id.toString() === parkFilter;
+    const matchesType = typeFilter === 'all' || space.space_type === typeFilter;
+    const matchesStatus = statusFilter === 'all' || 
+      (statusFilter === 'active' && space.is_active) ||
+      (statusFilter === 'inactive' && !space.is_active);
+    
+    return matchesSearch && matchesPark && matchesType && matchesStatus;
+  });
+
+  const totalPages = Math.ceil(filteredSpaces.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedSpaces = filteredSpaces.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleViewSpace = (space: ReservableSpace) => {
+    setSelectedSpace(space);
+  };
+
+  const handleEditSpace = (space: ReservableSpace) => {
+    setLocation(`/admin/space-reservations/spaces/edit/${space.id}`);
+  };
+
+  const handleNewSpace = () => {
+    setLocation('/admin/space-reservations/spaces/new');
+  };
+
+  const handleReserveSpace = (space: ReservableSpace) => {
+    setLocation(`/admin/space-reservations/new?space_id=${space.id}`);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">Error al cargar los espacios reservables</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Espacios Disponibles</h1>
+          <p className="text-gray-600">Gestiona los espacios reservables en los parques</p>
+        </div>
+        <Button 
+          onClick={handleNewSpace}
+          className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Nuevo Espacio
+        </Button>
+      </div>
+
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Espacios</CardTitle>
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{spaces.length}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Activos</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {spaces.filter(s => s.is_active).length}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Requieren Aprobación</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">
+              {spaces.filter(s => s.requires_approval).length}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Capacidad Total</CardTitle>
+            <Users className="h-4 w-4 text-[#00a587]" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-[#00a587]">
+              {spaces.reduce((sum, space) => sum + space.capacity, 0)}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Buscar por nombre, descripción o parque..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+        <Select value={parkFilter} onValueChange={setParkFilter}>
+          <SelectTrigger className="w-full lg:w-[200px]">
+            <SelectValue placeholder="Filtrar por parque" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los parques</SelectItem>
+            {parks.map((park: any) => (
+              <SelectItem key={park.id} value={park.id.toString()}>
+                {park.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-full lg:w-[180px]">
+            <SelectValue placeholder="Filtrar por tipo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los tipos</SelectItem>
+            <SelectItem value="playground">Área de Juegos</SelectItem>
+            <SelectItem value="kiosk">Kiosco</SelectItem>
+            <SelectItem value="picnic_area">Área de Picnic</SelectItem>
+            <SelectItem value="open_area">Área Abierta</SelectItem>
+            <SelectItem value="pavilion">Pabellón</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full lg:w-[150px]">
+            <SelectValue placeholder="Estado" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="active">Activos</SelectItem>
+            <SelectItem value="inactive">Inactivos</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Spaces Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {paginatedSpaces.map((space) => (
+          <Card key={space.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <CardTitle className="text-lg">{space.name}</CardTitle>
+                  <CardDescription className="mt-1">
+                    <div className="flex items-center gap-1 text-sm">
+                      <MapPin className="h-3 w-3" />
+                      {space.park_name}
+                    </div>
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className={spaceTypeColors[space.space_type as keyof typeof spaceTypeColors]}>
+                    {spaceTypeLabels[space.space_type as keyof typeof spaceTypeLabels]}
+                  </Badge>
+                  {space.is_active ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-red-500" />
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4 line-clamp-2">{space.description}</p>
+              
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1">
+                    <Users className="h-3 w-3" />
+                    Capacidad:
+                  </span>
+                  <span className="font-medium">{space.capacity} personas</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3" />
+                    Precio/hora:
+                  </span>
+                  <span className="font-medium">${space.hourly_rate}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Duración:
+                  </span>
+                  <span className="font-medium">{space.minimum_hours}-{space.maximum_hours}h</span>
+                </div>
+                {space.requires_approval && (
+                  <div className="flex items-center gap-1 text-amber-600">
+                    <Clock className="h-3 w-3" />
+                    <span className="text-xs">Requiere aprobación</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex space-x-2 mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleViewSpace(space)}
+                  className="flex-1"
+                >
+                  <Eye className="h-3 w-3 mr-1" />
+                  Ver
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleEditSpace(space)}
+                  className="flex-1"
+                >
+                  <Edit className="h-3 w-3 mr-1" />
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => handleReserveSpace(space)}
+                  className="bg-[#00a587] hover:bg-[#067f5f] text-white flex-1"
+                  disabled={!space.is_active}
+                >
+                  <Calendar className="h-3 w-3 mr-1" />
+                  Reservar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-gray-500">
+            Mostrando {startIndex + 1} a {Math.min(startIndex + itemsPerPage, filteredSpaces.length)} de {filteredSpaces.length} espacios
+          </p>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Anterior
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <Button
+                key={page}
+                variant={currentPage === page ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCurrentPage(page)}
+                className={currentPage === page ? "bg-[#00a587] hover:bg-[#067f5f]" : ""}
+              >
+                {page}
+              </Button>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Siguiente
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* View Space Dialog */}
+      <Dialog open={!!selectedSpace} onOpenChange={(open) => !open && setSelectedSpace(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detalles del Espacio</DialogTitle>
+          </DialogHeader>
+          {selectedSpace && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Información General</h4>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Nombre:</span> {selectedSpace.name}</div>
+                    <div><span className="font-medium">Parque:</span> {selectedSpace.park_name}</div>
+                    <div><span className="font-medium">Tipo:</span> {spaceTypeLabels[selectedSpace.space_type as keyof typeof spaceTypeLabels]}</div>
+                    <div><span className="font-medium">Estado:</span> 
+                      <Badge className={`ml-2 ${selectedSpace.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {selectedSpace.is_active ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Capacidad y Precios</h4>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Capacidad:</span> {selectedSpace.capacity} personas</div>
+                    <div><span className="font-medium">Precio por hora:</span> ${selectedSpace.hourly_rate}</div>
+                    <div><span className="font-medium">Duración mínima:</span> {selectedSpace.minimum_hours} horas</div>
+                    <div><span className="font-medium">Duración máxima:</span> {selectedSpace.maximum_hours} horas</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Descripción</h4>
+                <p className="text-sm text-gray-600">{selectedSpace.description}</p>
+              </div>
+              
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Amenidades</h4>
+                <p className="text-sm text-gray-600">{selectedSpace.amenities}</p>
+              </div>
+              
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Reglas y Condiciones</h4>
+                <p className="text-sm text-gray-600">{selectedSpace.rules}</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Requiere aprobación:</span> 
+                  <span className="ml-2">{selectedSpace.requires_approval ? 'Sí' : 'No'}</span>
+                </div>
+                <div>
+                  <span className="font-medium">Reserva anticipada:</span> 
+                  <span className="ml-2">{selectedSpace.advance_booking_days} días</span>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleEditSpace(selectedSpace)}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar
+                </Button>
+                <Button 
+                  onClick={() => handleReserveSpace(selectedSpace)}
+                  className="bg-[#00a587] hover:bg-[#067f5f]"
+                  disabled={!selectedSpace.is_active}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Reservar Espacio
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

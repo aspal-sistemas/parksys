@@ -20,6 +20,7 @@ import { registerAssetRoutes } from "./asset_routes";
 import { registerAssetImageRoutes } from "./asset-image-routes";
 import { registerMaintenanceRoutes } from "./maintenance_routes_fixed";
 import { registerAssetAssignmentRoutes } from "./asset_assignment_routes";
+import { registerSpaceReservationRoutes } from "./space-reservations-routes";
 import { registerTreeRoutes } from "./tree_routes";
 import { registerTreeMaintenanceRoutes } from "./tree_maintenance_routes";
 import { registerTreeInventoryRoutes } from "./tree_inventory_routes";
@@ -145,6 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAssetRoutes(app, apiRouter, isAuthenticated); // RESTAURADO - rutas POST de mantenimientos están comentadas en asset_routes.ts
   registerMaintenanceRoutes(app, apiRouter, isAuthenticated); // DESCOMENTADO - usado maintenance_routes_fixed.ts
   registerAssetAssignmentRoutes(app, apiRouter, isAuthenticated);
+  registerSpaceReservationRoutes(app, apiRouter, isAuthenticated);
   registerAssetImageRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de actividades

@@ -36,6 +36,7 @@ import {
   CalendarDays,
   CircleDollarSign,
   MapPin,
+  CalendarClock,
   GraduationCap,
   Award,
   DollarSign,
@@ -425,7 +426,44 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 7. INCIDENCIAS */}
+          {/* 7. RESERVAS DE ESPACIOS */}
+          <ModuleNav 
+            title="Reservas de Espacios" 
+            icon={<CalendarClock className="h-5 w-5" />}
+            value="space-reservations"
+            defaultOpen={location.startsWith('/admin/space-reservations')}
+          >
+            <NavItem 
+              href="/admin/space-reservations" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location === '/admin/space-reservations'}
+            >
+              Reservas Activas
+            </NavItem>
+            <NavItem 
+              href="/admin/space-reservations/spaces" 
+              icon={<MapPin className="h-5 w-5" />}
+              active={location.startsWith('/admin/space-reservations/spaces')}
+            >
+              Espacios Disponibles
+            </NavItem>
+            <NavItem 
+              href="/admin/space-reservations/new" 
+              icon={<Plus className="h-5 w-5" />}
+              active={location.startsWith('/admin/space-reservations/new')}
+            >
+              Nueva Reserva
+            </NavItem>
+            <NavItem 
+              href="/admin/space-reservations/calendar" 
+              icon={<CalendarDays className="h-5 w-5" />}
+              active={location.startsWith('/admin/space-reservations/calendar')}
+            >
+              Calendario
+            </NavItem>
+          </ModuleNav>
+
+          {/* 8. INCIDENCIAS */}
           <ModuleNav 
             title={t('navigation.incidents')} 
             icon={<AlertTriangle className="h-5 w-5" />}

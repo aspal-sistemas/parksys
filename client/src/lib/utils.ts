@@ -13,3 +13,12 @@ export function formatCurrency(amount: number): string {
     maximumFractionDigits: 2
   }).format(amount);
 }
+
+export function formatDate(date: string | Date): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleDateString('es-MX', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}

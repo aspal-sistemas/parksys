@@ -2733,3 +2733,112 @@ export type InsertActiveConcessionImage = z.infer<typeof insertActiveConcessionI
 
 export type ActiveConcessionDocument = typeof activeConcessionDocuments.$inferSelect;
 export type InsertActiveConcessionDocument = z.infer<typeof insertActiveConcessionDocumentSchema>;
+
+// ===== SISTEMA DE RESERVAS DE ESPACIOS =====
+
+// Espacios reservables en los parques
+export const reservableSpaces = pgTable("reservable_spaces", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").notNull().references(() => parks.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  spaceType: varchar("space_type", { length: 100 }).notNull(), // "playground", "kiosk", "open_area", "pavilion"
+  capacity: integer("capacity"),
+  hourlyRate: decimal("hourly_rate", { precision: 10, scale: 2 }).default("0.00"),
+  minimumHours: integer("minimum_hours").default(1),
+  maximumHours: integer("maximum_hours").default(8),
+  amenities: text("amenities"),
+  rules: text("rules"),
+  isActive: boolean("is_active").default(true),
+  requiresApproval: boolean("requires_approval").default(false),
+  advanceBookingDays: integer("advance_booking_days").default(30),
+  images: text("images"),
+  coordinates: text("coordinates"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Reservas de espacios
+export const spaceReservations = pgTable("space_reservations", {
+  id: serial("id").primaryKey(),
+  spaceId: integer("space_id").notNull().references(() => reservableSpaces.id),
+  eventId: integer("event_id").references(() => events.id),
+  activityId: integer("activity_id").references(() => activities.id),
+  reservedBy: integer("reserved_by").notNull(),
+  contactName: varchar("contact_name", { length: 255 }).notNull(),
+  contactPhone: varchar("contact_phone", { length: 20 }),
+  contactEmail: varchar("contact_email", { length: 255 }),
+  reservationDate: date("reservation_date").notNull(),
+  startTime: varchar("start_time", { length: 8 }).notNull(), // "09:00:00"
+  endTime: varchar("end_time", { length: 8 }).notNull(), // "17:00:00"
+  expectedAttendees: integer("expected_attendees"),
+  purpose: text("purpose").notNull(),
+  specialRequests: text("special_requests"),
+  totalCost: decimal("total_cost", { precision: 10, scale: 2 }).default("0.00"),
+  depositPaid: decimal("deposit_paid", { precision: 10, scale: 2 }).default("0.00"),
+  status: varchar("status", { length: 50 }).default("pending"), // pending, confirmed, cancelled, completed
+  approvedBy: integer("approved_by"),
+  approvedAt: timestamp("approved_at"),
+  cancellationReason: text("cancellation_reason"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Disponibilidad de espacios
+export const spaceAvailability = pgTable("space_availability", {
+  id: serial("id").primaryKey(),
+  spaceId: integer("space_id").notNull().references(() => reservableSpaces.id),
+  dayOfWeek: integer("day_of_week").notNull(), // 0=Domingo, 1=Lunes, etc.
+  startTime: varchar("start_time", { length: 8 }).notNull(),
+  endTime: varchar("end_time", { length: 8 }).notNull(),
+  isAvailable: boolean("is_available").default(true),
+  exceptionDate: date("exception_date"),
+  reason: text("reason"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Relaciones para reservas de espacios
+export const reservableSpacesRelations = relations(reservableSpaces, ({ one, many }) => ({
+  park: one(parks, {
+    fields: [reservableSpaces.parkId],
+    references: [parks.id],
+  }),
+  reservations: many(spaceReservations),
+  availability: many(spaceAvailability),
+}));
+
+export const spaceReservationsRelations = relations(spaceReservations, ({ one }) => ({
+  space: one(reservableSpaces, {
+    fields: [spaceReservations.spaceId],
+    references: [reservableSpaces.id],
+  }),
+  event: one(events, {
+    fields: [spaceReservations.eventId],
+    references: [events.id],
+  }),
+  activity: one(activities, {
+    fields: [spaceReservations.activityId],
+    references: [activities.id],
+  }),
+}));
+
+// Esquemas de validación para reservas
+export const insertReservableSpaceSchema = createInsertSchema(reservableSpaces).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertSpaceReservationSchema = createInsertSchema(spaceReservations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Tipos TypeScript para reservas
+export type ReservableSpace = typeof reservableSpaces.$inferSelect;
+export type InsertReservableSpace = z.infer<typeof insertReservableSpaceSchema>;
+export type SpaceReservation = typeof spaceReservations.$inferSelect;
+export type InsertSpaceReservation = z.infer<typeof insertSpaceReservationSchema>;
+export type SpaceAvailability = typeof spaceAvailability.$inferSelect;
