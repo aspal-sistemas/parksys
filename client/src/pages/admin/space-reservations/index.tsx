@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { CalendarClock, MapPin, Users, DollarSign, Phone, Mail, Eye, Edit, Trash2, Calendar, Search, Filter } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { useLocation } from 'wouter';
+import AdminLayout from '@/components/AdminLayout';
 
 interface SpaceReservation {
   id: number;
@@ -129,21 +130,20 @@ export default function SpaceReservationsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Reservas de Espacios</h1>
-          <p className="text-gray-600">Gestiona las reservas de espacios recreativos en los parques</p>
+    <AdminLayout title="Reservas de Espacios" subtitle="Gestiona las reservas de espacios recreativos en los parques">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <Button 
+              onClick={handleNewReservation}
+              className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+            >
+              <CalendarClock className="h-4 w-4 mr-2" />
+              Nueva Reserva
+            </Button>
+          </div>
         </div>
-        <Button 
-          onClick={handleNewReservation}
-          className="bg-[#00a587] hover:bg-[#067f5f] text-white"
-        >
-          <CalendarClock className="h-4 w-4 mr-2" />
-          Nueva Reserva
-        </Button>
-      </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -443,6 +443,7 @@ export default function SpaceReservationsPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
