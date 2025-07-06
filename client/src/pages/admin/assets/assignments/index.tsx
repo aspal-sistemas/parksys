@@ -105,6 +105,9 @@ const AssetsAssignmentsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -212,6 +215,16 @@ const AssetsAssignmentsPage: React.FC = () => {
 
   const getStatusInfo = (status: string) => {
     return STATUS_TYPES.find(s => s.value === status) || STATUS_TYPES[0];
+  };
+
+  const handleViewAssignment = (assignment: Assignment) => {
+    setSelectedAssignment(assignment);
+    setShowViewDialog(true);
+  };
+
+  const handleEditAssignment = (assignment: Assignment) => {
+    setSelectedAssignment(assignment);
+    setShowEditDialog(true);
   };
 
   if (assignmentsLoading) {
@@ -455,10 +468,20 @@ const AssetsAssignmentsPage: React.FC = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end space-x-2">
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleViewAssignment(assignment)}
+                              title="Ver detalles"
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleEditAssignment(assignment)}
+                              title="Editar asignación"
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
                             {assignment.status === 'active' && (
@@ -469,6 +492,7 @@ const AssetsAssignmentsPage: React.FC = () => {
                                   id: assignment.id, 
                                   condition: assignment.condition
                                 })}
+                                title="Devolver activo"
                               >
                                 <RotateCcw className="h-4 w-4" />
                               </Button>
@@ -483,6 +507,182 @@ const AssetsAssignmentsPage: React.FC = () => {
             </Table>
           </CardContent>
         </Card>
+
+        {/* Diálogo para ver detalles */}
+        <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Detalles de la Asignación</DialogTitle>
+              <DialogDescription>
+                Información completa de la asignación de activo
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedAssignment && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Activo</label>
+                    <p className="font-medium">{selectedAssignment.assetName || `Activo #${selectedAssignment.assetId}`}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Instructor</label>
+                    <p className="font-medium">{selectedAssignment.instructorName || '-'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Actividad</label>
+                    <p className="font-medium">{selectedAssignment.activityName || '-'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Fecha de Asignación</label>
+                    <p className="font-medium">
+                      {format(new Date(selectedAssignment.assignmentDate), 'dd/MM/yyyy', { locale: es })}
+                    </p>
+                  </div>
+                  {selectedAssignment.returnDate && (
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Fecha de Devolución</label>
+                      <p className="font-medium">
+                        {format(new Date(selectedAssignment.returnDate), 'dd/MM/yyyy', { locale: es })}
+                      </p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Estado</label>
+                    <div className="mt-1">
+                      <Badge className={getStatusInfo(selectedAssignment.status).color}>
+                        {getStatusInfo(selectedAssignment.status).label}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Condición</label>
+                    <div className="mt-1">
+                      <Badge variant="outline">
+                        {ASSIGNMENT_CONDITIONS.find(c => c.value === selectedAssignment.condition)?.label || selectedAssignment.condition}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Creado</label>
+                    <p className="font-medium">
+                      {format(new Date(selectedAssignment.createdAt), 'dd/MM/yyyy HH:mm', { locale: es })}
+                    </p>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Propósito</label>
+                  <p className="mt-1 p-3 bg-gray-50 rounded-md">{selectedAssignment.purpose}</p>
+                </div>
+                
+                {selectedAssignment.notes && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Notas</label>
+                    <p className="mt-1 p-3 bg-gray-50 rounded-md">{selectedAssignment.notes}</p>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={() => setShowViewDialog(false)}>
+                Cerrar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Diálogo para editar */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Asignación</DialogTitle>
+              <DialogDescription>
+                Modifica los datos de la asignación
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedAssignment && (
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                
+                const updateData = {
+                  purpose: formData.get('purpose') as string,
+                  condition: formData.get('condition') as string,
+                  notes: formData.get('notes') as string,
+                };
+
+                // Aquí puedes agregar la mutación para actualizar
+                console.log('Datos a actualizar:', updateData);
+                toast({
+                  title: 'Función en desarrollo',
+                  description: 'La edición de asignaciones estará disponible próximamente.',
+                });
+                setShowEditDialog(false);
+              }} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Activo</label>
+                  <Input 
+                    value={selectedAssignment.assetName || `Activo #${selectedAssignment.assetId}`}
+                    disabled
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Instructor</label>
+                  <Input 
+                    value={selectedAssignment.instructorName || 'Sin asignar'}
+                    disabled
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Propósito</label>
+                  <Input 
+                    name="purpose" 
+                    defaultValue={selectedAssignment.purpose}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Condición</label>
+                  <Select name="condition" defaultValue={selectedAssignment.condition} required>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ASSIGNMENT_CONDITIONS.map((condition) => (
+                        <SelectItem key={condition.value} value={condition.value}>
+                          {condition.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Notas</label>
+                  <Textarea 
+                    name="notes" 
+                    defaultValue={selectedAssignment.notes || ''}
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit">
+                    Guardar Cambios
+                  </Button>
+                </div>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
