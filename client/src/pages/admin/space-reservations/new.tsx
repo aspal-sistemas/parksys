@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { CalendarClock, MapPin, Users, DollarSign, Clock, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
+import AdminLayout from '@/components/AdminLayout';
 
 // Validation schema
 const reservationSchema = z.object({
@@ -186,163 +187,214 @@ export default function NewReservationPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={handleGoBack}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Volver
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Nueva Reserva</h1>
-          <p className="text-gray-600">Crear una nueva reserva de espacio</p>
+    <AdminLayout>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleGoBack}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Volver
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Nueva Reserva</h1>
+            <p className="text-gray-600">Crear una nueva reserva de espacio</p>
+          </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Form */}
-        <div className="lg:col-span-2">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Space Selection */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
-                    Seleccionar Espacio
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="space_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Espacio a Reservar</FormLabel>
-                        <FormControl>
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecciona un espacio" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {spaces.map((space) => (
-                                <SelectItem key={space.id} value={space.id.toString()}>
-                                  <div className="flex flex-col">
-                                    <span className="font-medium">{space.name}</span>
-                                    <span className="text-sm text-gray-500">
-                                      {space.park_name} - ${space.hourly_rate}/hora
-                                    </span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Customer Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Información del Cliente</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="customer_name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre Completo</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nombre del cliente" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Form */}
+          <div className="lg:col-span-2">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Space Selection */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5" />
+                      Seleccionar Espacio
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
                     <FormField
                       control={form.control}
-                      name="customer_email"
+                      name="space_id"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel>Espacio a Reservar</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="cliente@email.com" {...field} />
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona un espacio" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {spaces.map((space) => (
+                                  <SelectItem key={space.id} value={space.id.toString()}>
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">{space.name}</span>
+                                      <span className="text-sm text-gray-500">
+                                        {space.park_name} - ${space.hourly_rate}/hora
+                                      </span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Customer Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Información del Cliente</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="customer_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nombre Completo</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nombre del cliente" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                     
-                    <FormField
-                      control={form.control}
-                      name="customer_phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Teléfono</FormLabel>
-                          <FormControl>
-                            <Input placeholder="(33) 1234-5678" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Date and Time */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CalendarClock className="h-5 w-5" />
-                    Fecha y Horario
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="reservation_date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fecha de Reserva</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="date" 
-                            min={getMinDate()}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                        {selectedSpace && selectedSpace.advance_booking_days > 0 && (
-                          <p className="text-sm text-amber-600">
-                            <AlertCircle className="h-3 w-3 inline mr-1" />
-                            Requiere reserva con {selectedSpace.advance_booking_days} días de anticipación
-                          </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="customer_email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input type="email" placeholder="cliente@email.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="customer_phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Teléfono</FormLabel>
+                            <FormControl>
+                              <Input placeholder="(33) 1234-5678" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Date and Time */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CalendarClock className="h-5 w-5" />
+                      Fecha y Horario
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
                     <FormField
                       control={form.control}
-                      name="start_time"
+                      name="reservation_date"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Hora de Inicio</FormLabel>
+                          <FormLabel>Fecha de Reserva</FormLabel>
                           <FormControl>
-                            <Input type="time" {...field} />
+                            <Input 
+                              type="date" 
+                              min={getMinDate()}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          {selectedSpace && selectedSpace.advance_booking_days > 0 && (
+                            <p className="text-sm text-amber-600">
+                              <AlertCircle className="h-3 w-3 inline mr-1" />
+                              Requiere reserva con {selectedSpace.advance_booking_days} días de anticipación
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="start_time"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Hora de Inicio</FormLabel>
+                            <FormControl>
+                              <Input type="time" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="end_time"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Hora de Fin</FormLabel>
+                            <FormControl>
+                              <Input type="time" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    {selectedSpace && !isTimeRangeValid() && totalHours > 0 && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                        <p className="text-sm text-red-600">
+                          <AlertCircle className="h-3 w-3 inline mr-1" />
+                          La duración debe ser entre {selectedSpace.minimum_hours} y {selectedSpace.maximum_hours} horas
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Additional Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Información Adicional</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="special_requests"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Solicitudes Especiales (Opcional)</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Describe cualquier solicitud especial o requerimiento adicional..."
+                              className="min-h-[100px]"
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -351,192 +403,143 @@ export default function NewReservationPage() {
                     
                     <FormField
                       control={form.control}
-                      name="end_time"
+                      name="deposit_paid"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Hora de Fin</FormLabel>
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                           <FormControl>
-                            <Input type="time" {...field} />
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
                           </FormControl>
-                          <FormMessage />
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              Depósito Pagado
+                            </FormLabel>
+                            <p className="text-sm text-muted-foreground">
+                              Marcar si el cliente ya ha pagado el depósito requerido
+                            </p>
+                          </div>
                         </FormItem>
                       )}
                     />
-                  </div>
-                  
-                  {selectedSpace && !isTimeRangeValid() && totalHours > 0 && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                      <p className="text-sm text-red-600">
-                        <AlertCircle className="h-3 w-3 inline mr-1" />
-                        La duración debe ser entre {selectedSpace.minimum_hours} y {selectedSpace.maximum_hours} horas
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
 
-              {/* Additional Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Información Adicional</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="special_requests"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Solicitudes Especiales (Opcional)</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Describe cualquier solicitud especial o requerimiento adicional..."
-                            className="min-h-[100px]"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                {/* Submit Button */}
+                <div className="flex justify-end space-x-4">
+                  <Button type="button" variant="outline" onClick={handleGoBack}>
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="bg-[#00a587] hover:bg-[#067f5f]"
+                    disabled={createReservationMutation.isPending || !isTimeRangeValid()}
+                  >
+                    {createReservationMutation.isPending ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    ) : (
+                      <CheckCircle className="h-4 w-4 mr-2" />
                     )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="deposit_paid"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Depósito Pagado
-                          </FormLabel>
-                          <p className="text-sm text-muted-foreground">
-                            Marcar si el cliente ya ha pagado el depósito requerido
-                          </p>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+                    Crear Reserva
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
 
-              {/* Submit Button */}
-              <div className="flex justify-end space-x-4">
-                <Button type="button" variant="outline" onClick={handleGoBack}>
-                  Cancelar
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="bg-[#00a587] hover:bg-[#067f5f]"
-                  disabled={createReservationMutation.isPending || !isTimeRangeValid()}
-                >
-                  {createReservationMutation.isPending ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  ) : (
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                  )}
-                  Crear Reserva
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </div>
-
-        {/* Summary Panel */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-6 space-y-4">
-            {selectedSpace && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Resumen de Reserva</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">{selectedSpace.name}</h4>
-                    <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
-                      <MapPin className="h-3 w-3" />
-                      {selectedSpace.park_name}
-                    </div>
-                    <Badge className="bg-blue-100 text-blue-800">
-                      {spaceTypeLabels[selectedSpace.space_type as keyof typeof spaceTypeLabels]}
-                    </Badge>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        Capacidad:
-                      </span>
-                      <span>{selectedSpace.capacity} personas</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1">
-                        <DollarSign className="h-3 w-3" />
-                        Precio/hora:
-                      </span>
-                      <span>${selectedSpace.hourly_rate}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        Duración mín/máx:
-                      </span>
-                      <span>{selectedSpace.minimum_hours}h - {selectedSpace.maximum_hours}h</span>
-                    </div>
-                  </div>
-                  
-                  {totalHours > 0 && (
-                    <>
-                      <Separator />
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Duración:</span>
-                          <span>{totalHours} horas</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Subtotal:</span>
-                          <span>${calculatedCost.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between font-medium">
-                          <span>Total:</span>
-                          <span className="text-[#00a587]">${calculatedCost.toFixed(2)}</span>
-                        </div>
+          {/* Summary Panel */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-6 space-y-4">
+              {selectedSpace && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Resumen de Reserva</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">{selectedSpace.name}</h4>
+                      <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
+                        <MapPin className="h-3 w-3" />
+                        {selectedSpace.park_name}
                       </div>
-                    </>
-                  )}
-                  
-                  {selectedSpace.requires_approval && (
-                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
-                      <p className="text-sm text-amber-600">
-                        <AlertCircle className="h-3 w-3 inline mr-1" />
-                        Este espacio requiere aprobación administrativa
-                      </p>
+                      <Badge className="bg-blue-100 text-blue-800">
+                        {spaceTypeLabels[selectedSpace.space_type as keyof typeof spaceTypeLabels]}
+                      </Badge>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-            
-            {selectedSpace && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Reglas del Espacio</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600">{selectedSpace.rules}</p>
-                </CardContent>
-              </Card>
-            )}
+                    
+                    <Separator />
+                    
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          Capacidad:
+                        </span>
+                        <span>{selectedSpace.capacity} personas</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1">
+                          <DollarSign className="h-3 w-3" />
+                          Precio/hora:
+                        </span>
+                        <span>${selectedSpace.hourly_rate}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          Duración mín/máx:
+                        </span>
+                        <span>{selectedSpace.minimum_hours}h - {selectedSpace.maximum_hours}h</span>
+                      </div>
+                    </div>
+                    
+                    {totalHours > 0 && (
+                      <>
+                        <Separator />
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Duración:</span>
+                            <span>{totalHours} horas</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Subtotal:</span>
+                            <span>${calculatedCost.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between font-medium">
+                            <span>Total:</span>
+                            <span className="text-[#00a587]">${calculatedCost.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    
+                    {selectedSpace.requires_approval && (
+                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                        <p className="text-sm text-amber-600">
+                          <AlertCircle className="h-3 w-3 inline mr-1" />
+                          Este espacio requiere aprobación administrativa
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+              
+              {selectedSpace && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Reglas del Espacio</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600">{selectedSpace.rules}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
