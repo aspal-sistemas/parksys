@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Eye, Edit, Calendar, Search, Plus } from 'lucide-react';
 import { useLocation } from 'wouter';
+import AdminLayout from '@/components/AdminLayout';
 
 interface ReservableSpace {
   id: number;
@@ -117,22 +118,27 @@ export default function ReservableSpacesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p className="text-red-600">Error al cargar los espacios reservables</p>
-      </div>
+      <AdminLayout>
+        <div className="text-center py-8">
+          <p className="text-red-600">Error al cargar los espacios reservables</p>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <AdminLayout>
+      <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -461,6 +467,7 @@ export default function ReservableSpacesPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
