@@ -99,12 +99,29 @@ export default function NewReservationPage() {
 
   const createReservationMutation = useMutation({
     mutationFn: async (data: ReservationFormData) => {
+      // Convert form data to backend format
+      const backendData = {
+        spaceId: parseInt(data.space_id),
+        contactName: data.customer_name,
+        contactEmail: data.customer_email,
+        contactPhone: data.customer_phone,
+        reservationDate: data.reservation_date,
+        startTime: data.start_time,
+        endTime: data.end_time,
+        specialRequests: data.special_requests || '',
+        expectedAttendees: selectedSpace?.capacity || 1,
+        purpose: 'Evento privado',
+        totalCost: calculatedCost,
+        eventId: null,
+        activityId: null
+      };
+
       const response = await fetch('/api/space-reservations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(backendData),
       });
       
       if (!response.ok) {
