@@ -65,7 +65,7 @@ interface Instructor {
 
 interface Activity {
   id: number;
-  name: string;
+  title: string;
   parkId: number;
   startDate: string;
 }
@@ -297,7 +297,7 @@ const AssetsAssignmentsPage: React.FC = () => {
                       <SelectValue placeholder="Seleccionar activo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {assets.filter(asset => asset.status === 'activo').map((asset) => (
+                      {assets.filter(asset => asset.status === 'active').map((asset) => (
                         <SelectItem key={asset.id} value={asset.id.toString()}>
                           {asset.name} - {asset.parkName}
                         </SelectItem>
@@ -331,7 +331,7 @@ const AssetsAssignmentsPage: React.FC = () => {
                     <SelectContent>
                       {activities.map((activity) => (
                         <SelectItem key={activity.id} value={activity.id.toString()}>
-                          {activity.name}
+                          {activity.title}
                         </SelectItem>
                       ))}
                     </SelectContent>
