@@ -90,6 +90,10 @@ export function registerSpaceReservationRoutes(app: any, apiRouter: any, isAuthe
   apiRouter.post('/reservable-spaces', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { pool } = await import("./db");
+      
+      // Log para debugging
+      console.log('📝 Request body:', JSON.stringify(req.body, null, 2));
+      
       const {
         parkId,
         name,
@@ -105,6 +109,8 @@ export function registerSpaceReservationRoutes(app: any, apiRouter: any, isAuthe
         advanceBookingDays,
         coordinates
       } = req.body;
+      
+      console.log('🏞️ parkId recibido:', parkId, 'tipo:', typeof parkId);
 
       const query = `
         INSERT INTO reservable_spaces (
