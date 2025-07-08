@@ -9,8 +9,6 @@ import ExtendedParksList from '@/components/ExtendedParksList';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
 import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1751508792698.jpg';
-import PublicLayout from '@/components/PublicLayout';
-
 const Parks: React.FC = () => {
   const [filters, setFilters] = useState<{
     search?: string;
@@ -128,8 +126,8 @@ const Parks: React.FC = () => {
   }
 
   return (
-    <PublicLayout>
-    <main className="bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <main className="flex-grow bg-gray-50">
       {/* Hero Section con imagen de fondo */}
       <div 
         className="relative text-white"
@@ -329,8 +327,8 @@ const Parks: React.FC = () => {
           onClose={() => setModalOpen(false)}
         />
       )}
-    </main>
-    </PublicLayout>
+      </main>
+    </div>
   );
 };
 
