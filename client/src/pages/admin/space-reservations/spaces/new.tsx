@@ -21,6 +21,7 @@ const newSpaceSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio"),
   description: z.string().min(1, "La descripción es obligatoria"),
   parkId: z.string().min(1, "Debe seleccionar un parque"),
+  spaceType: z.string().min(1, "Debe seleccionar un tipo de espacio"),
   capacity: z.number().min(1, "La capacidad debe ser mayor a 0"),
   hourlyRate: z.number().min(0, "La tarifa debe ser mayor o igual a 0"),
   amenities: z.string().optional(),
@@ -159,6 +160,34 @@ export default function NewSpacePage() {
                                 {park.name}
                               </SelectItem>
                             ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="spaceType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tipo de Espacio</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona el tipo de espacio" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="kiosco">Kiosco</SelectItem>
+                            <SelectItem value="area_juegos">Área de Juegos</SelectItem>
+                            <SelectItem value="picnic">Área de Picnic</SelectItem>
+                            <SelectItem value="jardin_eventos">Jardín de Eventos</SelectItem>
+                            <SelectItem value="pabellon">Pabellón</SelectItem>
+                            <SelectItem value="cancha_deportiva">Cancha Deportiva</SelectItem>
+                            <SelectItem value="anfiteatro">Anfiteatro</SelectItem>
+                            <SelectItem value="salon_usos_multiples">Salón de Usos Múltiples</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
