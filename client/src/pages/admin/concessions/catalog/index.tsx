@@ -329,7 +329,7 @@ export default function ConcessionTypeCatalog() {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Catálogo de Concesiones | ParquesMX</title>
+        <title>Catálogo de Concesiones | Bosques Urbanos</title>
         <meta 
           name="description" 
           content="Gestiona el catálogo de tipos de concesiones disponibles para los parques" 

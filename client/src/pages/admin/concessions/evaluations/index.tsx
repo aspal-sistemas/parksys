@@ -446,7 +446,7 @@ export default function ConcessionEvaluations() {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Evaluación y Cumplimiento | ParquesMX</title>
+        <title>Evaluación y Cumplimiento | Bosques Urbanos</title>
         <meta 
           name="description" 
           content="Gestiona la evaluación y cumplimiento de las concesiones en los parques" 

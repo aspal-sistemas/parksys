@@ -206,7 +206,7 @@ export default function ConcessionairesPage() {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Registro de Concesionarios | ParquesMX</title>
+        <title>Registro de Concesionarios | Bosques Urbanos</title>
         <meta 
           name="description" 
           content="Gestión de concesionarios autorizados para operar en los parques" 

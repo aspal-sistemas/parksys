@@ -288,7 +288,7 @@ const AssetsPage: React.FC = () => {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Gestión de Activos | ParquesMX</title>
+        <title>Gestión de Activos | Bosques Urbanos</title>
         <meta name="description" content="Administra los activos físicos de los parques y espacios públicos." />
       </Helmet>
       

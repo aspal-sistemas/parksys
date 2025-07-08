@@ -418,7 +418,7 @@ export default function ConcessionContracts() {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Contratos de Concesiones | ParquesMX</title>
+        <title>Contratos de Concesiones | Bosques Urbanos</title>
         <meta 
           name="description" 
           content="Gestiona los contratos de concesiones para los parques" 

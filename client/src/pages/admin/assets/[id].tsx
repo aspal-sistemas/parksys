@@ -517,7 +517,7 @@ const AssetDetailPage: React.FC = () => {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Detalle de Activo | ParquesMX</title>
+        <title>Detalle de Activo | Bosques Urbanos</title>
         <meta name="description" content="Información detallada y gestión del activo." />
       </Helmet>
       

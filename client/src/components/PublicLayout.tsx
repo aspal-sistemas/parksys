@@ -10,7 +10,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     enabled: false, // Por ahora desactivada
   });
 
-  const municipalityName = municipalityData?.name || 'ParquesMX';
+  const municipalityName = municipalityData?.name || 'Bosques Urbanos';
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

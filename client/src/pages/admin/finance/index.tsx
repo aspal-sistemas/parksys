@@ -909,7 +909,7 @@ export default function FinancePage() {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Módulo Financiero | ParquesMX</title>
+        <title>Módulo Financiero | Bosques Urbanos</title>
         <meta 
           name="description" 
           content="Gestión financiera integral: flujo de efectivo, ingresos, egresos y presupuestos" 

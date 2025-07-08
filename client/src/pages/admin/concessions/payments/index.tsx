@@ -389,7 +389,7 @@ export default function ConcessionPayments() {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Gestión Financiera de Concesiones | ParquesMX</title>
+        <title>Gestión Financiera de Concesiones | Bosques Urbanos</title>
         <meta 
           name="description" 
           content="Gestiona los pagos y finanzas de las concesiones en los parques" 

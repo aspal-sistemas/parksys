@@ -356,7 +356,7 @@ BT
 % Encabezado
 /F1 12 Tf
 50 740 Td
-(ParquesMX - Sistema de Gestión de Parques Urbanos) Tj
+(Bosques Urbanos - Sistema de Gestión de Parques Urbanos) Tj
 
 % Título del reporte
 /F1 24 Tf
@@ -395,11 +395,11 @@ ${summaryData}
 % Pie de página
 /F1 8 Tf
 50 100 Td
-(Nota: Este reporte es un documento oficial del sistema ParquesMX.) Tj
+(Nota: Este reporte es un documento oficial del sistema Bosques Urbanos.) Tj
 0 -15 Td
 (Para más información, contacte al administrador del sistema.) Tj
 0 -30 Td
-(© ${new Date().getFullYear()} ParquesMX - Todos los derechos reservados) Tj
+(© ${new Date().getFullYear()} Bosques Urbanos - Todos los derechos reservados) Tj
 
 ET
 endstream

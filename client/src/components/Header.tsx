@@ -33,7 +33,7 @@ const Header: React.FC = () => {
               <div className="flex-shrink-0 flex items-center cursor-pointer">
                 <img 
                   src={logoImage} 
-                  alt="Logo Parques de México" 
+                  alt="Logo Bosques Urbanos de Guadalajara" 
                   className="h-10 w-auto"
                 />
               </div>

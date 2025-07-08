@@ -318,7 +318,7 @@ export default function ConcessionLocations() {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Ubicaciones de Concesiones | ParquesMX</title>
+        <title>Ubicaciones de Concesiones | Bosques Urbanos</title>
         <meta 
           name="description" 
           content="Gestiona la ubicación y georreferenciación de las concesiones en los parques" 

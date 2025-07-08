@@ -78,7 +78,7 @@ const TreesDashboardPage = () => {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Dashboard de Arbolado | ParquesMX</title>
+        <title>Dashboard de Arbolado | Bosques Urbanos</title>
       </Helmet>
 
       <div className="space-y-6">

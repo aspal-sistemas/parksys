@@ -43,7 +43,7 @@ export async function authenticateUser(username: string, password: string) {
           id: 1,
           username: 'admin',
           password: 'admin123',
-          email: 'admin@parquesmx.com',
+          email: 'admin@bosquesurbanos.gob.mx',
           fullName: 'Admin System',
           role: 'super_admin',
           municipalityId: 2,

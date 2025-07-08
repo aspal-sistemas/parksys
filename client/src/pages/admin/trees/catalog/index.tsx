@@ -644,7 +644,7 @@ function TreeSpeciesCatalog() {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Catálogo de Especies Arbóreas | ParquesMX</title>
+        <title>Catálogo de Especies Arbóreas | Bosques Urbanos</title>
         <meta name="description" content="Gestión y consulta del catálogo de especies arbóreas para parques y espacios públicos" />
       </Helmet>
       

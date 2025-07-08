@@ -301,7 +301,7 @@ const CreateAssetPage: React.FC = () => {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Crear Nuevo Activo | ParquesMX</title>
+        <title>Crear Nuevo Activo | Bosques Urbanos</title>
         <meta name="description" content="Formulario para registrar un nuevo activo en el sistema." />
       </Helmet>
       

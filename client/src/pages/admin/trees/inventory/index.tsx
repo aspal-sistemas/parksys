@@ -300,7 +300,7 @@ function TreeInventoryPage() {
   return (
     <AdminLayout>
       <Helmet>
-        <title>Inventario de Árboles | ParquesMX</title>
+        <title>Inventario de Árboles | Bosques Urbanos</title>
         <meta name="description" content="Gestión del inventario de árboles en los parques municipales" />
       </Helmet>
       

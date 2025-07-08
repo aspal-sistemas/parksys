@@ -176,7 +176,7 @@ export default function ProfilePage() {
   return (
     <AdminLayout title="Mi Perfil">
       <Helmet>
-        <title>Mi Perfil | ParquesMX</title>
+        <title>Mi Perfil | Bosques Urbanos</title>
       </Helmet>
 
       <div className="max-w-4xl mx-auto space-y-6">
