@@ -686,9 +686,9 @@ const AdminSidebarComplete: React.FC = () => {
               Recibos
             </NavItem>
             <NavItem 
-              href="/admin/hr/vacation" 
+              href="/admin/hr/vacations" 
               icon={<Clock className="h-5 w-5" />}
-              active={location.startsWith('/admin/hr/vacation')}
+              active={location.startsWith('/admin/hr/vacations')}
             >
               Vacaciones
             </NavItem>

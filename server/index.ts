@@ -918,6 +918,15 @@ async function initializeDatabaseAsync() {
     router.use(express.urlencoded({ extended: true, limit: '50mb' }));
     
     registerHRRoutes(app, router, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Registrar rutas del módulo de vacaciones
+    const { registerVacationRoutes } = await import("./vacation-routes");
+    registerVacationRoutes(app, router, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Inicializar tablas de vacaciones
+    const { createVacationTables } = await import("./create-vacation-tables");
+    await createVacationTables();
+    
     app.use("/api/hr", router); // Cambiar prefijo para evitar conflictos
     console.log("Rutas HR-Finanzas registradas correctamente");
   } catch (error) {

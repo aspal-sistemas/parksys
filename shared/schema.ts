@@ -226,17 +226,11 @@ export const payrollConcepts = pgTable("payroll_concepts", {
 export const payrollPeriods = pgTable("payroll_periods", {
   id: serial("id").primaryKey(),
   period: varchar("period", { length: 7 }).notNull(), // Format: YYYY-MM
-  name: varchar("name", { length: 100 }), // Period name for HR-Finance integration
-  periodType: varchar("period_type", { length: 20 }).default("monthly"),
   startDate: date("start_date").notNull(),
   endDate: date("end_date").notNull(),
-  payDate: date("pay_date"), // Payment date for HR integration
   status: varchar("status", { length: 20 }).default("draft"),
   processedAt: timestamp("processed_at"),
   totalAmount: decimal("total_amount", { precision: 12, scale: 2 }),
-  totalGross: decimal("total_gross", { precision: 12, scale: 2 }),
-  totalDeductions: decimal("total_deductions", { precision: 12, scale: 2 }),
-  totalNet: decimal("total_net", { precision: 12, scale: 2 }),
   employeesCount: integer("employees_count"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -319,6 +313,9 @@ export type PayrollPeriod = typeof payrollPeriods.$inferSelect;
 export type InsertPayrollPeriod = z.infer<typeof insertPayrollPeriodSchema>;
 export type PayrollDetail = typeof payrollDetails.$inferSelect;
 export type InsertPayrollDetail = z.infer<typeof insertPayrollDetailSchema>;
+
+// ========== MÓDULO DE VACACIONES ==========
+// Using the existing vacation tables defined later in the file to avoid duplicates
 
 // ========== FIN MÓDULO DE RECURSOS HUMANOS ==========
 
