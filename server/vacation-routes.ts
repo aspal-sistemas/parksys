@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { eq, sql, and, desc, asc, gte, lte, or, like, count } from "drizzle-orm";
 import { db } from "./db";
 import { 
-  timeOffRequests, 
+  vacationRequests, 
   vacationBalances, 
   employees, 
   users,
@@ -33,19 +33,19 @@ export function registerVacationRoutes(app: any, apiRouter: any, isAuthenticated
       
       // Filtros opcionales
       if (status && status !== 'all') {
-        whereConditions.push(eq(timeOffRequests.status, status as string));
+        whereConditions.push(eq(vacationRequests.status, status as string));
       }
       if (employeeId && employeeId !== 'all') {
-        whereConditions.push(eq(timeOffRequests.employeeId, parseInt(employeeId as string)));
+        whereConditions.push(eq(vacationRequests.employeeId, parseInt(employeeId as string)));
       }
       if (requestType && requestType !== 'all') {
-        whereConditions.push(eq(timeOffRequests.requestType, requestType as string));
+        whereConditions.push(eq(vacationRequests.requestType, requestType as string));
       }
       if (startDate) {
-        whereConditions.push(gte(timeOffRequests.startDate, startDate as string));
+        whereConditions.push(gte(vacationRequests.startDate, startDate as string));
       }
       if (endDate) {
-        whereConditions.push(lte(timeOffRequests.endDate, endDate as string));
+        whereConditions.push(lte(vacationRequests.endDate, endDate as string));
       }
       
       const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
@@ -53,31 +53,31 @@ export function registerVacationRoutes(app: any, apiRouter: any, isAuthenticated
       // Obtener solicitudes con información del empleado
       const requests = await db
         .select({
-          id: timeOffRequests.id,
-          employeeId: timeOffRequests.employeeId,
-          employeeName: employees.fullName,
-          requestType: timeOffRequests.requestType,
-          startDate: timeOffRequests.startDate,
-          endDate: timeOffRequests.endDate,
-          requestedDays: timeOffRequests.requestedDays,
-          reason: timeOffRequests.reason,
-          status: timeOffRequests.status,
-          submittedAt: timeOffRequests.submittedAt,
-          approvedBy: timeOffRequests.approvedBy,
-          approvedAt: timeOffRequests.approvedAt,
-          rejectionReason: timeOffRequests.rejectionReason,
+          id: vacationRequests.id,
+          employeeId: vacationRequests.employeeId,
+          employeeName: users.fullName,
+          requestType: vacationRequests.requestType,
+          startDate: vacationRequests.startDate,
+          endDate: vacationRequests.endDate,
+          requestedDays: vacationRequests.totalDays,
+          reason: vacationRequests.reason,
+          status: vacationRequests.status,
+          submittedAt: vacationRequests.createdAt,
+          approvedBy: vacationRequests.approvedBy,
+          approvedAt: vacationRequests.createdAt,
+          rejectionReason: vacationRequests.notes,
         })
-        .from(timeOffRequests)
-        .innerJoin(employees, eq(timeOffRequests.employeeId, employees.id))
+        .from(vacationRequests)
+        .innerJoin(users, eq(vacationRequests.employeeId, users.id))
         .where(whereClause)
-        .orderBy(desc(timeOffRequests.submittedAt))
+        .orderBy(desc(vacationRequests.createdAt))
         .limit(parseInt(limit as string))
         .offset(offset);
       
       // Contar total de registros
       const totalResult = await db
         .select({ count: count() })
-        .from(timeOffRequests)
+        .from(vacationRequests)
         .where(whereClause);
       
       const total = totalResult[0].count;
@@ -130,16 +130,17 @@ export function registerVacationRoutes(app: any, apiRouter: any, isAuthenticated
 
       // Crear solicitud
       const [newRequest] = await db
-        .insert(timeOffRequests)
+        .insert(vacationRequests)
         .values({
           employeeId,
           requestType,
           startDate,
           endDate,
-          requestedDays,
+          totalDays: requestedDays,
           reason,
-          description,
-          status: "pending"
+          status: "pendiente",
+          requestedBy: employeeId,
+          notes: description
         })
         .returning();
 

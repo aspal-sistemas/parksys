@@ -18,11 +18,22 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
   
   // ========== EMPLEADOS ==========
   
-  // Obtener todos los empleados
+  // Obtener todos los empleados - Para el sistema de vacaciones
   apiRouter.get("/employees", async (req: Request, res: Response) => {
     try {
-      const allEmployees = await db.select().from(employees);
-      res.json(allEmployees);
+      // Obtener usuarios con rol 'employee' para el sistema de vacaciones
+      const employeeUsers = await db
+        .select({
+          id: users.id,
+          fullName: users.fullName,
+          email: users.email,
+          role: users.role
+        })
+        .from(users)
+        .where(eq(users.role, 'employee'));
+      
+      console.log(`Encontrados ${employeeUsers.length} empleados para el sistema de vacaciones`);
+      res.json(employeeUsers);
     } catch (error) {
       console.error("Error al obtener empleados:", error);
       res.status(500).json({ error: "Error interno del servidor" });
