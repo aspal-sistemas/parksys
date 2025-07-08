@@ -234,30 +234,36 @@ export function registerSpaceReservationRoutes(app: any, apiRouter: any, isAuthe
         contactName,
         contactPhone,
         contactEmail,
-        reservationDate,
+        startDate,
+        endDate,
         startTime,
         endTime,
         expectedAttendees,
         purpose,
         specialRequests,
-        totalCost
+        totalCost,
+        depositPaid
       } = req.body;
 
-      // Verificar disponibilidad
+      // Verificar disponibilidad para el rango de fechas
       const conflictQuery = `
         SELECT id FROM space_reservations
         WHERE space_id = $1 
-        AND reservation_date = $2
         AND status NOT IN ('cancelled')
         AND (
-          (start_time <= $3 AND end_time > $3) OR
-          (start_time < $4 AND end_time >= $4) OR
-          (start_time >= $3 AND end_time <= $4)
+          (reservation_date BETWEEN $2 AND $3) OR
+          (reservation_date = $2) OR  
+          (reservation_date = $3)
+        )
+        AND (
+          (start_time <= $4 AND end_time > $4) OR
+          (start_time < $5 AND end_time >= $5) OR
+          (start_time >= $4 AND end_time <= $5)
         )
       `;
 
       const conflictResult = await pool.query(conflictQuery, [
-        spaceId, reservationDate, startTime, endTime
+        spaceId, startDate, endDate, startTime, endTime
       ]);
 
       if (conflictResult.rows.length > 0) {
@@ -270,21 +276,21 @@ export function registerSpaceReservationRoutes(app: any, apiRouter: any, isAuthe
         INSERT INTO space_reservations (
           space_id, event_id, activity_id, reserved_by,
           contact_name, contact_phone, contact_email,
-          reservation_date, start_time, end_time,
-          expected_attendees, purpose, special_requests, total_cost
+          reservation_date, start_date, end_date, start_time, end_time,
+          expected_attendees, purpose, special_requests, total_cost, deposit_paid
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
         RETURNING *
       `;
 
       const result = await pool.query(insertQuery, [
         spaceId, eventId, activityId, req.user?.id || 1,
         contactName, contactPhone, contactEmail,
-        reservationDate, startTime, endTime,
-        expectedAttendees, purpose, specialRequests, totalCost || 0
+        startDate, startDate, endDate, startTime, endTime,
+        expectedAttendees, purpose, specialRequests, totalCost || 0, depositPaid || false
       ]);
 
-      console.log(`📅 Reserva creada: ${contactName} - ${reservationDate}`);
+      console.log(`📅 Reserva creada: ${contactName} - ${startDate} a ${endDate}`);
       res.status(201).json(result.rows[0]);
     } catch (error) {
       console.error('Error creating reservation:', error);

@@ -24,11 +24,19 @@ const reservationSchema = z.object({
   customer_name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   customer_email: z.string().email('Email inválido'),
   customer_phone: z.string().min(10, 'El teléfono debe tener al menos 10 dígitos'),
-  reservation_date: z.string().min(1, 'Selecciona una fecha'),
+  start_date: z.string().min(1, 'Selecciona fecha de inicio'),
+  end_date: z.string().min(1, 'Selecciona fecha de fin'),
   start_time: z.string().min(1, 'Selecciona hora de inicio'),
   end_time: z.string().min(1, 'Selecciona hora de fin'),
   special_requests: z.string().optional(),
   deposit_paid: z.boolean().default(false)
+}).refine((data) => {
+  const startDate = new Date(data.start_date);
+  const endDate = new Date(data.end_date);
+  return endDate >= startDate;
+}, {
+  message: "La fecha de fin debe ser igual o posterior a la fecha de inicio",
+  path: ["end_date"],
 });
 
 type ReservationFormData = z.infer<typeof reservationSchema>;
@@ -78,7 +86,8 @@ export default function NewReservationPage() {
       customer_name: '',
       customer_email: '',
       customer_phone: '',
-      reservation_date: '',
+      start_date: '',
+      end_date: '',
       start_time: '',
       end_time: '',
       special_requests: '',
@@ -105,13 +114,15 @@ export default function NewReservationPage() {
         contactName: data.customer_name,
         contactEmail: data.customer_email,
         contactPhone: data.customer_phone,
-        reservationDate: data.reservation_date,
+        startDate: data.start_date,
+        endDate: data.end_date,
         startTime: data.start_time,
         endTime: data.end_time,
         specialRequests: data.special_requests || '',
         expectedAttendees: selectedSpace?.capacity || 1,
-        purpose: 'Evento privado',
+        purpose: 'Evento privado - Múltiples días',
         totalCost: calculatedCost,
+        depositPaid: data.deposit_paid,
         eventId: null,
         activityId: null
       };
@@ -150,7 +161,8 @@ export default function NewReservationPage() {
 
   // Watch for space selection changes
   const watchedSpaceId = form.watch('space_id');
-  const watchedDate = form.watch('reservation_date');
+  const watchedStartDate = form.watch('start_date');
+  const watchedEndDate = form.watch('end_date');
   const watchedStartTime = form.watch('start_time');
   const watchedEndTime = form.watch('end_time');
 
@@ -162,21 +174,31 @@ export default function NewReservationPage() {
   }, [watchedSpaceId, spaces]);
 
   useEffect(() => {
-    if (selectedSpace && watchedStartTime && watchedEndTime) {
+    if (selectedSpace && watchedStartDate && watchedEndDate && watchedStartTime && watchedEndTime) {
+      const startDate = new Date(watchedStartDate);
+      const endDate = new Date(watchedEndDate);
+      
+      // Calculate number of days
+      const timeDiff = endDate.getTime() - startDate.getTime();
+      const totalDays = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1);
+      
+      // Calculate hours per day
       const start = new Date(`2000-01-01T${watchedStartTime}`);
       const end = new Date(`2000-01-01T${watchedEndTime}`);
       const diffMs = end.getTime() - start.getTime();
-      const hours = diffMs / (1000 * 60 * 60);
+      const hoursPerDay = diffMs / (1000 * 60 * 60);
       
-      if (hours > 0) {
-        setTotalHours(hours);
-        setCalculatedCost(hours * parseFloat(selectedSpace.hourly_rate));
+      if (hoursPerDay > 0) {
+        // Total hours = hours per day × number of days
+        const totalHours = hoursPerDay * totalDays;
+        setTotalHours(totalHours);
+        setCalculatedCost(totalHours * parseFloat(selectedSpace.hourly_rate));
       } else {
         setTotalHours(0);
         setCalculatedCost(0);
       }
     }
-  }, [selectedSpace, watchedStartTime, watchedEndTime]);
+  }, [selectedSpace, watchedStartDate, watchedEndDate, watchedStartTime, watchedEndTime]);
 
   const onSubmit = (data: ReservationFormData) => {
     createReservationMutation.mutate(data);
@@ -329,29 +351,52 @@ export default function NewReservationPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="reservation_date"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Fecha de Reserva</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="date" 
-                              min={getMinDate()}
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                          {selectedSpace && selectedSpace.advance_booking_days > 0 && (
-                            <p className="text-sm text-amber-600">
-                              <AlertCircle className="h-3 w-3 inline mr-1" />
-                              Requiere reserva con {selectedSpace.advance_booking_days} días de anticipación
-                            </p>
-                          )}
-                        </FormItem>
-                      )}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="start_date"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fecha de Inicio</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="date" 
+                                min={getMinDate()}
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="end_date"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fecha de Fin</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="date" 
+                                min={watchedStartDate || getMinDate()}
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    {selectedSpace && selectedSpace.advance_booking_days > 0 && (
+                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                        <p className="text-sm text-amber-600">
+                          <AlertCircle className="h-3 w-3 inline mr-1" />
+                          Requiere reserva con {selectedSpace.advance_booking_days} días de anticipación
+                        </p>
+                      </div>
+                    )}
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
@@ -511,22 +556,42 @@ export default function NewReservationPage() {
                       </div>
                     </div>
                     
-                    {totalHours > 0 && (
+                    {totalHours > 0 && watchedStartDate && watchedEndDate && (
                       <>
                         <Separator />
                         <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Duración:</span>
-                            <span>{totalHours} horas</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Subtotal:</span>
-                            <span>${calculatedCost.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between font-medium">
-                            <span>Total:</span>
-                            <span className="text-[#00a587]">${calculatedCost.toFixed(2)}</span>
-                          </div>
+                          {(() => {
+                            const startDate = new Date(watchedStartDate);
+                            const endDate = new Date(watchedEndDate);
+                            const timeDiff = endDate.getTime() - startDate.getTime();
+                            const totalDays = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1);
+                            const hoursPerDay = totalHours / totalDays;
+                            
+                            return (
+                              <>
+                                <div className="flex justify-between text-sm">
+                                  <span>Período:</span>
+                                  <span>{totalDays} {totalDays === 1 ? 'día' : 'días'}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span>Horas por día:</span>
+                                  <span>{hoursPerDay.toFixed(1)} hrs</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span>Total horas:</span>
+                                  <span>{totalHours.toFixed(1)} hrs</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span>Subtotal:</span>
+                                  <span>${calculatedCost.toFixed(2)}</span>
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </div>
+                        <div className="flex justify-between font-medium">
+                          <span>Total:</span>
+                          <span className="text-[#00a587]">${calculatedCost.toFixed(2)}</span>
                         </div>
                       </>
                     )}
