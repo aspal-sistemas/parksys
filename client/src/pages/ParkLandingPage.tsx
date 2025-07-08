@@ -127,7 +127,10 @@ function ParkLandingPage() {
             </Button>
           </Link>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-gray-900">{park.name}</h1>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">{park.name}</h1>
+              <p className="text-sm text-gray-600 mt-1">Parque Certificado con el</p>
+            </div>
             {/* Green Flag Award Logo - Solo para parques certificados */}
             {shouldShowGreenFlag(park.id) && (
               <img 
