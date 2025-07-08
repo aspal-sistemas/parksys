@@ -65,6 +65,9 @@ export default function NewSpacePage() {
     mutationFn: async (data: NewSpaceFormData) => {
       return apiRequest("/api/reservable-spaces", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           ...data,
           parkId: parseInt(data.parkId),
