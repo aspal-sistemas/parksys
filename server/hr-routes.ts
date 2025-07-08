@@ -21,20 +21,7 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
   // Obtener todos los empleados
   apiRouter.get("/employees", async (req: Request, res: Response) => {
     try {
-      const allEmployees = await db.select({
-        id: employees.id,
-        firstName: employees.firstName,
-        lastName: employees.lastName,
-        email: employees.email,
-        phone: employees.phone,
-        position: employees.position,
-        departmentId: employees.departmentId,
-        hireDate: employees.hireDate,
-        salary: employees.salary,
-        status: employees.status,
-        createdAt: employees.createdAt,
-        updatedAt: employees.updatedAt
-      }).from(employees);
+      const allEmployees = await db.select().from(employees);
       res.json(allEmployees);
     } catch (error) {
       console.error("Error al obtener empleados:", error);
