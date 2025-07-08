@@ -15,6 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { Calendar, CheckCircle, XCircle, Clock, Plus, Filter, Search, FileText, User, CalendarDays } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { AdminLayout } from "@/components/AdminLayout";
 
 interface VacationRequest {
   id: number;
@@ -192,7 +193,8 @@ export default function VacationManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -570,6 +572,7 @@ export default function VacationManagement() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
