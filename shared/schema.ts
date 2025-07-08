@@ -2835,3 +2835,5 @@ export type InsertReservableSpace = z.infer<typeof insertReservableSpaceSchema>;
 export type SpaceReservation = typeof spaceReservations.$inferSelect;
 export type InsertSpaceReservation = z.infer<typeof insertSpaceReservationSchema>;
 export type SpaceAvailability = typeof spaceAvailability.$inferSelect;
+
+

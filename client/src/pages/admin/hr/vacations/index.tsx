@@ -11,8 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { Calendar, CheckCircle, XCircle, Clock, Plus, Filter, Search, FileText, User, CalendarDays } from "lucide-react";
+import { Calendar, CheckCircle, XCircle, Clock, Plus, Filter, Search, FileText, User, CalendarDays, Shield, Bell } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { AdminLayout } from "@/components/AdminLayout";
@@ -389,41 +390,313 @@ export default function VacationManagement() {
           </Card>
         </TabsContent>
         
-        {/* Otros tabs serán implementados como componentes separados */}
-        <TabsContent value="dashboard">
+        {/* Panel de Control Tab */}
+        <TabsContent value="dashboard" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Métricas principales */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Solicitudes Pendientes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-orange-600">8</div>
+                <p className="text-xs text-gray-600">Requieren revisión</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Empleados en Vacaciones</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">12</div>
+                <p className="text-xs text-gray-600">Esta semana</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Días Promedio</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">15.3</div>
+                <p className="text-xs text-gray-600">Días por empleado</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Cobertura</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-purple-600">89%</div>
+                <p className="text-xs text-gray-600">Posiciones cubiertas</p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Calendario de próximas vacaciones */}
           <Card>
-            <CardContent className="pt-6">
-              <div className="text-center py-8">
-                <CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Panel de Control</h3>
-                <p className="text-gray-600">Próximamente: Dashboard con estadísticas y métricas</p>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarDays className="h-5 w-5" />
+                Próximas Vacaciones (Próximas 2 semanas)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  { name: "Ana García López", department: "Recursos Humanos", dates: "15-19 Jul", days: 5, status: "confirmada" },
+                  { name: "Carlos Mendoza", department: "Finanzas", dates: "18-25 Jul", days: 8, status: "confirmada" },
+                  { name: "Elena Morales", department: "Operaciones", dates: "22-29 Jul", days: 8, status: "pendiente" },
+                  { name: "Franco Colapinto", department: "Marketing", dates: "25 Jul - 2 Ago", days: 9, status: "confirmada" }
+                ].map((vacation, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <User className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{vacation.name}</p>
+                        <p className="text-xs text-gray-600">{vacation.department}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">{vacation.dates}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-600">{vacation.days} días</span>
+                        <Badge variant={vacation.status === 'confirmada' ? 'default' : 'secondary'} className="text-xs">
+                          {vacation.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
         
-        <TabsContent value="balances">
+        {/* Balances Tab */}
+        <TabsContent value="balances" className="space-y-4">
           <Card>
-            <CardContent className="pt-6">
-              <div className="text-center py-8">
-                <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Balance de Vacaciones</h3>
-                <p className="text-gray-600">Próximamente: Gestión de balances por empleado</p>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Balances de Vacaciones por Empleado
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Filtros */}
+                <div className="flex gap-4 items-center">
+                  <div className="flex-1">
+                    <Label htmlFor="search-employee">Buscar empleado</Label>
+                    <Input 
+                      id="search-employee"
+                      placeholder="Nombre del empleado..."
+                      className="max-w-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="department-filter">Departamento</Label>
+                    <Select defaultValue="all">
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="rh">Recursos Humanos</SelectItem>
+                        <SelectItem value="finanzas">Finanzas</SelectItem>
+                        <SelectItem value="operaciones">Operaciones</SelectItem>
+                        <SelectItem value="marketing">Marketing</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                {/* Tabla de balances */}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Empleado</TableHead>
+                      <TableHead>Departamento</TableHead>
+                      <TableHead>Días Ganados</TableHead>
+                      <TableHead>Días Usados</TableHead>
+                      <TableHead>Días Pendientes</TableHead>
+                      <TableHead>Saldo Disponible</TableHead>
+                      <TableHead>Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {[
+                      { name: "Ana García López", department: "Recursos Humanos", earned: 20, used: 8, pending: 0, available: 12 },
+                      { name: "Carlos Mendoza", department: "Finanzas", earned: 20, used: 5, pending: 8, available: 7 },
+                      { name: "Elena Morales", department: "Operaciones", earned: 20, used: 12, pending: 8, available: 0 },
+                      { name: "Franco Colapinto", department: "Marketing", earned: 20, used: 3, pending: 9, available: 8 },
+                      { name: "Luis Antonio Roman", department: "Administración", earned: 20, used: 0, pending: 0, available: 20 },
+                      { name: "María Elena Ruiz", department: "Operaciones", earned: 20, used: 15, pending: 0, available: 5 }
+                    ].map((employee, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{employee.name}</TableCell>
+                        <TableCell>{employee.department}</TableCell>
+                        <TableCell>{employee.earned}</TableCell>
+                        <TableCell>{employee.used}</TableCell>
+                        <TableCell>
+                          <Badge variant={employee.pending > 0 ? 'secondary' : 'outline'}>
+                            {employee.pending}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`font-medium ${employee.available > 10 ? 'text-green-600' : employee.available > 5 ? 'text-yellow-600' : 'text-red-600'}`}>
+                            {employee.available}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm">
+                            Ajustar
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
         
-        <TabsContent value="settings">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center py-8">
-                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Configuración</h3>
-                <p className="text-gray-600">Próximamente: Configuración del sistema</p>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Configuración Tab */}
+        <TabsContent value="settings" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Políticas de Vacaciones */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Políticas de Vacaciones
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="annual-days">Días anuales por empleado</Label>
+                  <Input id="annual-days" type="number" defaultValue="20" />
+                </div>
+                <div>
+                  <Label htmlFor="max-consecutive">Máximo días consecutivos</Label>
+                  <Input id="max-consecutive" type="number" defaultValue="15" />
+                </div>
+                <div>
+                  <Label htmlFor="advance-notice">Días de aviso previo</Label>
+                  <Input id="advance-notice" type="number" defaultValue="30" />
+                </div>
+                <div>
+                  <Label htmlFor="carryover-days">Días acumulables al siguiente año</Label>
+                  <Input id="carryover-days" type="number" defaultValue="5" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Configuración de Aprobaciones */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Flujo de Aprobaciones
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="approval-levels">Niveles de aprobación</Label>
+                  <Select defaultValue="2">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 Nivel (Supervisor directo)</SelectItem>
+                      <SelectItem value="2">2 Niveles (Supervisor + RH)</SelectItem>
+                      <SelectItem value="3">3 Niveles (Supervisor + RH + Gerente)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="auto-approval">Aprobación automática</Label>
+                  <Select defaultValue="disabled">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="disabled">Deshabilitada</SelectItem>
+                      <SelectItem value="1-day">Solicitudes de 1 día</SelectItem>
+                      <SelectItem value="3-days">Solicitudes hasta 3 días</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="notification-time">Recordatorio de aprobación (horas)</Label>
+                  <Input id="notification-time" type="number" defaultValue="24" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Configuración de Notificaciones */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Notificaciones
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="email-notifications">Notificaciones por email</Label>
+                    <Switch id="email-notifications" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="sms-notifications">Notificaciones por SMS</Label>
+                    <Switch id="sms-notifications" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="calendar-integration">Integración con calendario</Label>
+                    <Switch id="calendar-integration" defaultChecked />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Configuración de Períodos */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Períodos Especiales
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="blackout-start">Período de restricción - Inicio</Label>
+                  <Input id="blackout-start" type="date" />
+                </div>
+                <div>
+                  <Label htmlFor="blackout-end">Período de restricción - Fin</Label>
+                  <Input id="blackout-end" type="date" />
+                </div>
+                <div>
+                  <Label htmlFor="holiday-adjustment">Ajuste por días festivos</Label>
+                  <Switch id="holiday-adjustment" defaultChecked />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Botones de acción */}
+          <div className="flex justify-end gap-4">
+            <Button variant="outline">Cancelar</Button>
+            <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+              Guardar Configuración
+            </Button>
+          </div>
         </TabsContent>
       </Tabs>
 
