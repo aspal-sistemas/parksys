@@ -544,6 +544,12 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/space-reservations/calendar')))}
           </Suspense>
         </Route>
+        
+        <Route path="/admin/space-reservations/spaces/new">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de nuevo espacio...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/space-reservations/spaces/new')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/assets/:id/edit">
           <Suspense fallback={<div className="p-8 text-center">Cargando editor de activo...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/assets/edit')))}
