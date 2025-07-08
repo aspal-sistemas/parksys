@@ -190,6 +190,39 @@ export function registerSpaceReservationRoutes(app: any, apiRouter: any, isAuthe
     }
   });
 
+  // Obtener reserva por ID
+  apiRouter.get('/space-reservations/:id', async (req: Request, res: Response) => {
+    try {
+      const reservationId = parseInt(req.params.id);
+      const { pool } = await import("./db");
+
+      const query = `
+        SELECT 
+          sr.*,
+          rs.name as space_name,
+          rs.space_type,
+          rs.hourly_rate,
+          rs.capacity,
+          p.name as park_name
+        FROM space_reservations sr
+        JOIN reservable_spaces rs ON sr.space_id = rs.id
+        JOIN parks p ON rs.park_id = p.id
+        WHERE sr.id = $1
+      `;
+
+      const result = await pool.query(query, [reservationId]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Reserva no encontrada' });
+      }
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error fetching reservation details:', error);
+      res.status(500).json({ error: 'Error al obtener detalles de la reserva' });
+    }
+  });
+
   // Crear nueva reserva
   apiRouter.post('/space-reservations', isAuthenticated, async (req: Request, res: Response) => {
     try {
