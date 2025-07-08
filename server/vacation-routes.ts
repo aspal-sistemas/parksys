@@ -32,13 +32,13 @@ export function registerVacationRoutes(app: any, apiRouter: any, isAuthenticated
       let whereConditions: any[] = [];
       
       // Filtros opcionales
-      if (status) {
+      if (status && status !== 'all') {
         whereConditions.push(eq(timeOffRequests.status, status as string));
       }
-      if (employeeId) {
+      if (employeeId && employeeId !== 'all') {
         whereConditions.push(eq(timeOffRequests.employeeId, parseInt(employeeId as string)));
       }
-      if (requestType) {
+      if (requestType && requestType !== 'all') {
         whereConditions.push(eq(timeOffRequests.requestType, requestType as string));
       }
       if (startDate) {

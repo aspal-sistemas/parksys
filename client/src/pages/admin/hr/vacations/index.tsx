@@ -41,7 +41,7 @@ export default function VacationManagement() {
   const [selectedTab, setSelectedTab] = useState("requests");
   const [filters, setFilters] = useState({
     status: "all",
-    employeeId: "",
+    employeeId: "all",
     requestType: "all",
     page: 1
   });
@@ -263,8 +263,8 @@ export default function VacationManagement() {
                       <SelectValue placeholder="Todos los empleados" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todos los empleados</SelectItem>
-                      {employees?.map((emp: Employee) => (
+                      <SelectItem value="all">Todos los empleados</SelectItem>
+                      {employees?.filter((emp: Employee) => emp.id && emp.fullName).map((emp: Employee) => (
                         <SelectItem key={emp.id} value={emp.id.toString()}>
                           {emp.fullName}
                         </SelectItem>
@@ -440,7 +440,7 @@ export default function VacationManagement() {
                     <SelectValue placeholder="Seleccionar empleado" />
                   </SelectTrigger>
                   <SelectContent>
-                    {employees?.map((emp: Employee) => (
+                    {employees?.filter((emp: Employee) => emp.id && emp.fullName).map((emp: Employee) => (
                       <SelectItem key={emp.id} value={emp.id.toString()}>
                         {emp.fullName}
                       </SelectItem>
