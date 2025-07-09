@@ -263,41 +263,80 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      // Usar consulta SQL directa para incluir todos los campos, incluidos los nuevos
+      // Obtener datos del voluntario con información del usuario
       const result = await db.execute(
         sql`SELECT 
-          id, 
-          full_name, 
-          email, 
-          phone, 
-          gender, 
-          age, 
-          status, 
-          profile_image_url,
-          previous_experience,
-          available_hours,
-          available_days,
-          interest_areas,
-          preferred_park_id,
-          legal_consent,
-          address,
-          emergency_contact,
-          emergency_phone,
-          created_at,
-          updated_at,
-          user_id
-        FROM volunteers 
-        WHERE id = ${volunteerId}`
+              v.id,
+              v.full_name,
+              v.email,
+              v.phone,
+              v.gender,
+              v.status,
+              v.address,
+              v.emergency_contact,
+              v.emergency_phone,
+              v.preferred_park_id,
+              v.previous_experience,
+              v.skills,
+              v.available_hours,
+              v.available_days,
+              v.interest_areas,
+              v.legal_consent,
+              v.user_id,
+              u.full_name as user_full_name,
+              u.birth_date,
+              u.created_at,
+              u.updated_at
+            FROM volunteers v
+            JOIN users u ON v.user_id = u.id
+            WHERE v.id = ${volunteerId}`
       );
       
       if (!result.rows || result.rows.length === 0) {
         return res.status(404).json({ message: "Voluntario no encontrado" });
       }
       
-      // Log para depuración
-      console.log("Datos del voluntario recuperados:", result.rows[0]);
+      const volunteerData = result.rows[0];
       
-      res.json(result.rows[0]);
+      // Formatear datos para el frontend
+      // Separar nombre completo en first_name y last_name
+      const fullName = volunteerData.user_full_name || volunteerData.full_name || '';
+      const nameParts = fullName.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      const formattedVolunteer = {
+        id: volunteerData.id,
+        firstName: firstName,
+        lastName: lastName,
+        email: volunteerData.email,
+        phone: volunteerData.phone,
+        gender: volunteerData.gender || 'no_especificar',
+        birthDate: volunteerData.birth_date ? new Date(volunteerData.birth_date).toISOString().split('T')[0] : '',
+        address: volunteerData.address || '',
+        emergencyContactName: volunteerData.emergency_contact || '',
+        emergencyContactPhone: volunteerData.emergency_phone || '',
+        preferredParkId: volunteerData.preferred_park_id?.toString() || '',
+        volunteerExperience: volunteerData.previous_experience || '',
+        skills: volunteerData.skills || '',
+        availability: volunteerData.available_hours || 'flexible',
+        legalConsent: volunteerData.legal_consent || true,
+        status: volunteerData.status,
+        userId: volunteerData.user_id,
+        municipalityId: 2, // Guadalajara por defecto
+        // Manejar áreas de interés
+        interestNature: volunteerData.interest_areas ? volunteerData.interest_areas.includes('nature') : false,
+        interestEvents: volunteerData.interest_areas ? volunteerData.interest_areas.includes('events') : false,
+        interestEducation: volunteerData.interest_areas ? volunteerData.interest_areas.includes('education') : false,
+        interestMaintenance: volunteerData.interest_areas ? volunteerData.interest_areas.includes('maintenance') : false,
+        interestSports: volunteerData.interest_areas ? volunteerData.interest_areas.includes('sports') : false,
+        interestCultural: volunteerData.interest_areas ? volunteerData.interest_areas.includes('cultural') : false,
+        // Valores por defecto para los campos requeridos
+        ageConsent: true,
+        conductConsent: true
+      };
+      
+      res.json(formattedVolunteer);
     } catch (error) {
       console.error(`Error al obtener voluntario ${req.params.id}:`, error);
       res.status(500).json({ message: "Error al obtener datos del voluntario" });
