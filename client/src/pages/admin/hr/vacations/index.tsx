@@ -81,11 +81,17 @@ export default function VacationManagement() {
   });
 
   // Obtener empleados activos
-  const { data: employees } = useQuery({
+  const { data: employees, isLoading: employeesLoading, error: employeesError } = useQuery({
     queryKey: ['employees-active'],
     queryFn: async () => {
+      console.log('🌐 [API REQUEST] GET /api/hr/employees');
       const response = await apiRequest('/api/hr/employees');
-      return response.filter((emp: Employee) => emp.fullName);
+      console.log('📋 Empleados recibidos:', response);
+      console.log('📋 Total empleados:', response?.length || 0);
+      const filtered = response.filter((emp: Employee) => emp.fullName);
+      console.log('📋 Empleados filtrados:', filtered);
+      console.log('📋 Total filtrados:', filtered?.length || 0);
+      return filtered;
     }
   });
 
