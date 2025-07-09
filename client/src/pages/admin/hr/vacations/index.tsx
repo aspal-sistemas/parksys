@@ -99,10 +99,24 @@ export default function VacationManagement() {
   // Crear nueva solicitud
   const createRequestMutation = useMutation({
     mutationFn: async (data: typeof newRequest) => {
-      return await apiRequest('/api/hr/vacation-requests', {
+      console.log('📤 Enviando datos de solicitud:', data);
+      const response = await fetch('/api/hr/vacation-requests', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer direct-token-1750522117022',
+          'X-User-Id': '1',
+          'X-User-Role': 'super_admin'
+        },
         body: JSON.stringify(data)
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Error al crear solicitud');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
