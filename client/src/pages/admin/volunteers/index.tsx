@@ -69,6 +69,10 @@ export default function VolunteersPage() {
     navigate('/admin/volunteers/register');
   };
 
+  const handleEditVolunteer = (volunteerId: number) => {
+    navigate(`/admin/volunteers/edit/${volunteerId}`);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'activo': return 'bg-green-100 text-green-800';
@@ -257,6 +261,7 @@ export default function VolunteersPage() {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => handleEditVolunteer(volunteer.id)}
                             >
                               <Edit className="h-4 w-4 mr-1" />
                               Editar

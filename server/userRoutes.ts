@@ -43,7 +43,7 @@ const updateUserSchema = z.object({
 });
 
 // Función para sincronizar datos de usuario con la tabla de voluntarios
-async function syncUserWithVolunteerTable(user: any) {
+async function syncUserWithVolunteerTable(user: any, formData: any = {}) {
   try {
     console.log(`Sincronizando usuario ${user.id} con tabla de voluntarios...`);
     
@@ -54,19 +54,19 @@ async function syncUserWithVolunteerTable(user: any) {
     
     const volunteerExists = volunteerResult.rows && volunteerResult.rows.length > 0;
     
-    // Convertir campos de usuario a formato de voluntario
+    // Convertir campos de usuario a formato de voluntario usando datos del formulario
     const volunteerData = {
       full_name: user.fullName,
       email: user.email,
-      phone: user.phone || null,
-      gender: user.gender || null,
+      phone: formData.phone || user.phone || null,
+      gender: formData.gender || user.gender || 'no_especificar',
       status: 'active',
       profile_image_url: user.profileImageUrl || null,
-      previous_experience: null, // Estos campos pueden estar en un objeto adicional 
-      address: user.address || null,
-      emergency_contact: user.emergencyContactName || null,
-      emergency_phone: user.emergencyContactPhone || null,
-      preferred_park_id: user.preferredParkId || 3, // Usamos valor por defecto
+      previous_experience: formData.volunteerExperience || null, 
+      address: formData.address || user.address || null,
+      emergency_contact: formData.emergencyContactName || user.emergencyContactName || null,
+      emergency_phone: formData.emergencyContactPhone || user.emergencyContactPhone || null,
+      preferred_park_id: formData.preferredParkId || user.preferredParkId || 3, // Usamos valor por defecto
       user_id: user.id,
       updated_at: new Date()
     };
@@ -78,8 +78,9 @@ async function syncUserWithVolunteerTable(user: any) {
       
       // Calcular la edad a partir de la fecha de nacimiento si existe, o mantener la existente
       let age = 18; // Valor por defecto
-      if (user.birthDate) {
-        const birthDate = new Date(user.birthDate);
+      const birthDateStr = formData.birthDate || user.birthDate;
+      if (birthDateStr) {
+        const birthDate = new Date(birthDateStr);
         const today = new Date();
         age = today.getFullYear() - birthDate.getFullYear();
         // Ajustar si aún no ha cumplido años este año
@@ -100,10 +101,10 @@ async function syncUserWithVolunteerTable(user: any) {
                 user_id = ${volunteerData.user_id},
                 updated_at = ${volunteerData.updated_at},
                 age = ${age},
-                preferred_park_id = ${user.preferredParkId || 3},
-                address = ${user.address || null},
-                emergency_contact = ${user.emergencyContactName || null},
-                emergency_phone = ${user.emergencyContactPhone || null}
+                preferred_park_id = ${formData.preferredParkId || user.preferredParkId || 3},
+                address = ${formData.address || user.address || null},
+                emergency_contact = ${formData.emergencyContactName || user.emergencyContactName || null},
+                emergency_phone = ${formData.emergencyContactPhone || user.emergencyContactPhone || null}
             WHERE id = ${volunteerId}`
       );
       
@@ -114,8 +115,9 @@ async function syncUserWithVolunteerTable(user: any) {
       
       // Calcular la edad a partir de la fecha de nacimiento si existe, o usar 18 como valor predeterminado
       let age = 18; // Valor predeterminado
-      if (user.birthDate) {
-        const birthDate = new Date(user.birthDate);
+      const birthDateStr = formData.birthDate || user.birthDate;
+      if (birthDateStr) {
+        const birthDate = new Date(birthDateStr);
         const today = new Date();
         age = today.getFullYear() - birthDate.getFullYear();
         // Ajustar si aún no ha cumplido años este año
@@ -134,8 +136,8 @@ async function syncUserWithVolunteerTable(user: any) {
             (${volunteerData.full_name}, ${volunteerData.email}, ${volunteerData.phone}, 
              ${volunteerData.gender}, ${volunteerData.status}, ${volunteerData.profile_image_url}, 
              ${volunteerData.user_id}, ${new Date()}, ${volunteerData.updated_at}, ${age}, ${true}, 
-             ${user.preferredParkId || 3}, ${user.address || null}, 
-             ${user.emergencyContactName || null}, ${user.emergencyContactPhone || null})`
+             ${formData.preferredParkId || user.preferredParkId || 3}, ${formData.address || user.address || null}, 
+             ${formData.emergencyContactName || user.emergencyContactName || null}, ${formData.emergencyContactPhone || user.emergencyContactPhone || null})`
       );
       
       console.log(`Nuevo voluntario creado para usuario ID ${user.id}`);
@@ -386,7 +388,7 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
           
           // Si el usuario tiene rol de voluntario, sincronizar con la tabla de voluntarios
           if (newUser.role === 'voluntario') {
-            await syncUserWithVolunteerTable(newUser);
+            await syncUserWithVolunteerTable(newUser, req.body);
           }
           
           // Si el usuario tiene rol de concesionario, crear automáticamente el perfil de concesionario
@@ -721,6 +723,167 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
       
       console.error('Error updating user:', error);
       res.status(500).json({ message: 'Error al actualizar usuario' });
+    }
+  });
+
+  // GET /api/volunteers/:id - Obtener un voluntario específico
+  apiRouter.get('/volunteers/:id', async (req: Request, res: Response) => {
+    try {
+      const volunteerId = Number(req.params.id);
+      
+      // Obtener datos del voluntario con información del usuario
+      const volunteerResult = await db.execute(
+        sql`SELECT 
+              v.id,
+              v.full_name,
+              v.email,
+              v.phone,
+              v.gender,
+              v.status,
+              v.join_date,
+              v.total_hours,
+              v.address,
+              v.emergency_contact,
+              v.emergency_phone,
+              v.preferred_park_id,
+              v.previous_experience,
+              v.skills,
+              v.available_hours,
+              v.legal_consent,
+              v.is_active,
+              v.user_id,
+              u.first_name,
+              u.last_name,
+              u.birth_date,
+              u.created_at,
+              u.updated_at
+            FROM volunteers v
+            JOIN users u ON v.user_id = u.id
+            WHERE v.id = ${volunteerId}`
+      );
+      
+      if (!volunteerResult.rows || volunteerResult.rows.length === 0) {
+        return res.status(404).json({ message: 'Voluntario no encontrado' });
+      }
+      
+      const volunteerData = volunteerResult.rows[0];
+      
+      // Formatear datos para el frontend
+      const formattedVolunteer = {
+        id: volunteerData.id,
+        firstName: volunteerData.first_name,
+        lastName: volunteerData.last_name,
+        email: volunteerData.email,
+        phone: volunteerData.phone,
+        gender: volunteerData.gender,
+        birthDate: volunteerData.birth_date ? new Date(volunteerData.birth_date).toISOString().split('T')[0] : null,
+        address: volunteerData.address,
+        emergencyContactName: volunteerData.emergency_contact,
+        emergencyContactPhone: volunteerData.emergency_phone,
+        preferredParkId: volunteerData.preferred_park_id,
+        volunteerExperience: volunteerData.previous_experience,
+        skills: volunteerData.skills,
+        availability: volunteerData.available_hours,
+        legalConsent: volunteerData.legal_consent,
+        status: volunteerData.status,
+        joinDate: volunteerData.join_date,
+        totalHours: volunteerData.total_hours,
+        isActive: volunteerData.is_active,
+        userId: volunteerData.user_id,
+        municipalityId: 2, // Guadalajara por defecto
+        // Valores por defecto para los campos requeridos
+        ageConsent: true,
+        conductConsent: true,
+        interestNature: false,
+        interestEvents: false,
+        interestEducation: false,
+        interestMaintenance: false,
+        interestSports: false,
+        interestCultural: false
+      };
+      
+      res.json(formattedVolunteer);
+      
+    } catch (error) {
+      console.error('Error obteniendo voluntario:', error);
+      res.status(500).json({ message: 'Error al obtener voluntario' });
+    }
+  });
+
+  // PUT /api/volunteers/:id - Actualizar un voluntario directamente
+  apiRouter.put('/volunteers/:id', async (req: Request, res: Response) => {
+    try {
+      const volunteerId = Number(req.params.id);
+      const volunteerData = req.body;
+      
+      console.log(`Actualizando voluntario ID: ${volunteerId}`);
+      console.log("Datos recibidos:", volunteerData);
+      
+      // Verificar que el voluntario existe
+      const volunteerResult = await db.execute(
+        sql`SELECT user_id FROM volunteers WHERE id = ${volunteerId}`
+      );
+      
+      if (!volunteerResult.rows || volunteerResult.rows.length === 0) {
+        return res.status(404).json({ message: 'Voluntario no encontrado' });
+      }
+      
+      const userId = volunteerResult.rows[0].user_id;
+      
+      // Actualizar los datos del usuario primero
+      const userUpdateData = {
+        firstName: volunteerData.firstName,
+        lastName: volunteerData.lastName,
+        email: volunteerData.email,
+        phone: volunteerData.phone,
+        gender: volunteerData.gender,
+        birthDate: volunteerData.birthDate,
+        updatedAt: new Date()
+      };
+      
+      // Actualizar tabla users
+      await db.execute(
+        sql`UPDATE users 
+            SET first_name = ${userUpdateData.firstName},
+                last_name = ${userUpdateData.lastName},
+                email = ${userUpdateData.email},
+                phone = ${userUpdateData.phone},
+                gender = ${userUpdateData.gender},
+                birth_date = ${userUpdateData.birthDate ? new Date(userUpdateData.birthDate) : null},
+                updated_at = ${userUpdateData.updatedAt}
+            WHERE id = ${userId}`
+      );
+      
+      // Actualizar tabla volunteers
+      await db.execute(
+        sql`UPDATE volunteers 
+            SET full_name = ${`${volunteerData.firstName} ${volunteerData.lastName}`},
+                email = ${volunteerData.email},
+                phone = ${volunteerData.phone},
+                gender = ${volunteerData.gender},
+                address = ${volunteerData.address || null},
+                emergency_contact = ${volunteerData.emergencyContactName || null},
+                emergency_phone = ${volunteerData.emergencyContactPhone || null},
+                preferred_park_id = ${volunteerData.preferredParkId ? Number(volunteerData.preferredParkId) : null},
+                previous_experience = ${volunteerData.volunteerExperience || null},
+                skills = ${volunteerData.skills || null},
+                available_hours = ${volunteerData.availability || null},
+                legal_consent = ${volunteerData.legalConsent === true},
+                updated_at = ${new Date()}
+            WHERE id = ${volunteerId}`
+      );
+      
+      console.log(`Voluntario ID ${volunteerId} actualizado correctamente`);
+      
+      res.json({ 
+        message: 'Voluntario actualizado exitosamente',
+        volunteerId: volunteerId,
+        userId: userId
+      });
+      
+    } catch (error) {
+      console.error('Error actualizando voluntario:', error);
+      res.status(500).json({ message: 'Error al actualizar voluntario' });
     }
   });
 
