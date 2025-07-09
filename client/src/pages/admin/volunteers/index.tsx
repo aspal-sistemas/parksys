@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +30,7 @@ interface Volunteer {
 export default function VolunteersPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
@@ -63,6 +65,10 @@ export default function VolunteersPage() {
     setIsDetailOpen(true);
   };
 
+  const handleNewVolunteer = () => {
+    navigate('/admin/volunteers/register');
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'activo': return 'bg-green-100 text-green-800';
@@ -82,7 +88,7 @@ export default function VolunteersPage() {
               Administra los voluntarios registrados en el sistema
             </p>
           </div>
-          <Button>
+          <Button onClick={handleNewVolunteer}>
             <Plus className="h-4 w-4 mr-2" />
             Nuevo Voluntario
           </Button>

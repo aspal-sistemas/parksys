@@ -367,9 +367,6 @@ export default function VacationManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {console.log('📊 requestsData recibido:', requestsData)}
-                    {console.log('📊 requestsData?.data:', requestsData?.data)}
-                    {console.log('📊 Array.isArray(requestsData?.data):', Array.isArray(requestsData?.data))}
                     {requestsData?.data?.map((request: VacationRequest) => (
                       <TableRow key={request.id}>
                         <TableCell className="font-medium">{request.employeeName}</TableCell>
