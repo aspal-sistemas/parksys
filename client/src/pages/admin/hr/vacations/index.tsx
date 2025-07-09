@@ -85,10 +85,11 @@ export default function VacationManagement() {
     queryKey: ['employees-active'],
     queryFn: async () => {
       console.log('🌐 [API REQUEST] GET /api/hr/employees');
-      const response = await apiRequest('/api/hr/employees');
-      console.log('📋 Empleados recibidos:', response);
-      console.log('📋 Total empleados:', response?.length || 0);
-      const filtered = response.filter((emp: Employee) => emp.fullName);
+      const response = await fetch('/api/hr/employees');
+      const data = await response.json();
+      console.log('📋 Empleados recibidos:', data);
+      console.log('📋 Total empleados:', data?.length || 0);
+      const filtered = data.filter((emp: Employee) => emp.fullName);
       console.log('📋 Empleados filtrados:', filtered);
       console.log('📋 Total filtrados:', filtered?.length || 0);
       return filtered;
