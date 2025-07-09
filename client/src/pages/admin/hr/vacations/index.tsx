@@ -75,8 +75,22 @@ export default function VacationManagement() {
       params.append("page", filters.page.toString());
       params.append("limit", "10");
       
-      const response = await apiRequest(`/api/hr/vacation-requests?${params}`);
-      return response;
+      console.log('🌐 [API REQUEST] GET /api/hr/vacation-requests?' + params);
+      const response = await fetch(`/api/hr/vacation-requests?${params}`, {
+        headers: {
+          'Authorization': 'Bearer direct-token-1750522117022',
+          'X-User-Id': '1',
+          'X-User-Role': 'super_admin'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener solicitudes');
+      }
+      
+      const data = await response.json();
+      console.log('📋 Respuesta del servidor:', data);
+      return data;
     }
   });
 
@@ -353,6 +367,9 @@ export default function VacationManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
+                    {console.log('📊 requestsData recibido:', requestsData)}
+                    {console.log('📊 requestsData?.data:', requestsData?.data)}
+                    {console.log('📊 Array.isArray(requestsData?.data):', Array.isArray(requestsData?.data))}
                     {requestsData?.data?.map((request: VacationRequest) => (
                       <TableRow key={request.id}>
                         <TableCell className="font-medium">{request.employeeName}</TableCell>
