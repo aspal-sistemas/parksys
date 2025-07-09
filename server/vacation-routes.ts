@@ -82,6 +82,10 @@ export function registerVacationRoutes(app: any, apiRouter: any, isAuthenticated
       sqlParams.push(parseInt(limit as string), offset);
       
       const requests = await pool.query(sqlQuery, sqlParams);
+      console.log("📋 Consulta SQL:", sqlQuery);
+      console.log("📋 Parámetros SQL:", sqlParams);
+      console.log("📋 Solicitudes encontradas:", requests.rows.length);
+      console.log("📋 Primera solicitud:", requests.rows[0]);
       
       // Contar total de registros
       let countQuery = 'SELECT COUNT(*) FROM time_off_requests';
@@ -98,6 +102,7 @@ export function registerVacationRoutes(app: any, apiRouter: any, isAuthenticated
       }
       
       const totalResult = await pool.query(countQuery, countParams);
+      console.log("📋 Total de registros:", totalResult.rows[0].count);
       
       const total = totalResult.rows[0].count;
       
