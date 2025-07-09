@@ -155,11 +155,10 @@ export function registerVacationRoutes(app: any, apiRouter: any, isAuthenticated
           requestType,
           startDate,
           endDate,
-          totalDays: requestedDays,
+          requestedDays: requestedDays,
           reason,
-          status: "pendiente",
-          requestedBy: employeeId,
-          notes: description
+          description,
+          status: "pending"
         })
         .returning();
 
