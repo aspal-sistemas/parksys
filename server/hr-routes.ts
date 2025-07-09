@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { employees, payrollConcepts, payrollPeriods, payrollDetails, actualExpenses, users } from "@shared/schema";
 import { eq, and, sql, desc } from "drizzle-orm";
 
@@ -26,19 +26,20 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
   // Obtener todos los empleados - Para el sistema de vacaciones
   apiRouter.get("/employees", async (req: Request, res: Response) => {
     try {
-      // Obtener usuarios con rol 'employee' para el sistema de vacaciones
-      const employeeUsers = await db
-        .select({
-          id: users.id,
-          fullName: users.fullName,
-          email: users.email,
-          role: users.role
-        })
-        .from(users)
-        .where(eq(users.role, 'employee'));
+      // Consultar directamente la tabla employees usando SQL
+      const result = await pool.query(`
+        SELECT 
+          id,
+          full_name as "fullName",
+          email,
+          position,
+          department
+        FROM employees
+        ORDER BY full_name ASC
+      `);
       
-      console.log(`Encontrados ${employeeUsers.length} empleados para el sistema de vacaciones`);
-      res.json(employeeUsers);
+      console.log(`Encontrados ${result.rows.length} empleados desde tabla employees`);
+      res.json(result.rows);
     } catch (error) {
       console.error("Error al obtener empleados:", error);
       res.status(500).json({ error: "Error interno del servidor" });
