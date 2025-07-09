@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import { eq, sql, and, desc, asc, gte, lte, or, like, count } from "drizzle-orm";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { 
-  vacationRequests, 
+  timeOffRequests, 
   vacationBalances, 
   employees, 
-  users,
-  vacationSettings 
+  users
 } from "@shared/schema";
 
 /**
@@ -29,61 +28,81 @@ export function registerVacationRoutes(app: any, apiRouter: any, isAuthenticated
       const { page = 1, limit = 10, status, employeeId, requestType, startDate, endDate } = req.query;
       const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
       
-      let whereConditions: any[] = [];
+      // Crear condiciones WHERE para SQL directo
+      const whereConditions = [];
+      let sqlParams = [];
       
-      // Filtros opcionales
-      if (status && status !== 'all') {
-        whereConditions.push(eq(vacationRequests.status, status as string));
-      }
       if (employeeId && employeeId !== 'all') {
-        whereConditions.push(eq(vacationRequests.employeeId, parseInt(employeeId as string)));
+        whereConditions.push(`tor.employee_id = $${sqlParams.length + 1}`);
+        sqlParams.push(parseInt(employeeId as string));
+      }
+      if (status && status !== 'all') {
+        whereConditions.push(`tor.status = $${sqlParams.length + 1}`);
+        sqlParams.push(status as string);
       }
       if (requestType && requestType !== 'all') {
-        whereConditions.push(eq(vacationRequests.requestType, requestType as string));
+        whereConditions.push(`tor.request_type = $${sqlParams.length + 1}`);
+        sqlParams.push(requestType as string);
       }
       if (startDate) {
-        whereConditions.push(gte(vacationRequests.startDate, startDate as string));
+        whereConditions.push(`tor.start_date >= $${sqlParams.length + 1}`);
+        sqlParams.push(startDate as string);
       }
       if (endDate) {
-        whereConditions.push(lte(vacationRequests.endDate, endDate as string));
+        whereConditions.push(`tor.end_date <= $${sqlParams.length + 1}`);
+        sqlParams.push(endDate as string);
       }
       
-      const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
+      // Obtener solicitudes con información del empleado usando SQL directo
+      let sqlQuery = `
+        SELECT 
+          tor.id,
+          tor.employee_id as "employeeId",
+          e.full_name as "employeeName",
+          tor.request_type as "requestType",
+          tor.start_date as "startDate",
+          tor.end_date as "endDate",
+          tor.requested_days as "requestedDays",
+          tor.reason,
+          tor.status,
+          tor.submitted_at as "submittedAt",
+          tor.approved_by as "approvedBy",
+          tor.approved_at as "approvedAt",
+          tor.rejection_reason as "rejectionReason"
+        FROM time_off_requests tor
+        INNER JOIN employees e ON tor.employee_id = e.id
+      `;
       
-      // Obtener solicitudes con información del empleado
-      const requests = await db
-        .select({
-          id: vacationRequests.id,
-          employeeId: vacationRequests.employeeId,
-          employeeName: users.fullName,
-          requestType: vacationRequests.requestType,
-          startDate: vacationRequests.startDate,
-          endDate: vacationRequests.endDate,
-          requestedDays: vacationRequests.totalDays,
-          reason: vacationRequests.reason,
-          status: vacationRequests.status,
-          submittedAt: vacationRequests.createdAt,
-          approvedBy: vacationRequests.approvedBy,
-          approvedAt: vacationRequests.createdAt,
-          rejectionReason: vacationRequests.notes,
-        })
-        .from(vacationRequests)
-        .innerJoin(users, eq(vacationRequests.employeeId, users.id))
-        .where(whereClause)
-        .orderBy(desc(vacationRequests.createdAt))
-        .limit(parseInt(limit as string))
-        .offset(offset);
+      // Agregar WHERE clause si hay condiciones
+      if (whereConditions.length > 0) {
+        sqlQuery += ' WHERE ' + whereConditions.join(' AND ');
+      }
+      
+      sqlQuery += ' ORDER BY tor.created_at DESC LIMIT $' + (sqlParams.length + 1) + ' OFFSET $' + (sqlParams.length + 2);
+      sqlParams.push(parseInt(limit as string), offset);
+      
+      const requests = await pool.query(sqlQuery, sqlParams);
       
       // Contar total de registros
-      const totalResult = await db
-        .select({ count: count() })
-        .from(vacationRequests)
-        .where(whereClause);
+      let countQuery = 'SELECT COUNT(*) FROM time_off_requests';
+      let countParams = [];
       
-      const total = totalResult[0].count;
+      // Contar con las mismas condiciones WHERE
+      if (whereConditions.length > 0) {
+        // Crear condiciones sin aliases para la consulta de count
+        const countConditions = whereConditions.map(condition => 
+          condition.replace('tor.', '')
+        );
+        countQuery += ' WHERE ' + countConditions.join(' AND ');
+        countParams = [...sqlParams.slice(0, -2)]; // Excluir LIMIT y OFFSET
+      }
+      
+      const totalResult = await pool.query(countQuery, countParams);
+      
+      const total = totalResult.rows[0].count;
       
       res.json({
-        data: requests,
+        data: requests.rows,
         pagination: {
           page: parseInt(page as string),
           limit: parseInt(limit as string),
@@ -130,7 +149,7 @@ export function registerVacationRoutes(app: any, apiRouter: any, isAuthenticated
 
       // Crear solicitud
       const [newRequest] = await db
-        .insert(vacationRequests)
+        .insert(timeOffRequests)
         .values({
           employeeId,
           requestType,
@@ -395,13 +414,13 @@ export function registerVacationRoutes(app: any, apiRouter: any, isAuthenticated
   // Obtener configuración del sistema
   apiRouter.get("/vacation-settings", async (req: Request, res: Response) => {
     try {
-      const settings = await db
-        .select()
-        .from(vacationSettings)
-        .where(eq(vacationSettings.isActive, true))
-        .orderBy(asc(vacationSettings.settingKey));
+      const result = await db.execute(`
+        SELECT * FROM vacation_settings 
+        WHERE is_active = true 
+        ORDER BY setting_key ASC;
+      `);
 
-      res.json(settings);
+      res.json(result.rows);
     } catch (error) {
       console.error("Error al obtener configuración:", error);
       res.status(500).json({ error: "Error interno del servidor" });

@@ -2,7 +2,6 @@ import { db } from "./db";
 import { 
   timeOffRequests, 
   vacationBalances, 
-  vacationSettings,
   employees 
 } from "@shared/schema";
 import { eq } from "drizzle-orm";
@@ -11,6 +10,20 @@ export async function createVacationTables() {
   console.log("🏖️ Inicializando tablas del módulo de vacaciones...");
   
   try {
+    // Crear tabla de configuración si no existe
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS vacation_settings (
+        id SERIAL PRIMARY KEY,
+        setting_key VARCHAR(255) NOT NULL UNIQUE,
+        setting_value TEXT NOT NULL,
+        description TEXT,
+        data_type VARCHAR(50) DEFAULT 'string',
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
     // Crear configuración por defecto del sistema
     const defaultSettings = [
       {
@@ -53,7 +66,11 @@ export async function createVacationTables() {
     // Insertar configuración por defecto (solo si no existe)
     for (const setting of defaultSettings) {
       try {
-        await db.insert(vacationSettings).values(setting).onConflictDoNothing();
+        await db.execute(`
+          INSERT INTO vacation_settings (setting_key, setting_value, description, data_type, is_active)
+          VALUES ($1, $2, $3, $4, $5)
+          ON CONFLICT (setting_key) DO NOTHING;
+        `, [setting.settingKey, setting.settingValue, setting.description, setting.dataType, setting.isActive]);
       } catch (error) {
         console.log(`Configuración ${setting.settingKey} ya existe`);
       }

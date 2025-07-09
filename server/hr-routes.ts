@@ -8,6 +8,11 @@ import { eq, and, sql, desc } from "drizzle-orm";
  */
 export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
   
+  // Test route to verify HR router is working
+  apiRouter.get("/test", (req: Request, res: Response) => {
+    res.json({ message: "HR Router is working!" });
+  });
+  
   // Middleware JSON específico para las rutas HR
   apiRouter.use((req: Request, res: Response, next: any) => {
     console.log(`HR Route: ${req.method} ${req.path}`);

@@ -908,30 +908,8 @@ async function initializeDatabaseAsync() {
   
 
 
-  // Registrar rutas de Recursos Humanos integradas con Finanzas DESPUÉS de endpoints directos
-  try {
-    const { registerHRRoutes } = await import("./hr-routes");
-    const router = express.Router();
-    
-    // Aplicar middleware JSON específicamente al router HR
-    router.use(express.json({ limit: '50mb' }));
-    router.use(express.urlencoded({ extended: true, limit: '50mb' }));
-    
-    registerHRRoutes(app, router, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Registrar rutas del módulo de vacaciones
-    const { registerVacationRoutes } = await import("./vacation-routes");
-    registerVacationRoutes(app, router, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Inicializar tablas de vacaciones
-    const { createVacationTables } = await import("./create-vacation-tables");
-    await createVacationTables();
-    
-    app.use("/api/hr", router); // Cambiar prefijo para evitar conflictos
-    console.log("Rutas HR-Finanzas registradas correctamente");
-  } catch (error) {
-    console.error("Error al registrar rutas HR:", error);
-  }
+  // HR routes registration moved to after main routes registration
+  // (see after registerRoutes call)
 
   // Registrar rutas de vacaciones y control de horas
   try {
@@ -971,7 +949,7 @@ async function initializeDatabaseAsync() {
     receiptsRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
     
     registerPayrollReceiptsRoutes(app, receiptsRouter, (req: Request, res: Response, next: NextFunction) => next());
-    app.use("/api/hr", receiptsRouter); // Usar el mismo prefijo que HR
+    app.use("/api/payroll", receiptsRouter); // Usar prefijo separado para evitar conflictos con HR
     console.log("Rutas de Recibos de Nómina registradas correctamente");
   } catch (error) {
     console.error("Error al registrar rutas de Recibos de Nómina:", error);
@@ -1032,7 +1010,14 @@ async function initializeDatabaseAsync() {
 
   const routeServer = await registerRoutes(app);
 
-
+  // Inicializar tablas de vacaciones
+  try {
+    const { createVacationTables } = await import("./create-vacation-tables");
+    await createVacationTables();
+    console.log("✅ Tablas de vacaciones inicializadas");
+  } catch (error) {
+    console.error("Error al inicializar tablas de vacaciones:", error);
+  }
 
   // ENDPOINT DIRECTO ELIMINADO - Usando exclusivamente maintenance_routes_fixed.ts
 
@@ -1366,6 +1351,27 @@ async function initializeDatabaseAsync() {
   console.log(`🚀 Starting server on ${HOST}:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
   
   let appServer: any;
+
+  // Registrar rutas HR ANTES de Vite para evitar conflictos
+  try {
+    const { registerHRRoutes } = await import("./hr-routes");
+    const hrRouter = express.Router();
+    
+    // Aplicar middleware JSON específicamente al router HR
+    hrRouter.use(express.json({ limit: '50mb' }));
+    hrRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    
+    registerHRRoutes(app, hrRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Registrar rutas del módulo de vacaciones
+    const { registerVacationRoutes } = await import("./vacation-routes");
+    registerVacationRoutes(app, hrRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    app.use("/api/hr", hrRouter); // Registrar rutas HR ANTES de Vite
+    console.log("✅ Rutas HR y Vacaciones registradas ANTES de Vite");
+  } catch (error) {
+    console.error("Error al registrar rutas HR:", error);
+  }
 
   // Setup Vite in development mode with error handling
   if (app.get("env") === "development") {
