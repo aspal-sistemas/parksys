@@ -48,6 +48,9 @@ const volunteerRegistrationSchema = z.object({
   legalConsent: z.boolean().refine(val => val === true, 'Debe aceptar los términos legales'),
   ageConsent: z.boolean().refine(val => val === true, 'Debe confirmar ser mayor de edad'),
   conductConsent: z.boolean().refine(val => val === true, 'Debe aceptar el código de conducta'),
+  
+  // Municipalidad
+  municipalityId: z.number().optional(),
 });
 
 type VolunteerRegistrationForm = z.infer<typeof volunteerRegistrationSchema>;
@@ -82,6 +85,7 @@ export default function VolunteerRegisterPage() {
       legalConsent: false,
       ageConsent: false,
       conductConsent: false,
+      municipalityId: 2, // Guadalajara por defecto
     },
   });
 
