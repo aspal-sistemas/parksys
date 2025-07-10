@@ -261,9 +261,9 @@ function Router() {
         <Route path="/admin/volunteers/participations/:id" component={AdminParticipationEdit} />
         <Route path="/admin/volunteers/evaluations" component={AdminVolunteerEvaluations} />
         <Route path="/admin/volunteers/evaluations/:id" component={AdminEvaluationEdit} />
-        <Route path="/admin/volunteers/recognitions">
+        <Route path="/admin/volunteers/recognition">
           <Suspense fallback={<div className="p-8 text-center">Cargando reconocimientos...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/recognitions')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/recognition')))}
           </Suspense>
         </Route>
         <Route path="/admin/volunteers/dashboard">
