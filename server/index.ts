@@ -110,6 +110,30 @@ app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Configurar headers de seguridad CSP para permitir inline scripts
+app.use((req: Request, res: Response, next: NextFunction) => {
+  // Configurar CSP para permitir inline scripts e inline styles necesarios para la aplicación
+  res.setHeader(
+    'Content-Security-Policy', 
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; " +
+    "style-src 'self' 'unsafe-inline' https: data:; " +
+    "img-src 'self' data: https: blob:; " +
+    "font-src 'self' https: data:; " +
+    "connect-src 'self' https: ws: wss:; " +
+    "frame-src 'self' https:; " +
+    "object-src 'none'; " +
+    "base-uri 'self';"
+  );
+  
+  // Headers adicionales de seguridad
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  
+  next();
+});
+
 // Global request logging for debugging - AFTER JSON parsing
 app.use((req: Request, res: Response, next: NextFunction) => {
   if (req.method === 'POST' && req.url.includes('/api/activities')) {
