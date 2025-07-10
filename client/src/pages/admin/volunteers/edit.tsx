@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, UserEdit } from "lucide-react";
+import { ArrowLeft, Save, Edit } from "lucide-react";
 
 // Esquema de validación para editar voluntario
 const editVolunteerSchema = z.object({
@@ -198,7 +198,7 @@ export default function EditVolunteerPage() {
           </Button>
           
           <div className="flex items-center gap-3 mb-2">
-            <UserEdit className="h-8 w-8 text-blue-600" />
+            <Edit className="h-8 w-8 text-blue-600" />
             <h1 className="text-3xl font-bold tracking-tight">Editar Voluntario</h1>
           </div>
           <p className="text-muted-foreground">
