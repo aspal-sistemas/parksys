@@ -583,17 +583,16 @@ export const volunteerParticipations = pgTable("volunteer_participations", {
 
 export const volunteerEvaluations = pgTable("volunteer_evaluations", {
   id: serial("id").primaryKey(),
+  participationId: integer("participation_id"),
   volunteerId: integer("volunteer_id").notNull(),
   evaluatorId: integer("evaluator_id").notNull(),
-  evaluationDate: date("evaluation_date").notNull(),
-  attendanceRating: integer("attendance_rating").notNull(),
-  attitudeRating: integer("attitude_rating").notNull(),
-  skillsRating: integer("skills_rating").notNull(),
-  teamworkRating: integer("teamwork_rating").notNull(),
-  overallRating: integer("overall_rating").notNull(),
+  punctuality: integer("punctuality").notNull(),
+  attitude: integer("attitude").notNull(),
+  responsibility: integer("responsibility").notNull(),
+  overallPerformance: integer("overall_performance").notNull(),
   comments: text("comments"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow()
+  followUpRequired: boolean("follow_up_required").default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
 export const volunteerRecognitions = pgTable("volunteer_recognitions", {
