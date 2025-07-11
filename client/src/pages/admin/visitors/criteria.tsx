@@ -324,14 +324,8 @@ export default function EvaluationCriteriaPage() {
     queryFn: () => safeApiRequest('/api/evaluation-criteria/admin'),
   });
 
-  // Debug: mostrar datos recibidos
-  console.log('📋 Datos de criterios recibidos:', criteriaData);
-  console.log('📋 Estado de carga:', isLoading);
-  console.log('📋 Error:', error);
-
   // Asegurar que criteria sea un array
   const criteria = Array.isArray(criteriaData) ? criteriaData : [];
-  console.log('📋 Criterios procesados:', criteria.length, 'elementos');
 
   // Crear criterio
   const createCriteria = useMutation({

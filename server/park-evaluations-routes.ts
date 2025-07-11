@@ -111,7 +111,11 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
   apiRouter.get('/park-evaluations', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { status, parkId, page = 1, limit = 10 } = req.query;
-      const offset = (Number(page) - 1) * Number(limit);
+      
+      // Validar y convertir parámetros numéricos
+      const pageNum = Number(page) || 1;
+      const limitNum = Number(limit) || 10;
+      const offset = (pageNum - 1) * limitNum;
 
       let baseQuery = `
         SELECT 
@@ -127,20 +131,20 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
       const params: any[] = [];
       let paramIndex = 1;
 
-      if (status) {
+      if (status && status !== 'all') {
         baseQuery += ` AND pe.status = $${paramIndex}`;
         params.push(status);
         paramIndex++;
       }
 
-      if (parkId) {
+      if (parkId && parkId !== 'all') {
         baseQuery += ` AND pe.park_id = $${paramIndex}`;
         params.push(Number(parkId));
         paramIndex++;
       }
 
       baseQuery += ` ORDER BY pe.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-      params.push(Number(limit), offset);
+      params.push(limitNum, offset);
 
       const result = await pool.query(baseQuery, params);
       
@@ -149,13 +153,13 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
       const countParams: any[] = [];
       let countParamIndex = 1;
 
-      if (status) {
+      if (status && status !== 'all') {
         countQuery += ` AND pe.status = $${countParamIndex}`;
         countParams.push(status);
         countParamIndex++;
       }
 
-      if (parkId) {
+      if (parkId && parkId !== 'all') {
         countQuery += ` AND pe.park_id = $${countParamIndex}`;
         countParams.push(Number(parkId));
       }
@@ -166,10 +170,10 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
       res.json({
         evaluations: result.rows,
         pagination: {
-          page: Number(page),
-          limit: Number(limit),
+          page: pageNum,
+          limit: limitNum,
           total: Number(total),
-          pages: Math.ceil(Number(total) / Number(limit))
+          pages: Math.ceil(Number(total) / limitNum)
         }
       });
     } catch (error) {
