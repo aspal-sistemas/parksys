@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import AdminLayout from '@/components/AdminLayout';
 import { 
   Plus, 
   Edit, 
@@ -443,7 +444,8 @@ export default function EvaluationCriteriaPage() {
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <AdminLayout>
+      <div className="p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Criterios de Evaluación</h1>
@@ -562,6 +564,7 @@ export default function EvaluationCriteriaPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
