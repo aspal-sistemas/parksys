@@ -2843,10 +2843,12 @@ export const visitorCounts = pgTable("visitor_counts", {
   date: date("date").notNull(),
   adults: integer("adults").default(0).notNull(),
   children: integer("children").default(0).notNull(),
+  seniors: integer("seniors").default(0).notNull(),
+  pets: integer("pets").default(0).notNull(),
   groups: integer("groups").default(0).notNull(),
   countingMethod: varchar("counting_method", { length: 50 }).notNull(), // estimation, manual_counter, event_based, entrance_control
-  dayType: varchar("day_type", { length: 20 }).notNull(), // weekday, weekend, holiday
-  weather: varchar("weather", { length: 20 }), // sunny, cloudy, rainy, other
+  dayType: varchar("day_type", { length: 20 }), // weekday, weekend, holiday - opcional para rangos
+  weather: varchar("weather", { length: 20 }), // sunny, cloudy, rainy, other - opcional para rangos
   notes: text("notes"),
   registeredBy: integer("registered_by").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -2864,6 +2866,9 @@ export const insertVisitorCountSchema = createInsertSchema(visitorCounts).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  dayType: z.string().optional(),
+  weather: z.string().optional(),
 });
 
 export type InsertVisitorCount = z.infer<typeof insertVisitorCountSchema>;

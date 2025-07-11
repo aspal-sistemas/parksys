@@ -12,9 +12,11 @@ const createVisitorCountSchema = z.object({
   date: z.string(),
   adults: z.number().min(0),
   children: z.number().min(0),
+  seniors: z.number().min(0).default(0),
+  pets: z.number().min(0).default(0),
   groups: z.number().min(0).default(0),
   countingMethod: z.enum(['estimation', 'manual_counter', 'event_based', 'entrance_control']),
-  dayType: z.enum(['weekday', 'weekend', 'holiday']),
+  dayType: z.enum(['weekday', 'weekend', 'holiday']).optional(),
   weather: z.enum(['sunny', 'cloudy', 'rainy', 'other']).optional(),
   notes: z.string().optional(),
   registeredBy: z.number()
@@ -33,8 +35,10 @@ router.get('/visitor-counts', async (req, res) => {
         date: visitorCounts.date,
         adults: visitorCounts.adults,
         children: visitorCounts.children,
+        seniors: visitorCounts.seniors,
+        pets: visitorCounts.pets,
         groups: visitorCounts.groups,
-        totalVisitors: sql<number>`${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.groups}`,
+        totalVisitors: sql<number>`${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors} + ${visitorCounts.pets} + ${visitorCounts.groups}`,
         countingMethod: visitorCounts.countingMethod,
         dayType: visitorCounts.dayType,
         weather: visitorCounts.weather,
@@ -103,10 +107,12 @@ router.post('/visitor-counts', async (req, res) => {
         date: validatedData.date,
         adults: validatedData.adults,
         children: validatedData.children,
+        seniors: validatedData.seniors,
+        pets: validatedData.pets,
         groups: validatedData.groups,
         countingMethod: validatedData.countingMethod,
-        dayType: validatedData.dayType,
-        weather: validatedData.weather,
+        dayType: validatedData.dayType || null,
+        weather: validatedData.weather || null,
         notes: validatedData.notes,
         registeredBy: validatedData.registeredBy
       })
@@ -138,14 +144,16 @@ router.get('/visitor-stats/:parkId', async (req, res) => {
     
     const monthlyStats = await db
       .select({
-        totalVisitors: sql<number>`SUM(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.groups})`,
+        totalVisitors: sql<number>`SUM(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors} + ${visitorCounts.pets} + ${visitorCounts.groups})`,
         totalAdults: sql<number>`SUM(${visitorCounts.adults})`,
         totalChildren: sql<number>`SUM(${visitorCounts.children})`,
+        totalSeniors: sql<number>`SUM(${visitorCounts.seniors})`,
+        totalPets: sql<number>`SUM(${visitorCounts.pets})`,
         totalGroups: sql<number>`SUM(${visitorCounts.groups})`,
-        avgDailyVisitors: sql<number>`AVG(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.groups})`,
+        avgDailyVisitors: sql<number>`AVG(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors} + ${visitorCounts.pets} + ${visitorCounts.groups})`,
         totalDays: sql<number>`COUNT(*)`,
         peakDay: sql<string>`MAX(${visitorCounts.date})`,
-        peakVisitors: sql<number>`MAX(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.groups})`
+        peakVisitors: sql<number>`MAX(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors} + ${visitorCounts.pets} + ${visitorCounts.groups})`
       })
       .from(visitorCounts)
       .where(

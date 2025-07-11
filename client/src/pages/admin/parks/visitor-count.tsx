@@ -22,10 +22,12 @@ interface VisitorCount {
   date: string;
   adults: number;
   children: number;
+  seniors: number;
+  pets: number;
   groups: number;
   totalVisitors: number;
   countingMethod: string;
-  dayType: string;
+  dayType?: string;
   weather?: string;
   notes?: string;
   createdAt: string;
@@ -44,9 +46,11 @@ interface VisitorCountForm {
   endDate?: string;
   adults: number;
   children: number;
+  seniors: number;
+  pets: number;
   groups: number;
   countingMethod: string;
-  dayType: string;
+  dayType?: string;
   weather?: string;
   notes?: string;
 }
@@ -65,6 +69,8 @@ export default function VisitorCountPage() {
     endDate: new Date().toISOString().split('T')[0],
     adults: 0,
     children: 0,
+    seniors: 0,
+    pets: 0,
     groups: 0,
     countingMethod: "estimation",
     dayType: "weekday",
@@ -108,10 +114,12 @@ export default function VisitorCountPage() {
             date: dateStr,
             adults: data.adults,
             children: data.children,
+            seniors: data.seniors,
+            pets: data.pets,
             groups: data.groups,
             countingMethod: data.countingMethod,
-            dayType: data.dayType,
-            weather: data.weather,
+            dayType: countingMode === 'daily' ? data.dayType : undefined,
+            weather: countingMode === 'daily' ? data.weather : undefined,
             notes: data.notes,
             registeredBy: 2 // TODO: Usar user ID del contexto
           });
@@ -137,6 +145,8 @@ export default function VisitorCountPage() {
             date: data.date,
             adults: data.adults,
             children: data.children,
+            seniors: data.seniors,
+            pets: data.pets,
             groups: data.groups,
             countingMethod: data.countingMethod,
             dayType: data.dayType,
@@ -164,6 +174,8 @@ export default function VisitorCountPage() {
         endDate: new Date().toISOString().split('T')[0],
         adults: 0,
         children: 0,
+        seniors: 0,
+        pets: 0,
         groups: 0,
         countingMethod: "estimation",
         dayType: "weekday",
@@ -243,7 +255,7 @@ export default function VisitorCountPage() {
   };
 
   const getTotalVisitors = () => {
-    return formData.adults + formData.children + formData.groups;
+    return formData.adults + formData.children + formData.seniors + formData.pets + formData.groups;
   };
 
   return (
@@ -340,7 +352,7 @@ export default function VisitorCountPage() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4 mb-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
                         <div className="text-center p-3 bg-blue-50 rounded-lg">
                           <div className="text-lg font-semibold text-blue-700">{count.adults}</div>
                           <div className="text-sm text-blue-600">Adultos</div>
@@ -348,6 +360,14 @@ export default function VisitorCountPage() {
                         <div className="text-center p-3 bg-green-50 rounded-lg">
                           <div className="text-lg font-semibold text-green-700">{count.children}</div>
                           <div className="text-sm text-green-600">Niños</div>
+                        </div>
+                        <div className="text-center p-3 bg-orange-50 rounded-lg">
+                          <div className="text-lg font-semibold text-orange-700">{count.seniors}</div>
+                          <div className="text-sm text-orange-600">Adultos mayores</div>
+                        </div>
+                        <div className="text-center p-3 bg-pink-50 rounded-lg">
+                          <div className="text-lg font-semibold text-pink-700">{count.pets}</div>
+                          <div className="text-sm text-pink-600">Mascotas</div>
                         </div>
                         <div className="text-center p-3 bg-purple-50 rounded-lg">
                           <div className="text-lg font-semibold text-purple-700">{count.groups}</div>
@@ -521,6 +541,28 @@ export default function VisitorCountPage() {
                     </div>
 
                     <div className="space-y-2">
+                      <Label htmlFor="seniors">Adultos mayores</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={formData.seniors}
+                        onChange={(e) => setFormData({...formData, seniors: parseInt(e.target.value) || 0})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="pets">Mascotas (perros)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={formData.pets}
+                        onChange={(e) => setFormData({...formData, pets: parseInt(e.target.value) || 0})}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
                       <Label htmlFor="groups">Grupos</Label>
                       <Input
                         type="number"
@@ -557,41 +599,45 @@ export default function VisitorCountPage() {
                       </Select>
                     </div>
 
+                    {countingMode === 'daily' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="dayType">Tipo de día *</Label>
+                        <Select 
+                          value={formData.dayType} 
+                          onValueChange={(value) => setFormData({...formData, dayType: value})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="weekday">Día laborable</SelectItem>
+                            <SelectItem value="weekend">Fin de semana</SelectItem>
+                            <SelectItem value="holiday">Día festivo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+
+                  {countingMode === 'daily' && (
                     <div className="space-y-2">
-                      <Label htmlFor="dayType">Tipo de día *</Label>
+                      <Label htmlFor="weather">Clima</Label>
                       <Select 
-                        value={formData.dayType} 
-                        onValueChange={(value) => setFormData({...formData, dayType: value})}
+                        value={formData.weather} 
+                        onValueChange={(value) => setFormData({...formData, weather: value})}
                       >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="weekday">Día laborable</SelectItem>
-                          <SelectItem value="weekend">Fin de semana</SelectItem>
-                          <SelectItem value="holiday">Día festivo</SelectItem>
+                          <SelectItem value="sunny">Soleado</SelectItem>
+                          <SelectItem value="cloudy">Nublado</SelectItem>
+                          <SelectItem value="rainy">Lluvioso</SelectItem>
+                          <SelectItem value="other">Otro</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="weather">Clima</Label>
-                    <Select 
-                      value={formData.weather} 
-                      onValueChange={(value) => setFormData({...formData, weather: value})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sunny">Soleado</SelectItem>
-                        <SelectItem value="cloudy">Nublado</SelectItem>
-                        <SelectItem value="rainy">Lluvioso</SelectItem>
-                        <SelectItem value="other">Otro</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="notes">Notas adicionales</Label>
