@@ -73,6 +73,30 @@ app.get('/health', (req: Request, res: Response) => {
   }
 });
 
+// Root API endpoint for deployment verification
+app.get('/api', (req: Request, res: Response) => {
+  try {
+    res.status(200).json({
+      message: 'ParkSys - Bosques Urbanos API',
+      status: 'running',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      endpoints: {
+        health: '/health',
+        status: '/api/status',
+        admin: '/admin',
+        parks: '/parks'
+      }
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'error',
+      message: 'Service temporarily unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Servir archivos estáticos del directorio public ANTES de otras rutas
 app.use(express.static(path.join(process.cwd(), 'public')));
 
