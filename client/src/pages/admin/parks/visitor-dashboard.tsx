@@ -10,6 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Calendar, Users, TrendingUp, MapPin, Clock, Activity, Eye, Download, Filter } from 'lucide-react';
 import { format, subDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { AdminLayout } from '@/components/AdminLayout';
 
 interface VisitorCount {
   id: number;
@@ -233,212 +234,215 @@ export default function VisitorDashboard() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Panel de Visitantes</h1>
+      <AdminLayout>
+        <div className="p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">Panel de Visitantes</h1>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Panel de Visitantes</h1>
-          <p className="text-gray-600">Análisis y estadísticas del conteo de visitantes</p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Exportar
-          </Button>
-          <Button variant="outline" size="sm">
-            <Eye className="w-4 h-4 mr-2" />
-            Ver Detalles
-          </Button>
-        </div>
-      </div>
-
-      {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Filter className="w-5 h-5 mr-2" />
-            Filtros
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Parque</label>
-              <Select value={selectedPark} onValueChange={setSelectedPark}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar parque" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los parques</SelectItem>
-                  {parks?.map(park => (
-                    <SelectItem key={park.id} value={park.id.toString()}>
-                      {park.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Período</label>
-              <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar período" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7">Últimos 7 días</SelectItem>
-                  <SelectItem value="30">Últimos 30 días</SelectItem>
-                  <SelectItem value="90">Últimos 90 días</SelectItem>
-                  <SelectItem value="all">Todo el tiempo</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
-              <Input
-                placeholder="Buscar en notas..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+    <AdminLayout>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Panel de Visitantes</h1>
+            <p className="text-gray-600">Análisis y estadísticas del conteo de visitantes</p>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex items-center space-x-4">
+            <Button variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Exportar
+            </Button>
+            <Button variant="outline" size="sm">
+              <Eye className="w-4 h-4 mr-2" />
+              Ver Detalles
+            </Button>
+          </div>
+        </div>
 
-      {/* Métricas principales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Filtros */}
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Filter className="w-5 h-5 mr-2" />
+              Filtros
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Visitantes</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics?.totalVisitors?.toLocaleString() || 0}</p>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Parque</label>
+                <Select value={selectedPark} onValueChange={setSelectedPark}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar parque" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los parques</SelectItem>
+                    {parks?.map(park => (
+                      <SelectItem key={park.id} value={park.id.toString()}>
+                        {park.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Promedio Diario</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics?.avgDailyVisitors || 0}</p>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Período</label>
+                <Select value={dateRange} onValueChange={setDateRange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar período" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">Últimos 7 días</SelectItem>
+                    <SelectItem value="30">Últimos 30 días</SelectItem>
+                    <SelectItem value="90">Últimos 90 días</SelectItem>
+                    <SelectItem value="all">Todo el tiempo</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Registros</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics?.totalRecords || 0}</p>
-              </div>
-              <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Activity className="w-6 h-6 text-purple-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Parques Activos</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics?.uniqueParks || 0}</p>
-              </div>
-              <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <MapPin className="w-6 h-6 text-orange-600" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
+                <Input
+                  placeholder="Buscar en notas..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Desglose demográfico */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-600">Adultos</p>
-              <p className="text-xl font-bold text-gray-900">{metrics?.totalAdults?.toLocaleString() || 0}</p>
-              <p className="text-xs text-gray-500">
-                {metrics?.totalVisitors ? Math.round((metrics.totalAdults / metrics.totalVisitors) * 100) : 0}% del total
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Métricas principales */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Visitantes</p>
+                  <p className="text-2xl font-bold text-gray-900">{metrics?.totalVisitors?.toLocaleString() || 0}</p>
+                </div>
+                <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Users className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-600">Niños</p>
-              <p className="text-xl font-bold text-gray-900">{metrics?.totalChildren?.toLocaleString() || 0}</p>
-              <p className="text-xs text-gray-500">
-                {metrics?.totalVisitors ? Math.round((metrics.totalChildren / metrics.totalVisitors) * 100) : 0}% del total
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Promedio Diario</p>
+                  <p className="text-2xl font-bold text-gray-900">{metrics?.avgDailyVisitors || 0}</p>
+                </div>
+                <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-600">Adultos Mayores</p>
-              <p className="text-xl font-bold text-gray-900">{metrics?.totalSeniors?.toLocaleString() || 0}</p>
-              <p className="text-xs text-gray-500">
-                {metrics?.totalVisitors ? Math.round((metrics.totalSeniors / metrics.totalVisitors) * 100) : 0}% del total
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Registros</p>
+                  <p className="text-2xl font-bold text-gray-900">{metrics?.totalRecords || 0}</p>
+                </div>
+                <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Activity className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-600">Mascotas</p>
-              <p className="text-xl font-bold text-gray-900">{metrics?.totalPets?.toLocaleString() || 0}</p>
-              <p className="text-xs text-gray-500">Acompañantes</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Parques Activos</p>
+                  <p className="text-2xl font-bold text-gray-900">{metrics?.uniqueParks || 0}</p>
+                </div>
+                <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <MapPin className="w-6 h-6 text-orange-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Gráficos */}
-      <Tabs defaultValue="trends" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="trends">Tendencias</TabsTrigger>
-          <TabsTrigger value="parks">Por Parques</TabsTrigger>
-          <TabsTrigger value="methods">Métodos</TabsTrigger>
-          <TabsTrigger value="summary">Resumen</TabsTrigger>
-        </TabsList>
+        {/* Desglose demográfico */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-600">Adultos</p>
+                <p className="text-xl font-bold text-gray-900">{metrics?.totalAdults?.toLocaleString() || 0}</p>
+                <p className="text-xs text-gray-500">
+                  {metrics?.totalVisitors ? Math.round((metrics.totalAdults / metrics.totalVisitors) * 100) : 0}% del total
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-600">Niños</p>
+                <p className="text-xl font-bold text-gray-900">{metrics?.totalChildren?.toLocaleString() || 0}</p>
+                <p className="text-xs text-gray-500">
+                  {metrics?.totalVisitors ? Math.round((metrics.totalChildren / metrics.totalVisitors) * 100) : 0}% del total
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-600">Adultos Mayores</p>
+                <p className="text-xl font-bold text-gray-900">{metrics?.totalSeniors?.toLocaleString() || 0}</p>
+                <p className="text-xs text-gray-500">
+                  {metrics?.totalVisitors ? Math.round((metrics.totalSeniors / metrics.totalVisitors) * 100) : 0}% del total
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-600">Mascotas</p>
+                <p className="text-xl font-bold text-gray-900">{metrics?.totalPets?.toLocaleString() || 0}</p>
+                <p className="text-xs text-gray-500">Acompañantes</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Gráficos */}
+        <Tabs defaultValue="trends" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="trends">Tendencias</TabsTrigger>
+            <TabsTrigger value="parks">Por Parques</TabsTrigger>
+            <TabsTrigger value="methods">Métodos</TabsTrigger>
+            <TabsTrigger value="summary">Resumen</TabsTrigger>
+          </TabsList>
 
         <TabsContent value="trends" className="space-y-4">
           <Card>
@@ -597,7 +601,8 @@ export default function VisitorDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
-    </div>
+        </Tabs>
+      </div>
+    </AdminLayout>
   );
 }
