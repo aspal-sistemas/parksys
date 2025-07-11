@@ -1028,7 +1028,16 @@ async function initializeDatabaseAsync() {
   // Registrar rutas del sistema de conteo de visitantes
   try {
     console.log("Registrando rutas del sistema de conteo de visitantes...");
-    app.use("/api", visitorCountRoutes);
+    
+    // Crear router específico con middleware JSON
+    const visitorCountRouter = express.Router();
+    visitorCountRouter.use(express.json({ limit: '50mb' }));
+    visitorCountRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    
+    // Montar las rutas de visitor-count en el router con middleware
+    visitorCountRouter.use('/', visitorCountRoutes);
+    
+    app.use("/api", visitorCountRouter);
     console.log("Rutas del sistema de conteo de visitantes registradas correctamente");
   } catch (error) {
     console.error("Error al registrar rutas de conteo de visitantes:", error);

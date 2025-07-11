@@ -1,10 +1,15 @@
 import { Router } from 'express';
+import express from 'express';
 import { db } from './db';
 import { visitorCounts, parks, insertVisitorCountSchema } from '@shared/schema';
 import { eq, sql, desc, and, gte, lte, sum } from 'drizzle-orm';
 import { z } from 'zod';
 
 const router = Router();
+
+// Aplicar middleware JSON específicamente a este router
+router.use(express.json({ limit: '50mb' }));
+router.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Usar el schema de inserción desde shared/schema.ts con modificaciones para campos opcionales
 const createVisitorCountSchema = insertVisitorCountSchema.extend({

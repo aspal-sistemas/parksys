@@ -124,7 +124,7 @@ export default function VisitorCountPage() {
             dayType: countingMode === 'daily' ? data.dayType : undefined,
             weather: countingMode === 'daily' ? data.weather : undefined,
             notes: data.notes,
-            registeredBy: 2 // TODO: Usar user ID del contexto
+            registeredBy: 1 // Usuario admin por defecto
           };
           console.log('Registro individual para rango:', record);
           records.push(record);
@@ -155,7 +155,7 @@ export default function VisitorCountPage() {
           dayType: data.dayType,
           weather: data.weather,
           notes: data.notes,
-          registeredBy: 2 // TODO: Usar user ID del contexto
+          registeredBy: 1 // Usuario admin por defecto
         };
         console.log('Datos para enviar (conteo diario):', requestData);
         
