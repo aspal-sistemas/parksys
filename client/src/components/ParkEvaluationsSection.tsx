@@ -168,6 +168,10 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
     queryFn: () => apiRequest(`/api/parks/${parkId}/evaluation-stats`),
   });
 
+  // Debug: Ver qué datos están llegando
+  console.log('🔍 ParkEvaluationsSection - parkId:', parkId);
+  console.log('🔍 ParkEvaluationsSection - stats:', stats);
+
   // Obtener evaluaciones recientes
   const { data: evaluationsData } = useQuery({
     queryKey: ['/api/parks', parkId, 'evaluations'],
@@ -183,32 +187,28 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
 
   if (!stats || !stats.average_rating || stats.total_evaluations === 0) {
     return (
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <Card className="max-w-4xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-gray-900 text-center">
-                Evaluaciones Ciudadanas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center">
-                <p className="text-gray-600 mb-6">
-                  Sé el primero en evaluar este parque y ayuda a otros visitantes con tu experiencia.
-                </p>
-                <Button
-                  size="lg"
-                  className="bg-green-600 hover:bg-green-700"
-                  onClick={() => window.open(`/parque/${parkSlug}/evaluar`, '_blank')}
-                >
-                  <Star className="h-4 w-4 mr-2" />
-                  Evalúa este parque
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl font-bold text-gray-900">
+            Evaluaciones Ciudadanas
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center">
+            <p className="text-gray-600 mb-6">
+              Sé el primero en evaluar este parque y ayuda a otros visitantes con tu experiencia.
+            </p>
+            <Button
+              size="lg"
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => window.open(`/parque/${parkSlug}/evaluar`, '_blank')}
+            >
+              <Star className="h-4 w-4 mr-2" />
+              Evalúa este parque
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -216,17 +216,15 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
   const allEvaluations = allEvaluationsData?.evaluations || [];
 
   return (
-    <section className="py-12 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <Card className="max-w-7xl mx-auto">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-gray-900 text-center">
-              Evaluaciones Ciudadanas
-            </CardTitle>
-            <p className="text-center text-gray-600 mt-2">
-              Conoce la opinión de otros visitantes sobre este parque
-            </p>
-          </CardHeader>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-xl font-bold text-gray-900">
+          Evaluaciones Ciudadanas
+        </CardTitle>
+        <p className="text-gray-600 mt-2">
+          Conoce la opinión de otros visitantes sobre este parque
+        </p>
+      </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Estadísticas principales */}
@@ -327,10 +325,8 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
               </Card>
             )}
           </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
