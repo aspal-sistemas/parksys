@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminLayout } from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Users, Plus, FileText, TrendingUp, MapPin, Clock, Sun, Cloud, CloudRain } from "lucide-react";
+import { Calendar, Users, Plus, FileText, TrendingUp, MapPin, Clock, Sun, Cloud, CloudRain, BarChart3 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -281,13 +281,23 @@ export default function VisitorCountPage() {
             <h1 className="text-3xl font-bold text-gray-900">Conteo de Visitantes</h1>
             <p className="text-gray-600">Gestión diaria de visitantes por parque</p>
           </div>
-          <Button 
-            onClick={() => setShowForm(true)}
-            className="bg-emerald-600 hover:bg-emerald-700"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Registro
-          </Button>
+          <div className="flex items-center space-x-3">
+            <Button 
+              variant="outline"
+              onClick={() => window.location.href = '/admin/parks/visitor-dashboard'}
+              className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Dashboard de Análisis
+            </Button>
+            <Button 
+              onClick={() => setShowForm(true)}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Registro
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="registros" className="w-full">

@@ -21,7 +21,7 @@ const createVisitorCountSchema = insertVisitorCountSchema.extend({
 // Obtener todos los registros de visitantes con filtros
 router.get('/visitor-counts', async (req, res) => {
   try {
-    const { parkId, startDate, endDate, limit = 50, offset = 0 } = req.query;
+    const { parkId, startDate, endDate, limit = 1000, offset = 0 } = req.query;
     
     let query = db
       .select({
