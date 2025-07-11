@@ -40,6 +40,8 @@ interface Park {
 interface VisitorCountForm {
   parkId: number;
   date: string;
+  startDate?: string;
+  endDate?: string;
   adults: number;
   children: number;
   groups: number;
@@ -55,9 +57,12 @@ export default function VisitorCountPage() {
   
   const [selectedPark, setSelectedPark] = useState<string>("");
   const [showForm, setShowForm] = useState(false);
+  const [countingMode, setCountingMode] = useState<'daily' | 'range'>('daily');
   const [formData, setFormData] = useState<VisitorCountForm>({
     parkId: 0,
     date: new Date().toISOString().split('T')[0],
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
     adults: 0,
     children: 0,
     groups: 0,
@@ -90,21 +95,73 @@ export default function VisitorCountPage() {
   // Mutation para crear nuevo registro
   const createVisitorCount = useMutation({
     mutationFn: async (data: VisitorCountForm) => {
-      return apiRequest('/api/visitor-counts', {
-        method: 'POST',
-        body: { ...data, registeredBy: 2 } // TODO: Usar user ID del contexto
-      });
+      if (countingMode === 'range') {
+        // Para rangos, crear múltiples registros
+        const records = [];
+        const startDate = new Date(data.startDate!);
+        const endDate = new Date(data.endDate!);
+        
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+          const dateStr = d.toISOString().split('T')[0];
+          records.push({
+            parkId: data.parkId,
+            date: dateStr,
+            adults: data.adults,
+            children: data.children,
+            groups: data.groups,
+            countingMethod: data.countingMethod,
+            dayType: data.dayType,
+            weather: data.weather,
+            notes: data.notes,
+            registeredBy: 2 // TODO: Usar user ID del contexto
+          });
+        }
+        
+        // Crear todos los registros
+        const responses = await Promise.all(
+          records.map(record => 
+            apiRequest('/api/visitor-counts', {
+              method: 'POST',
+              body: record
+            })
+          )
+        );
+        
+        return responses;
+      } else {
+        // Para conteo diario
+        return apiRequest('/api/visitor-counts', {
+          method: 'POST',
+          body: { 
+            parkId: data.parkId,
+            date: data.date,
+            adults: data.adults,
+            children: data.children,
+            groups: data.groups,
+            countingMethod: data.countingMethod,
+            dayType: data.dayType,
+            weather: data.weather,
+            notes: data.notes,
+            registeredBy: 2 // TODO: Usar user ID del contexto
+          }
+        });
+      }
     },
     onSuccess: () => {
+      const recordsCount = countingMode === 'range' ? 
+        Math.ceil((new Date(formData.endDate!) - new Date(formData.startDate!)) / (1000 * 60 * 60 * 24)) + 1 : 1;
+      
       toast({
         title: "Registro exitoso",
-        description: "El conteo de visitantes ha sido registrado correctamente",
+        description: `${recordsCount} registro(s) de visitantes creado(s) correctamente`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/visitor-counts'] });
       setShowForm(false);
       setFormData({
         parkId: 0,
         date: new Date().toISOString().split('T')[0],
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: new Date().toISOString().split('T')[0],
         adults: 0,
         children: 0,
         groups: 0,
@@ -133,6 +190,27 @@ export default function VisitorCountPage() {
       });
       return;
     }
+    
+    if (countingMode === 'range') {
+      if (!formData.startDate || !formData.endDate) {
+        toast({
+          title: "Error",
+          description: "Por favor selecciona las fechas de inicio y fin",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (new Date(formData.startDate) > new Date(formData.endDate)) {
+        toast({
+          title: "Error",
+          description: "La fecha de inicio debe ser anterior a la fecha de fin",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
     createVisitorCount.mutate(formData);
   };
 
@@ -338,34 +416,86 @@ export default function VisitorCountPage() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="parkId">Parque *</Label>
-                      <Select 
-                        value={formData.parkId.toString()} 
-                        onValueChange={(value) => setFormData({...formData, parkId: parseInt(value)})}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un parque" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {parks?.filter(park => park.id && park.name).map((park) => (
-                            <SelectItem key={park.id} value={park.id.toString()}>
-                              {park.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label>Modo de conteo *</Label>
+                      <div className="flex gap-4">
+                        <Button
+                          type="button"
+                          variant={countingMode === 'daily' ? 'default' : 'outline'}
+                          onClick={() => setCountingMode('daily')}
+                          className="flex items-center gap-2"
+                        >
+                          <Calendar className="h-4 w-4" />
+                          Conteo diario
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={countingMode === 'range' ? 'default' : 'outline'}
+                          onClick={() => setCountingMode('range')}
+                          className="flex items-center gap-2"
+                        >
+                          <Clock className="h-4 w-4" />
+                          Rango de fechas
+                        </Button>
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="date">Fecha *</Label>
-                      <Input
-                        type="date"
-                        value={formData.date}
-                        onChange={(e) => setFormData({...formData, date: e.target.value})}
-                        required
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="parkId">Parque *</Label>
+                        <Select 
+                          value={formData.parkId.toString()} 
+                          onValueChange={(value) => setFormData({...formData, parkId: parseInt(value)})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona un parque" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {parks?.filter(park => park.id && park.name).map((park) => (
+                              <SelectItem key={park.id} value={park.id.toString()}>
+                                {park.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {countingMode === 'daily' ? (
+                        <div className="space-y-2">
+                          <Label htmlFor="date">Fecha *</Label>
+                          <Input
+                            type="date"
+                            value={formData.date}
+                            onChange={(e) => setFormData({...formData, date: e.target.value})}
+                            required
+                          />
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Label>Rango de fechas *</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <Label htmlFor="startDate" className="text-sm">Desde</Label>
+                              <Input
+                                type="date"
+                                value={formData.startDate}
+                                onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="endDate" className="text-sm">Hasta</Label>
+                              <Input
+                                type="date"
+                                value={formData.endDate}
+                                onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+                                required
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
