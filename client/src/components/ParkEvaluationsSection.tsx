@@ -185,22 +185,28 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
     return (
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Evaluaciones Ciudadanas
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Sé el primero en evaluar este parque y ayuda a otros visitantes con tu experiencia.
-            </p>
-            <Button
-              size="lg"
-              className="bg-green-600 hover:bg-green-700"
-              onClick={() => window.open(`/parque/${parkSlug}/evaluar`, '_blank')}
-            >
-              <Star className="h-4 w-4 mr-2" />
-              Evalúa este parque
-            </Button>
-          </div>
+          <Card className="max-w-4xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-gray-900 text-center">
+                Evaluaciones Ciudadanas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center">
+                <p className="text-gray-600 mb-6">
+                  Sé el primero en evaluar este parque y ayuda a otros visitantes con tu experiencia.
+                </p>
+                <Button
+                  size="lg"
+                  className="bg-green-600 hover:bg-green-700"
+                  onClick={() => window.open(`/parque/${parkSlug}/evaluar`, '_blank')}
+                >
+                  <Star className="h-4 w-4 mr-2" />
+                  Evalúa este parque
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
     );
@@ -212,16 +218,17 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
   return (
     <section className="py-12 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Evaluaciones Ciudadanas
-          </h2>
-          <p className="text-gray-600">
-            Conoce la opinión de otros visitantes sobre este parque
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Card className="max-w-7xl mx-auto">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-gray-900 text-center">
+              Evaluaciones Ciudadanas
+            </CardTitle>
+            <p className="text-center text-gray-600 mt-2">
+              Conoce la opinión de otros visitantes sobre este parque
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Estadísticas principales */}
           <div className="lg:col-span-1">
             <Card>
@@ -320,7 +327,9 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
               </Card>
             )}
           </div>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );

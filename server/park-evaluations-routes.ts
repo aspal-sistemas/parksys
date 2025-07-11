@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { Pool } from '@neondatabase/serverless';
-import { db } from './db';
+import { db, pool } from './db';
 import { parkEvaluations, parks, users } from '@shared/schema';
-import { eq, desc, sql, and, gte, lte } from 'drizzle-orm';
+import { eq, desc, and, gte, lte } from 'drizzle-orm';
 import { z } from 'zod';
 
 // Esquemas de validación
@@ -142,7 +142,7 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
       baseQuery += ` ORDER BY pe.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
       params.push(Number(limit), offset);
 
-      const result = await db.execute(sql.raw(baseQuery, params));
+      const result = await pool.query(baseQuery, params);
       
       // Contar total para paginación
       let countQuery = `SELECT COUNT(*) as total FROM park_evaluations pe WHERE 1=1`;
@@ -160,7 +160,7 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
         countParams.push(Number(parkId));
       }
 
-      const countResult = await db.execute(sql.raw(countQuery, countParams));
+      const countResult = await pool.query(countQuery, countParams);
       const total = countResult.rows[0]?.total || 0;
 
       res.json({
@@ -196,11 +196,11 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
         LIMIT $3 OFFSET $4
       `;
 
-      const result = await db.execute(sql.raw(query, [Number(parkId), status, Number(limit), offset]));
+      const result = await pool.query(query, [Number(parkId), status, Number(limit), offset]);
       
       // Contar total
       const countQuery = `SELECT COUNT(*) as total FROM park_evaluations WHERE park_id = $1 AND status = $2`;
-      const countResult = await db.execute(sql.raw(countQuery, [Number(parkId), status]));
+      const countResult = await pool.query(countQuery, [Number(parkId), status]);
       const total = countResult.rows[0]?.total || 0;
 
       res.json({
@@ -245,7 +245,7 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
         WHERE park_id = $1 AND status = 'approved'
       `;
 
-      const result = await db.execute(sql.raw(query, [Number(parkId)]));
+      const result = await pool.query(query, [Number(parkId)]);
       const stats = result.rows[0];
 
       if (stats) {
@@ -319,7 +319,7 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
         ) RETURNING *
       `;
 
-      const result = await db.execute(sql.raw(query, [
+      const result = await pool.query(query, [
         evaluationData.parkId,
         evaluationData.evaluatorName,
         evaluationData.evaluatorEmail || null,
@@ -345,7 +345,7 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
         evaluationData.status,
         evaluationData.ipAddress,
         evaluationData.userAgent,
-      ]));
+      ]);
 
       console.log('✅ Evaluación creada exitosamente:', result.rows[0]);
       res.status(201).json({ 
@@ -377,12 +377,12 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
         RETURNING *
       `;
 
-      const result = await db.execute(sql.raw(query, [
+      const result = await pool.query(query, [
         validatedData.status,
         userId,
         validatedData.moderationNotes || null,
         Number(id)
-      ]));
+      ]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Evaluación no encontrada' });
@@ -410,7 +410,7 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
       const { id } = req.params;
 
       const query = `DELETE FROM park_evaluations WHERE id = $1 RETURNING *`;
-      const result = await db.execute(sql.raw(query, [Number(id)]));
+      const result = await pool.query(query, [Number(id)]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Evaluación no encontrada' });
@@ -441,7 +441,7 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
         ORDER BY average_rating DESC NULLS LAST, total_evaluations DESC
       `;
 
-      const result = await db.execute(sql.raw(query));
+      const result = await pool.query(query);
       
       const summary = result.rows.map(row => ({
         ...row,
