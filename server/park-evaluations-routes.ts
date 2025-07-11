@@ -9,31 +9,31 @@ import { z } from 'zod';
 const createEvaluationSchema = z.object({
   parkId: z.number(),
   evaluatorName: z.string().min(1, "El nombre es requerido"),
-  evaluatorEmail: z.string().email().optional().or(z.literal("")).optional(),
-  evaluatorPhone: z.string().optional().or(z.literal("")).optional(),
-  evaluatorCity: z.string().optional().or(z.literal("")).optional(),
-  evaluatorAge: z.number().min(13).max(120).optional(),
-  isFrequentVisitor: z.boolean().optional().default(false),
+  evaluatorEmail: z.string().optional(),
+  evaluatorPhone: z.string().optional(),
+  evaluatorCity: z.string().optional(),
+  evaluatorAge: z.number().optional(),
+  isFrequentVisitor: z.boolean().optional(),
   
-  // Criterios de evaluación (1-5)
-  cleanliness: z.number().min(1).max(5),
-  safety: z.number().min(1).max(5),
-  maintenance: z.number().min(1).max(5),
-  accessibility: z.number().min(1).max(5),
-  amenities: z.number().min(1).max(5),
-  activities: z.number().min(1).max(5),
-  staff: z.number().min(1).max(5),
-  naturalBeauty: z.number().min(1).max(5),
-  overallRating: z.number().min(1).max(5),
+  // Criterios de evaluación (1-5) - completamente opcionales
+  cleanliness: z.number().optional(),
+  safety: z.number().optional(),
+  maintenance: z.number().optional(),
+  accessibility: z.number().optional(),
+  amenities: z.number().optional(),
+  activities: z.number().optional(),
+  staff: z.number().optional(),
+  naturalBeauty: z.number().optional(),
+  overallRating: z.number().optional(),
   
   // Información adicional
-  comments: z.string().optional().or(z.literal("")).optional(),
-  suggestions: z.string().optional().or(z.literal("")).optional(),
-  wouldRecommend: z.boolean().optional().default(true),
-  visitDate: z.string().optional().or(z.literal("")).optional(),
-  visitPurpose: z.string().optional().or(z.literal("")).optional(),
-  visitDuration: z.number().min(1).optional(),
-});
+  comments: z.string().optional(),
+  suggestions: z.string().optional(),
+  wouldRecommend: z.boolean().optional(),
+  visitDate: z.string().optional(),
+  visitPurpose: z.string().optional(),
+  visitDuration: z.number().optional(),
+}).passthrough();
 
 const moderateEvaluationSchema = z.object({
   status: z.enum(['pending', 'approved', 'rejected']),
@@ -296,6 +296,7 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
   // Crear nueva evaluación (público)
   apiRouter.post('/park-evaluations', async (req: Request, res: Response) => {
     try {
+      console.log('📝 Datos recibidos en el endpoint POST:', JSON.stringify(req.body, null, 2));
       const validatedData = createEvaluationSchema.parse(req.body);
       
       // Agregar metadata
@@ -327,15 +328,15 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
         evaluationData.evaluatorCity || null,
         evaluationData.evaluatorAge || null,
         evaluationData.isFrequentVisitor || false,
-        evaluationData.cleanliness,
-        evaluationData.safety,
-        evaluationData.maintenance,
-        evaluationData.accessibility,
-        evaluationData.amenities,
-        evaluationData.activities,
-        evaluationData.staff,
-        evaluationData.naturalBeauty,
-        evaluationData.overallRating,
+        evaluationData.cleanliness || null,
+        evaluationData.safety || null,
+        evaluationData.maintenance || null,
+        evaluationData.accessibility || null,
+        evaluationData.amenities || null,
+        evaluationData.activities || null,
+        evaluationData.staff || null,
+        evaluationData.naturalBeauty || null,
+        evaluationData.overallRating || null,
         evaluationData.comments || null,
         evaluationData.suggestions || null,
         evaluationData.wouldRecommend !== false,

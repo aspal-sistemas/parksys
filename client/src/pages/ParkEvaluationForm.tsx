@@ -25,16 +25,16 @@ const evaluationSchema = z.object({
   evaluatorAge: z.number().min(13, "Edad mínima: 13 años").max(120, "Edad máxima: 120 años").optional(),
   isFrequentVisitor: z.boolean().optional(),
   
-  // Criterios de evaluación (1-5)
-  cleanliness: z.number().min(1).max(5),
-  safety: z.number().min(1).max(5),
-  maintenance: z.number().min(1).max(5),
-  accessibility: z.number().min(1).max(5),
-  amenities: z.number().min(1).max(5),
-  activities: z.number().min(1).max(5),
-  staff: z.number().min(1).max(5),
-  naturalBeauty: z.number().min(1).max(5),
-  overallRating: z.number().min(1).max(5),
+  // Criterios de evaluación (0-5, donde 0 = sin calificar)
+  cleanliness: z.number().min(0).max(5),
+  safety: z.number().min(0).max(5),
+  maintenance: z.number().min(0).max(5),
+  accessibility: z.number().min(0).max(5),
+  amenities: z.number().min(0).max(5),
+  activities: z.number().min(0).max(5),
+  staff: z.number().min(0).max(5),
+  naturalBeauty: z.number().min(0).max(5),
+  overallRating: z.number().min(0).max(5),
   
   // Información adicional
   comments: z.string().optional(),
@@ -170,6 +170,12 @@ export default function ParkEvaluationForm() {
     const processedData: any = {
       parkId: data.parkId,
       evaluatorName: data.evaluatorName,
+      isFrequentVisitor: data.isFrequentVisitor || false,
+      wouldRecommend: data.wouldRecommend !== undefined ? data.wouldRecommend : true,
+    };
+
+    // Solo incluir calificaciones que no sean 0
+    const ratings = {
       cleanliness: data.cleanliness,
       safety: data.safety,
       maintenance: data.maintenance,
@@ -179,9 +185,14 @@ export default function ParkEvaluationForm() {
       staff: data.staff,
       naturalBeauty: data.naturalBeauty,
       overallRating: data.overallRating,
-      isFrequentVisitor: data.isFrequentVisitor || false,
-      wouldRecommend: data.wouldRecommend !== undefined ? data.wouldRecommend : true,
     };
+
+    // Filtrar y agregar solo calificaciones válidas (>0)
+    Object.entries(ratings).forEach(([key, value]) => {
+      if (value > 0) {
+        processedData[key] = value;
+      }
+    });
 
     // Solo incluir campos opcionales si tienen valores válidos
     if (data.evaluatorEmail && data.evaluatorEmail.trim() !== '') {
@@ -212,6 +223,7 @@ export default function ParkEvaluationForm() {
       processedData.visitDuration = data.visitDuration;
     }
 
+    console.log('📝 Datos procesados a enviar:', JSON.stringify(processedData, null, 2));
     createEvaluation.mutate(processedData);
   };
 
