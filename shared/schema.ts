@@ -2977,4 +2977,63 @@ export type ParkEvaluation = typeof parkEvaluations.$inferSelect;
 export type InsertParkEvaluation = z.infer<typeof insertParkEvaluationSchema>;
 export type UpdateParkEvaluation = z.infer<typeof updateParkEvaluationSchema>;
 
+// ===== CRITERIOS DE EVALUACIÓN CONFIGURABLES =====
+
+export const evaluationCriteria = pgTable("evaluation_criteria", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  label: varchar("label", { length: 255 }).notNull(),
+  description: text("description"),
+  fieldType: varchar("field_type", { length: 50 }).notNull().default("rating"), // rating, boolean, text
+  minValue: integer("min_value").default(1),
+  maxValue: integer("max_value").default(5),
+  isRequired: boolean("is_required").default(true),
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  icon: varchar("icon", { length: 50 }),
+  category: varchar("category", { length: 100 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relaciones para criterios de evaluación
+export const evaluationCriteriaRelations = relations(evaluationCriteria, ({ many }) => ({
+  responses: many(evaluationResponses),
+}));
+
+// Tabla para almacenar respuestas flexibles basadas en criterios configurables
+export const evaluationResponses = pgTable("evaluation_responses", {
+  id: serial("id").primaryKey(),
+  evaluationId: integer("evaluation_id").notNull().references(() => parkEvaluations.id),
+  criteriaId: integer("criteria_id").notNull().references(() => evaluationCriteria.id),
+  ratingValue: integer("rating_value"), // Para criterios tipo rating
+  textValue: text("text_value"), // Para criterios tipo text
+  booleanValue: boolean("boolean_value"), // Para criterios tipo boolean
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Relaciones para respuestas de evaluación
+export const evaluationResponsesRelations = relations(evaluationResponses, ({ one }) => ({
+  evaluation: one(parkEvaluations, { fields: [evaluationResponses.evaluationId], references: [parkEvaluations.id] }),
+  criteria: one(evaluationCriteria, { fields: [evaluationResponses.criteriaId], references: [evaluationCriteria.id] }),
+}));
+
+// Esquemas de validación para criterios
+export const insertEvaluationCriteriaSchema = createInsertSchema(evaluationCriteria).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEvaluationResponseSchema = createInsertSchema(evaluationResponses).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Tipos TypeScript para criterios
+export type EvaluationCriteria = typeof evaluationCriteria.$inferSelect;
+export type InsertEvaluationCriteria = z.infer<typeof insertEvaluationCriteriaSchema>;
+export type EvaluationResponse = typeof evaluationResponses.$inferSelect;
+export type InsertEvaluationResponse = z.infer<typeof insertEvaluationResponseSchema>;
+
 

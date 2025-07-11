@@ -1102,6 +1102,10 @@ async function initializeDatabaseAsync() {
     const { registerParkEvaluationRoutes } = await import('./park-evaluations-routes');
     registerParkEvaluationRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
     
+    // Registrar rutas de criterios de evaluación configurables
+    const { registerEvaluationCriteriaRoutes } = await import('./evaluation-criteria-routes');
+    registerEvaluationCriteriaRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
     // Importar y registrar rutas de conteo de visitantes
     app.use("/api", visitorCountRoutes);
     console.log("Rutas de conteo de visitantes registradas correctamente");
@@ -1119,6 +1123,12 @@ async function initializeDatabaseAsync() {
     // Crear tablas de evaluaciones de parques
     await createParkEvaluationsTables();
     console.log("Sistema de evaluaciones de parques inicializado correctamente");
+    
+    // Crear tablas de criterios de evaluación configurables
+    const { createEvaluationCriteriaTables, seedDefaultEvaluationCriteria } = await import('./create-evaluation-criteria-tables');
+    await createEvaluationCriteriaTables();
+    await seedDefaultEvaluationCriteria();
+    console.log("Sistema de criterios de evaluación configurables inicializado correctamente");
   } catch (error) {
     console.error("Error al registrar API de integraciones financieras:", error);
   }

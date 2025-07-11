@@ -273,6 +273,13 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Evaluaciones
             </NavItem>
+            <NavItem 
+              href="/admin/visitors/criteria" 
+              icon={<Settings className="h-5 w-5" />}
+              active={location === '/admin/visitors/criteria'}
+            >
+              Criterios de Evaluación
+            </NavItem>
           </ModuleNav>
 
           {/* 3. PARQUES */}
