@@ -152,15 +152,16 @@ export default function ParkEvaluationForm() {
 
   const onSubmit = (data: EvaluationFormData) => {
     // Validar que al menos una calificación esté dada
-    const ratings = [
+    const allRatings = [
       data.cleanliness, data.safety, data.maintenance, data.accessibility,
       data.amenities, data.activities, data.staff, data.naturalBeauty, data.overallRating
     ];
     
-    if (ratings.some(rating => rating === 0)) {
+    // Verificar que al menos una calificación esté completa (>0)
+    if (allRatings.every(rating => rating === 0)) {
       toast({
-        title: "Calificaciones incompletas",
-        description: "Por favor, califica todos los aspectos del parque.",
+        title: "Calificación requerida",
+        description: "Por favor, califica al menos un aspecto del parque.",
         variant: "destructive",
       });
       return;
@@ -175,7 +176,7 @@ export default function ParkEvaluationForm() {
     };
 
     // Solo incluir calificaciones que no sean 0
-    const ratings = {
+    const ratingsData = {
       cleanliness: data.cleanliness,
       safety: data.safety,
       maintenance: data.maintenance,
@@ -188,7 +189,7 @@ export default function ParkEvaluationForm() {
     };
 
     // Filtrar y agregar solo calificaciones válidas (>0)
-    Object.entries(ratings).forEach(([key, value]) => {
+    Object.entries(ratingsData).forEach(([key, value]) => {
       if (value > 0) {
         processedData[key] = value;
       }
