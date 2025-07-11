@@ -266,6 +266,13 @@ const AdminSidebarComplete: React.FC = () => {
             >
               {t('navigation.management')}
             </NavItem>
+            <NavItem 
+              href="/admin/parks/visitor-count" 
+              icon={<Users className="h-5 w-5" />}
+              active={location === '/admin/parks/visitor-count'}
+            >
+              Conteo de Visitantes
+            </NavItem>
           </ModuleNav>
 
           {/* 3. ÁRBOLES */}

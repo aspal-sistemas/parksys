@@ -2835,4 +2835,38 @@ export type SpaceReservation = typeof spaceReservations.$inferSelect;
 export type InsertSpaceReservation = z.infer<typeof insertSpaceReservationSchema>;
 export type SpaceAvailability = typeof spaceAvailability.$inferSelect;
 
+// ===== SISTEMA DE CONTEO DE VISITANTES =====
+
+export const visitorCounts = pgTable("visitor_counts", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").references(() => parks.id).notNull(),
+  date: date("date").notNull(),
+  adults: integer("adults").default(0).notNull(),
+  children: integer("children").default(0).notNull(),
+  groups: integer("groups").default(0).notNull(),
+  countingMethod: varchar("counting_method", { length: 50 }).notNull(), // estimation, manual_counter, event_based, entrance_control
+  dayType: varchar("day_type", { length: 20 }).notNull(), // weekday, weekend, holiday
+  weather: varchar("weather", { length: 20 }), // sunny, cloudy, rainy, other
+  notes: text("notes"),
+  registeredBy: integer("registered_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relaciones para conteo de visitantes
+export const visitorCountsRelations = relations(visitorCounts, ({ one }) => ({
+  park: one(parks, { fields: [visitorCounts.parkId], references: [parks.id] }),
+  registeredBy: one(users, { fields: [visitorCounts.registeredBy], references: [users.id] }),
+}));
+
+// Schemas de inserción para conteo de visitantes
+export const insertVisitorCountSchema = createInsertSchema(visitorCounts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertVisitorCount = z.infer<typeof insertVisitorCountSchema>;
+export type VisitorCount = typeof visitorCounts.$inferSelect;
+
 
