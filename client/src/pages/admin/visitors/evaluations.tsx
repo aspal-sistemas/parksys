@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Star, Eye, CheckCircle, XCircle, Clock, Filter, Users, BarChart3, MessageSquare, TrendingUp, Calendar, Award } from 'lucide-react';
+import AdminLayout from '@/components/AdminLayout';
 
 interface ParkEvaluation {
   id: number;
@@ -316,13 +317,14 @@ export default function EvaluationsPage() {
   const parks = parksData?.parks || [];
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Evaluaciones de Parques</h1>
-          <p className="text-gray-600 mt-1">Gestiona las evaluaciones ciudadanas de los parques</p>
+    <AdminLayout>
+      <div className="container mx-auto p-6 max-w-7xl">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Evaluaciones de Parques</h1>
+            <p className="text-gray-600 mt-1">Gestiona las evaluaciones ciudadanas de los parques</p>
+          </div>
         </div>
-      </div>
 
       <Tabs defaultValue="evaluations" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
@@ -471,6 +473,7 @@ export default function EvaluationsPage() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
