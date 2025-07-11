@@ -87,15 +87,18 @@ const StarRating = ({ value, onChange, label }: StarRatingProps) => {
 };
 
 export default function ParkEvaluationForm() {
-  const { parkId } = useParams<{ parkId: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // Extraer parkId del slug (formato: nombre-parque-id)
+  const parkId = slug ? slug.split('-').pop() : null;
+
   // Obtener información del parque
   const { data: parkData, isLoading: parkLoading } = useQuery({
-    queryKey: ['/api/parks', parkId],
-    queryFn: () => apiRequest(`/api/parks/${parkId}`),
+    queryKey: ['/api/parks', parkId, 'extended'],
+    queryFn: () => apiRequest(`/api/parks/${parkId}/extended`),
     enabled: !!parkId,
   });
 

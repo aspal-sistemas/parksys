@@ -99,10 +99,10 @@ export default function ParkEvaluationsSectionSimple({ parkId, parkSlug }: ParkE
           )}
 
           {/* Acciones principales */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col gap-3 justify-center items-center">
             <Button
               size="lg"
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 w-full max-w-md"
               onClick={() => window.open(`/parque/${parkSlug}/evaluar`, '_blank')}
             >
               <Star className="h-4 w-4 mr-2" />
@@ -113,6 +113,7 @@ export default function ParkEvaluationsSectionSimple({ parkId, parkSlug }: ParkE
               <Button
                 variant="outline"
                 size="lg"
+                className="w-full max-w-md"
                 onClick={() => window.open(`/parque/${parkSlug}/evaluaciones`, '_blank')}
               >
                 <Users className="h-4 w-4 mr-2" />
