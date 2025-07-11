@@ -246,7 +246,29 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 2. PARQUES */}
+          {/* 2. VISITANTES */}
+          <ModuleNav 
+            title="Visitantes" 
+            icon={<Users className="h-5 w-5" />}
+            value="visitors"
+          >
+            <NavItem 
+              href="/admin/visitors/count" 
+              icon={<Users className="h-5 w-5" />}
+              active={location === '/admin/visitors/count'}
+            >
+              Conteo de Visitantes
+            </NavItem>
+            <NavItem 
+              href="/admin/visitors/dashboard" 
+              icon={<Activity className="h-5 w-5" />}
+              active={location === '/admin/visitors/dashboard'}
+            >
+              Dashboard de Visitantes
+            </NavItem>
+          </ModuleNav>
+
+          {/* 3. PARQUES */}
           <ModuleNav 
             title={t('navigation.parks')} 
             icon={<Map className="h-5 w-5" />}
@@ -266,23 +288,9 @@ const AdminSidebarComplete: React.FC = () => {
             >
               {t('navigation.management')}
             </NavItem>
-            <NavItem 
-              href="/admin/parks/visitor-count" 
-              icon={<Users className="h-5 w-5" />}
-              active={location === '/admin/parks/visitor-count'}
-            >
-              Conteo de Visitantes
-            </NavItem>
-            <NavItem 
-              href="/admin/parks/visitor-dashboard" 
-              icon={<Activity className="h-5 w-5" />}
-              active={location === '/admin/parks/visitor-dashboard'}
-            >
-              Dashboard de Visitantes
-            </NavItem>
           </ModuleNav>
 
-          {/* 3. ÁRBOLES */}
+          {/* 4. ÁRBOLES */}
           <ModuleNav 
             title={t('navigation.trees')} 
             icon={<TreePine className="h-5 w-5" />}
@@ -311,7 +319,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 4. AMENIDADES */}
+          {/* 5. AMENIDADES */}
           <ModuleNav 
             title={t('navigation.amenities')} 
             icon={<Package className="h-5 w-5" />}
@@ -333,7 +341,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 5. ACTIVIDADES */}
+          {/* 6. ACTIVIDADES */}
           <ModuleNav 
             title={t('navigation.activities')} 
             icon={<Calendar className="h-5 w-5" />}
@@ -383,7 +391,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 6. ACTIVOS */}
+          {/* 7. ACTIVOS */}
           <ModuleNav 
             title={t('navigation.assets')} 
             icon={<Package className="h-5 w-5" />}
@@ -499,7 +507,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 8. FINANZAS */}
+          {/* 9. FINANZAS */}
           <ModuleNav 
             title={t('navigation.finance')} 
             icon={<DollarSign className="h-5 w-5" />}
@@ -563,7 +571,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 9. EVENTOS */}
+          {/* 10. EVENTOS */}
           <ModuleNav 
             title="Eventos" 
             icon={<CalendarDays className="h-5 w-5" />}
@@ -607,7 +615,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 10. MARKETING */}
+          {/* 11. MARKETING */}
           <ModuleNav 
             title="Marketing" 
             icon={<Megaphone className="h-5 w-5" />}
@@ -629,7 +637,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 11. CONCESIONES */}
+          {/* 12. CONCESIONES */}
           <ModuleNav 
             title={t('navigation.concessions')} 
             icon={<Store className="h-5 w-5" />}
@@ -672,7 +680,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 12. RECURSOS HUMANOS */}
+          {/* 13. RECURSOS HUMANOS */}
           <ModuleNav 
             title="Recursos Humanos" 
             icon={<Users className="h-5 w-5" />}
@@ -744,7 +752,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 13. COMUNICACIÓN */}
+          {/* 14. COMUNICACIÓN */}
           <ModuleNav 
             title="Comunicación" 
             icon={<MessageSquare className="h-5 w-5" />}
@@ -794,7 +802,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 14. SEGURIDAD */}
+          {/* 15. SEGURIDAD */}
           <ModuleNav 
             title="Seguridad" 
             icon={<Shield className="h-5 w-5" />}

@@ -99,16 +99,19 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/parks-dashboard')))}
           </Suspense>
         </Route>
-        <Route path="/admin/parks/visitor-count">
+        {/* Rutas del módulo de visitantes - nuevas rutas */}
+        <Route path="/admin/visitors/count">
           <Suspense fallback={<div className="p-8 text-center">Cargando sistema de conteo de visitantes...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/parks/visitor-count')))}
           </Suspense>
         </Route>
-        <Route path="/admin/parks/visitor-dashboard">
+        <Route path="/admin/visitors/dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de visitantes...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/parks/visitor-dashboard')))}
           </Suspense>
         </Route>
+        
+
         <Route path="/admin/parks-dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de parques...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/parks-dashboard')))}
