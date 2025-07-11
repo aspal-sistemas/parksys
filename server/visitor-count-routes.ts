@@ -1,25 +1,16 @@
 import { Router } from 'express';
 import { db } from './db';
-import { visitorCounts, parks } from '@shared/schema';
+import { visitorCounts, parks, insertVisitorCountSchema } from '@shared/schema';
 import { eq, sql, desc, and, gte, lte, sum } from 'drizzle-orm';
 import { z } from 'zod';
 
 const router = Router();
 
-// Schema de validación para crear registro de visitantes
-const createVisitorCountSchema = z.object({
-  parkId: z.number(),
-  date: z.string(),
-  adults: z.number().min(0),
-  children: z.number().min(0),
-  seniors: z.number().min(0).default(0),
-  pets: z.number().min(0).default(0),
-  groups: z.number().min(0).default(0),
-  countingMethod: z.enum(['estimation', 'manual_counter', 'event_based', 'entrance_control']),
-  dayType: z.enum(['weekday', 'weekend', 'holiday']).optional(),
-  weather: z.enum(['sunny', 'cloudy', 'rainy', 'other']).optional(),
-  notes: z.string().optional(),
-  registeredBy: z.number()
+// Usar el schema de inserción desde shared/schema.ts con modificaciones para campos opcionales
+const createVisitorCountSchema = insertVisitorCountSchema.extend({
+  dayType: z.string().optional(),
+  weather: z.string().optional(),
+  notes: z.string().optional()
 });
 
 // Obtener todos los registros de visitantes con filtros
@@ -99,6 +90,9 @@ router.get('/visitor-counts', async (req, res) => {
 router.post('/visitor-counts', async (req, res) => {
   try {
     console.log('📥 Datos recibidos en el backend:', req.body);
+    console.log('📋 Estructura del body:', Object.keys(req.body));
+    console.log('📋 Tipos de datos:', Object.entries(req.body).map(([key, value]) => `${key}: ${typeof value}`));
+    
     const validatedData = createVisitorCountSchema.parse(req.body);
     console.log('✅ Datos validados:', validatedData);
     
