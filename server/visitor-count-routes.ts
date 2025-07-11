@@ -38,7 +38,7 @@ router.get('/visitor-counts', async (req, res) => {
         seniors: visitorCounts.seniors,
         pets: visitorCounts.pets,
         groups: visitorCounts.groups,
-        totalVisitors: sql<number>`${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors} + ${visitorCounts.pets} + ${visitorCounts.groups}`,
+        totalVisitors: sql<number>`${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors}`,
         countingMethod: visitorCounts.countingMethod,
         dayType: visitorCounts.dayType,
         weather: visitorCounts.weather,
@@ -98,7 +98,9 @@ router.get('/visitor-counts', async (req, res) => {
 // Crear nuevo registro de visitantes
 router.post('/visitor-counts', async (req, res) => {
   try {
+    console.log('📥 Datos recibidos en el backend:', req.body);
     const validatedData = createVisitorCountSchema.parse(req.body);
+    console.log('✅ Datos validados:', validatedData);
     
     const [newRecord] = await db
       .insert(visitorCounts)
@@ -118,9 +120,10 @@ router.post('/visitor-counts', async (req, res) => {
       })
       .returning();
 
+    console.log('✅ Registro creado exitosamente:', newRecord);
     res.status(201).json(newRecord);
   } catch (error) {
-    console.error('Error creando registro de visitantes:', error);
+    console.error('❌ Error creando registro de visitantes:', error);
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: 'Datos inválidos', details: error.errors });
     } else {
@@ -144,13 +147,13 @@ router.get('/visitor-stats/:parkId', async (req, res) => {
     
     const monthlyStats = await db
       .select({
-        totalVisitors: sql<number>`SUM(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors} + ${visitorCounts.pets} + ${visitorCounts.groups})`,
+        totalVisitors: sql<number>`SUM(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors})`,
         totalAdults: sql<number>`SUM(${visitorCounts.adults})`,
         totalChildren: sql<number>`SUM(${visitorCounts.children})`,
         totalSeniors: sql<number>`SUM(${visitorCounts.seniors})`,
         totalPets: sql<number>`SUM(${visitorCounts.pets})`,
         totalGroups: sql<number>`SUM(${visitorCounts.groups})`,
-        avgDailyVisitors: sql<number>`AVG(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors} + ${visitorCounts.pets} + ${visitorCounts.groups})`,
+        avgDailyVisitors: sql<number>`AVG(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors})`,
         totalDays: sql<number>`COUNT(*)`,
         peakDay: sql<string>`MAX(${visitorCounts.date})`,
         peakVisitors: sql<number>`MAX(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors} + ${visitorCounts.pets} + ${visitorCounts.groups})`

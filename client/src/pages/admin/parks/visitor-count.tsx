@@ -266,7 +266,7 @@ export default function VisitorCountPage() {
   };
 
   const getTotalVisitors = () => {
-    return formData.adults + formData.children + formData.seniors + formData.groups;
+    return formData.adults + formData.children + formData.seniors;
   };
 
   const getTotalPets = () => {
@@ -566,15 +566,7 @@ export default function VisitorCountPage() {
                             onChange={(e) => setFormData({...formData, seniors: parseInt(e.target.value) || 0})}
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="groups">Grupos</Label>
-                          <Input
-                            type="number"
-                            min="0"
-                            value={formData.groups}
-                            onChange={(e) => setFormData({...formData, groups: parseInt(e.target.value) || 0})}
-                          />
-                        </div>
+
                       </div>
                     </div>
 
@@ -601,7 +593,7 @@ export default function VisitorCountPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 bg-emerald-50 rounded-lg">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-emerald-700">{formData.adults + formData.children + formData.seniors + formData.groups}</div>
+                        <div className="text-2xl font-bold text-emerald-700">{formData.adults + formData.children + formData.seniors}</div>
                         <div className="text-sm text-emerald-600">Total de visitantes</div>
                       </div>
                     </div>
