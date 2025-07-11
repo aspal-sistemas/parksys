@@ -599,13 +599,13 @@ export const volunteerRecognitions = pgTable("volunteer_recognitions", {
   id: serial("id").primaryKey(),
   volunteerId: integer("volunteer_id").notNull(),
   recognitionType: text("recognition_type").notNull(),
-  title: text("title").notNull(),
-  description: text("description"),
-  issuedDate: date("issued_date").notNull(),
+  level: text("level"),
+  reason: text("reason").notNull(),
+  hoursCompleted: integer("hours_completed"),
+  certificateUrl: text("certificate_url"),
+  issuedAt: timestamp("issued_at").notNull(),
   issuedById: integer("issued_by_id").notNull(),
-  imageUrl: text("image_url"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow()
+  additionalComments: text("additional_comments"),
 });
 
 // Constantes y tipos adicionales

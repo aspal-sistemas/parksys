@@ -33,15 +33,15 @@ import { apiRequest } from '@/lib/queryClient';
 // Estructura de datos para reconocimiento (ajustado a la estructura real de la DB)
 interface Recognition {
   id: number;
-  volunteerId: number;
-  recognitionType: string;
+  volunteer_id: number;
+  recognition_type: string;
   level: string | null;
   reason: string;
-  hoursCompleted: number | null;
-  certificateUrl: string | null;
-  issuedAt: string;
-  issuedById: number;
-  additionalComments: string | null;
+  hours_completed: number | null;
+  certificate_url: string | null;
+  issued_at: string;
+  issued_by_id: number;
+  additional_comments: string | null;
 }
 
 const VolunteerRecognitions: React.FC = () => {
@@ -85,18 +85,23 @@ const VolunteerRecognitions: React.FC = () => {
 
   // Filter recognitions based on search term and type
   const filteredRecognitions = recognitions.filter((recognition: Recognition) => {
-    const volunteer = volunteers.find((v: any) => v.id === recognition.volunteerId);
-    const volunteerName = volunteer ? volunteer.fullName : `Voluntario ID: ${recognition.volunteerId}`;
+    // Validate recognition object and required fields
+    if (!recognition || !recognition.recognition_type || !recognition.reason) {
+      return false;
+    }
+    
+    const volunteer = volunteers.find((v: any) => v.id === recognition.volunteer_id);
+    const volunteerName = volunteer ? volunteer.fullName : `Voluntario ID: ${recognition.volunteer_id}`;
     
     const matchesSearch = 
       searchTerm === '' || 
       volunteerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      recognition.recognitionType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (recognition.reason && recognition.reason.toLowerCase().includes(searchTerm.toLowerCase()));
+      recognition.recognition_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      recognition.reason.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesType = 
       typeFilter === 'all' || 
-      recognition.recognitionType === typeFilter;
+      recognition.recognition_type === typeFilter;
     
     return matchesSearch && matchesType;
   });
@@ -290,13 +295,13 @@ const VolunteerRecognitions: React.FC = () => {
                       <TableRow key={recognition.id}>
                         <TableCell className="font-medium">{recognition.id}</TableCell>
                         <TableCell>
-                          <div className="font-medium">{getVolunteerName(recognition.volunteerId)}</div>
-                          <div className="text-sm text-gray-500">ID: {recognition.volunteerId}</div>
+                          <div className="font-medium">{getVolunteerName(recognition.volunteer_id)}</div>
+                          <div className="text-sm text-gray-500">ID: {recognition.volunteer_id}</div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {getRecognitionIcon(recognition.recognitionType)}
-                            <span>{recognition.recognitionType}</span>
+                            {getRecognitionIcon(recognition.recognition_type)}
+                            <span>{recognition.recognition_type}</span>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -315,10 +320,10 @@ const VolunteerRecognitions: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            {formatDate(recognition.issuedAt)}
+                            {formatDate(recognition.issued_at)}
                           </div>
                           <div className="text-xs text-gray-500">
-                            Por: {getIssuerName(recognition.issuedById)}
+                            Por: {getIssuerName(recognition.issued_by_id)}
                           </div>
                         </TableCell>
                         <TableCell className="text-right">

@@ -1247,11 +1247,23 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
   apiRouter.get("/volunteers/recognitions/all", isAuthenticated, async (_req: Request, res: Response) => {
     try {
       console.log("Obteniendo todos los reconocimientos");
-      const recognitions = await db
-        .select()
-        .from(volunteerRecognitions)
-        .orderBy(desc(volunteerRecognitions.issuedAt));
-        
+      const result = await db.execute(sql`
+        SELECT 
+          id,
+          volunteer_id,
+          recognition_type,
+          level,
+          reason,
+          hours_completed,
+          certificate_url,
+          issued_at,
+          issued_by_id,
+          additional_comments
+        FROM volunteer_recognitions 
+        ORDER BY issued_at DESC
+      `);
+      
+      const recognitions = result.rows;
       console.log(`Se encontraron ${recognitions.length} reconocimientos`);
       res.json(recognitions);
     } catch (error) {
@@ -1269,12 +1281,24 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      const recognitions = await db
-        .select()
-        .from(volunteerRecognitions)
-        .where(eq(volunteerRecognitions.volunteerId, volunteerId))
-        .orderBy(desc(volunteerRecognitions.createdAt));
-        
+      const result = await db.execute(sql`
+        SELECT 
+          id,
+          volunteer_id,
+          recognition_type,
+          level,
+          reason,
+          hours_completed,
+          certificate_url,
+          issued_at,
+          issued_by_id,
+          additional_comments
+        FROM volunteer_recognitions 
+        WHERE volunteer_id = ${volunteerId}
+        ORDER BY issued_at DESC
+      `);
+      
+      const recognitions = result.rows;
       res.json(recognitions);
     } catch (error) {
       console.error(`Error al obtener reconocimientos del voluntario ${req.params.id}:`, error);
