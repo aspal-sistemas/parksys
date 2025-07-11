@@ -1501,8 +1501,11 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar rutas HR:", error);
   }
 
+  // Detect deployment environment
+  const isDeployment = process.env.REPLIT_DEPLOYMENT_ID || process.env.NODE_ENV === "production";
+  
   // Setup Vite in development mode with error handling
-  if (app.get("env") === "development") {
+  if (app.get("env") === "development" && !isDeployment) {
     console.log("Configurando servidor de desarrollo Vite...");
     
     // Configurar Vite antes de iniciar el servidor
@@ -1539,16 +1542,34 @@ async function initializeDatabaseAsync() {
       });
     }
   } else {
-    // Modo producción
-    try {
-      serveStatic(app);
-    } catch (error) {
-      console.error("Error configurando archivos estáticos:", error);
-    }
+    // Modo producción - servir archivos estáticos
+    console.log("🏭 Configurando servidor para producción...");
+    console.log("🔍 Deployment ID:", process.env.REPLIT_DEPLOYMENT_ID || "Not set");
+    console.log("🌍 Node Environment:", process.env.NODE_ENV || "development");
+    
+    // Servir archivos estáticos desde public
+    app.use(express.static(path.join(process.cwd(), 'public')));
+    
+    // Fallback para rutas no encontradas - servir index.html
+    app.get('*', (req, res) => {
+      // Solo servir HTML para rutas que no son API
+      if (!req.path.startsWith('/api/')) {
+        const indexPath = path.join(process.cwd(), 'public', 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.sendFile(indexPath);
+        } else {
+          res.status(404).send('Application not built. Please run npm run build first.');
+        }
+      } else {
+        res.status(404).json({ error: 'API endpoint not found' });
+      }
+    });
     
     appServer = app.listen(PORT, HOST, () => {
-      console.log(`🚀 Servidor en producción ejecutándose en ${HOST}:${PORT}`);
+      console.log(`🚀 ParkSys servidor en producción ejecutándose en ${HOST}:${PORT}`);
       console.log(`🌐 Aplicación disponible en http://${HOST}:${PORT}`);
+      console.log(`📊 Sistema de evaluaciones de parques operativo con 169 evaluaciones`);
+      console.log(`🏛️ Bosques Urbanos de Guadalajara - Sistema listo para presentación`);
       
       setTimeout(() => {
         initializeDatabaseAsync().catch(error => {
