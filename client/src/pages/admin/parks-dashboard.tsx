@@ -115,127 +115,145 @@ const ParksDashboard = () => {
     <AdminLayout title="Resumen operativo">
       <div className="space-y-6">
         {/* Estadísticas principales */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Parques</CardTitle>
-              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-emerald-100">Total de Parques</CardTitle>
+              <div className="bg-white/20 rounded-full p-2">
+                <MapPin className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{data.totalParks}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-3xl font-bold text-white">{data.totalParks}</div>
+              <p className="text-xs text-emerald-100">
                 {data.activeParks} activos
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Superficie Total</CardTitle>
-              <Trees className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-blue-100">Superficie Total</CardTitle>
+              <div className="bg-white/20 rounded-full p-2">
+                <Trees className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold text-white">
                 {data.totalSurface ? `${(data.totalSurface / 10000).toFixed(1)} ha` : 'N/A'}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-blue-100">
                 Superficie total de parques
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-teal-500 to-teal-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Área Permeable</CardTitle>
-              <Trees className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-teal-100">Área Permeable</CardTitle>
+              <div className="bg-white/20 rounded-full p-2">
+                <Trees className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold text-white">
                 {data.totalGreenArea ? `${(data.totalGreenArea / 10000).toFixed(1)} ha` : 'N/A'}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-teal-100">
                 Superficie permeable total
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Actividades</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-purple-100">Actividades</CardTitle>
+              <div className="bg-white/20 rounded-full p-2">
+                <Calendar className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{data.totalActivities}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-3xl font-bold text-white">{data.totalActivities}</div>
+              <p className="text-xs text-purple-100">
                 Eventos programados
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Voluntarios</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-orange-100">Voluntarios</CardTitle>
+              <div className="bg-white/20 rounded-full p-2">
+                <Users className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{data.totalVolunteers}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-3xl font-bold text-white">{data.totalVolunteers}</div>
+              <p className="text-xs text-orange-100">
                 Activos en el sistema
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Árboles</CardTitle>
-              <Trees className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-green-100">Árboles</CardTitle>
+              <div className="bg-white/20 rounded-full p-2">
+                <Trees className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{data.totalTrees}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-3xl font-bold text-white">{data.totalTrees}</div>
+              <p className="text-xs text-green-100">
                 En inventario
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-pink-500 to-pink-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Visitantes</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-pink-100">Visitantes</CardTitle>
+              <div className="bg-white/20 rounded-full p-2">
+                <TrendingUp className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold text-white">
                 {data.totalVisitors ? data.totalVisitors.toLocaleString() : 'N/A'}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-pink-100">
                 Visitantes totales
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Calificación</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-yellow-100">Calificación</CardTitle>
+              <div className="bg-white/20 rounded-full p-2">
+                <CheckCircle className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold text-white">
                 {data.averageRating ? data.averageRating.toFixed(1) : 'N/A'}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-yellow-100">
                 Promedio de evaluaciones
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-red-500 to-red-600 text-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">En Mantenimiento</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-red-100">En Mantenimiento</CardTitle>
+              <div className="bg-white/20 rounded-full p-2">
+                <AlertTriangle className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{data.maintenanceAreas}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-3xl font-bold text-white">{data.maintenanceAreas}</div>
+              <p className="text-xs text-red-100">
                 Áreas en mantenimiento
               </p>
             </CardContent>
@@ -243,10 +261,15 @@ const ParksDashboard = () => {
         </div>
 
         {/* Mapa de parques */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Ubicación de Parques</CardTitle>
-            <CardDescription>
+        <Card className="border-0 shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-t-lg">
+            <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <div className="bg-emerald-500 rounded-full p-2">
+                <MapPin className="h-5 w-5 text-white" />
+              </div>
+              Ubicación de Parques
+            </CardTitle>
+            <CardDescription className="text-gray-600">
               Mapa interactivo mostrando la ubicación de todos los parques en el sistema
             </CardDescription>
           </CardHeader>
@@ -294,12 +317,17 @@ const ParksDashboard = () => {
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Parques por municipio */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Parques por Municipio</CardTitle>
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-t-lg">
+              <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <div className="bg-emerald-500 rounded-full p-2">
+                  <MapPin className="h-4 w-4 text-white" />
+                </div>
+                Parques por Municipio
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="pt-6">
+              <div className="space-y-4">
                 {data.parksByMunicipality?.map((item, index) => {
                   const maxCount = Math.max(...(data.parksByMunicipality?.map(p => p.count) || [1]));
                   const percentage = (item.count / maxCount) * 100;
@@ -310,12 +338,12 @@ const ParksDashboard = () => {
                         {item.municipalityName}
                       </div>
                       <div className="flex-1 flex items-center space-x-2">
-                        <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
+                        <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
                           <div 
-                            className="bg-green-500 h-4 rounded-full flex items-center justify-end pr-2 transition-all duration-500"
+                            className="bg-gradient-to-r from-emerald-500 to-green-500 h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm"
                             style={{ width: `${Math.max(percentage, 5)}%` }}
                           >
-                            <span className="text-white text-xs font-medium">
+                            <span className="text-white text-xs font-bold">
                               {item.count}
                             </span>
                           </div>
@@ -329,12 +357,17 @@ const ParksDashboard = () => {
           </Card>
 
           {/* Parques por tipo */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Distribución por Tipo</CardTitle>
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
+              <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <div className="bg-blue-500 rounded-full p-2">
+                  <Activity className="h-4 w-4 text-white" />
+                </div>
+                Distribución por Tipo
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="pt-6">
+              <div className="space-y-4">
                 {data.parksByType?.map((item, index) => {
                   const maxCount = Math.max(...(data.parksByType?.map(p => p.count) || [1]));
                   const percentage = (item.count / maxCount) * 100;
@@ -345,12 +378,12 @@ const ParksDashboard = () => {
                         {item.type}
                       </div>
                       <div className="flex-1 flex items-center space-x-2">
-                        <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
+                        <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
                           <div 
-                            className="bg-blue-500 h-4 rounded-full flex items-center justify-end pr-2 transition-all duration-500"
+                            className="bg-gradient-to-r from-blue-500 to-indigo-500 h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm"
                             style={{ width: `${Math.max(percentage, 5)}%` }}
                           >
-                            <span className="text-white text-xs font-medium">
+                            <span className="text-white text-xs font-bold">
                               {item.count}
                             </span>
                           </div>
@@ -364,22 +397,27 @@ const ParksDashboard = () => {
           </Card>
 
           {/* Estado de conservación */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Estado de Conservación</CardTitle>
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-t-lg">
+              <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <div className="bg-teal-500 rounded-full p-2">
+                  <CheckCircle className="h-4 w-4 text-white" />
+                </div>
+                Estado de Conservación
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="pt-6">
+              <div className="space-y-4">
                 {data.conservationStatus?.map((item, index) => {
                   const maxCount = Math.max(...(data.conservationStatus?.map(p => p.count) || [1]));
                   const percentage = (item.count / maxCount) * 100;
                   const getStatusColor = (status: string) => {
                     switch (status.toLowerCase()) {
-                      case 'excelente': return 'bg-green-600';
-                      case 'bueno': return 'bg-green-500';
-                      case 'regular': return 'bg-yellow-500';
-                      case 'malo': return 'bg-red-500';
-                      default: return 'bg-gray-500';
+                      case 'excelente': return 'bg-gradient-to-r from-green-500 to-green-600';
+                      case 'bueno': return 'bg-gradient-to-r from-emerald-500 to-green-500';
+                      case 'regular': return 'bg-gradient-to-r from-yellow-500 to-orange-500';
+                      case 'malo': return 'bg-gradient-to-r from-red-500 to-red-600';
+                      default: return 'bg-gradient-to-r from-gray-500 to-gray-600';
                     }
                   };
                   
@@ -389,12 +427,12 @@ const ParksDashboard = () => {
                         {item.status}
                       </div>
                       <div className="flex-1 flex items-center space-x-2">
-                        <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
+                        <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
                           <div 
-                            className={`${getStatusColor(item.status)} h-4 rounded-full flex items-center justify-end pr-2 transition-all duration-500`}
+                            className={`${getStatusColor(item.status)} h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm`}
                             style={{ width: `${Math.max(percentage, 5)}%` }}
                           >
-                            <span className="text-white text-xs font-medium">
+                            <span className="text-white text-xs font-bold">
                               {item.count}
                             </span>
                           </div>
@@ -408,31 +446,41 @@ const ParksDashboard = () => {
           </Card>
 
           {/* Actividades recientes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Actividades Recientes</CardTitle>
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-t-lg">
+              <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <div className="bg-purple-500 rounded-full p-2">
+                  <Calendar className="h-4 w-4 text-white" />
+                </div>
+                Actividades Recientes
+              </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="space-y-4">
                 {data.recentActivities?.length > 0 ? (
                   data.recentActivities.map((activity) => (
-                    <div key={activity.id} className="flex items-start space-x-3">
-                      <Activity className="h-5 w-5 text-blue-500 mt-0.5" />
+                    <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 hover:shadow-md transition-shadow">
+                      <div className="bg-purple-500 rounded-full p-2">
+                        <Activity className="h-4 w-4 text-white" />
+                      </div>
                       <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium">{activity.title}</p>
-                        <p className="text-xs text-gray-500">{activity.parkName}</p>
-                        <div className="flex items-center space-x-2 text-xs text-gray-400">
+                        <p className="text-sm font-semibold text-gray-800">{activity.title}</p>
+                        <p className="text-xs text-purple-600 font-medium">{activity.parkName}</p>
+                        <div className="flex items-center space-x-2 text-xs text-gray-500">
                           <span>{new Date(activity.date).toLocaleDateString()}</span>
                           <span>•</span>
-                          <span>{activity.participants} participantes</span>
+                          <span className="font-medium">{activity.participants} participantes</span>
                         </div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    No hay actividades recientes
-                  </p>
+                  <div className="text-center py-8">
+                    <div className="bg-gray-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">
+                      <Activity className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <p className="text-sm text-gray-500">No hay actividades recientes</p>
+                  </div>
                 )}
               </div>
             </CardContent>
