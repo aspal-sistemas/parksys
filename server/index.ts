@@ -1025,6 +1025,15 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar rutas de comunicaciones:", error);
   }
 
+  // Registrar rutas del sistema de conteo de visitantes
+  try {
+    console.log("Registrando rutas del sistema de conteo de visitantes...");
+    app.use("/api", visitorCountRoutes);
+    console.log("Rutas del sistema de conteo de visitantes registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de conteo de visitantes:", error);
+  }
+
   // Inicializar tablas de comunicaciones
   try {
     const { seedEmailTemplates } = await import("./communications/seedCommunications");

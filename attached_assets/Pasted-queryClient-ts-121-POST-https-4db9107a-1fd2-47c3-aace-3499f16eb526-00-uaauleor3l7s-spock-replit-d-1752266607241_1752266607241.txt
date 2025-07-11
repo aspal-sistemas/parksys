@@ -1,0 +1,57 @@
+queryClient.ts:121  POST https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/visitor-counts 400 (Bad Request)
+window.fetch @ Network.js:219
+apiRequest @ queryClient.ts:121
+(anonymous) @ visitor-count.tsx:136
+mutationFn @ visitor-count.tsx:135
+fn @ @tanstack_react-query.js?v=016459d6:1203
+run @ @tanstack_react-query.js?v=016459d6:500
+start @ @tanstack_react-query.js?v=016459d6:542
+execute @ @tanstack_react-query.js?v=016459d6:1239
+await in execute
+mutate @ @tanstack_react-query.js?v=016459d6:2655
+(anonymous) @ @tanstack_react-query.js?v=016459d6:3371
+handleSubmit @ visitor-count.tsx:237
+callCallback2 @ chunk-SKRUXVEK.js?v=016459d6:3674
+invokeGuardedCallbackDev @ chunk-SKRUXVEK.js?v=016459d6:3699
+invokeGuardedCallback @ chunk-SKRUXVEK.js?v=016459d6:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-SKRUXVEK.js?v=016459d6:3736
+executeDispatch @ chunk-SKRUXVEK.js?v=016459d6:7014
+processDispatchQueueItemsInOrder @ chunk-SKRUXVEK.js?v=016459d6:7034
+processDispatchQueue @ chunk-SKRUXVEK.js?v=016459d6:7043
+dispatchEventsForPlugins @ chunk-SKRUXVEK.js?v=016459d6:7051
+(anonymous) @ chunk-SKRUXVEK.js?v=016459d6:7174
+batchedUpdates$1 @ chunk-SKRUXVEK.js?v=016459d6:18913
+batchedUpdates @ chunk-SKRUXVEK.js?v=016459d6:3579
+dispatchEventForPluginEventSystem @ chunk-SKRUXVEK.js?v=016459d6:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-SKRUXVEK.js?v=016459d6:5478
+dispatchEvent @ chunk-SKRUXVEK.js?v=016459d6:5472
+dispatchDiscreteEvent @ chunk-SKRUXVEK.js?v=016459d6:5449Understand this error
+queryClient.ts:121  POST https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/visitor-counts 400 (Bad Request)
+window.fetch @ Network.js:219
+apiRequest @ queryClient.ts:121
+(anonymous) @ visitor-count.tsx:136
+mutationFn @ visitor-count.tsx:135
+fn @ @tanstack_react-query.js?v=016459d6:1203
+run @ @tanstack_react-query.js?v=016459d6:500
+start @ @tanstack_react-query.js?v=016459d6:542
+execute @ @tanstack_react-query.js?v=016459d6:1239
+await in execute
+mutate @ @tanstack_react-query.js?v=016459d6:2655
+(anonymous) @ @tanstack_react-query.js?v=016459d6:3371
+handleSubmit @ visitor-count.tsx:237
+callCallback2 @ chunk-SKRUXVEK.js?v=016459d6:3674
+invokeGuardedCallbackDev @ chunk-SKRUXVEK.js?v=016459d6:3699
+invokeGuardedCallback @ chunk-SKRUXVEK.js?v=016459d6:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-SKRUXVEK.js?v=016459d6:3736
+executeDispatch @ chunk-SKRUXVEK.js?v=016459d6:7014
+processDispatchQueueItemsInOrder @ chunk-SKRUXVEK.js?v=016459d6:7034
+processDispatchQueue @ chunk-SKRUXVEK.js?v=016459d6:7043
+dispatchEventsForPlugins @ chunk-SKRUXVEK.js?v=016459d6:7051
+(anonymous) @ chunk-SKRUXVEK.js?v=016459d6:7174
+batchedUpdates$1 @ chunk-SKRUXVEK.js?v=016459d6:18913
+batchedUpdates @ chunk-SKRUXVEK.js?v=016459d6:3579
+dispatchEventForPluginEventSystem @ chunk-SKRUXVEK.js?v=016459d6:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-SKRUXVEK.js?v=016459d6:5478
+dispatchEvent @ chunk-SKRUXVEK.js?v=016459d6:5472
+dispatchDiscreteEvent @ chunk-SKRUXVEK.js?v=016459d6:5449Understand this error
+queryClient.ts:121  POST https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/visitor-counts 400 (Bad Request)
