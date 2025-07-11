@@ -9,11 +9,11 @@ import { z } from 'zod';
 const createEvaluationSchema = z.object({
   parkId: z.number(),
   evaluatorName: z.string().min(1, "El nombre es requerido"),
-  evaluatorEmail: z.string().email().optional(),
-  evaluatorPhone: z.string().optional(),
-  evaluatorCity: z.string().optional(),
+  evaluatorEmail: z.string().email().optional().or(z.literal("")).optional(),
+  evaluatorPhone: z.string().optional().or(z.literal("")).optional(),
+  evaluatorCity: z.string().optional().or(z.literal("")).optional(),
   evaluatorAge: z.number().min(13).max(120).optional(),
-  isFrequentVisitor: z.boolean().optional(),
+  isFrequentVisitor: z.boolean().optional().default(false),
   
   // Criterios de evaluación (1-5)
   cleanliness: z.number().min(1).max(5),
@@ -27,11 +27,11 @@ const createEvaluationSchema = z.object({
   overallRating: z.number().min(1).max(5),
   
   // Información adicional
-  comments: z.string().optional(),
-  suggestions: z.string().optional(),
-  wouldRecommend: z.boolean().optional(),
-  visitDate: z.string().optional(),
-  visitPurpose: z.string().optional(),
+  comments: z.string().optional().or(z.literal("")).optional(),
+  suggestions: z.string().optional().or(z.literal("")).optional(),
+  wouldRecommend: z.boolean().optional().default(true),
+  visitDate: z.string().optional().or(z.literal("")).optional(),
+  visitPurpose: z.string().optional().or(z.literal("")).optional(),
   visitDuration: z.number().min(1).optional(),
 });
 

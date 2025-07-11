@@ -166,19 +166,51 @@ export default function ParkEvaluationForm() {
       return;
     }
 
-    // Procesar datos opcionales
-    const processedData = {
-      ...data,
-      evaluatorAge: data.evaluatorAge || undefined,
-      evaluatorEmail: data.evaluatorEmail || undefined,
-      evaluatorPhone: data.evaluatorPhone || undefined,
-      evaluatorCity: data.evaluatorCity || undefined,
-      comments: data.comments || undefined,
-      suggestions: data.suggestions || undefined,
-      visitDate: data.visitDate || undefined,
-      visitPurpose: data.visitPurpose || undefined,
-      visitDuration: data.visitDuration || undefined,
+    // Procesar datos - solo incluir campos con valores válidos
+    const processedData: any = {
+      parkId: data.parkId,
+      evaluatorName: data.evaluatorName,
+      cleanliness: data.cleanliness,
+      safety: data.safety,
+      maintenance: data.maintenance,
+      accessibility: data.accessibility,
+      amenities: data.amenities,
+      activities: data.activities,
+      staff: data.staff,
+      naturalBeauty: data.naturalBeauty,
+      overallRating: data.overallRating,
+      isFrequentVisitor: data.isFrequentVisitor || false,
+      wouldRecommend: data.wouldRecommend !== undefined ? data.wouldRecommend : true,
     };
+
+    // Solo incluir campos opcionales si tienen valores válidos
+    if (data.evaluatorEmail && data.evaluatorEmail.trim() !== '') {
+      processedData.evaluatorEmail = data.evaluatorEmail;
+    }
+    if (data.evaluatorPhone && data.evaluatorPhone.trim() !== '') {
+      processedData.evaluatorPhone = data.evaluatorPhone;
+    }
+    if (data.evaluatorCity && data.evaluatorCity.trim() !== '') {
+      processedData.evaluatorCity = data.evaluatorCity;
+    }
+    if (data.evaluatorAge && data.evaluatorAge > 0) {
+      processedData.evaluatorAge = data.evaluatorAge;
+    }
+    if (data.comments && data.comments.trim() !== '') {
+      processedData.comments = data.comments;
+    }
+    if (data.suggestions && data.suggestions.trim() !== '') {
+      processedData.suggestions = data.suggestions;
+    }
+    if (data.visitDate && data.visitDate.trim() !== '') {
+      processedData.visitDate = data.visitDate;
+    }
+    if (data.visitPurpose && data.visitPurpose.trim() !== '') {
+      processedData.visitPurpose = data.visitPurpose;
+    }
+    if (data.visitDuration && data.visitDuration > 0) {
+      processedData.visitDuration = data.visitDuration;
+    }
 
     createEvaluation.mutate(processedData);
   };
