@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, safeApiRequest } from '@/lib/queryClient';
 import AdminLayout from '@/components/AdminLayout';
 import { 
   Plus, 
@@ -321,7 +321,7 @@ export default function EvaluationCriteriaPage() {
   // Obtener criterios de evaluación
   const { data: criteriaData, isLoading, error } = useQuery({
     queryKey: ['/api/evaluation-criteria/admin'],
-    queryFn: () => apiRequest('/api/evaluation-criteria/admin'),
+    queryFn: () => safeApiRequest('/api/evaluation-criteria/admin'),
   });
 
   // Debug: mostrar datos recibidos
