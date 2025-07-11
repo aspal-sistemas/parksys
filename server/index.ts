@@ -18,6 +18,27 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
+// Root endpoint handler for deployment health checks - HIGHEST PRIORITY
+app.get('/', (req: Request, res: Response) => {
+  try {
+    res.status(200).json({
+      status: 'ok',
+      message: 'ParkSys - Bosques Urbanos de Guadalajara',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      port: process.env.PORT || 5000,
+      environment: process.env.NODE_ENV || 'development',
+      uptime: process.uptime()
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'error', 
+      message: 'Service temporarily unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Simple API health check - priority over static files
 app.get('/api/status', (req: Request, res: Response) => {
   try {
@@ -71,6 +92,19 @@ app.get('/health', (req: Request, res: Response) => {
       timestamp: new Date().toISOString()
     });
   }
+});
+
+// Additional deployment health check endpoints
+app.get('/healthz', (req: Request, res: Response) => {
+  res.status(200).send('ok');
+});
+
+app.get('/readiness', (req: Request, res: Response) => {
+  res.status(200).json({ ready: true });
+});
+
+app.get('/liveness', (req: Request, res: Response) => {
+  res.status(200).json({ alive: true });
 });
 
 // Root API endpoint for deployment verification
@@ -196,6 +230,17 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   
   next();
 });
+
+// Register main routes immediately after middleware setup for faster deployment health checks
+console.log("🚀 Registering main routes for deployment health checks...");
+setTimeout(async () => {
+  try {
+    await registerRoutes(app);
+    console.log("✅ Main routes registered successfully");
+  } catch (error) {
+    console.error("❌ Error registering main routes:", error);
+  }
+}, 0);
 
 // Global request logging for debugging - AFTER JSON parsing
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -1114,7 +1159,8 @@ async function initializeDatabaseAsync() {
     console.error("Error inicializando tablas de comunicaciones:", error);
   }
 
-  const routeServer = await registerRoutes(app);
+  // Routes already registered earlier for faster deployment health checks
+  console.log("Main routes already registered for deployment health checks");
 
   // Inicializar tablas de vacaciones
   try {
@@ -1527,7 +1573,7 @@ async function initializeDatabaseAsync() {
           initializeDatabaseAsync().catch(error => {
             console.error("Error inicializando base de datos (no crítico):", error);
           });
-        }, 3000);
+        }, 500);
       });
     } catch (error) {
       console.error("Error importando Vite, iniciando servidor sin frontend:", error);
@@ -1538,7 +1584,7 @@ async function initializeDatabaseAsync() {
           initializeDatabaseAsync().catch(error => {
             console.error("Error inicializando base de datos (no crítico):", error);
           });
-        }, 3000);
+        }, 500);
       });
     }
   } else {
@@ -1552,15 +1598,15 @@ async function initializeDatabaseAsync() {
     
     // Fallback para rutas no encontradas - servir index.html
     app.get('*', (req, res) => {
-      // Solo servir HTML para rutas que no son API
-      if (!req.path.startsWith('/api/')) {
+      // Solo servir HTML para rutas que no son API, except root which is handled above
+      if (!req.path.startsWith('/api/') && req.path !== '/') {
         const indexPath = path.join(process.cwd(), 'public', 'index.html');
         if (fs.existsSync(indexPath)) {
           res.sendFile(indexPath);
         } else {
           res.status(404).send('Application not built. Please run npm run build first.');
         }
-      } else {
+      } else if (req.path.startsWith('/api/')) {
         res.status(404).json({ error: 'API endpoint not found' });
       }
     });
@@ -1575,7 +1621,7 @@ async function initializeDatabaseAsync() {
         initializeDatabaseAsync().catch(error => {
           console.error("Error inicializando base de datos (no crítico):", error);
         });
-      }, 1000);
+      }, 100);
     });
   }
 
