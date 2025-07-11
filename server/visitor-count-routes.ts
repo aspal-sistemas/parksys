@@ -304,4 +304,118 @@ router.delete('/visitor-counts/:id', async (req, res) => {
   }
 });
 
+// Endpoint específico para dashboard con métricas agregadas
+router.get('/visitor-counts/dashboard', async (req, res) => {
+  try {
+    const { parkId, startDate, endDate, limit = 1000 } = req.query;
+    
+    // Construir condiciones de filtrado
+    const conditions = [];
+    if (parkId && parkId !== 'all') {
+      conditions.push(eq(visitorCounts.parkId, Number(parkId)));
+    }
+    if (startDate) {
+      conditions.push(gte(visitorCounts.date, startDate as string));
+    }
+    if (endDate) {
+      conditions.push(lte(visitorCounts.date, endDate as string));
+    }
+
+    // Obtener datos de visitantes con información de parque
+    let query = db
+      .select({
+        id: visitorCounts.id,
+        parkId: visitorCounts.parkId,
+        parkName: parks.name,
+        date: visitorCounts.date,
+        adults: visitorCounts.adults,
+        children: visitorCounts.children,
+        seniors: visitorCounts.seniors,
+        pets: visitorCounts.pets,
+        groups: visitorCounts.groups,
+        totalVisitors: sql<number>`${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors}`,
+        countingMethod: visitorCounts.countingMethod,
+        dayType: visitorCounts.dayType,
+        weather: visitorCounts.weather,
+        notes: visitorCounts.notes,
+        createdAt: visitorCounts.createdAt
+      })
+      .from(visitorCounts)
+      .leftJoin(parks, eq(visitorCounts.parkId, parks.id))
+      .orderBy(desc(visitorCounts.date))
+      .limit(Number(limit));
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    const results = await query;
+
+    // Obtener métricas adicionales
+    let metricsQuery = db
+      .select({
+        totalVisitors: sql<number>`SUM(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors})`,
+        totalAdults: sql<number>`SUM(${visitorCounts.adults})`,
+        totalChildren: sql<number>`SUM(${visitorCounts.children})`,
+        totalSeniors: sql<number>`SUM(${visitorCounts.seniors})`,
+        totalPets: sql<number>`SUM(${visitorCounts.pets})`,
+        totalRecords: sql<number>`COUNT(*)`,
+        avgDailyVisitors: sql<number>`ROUND(AVG(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors}))`,
+        uniqueParks: sql<number>`COUNT(DISTINCT ${visitorCounts.parkId})`
+      })
+      .from(visitorCounts);
+
+    if (conditions.length > 0) {
+      metricsQuery = metricsQuery.where(and(...conditions));
+    }
+
+    const metrics = await metricsQuery;
+
+    // Obtener resumen por parques
+    let parkSummaryQuery = db
+      .select({
+        parkId: visitorCounts.parkId,
+        parkName: parks.name,
+        totalVisitors: sql<number>`SUM(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors})`,
+        totalRecords: sql<number>`COUNT(*)`,
+        avgDailyVisitors: sql<number>`ROUND(AVG(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors}))`,
+        lastCountDate: sql<string>`MAX(${visitorCounts.date})`
+      })
+      .from(visitorCounts)
+      .leftJoin(parks, eq(visitorCounts.parkId, parks.id))
+      .groupBy(visitorCounts.parkId, parks.name)
+      .orderBy(desc(sql<number>`SUM(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors})`));
+
+    if (conditions.length > 0) {
+      parkSummaryQuery = parkSummaryQuery.where(and(...conditions));
+    }
+
+    const parkSummaries = await parkSummaryQuery;
+
+    console.log('🌐 [VISITOR DASHBOARD] Datos enviados:', {
+      recordsCount: results.length,
+      metricsData: metrics[0],
+      parkSummariesCount: parkSummaries.length
+    });
+
+    res.json({
+      records: results,
+      metrics: metrics[0] || {
+        totalVisitors: 0,
+        totalAdults: 0,
+        totalChildren: 0,
+        totalSeniors: 0,
+        totalPets: 0,
+        totalRecords: 0,
+        avgDailyVisitors: 0,
+        uniqueParks: 0
+      },
+      parkSummaries: parkSummaries || []
+    });
+  } catch (error) {
+    console.error('❌ Error obteniendo datos del dashboard de visitantes:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 export default router;

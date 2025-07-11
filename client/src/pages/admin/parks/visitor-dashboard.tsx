@@ -66,9 +66,22 @@ export default function VisitorDashboard() {
   const [dateRange, setDateRange] = useState<string>('30');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Obtener datos de visitantes
-  const { data: visitorData, isLoading } = useQuery<VisitorCount[]>({
-    queryKey: ['/api/visitor-counts', selectedPark, dateRange],
+  // Obtener datos del dashboard de visitantes
+  const { data: dashboardData, isLoading } = useQuery<{
+    records: VisitorCount[];
+    metrics: {
+      totalVisitors: number;
+      totalAdults: number;
+      totalChildren: number;
+      totalSeniors: number;
+      totalPets: number;
+      totalRecords: number;
+      avgDailyVisitors: number;
+      uniqueParks: number;
+    };
+    parkSummaries: ParkSummary[];
+  }>({
+    queryKey: ['/api/visitor-counts/dashboard', selectedPark, dateRange],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedPark !== 'all') params.append('parkId', selectedPark);
@@ -79,8 +92,10 @@ export default function VisitorDashboard() {
       }
       params.append('limit', '1000');
       
-      const response = await fetch(`/api/visitor-counts?${params}`);
-      return response.json();
+      const response = await fetch(`/api/visitor-counts/dashboard?${params}`);
+      const data = await response.json();
+      console.log('🌐 [FRONTEND] Datos recibidos del dashboard:', data);
+      return data;
     }
   });
 
@@ -89,30 +104,10 @@ export default function VisitorDashboard() {
     queryKey: ['/api/parks'],
   });
 
-  // Procesar datos para métricas
-  const metrics = useMemo(() => {
-    if (!visitorData || !Array.isArray(visitorData)) return null;
-
-    const totalVisitors = visitorData.reduce((sum, record) => sum + record.totalVisitors, 0);
-    const totalAdults = visitorData.reduce((sum, record) => sum + record.adults, 0);
-    const totalChildren = visitorData.reduce((sum, record) => sum + record.children, 0);
-    const totalSeniors = visitorData.reduce((sum, record) => sum + record.seniors, 0);
-    const totalPets = visitorData.reduce((sum, record) => sum + record.pets, 0);
-    const totalRecords = visitorData.length;
-    const avgDailyVisitors = totalRecords > 0 ? Math.round(totalVisitors / totalRecords) : 0;
-    const uniqueParks = new Set(visitorData.map(r => r.parkId)).size;
-
-    return {
-      totalVisitors,
-      totalAdults,
-      totalChildren,
-      totalSeniors,
-      totalPets,
-      totalRecords,
-      avgDailyVisitors,
-      uniqueParks
-    };
-  }, [visitorData]);
+  // Datos procesados desde el dashboard
+  const visitorData = dashboardData?.records || [];
+  const metrics = dashboardData?.metrics || null;
+  const parkSummaries = dashboardData?.parkSummaries || [];
 
   // Datos para gráficos
   const chartData = useMemo(() => {
@@ -198,38 +193,6 @@ export default function VisitorDashboard() {
       methods: methodData,
       weather: weatherData
     };
-  }, [visitorData]);
-
-  // Resumen por parques
-  const parkSummaries = useMemo(() => {
-    if (!visitorData || !Array.isArray(visitorData)) return [];
-
-    const summaries: Record<number, ParkSummary> = {};
-    
-    visitorData.forEach(record => {
-      if (!summaries[record.parkId]) {
-        summaries[record.parkId] = {
-          parkId: record.parkId,
-          parkName: record.parkName,
-          totalVisitors: 0,
-          totalRecords: 0,
-          avgDailyVisitors: 0,
-          lastCountDate: record.date
-        };
-      }
-      
-      summaries[record.parkId].totalVisitors += record.totalVisitors;
-      summaries[record.parkId].totalRecords += 1;
-      if (record.date > summaries[record.parkId].lastCountDate) {
-        summaries[record.parkId].lastCountDate = record.date;
-      }
-    });
-
-    Object.values(summaries).forEach(summary => {
-      summary.avgDailyVisitors = Math.round(summary.totalVisitors / summary.totalRecords);
-    });
-
-    return Object.values(summaries).sort((a, b) => b.totalVisitors - a.totalVisitors);
   }, [visitorData]);
 
   if (isLoading) {
