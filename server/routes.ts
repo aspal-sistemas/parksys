@@ -513,6 +513,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const treesResult = await pool.query('SELECT COUNT(*) as count FROM trees');
       const totalTrees = parseInt(treesResult.rows[0].count);
       
+      // Total de amenidades
+      const amenitiesResult = await pool.query('SELECT COUNT(*) as count FROM amenities');
+      const totalAmenities = parseInt(amenitiesResult.rows[0].count);
+      
+      // Total de instructores  
+      const instructorsResult = await pool.query('SELECT COUNT(*) as count FROM instructors');
+      const totalInstructors = parseInt(instructorsResult.rows[0].count);
+      
+      // Total de incidencias
+      const incidentsResult = await pool.query('SELECT COUNT(*) as count FROM incidents WHERE created_at >= CURRENT_DATE - INTERVAL \'30 days\'');
+      const totalIncidents = parseInt(incidentsResult.rows[0].count);
+      
+      // Total de activos
+      const assetsResult = await pool.query('SELECT COUNT(*) as count FROM assets');
+      const totalAssets = parseInt(assetsResult.rows[0].count);
+      
       // Áreas en mantenimiento (simulado por actividades de mantenimiento)
       const maintenanceResult = await pool.query(`
         SELECT COUNT(*) as count 
@@ -592,6 +608,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalActivities,
         totalVolunteers,
         totalTrees,
+        totalAmenities,
+        totalInstructors,
+        totalIncidents,
+        totalAssets,
         averageRating,
         parksByMunicipality: parksByMunicipalityResult.rows.map(row => ({
           municipalityName: row.municipality_name,
