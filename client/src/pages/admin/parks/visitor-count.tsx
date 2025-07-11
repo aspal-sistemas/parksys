@@ -101,6 +101,9 @@ export default function VisitorCountPage() {
   // Mutation para crear nuevo registro
   const createVisitorCount = useMutation({
     mutationFn: async (data: VisitorCountForm) => {
+      console.log('Datos del formulario de conteo de visitantes:', data);
+      console.log('Modo de conteo:', countingMode);
+      
       if (countingMode === 'range') {
         // Para rangos, crear múltiples registros
         const records = [];
@@ -109,7 +112,7 @@ export default function VisitorCountPage() {
         
         for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
           const dateStr = d.toISOString().split('T')[0];
-          records.push({
+          const record = {
             parkId: data.parkId,
             date: dateStr,
             adults: data.adults,
@@ -122,7 +125,9 @@ export default function VisitorCountPage() {
             weather: countingMode === 'daily' ? data.weather : undefined,
             notes: data.notes,
             registeredBy: 2 // TODO: Usar user ID del contexto
-          });
+          };
+          console.log('Registro individual para rango:', record);
+          records.push(record);
         }
         
         // Crear todos los registros
@@ -138,22 +143,25 @@ export default function VisitorCountPage() {
         return responses;
       } else {
         // Para conteo diario
+        const requestData = { 
+          parkId: data.parkId,
+          date: data.date,
+          adults: data.adults,
+          children: data.children,
+          seniors: data.seniors,
+          pets: data.pets,
+          groups: data.groups,
+          countingMethod: data.countingMethod,
+          dayType: data.dayType,
+          weather: data.weather,
+          notes: data.notes,
+          registeredBy: 2 // TODO: Usar user ID del contexto
+        };
+        console.log('Datos para enviar (conteo diario):', requestData);
+        
         return apiRequest('/api/visitor-counts', {
           method: 'POST',
-          body: { 
-            parkId: data.parkId,
-            date: data.date,
-            adults: data.adults,
-            children: data.children,
-            seniors: data.seniors,
-            pets: data.pets,
-            groups: data.groups,
-            countingMethod: data.countingMethod,
-            dayType: data.dayType,
-            weather: data.weather,
-            notes: data.notes,
-            registeredBy: 2 // TODO: Usar user ID del contexto
-          }
+          body: requestData
         });
       }
     },
@@ -194,6 +202,9 @@ export default function VisitorCountPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔍 Datos del formulario antes de enviar:', formData);
+    console.log('🔍 Modo de conteo:', countingMode);
+    
     if (formData.parkId === 0) {
       toast({
         title: "Error",
@@ -255,7 +266,11 @@ export default function VisitorCountPage() {
   };
 
   const getTotalVisitors = () => {
-    return formData.adults + formData.children + formData.seniors + formData.pets + formData.groups;
+    return formData.adults + formData.children + formData.seniors + formData.groups;
+  };
+
+  const getTotalPets = () => {
+    return formData.pets;
   };
 
   return (
@@ -519,64 +534,82 @@ export default function VisitorCountPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="adults">Adultos</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={formData.adults}
-                        onChange={(e) => setFormData({...formData, adults: parseInt(e.target.value) || 0})}
-                      />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Contador de Visitantes */}
+                    <div className="p-4 border rounded-lg bg-blue-50">
+                      <h3 className="font-semibold text-blue-900 mb-3">Contador de Visitantes</h3>
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          <Label htmlFor="adults">Adultos</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            value={formData.adults}
+                            onChange={(e) => setFormData({...formData, adults: parseInt(e.target.value) || 0})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="children">Niños</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            value={formData.children}
+                            onChange={(e) => setFormData({...formData, children: parseInt(e.target.value) || 0})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="seniors">Adultos mayores</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            value={formData.seniors}
+                            onChange={(e) => setFormData({...formData, seniors: parseInt(e.target.value) || 0})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="groups">Grupos</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            value={formData.groups}
+                            onChange={(e) => setFormData({...formData, groups: parseInt(e.target.value) || 0})}
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="children">Niños</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={formData.children}
-                        onChange={(e) => setFormData({...formData, children: parseInt(e.target.value) || 0})}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="seniors">Adultos mayores</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={formData.seniors}
-                        onChange={(e) => setFormData({...formData, seniors: parseInt(e.target.value) || 0})}
-                      />
+                    {/* Contador de Mascotas */}
+                    <div className="p-4 border rounded-lg bg-pink-50">
+                      <h3 className="font-semibold text-pink-900 mb-3">Contador de Mascotas</h3>
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          <Label htmlFor="pets">Mascotas (perros)</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            value={formData.pets}
+                            onChange={(e) => setFormData({...formData, pets: parseInt(e.target.value) || 0})}
+                          />
+                        </div>
+                        <div className="text-sm text-pink-700 mt-2">
+                          Conteo separado para mascotas que ingresan al parque
+                        </div>
+                      </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="pets">Mascotas (perros)</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={formData.pets}
-                        onChange={(e) => setFormData({...formData, pets: parseInt(e.target.value) || 0})}
-                      />
+                    <div className="p-4 bg-emerald-50 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-emerald-700">{formData.adults + formData.children + formData.seniors + formData.groups}</div>
+                        <div className="text-sm text-emerald-600">Total de visitantes</div>
+                      </div>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="groups">Grupos</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={formData.groups}
-                        onChange={(e) => setFormData({...formData, groups: parseInt(e.target.value) || 0})}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-emerald-50 rounded-lg">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-emerald-700">{getTotalVisitors()}</div>
-                      <div className="text-sm text-emerald-600">Total de visitantes</div>
+                    <div className="p-4 bg-pink-50 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-pink-700">{formData.pets}</div>
+                        <div className="text-sm text-pink-600">Total de mascotas</div>
+                      </div>
                     </div>
                   </div>
 
