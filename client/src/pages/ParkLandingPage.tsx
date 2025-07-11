@@ -35,7 +35,7 @@ import AmenityIcon from '@/components/ui/amenity-icon';
 import TreeSpeciesIcon from '@/components/ui/tree-species-icon';
 import TreePhotoViewer from '@/components/TreePhotoViewer';
 import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
-import ParkEvaluationsSection from '@/components/ParkEvaluationsSection';
+import ParkEvaluationsSectionSimple from '@/components/ParkEvaluationsSectionSimple';
 import greenFlagLogo from '@assets/PHOTO-2025-07-01-12-36-16_1751396336894.jpg';
 
 function ParkLandingPage() {
@@ -1030,7 +1030,7 @@ function ParkLandingPage() {
             </Card>
 
             {/* Evaluaciones Ciudadanas */}
-            <ParkEvaluationsSection parkId={park.id} parkSlug={slug || ''} />
+            <ParkEvaluationsSectionSimple parkId={park.id} parkSlug={slug || ''} />
 
             {/* Documentos y Reglamentos */}
             <Card>
