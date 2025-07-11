@@ -181,7 +181,7 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
     enabled: showAllEvaluations,
   });
 
-  if (!stats || stats.total_evaluations === 0) {
+  if (!stats || !stats.average_rating || stats.total_evaluations === 0) {
     return (
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -241,32 +241,32 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
               <CardContent>
                 <div className="text-center mb-6">
                   <div className="text-4xl font-bold text-green-600">
-                    {stats.average_rating.toFixed(1)}
+                    {stats.average_rating ? stats.average_rating.toFixed(1) : '0.0'}
                   </div>
                   <div className="flex justify-center mb-2">
-                    <StarRating rating={Math.round(stats.average_rating)} />
+                    <StarRating rating={Math.round(stats.average_rating || 0)} />
                   </div>
                   <div className="text-sm text-gray-600">
-                    Basado en {stats.total_evaluations} evaluaciones
+                    Basado en {stats.total_evaluations || 0} evaluaciones
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <RatingBar label="Limpieza" value={stats.avg_cleanliness} />
-                  <RatingBar label="Seguridad" value={stats.avg_safety} />
-                  <RatingBar label="Mantenimiento" value={stats.avg_maintenance} />
-                  <RatingBar label="Accesibilidad" value={stats.avg_accessibility} />
-                  <RatingBar label="Amenidades" value={stats.avg_amenities} />
-                  <RatingBar label="Actividades" value={stats.avg_activities} />
-                  <RatingBar label="Personal" value={stats.avg_staff} />
-                  <RatingBar label="Belleza Natural" value={stats.avg_natural_beauty} />
+                  <RatingBar label="Limpieza" value={stats.avg_cleanliness || 0} />
+                  <RatingBar label="Seguridad" value={stats.avg_safety || 0} />
+                  <RatingBar label="Mantenimiento" value={stats.avg_maintenance || 0} />
+                  <RatingBar label="Accesibilidad" value={stats.avg_accessibility || 0} />
+                  <RatingBar label="Amenidades" value={stats.avg_amenities || 0} />
+                  <RatingBar label="Actividades" value={stats.avg_activities || 0} />
+                  <RatingBar label="Personal" value={stats.avg_staff || 0} />
+                  <RatingBar label="Belleza Natural" value={stats.avg_natural_beauty || 0} />
                 </div>
 
                 <div className="mt-6 pt-6 border-t">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Recomendación</span>
                     <span className="text-lg font-semibold text-green-600">
-                      {stats.recommendation_rate}%
+                      {stats.recommendation_rate || 0}%
                     </span>
                   </div>
                 </div>
@@ -283,7 +283,7 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm">
                       <Users className="h-4 w-4 mr-2" />
-                      Ver todas ({stats.total_evaluations})
+                      Ver todas ({stats.total_evaluations || 0})
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-4xl max-h-[80vh]">
