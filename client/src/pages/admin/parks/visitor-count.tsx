@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminLayout } from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Users, Plus, FileText, TrendingUp, MapPin, Clock, Sun, Cloud, CloudRain, BarChart3 } from "lucide-react";
+import { Calendar, Users, Plus, FileText, TrendingUp, MapPin, Clock, Sun, Cloud, CloudRain, BarChart3, Download, Filter, PieChart, Activity } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
 
 interface VisitorCount {
   id: number;
@@ -62,6 +63,10 @@ export default function VisitorCountPage() {
   const [selectedPark, setSelectedPark] = useState<string>("");
   const [showForm, setShowForm] = useState(false);
   const [countingMode, setCountingMode] = useState<'daily' | 'range'>('daily');
+  
+  // Estados para reportes
+  const [reportPeriod, setReportPeriod] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
+  const [reportPark, setReportPark] = useState<string>('all');
   const [formData, setFormData] = useState<VisitorCountForm>({
     parkId: 0,
     date: new Date().toISOString().split('T')[0],
@@ -97,6 +102,113 @@ export default function VisitorCountPage() {
       return response.json();
     },
   });
+
+  // Calcular datos para reportes
+  const reportData = useMemo(() => {
+    if (!visitorCounts?.data || visitorCounts.data.length === 0) return null;
+
+    // Filtrar por parque si no es 'all'
+    const filteredData = reportPark === 'all' 
+      ? visitorCounts.data 
+      : visitorCounts.data.filter(count => count.parkId.toString() === reportPark);
+
+    // Estadísticas generales
+    const totalVisitors = filteredData.reduce((sum, count) => sum + count.totalVisitors, 0);
+    const totalAdults = filteredData.reduce((sum, count) => sum + count.adults, 0);
+    const totalChildren = filteredData.reduce((sum, count) => sum + count.children, 0);
+    const totalSeniors = filteredData.reduce((sum, count) => sum + count.seniors, 0);
+    const totalPets = filteredData.reduce((sum, count) => sum + count.pets, 0);
+    const avgDaily = filteredData.length > 0 ? Math.round(totalVisitors / filteredData.length) : 0;
+
+    // Datos demográficos para gráfico de pie
+    const demographicData = [
+      { name: 'Adultos', value: totalAdults, color: '#067f5f' },
+      { name: 'Niños', value: totalChildren, color: '#bcd256' },
+      { name: 'Seniors', value: totalSeniors, color: '#8498a5' },
+      { name: 'Mascotas', value: totalPets, color: '#00a587' }
+    ];
+
+    // Datos por parque para gráfico de barras
+    const parkData = filteredData.reduce((acc, count) => {
+      const existing = acc.find(item => item.parkName === count.parkName);
+      if (existing) {
+        existing.visitors += count.totalVisitors;
+        existing.records += 1;
+      } else {
+        acc.push({
+          parkName: count.parkName,
+          visitors: count.totalVisitors,
+          records: 1
+        });
+      }
+      return acc;
+    }, [] as any[]);
+
+    // Datos por método de conteo
+    const methodData = filteredData.reduce((acc, count) => {
+      const method = count.countingMethod;
+      const existing = acc.find(item => item.method === method);
+      if (existing) {
+        existing.count += 1;
+        existing.visitors += count.totalVisitors;
+      } else {
+        acc.push({
+          method: method,
+          count: 1,
+          visitors: count.totalVisitors
+        });
+      }
+      return acc;
+    }, [] as any[]);
+
+    // Datos por clima
+    const weatherData = filteredData.reduce((acc, count) => {
+      const weather = count.weather || 'No especificado';
+      const existing = acc.find(item => item.weather === weather);
+      if (existing) {
+        existing.count += 1;
+        existing.visitors += count.totalVisitors;
+      } else {
+        acc.push({
+          weather: weather,
+          count: 1,
+          visitors: count.totalVisitors
+        });
+      }
+      return acc;
+    }, [] as any[]);
+
+    // Tendencia temporal (últimos 7 días)
+    const last7Days = filteredData
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(-7)
+      .map(count => ({
+        date: format(new Date(count.date), 'dd/MM', { locale: es }),
+        visitors: count.totalVisitors,
+        adults: count.adults,
+        children: count.children
+      }));
+
+    return {
+      summary: {
+        totalVisitors,
+        totalAdults,
+        totalChildren,
+        totalSeniors,
+        totalPets,
+        avgDaily,
+        totalRecords: filteredData.length,
+        uniqueParks: [...new Set(filteredData.map(c => c.parkName))].length
+      },
+      charts: {
+        demographic: demographicData,
+        parks: parkData,
+        methods: methodData,
+        weather: weatherData,
+        trend: last7Days
+      }
+    };
+  }, [visitorCounts, reportPark]);
 
   // Mutation para crear nuevo registro
   const createVisitorCount = useMutation({
@@ -429,23 +541,280 @@ export default function VisitorCountPage() {
           </TabsContent>
 
           <TabsContent value="reportes">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Reportes y Estadísticas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Funcionalidad de reportes en desarrollo</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Próximamente: estadísticas mensuales, comparativas anuales y exportación de datos
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              {/* Controles de filtro */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Filter className="h-5 w-5" />
+                    Filtros de Reporte
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium">Parque</Label>
+                      <Select value={reportPark} onValueChange={setReportPark}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un parque" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos los parques</SelectItem>
+                          {parks?.filter(park => park.id && park.name).map((park) => (
+                            <SelectItem key={park.id} value={park.id.toString()}>
+                              {park.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Período</Label>
+                      <Select value={reportPeriod} onValueChange={(value: any) => setReportPeriod(value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="week">Última semana</SelectItem>
+                          <SelectItem value="month">Último mes</SelectItem>
+                          <SelectItem value="quarter">Último trimestre</SelectItem>
+                          <SelectItem value="year">Último año</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Métricas resumen */}
+              {reportData && (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600">Total Visitantes</p>
+                            <p className="text-2xl font-bold text-[#067f5f]">
+                              {reportData.summary.totalVisitors.toLocaleString()}
+                            </p>
+                          </div>
+                          <Users className="h-8 w-8 text-[#067f5f]" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600">Promedio Diario</p>
+                            <p className="text-2xl font-bold text-[#00a587]">
+                              {reportData.summary.avgDaily}
+                            </p>
+                          </div>
+                          <TrendingUp className="h-8 w-8 text-[#00a587]" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600">Registros</p>
+                            <p className="text-2xl font-bold text-[#bcd256]">
+                              {reportData.summary.totalRecords}
+                            </p>
+                          </div>
+                          <FileText className="h-8 w-8 text-[#bcd256]" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600">Parques Únicos</p>
+                            <p className="text-2xl font-bold text-[#8498a5]">
+                              {reportData.summary.uniqueParks}
+                            </p>
+                          </div>
+                          <MapPin className="h-8 w-8 text-[#8498a5]" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Gráficos */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Distribución demográfica */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <PieChart className="h-5 w-5" />
+                          Distribución Demográfica
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RechartsPieChart>
+                              <Pie
+                                data={reportData.charts.demographic}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="value"
+                              >
+                                {reportData.charts.demographic.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                            </RechartsPieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Tendencia temporal */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Activity className="h-5 w-5" />
+                          Tendencia Últimos 7 Días
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={reportData.charts.trend}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="date" />
+                              <YAxis />
+                              <Tooltip />
+                              <Line type="monotone" dataKey="visitors" stroke="#067f5f" strokeWidth={2} />
+                              <Line type="monotone" dataKey="adults" stroke="#00a587" strokeWidth={2} />
+                              <Line type="monotone" dataKey="children" stroke="#bcd256" strokeWidth={2} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Visitantes por parque */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <BarChart3 className="h-5 w-5" />
+                          Visitantes por Parque
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={reportData.charts.parks}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="parkName" angle={-45} textAnchor="end" height={100} />
+                              <YAxis />
+                              <Tooltip />
+                              <Bar dataKey="visitors" fill="#067f5f" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Métodos de conteo */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Clock className="h-5 w-5" />
+                          Métodos de Conteo
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {reportData.charts.methods.map((method, index) => (
+                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div>
+                                <p className="font-medium">{method.method}</p>
+                                <p className="text-sm text-gray-600">{method.count} registros</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-lg font-semibold text-[#067f5f]">
+                                  {method.visitors.toLocaleString()}
+                                </p>
+                                <p className="text-sm text-gray-600">visitantes</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Tabla de condiciones climáticas */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Sun className="h-5 w-5" />
+                        Análisis por Condiciones Climáticas
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left p-2">Clima</th>
+                              <th className="text-center p-2">Registros</th>
+                              <th className="text-center p-2">Total Visitantes</th>
+                              <th className="text-center p-2">Promedio</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {reportData.charts.weather.map((weather, index) => (
+                              <tr key={index} className="border-b">
+                                <td className="p-2 font-medium">{weather.weather}</td>
+                                <td className="text-center p-2">{weather.count}</td>
+                                <td className="text-center p-2">{weather.visitors.toLocaleString()}</td>
+                                <td className="text-center p-2">{Math.round(weather.visitors / weather.count)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Botón de exportar */}
+                  <div className="flex justify-end">
+                    <Button className="bg-[#067f5f] hover:bg-[#00a587]">
+                      <Download className="h-4 w-4 mr-2" />
+                      Exportar Reporte
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              {/* Estado sin datos */}
+              {!reportData && (
+                <Card>
+                  <CardContent className="p-8">
+                    <div className="text-center">
+                      <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">No hay datos disponibles para generar reportes</p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        Asegúrate de tener registros de visitantes para visualizar los análisis
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
 
