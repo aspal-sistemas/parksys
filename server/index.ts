@@ -28,13 +28,16 @@ app.get('/', (req: Request, res: Response) => {
       timestamp: new Date().toISOString(),
       port: process.env.PORT || 5000,
       environment: process.env.NODE_ENV || 'development',
-      uptime: process.uptime()
+      uptime: process.uptime(),
+      deployment: process.env.REPLIT_DEPLOYMENT_ID || 'local'
     });
   } catch (error) {
+    console.error('Health check error:', error);
     res.status(503).json({ 
       status: 'error', 
       message: 'Service temporarily unavailable',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      error: error.message
     });
   }
 });
@@ -47,13 +50,16 @@ app.get('/api/status', (req: Request, res: Response) => {
       message: 'ParkSys - Parques de México API',
       timestamp: new Date().toISOString(),
       port: process.env.PORT || 5000,
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
+      deployment: process.env.REPLIT_DEPLOYMENT_ID || 'local'
     });
   } catch (error) {
+    console.error('API status check error:', error);
     res.status(503).json({ 
       status: 'error', 
       message: 'Service temporarily unavailable',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      error: error.message
     });
   }
 });
@@ -66,46 +72,55 @@ app.get('/api/health', (req: Request, res: Response) => {
       message: 'ParkSys API is running',
       timestamp: new Date().toISOString(),
       port: process.env.PORT || 5000,
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
+      deployment: process.env.REPLIT_DEPLOYMENT_ID || 'local'
     });
   } catch (error) {
+    console.error('Health check error:', error);
     res.status(503).json({ 
       status: 'error', 
       message: 'Service temporarily unavailable',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      error: error.message
     });
   }
 });
 
-// Additional health check endpoint
+// Additional health check endpoints for compatibility
 app.get('/health', (req: Request, res: Response) => {
   try {
     res.status(200).json({ 
-      status: 'healthy',
-      uptime: process.uptime(),
+      status: 'ok', 
+      message: 'ParkSys Health Check',
       timestamp: new Date().toISOString(),
-      memory: process.memoryUsage()
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      deployment: process.env.REPLIT_DEPLOYMENT_ID || 'local'
     });
   } catch (error) {
+    console.error('Health endpoint error:', error);
     res.status(503).json({ 
-      status: 'unhealthy',
-      timestamp: new Date().toISOString()
+      status: 'error', 
+      message: 'Service temporarily unavailable',
+      timestamp: new Date().toISOString(),
+      error: error.message
     });
   }
 });
 
-// Additional deployment health check endpoints
 app.get('/healthz', (req: Request, res: Response) => {
-  res.status(200).send('ok');
+  res.status(200).send('OK');
 });
 
 app.get('/readiness', (req: Request, res: Response) => {
-  res.status(200).json({ ready: true });
+  res.status(200).json({ ready: true, timestamp: new Date().toISOString() });
 });
 
 app.get('/liveness', (req: Request, res: Response) => {
-  res.status(200).json({ alive: true });
+  res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
 });
+
+// Removed duplicate health check endpoints - kept only the ones defined above
 
 // Root API endpoint for deployment verification
 app.get('/api', (req: Request, res: Response) => {
@@ -206,6 +221,15 @@ app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
 // IMPORTANTE: Configurar middleware de parseo JSON ANTES de cualquier ruta
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Error handling middleware for JSON parsing errors
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof SyntaxError && 'body' in err) {
+    console.error('JSON parsing error:', err.message);
+    return res.status(400).json({ error: 'Invalid JSON in request body' });
+  }
+  next(err);
+});
 
 // Configurar headers de seguridad CSP para permitir inline scripts
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -1550,6 +1574,24 @@ async function initializeDatabaseAsync() {
   // Detect deployment environment
   const isDeployment = process.env.REPLIT_DEPLOYMENT_ID || process.env.NODE_ENV === "production";
   
+  // Initialize database operations in background (non-blocking)
+  const initializeDatabaseAsync = async () => {
+    console.log("Inicializando estructura de la base de datos de forma asíncrona...");
+    
+    try {
+      // Move all database initialization here
+      await createParkEvaluationsTables();
+      
+      // Initialize other critical tables
+      await createMultimediaTables();
+      
+      console.log("Inicialización de base de datos completada exitosamente");
+    } catch (error) {
+      console.error("Error durante inicialización de base de datos (no crítico):", error);
+      // Don't throw - let the server continue running
+    }
+  };
+  
   // Setup Vite in development mode with error handling
   if (app.get("env") === "development" && !isDeployment) {
     console.log("Configurando servidor de desarrollo Vite...");
@@ -1569,22 +1611,22 @@ async function initializeDatabaseAsync() {
         }
         
         // Inicializar base de datos después de que todo esté listo
-        setTimeout(() => {
+        setImmediate(() => {
           initializeDatabaseAsync().catch(error => {
             console.error("Error inicializando base de datos (no crítico):", error);
           });
-        }, 500);
+        });
       });
     } catch (error) {
       console.error("Error importando Vite, iniciando servidor sin frontend:", error);
       appServer = app.listen(PORT, HOST, () => {
         console.log(`Servidor ejecutándose en puerto ${PORT} (solo API)`);
         
-        setTimeout(() => {
+        setImmediate(() => {
           initializeDatabaseAsync().catch(error => {
             console.error("Error inicializando base de datos (no crítico):", error);
           });
-        }, 500);
+        });
       });
     }
   } else {
@@ -1614,14 +1656,16 @@ async function initializeDatabaseAsync() {
     appServer = app.listen(PORT, HOST, () => {
       console.log(`🚀 ParkSys servidor en producción ejecutándose en ${HOST}:${PORT}`);
       console.log(`🌐 Aplicación disponible en http://${HOST}:${PORT}`);
-      console.log(`📊 Sistema de evaluaciones de parques operativo con 169 evaluaciones`);
+      console.log(`📊 Sistema de evaluaciones de parques operativo`);
       console.log(`🏛️ Bosques Urbanos de Guadalajara - Sistema listo para presentación`);
+      console.log(`✅ Servidor iniciado exitosamente - Health checks disponibles en /health`);
       
-      setTimeout(() => {
+      // Initialize database in background after server is ready
+      setImmediate(() => {
         initializeDatabaseAsync().catch(error => {
           console.error("Error inicializando base de datos (no crítico):", error);
         });
-      }, 100);
+      });
     });
   }
 
