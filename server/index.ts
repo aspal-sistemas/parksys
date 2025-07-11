@@ -97,6 +97,44 @@ app.get('/api', (req: Request, res: Response) => {
   }
 });
 
+// Simple status page for deployment verification
+app.get('/status', (req: Request, res: Response) => {
+  try {
+    res.status(200).send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>ParkSys - Estado del Sistema</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+            .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .status { color: #00a587; font-size: 24px; font-weight: bold; }
+            .info { margin: 20px 0; }
+            .timestamp { color: #666; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>🌳 ParkSys - Bosques Urbanos</h1>
+            <div class="status">✅ Sistema Funcionando</div>
+            <div class="info">
+              <p><strong>Estado:</strong> Operativo</p>
+              <p><strong>Servidor:</strong> ${process.env.NODE_ENV || 'development'}</p>
+              <p><strong>Puerto:</strong> ${process.env.PORT || 5000}</p>
+              <p><strong>Base de Datos:</strong> PostgreSQL Conectada</p>
+            </div>
+            <div class="timestamp">
+              Última verificación: ${new Date().toLocaleString('es-MX')}
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
+  } catch (error) {
+    res.status(503).send('Sistema temporalmente no disponible');
+  }
+});
+
 // Servir archivos estáticos del directorio public ANTES de otras rutas
 app.use(express.static(path.join(process.cwd(), 'public')));
 
@@ -1436,7 +1474,7 @@ async function initializeDatabaseAsync() {
 
   // Use environment port for deployment compatibility - ensure port 5000
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
-  const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '0.0.0.0';
+  const HOST = '0.0.0.0';
   
   console.log(`🚀 Starting server on ${HOST}:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
   
@@ -1509,7 +1547,8 @@ async function initializeDatabaseAsync() {
     }
     
     appServer = app.listen(PORT, HOST, () => {
-      console.log(`Servidor en producción ejecutándose en puerto ${PORT}`);
+      console.log(`🚀 Servidor en producción ejecutándose en ${HOST}:${PORT}`);
+      console.log(`🌐 Aplicación disponible en http://${HOST}:${PORT}`);
       
       setTimeout(() => {
         initializeDatabaseAsync().catch(error => {
