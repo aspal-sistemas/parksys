@@ -11,6 +11,7 @@ import { skillsRouter } from "./update-skills-route";
 import { registerFinancialIntegrationsAPI } from "./financial-integrations-api";
 import { registerMultimediaRoutes, createMultimediaTables } from "./multimedia-system";
 import { registerBudgetPlanningRoutes } from "./budget-planning-routes";
+import { createParkEvaluationsTables } from "./create-park-evaluations-tables";
 import { db } from "./db";
 import { incomeCategories, expenseCategories } from "../shared/finance-schema";
 import { eq } from "drizzle-orm";
@@ -1096,6 +1097,10 @@ async function initializeDatabaseAsync() {
     // Importar y registrar rutas de concesionarios
     const { registerConcessionairesRoutes } = await import('./concessionaires-routes');
     registerConcessionairesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+
+    // Registrar rutas del módulo de evaluaciones de parques
+    const { registerParkEvaluationRoutes } = await import('./park-evaluations-routes');
+    registerParkEvaluationRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
     
     // Importar y registrar rutas de conteo de visitantes
     app.use("/api", visitorCountRoutes);
@@ -1110,6 +1115,10 @@ async function initializeDatabaseAsync() {
     // Crear tablas de multimedia si no existen
     await createMultimediaTables();
     console.log("Sistema de multimedia inicializado correctamente");
+    
+    // Crear tablas de evaluaciones de parques
+    await createParkEvaluationsTables();
+    console.log("Sistema de evaluaciones de parques inicializado correctamente");
   } catch (error) {
     console.error("Error al registrar API de integraciones financieras:", error);
   }

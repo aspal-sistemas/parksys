@@ -91,6 +91,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/ConcessionDetail')))}
           </Suspense>
         </Route>
+        <Route path="/parque/:slug/evaluar">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de evaluación...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/ParkEvaluationForm')))}
+          </Suspense>
+        </Route>
 
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/parks" component={AdminParks} />
@@ -108,6 +113,11 @@ function Router() {
         <Route path="/admin/visitors/dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de visitantes...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/parks/visitor-dashboard')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/visitors/evaluations">
+          <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de parques...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/visitors/evaluations')))}
           </Suspense>
         </Route>
         

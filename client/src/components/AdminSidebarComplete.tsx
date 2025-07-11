@@ -266,6 +266,13 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Dashboard de Visitantes
             </NavItem>
+            <NavItem 
+              href="/admin/visitors/evaluations" 
+              icon={<Star className="h-5 w-5" />}
+              active={location === '/admin/visitors/evaluations'}
+            >
+              Evaluaciones
+            </NavItem>
           </ModuleNav>
 
           {/* 3. PARQUES */}

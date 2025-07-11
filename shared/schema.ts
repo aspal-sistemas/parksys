@@ -2874,4 +2874,107 @@ export const insertVisitorCountSchema = createInsertSchema(visitorCounts).omit({
 export type InsertVisitorCount = z.infer<typeof insertVisitorCountSchema>;
 export type VisitorCount = typeof visitorCounts.$inferSelect;
 
+// ===== SISTEMA DE EVALUACIONES DE PARQUES =====
+
+export const parkEvaluations = pgTable("park_evaluations", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").references(() => parks.id).notNull(),
+  
+  // Información del evaluador
+  evaluatorName: varchar("evaluator_name", { length: 255 }).notNull(),
+  evaluatorEmail: varchar("evaluator_email", { length: 255 }),
+  evaluatorPhone: varchar("evaluator_phone", { length: 20 }),
+  evaluatorCity: varchar("evaluator_city", { length: 100 }),
+  evaluatorAge: integer("evaluator_age"),
+  isFrequentVisitor: boolean("is_frequent_visitor").default(false),
+  
+  // Criterios de evaluación (1-5 estrellas)
+  cleanliness: integer("cleanliness").notNull(), // Limpieza
+  safety: integer("safety").notNull(), // Seguridad
+  maintenance: integer("maintenance").notNull(), // Mantenimiento
+  accessibility: integer("accessibility").notNull(), // Accesibilidad
+  amenities: integer("amenities").notNull(), // Amenidades
+  activities: integer("activities").notNull(), // Actividades
+  staff: integer("staff").notNull(), // Personal
+  naturalBeauty: integer("natural_beauty").notNull(), // Belleza natural
+  
+  // Calificación general
+  overallRating: integer("overall_rating").notNull(), // Calificación general
+  
+  // Comentarios y sugerencias
+  comments: text("comments"),
+  suggestions: text("suggestions"),
+  wouldRecommend: boolean("would_recommend").default(true),
+  
+  // Información adicional
+  visitDate: date("visit_date"),
+  visitPurpose: varchar("visit_purpose", { length: 100 }), // recreation, exercise, family, work, etc.
+  visitDuration: integer("visit_duration"), // en minutos
+  
+  // Moderación
+  status: varchar("status", { length: 20 }).default("pending"), // pending, approved, rejected
+  moderatedBy: integer("moderated_by").references(() => users.id),
+  moderatedAt: timestamp("moderated_at"),
+  moderationNotes: text("moderation_notes"),
+  
+  // Metadata
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relaciones para evaluaciones de parques
+export const parkEvaluationsRelations = relations(parkEvaluations, ({ one }) => ({
+  park: one(parks, { fields: [parkEvaluations.parkId], references: [parks.id] }),
+  moderatedBy: one(users, { fields: [parkEvaluations.moderatedBy], references: [users.id] }),
+}));
+
+// Esquemas de validación para evaluaciones
+export const insertParkEvaluationSchema = createInsertSchema(parkEvaluations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  moderatedBy: true,
+  moderatedAt: true,
+  moderationNotes: true,
+}).extend({
+  // Validación de calificaciones (1-5)
+  cleanliness: z.number().min(1).max(5),
+  safety: z.number().min(1).max(5),
+  maintenance: z.number().min(1).max(5),
+  accessibility: z.number().min(1).max(5),
+  amenities: z.number().min(1).max(5),
+  activities: z.number().min(1).max(5),
+  staff: z.number().min(1).max(5),
+  naturalBeauty: z.number().min(1).max(5),
+  overallRating: z.number().min(1).max(5),
+  
+  // Validación de campos opcionales
+  evaluatorEmail: z.string().email().optional(),
+  evaluatorPhone: z.string().optional(),
+  evaluatorCity: z.string().optional(),
+  evaluatorAge: z.number().min(13).max(120).optional(),
+  comments: z.string().optional(),
+  suggestions: z.string().optional(),
+  visitDate: z.string().optional(),
+  visitPurpose: z.string().optional(),
+  visitDuration: z.number().min(1).optional(),
+});
+
+export const updateParkEvaluationSchema = createInsertSchema(parkEvaluations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  status: z.enum(["pending", "approved", "rejected"]),
+  moderationNotes: z.string().optional(),
+});
+
+// Tipos TypeScript para evaluaciones
+export type ParkEvaluation = typeof parkEvaluations.$inferSelect;
+export type InsertParkEvaluation = z.infer<typeof insertParkEvaluationSchema>;
+export type UpdateParkEvaluation = z.infer<typeof updateParkEvaluationSchema>;
+
 
