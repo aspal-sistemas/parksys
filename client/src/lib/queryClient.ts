@@ -1,7 +1,7 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 // Nueva función que no lee el body hasta que sea necesario
-async function safeApiRequest(url: string, options: any = {}) {
+export async function safeApiRequest(url: string, options: any = {}) {
   const { method = "GET", data, headers: customHeaders = {} } = options;
   
   const requestHeaders: Record<string, string> = {

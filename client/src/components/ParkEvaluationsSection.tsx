@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { safeApiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -165,27 +165,23 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
   // Obtener estadísticas de evaluaciones
   const { data: stats } = useQuery<EvaluationStats>({
     queryKey: ['/api/parks', parkId, 'evaluation-stats'],
-    queryFn: () => apiRequest(`/api/parks/${parkId}/evaluation-stats`),
+    queryFn: () => safeApiRequest(`/api/parks/${parkId}/evaluation-stats`),
   });
-
-  // Debug: Ver qué datos están llegando
-  console.log('🔍 ParkEvaluationsSection - parkId:', parkId);
-  console.log('🔍 ParkEvaluationsSection - stats:', stats);
 
   // Obtener evaluaciones recientes
   const { data: evaluationsData } = useQuery({
     queryKey: ['/api/parks', parkId, 'evaluations'],
-    queryFn: () => apiRequest(`/api/parks/${parkId}/evaluations?limit=3`),
+    queryFn: () => safeApiRequest(`/api/parks/${parkId}/evaluations?limit=3`),
   });
 
   // Obtener todas las evaluaciones para el modal
   const { data: allEvaluationsData } = useQuery({
     queryKey: ['/api/parks', parkId, 'all-evaluations'],
-    queryFn: () => apiRequest(`/api/parks/${parkId}/evaluations?limit=50`),
+    queryFn: () => safeApiRequest(`/api/parks/${parkId}/evaluations?limit=50`),
     enabled: showAllEvaluations,
   });
 
-  if (!stats || !stats.average_rating || stats.total_evaluations === 0) {
+  if (!stats || !stats.average_rating || Number(stats.total_evaluations) === 0) {
     return (
       <Card>
         <CardHeader>
@@ -245,7 +241,7 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
                     <StarRating rating={Math.round(stats.average_rating || 0)} />
                   </div>
                   <div className="text-sm text-gray-600">
-                    Basado en {stats.total_evaluations || 0} evaluaciones
+                    Basado en {Number(stats.total_evaluations) || 0} evaluaciones
                   </div>
                 </div>
 
@@ -281,7 +277,7 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm">
                       <Users className="h-4 w-4 mr-2" />
-                      Ver todas ({stats.total_evaluations || 0})
+                      Ver todas ({Number(stats.total_evaluations) || 0})
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-4xl max-h-[80vh]">
