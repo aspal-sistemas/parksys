@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Area, AreaChart } from 'recharts';
-import { Calendar, Users, TrendingUp, MapPin, Clock, Activity, Eye, Download, Filter } from 'lucide-react';
+import { Calendar, Users, TrendingUp, MapPin, Clock, Activity, Eye, Download, Filter, Upload, FileText, AlertTriangle } from 'lucide-react';
 import { format, subDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { AdminLayout } from '@/components/AdminLayout';
@@ -65,6 +68,13 @@ export default function VisitorDashboard() {
   const [selectedPark, setSelectedPark] = useState<string>('all');
   const [dateRange, setDateRange] = useState<string>('30');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [csvPreview, setCsvPreview] = useState<any[]>([]);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Obtener datos del dashboard de visitantes
   const { data: dashboardData, isLoading } = useQuery<{
@@ -108,6 +118,88 @@ export default function VisitorDashboard() {
   const visitorData = dashboardData?.records || [];
   const metrics = dashboardData?.metrics || null;
   const parkSummaries = dashboardData?.parkSummaries || [];
+
+  // Función para procesar archivo CSV
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'text/csv') {
+      setCsvFile(file);
+      setIsPreviewLoading(true);
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        const lines = text.split('\n').filter(line => line.trim());
+        if (lines.length > 0) {
+          const headers = lines[0].split(',').map(h => h.trim());
+          const preview = lines.slice(1, 6).map(line => {
+            const values = line.split(',').map(v => v.trim());
+            const row: any = {};
+            headers.forEach((header, index) => {
+              row[header] = values[index] || '';
+            });
+            return row;
+          });
+          setCsvPreview(preview);
+        }
+        setIsPreviewLoading(false);
+      };
+      reader.readAsText(file);
+    } else {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona un archivo CSV válido",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Mutación para importar CSV
+  const importCsvMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('csvFile', file);
+      
+      const response = await fetch('/api/visitor-counts/import-csv', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error al importar archivo CSV');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (result) => {
+      toast({
+        title: "Importación exitosa",
+        description: `Se importaron ${result.imported} registros correctamente. ${result.errors ? `Errores: ${result.errors}` : ''}`,
+      });
+      
+      // Actualizar datos del dashboard
+      queryClient.invalidateQueries({ queryKey: ['/api/visitor-counts/dashboard'] });
+      
+      // Cerrar diálogo y limpiar estado
+      setIsImportDialogOpen(false);
+      setCsvFile(null);
+      setCsvPreview([]);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error en importación",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleImportCsv = () => {
+    if (csvFile) {
+      importCsvMutation.mutate(csvFile);
+    }
+  };
 
   // Datos para gráficos
   const chartData = useMemo(() => {
@@ -227,6 +319,14 @@ export default function VisitorDashboard() {
             <p className="text-gray-600">Análisis y estadísticas del conteo de visitantes</p>
           </div>
           <div className="flex items-center space-x-4">
+            <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Importar CSV
+                </Button>
+              </DialogTrigger>
+            </Dialog>
             <Button variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
               Exportar
