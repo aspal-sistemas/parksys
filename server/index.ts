@@ -18,76 +18,60 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
-// Startup flag to track initialization status
-let isInitialized = false;
-let initializationStarted = false;
-
-// Root endpoint handler for deployment health checks - HIGHEST PRIORITY
-// Responds immediately without any database operations
-app.get('/', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'ok',
-    message: 'ParkSys - Bosques Urbanos de Guadalajara',
-    version: '1.0.0',
-    timestamp: new Date().toISOString(),
-    port: process.env.PORT || 5000,
-    environment: process.env.NODE_ENV || 'development',
-    uptime: process.uptime(),
-    deployment: process.env.REPLIT_DEPLOYMENT_ID || 'local',
-    initialized: isInitialized
-  });
-});
-
-// Health check endpoints - all respond immediately
-app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    initialized: isInitialized
-  });
-});
-
-app.get('/healthz', (req: Request, res: Response) => {
-  res.status(200).send('OK');
-});
-
-app.get('/readiness', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'ready',
-    initialized: isInitialized,
-    timestamp: new Date().toISOString()
-  });
-});
-
-app.get('/liveness', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'alive',
-    timestamp: new Date().toISOString()
-  });
-});
-
+// Simple API health check - priority over static files
 app.get('/api/status', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    status: 'ok', 
-    message: 'ParkSys API',
-    timestamp: new Date().toISOString(),
-    port: process.env.PORT || 5000,
-    environment: process.env.NODE_ENV || 'development',
-    deployment: process.env.REPLIT_DEPLOYMENT_ID || 'local',
-    initialized: isInitialized
-  });
+  try {
+    res.status(200).json({ 
+      status: 'ok', 
+      message: 'ParkSys - Parques de México API',
+      timestamp: new Date().toISOString(),
+      port: process.env.PORT || 5000,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'error', 
+      message: 'Service temporarily unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
+// Health check endpoint for deployment (API route)
 app.get('/api/health', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    status: 'ok', 
-    message: 'ParkSys API is running',
-    timestamp: new Date().toISOString(),
-    initialized: isInitialized
-  });
+  try {
+    res.status(200).json({ 
+      status: 'ok', 
+      message: 'ParkSys API is running',
+      timestamp: new Date().toISOString(),
+      port: process.env.PORT || 5000,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'error', 
+      message: 'Service temporarily unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
-// Removed duplicate health check endpoints - kept only the ones defined above
+// Additional health check endpoint
+app.get('/health', (req: Request, res: Response) => {
+  try {
+    res.status(200).json({ 
+      status: 'healthy',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      memory: process.memoryUsage()
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'unhealthy',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 // Root API endpoint for deployment verification
 app.get('/api', (req: Request, res: Response) => {
@@ -154,213 +138,15 @@ app.get('/status', (req: Request, res: Response) => {
 // Servir archivos estáticos del directorio public ANTES de otras rutas
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Comprehensive asynchronous initialization function
-async function initializeSystemAsync() {
-  if (initializationStarted) return;
-  initializationStarted = true;
-  
-  try {
-    // Initialize database tables with timeout
-    await Promise.race([
-      createParkEvaluationsTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Database initialization timeout')), 10000))
-    ]);
-    
-    await Promise.race([
-      createMultimediaTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Multimedia tables timeout')), 10000))
-    ]);
-    
-    // Initialize other tables with timeout
-    const { createVacationTables } = await import("./create-vacation-tables");
-    await Promise.race([
-      createVacationTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Vacation tables timeout')), 10000))
-    ]);
-    
-    // Initialize communications with timeout
-    const { seedEmailTemplates } = await import("./communications/seedCommunications");
-    await Promise.race([
-      seedEmailTemplates(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Email templates timeout')), 10000))
-    ]);
-    
-    // Initialize security system with timeout
-    const { initSecurityTables, seedSecurityData } = await import('./security/initSecurityTables');
-    await Promise.race([
-      initSecurityTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Security tables timeout')), 10000))
-    ]);
-    
-    await Promise.race([
-      seedSecurityData(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Security data timeout')), 10000))
-    ]);
-    
-    // Initialize evaluation criteria with timeout
-    const { createEvaluationCriteriaTables, seedDefaultEvaluationCriteria } = await import('./create-evaluation-criteria-tables');
-    await Promise.race([
-      createEvaluationCriteriaTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Evaluation criteria tables timeout')), 10000))
-    ]);
-    
-    await Promise.race([
-      seedDefaultEvaluationCriteria(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Evaluation criteria seed timeout')), 10000))
-    ]);
-    
-    // Initialize payroll receipts tables
-    const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
-    await Promise.race([
-      createPayrollReceiptsTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Payroll receipts tables timeout')), 10000))
-    ]);
-    
-    // Initialize payroll data seeding
-    try {
-      const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
-      await Promise.race([
-        seedPayrollReceipts(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Payroll receipts seed timeout')), 10000))
-      ]);
-    } catch (error) {
-      console.error("Payroll receipts seeding failed (non-critical):", error);
-    }
-    
-    // Initialize tree tables
-    try {
-      const { createTreeTables } = await import("./create-tree-tables");
-      await Promise.race([
-        createTreeTables(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Tree tables timeout')), 10000))
-      ]);
-      
-      const { seedTreeSpecies } = await import("./seed");
-      await Promise.race([
-        seedTreeSpecies(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Tree species seed timeout')), 10000))
-      ]);
-    } catch (error) {
-      console.error("Tree tables initialization failed (non-critical):", error);
-    }
-    
-    // Register additional routes asynchronously
-    await registerAdditionalRoutes();
-    
-    isInitialized = true;
-    
-  } catch (error) {
-    console.error("System initialization failed (non-critical):", error);
-    // Don't throw - let the server continue running
-  }
-}
-
-// Register complex routes asynchronously
-async function registerAdditionalRoutes() {
-  try {
-    // Register routes for all modules
-    const apiRouter = express.Router();
-    
-    // Register API integrations
-    registerFinancialIntegrationsAPI(apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    registerMultimediaRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Register module routes
-    const { registerBudgetPlanningRoutes } = await import('./budget-planning-routes');
-    registerBudgetPlanningRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    const { registerFinanceRoutes } = await import('./finance-routes');
-    registerFinanceRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    const { registerEventCategoriesRoutes } = await import('./event-categories-routes');
-    registerEventCategoriesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    const { registerInstructorRoutes } = await import('./instructor-routes');
-    registerInstructorRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    const { registerAssetCategoriesRoutes } = await import('./asset-categories-routes');
-    registerAssetCategoriesRoutes(app, apiRouter);
-    
-    const { registerInstructorEvaluationRoutes } = await import('./instructor-evaluations-routes');
-    registerInstructorEvaluationRoutes(app, apiRouter);
-    
-    const { registerConcessionairesRoutes } = await import('./concessionaires-routes');
-    registerConcessionairesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-
-    const { registerParkEvaluationRoutes } = await import('./park-evaluations-routes');
-    registerParkEvaluationRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    const { registerEvaluationCriteriaRoutes } = await import('./evaluation-criteria-routes');
-    registerEvaluationCriteriaRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Register payroll routes
-    const { registerPayrollReceiptsRoutes } = await import("./payroll-receipts-routes");
-    const receiptsRouter = express.Router();
-    registerPayrollReceiptsRoutes(app, receiptsRouter, (req: Request, res: Response, next: NextFunction) => next());
-    app.use("/api/payroll", receiptsRouter);
-    
-    // Register vacation routes
-    const { registerVacationRoutes } = await import("./vacation-routes");
-    const vacationRouter = express.Router();
-    registerVacationRoutes(app, vacationRouter, (req: Request, res: Response, next: NextFunction) => next());
-    app.use("/api/vacation", vacationRouter);
-    
-    // Register time-off routes
-    const { registerTimeOffRoutes } = await import("./time-off-routes");
-    const timeOffRouter = express.Router();
-    registerTimeOffRoutes(app, timeOffRouter, (req: Request, res: Response, next: NextFunction) => next());
-    app.use("/api/time-off", timeOffRouter);
-    
-    // Register eventos AMBU routes
-    const { registerEventosAmbuRoutes } = await import("./eventos-ambu-routes");
-    const eventosAmbuRouter = express.Router();
-    registerEventosAmbuRoutes(app, eventosAmbuRouter, (req: Request, res: Response, next: NextFunction) => next());
-    app.use("/api/eventos-ambu", eventosAmbuRouter);
-    
-    // Register security routes
-    const securityRouter = await import('./security/securityRoutes');
-    app.use('/api/security', securityRouter.default);
-    
-    const passwordRecoveryRouter = await import('./password-recovery-routes');
-    app.use('/api', passwordRecoveryRouter.default);
-    
-    // Register communication routes
-    const { default: communicationsRouter } = await import("./communications/communicationsRoutes");
-    app.use("/api/communications", communicationsRouter);
-    
-    // Register activity image routes
-    const activityImageRouter = await import("./activity-image-routes");
-    app.use("/api/activities", activityImageRouter.default);
-    
-    // Register email routes
-    const { emailRouter } = await import("./email/emailRoutes");
-    app.use("/api/email", emailRouter);
-    
-    // Register visitor count routes
-    const visitorCountRouter = express.Router();
-    visitorCountRouter.use('/', visitorCountRoutes);
-    app.use("/api/visitor-count", visitorCountRouter);
-    
-    // Register all API routes
-    app.use("/api", apiRouter);
-    
-  } catch (error) {
-    console.error("Error registering additional routes:", error);
-  }
-}
-
 // ENDPOINT COMBINADO para la matriz de flujo de efectivo
 app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
   try {
-    if (!isInitialized) {
-      return res.status(503).json({ 
-        error: 'System still initializing, please try again in a moment',
-        initialized: false
-      });
-    }
+    console.log("=== OBTENIENDO DATOS PARA MATRIZ DE FLUJO DE EFECTIVO ===");
     
     const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
     const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+    
+    console.log(`Matriz - Ingresos: ${incomeCategsList.length}, Egresos: ${expenseCategsList.length}`);
     
     const result = {
       incomeCategories: incomeCategsList,
@@ -387,15 +173,6 @@ app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Error handling middleware for JSON parsing errors
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  if (err instanceof SyntaxError && 'body' in err) {
-    console.error('JSON parsing error:', err.message);
-    return res.status(400).json({ error: 'Invalid JSON in request body' });
-  }
-  next(err);
-});
-
 // Configurar headers de seguridad CSP para permitir inline scripts
 app.use((req: Request, res: Response, next: NextFunction) => {
   // Configurar CSP para permitir inline scripts e inline styles necesarios para la aplicación
@@ -419,17 +196,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   
   next();
 });
-
-// Register main routes immediately after middleware setup for faster deployment health checks
-console.log("🚀 Registering main routes for deployment health checks...");
-setTimeout(async () => {
-  try {
-    await registerRoutes(app);
-    console.log("✅ Main routes registered successfully");
-  } catch (error) {
-    console.error("❌ Error registering main routes:", error);
-  }
-}, 0);
 
 // Global request logging for debugging - AFTER JSON parsing
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -1227,25 +993,227 @@ async function initializeDatabaseAsync() {
 }
 
 (async () => {
-  // Essential middleware setup immediately
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
   
-  // Register essential routes immediately for health checks and basic functionality
+
+
+  // HR routes registration moved to after main routes registration
+  // (see after registerRoutes call)
+
+  // Registrar rutas de vacaciones y control de horas
   try {
-    registerRoutes(app);
+    const { registerTimeOffRoutes } = await import("./time-off-routes");
+    const timeOffRouter = express.Router();
+    
+    // Aplicar middleware JSON al router de tiempo libre
+    timeOffRouter.use(express.json({ limit: '50mb' }));
+    timeOffRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    
+    registerTimeOffRoutes(app, timeOffRouter, (req: Request, res: Response, next: NextFunction) => next());
+    app.use("/api/time-off", timeOffRouter);
+    console.log("Rutas de vacaciones y control de horas registradas correctamente");
   } catch (error) {
-    console.error("Error registering essential routes:", error);
+    console.error("Error al registrar rutas de vacaciones y control de horas:", error);
   }
 
-  // Register essential HR routes immediately (but defer complex initialization)
+  // Crear tablas de recibos de nómina
   try {
-    const { registerHRRoutes } = await import("./hr-routes");
-    const hrRouter = express.Router();
-    registerHRRoutes(app, hrRouter, (req: Request, res: Response, next: NextFunction) => next());
-    app.use("/api/hr", hrRouter);
+    const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
+    await createPayrollReceiptsTables();
+    
+    // Crear datos de muestra para recibos
+    const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
+    await seedPayrollReceipts();
   } catch (error) {
-    console.error("Error al registrar rutas HR:", error);
+    console.error("Error al crear tablas de recibos de nómina:", error);
+  }
+
+  // Registrar rutas de Recibos de Nómina
+  try {
+    const { registerPayrollReceiptsRoutes } = await import("./payroll-receipts-routes");
+    const receiptsRouter = express.Router();
+    
+    // Aplicar middleware JSON específicamente al router de recibos
+    receiptsRouter.use(express.json({ limit: '50mb' }));
+    receiptsRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    
+    registerPayrollReceiptsRoutes(app, receiptsRouter, (req: Request, res: Response, next: NextFunction) => next());
+    app.use("/api/payroll", receiptsRouter); // Usar prefijo separado para evitar conflictos con HR
+    console.log("Rutas de Recibos de Nómina registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de Recibos de Nómina:", error);
+  }
+
+  // Registrar rutas de Eventos AMBU
+  try {
+    const { registerEventosAmbuRoutes } = await import("./eventos-ambu-routes");
+    const eventosAmbuRouter = express.Router();
+    
+    // Aplicar middleware JSON específicamente al router de eventos AMBU
+    eventosAmbuRouter.use(express.json({ limit: '50mb' }));
+    eventosAmbuRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    
+    registerEventosAmbuRoutes(app, eventosAmbuRouter, (req: Request, res: Response, next: NextFunction) => next());
+    app.use("/api", eventosAmbuRouter);
+    console.log("Rutas de Eventos AMBU registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de Eventos AMBU:", error);
+  }
+
+  // Registrar rutas del sistema de email
+  try {
+    const { emailRouter } = await import("./email/emailRoutes");
+    console.log("Registrando rutas del sistema de email...");
+    app.use("/api/email", emailRouter);
+    console.log("Rutas del sistema de email registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de email:", error);
+  }
+
+  // Registrar rutas de imágenes de actividades
+  try {
+    const activityImageRouter = await import("./activity-image-routes");
+    app.use("/api/activities", activityImageRouter.default);
+    console.log("Rutas de imágenes de actividades registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de imágenes de actividades:", error);
+  }
+
+  // Registrar rutas del sistema de comunicaciones
+  try {
+    const { default: communicationsRouter } = await import("./communications/communicationsRoutes");
+    console.log("Registrando rutas del sistema de comunicaciones...");
+    app.use("/api/communications", communicationsRouter);
+    console.log("Rutas del sistema de comunicaciones registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de comunicaciones:", error);
+  }
+
+  // Registrar rutas del sistema de conteo de visitantes
+  try {
+    console.log("Registrando rutas del sistema de conteo de visitantes...");
+    
+    // Crear router específico con middleware JSON
+    const visitorCountRouter = express.Router();
+    visitorCountRouter.use(express.json({ limit: '50mb' }));
+    visitorCountRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    
+    // Montar las rutas de visitor-count en el router con middleware
+    visitorCountRouter.use('/', visitorCountRoutes);
+    
+    app.use("/api", visitorCountRouter);
+    console.log("Rutas del sistema de conteo de visitantes registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de conteo de visitantes:", error);
+  }
+
+  // Inicializar tablas de comunicaciones
+  try {
+    const { seedEmailTemplates } = await import("./communications/seedCommunications");
+    await seedEmailTemplates();
+  } catch (error) {
+    console.error("Error inicializando tablas de comunicaciones:", error);
+  }
+
+  const routeServer = await registerRoutes(app);
+
+  // Inicializar tablas de vacaciones
+  try {
+    const { createVacationTables } = await import("./create-vacation-tables");
+    await createVacationTables();
+    console.log("✅ Tablas de vacaciones inicializadas");
+  } catch (error) {
+    console.error("Error al inicializar tablas de vacaciones:", error);
+  }
+
+  // ENDPOINT DIRECTO ELIMINADO - Usando exclusivamente maintenance_routes_fixed.ts
+
+  // Registrar API de integraciones financieras múltiples
+  try {
+    const apiRouter = express.Router();
+    registerFinancialIntegrationsAPI(apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    registerMultimediaRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Importar y registrar rutas de planificación presupuestaria
+    const { registerBudgetPlanningRoutes } = await import('./budget-planning-routes');
+    registerBudgetPlanningRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Importar y registrar rutas del módulo financiero
+    const { registerFinanceRoutes } = await import('./finance-routes');
+    registerFinanceRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Importar y registrar rutas de categorías de eventos
+    const { registerEventCategoriesRoutes } = await import('./event-categories-routes');
+    registerEventCategoriesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Importar y registrar rutas de instructores
+    const { registerInstructorRoutes } = await import('./instructor-routes');
+    registerInstructorRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Importar y registrar rutas de categorías de activos
+    const { registerAssetCategoriesRoutes } = await import('./asset-categories-routes');
+    registerAssetCategoriesRoutes(app, apiRouter);
+    
+    const { registerInstructorEvaluationRoutes } = await import('./instructor-evaluations-routes');
+    registerInstructorEvaluationRoutes(app, apiRouter);
+    
+    // Importar y registrar rutas de concesionarios
+    const { registerConcessionairesRoutes } = await import('./concessionaires-routes');
+    registerConcessionairesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+
+    // Registrar rutas del módulo de evaluaciones de parques
+    const { registerParkEvaluationRoutes } = await import('./park-evaluations-routes');
+    registerParkEvaluationRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Registrar rutas de criterios de evaluación configurables
+    const { registerEvaluationCriteriaRoutes } = await import('./evaluation-criteria-routes');
+    registerEvaluationCriteriaRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Importar y registrar rutas de conteo de visitantes
+    app.use("/api", visitorCountRoutes);
+    console.log("Rutas de conteo de visitantes registradas correctamente");
+    
+    // CATEGORÍAS DE ACTIVOS: Registradas en la sección principal arriba para evitar duplicación
+    // MANTENIMIENTO DE ACTIVOS: Registradas en la sección principal de startup para evitar duplicación
+    
+    app.use("/api", apiRouter);
+    console.log("API de integraciones financieras múltiples registrada correctamente");
+    
+    // Crear tablas de multimedia si no existen
+    await createMultimediaTables();
+    console.log("Sistema de multimedia inicializado correctamente");
+    
+    // Crear tablas de evaluaciones de parques
+    await createParkEvaluationsTables();
+    console.log("Sistema de evaluaciones de parques inicializado correctamente");
+    
+    // Crear tablas de criterios de evaluación configurables
+    const { createEvaluationCriteriaTables, seedDefaultEvaluationCriteria } = await import('./create-evaluation-criteria-tables');
+    await createEvaluationCriteriaTables();
+    await seedDefaultEvaluationCriteria();
+    console.log("Sistema de criterios de evaluación configurables inicializado correctamente");
+  } catch (error) {
+    console.error("Error al registrar API de integraciones financieras:", error);
+  }
+
+  // Registrar módulo de seguridad
+  try {
+    console.log("🔒 Registrando módulo de seguridad...");
+    
+    const { initSecurityTables, seedSecurityData } = await import('./security/initSecurityTables');
+    await initSecurityTables();
+    await seedSecurityData();
+    
+    const securityRouter = await import('./security/securityRoutes');
+    app.use('/api/security', securityRouter.default);
+    
+    // Registrar rutas de recuperación de contraseña
+    console.log("🔑 Registrando rutas de recuperación de contraseña...");
+    const passwordRecoveryRouter = await import('./password-recovery-routes');
+    app.use('/api', passwordRecoveryRouter.default);
+    
+    console.log("✅ Módulo de seguridad registrado correctamente");
+  } catch (error) {
+    console.error("❌ Error al registrar módulo de seguridad:", error);
   }
 
   // Rutas para servir archivos del recibo - ANTES de Vite
@@ -1512,13 +1480,29 @@ async function initializeDatabaseAsync() {
   
   let appServer: any;
 
-  // HR routes already registered in the main startup section above
+  // Registrar rutas HR ANTES de Vite para evitar conflictos
+  try {
+    const { registerHRRoutes } = await import("./hr-routes");
+    const hrRouter = express.Router();
+    
+    // Aplicar middleware JSON específicamente al router HR
+    hrRouter.use(express.json({ limit: '50mb' }));
+    hrRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    
+    registerHRRoutes(app, hrRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Registrar rutas del módulo de vacaciones
+    const { registerVacationRoutes } = await import("./vacation-routes");
+    registerVacationRoutes(app, hrRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    app.use("/api/hr", hrRouter); // Registrar rutas HR ANTES de Vite
+    console.log("✅ Rutas HR y Vacaciones registradas ANTES de Vite");
+  } catch (error) {
+    console.error("Error al registrar rutas HR:", error);
+  }
 
   // Detect deployment environment
   const isDeployment = process.env.REPLIT_DEPLOYMENT_ID || process.env.NODE_ENV === "production";
-  
-  // Use the comprehensive initialization function defined earlier
-  const initializeDatabaseAsync = initializeSystemAsync;
   
   // Setup Vite in development mode with error handling
   if (app.get("env") === "development" && !isDeployment) {
@@ -1538,23 +1522,23 @@ async function initializeDatabaseAsync() {
           console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
         }
         
-        // Inicializar base de datos después de que todo esté listo con timeout reducido
+        // Inicializar base de datos después de que todo esté listo
         setTimeout(() => {
           initializeDatabaseAsync().catch(error => {
             console.error("Error inicializando base de datos (no crítico):", error);
           });
-        }, 100);
+        }, 3000);
       });
     } catch (error) {
       console.error("Error importando Vite, iniciando servidor sin frontend:", error);
       appServer = app.listen(PORT, HOST, () => {
         console.log(`Servidor ejecutándose en puerto ${PORT} (solo API)`);
         
-        setImmediate(() => {
+        setTimeout(() => {
           initializeDatabaseAsync().catch(error => {
             console.error("Error inicializando base de datos (no crítico):", error);
           });
-        });
+        }, 3000);
       });
     }
   } else {
@@ -1568,15 +1552,15 @@ async function initializeDatabaseAsync() {
     
     // Fallback para rutas no encontradas - servir index.html
     app.get('*', (req, res) => {
-      // Solo servir HTML para rutas que no son API, except root which is handled above
-      if (!req.path.startsWith('/api/') && req.path !== '/') {
+      // Solo servir HTML para rutas que no son API
+      if (!req.path.startsWith('/api/')) {
         const indexPath = path.join(process.cwd(), 'public', 'index.html');
         if (fs.existsSync(indexPath)) {
           res.sendFile(indexPath);
         } else {
           res.status(404).send('Application not built. Please run npm run build first.');
         }
-      } else if (req.path.startsWith('/api/')) {
+      } else {
         res.status(404).json({ error: 'API endpoint not found' });
       }
     });
@@ -1584,16 +1568,14 @@ async function initializeDatabaseAsync() {
     appServer = app.listen(PORT, HOST, () => {
       console.log(`🚀 ParkSys servidor en producción ejecutándose en ${HOST}:${PORT}`);
       console.log(`🌐 Aplicación disponible en http://${HOST}:${PORT}`);
-      console.log(`📊 Sistema de evaluaciones de parques operativo`);
+      console.log(`📊 Sistema de evaluaciones de parques operativo con 169 evaluaciones`);
       console.log(`🏛️ Bosques Urbanos de Guadalajara - Sistema listo para presentación`);
-      console.log(`✅ Servidor iniciado exitosamente - Health checks disponibles en /health`);
       
-      // Initialize database in background after server is ready
-      setImmediate(() => {
+      setTimeout(() => {
         initializeDatabaseAsync().catch(error => {
           console.error("Error inicializando base de datos (no crítico):", error);
         });
-      });
+      }, 1000);
     });
   }
 
