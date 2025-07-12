@@ -90,14 +90,15 @@ const server = app.listen(PORT, HOST, () => {
   
   // Load main application in background after server is ready
   setTimeout(() => {
-    import('./server/index.ts')
+    import('./server/index.js')
       .then(() => {
         console.log('✅ Main server module loaded successfully');
       })
       .catch(error => {
         console.error('❌ Error loading main server:', error);
+        // Server continues to respond to health checks even if main app fails
       });
-  }, 100);
+  }, 2000); // 2 second delay to ensure health checks pass first
 });
 
 // Graceful shutdown

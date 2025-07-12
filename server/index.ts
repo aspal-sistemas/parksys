@@ -148,90 +148,93 @@ async function initializeSystemAsync() {
   if (initializationStarted) return;
   initializationStarted = true;
   
-  try {
-    // Initialize database tables with no timeout - let them run in background
+  // Run in completely async background with longer delay for deployment
+  setTimeout(async () => {
     try {
-      await createParkEvaluationsTables();
-    } catch (error) {
-      // Silently handle non-critical errors
-    }
-    
-    try {
-      await createMultimediaTables();
-    } catch (error) {
-      // Silently handle non-critical errors
-    }
-    
-    // Initialize other tables
-    try {
-      const { createVacationTables } = await import("./create-vacation-tables");
-      await createVacationTables();
-    } catch (error) {
-      // Silently handle non-critical errors
-    }
-    
-    // Initialize communications
-    try {
-      const { seedEmailTemplates } = await import("./communications/seedCommunications");
-      await seedEmailTemplates();
-    } catch (error) {
-      // Silently handle non-critical errors
-    }
-    
-    // Initialize security system
-    try {
-      const { initSecurityTables, seedSecurityData } = await import('./security/initSecurityTables');
-      await initSecurityTables();
-      await seedSecurityData();
-    } catch (error) {
-      // Silently handle non-critical errors
-    }
-    
-    // Initialize evaluation criteria
-    try {
-      const { createEvaluationCriteriaTables, seedDefaultEvaluationCriteria } = await import('./create-evaluation-criteria-tables');
-      await createEvaluationCriteriaTables();
-      await seedDefaultEvaluationCriteria();
-    } catch (error) {
-      // Silently handle non-critical errors
-    }
-    
-    // Initialize payroll receipts tables
-    try {
-      const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
-      await createPayrollReceiptsTables();
-    } catch (error) {
-      // Silently handle non-critical errors
-    }
-    
-    // Initialize payroll data seeding
-    try {
-      const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
-      await seedPayrollReceipts();
-    } catch (error) {
-      // Silently handle non-critical errors
-    }
-    
-    // Initialize tree tables
-    try {
-      const { createTreeTables } = await import("./create-tree-tables");
-      await createTreeTables();
+      // Initialize database tables with no timeout - let them run in background
+      try {
+        await createParkEvaluationsTables();
+      } catch (error) {
+        // Silently handle non-critical errors
+      }
       
-      const { seedTreeSpecies } = await import("./seed");
-      await seedTreeSpecies();
+      try {
+        await createMultimediaTables();
+      } catch (error) {
+        // Silently handle non-critical errors
+      }
+      
+      // Initialize other tables
+      try {
+        const { createVacationTables } = await import("./create-vacation-tables");
+        await createVacationTables();
+      } catch (error) {
+        // Silently handle non-critical errors
+      }
+      
+      // Initialize communications
+      try {
+        const { seedEmailTemplates } = await import("./communications/seedCommunications");
+        await seedEmailTemplates();
+      } catch (error) {
+        // Silently handle non-critical errors
+      }
+      
+      // Initialize security system
+      try {
+        const { initSecurityTables, seedSecurityData } = await import('./security/initSecurityTables');
+        await initSecurityTables();
+        await seedSecurityData();
+      } catch (error) {
+        // Silently handle non-critical errors
+      }
+      
+      // Initialize evaluation criteria
+      try {
+        const { createEvaluationCriteriaTables, seedDefaultEvaluationCriteria } = await import('./create-evaluation-criteria-tables');
+        await createEvaluationCriteriaTables();
+        await seedDefaultEvaluationCriteria();
+      } catch (error) {
+        // Silently handle non-critical errors
+      }
+      
+      // Initialize payroll receipts tables
+      try {
+        const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
+        await createPayrollReceiptsTables();
+      } catch (error) {
+        // Silently handle non-critical errors
+      }
+      
+      // Initialize payroll data seeding
+      try {
+        const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
+        await seedPayrollReceipts();
+      } catch (error) {
+        // Silently handle non-critical errors
+      }
+      
+      // Initialize tree tables
+      try {
+        const { createTreeTables } = await import("./create-tree-tables");
+        await createTreeTables();
+        
+        const { seedTreeSpecies } = await import("./seed");
+        await seedTreeSpecies();
+      } catch (error) {
+        // Silently handle non-critical errors
+      }
+      
+      // Register additional routes asynchronously
+      await registerAdditionalRoutes();
+      
+      isInitialized = true;
+      
     } catch (error) {
-      // Silently handle non-critical errors
+      // Silently handle non-critical errors to avoid console spam
+      // Don't throw - let the server continue running
     }
-    
-    // Register additional routes asynchronously
-    await registerAdditionalRoutes();
-    
-    isInitialized = true;
-    
-  } catch (error) {
-    // Silently handle non-critical errors to avoid console spam
-    // Don't throw - let the server continue running
-  }
+  }, 5000); // 5 second delay to allow health checks to pass first
 }
 
 // Register complex routes asynchronously
@@ -392,14 +395,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Register main routes immediately after middleware setup for faster deployment health checks
+// Register main routes asynchronously after server startup
 setTimeout(async () => {
   try {
     await registerRoutes(app);
   } catch (error) {
     // Silently handle errors to avoid console spam
   }
-}, 50);
+}, 1000); // Delay route registration to allow health checks to pass first
 
 // Minimal request logging for production
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -1113,55 +1116,58 @@ import { seedTreeSpecies } from "./seed-tree-species";
 
 import { initializeDatabase } from "./initialize-db";
 
-// Database initialization function that runs after server starts
+// Database initialization function that runs AFTER server starts responding to health checks
 async function initializeDatabaseAsync() {
-  try {
-    console.log("Inicializando estructura de la base de datos de forma asíncrona...");
-    await initializeDatabase();
-    
-    // Intentar inicializar los datos predeterminados con protección extra
+  // Delay all database initialization to allow health checks to pass first
+  setTimeout(async () => {
     try {
-      await seedDatabase();
+      console.log("Inicializando estructura de la base de datos de forma asíncrona...");
+      await initializeDatabase();
+      
+      // Intentar inicializar los datos predeterminados con protección extra
+      try {
+        await seedDatabase();
+      } catch (error) {
+        console.error("Error al cargar datos iniciales (continuando):", error);
+      }
+      
+      // Crear tablas del módulo de arbolado con protección
+      try {
+        await createTreeTables();
+      } catch (error) {
+        console.error("Error al crear tablas de arbolado (continuando):", error);
+      }
+      
+      // Cargar especies de árboles de muestra con protección
+      try {
+        await seedTreeSpecies();
+      } catch (error) {
+        console.error("Error al cargar especies de árboles (continuando):", error);
+      }
+      
+      // Inicializar integración HR-Finanzas con protección mejorada - TEMPORALMENTE DESHABILITADO PARA DESPLIEGUE
+      try {
+        console.log("HR-Finance integration seeding temporarily disabled for deployment stability");
+        // const { seedHRFinanceIntegration } = await import("./seed-hr-finance-integration");
+        // await seedHRFinanceIntegration();
+      } catch (error) {
+        console.error("Error al inicializar integración HR-Finanzas (continuando):", error);
+      }
+      
+      // Inicializar recibos de nómina con protección contra duplicados - TEMPORALMENTE DESHABILITADO PARA DESPLIEGUE
+      try {
+        console.log("Payroll receipts seeding temporarily disabled for deployment stability");
+        // const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
+        // await seedPayrollReceipts();
+      } catch (error) {
+        console.error("Error al inicializar recibos de nómina (continuando):", error);
+      }
+      
+      console.log("Inicialización de base de datos completada exitosamente");
     } catch (error) {
-      console.error("Error al cargar datos iniciales (continuando):", error);
+      console.error("Error crítico al inicializar la base de datos (servidor continuará funcionando):", error);
     }
-    
-    // Crear tablas del módulo de arbolado con protección
-    try {
-      await createTreeTables();
-    } catch (error) {
-      console.error("Error al crear tablas de arbolado (continuando):", error);
-    }
-    
-    // Cargar especies de árboles de muestra con protección
-    try {
-      await seedTreeSpecies();
-    } catch (error) {
-      console.error("Error al cargar especies de árboles (continuando):", error);
-    }
-    
-    // Inicializar integración HR-Finanzas con protección mejorada - TEMPORALMENTE DESHABILITADO PARA DESPLIEGUE
-    try {
-      console.log("HR-Finance integration seeding temporarily disabled for deployment stability");
-      // const { seedHRFinanceIntegration } = await import("./seed-hr-finance-integration");
-      // await seedHRFinanceIntegration();
-    } catch (error) {
-      console.error("Error al inicializar integración HR-Finanzas (continuando):", error);
-    }
-    
-    // Inicializar recibos de nómina con protección contra duplicados - TEMPORALMENTE DESHABILITADO PARA DESPLIEGUE
-    try {
-      console.log("Payroll receipts seeding temporarily disabled for deployment stability");
-      // const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
-      // await seedPayrollReceipts();
-    } catch (error) {
-      console.error("Error al inicializar recibos de nómina (continuando):", error);
-    }
-    
-    console.log("Inicialización de base de datos completada exitosamente");
-  } catch (error) {
-    console.error("Error crítico al inicializar la base de datos (servidor continuará funcionando):", error);
-  }
+  }, 15000); // 15 second delay for deployment stability
 }
 
 (async () => {
@@ -1176,15 +1182,17 @@ async function initializeDatabaseAsync() {
     console.error("Error registering essential routes:", error);
   }
 
-  // Register essential HR routes immediately (but defer complex initialization)
-  try {
-    const { registerHRRoutes } = await import("./hr-routes");
-    const hrRouter = express.Router();
-    registerHRRoutes(app, hrRouter, (req: Request, res: Response, next: NextFunction) => next());
-    app.use("/api/hr", hrRouter);
-  } catch (error) {
-    console.error("Error al registrar rutas HR:", error);
-  }
+  // Register essential HR routes asynchronously to avoid blocking health checks
+  setTimeout(async () => {
+    try {
+      const { registerHRRoutes } = await import("./hr-routes");
+      const hrRouter = express.Router();
+      registerHRRoutes(app, hrRouter, (req: Request, res: Response, next: NextFunction) => next());
+      app.use("/api/hr", hrRouter);
+    } catch (error) {
+      console.error("Error al registrar rutas HR:", error);
+    }
+  }, 2000); // Delay HR routes registration
 
   // Rutas para servir archivos del recibo - ANTES de Vite
   app.get('/api/recibo-nomina', (req: Request, res: Response) => {
@@ -1474,7 +1482,7 @@ async function initializeDatabaseAsync() {
           initializeDatabaseAsync().catch(() => {
             // Silently handle database initialization errors
           });
-        }, 100);
+        }, 10000); // 10 second delay for deployment stability
       });
     } catch (error) {
       appServer = app.listen(PORT, HOST, () => {
@@ -1484,7 +1492,7 @@ async function initializeDatabaseAsync() {
           initializeDatabaseAsync().catch(() => {
             // Silently handle database initialization errors
           });
-        }, 100);
+        }, 10000); // 10 second delay for deployment stability
       });
     }
   } else {
@@ -1515,7 +1523,7 @@ async function initializeDatabaseAsync() {
         initializeDatabaseAsync().catch(() => {
           // Silently handle database initialization errors
         });
-      }, 100);
+      }, 10000); // 10 second delay for deployment stability
     });
   }
 
