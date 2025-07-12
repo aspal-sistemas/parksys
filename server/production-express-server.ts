@@ -1,114 +1,66 @@
 import express from "express";
+import { createServer } from "vite";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { NextFunction, Request, Response } from "express";
-import { createServer as createViteServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function createServer() {
+async function createProductionServer() {
   const app = express();
 
-  // CRITICAL: Configure Express for deployment
+  // Configure Express for deployment
   app.set('trust proxy', 1);
 
-  // Essential middleware with timeout protection
+  // Essential middleware
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+  // Create Vite server for development
+  let viteServer;
+  try {
+    viteServer = await createServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+      root: path.resolve(__dirname, '..'),
+      configFile: path.resolve(__dirname, '../vite.config.ts'),
+      envFile: path.resolve(__dirname, '../.env')
+    });
+  } catch (error) {
+    console.warn('Vite server creation failed, proceeding with static files only:', error);
+  }
 
   // Static files serving
   app.use('/uploads', express.static('uploads'));
 
-  // CRITICAL: Instant health check endpoints for deployment - NO DATABASE DEPENDENCIES
-  const startTime = Date.now();
+  // Check if built files exist and serve them first
+  const distPath = path.join(__dirname, '../dist');
+  if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+  } else if (viteServer) {
+    // Use Vite dev server for development
+    app.use(viteServer.middlewares);
+  }
+
+  // Serve client files
+  app.use(express.static(path.join(__dirname, '../client')));
+  
+  // Serve public files as fallback
+  app.use(express.static(path.join(__dirname, '../public')));
+
+  // Health response template
   const healthResponse = {
-    status: 'ok',
-    message: 'ParkSys - Bosques Urbanos de Guadalajara',
-    deployment: process.env.REPLIT_DEPLOYMENT_ID || 'development',
+    status: 'healthy',
+    service: 'ParkSys',
+    version: '1.0.0',
     timestamp: new Date().toISOString()
   };
 
-  // Health check endpoints
-  app.get('/health', (req: Request, res: Response) => {
-    res.status(200).json({
-      status: 'ok',
-      uptime: Math.floor((Date.now() - startTime) / 1000),
-      timestamp: new Date().toISOString()
-    });
-  });
+  const startTime = Date.now();
 
-  app.get('/healthz', (req: Request, res: Response) => {
-    res.status(200).json({
-      status: 'ok',
-      uptime: Math.floor((Date.now() - startTime) / 1000),
-      timestamp: new Date().toISOString()
-    });
-  });
-
-  app.get('/readiness', (req: Request, res: Response) => {
-    res.status(200).json({
-      status: 'ok',
-      uptime: Math.floor((Date.now() - startTime) / 1000),
-      timestamp: new Date().toISOString()
-    });
-  });
-
-  app.get('/liveness', (req: Request, res: Response) => {
-    res.status(200).json({
-      status: 'ok',
-      uptime: Math.floor((Date.now() - startTime) / 1000),
-      timestamp: new Date().toISOString()
-    });
-  });
-
-  app.get('/api/status', (req: Request, res: Response) => {
-    res.status(200).json({
-      ...healthResponse,
-      uptime: Math.floor((Date.now() - startTime) / 1000)
-    });
-  });
-
-  app.get('/api/health', (req: Request, res: Response) => {
-    res.status(200).json({
-      status: 'ok',
-      message: 'API Health Check OK',
-      uptime: Math.floor((Date.now() - startTime) / 1000),
-      timestamp: new Date().toISOString()
-    });
-  });
-
-  // Check if dist exists for production
-  const distPath = path.join(__dirname, '../dist');
-  const hasBuiltFiles = fs.existsSync(distPath);
-  
-  if (hasBuiltFiles) {
-    console.log('✅ Built files found, serving from dist/');
-    app.use(express.static(distPath));
-  } else {
-    console.log('🔨 No built files found, creating Vite dev server...');
-    
-    // Create Vite server for development
-    try {
-      const viteServer = await createViteServer({
-        server: { middlewareMode: true },
-        appType: 'spa',
-        root: path.resolve(__dirname, '..'),
-        configFile: path.resolve(__dirname, '../vite.config.ts')
-      });
-      
-      app.use(viteServer.middlewares);
-      console.log('✅ Vite dev server created successfully');
-    } catch (error) {
-      console.error('❌ Failed to create Vite server:', error);
-      // Fallback to static files
-      app.use(express.static(path.join(__dirname, '../client')));
-      app.use(express.static(path.join(__dirname, '../public')));
-    }
-  }
-
-  // Health check endpoints
+  // All health check endpoints
   app.get('/', (req: Request, res: Response) => {
     const acceptsHtml = req.get('Accept')?.includes('text/html');
     
@@ -147,6 +99,49 @@ async function createServer() {
     }
   });
 
+  app.get('/health', (req: Request, res: Response) => {
+    res.status(200).json({
+      status: 'ok',
+      message: 'Health check OK',
+      uptime: Math.floor((Date.now() - startTime) / 1000),
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  app.get('/healthz', (req: Request, res: Response) => {
+    res.status(200).send('OK');
+  });
+
+  app.get('/readiness', (req: Request, res: Response) => {
+    res.status(200).json({ 
+      ready: true,
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  app.get('/liveness', (req: Request, res: Response) => {
+    res.status(200).json({ 
+      alive: true,
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  app.get('/api/status', (req: Request, res: Response) => {
+    res.status(200).json({
+      ...healthResponse,
+      uptime: Math.floor((Date.now() - startTime) / 1000)
+    });
+  });
+
+  app.get('/api/health', (req: Request, res: Response) => {
+    res.status(200).json({
+      status: 'ok',
+      message: 'API Health Check OK',
+      uptime: Math.floor((Date.now() - startTime) / 1000),
+      timestamp: new Date().toISOString()
+    });
+  });
+
   // Catch-all for SPA routing
   app.get('*', (req: Request, res: Response) => {
     if (req.path.startsWith('/api/')) {
@@ -179,9 +174,9 @@ async function createServer() {
   });
 
   // Error handling middleware
-  app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error('Express error:', err);
-    const status = err.status || 500;
+    const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
     res.status(status).json({ 
       error: message,
@@ -196,11 +191,11 @@ async function createServer() {
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
 const HOST = '0.0.0.0';
 
-createServer().then((app) => {
+createProductionServer().then((app) => {
   const server = app.listen(PORT, HOST, () => {
-    console.log(`🚀 ParkSys servidor ejecutándose en ${HOST}:${PORT}`);
-    console.log(`✅ Servidor iniciado exitosamente - Health checks disponibles`);
-    console.log(`📡 Health endpoints: /, /health, /healthz, /readiness, /liveness, /api/status, /api/health`);
+    console.log(`🚀 ParkSys Production Server running on ${HOST}:${PORT}`);
+    console.log(`✅ Health checks available at multiple endpoints`);
+    console.log(`📡 Vite integration for development mode`);
   });
 
   // Graceful shutdown
@@ -220,6 +215,6 @@ createServer().then((app) => {
     });
   });
 }).catch((error) => {
-  console.error('Failed to start server:', error);
+  console.error('Failed to start production server:', error);
   process.exit(1);
 });

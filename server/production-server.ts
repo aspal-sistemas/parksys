@@ -3,13 +3,11 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { NextFunction, Request, Response } from "express";
-import { createServer as createViteServer } from "vite";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const isProduction = process.env.NODE_ENV === 'production' || process.env.REPLIT_DEPLOYMENT_ID;
 
 // CRITICAL: Configure Express for deployment
 app.set('trust proxy', 1);
@@ -18,10 +16,22 @@ app.set('trust proxy', 1);
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Static files serving
+// Static files serving with proper order and fallbacks
 app.use('/uploads', express.static('uploads'));
 
-// Health check configuration
+// Serve built files first (if they exist)
+const distPath = path.join(__dirname, '../dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+}
+
+// Serve client files for development
+app.use(express.static(path.join(__dirname, '../client')));
+
+// Serve public files as final fallback
+app.use(express.static(path.join(__dirname, '../public')));
+
+// CRITICAL: Instant health check endpoints for deployment
 const startTime = Date.now();
 const healthResponse = {
   status: 'ok',
@@ -30,7 +40,7 @@ const healthResponse = {
   timestamp: new Date().toISOString()
 };
 
-// Health check endpoints - these must work for deployment
+// Health check endpoints
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
@@ -40,19 +50,25 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 app.get('/healthz', (req: Request, res: Response) => {
-  res.status(200).send('OK');
+  res.status(200).json({
+    status: 'ok',
+    uptime: Math.floor((Date.now() - startTime) / 1000),
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.get('/readiness', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    ready: true,
+  res.status(200).json({
+    status: 'ok',
+    uptime: Math.floor((Date.now() - startTime) / 1000),
     timestamp: new Date().toISOString()
   });
 });
 
 app.get('/liveness', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    alive: true,
+  res.status(200).json({
+    status: 'ok',
+    uptime: Math.floor((Date.now() - startTime) / 1000),
     timestamp: new Date().toISOString()
   });
 });
@@ -67,125 +83,139 @@ app.get('/api/status', (req: Request, res: Response) => {
 app.get('/api/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
-    message: 'API Health Check OK',
     uptime: Math.floor((Date.now() - startTime) / 1000),
     timestamp: new Date().toISOString()
   });
 });
 
-async function createServer() {
-  if (isProduction) {
-    // Production mode: serve built files
-    app.use(express.static('dist'));
-    
-    // Root endpoint - serve frontend for browsers, JSON for health checks
-    app.get('/', (req: Request, res: Response) => {
-      const acceptHeader = req.headers.accept || '';
-      const userAgent = req.headers['user-agent'] || '';
-      
-      // Return JSON for health checks
-      if (acceptHeader.includes('application/json') || 
-          (userAgent.includes('curl') && !acceptHeader.includes('text/html')) ||
-          req.query.healthcheck) {
-        return res.status(200).json({
-          ...healthResponse,
-          uptime: Math.floor((Date.now() - startTime) / 1000)
-        });
-      }
-      
-      // Serve built frontend
-      const indexPath = path.join(__dirname, '../dist/index.html');
-      if (fs.existsSync(indexPath)) {
-        res.sendFile(indexPath);
-      } else {
-        res.status(503).json({
-          error: 'Frontend not built',
-          message: 'Run npm run build first'
-        });
-      }
-    });
-    
-    // Catch-all for SPA routing
-    app.get('*', (req: Request, res: Response) => {
-      if (req.path.startsWith('/api/')) {
-        return res.status(404).json({ error: 'API endpoint not found' });
-      }
-      
-      const indexPath = path.join(__dirname, '../dist/index.html');
-      if (fs.existsSync(indexPath)) {
-        res.sendFile(indexPath);
-      } else {
-        res.status(503).json({
-          error: 'Frontend not built',
-          message: 'Run npm run build first'
-        });
-      }
-    });
-    
-  } else {
-    // Development mode: use Vite dev server
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa'
-    });
-    
-    app.use(vite.ssrFixStacktrace);
-    app.use(vite.middlewares);
-    
-    // Root endpoint for development
-    app.get('/', (req: Request, res: Response) => {
-      const acceptHeader = req.headers.accept || '';
-      const userAgent = req.headers['user-agent'] || '';
-      
-      // Return JSON for health checks
-      if (acceptHeader.includes('application/json') || 
-          (userAgent.includes('curl') && !acceptHeader.includes('text/html')) ||
-          req.query.healthcheck) {
-        return res.status(200).json({
-          ...healthResponse,
-          uptime: Math.floor((Date.now() - startTime) / 1000)
-        });
-      }
-      
-      // Let Vite handle the frontend
-      res.redirect('/client/');
+// Root endpoint with intelligent routing
+app.get('/', (req: Request, res: Response) => {
+  // Check if this is a health check request
+  const acceptHeader = req.headers.accept || '';
+  const userAgent = req.headers['user-agent'] || '';
+  
+  if (acceptHeader.includes('application/json') || 
+      userAgent.includes('curl') || 
+      userAgent.includes('wget') ||
+      userAgent.includes('health') ||
+      userAgent.includes('check') ||
+      req.query.format === 'json') {
+    return res.status(200).json({
+      ...healthResponse,
+      uptime: Math.floor((Date.now() - startTime) / 1000)
     });
   }
   
-  return app;
-}
+  // Try to serve the built frontend first
+  const builtIndexPath = path.join(__dirname, '../dist/index.html');
+  if (fs.existsSync(builtIndexPath)) {
+    return res.sendFile(builtIndexPath);
+  }
+  
+  // Fallback to development client
+  const devIndexPath = path.join(__dirname, '../client/index.html');
+  if (fs.existsSync(devIndexPath)) {
+    return res.sendFile(devIndexPath);
+  }
+  
+  // Final fallback to public
+  const publicIndexPath = path.join(__dirname, '../public/index.html');
+  if (fs.existsSync(publicIndexPath)) {
+    return res.sendFile(publicIndexPath);
+  }
+  
+  // If no frontend available, return health check
+  res.status(200).json({
+    ...healthResponse,
+    uptime: Math.floor((Date.now() - startTime) / 1000),
+    message: 'ParkSys - Frontend not available'
+  });
+});
+
+// Catch-all for SPA routing
+app.get('*', (req: Request, res: Response) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  
+  // Try to serve the built frontend first
+  const builtIndexPath = path.join(__dirname, '../dist/index.html');
+  if (fs.existsSync(builtIndexPath)) {
+    return res.sendFile(builtIndexPath);
+  }
+  
+  // Fallback to development client
+  const devIndexPath = path.join(__dirname, '../client/index.html');
+  if (fs.existsSync(devIndexPath)) {
+    return res.sendFile(devIndexPath);
+  }
+  
+  // Final fallback to public
+  const publicIndexPath = path.join(__dirname, '../public/index.html');
+  if (fs.existsSync(publicIndexPath)) {
+    return res.sendFile(publicIndexPath);
+  }
+  
+  // If no frontend available, return health check
+  res.status(200).json({
+    ...healthResponse,
+    message: 'ParkSys - Frontend not available'
+  });
+});
 
 // Error handling middleware
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('Express error:', err);
-  const status = err.status || err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-  res.status(status).json({ 
-    error: message,
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error('Error in server:', err);
+  res.status(500).json({
+    status: 'error',
+    message: 'Internal server error',
     timestamp: new Date().toISOString()
   });
 });
 
 // Start server
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
-const HOST = '0.0.0.0';
+const port = process.env.PORT || 5000;
+const host = process.env.HOST || '0.0.0.0';
 
-createServer().then(() => {
-  const server = app.listen(PORT, HOST, () => {
-    console.log(`🚀 ParkSys servidor ejecutándose en ${HOST}:${PORT}`);
-    console.log(`✅ Modo: ${isProduction ? 'PRODUCCIÓN' : 'DESARROLLO'}`);
-    console.log(`📡 Health endpoints: /, /health, /healthz, /readiness, /liveness, /api/status, /api/health`);
-  });
+app.listen(port, host, () => {
+  console.log(`🚀 ParkSys servidor ejecutándose en ${host}:${port}`);
+  console.log(`✅ Servidor iniciado exitosamente - Health checks disponibles`);
+  console.log(`📡 Health endpoints: /, /health, /healthz, /readiness, /liveness, /api/status, /api/health`);
   
-  // Graceful shutdown
-  const gracefulShutdown = () => {
-    console.log('Shutting down gracefully...');
-    server.close(() => {
-      console.log('Server closed');
-      process.exit(0);
-    });
-  };
+  // Check what frontend is available
+  const builtIndexPath = path.join(__dirname, '../dist/index.html');
+  const devIndexPath = path.join(__dirname, '../client/index.html');
+  const publicIndexPath = path.join(__dirname, '../public/index.html');
   
-  process.on('SIGTERM', gracefulShutdown);
-  process.on('SIGINT', gracefulShutdown);
-}).catch(console.error);
+  if (fs.existsSync(builtIndexPath)) {
+    console.log(`📦 Serving built frontend from: dist/`);
+  } else if (fs.existsSync(devIndexPath)) {
+    console.log(`🔧 Serving development frontend from: client/`);
+  } else if (fs.existsSync(publicIndexPath)) {
+    console.log(`📄 Serving simple frontend from: public/`);
+  } else {
+    console.log(`⚠️  No frontend available - health checks only`);
+  }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🔄 Recibido SIGTERM, cerrando servidor...');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('🔄 Recibido SIGINT, cerrando servidor...');
+  process.exit(0);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('❌ Excepción no capturada:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Rechazo de promesa no manejado:', reason);
+  process.exit(1);
+});
