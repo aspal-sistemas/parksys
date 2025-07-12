@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSys - Bosques Urbanos de Guadalajara</title>
+    <meta name="description" content="Sistema de gestión de parques urbanos para la ciudad de Guadalajara. Administra parques, actividades, voluntarios y más.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #00a587 0%, #067f5f 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 2rem;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .feature h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #bcd256;
+        }
+        
+        .status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .contact {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🌳 ParkSys</div>
+        <div class="subtitle">Bosques Urbanos de Guadalajara</div>
+        <div class="description">
+            Sistema integral de gestión de parques urbanos para la Zona Metropolitana de Guadalajara. 
+            Administra parques, actividades, voluntarios, activos, finanzas y más desde una plataforma unificada.
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>🏞️ Gestión de Parques</h3>
+                <p>Administra parques, amenidades, ubicaciones y zonas verdes</p>
+            </div>
+            <div class="feature">
+                <h3>🎯 Actividades</h3>
+                <p>Organiza eventos, actividades y programas recreativos</p>
+            </div>
+            <div class="feature">
+                <h3>🤝 Voluntarios</h3>
+                <p>Coordina programas de voluntariado y participación ciudadana</p>
+            </div>
+            <div class="feature">
+                <h3>💰 Finanzas</h3>
+                <p>Control presupuestario y gestión financiera integral</p>
+            </div>
+            <div class="feature">
+                <h3>🌲 Arbolado</h3>
+                <p>Inventario y mantenimiento de especies arbóreas</p>
+            </div>
+            <div class="feature">
+                <h3>🏢 Concesiones</h3>
+                <p>Gestión de contratos y concesiones comerciales</p>
+            </div>
+        </div>
+        
+        <div class="status">
+            <div class="status-badge">✅ Sistema Desplegado</div>
+            <p style="margin-top: 1rem;">
+                Deployment ID: <code id="deployment-id">Cargando...</code><br>
+                Uptime: <span id="uptime">Cargando...</span>
+            </p>
+        </div>
+        
+        <div class="contact">
+            <p><strong>Agencia Metropolitana de Bosques Urbanos</strong></p>
+            <p>Av. Alcalde 1351, Guadalajara, Jalisco</p>
+            <p>Tel: 33 3837-4400 | Email: bosques@guadalajara.gob.mx</p>
+        </div>
+    </div>
+    
+    <script>
+        // Fetch system status
+        fetch('/api/status')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('deployment-id').textContent = data.deployment || 'development';
+                document.getElementById('uptime').textContent = data.uptime + ' segundos';
+            })
+            .catch(error => {
+                console.log('Status fetch error:', error);
+                document.getElementById('deployment-id').textContent = 'Error';
+                document.getElementById('uptime').textContent = 'Error';
+            });
+    </script>
+</body>
+</html>

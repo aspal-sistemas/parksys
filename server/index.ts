@@ -18,8 +18,8 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Static files serving
 app.use('/uploads', express.static('uploads'));
-app.use(express.static('client/src'));
 app.use(express.static('dist'));
+app.use(express.static('public'));
 
 // CRITICAL: Instant health check endpoints for deployment - NO DATABASE DEPENDENCIES
 const startTime = Date.now();
@@ -47,17 +47,30 @@ app.get('/', (req: Request, res: Response) => {
   }
   
   // Serve frontend for browsers
-  const indexPath = path.join(__dirname, '../client/index.html');
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    // Fallback to health check if no frontend
-    res.status(200).json({
-      ...healthResponse,
-      uptime: Math.floor((Date.now() - startTime) / 1000),
-      message: 'ParkSys - Frontend not available'
-    });
+  // Try built version first (dist)
+  const builtIndexPath = path.join(__dirname, '../dist/index.html');
+  if (fs.existsSync(builtIndexPath)) {
+    return res.sendFile(builtIndexPath);
   }
+  
+  // Try development version (client)
+  const devIndexPath = path.join(__dirname, '../client/index.html');
+  if (fs.existsSync(devIndexPath)) {
+    return res.sendFile(devIndexPath);
+  }
+  
+  // Fallback to simple public version
+  const publicIndexPath = path.join(__dirname, '../public/index.html');
+  if (fs.existsSync(publicIndexPath)) {
+    return res.sendFile(publicIndexPath);
+  }
+  
+  // Final fallback to health check
+  res.status(200).json({
+    ...healthResponse,
+    uptime: Math.floor((Date.now() - startTime) / 1000),
+    message: 'ParkSys - Frontend not available'
+  });
 });
 
 // Health check endpoints
@@ -115,10 +128,16 @@ app.get('*', (req: Request, res: Response) => {
     return res.sendFile(builtIndexPath);
   }
   
-  // Fallback to development version (client)
+  // Try development version (client)
   const devIndexPath = path.join(__dirname, '../client/index.html');
   if (fs.existsSync(devIndexPath)) {
     return res.sendFile(devIndexPath);
+  }
+  
+  // Fallback to simple public version
+  const publicIndexPath = path.join(__dirname, '../public/index.html');
+  if (fs.existsSync(publicIndexPath)) {
+    return res.sendFile(publicIndexPath);
   }
   
   // Final fallback to health check
