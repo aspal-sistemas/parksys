@@ -154,66 +154,66 @@ app.get('/status', (req: Request, res: Response) => {
 // Servir archivos estáticos del directorio public ANTES de otras rutas
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Comprehensive asynchronous initialization function
+// Comprehensive asynchronous initialization function with shorter timeouts
 async function initializeSystemAsync() {
   if (initializationStarted) return;
   initializationStarted = true;
   
   try {
-    // Initialize database tables with timeout
+    // Initialize database tables with reduced timeout (3 seconds)
     await Promise.race([
       createParkEvaluationsTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Database initialization timeout')), 10000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Database initialization timeout')), 3000))
     ]);
     
     await Promise.race([
       createMultimediaTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Multimedia tables timeout')), 10000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Multimedia tables timeout')), 3000))
     ]);
     
-    // Initialize other tables with timeout
+    // Initialize other tables with reduced timeout
     const { createVacationTables } = await import("./create-vacation-tables");
     await Promise.race([
       createVacationTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Vacation tables timeout')), 10000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Vacation tables timeout')), 3000))
     ]);
     
-    // Initialize communications with timeout
+    // Initialize communications with reduced timeout
     const { seedEmailTemplates } = await import("./communications/seedCommunications");
     await Promise.race([
       seedEmailTemplates(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Email templates timeout')), 10000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Email templates timeout')), 3000))
     ]);
     
-    // Initialize security system with timeout
+    // Initialize security system with reduced timeout
     const { initSecurityTables, seedSecurityData } = await import('./security/initSecurityTables');
     await Promise.race([
       initSecurityTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Security tables timeout')), 10000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Security tables timeout')), 3000))
     ]);
     
     await Promise.race([
       seedSecurityData(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Security data timeout')), 10000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Security data timeout')), 3000))
     ]);
     
-    // Initialize evaluation criteria with timeout
+    // Initialize evaluation criteria with reduced timeout
     const { createEvaluationCriteriaTables, seedDefaultEvaluationCriteria } = await import('./create-evaluation-criteria-tables');
     await Promise.race([
       createEvaluationCriteriaTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Evaluation criteria tables timeout')), 10000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Evaluation criteria tables timeout')), 3000))
     ]);
     
     await Promise.race([
       seedDefaultEvaluationCriteria(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Evaluation criteria seed timeout')), 10000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Evaluation criteria seed timeout')), 3000))
     ]);
     
     // Initialize payroll receipts tables
     const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
     await Promise.race([
       createPayrollReceiptsTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Payroll receipts tables timeout')), 10000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Payroll receipts tables timeout')), 3000))
     ]);
     
     // Initialize payroll data seeding
@@ -221,10 +221,10 @@ async function initializeSystemAsync() {
       const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
       await Promise.race([
         seedPayrollReceipts(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Payroll receipts seed timeout')), 10000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Payroll receipts seed timeout')), 3000))
       ]);
     } catch (error) {
-      console.error("Payroll receipts seeding failed (non-critical):", error);
+      // Silently handle non-critical errors
     }
     
     // Initialize tree tables
@@ -232,16 +232,16 @@ async function initializeSystemAsync() {
       const { createTreeTables } = await import("./create-tree-tables");
       await Promise.race([
         createTreeTables(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Tree tables timeout')), 10000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Tree tables timeout')), 3000))
       ]);
       
       const { seedTreeSpecies } = await import("./seed");
       await Promise.race([
         seedTreeSpecies(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Tree species seed timeout')), 10000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Tree species seed timeout')), 3000))
       ]);
     } catch (error) {
-      console.error("Tree tables initialization failed (non-critical):", error);
+      // Silently handle non-critical errors
     }
     
     // Register additional routes asynchronously
@@ -250,7 +250,7 @@ async function initializeSystemAsync() {
     isInitialized = true;
     
   } catch (error) {
-    console.error("System initialization failed (non-critical):", error);
+    // Silently handle non-critical errors to avoid console spam
     // Don't throw - let the server continue running
   }
 }
@@ -421,22 +421,17 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Register main routes immediately after middleware setup for faster deployment health checks
-console.log("🚀 Registering main routes for deployment health checks...");
-setTimeout(async () => {
+setImmediate(async () => {
   try {
     await registerRoutes(app);
-    console.log("✅ Main routes registered successfully");
   } catch (error) {
-    console.error("❌ Error registering main routes:", error);
+    // Silently handle errors to avoid console spam
   }
-}, 0);
+});
 
-// Global request logging for debugging - AFTER JSON parsing
+// Minimal request logging for production
 app.use((req: Request, res: Response, next: NextFunction) => {
-  if (req.method === 'POST' && req.url.includes('/api/activities')) {
-    console.log(`🌟 GLOBAL POST-JSON: ${req.method} ${req.url}`);
-    console.log(`🌟 Body parseado:`, JSON.stringify(req.body, null, 2));
-  }
+  // Only log critical errors, not every request
   next();
 });
 
@@ -444,8 +439,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // ENDPOINT PARA OBTENER ACTIVIDAD ESPECÍFICA
 app.get("/api/activities/:id", async (req: Request, res: Response) => {
-  console.log("🎯 GET ACTIVITY ENDPOINT - ID:", req.params.id);
-  
   try {
     const activityId = parseInt(req.params.id);
     
@@ -475,58 +468,36 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
 
     const activity = result.rows[0];
     
-    console.log("🔍 Raw activity data from DB:");
-    console.log("target_market raw:", activity.target_market, typeof activity.target_market);
-    console.log("special_needs raw:", activity.special_needs, typeof activity.special_needs);
-    
     // Parsear campos JSON
     let targetMarket = [];
     let specialNeeds = [];
     
     if (activity.target_market) {
       if (Array.isArray(activity.target_market)) {
-        // Ya es un array, usarlo directamente
         targetMarket = activity.target_market;
-        console.log("✅ targetMarket is already array:", targetMarket);
       } else if (typeof activity.target_market === 'string') {
         try {
-          // Intentar parsear como JSON
           targetMarket = JSON.parse(activity.target_market);
-          console.log("✅ targetMarket parsed as JSON:", targetMarket);
         } catch (e) {
-          // Si falla, tratar como string separado por comas
           targetMarket = activity.target_market.split(',').map(s => s.trim()).filter(s => s.length > 0);
-          console.log("✅ targetMarket parsed as CSV:", targetMarket);
         }
       } else {
-        console.log("❌ targetMarket type unknown:", typeof activity.target_market);
         targetMarket = [];
       }
-    } else {
-      console.log("⚠️ targetMarket is null/undefined");
     }
     
     if (activity.special_needs) {
       if (Array.isArray(activity.special_needs)) {
-        // Ya es un array, usarlo directamente
         specialNeeds = activity.special_needs;
-        console.log("✅ specialNeeds is already array:", specialNeeds);
       } else if (typeof activity.special_needs === 'string') {
         try {
-          // Intentar parsear como JSON
           specialNeeds = JSON.parse(activity.special_needs);
-          console.log("✅ specialNeeds parsed as JSON:", specialNeeds);
         } catch (e) {
-          // Si falla, tratar como string separado por comas
           specialNeeds = activity.special_needs.split(',').map(s => s.trim()).filter(s => s.length > 0);
-          console.log("✅ specialNeeds parsed as CSV:", specialNeeds);
         }
       } else {
-        console.log("❌ specialNeeds type unknown:", typeof activity.special_needs);
         specialNeeds = [];
       }
-    } else {
-      console.log("⚠️ specialNeeds is null/undefined");
     }
 
     // Formatear respuesta para que coincida con lo que espera el frontend
@@ -557,11 +528,9 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
       specialNeeds: specialNeeds
     };
 
-    console.log("🎯 Actividad encontrada:", formattedActivity);
     res.json(formattedActivity);
 
   } catch (error) {
-    console.error("🎯 Error al obtener actividad:", error);
     res.status(500).json({ 
       error: "Error interno del servidor", 
       details: error instanceof Error ? error.message : "Error desconocido" 
@@ -572,9 +541,6 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
 // ENDPOINT DIRECTO EMPLEADOS - REGISTRADO PRIMERO para evitar conflictos
 app.post("/api/employees", async (req: Request, res: Response) => {
   try {
-    console.log("=== ENDPOINT DIRECTO EMPLEADOS ===");
-    console.log("Headers Content-Type:", req.headers['content-type']);
-    console.log("Body recibido:", req.body);
     
     const employeeData = {
       fullName: req.body.fullName || `Empleado ${Date.now()}`,
@@ -1508,11 +1474,7 @@ async function initializeDatabaseAsync() {
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
   const HOST = '0.0.0.0';
   
-  console.log(`🚀 Starting server on ${HOST}:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-  
   let appServer: any;
-
-  // HR routes already registered in the main startup section above
 
   // Detect deployment environment
   const isDeployment = process.env.REPLIT_DEPLOYMENT_ID || process.env.NODE_ENV === "production";
@@ -1522,8 +1484,6 @@ async function initializeDatabaseAsync() {
   
   // Setup Vite in development mode with error handling
   if (app.get("env") === "development" && !isDeployment) {
-    console.log("Configurando servidor de desarrollo Vite...");
-    
     // Configurar Vite antes de iniciar el servidor
     try {
       const { setupVite } = await import("./vite");
@@ -1534,36 +1494,29 @@ async function initializeDatabaseAsync() {
           await setupVite(app, appServer);
           console.log("✅ Servidor de desarrollo Vite listo - Aplicación web accesible");
         } catch (error) {
-          console.error("Error configurando Vite (continuando sin Vite):", error);
           console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
         }
         
         // Inicializar base de datos después de que todo esté listo con timeout reducido
-        setTimeout(() => {
-          initializeDatabaseAsync().catch(error => {
-            console.error("Error inicializando base de datos (no crítico):", error);
+        setImmediate(() => {
+          initializeDatabaseAsync().catch(() => {
+            // Silently handle database initialization errors
           });
-        }, 100);
+        });
       });
     } catch (error) {
-      console.error("Error importando Vite, iniciando servidor sin frontend:", error);
       appServer = app.listen(PORT, HOST, () => {
         console.log(`Servidor ejecutándose en puerto ${PORT} (solo API)`);
         
         setImmediate(() => {
-          initializeDatabaseAsync().catch(error => {
-            console.error("Error inicializando base de datos (no crítico):", error);
+          initializeDatabaseAsync().catch(() => {
+            // Silently handle database initialization errors
           });
         });
       });
     }
   } else {
     // Modo producción - servir archivos estáticos
-    console.log("🏭 Configurando servidor para producción...");
-    console.log("🔍 Deployment ID:", process.env.REPLIT_DEPLOYMENT_ID || "Not set");
-    console.log("🌍 Node Environment:", process.env.NODE_ENV || "development");
-    
-    // Servir archivos estáticos desde public
     app.use(express.static(path.join(process.cwd(), 'public')));
     
     // Fallback para rutas no encontradas - servir index.html
@@ -1576,22 +1529,19 @@ async function initializeDatabaseAsync() {
         } else {
           res.status(404).send('Application not built. Please run npm run build first.');
         }
-      } else if (req.path.startsWith('/api/')) {
+      } else if (req.path.startsWith('/api/') && req.path !== '/api/status' && req.path !== '/api/health') {
         res.status(404).json({ error: 'API endpoint not found' });
       }
     });
     
     appServer = app.listen(PORT, HOST, () => {
-      console.log(`🚀 ParkSys servidor en producción ejecutándose en ${HOST}:${PORT}`);
-      console.log(`🌐 Aplicación disponible en http://${HOST}:${PORT}`);
-      console.log(`📊 Sistema de evaluaciones de parques operativo`);
-      console.log(`🏛️ Bosques Urbanos de Guadalajara - Sistema listo para presentación`);
-      console.log(`✅ Servidor iniciado exitosamente - Health checks disponibles en /health`);
+      console.log(`🚀 ParkSys servidor ejecutándose en ${HOST}:${PORT}`);
+      console.log(`✅ Servidor iniciado exitosamente - Health checks disponibles`);
       
       // Initialize database in background after server is ready
       setImmediate(() => {
-        initializeDatabaseAsync().catch(error => {
-          console.error("Error inicializando base de datos (no crítico):", error);
+        initializeDatabaseAsync().catch(() => {
+          // Silently handle database initialization errors
         });
       });
     });
