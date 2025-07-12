@@ -28,13 +28,8 @@ app.get('/', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
     message: 'ParkSys - Bosques Urbanos de Guadalajara',
-    version: '1.0.0',
     timestamp: new Date().toISOString(),
-    port: process.env.PORT || 5000,
-    environment: process.env.NODE_ENV || 'development',
-    uptime: process.uptime(),
-    deployment: process.env.REPLIT_DEPLOYMENT_ID || 'local',
-    initialized: isInitialized
+    port: process.env.PORT || 5000
   });
 });
 
@@ -42,8 +37,7 @@ app.get('/', (req: Request, res: Response) => {
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
-    timestamp: new Date().toISOString(),
-    initialized: isInitialized
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -54,7 +48,6 @@ app.get('/healthz', (req: Request, res: Response) => {
 app.get('/readiness', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'ready',
-    initialized: isInitialized,
     timestamp: new Date().toISOString()
   });
 });
@@ -71,10 +64,7 @@ app.get('/api/status', (req: Request, res: Response) => {
     status: 'ok', 
     message: 'ParkSys API',
     timestamp: new Date().toISOString(),
-    port: process.env.PORT || 5000,
-    environment: process.env.NODE_ENV || 'development',
-    deployment: process.env.REPLIT_DEPLOYMENT_ID || 'local',
-    initialized: isInitialized
+    port: process.env.PORT || 5000
   });
 });
 
@@ -82,8 +72,7 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.status(200).json({ 
     status: 'ok', 
     message: 'ParkSys API is running',
-    timestamp: new Date().toISOString(),
-    initialized: isInitialized
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -154,75 +143,71 @@ app.get('/status', (req: Request, res: Response) => {
 // Servir archivos estáticos del directorio public ANTES de otras rutas
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Comprehensive asynchronous initialization function with shorter timeouts
+// Comprehensive asynchronous initialization function - runs AFTER server startup
 async function initializeSystemAsync() {
   if (initializationStarted) return;
   initializationStarted = true;
   
   try {
-    // Initialize database tables with reduced timeout (3 seconds)
-    await Promise.race([
-      createParkEvaluationsTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Database initialization timeout')), 3000))
-    ]);
+    // Initialize database tables with no timeout - let them run in background
+    try {
+      await createParkEvaluationsTables();
+    } catch (error) {
+      // Silently handle non-critical errors
+    }
     
-    await Promise.race([
-      createMultimediaTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Multimedia tables timeout')), 3000))
-    ]);
+    try {
+      await createMultimediaTables();
+    } catch (error) {
+      // Silently handle non-critical errors
+    }
     
-    // Initialize other tables with reduced timeout
-    const { createVacationTables } = await import("./create-vacation-tables");
-    await Promise.race([
-      createVacationTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Vacation tables timeout')), 3000))
-    ]);
+    // Initialize other tables
+    try {
+      const { createVacationTables } = await import("./create-vacation-tables");
+      await createVacationTables();
+    } catch (error) {
+      // Silently handle non-critical errors
+    }
     
-    // Initialize communications with reduced timeout
-    const { seedEmailTemplates } = await import("./communications/seedCommunications");
-    await Promise.race([
-      seedEmailTemplates(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Email templates timeout')), 3000))
-    ]);
+    // Initialize communications
+    try {
+      const { seedEmailTemplates } = await import("./communications/seedCommunications");
+      await seedEmailTemplates();
+    } catch (error) {
+      // Silently handle non-critical errors
+    }
     
-    // Initialize security system with reduced timeout
-    const { initSecurityTables, seedSecurityData } = await import('./security/initSecurityTables');
-    await Promise.race([
-      initSecurityTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Security tables timeout')), 3000))
-    ]);
+    // Initialize security system
+    try {
+      const { initSecurityTables, seedSecurityData } = await import('./security/initSecurityTables');
+      await initSecurityTables();
+      await seedSecurityData();
+    } catch (error) {
+      // Silently handle non-critical errors
+    }
     
-    await Promise.race([
-      seedSecurityData(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Security data timeout')), 3000))
-    ]);
-    
-    // Initialize evaluation criteria with reduced timeout
-    const { createEvaluationCriteriaTables, seedDefaultEvaluationCriteria } = await import('./create-evaluation-criteria-tables');
-    await Promise.race([
-      createEvaluationCriteriaTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Evaluation criteria tables timeout')), 3000))
-    ]);
-    
-    await Promise.race([
-      seedDefaultEvaluationCriteria(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Evaluation criteria seed timeout')), 3000))
-    ]);
+    // Initialize evaluation criteria
+    try {
+      const { createEvaluationCriteriaTables, seedDefaultEvaluationCriteria } = await import('./create-evaluation-criteria-tables');
+      await createEvaluationCriteriaTables();
+      await seedDefaultEvaluationCriteria();
+    } catch (error) {
+      // Silently handle non-critical errors
+    }
     
     // Initialize payroll receipts tables
-    const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
-    await Promise.race([
-      createPayrollReceiptsTables(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Payroll receipts tables timeout')), 3000))
-    ]);
+    try {
+      const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
+      await createPayrollReceiptsTables();
+    } catch (error) {
+      // Silently handle non-critical errors
+    }
     
     // Initialize payroll data seeding
     try {
       const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
-      await Promise.race([
-        seedPayrollReceipts(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Payroll receipts seed timeout')), 3000))
-      ]);
+      await seedPayrollReceipts();
     } catch (error) {
       // Silently handle non-critical errors
     }
@@ -230,16 +215,10 @@ async function initializeSystemAsync() {
     // Initialize tree tables
     try {
       const { createTreeTables } = await import("./create-tree-tables");
-      await Promise.race([
-        createTreeTables(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Tree tables timeout')), 3000))
-      ]);
+      await createTreeTables();
       
       const { seedTreeSpecies } = await import("./seed");
-      await Promise.race([
-        seedTreeSpecies(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Tree species seed timeout')), 3000))
-      ]);
+      await seedTreeSpecies();
     } catch (error) {
       // Silently handle non-critical errors
     }
@@ -352,13 +331,6 @@ async function registerAdditionalRoutes() {
 // ENDPOINT COMBINADO para la matriz de flujo de efectivo
 app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
   try {
-    if (!isInitialized) {
-      return res.status(503).json({ 
-        error: 'System still initializing, please try again in a moment',
-        initialized: false
-      });
-    }
-    
     const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
     const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
     
@@ -421,13 +393,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Register main routes immediately after middleware setup for faster deployment health checks
-setImmediate(async () => {
+setTimeout(async () => {
   try {
     await registerRoutes(app);
   } catch (error) {
     // Silently handle errors to avoid console spam
   }
-});
+}, 50);
 
 // Minimal request logging for production
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -1497,22 +1469,22 @@ async function initializeDatabaseAsync() {
           console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
         }
         
-        // Inicializar base de datos después de que todo esté listo con timeout reducido
-        setImmediate(() => {
+        // Inicializar base de datos después de que todo esté listo - moved to background
+        setTimeout(() => {
           initializeDatabaseAsync().catch(() => {
             // Silently handle database initialization errors
           });
-        });
+        }, 100);
       });
     } catch (error) {
       appServer = app.listen(PORT, HOST, () => {
         console.log(`Servidor ejecutándose en puerto ${PORT} (solo API)`);
         
-        setImmediate(() => {
+        setTimeout(() => {
           initializeDatabaseAsync().catch(() => {
             // Silently handle database initialization errors
           });
-        });
+        }, 100);
       });
     }
   } else {
@@ -1539,11 +1511,11 @@ async function initializeDatabaseAsync() {
       console.log(`✅ Servidor iniciado exitosamente - Health checks disponibles`);
       
       // Initialize database in background after server is ready
-      setImmediate(() => {
+      setTimeout(() => {
         initializeDatabaseAsync().catch(() => {
           // Silently handle database initialization errors
         });
-      });
+      }, 100);
     });
   }
 
