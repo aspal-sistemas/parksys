@@ -38,7 +38,8 @@ const upload = multer({
     } else {
       cb(new Error('Solo se permiten archivos de imagen'));
     }
-  }
+  },
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB límite
 });
 
 // Obtener todas las imágenes de una actividad

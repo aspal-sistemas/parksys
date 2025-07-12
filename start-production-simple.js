@@ -77,35 +77,54 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve static files
-app.use(express.static(path.join(process.cwd(), 'public')));
-
 // Try to load the main server application
 console.log('Loading main server application...');
 
-// Server starts immediately to respond to health checks
-const server = app.listen(PORT, HOST, () => {
-  console.log(`🚀 ParkSys production server running on ${HOST}:${PORT}`);
-  console.log(`✅ Health checks available immediately`);
-  
-  // Load main application in background after server is ready
-  setTimeout(() => {
-    import('./server/index.js')
-      .then(() => {
-        console.log('✅ Main server module loaded successfully');
-      })
-      .catch(error => {
-        console.error('❌ Error loading main server:', error);
-        // Server continues to respond to health checks even if main app fails
-      });
-  }, 2000); // 2 second delay to ensure health checks pass first
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    console.log('Process terminated');
-    process.exit(0);
+try {
+  // Dynamic import of the main server
+  const { default: mainServer } = await import('./server/index.js').catch(async () => {
+    console.log('Compiled server not found, trying TypeScript version...');
+    return await import('./server/index.ts');
   });
-});
+  
+  console.log('✅ Main server loaded successfully');
+} catch (error) {
+  console.error('⚠️  Could not load main server application:', error.message);
+  console.log('🔧 Starting fallback server with basic functionality...');
+  
+  // Serve static files
+  app.use(express.static(path.join(__dirname, 'public')));
+  
+  // Fallback for all other routes
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api/')) {
+      res.status(503).json({
+        status: 'error',
+        message: 'API temporarily unavailable - main server not loaded',
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      const indexPath = path.join(__dirname, 'public', 'index.html');
+      res.sendFile(indexPath, (err) => {
+        if (err) {
+          res.status(503).send('Application not available. Please try again later.');
+        }
+      });
+    }
+  });
+  
+  // Start fallback server
+  const server = app.listen(PORT, HOST, () => {
+    console.log(`🔧 Fallback server running on ${HOST}:${PORT}`);
+    console.log(`🌐 Health checks available at: /, /health, /api/status`);
+  });
+  
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    server.close(() => {
+      console.log('Fallback server closed');
+      process.exit(0);
+    });
+  });
+}

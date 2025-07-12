@@ -66,7 +66,6 @@ export interface IStorage {
   isAmenityInUse(amenityId: number): Promise<boolean>;
   deleteAmenity(amenityId: number): Promise<boolean>;
   getParkImages(parkId: number): Promise<any[]>;
-  getParkImage(id: number): Promise<any>;
   createParkImage(imageData: any): Promise<any>;
   updateParkImage(id: number, data: any): Promise<any>;
   deleteParkImage(id: number): Promise<boolean>;
@@ -493,7 +492,19 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-
+  async getParkImage(id: number): Promise<any> {
+    try {
+      const result = await pool.query(`
+        SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption, created_at as "createdAt"
+        FROM park_images
+        WHERE id = $1
+      `, [id]);
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error("Error al obtener imagen del parque:", error);
+      return null;
+    }
+  }
 
 
   
