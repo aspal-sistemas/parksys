@@ -15,8 +15,17 @@ import { createParkEvaluationsTables } from "./create-park-evaluations-tables";
 import { db } from "./db";
 import { incomeCategories, expenseCategories } from "../shared/finance-schema";
 import { eq } from "drizzle-orm";
+import { seedDatabase } from "./seed";
+import { createTreeTables } from "./create-tree-tables";
+import visitorCountRoutes from "./visitor-count-routes";
+import { seedTreeSpecies } from "./seed-tree-species";
+import { initializeDatabase } from "./initialize-db";
 
 const app = express();
+
+// Global state variables for initialization
+let initializationStarted = false;
+let isInitialized = false;
 
 // Ultra-simple health check endpoints registered FIRST - no dependencies, no middleware
 // These endpoints respond instantly for deployment health checks
@@ -244,8 +253,7 @@ async function initializeSystemAsync() {
       // Silently handle non-critical errors to avoid console spam
       // Don't throw - let the server continue running
     }
-  }, 5000); // 5 second delay to allow health checks to pass first
-}
+  }, 20000); // 20 second delay to allow health checks to pass first
 
 // Register complex routes asynchronously
 async function registerAdditionalRoutes() {
@@ -344,6 +352,16 @@ async function registerAdditionalRoutes() {
 // ENDPOINT COMBINADO para la matriz de flujo de efectivo
 app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
   try {
+    // Check if initialization is complete before making database calls
+    if (!isInitialized) {
+      return res.status(200).json({ 
+        incomeCategories: [],
+        expenseCategories: [],
+        message: "Base de datos inicializando",
+        status: "initializing"
+      });
+    }
+    
     const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
     const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
     
@@ -412,7 +430,7 @@ setTimeout(async () => {
   } catch (error) {
     // Silently handle errors to avoid console spam
   }
-}, 1000); // Delay route registration to allow health checks to pass first
+}, 2000); // Delay route registration to allow health checks to pass first
 
 // Minimal request logging for production
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -1119,13 +1137,6 @@ app.get('/api/assets/:id/maintenances', async (req: Request, res: Response) => {
 
 // Logging middleware temporalmente desactivado debido a problemas de estabilidad
 
-import { seedDatabase } from "./seed";
-import { createTreeTables } from "./create-tree-tables";
-import visitorCountRoutes from "./visitor-count-routes";
-import { seedTreeSpecies } from "./seed-tree-species";
-
-import { initializeDatabase } from "./initialize-db";
-
 // Database initialization function that runs AFTER server starts responding to health checks
 async function initializeDatabaseAsync() {
   // Delay all database initialization to allow health checks to pass first
@@ -1177,7 +1188,7 @@ async function initializeDatabaseAsync() {
     } catch (error) {
       console.error("Error crítico al inicializar la base de datos (servidor continuará funcionando):", error);
     }
-  }, 15000); // 15 second delay for deployment stability
+  }, 25000); // 25 second delay for deployment stability
 }
 
 (async () => {
@@ -1492,7 +1503,7 @@ async function initializeDatabaseAsync() {
           initializeDatabaseAsync().catch(() => {
             // Silently handle database initialization errors
           });
-        }, 10000); // 10 second delay for deployment stability
+        }, 30000); // 30 second delay for deployment stability
       });
     } catch (error) {
       appServer = app.listen(PORT, HOST, () => {
@@ -1502,7 +1513,7 @@ async function initializeDatabaseAsync() {
           initializeDatabaseAsync().catch(() => {
             // Silently handle database initialization errors
           });
-        }, 10000); // 10 second delay for deployment stability
+        }, 30000); // 30 second delay for deployment stability
       });
     }
   } else {
@@ -1533,7 +1544,7 @@ async function initializeDatabaseAsync() {
         initializeDatabaseAsync().catch(() => {
           // Silently handle database initialization errors
         });
-      }, 10000); // 10 second delay for deployment stability
+      }, 30000); // 30 second delay for deployment stability
     });
   }
 
@@ -1548,3 +1559,4 @@ async function initializeDatabaseAsync() {
     }
   });
 })();
+}
