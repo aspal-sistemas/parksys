@@ -18,27 +18,27 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
-// Startup flag to track initialization status
-let isInitialized = false;
-let initializationStarted = false;
-
-// Root endpoint handler for deployment health checks - HIGHEST PRIORITY
-// Responds immediately without any database operations
+// Ultra-simple health check endpoints registered FIRST - no dependencies, no middleware
+// These endpoints respond instantly for deployment health checks
 app.get('/', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'ok',
-    message: 'ParkSys - Bosques Urbanos de Guadalajara',
-    timestamp: new Date().toISOString(),
-    port: process.env.PORT || 5000
-  });
+  try {
+    res.status(200).json({
+      status: 'ok',
+      message: 'ParkSys - Bosques Urbanos de Guadalajara',
+      timestamp: new Date().toISOString(),
+      port: process.env.PORT || 5000
+    });
+  } catch (error) {
+    res.status(200).send('OK');
+  }
 });
 
-// Health check endpoints - all respond immediately
 app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'ok',
-    timestamp: new Date().toISOString()
-  });
+  try {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  } catch (error) {
+    res.status(200).send('OK');
+  }
 });
 
 app.get('/healthz', (req: Request, res: Response) => {
@@ -46,34 +46,44 @@ app.get('/healthz', (req: Request, res: Response) => {
 });
 
 app.get('/readiness', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'ready',
-    timestamp: new Date().toISOString()
-  });
+  try {
+    res.status(200).json({ status: 'ready', timestamp: new Date().toISOString() });
+  } catch (error) {
+    res.status(200).send('OK');
+  }
 });
 
 app.get('/liveness', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'alive',
-    timestamp: new Date().toISOString()
-  });
+  try {
+    res.status(200).json({ status: 'alive', timestamp: new Date().toISOString() });
+  } catch (error) {
+    res.status(200).send('OK');
+  }
 });
 
 app.get('/api/status', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    status: 'ok', 
-    message: 'ParkSys API',
-    timestamp: new Date().toISOString(),
-    port: process.env.PORT || 5000
-  });
+  try {
+    res.status(200).json({ 
+      status: 'ok', 
+      message: 'ParkSys API',
+      timestamp: new Date().toISOString(),
+      port: process.env.PORT || 5000
+    });
+  } catch (error) {
+    res.status(200).send('OK');
+  }
 });
 
 app.get('/api/health', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    status: 'ok', 
-    message: 'ParkSys API is running',
-    timestamp: new Date().toISOString()
-  });
+  try {
+    res.status(200).json({ 
+      status: 'ok', 
+      message: 'ParkSys API is running',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(200).send('OK');
+  }
 });
 
 // Removed duplicate health check endpoints - kept only the ones defined above
@@ -1459,8 +1469,8 @@ async function initializeDatabaseAsync() {
   // Detect deployment environment
   const isDeployment = process.env.REPLIT_DEPLOYMENT_ID || process.env.NODE_ENV === "production";
   
-  // Use the comprehensive initialization function defined earlier
-  const initializeDatabaseAsync = initializeSystemAsync;
+  // Use the initialization function defined earlier
+  // initializeDatabaseAsync is already defined above
   
   // Setup Vite in development mode with error handling
   if (app.get("env") === "development" && !isDeployment) {

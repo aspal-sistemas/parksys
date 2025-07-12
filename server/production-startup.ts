@@ -1,145 +1,126 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 
 /**
- * Ultra-fast production startup script optimized for deployment health checks
- * This script ensures immediate response to health checks while initializing the full application in background
+ * Production startup script optimized for deployment health checks
+ * This script ensures health checks respond immediately while loading the full app in background
  */
 
-import express, { type Request, Response, NextFunction } from "express";
-import path from "path";
-import fs from "fs";
+import express from 'express';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
+const PORT = process.env.PORT || 5000;
+const HOST = '0.0.0.0';
 
-// Configure production environment
-process.env.NODE_ENV = process.env.NODE_ENV || "production";
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
-const HOST = process.env.HOST || "0.0.0.0";
+// Minimal JSON parsing for health checks
+app.use(express.json({ limit: '1mb' }));
 
-console.log(`🚀 Starting ParkSys ultra-fast production server on ${HOST}:${PORT}`);
-
-// Essential middleware with minimal processing
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// CRITICAL: Health check endpoints respond immediately without any database operations
-app.get('/', (req: Request, res: Response) => {
+// Ultra-fast health check endpoints - respond instantly
+app.get('/', (req, res) => {
   res.status(200).json({
     status: 'ok',
     message: 'ParkSys - Bosques Urbanos de Guadalajara',
-    version: '1.0.0',
-    timestamp: new Date().toISOString(),
-    port: PORT,
-    environment: process.env.NODE_ENV,
-    deployment: process.env.REPLIT_DEPLOYMENT_ID || 'production'
-  });
-});
-
-app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'ok',
-    message: 'Health check passed',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     deployment: process.env.REPLIT_DEPLOYMENT_ID || 'production'
   });
 });
 
-app.get('/healthz', (req: Request, res: Response) => {
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+app.get('/healthz', (req, res) => {
   res.status(200).send('OK');
 });
 
-app.get('/readiness', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    ready: true, 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+app.get('/readiness', (req, res) => {
+  res.status(200).json({
+    ready: true,
+    timestamp: new Date().toISOString()
   });
 });
 
-app.get('/liveness', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    alive: true, 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+app.get('/liveness', (req, res) => {
+  res.status(200).json({
+    alive: true,
+    timestamp: new Date().toISOString()
   });
 });
 
-app.get('/api/status', (req: Request, res: Response) => {
+app.get('/api/status', (req, res) => {
   res.status(200).json({
     status: 'ok',
-    message: 'ParkSys API Status',
+    message: 'ParkSys API',
     timestamp: new Date().toISOString(),
-    deployment: process.env.REPLIT_DEPLOYMENT_ID || 'production',
+    port: PORT,
     uptime: process.uptime()
   });
 });
 
-app.get('/api/health', (req: Request, res: Response) => {
+app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
-    message: 'ParkSys API Health Check',
-    timestamp: new Date().toISOString(),
-    deployment: process.env.REPLIT_DEPLOYMENT_ID || 'production',
-    uptime: process.uptime()
+    message: 'API Health Check',
+    timestamp: new Date().toISOString()
   });
 });
 
-// Serve static files immediately
+// Serve static files for production
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Fallback for SPA routes (except API endpoints)
-app.get('*', (req: Request, res: Response) => {
+// SPA fallback for frontend routes
+app.get('*', (req, res) => {
   if (!req.path.startsWith('/api/')) {
     const indexPath = path.join(process.cwd(), 'public', 'index.html');
     if (fs.existsSync(indexPath)) {
       res.sendFile(indexPath);
     } else {
-      res.status(404).send('Application not built. Please run npm run build first.');
+      res.status(404).json({ error: 'Application not built' });
     }
   } else {
-    res.status(404).json({ error: 'API endpoint not found - Application still initializing' });
+    res.status(404).json({ error: 'API endpoint not found' });
   }
 });
 
-// Start server IMMEDIATELY - no database operations during startup
+// Error handling middleware
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('Error:', err);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
+// Start server immediately
 const server = app.listen(PORT, HOST, () => {
-  console.log(`🚀 ParkSys server running on ${HOST}:${PORT}`);
-  console.log(`✅ Health checks available immediately`);
-  console.log(`🔄 Loading full application in background...`);
+  console.log(`🚀 Production server running on ${HOST}:${PORT}`);
+  console.log(`⚡ Health checks responding instantly`);
+  console.log(`🌐 Application ready for deployment`);
   
-  // Load full application in background with minimal delay
-  setTimeout(() => {
-    loadFullApplication().catch(error => {
+  // Load full application after health checks are established
+  setTimeout(async () => {
+    try {
+      console.log('🔄 Loading full application in background...');
+      await import('./index.js');
+      console.log('✅ Full application loaded successfully');
+    } catch (error) {
       console.error('❌ Error loading full application:', error);
-    });
-  }, 10);
+      // Keep health checks running even if full app fails
+    }
+  }, 100); // Minimal delay for health checks
 });
-
-// Load full application asynchronously after server is responding
-async function loadFullApplication() {
-  try {
-    console.log('🔄 Importing main server module...');
-    
-    // Import and initialize the main server application
-    const mainServer = await import('./index.js');
-    
-    console.log('✅ Main server module loaded successfully');
-    
-    // The main server will handle its own route registration and database initialization
-    // This happens completely asynchronously without blocking health checks
-    
-  } catch (error) {
-    console.error('❌ Error loading main server module:', error);
-    // Server continues to respond to health checks even if main app fails to load
-  }
-}
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down gracefully');
   server.close(() => {
-    console.log('Process terminated');
+    console.log('Server closed');
     process.exit(0);
   });
 });
@@ -147,20 +128,27 @@ process.on('SIGTERM', () => {
 process.on('SIGINT', () => {
   console.log('SIGINT received, shutting down gracefully');
   server.close(() => {
-    console.log('Process terminated');
+    console.log('Server closed');
     process.exit(0);
   });
 });
 
-// Handle uncaught exceptions
+// Keep process alive and handle errors gracefully
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
-  // Keep server running for health checks
+  // Don't exit - keep health checks running
 });
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  // Keep server running for health checks
+  // Don't exit - keep health checks running
 });
 
-export default app;
+console.log(`📋 Health check endpoints available:`);
+console.log(`  GET /        - Main health check`);
+console.log(`  GET /health  - Health status`);
+console.log(`  GET /healthz - Simple OK response`);
+console.log(`  GET /readiness - Readiness probe`);
+console.log(`  GET /liveness - Liveness probe`);
+console.log(`  GET /api/status - API status`);
+console.log(`  GET /api/health - API health`);

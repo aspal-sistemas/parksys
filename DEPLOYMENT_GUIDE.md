@@ -18,17 +18,23 @@ The following endpoints respond immediately without database operations:
 
 ## Production Startup Scripts
 
-### Option 1: Ultra-Fast Startup (Recommended)
+### Option 1: Optimized Production Startup (Recommended)
+```bash
+tsx server/production-startup.ts
+```
+This is the fastest startup option that ensures health checks respond instantly.
+
+### Option 2: Ultra-Fast Startup
 ```bash
 tsx start-production-ultra-fast.js
 ```
 
-### Option 2: Lightning-Fast Startup
+### Option 3: Lightning-Fast Startup
 ```bash
-node fast-production-start.js
+tsx fast-production-start.js
 ```
 
-### Option 3: Simple Production
+### Option 4: Simple Production
 ```bash
 tsx start-production-simple.js
 ```
