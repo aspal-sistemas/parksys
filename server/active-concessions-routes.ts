@@ -424,7 +424,6 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
   
   const concessionImageUpload = multer({ 
     storage: concessionImageStorage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
     fileFilter: function (req: any, file: any, cb: any) {
       if (file.mimetype.startsWith('image/')) {
         cb(null, true);

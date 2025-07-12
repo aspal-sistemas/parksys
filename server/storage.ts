@@ -66,6 +66,7 @@ export interface IStorage {
   isAmenityInUse(amenityId: number): Promise<boolean>;
   deleteAmenity(amenityId: number): Promise<boolean>;
   getParkImages(parkId: number): Promise<any[]>;
+  getParkImage(id: number): Promise<any>;
   createParkImage(imageData: any): Promise<any>;
   updateParkImage(id: number, data: any): Promise<any>;
   deleteParkImage(id: number): Promise<boolean>;
