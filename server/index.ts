@@ -1,7 +1,11 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 import { NextFunction, Request, Response } from "express";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -14,6 +18,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Static files serving
 app.use('/uploads', express.static('uploads'));
+app.use(express.static('client/src'));
 app.use(express.static('dist'));
 
 // CRITICAL: Instant health check endpoints for deployment - NO DATABASE DEPENDENCIES
@@ -25,12 +30,34 @@ const healthResponse = {
   timestamp: new Date().toISOString()
 };
 
-// Root endpoint - responds instantly for health checks
+// Root endpoint - serve frontend by default, JSON only for health checks
 app.get('/', (req: Request, res: Response) => {
-  res.status(200).json({
-    ...healthResponse,
-    uptime: Math.floor((Date.now() - startTime) / 1000)
-  });
+  // Check if this is a health check request (explicit JSON request or curl without HTML)
+  const acceptHeader = req.headers.accept || '';
+  const userAgent = req.headers['user-agent'] || '';
+  
+  // Return JSON for health checks (curl, monitoring tools, etc.)
+  if (acceptHeader.includes('application/json') || 
+      (userAgent.includes('curl') && !acceptHeader.includes('text/html')) ||
+      req.query.healthcheck) {
+    return res.status(200).json({
+      ...healthResponse,
+      uptime: Math.floor((Date.now() - startTime) / 1000)
+    });
+  }
+  
+  // Serve frontend for browsers
+  const indexPath = path.join(__dirname, '../client/index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    // Fallback to health check if no frontend
+    res.status(200).json({
+      ...healthResponse,
+      uptime: Math.floor((Date.now() - startTime) / 1000),
+      message: 'ParkSys - Frontend not available'
+    });
+  }
 });
 
 // Health check endpoints
@@ -82,15 +109,23 @@ app.get('*', (req: Request, res: Response) => {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
   
-  const indexPath = path.join(__dirname, '../dist/index.html');
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(200).json({
-      ...healthResponse,
-      message: 'ParkSys - Frontend not built yet'
-    });
+  // Try built version first (dist)
+  const builtIndexPath = path.join(__dirname, '../dist/index.html');
+  if (fs.existsSync(builtIndexPath)) {
+    return res.sendFile(builtIndexPath);
   }
+  
+  // Fallback to development version (client)
+  const devIndexPath = path.join(__dirname, '../client/index.html');
+  if (fs.existsSync(devIndexPath)) {
+    return res.sendFile(devIndexPath);
+  }
+  
+  // Final fallback to health check
+  res.status(200).json({
+    ...healthResponse,
+    message: 'ParkSys - Frontend not available'
+  });
 });
 
 // Error handling middleware
