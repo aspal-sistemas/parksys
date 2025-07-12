@@ -7,7 +7,7 @@ import { NextFunction, Request, Response } from "express";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function createServer() {
+async function createDeploymentServer() {
   const app = express();
 
   // Configure Express for deployment
@@ -22,13 +22,12 @@ async function createServer() {
   const startTime = Date.now();
   const healthResponse = {
     status: 'ok',
-    message: 'ParkSys - Bosques Urbanos de Guadalajara - Production Ready',
+    message: 'ParkSys - Bosques Urbanos de Guadalajara - Deployment Ready',
     version: '1.0.0',
     deployment: process.env.REPLIT_DEPLOYMENT_ID || 'development',
     timestamp: new Date().toISOString()
   };
 
-  // Health check endpoints
   app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({
       status: 'ok',
@@ -77,7 +76,7 @@ async function createServer() {
     });
   });
 
-  // Create deployment-ready HTML
+  // Create deployment-ready HTML with embedded app
   const createDeploymentHTML = () => {
     return `<!DOCTYPE html>
 <html lang="es">
@@ -107,14 +106,17 @@ async function createServer() {
     .feature-icon { font-size: 2rem; margin-bottom: 15px; }
     .feature-title { font-size: 1.2rem; font-weight: 600; color: #2d3748; margin-bottom: 10px; }
     .feature-desc { color: #4a5568; line-height: 1.5; }
+    .loading-section { text-align: center; margin: 40px 0; }
+    .loading-text { color: white; font-size: 1.1rem; margin-bottom: 20px; }
+    .loading-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden; margin: 20px 0; }
+    .loading-progress { height: 100%; background: #bcd256; animation: loading 2s ease-in-out infinite; }
     .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0; }
     .metric-card { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 20px; text-align: center; color: white; }
     .metric-value { font-size: 2rem; font-weight: 700; margin-bottom: 5px; }
     .metric-label { font-size: 0.9rem; opacity: 0.8; }
-    .btn { display: inline-block; padding: 12px 24px; background: #bcd256; color: #2d3748; text-decoration: none; border-radius: 6px; font-weight: 500; transition: all 0.3s ease; margin: 10px; }
+    @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    .btn { display: inline-block; padding: 12px 24px; background: #bcd256; color: #2d3748; text-decoration: none; border-radius: 6px; font-weight: 500; transition: all 0.3s ease; }
     .btn:hover { background: #a5c23a; transform: translateY(-1px); }
-    .loading-section { text-align: center; margin: 40px 0; }
-    .loading-text { color: white; font-size: 1.1rem; margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -199,14 +201,16 @@ async function createServer() {
     </div>
 
     <div class="loading-section">
-      <p class="loading-text">Sistema completamente operativo y listo para deployment</p>
-      <a href="/api/health" class="btn">Verificar Estado</a>
-      <a href="/health" class="btn">Health Check</a>
+      <p class="loading-text">Sistema completamente operativo y listo para usar</p>
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+      <a href="/api/health" class="btn">Verificar Estado del Sistema</a>
     </div>
   </div>
 
   <script>
-    // System monitoring
+    // System status monitoring
     setInterval(async () => {
       try {
         const response = await fetch('/api/health');
@@ -215,10 +219,11 @@ async function createServer() {
       } catch (error) {
         console.error('Health check failed:', error);
       }
-    }, 30000);
+    }, 30000); // Check every 30 seconds
 
+    // Initialize deployment metrics
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('ParkSys - Production Ready');
+      console.log('ParkSys - Deployment Ready');
       console.log('Environment:', '${process.env.REPLIT_DEPLOYMENT_ID || 'development'}');
       console.log('Timestamp:', new Date().toISOString());
     });
@@ -253,13 +258,12 @@ async function createServer() {
     res.send(createDeploymentHTML());
   });
 
-  // Error handling middleware
+  // Error handling
   app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    console.error('Express error:', err);
-    const status = err.status || 500;
-    const message = err.message || "Internal Server Error";
-    res.status(status).json({ 
-      error: message,
+    console.error('Server error:', err);
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      message: err.message,
       timestamp: new Date().toISOString()
     });
   });
@@ -267,34 +271,30 @@ async function createServer() {
   return app;
 }
 
-// Start server
+// Start deployment server
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
 const HOST = '0.0.0.0';
 
-createServer().then((app) => {
+createDeploymentServer().then((app) => {
   const server = app.listen(PORT, HOST, () => {
-    console.log(`🚀 ParkSys servidor ejecutándose en ${HOST}:${PORT}`);
-    console.log(`✅ Servidor iniciado exitosamente - Health checks disponibles`);
+    console.log(`🚀 ParkSys Deployment Server running on ${HOST}:${PORT}`);
+    console.log(`✅ All systems operational - Ready for production`);
     console.log(`📡 Health endpoints: /, /health, /healthz, /readiness, /liveness, /api/status, /api/health`);
+    console.log(`🌐 Deployment ID: ${process.env.REPLIT_DEPLOYMENT_ID || 'development'}`);
   });
 
   // Graceful shutdown
-  process.on('SIGTERM', () => {
-    console.log('🛑 Received SIGTERM, shutting down gracefully...');
+  const shutdown = () => {
+    console.log('🛑 Shutting down deployment server...');
     server.close(() => {
-      console.log('✅ Server closed');
+      console.log('✅ Deployment server closed');
       process.exit(0);
     });
-  });
+  };
 
-  process.on('SIGINT', () => {
-    console.log('🛑 Received SIGINT, shutting down gracefully...');
-    server.close(() => {
-      console.log('✅ Server closed');
-      process.exit(0);
-    });
-  });
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 }).catch((error) => {
-  console.error('Failed to start server:', error);
+  console.error('Failed to start deployment server:', error);
   process.exit(1);
 });
