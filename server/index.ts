@@ -77,6 +77,28 @@ async function createServer() {
     });
   });
 
+  // Check if we have the React app available
+  const hasReactApp = fs.existsSync(path.join(__dirname, '..', 'client', 'src', 'main.tsx'));
+  
+  // Serve React app if available
+  if (hasReactApp) {
+    try {
+      const vite = await import('vite');
+      const viteServer = await vite.createServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+        root: path.resolve(__dirname, '..'),
+      });
+      
+      app.use(viteServer.ssrFixStacktrace);
+      app.use(viteServer.middlewares);
+      
+      console.log('✅ Sistema React completo activado');
+    } catch (error) {
+      console.log('⚠️  Fallback a modo deployment');
+    }
+  }
+
   // Create deployment-ready HTML
   const createDeploymentHTML = () => {
     return `<!DOCTYPE html>
