@@ -264,19 +264,28 @@ export default function EvaluationsPage() {
   // Obtener evaluaciones
   const { data: evaluationsData, isLoading, error: evaluationsError } = useQuery({
     queryKey: ['/api/park-evaluations', selectedStatus, selectedPark],
-    queryFn: () => apiRequest(`/api/park-evaluations?status=${selectedStatus}&parkId=${selectedPark}`),
+    queryFn: async () => {
+      const response = await apiRequest(`/api/park-evaluations?status=${selectedStatus}&parkId=${selectedPark}`);
+      return response.json();
+    },
   });
 
   // Obtener resumen de parques
   const { data: summaryData, error: summaryError } = useQuery({
     queryKey: ['/api/park-evaluations/summary'],
-    queryFn: () => apiRequest('/api/park-evaluations/summary'),
+    queryFn: async () => {
+      const response = await apiRequest('/api/park-evaluations/summary');
+      return response.json();
+    },
   });
 
   // Obtener lista de parques para filtros
   const { data: parksData, error: parksError } = useQuery({
     queryKey: ['/api/parks'],
-    queryFn: () => apiRequest('/api/parks'),
+    queryFn: async () => {
+      const response = await apiRequest('/api/parks');
+      return response.json();
+    },
   });
 
   // Debug logging
