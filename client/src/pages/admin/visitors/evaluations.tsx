@@ -262,22 +262,28 @@ export default function EvaluationsPage() {
   const [selectedPark, setSelectedPark] = useState('all');
 
   // Obtener evaluaciones
-  const { data: evaluationsData, isLoading } = useQuery({
+  const { data: evaluationsData, isLoading, error: evaluationsError } = useQuery({
     queryKey: ['/api/park-evaluations', selectedStatus, selectedPark],
     queryFn: () => apiRequest(`/api/park-evaluations?status=${selectedStatus}&parkId=${selectedPark}`),
   });
 
   // Obtener resumen de parques
-  const { data: summaryData } = useQuery({
+  const { data: summaryData, error: summaryError } = useQuery({
     queryKey: ['/api/park-evaluations/summary'],
     queryFn: () => apiRequest('/api/park-evaluations/summary'),
   });
 
   // Obtener lista de parques para filtros
-  const { data: parksData } = useQuery({
+  const { data: parksData, error: parksError } = useQuery({
     queryKey: ['/api/parks'],
     queryFn: () => apiRequest('/api/parks'),
   });
+
+  // Debug logging
+  console.log('🔍 Evaluations data:', evaluationsData);
+  console.log('🔍 Summary data:', summaryData);
+  console.log('🔍 Parks data:', parksData);
+  console.log('🔍 Errors:', { evaluationsError, summaryError, parksError });
 
   // Mutación para moderar evaluación
   const moderateEvaluation = useMutation({
