@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Star, Eye, CheckCircle, XCircle, Clock, Filter, Users, BarChart3, MessageSquare, MessageCircle, TrendingUp, Calendar, Award } from 'lucide-react';
+import { Star, Eye, CheckCircle, XCircle, Clock, Filter, Users, BarChart3, MessageSquare, MessageCircle, TrendingUp, Calendar, Award, Grid, List, Download, Upload, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 
 interface ParkEvaluation {
@@ -260,6 +260,12 @@ export default function EvaluationsPage() {
   const queryClient = useQueryClient();
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedPark, setSelectedPark] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [evaluationsViewMode, setEvaluationsViewMode] = useState<'grid' | 'list'>('grid');
+  const [summaryViewMode, setSummaryViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [summaryCurrentPage, setSummaryCurrentPage] = useState(1);
+  const pageSize = 10;
 
   // Obtener evaluaciones
   const { data: evaluationsData, isLoading, error: evaluationsError } = useQuery({
@@ -331,6 +337,113 @@ export default function EvaluationsPage() {
   const parkSummary = summaryData?.parks || [];
   const parks = parksData?.parks || [];
 
+  // Export functionality
+  const exportEvaluations = () => {
+    const csvContent = [
+      ['ID', 'Parque', 'Evaluador', 'Email', 'Ciudad', 'Edad', 'Visitante Frecuente', 'Limpieza', 'Seguridad', 'Mantenimiento', 'Accesibilidad', 'Amenidades', 'Actividades', 'Personal', 'Belleza Natural', 'Calificación General', 'Comentarios', 'Sugerencias', 'Recomendaría', 'Fecha Visita', 'Propósito Visita', 'Duración Visita', 'Estado', 'Fecha Creación'].join(','),
+      ...evaluations.map(evaluation => [
+        evaluation.id,
+        evaluation.park_name,
+        evaluation.evaluator_name,
+        evaluation.evaluator_email,
+        evaluation.evaluator_city,
+        evaluation.evaluator_age,
+        evaluation.is_frequent_visitor ? 'Sí' : 'No',
+        evaluation.cleanliness,
+        evaluation.safety,
+        evaluation.maintenance,
+        evaluation.accessibility,
+        evaluation.amenities,
+        evaluation.activities,
+        evaluation.staff,
+        evaluation.natural_beauty,
+        evaluation.overall_rating,
+        `"${evaluation.comments || ''}"`,
+        `"${evaluation.suggestions || ''}"`,
+        evaluation.would_recommend ? 'Sí' : 'No',
+        evaluation.visit_date ? new Date(evaluation.visit_date).toLocaleDateString() : '',
+        evaluation.visit_purpose,
+        evaluation.visit_duration || '',
+        evaluation.status === 'approved' ? 'Aprobada' : evaluation.status === 'pending' ? 'Pendiente' : 'Rechazada',
+        new Date(evaluation.created_at).toLocaleDateString()
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `evaluaciones_parques_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    toast({
+      title: "Exportación completada",
+      description: "Las evaluaciones han sido exportadas exitosamente.",
+    });
+  };
+
+  const exportParkSummary = () => {
+    const csvContent = [
+      ['ID Parque', 'Nombre Parque', 'Total Evaluaciones', 'Calificación Promedio', 'Recomendaciones', 'Tasa Recomendación (%)', 'Evaluaciones Pendientes'].join(','),
+      ...parkSummary.map(park => [
+        park.park_id,
+        park.park_name,
+        park.total_evaluations,
+        park.average_rating,
+        park.recommendations,
+        park.recommendation_rate,
+        park.pending_evaluations
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `resumen_parques_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    toast({
+      title: "Exportación completada",
+      description: "El resumen de parques ha sido exportado exitosamente.",
+    });
+  };
+
+  // Filter and paginate data
+  const filteredEvaluations = evaluations.filter(evaluation => {
+    const matchesStatus = selectedStatus === 'all' || evaluation.status === selectedStatus;
+    const matchesPark = selectedPark === 'all' || evaluation.park_id.toString() === selectedPark;
+    const matchesSearch = searchTerm === '' || 
+      evaluation.evaluator_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      evaluation.park_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      evaluation.evaluator_city.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesStatus && matchesPark && matchesSearch;
+  });
+
+  const filteredParkSummary = parkSummary.filter(park => {
+    const matchesSearch = searchTerm === '' || 
+      park.park_name.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
+  });
+
+  // Pagination
+  const totalEvaluations = filteredEvaluations.length;
+  const totalPages = Math.ceil(totalEvaluations / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedEvaluations = filteredEvaluations.slice(startIndex, startIndex + pageSize);
+
+  const totalSummaryItems = filteredParkSummary.length;
+  const totalSummaryPages = Math.ceil(totalSummaryItems / pageSize);
+  const summaryStartIndex = (summaryCurrentPage - 1) * pageSize;
+  const paginatedSummary = filteredParkSummary.slice(summaryStartIndex, summaryStartIndex + pageSize);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStatus, selectedPark, searchTerm]);
+
+  useEffect(() => {
+    setSummaryCurrentPage(1);
+  }, [searchTerm]);
+
   return (
     <AdminLayout>
       <div className="container mx-auto p-6 max-w-7xl">
@@ -358,82 +471,345 @@ export default function EvaluationsPage() {
         </TabsList>
 
         <TabsContent value="evaluations" className="space-y-4">
-          {/* Filtros */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                Filtros
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <Label>Estado</Label>
-                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los estados</SelectItem>
-                      <SelectItem value="pending">Pendientes</SelectItem>
-                      <SelectItem value="approved">Aprobadas</SelectItem>
-                      <SelectItem value="rejected">Rechazadas</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="flex-1">
-                  <Label>Parque</Label>
-                  <Select value={selectedPark} onValueChange={setSelectedPark}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los parques</SelectItem>
-                      {parks.map((park: any) => (
-                        <SelectItem key={park.id} value={park.id.toString()}>
-                          {park.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+          {/* Filters and Controls */}
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={evaluationsViewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setEvaluationsViewMode('grid')}
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={evaluationsViewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setEvaluationsViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportEvaluations}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar
+                </Button>
+              </div>
+            </div>
 
-          {/* Lista de evaluaciones */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <Label htmlFor="search">Buscar</Label>
+                <Input
+                  id="search"
+                  placeholder="Buscar evaluador, parque o ciudad..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="status-filter">Estado</Label>
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los estados" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    <SelectItem value="pending">Pendientes</SelectItem>
+                    <SelectItem value="approved">Aprobadas</SelectItem>
+                    <SelectItem value="rejected">Rechazadas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="park-filter">Parque</Label>
+                <Select value={selectedPark} onValueChange={setSelectedPark}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los parques" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los parques</SelectItem>
+                    {parks.map((park: any) => (
+                      <SelectItem key={park.id} value={park.id.toString()}>
+                        {park.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
           <div className="space-y-4">
             {isLoading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-                <p className="mt-2 text-gray-600">Cargando evaluaciones...</p>
+                <p className="text-gray-600 mt-2">Cargando evaluaciones...</p>
               </div>
-            ) : evaluations.length === 0 ? (
-              <Card>
-                <CardContent className="py-8 text-center">
-                  <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No hay evaluaciones con los filtros seleccionados</p>
-                </CardContent>
-              </Card>
+            ) : paginatedEvaluations.length === 0 ? (
+              <div className="text-center py-8">
+                <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">No hay evaluaciones disponibles</p>
+              </div>
             ) : (
-              evaluations.map((evaluation: ParkEvaluation) => (
-                <EvaluationCard
-                  key={evaluation.id}
-                  evaluation={evaluation}
-                  onModerate={handleModerate}
-                />
-              ))
+              <>
+                {evaluationsViewMode === 'grid' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {paginatedEvaluations.map((evaluation: ParkEvaluation) => (
+                      <EvaluationCard
+                        key={evaluation.id}
+                        evaluation={evaluation}
+                        onModerate={handleModerate}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {paginatedEvaluations.map((evaluation: ParkEvaluation) => (
+                      <Card key={evaluation.id} className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div>
+                              <div className="font-medium">{evaluation.evaluator_name}</div>
+                              <div className="text-sm text-gray-600">{evaluation.park_name}</div>
+                            </div>
+                            <StarRating rating={evaluation.overall_rating} />
+                            <EvaluationStatus status={evaluation.status} />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500">
+                              {new Date(evaluation.created_at).toLocaleDateString()}
+                            </span>
+                            {evaluation.status === 'pending' && (
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="bg-green-50 hover:bg-green-100 text-green-700"
+                                  onClick={() => handleModerate(evaluation.id, 'approved')}
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="bg-red-50 hover:bg-red-100 text-red-700"
+                                  onClick={() => handleModerate(evaluation.id, 'rejected')}
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Pagination */}
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-500">
+                    Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(startIndex + pageSize, totalEvaluations)} de {totalEvaluations} evaluaciones
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Anterior
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 2)
+                        .map((page, index, array) => (
+                          <div key={`page-${page}`} className="flex items-center gap-1">
+                            {index > 0 && array[index - 1] !== page - 1 && (
+                              <span className="text-gray-500">...</span>
+                            )}
+                            <Button
+                              variant={page === currentPage ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => setCurrentPage(page)}
+                              className={page === currentPage ? 'bg-green-600 hover:bg-green-700' : ''}
+                            >
+                              {page}
+                            </Button>
+                          </div>
+                        ))}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Siguiente
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </TabsContent>
 
         <TabsContent value="summary" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {parkSummary.map((park: ParkSummary) => (
-              <ParkSummaryCard key={park.park_id} park={park} />
-            ))}
+          {/* Filters and Controls */}
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={summaryViewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSummaryViewMode('grid')}
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={summaryViewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSummaryViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportParkSummary}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="summary-search">Buscar</Label>
+                <Input
+                  id="summary-search"
+                  placeholder="Buscar parque..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="space-y-4">
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                <p className="text-gray-600 mt-2">Cargando resumen...</p>
+              </div>
+            ) : paginatedSummary.length === 0 ? (
+              <div className="text-center py-8">
+                <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">No hay parques disponibles</p>
+              </div>
+            ) : (
+              <>
+                {summaryViewMode === 'grid' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {paginatedSummary.map((park: ParkSummary) => (
+                      <ParkSummaryCard key={park.park_id} park={park} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {paginatedSummary.map((park: ParkSummary) => (
+                      <Card key={park.park_id} className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div>
+                              <div className="font-medium">{park.park_name}</div>
+                              <div className="text-sm text-gray-600">{park.total_evaluations} evaluaciones</div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <StarRating rating={park.average_rating} />
+                              <span className="text-sm font-medium">{park.average_rating.toFixed(1)}</span>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg font-bold text-green-600">{park.recommendation_rate}%</div>
+                              <div className="text-xs text-gray-500">Recomendación</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {park.pending_evaluations > 0 && (
+                              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                                {park.pending_evaluations} pendientes
+                              </Badge>
+                            )}
+                            <Button variant="outline" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Pagination */}
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-500">
+                    Página {summaryCurrentPage} de {totalSummaryPages} - Mostrando {summaryStartIndex + 1}-{Math.min(summaryStartIndex + pageSize, totalSummaryItems)} de {totalSummaryItems} parques
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSummaryCurrentPage(summaryCurrentPage - 1)}
+                      disabled={summaryCurrentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Anterior
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalSummaryPages }, (_, i) => i + 1)
+                        .filter(page => page === 1 || page === totalSummaryPages || Math.abs(page - summaryCurrentPage) <= 2)
+                        .map((page, index, array) => (
+                          <div key={`summary-page-${page}`} className="flex items-center gap-1">
+                            {index > 0 && array[index - 1] !== page - 1 && (
+                              <span className="text-gray-500">...</span>
+                            )}
+                            <Button
+                              variant={page === summaryCurrentPage ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => setSummaryCurrentPage(page)}
+                              className={page === summaryCurrentPage ? 'bg-green-600 hover:bg-green-700' : ''}
+                            >
+                              {page}
+                            </Button>
+                          </div>
+                        ))}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSummaryCurrentPage(summaryCurrentPage + 1)}
+                      disabled={summaryCurrentPage === totalSummaryPages}
+                    >
+                      Siguiente
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </TabsContent>
 
