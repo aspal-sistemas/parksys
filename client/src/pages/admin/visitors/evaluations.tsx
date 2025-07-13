@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Star, Eye, CheckCircle, XCircle, Clock, Filter, Users, BarChart3, MessageSquare, TrendingUp, Calendar, Award } from 'lucide-react';
+import { Star, Eye, CheckCircle, XCircle, Clock, Filter, Users, BarChart3, MessageSquare, MessageCircle, TrendingUp, Calendar, Award } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 
 interface ParkEvaluation {
@@ -422,7 +422,8 @@ export default function EvaluationsPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="stats" className="space-y-4">
+        <TabsContent value="stats" className="space-y-6">
+          {/* Métricas principales */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-2">
@@ -446,6 +447,9 @@ export default function EvaluationsPage() {
                   }
                 </div>
                 <p className="text-xs text-gray-600">Calificación promedio</p>
+                <div className="flex items-center gap-1 mt-1">
+                  <StarRating rating={parkSummary.length > 0 ? Math.round(parkSummary.reduce((sum, park) => sum + park.average_rating, 0) / parkSummary.length) : 0} />
+                </div>
               </CardContent>
             </Card>
             
@@ -468,6 +472,311 @@ export default function EvaluationsPage() {
               <CardContent>
                 <div className="text-2xl font-bold">{parkSummary.filter(park => park.total_evaluations > 0).length}</div>
                 <p className="text-xs text-gray-600">Con evaluaciones</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Análisis de satisfacción */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Tasa de Recomendación
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {parkSummary.length > 0 ? (
+                    <>
+                      <div className="text-center">
+                        <div className="text-4xl font-bold text-green-600">
+                          {Math.round(parkSummary.reduce((sum, park) => sum + park.recommendation_rate, 0) / parkSummary.length)}%
+                        </div>
+                        <p className="text-sm text-gray-600">Promedio de recomendaciones</p>
+                      </div>
+                      <div className="space-y-2">
+                        {parkSummary.filter(park => park.total_evaluations > 0).map((park) => (
+                          <div key={park.park_id} className="flex justify-between items-center">
+                            <span className="text-sm">{park.park_name}</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="bg-green-500 h-2 rounded-full" 
+                                  style={{ width: `${park.recommendation_rate}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-sm font-medium">{park.recommendation_rate}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Users className="h-8 w-8 mx-auto mb-2" />
+                      <p>No hay datos de recomendaciones disponibles</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Ranking de Parques
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {parkSummary
+                    .filter(park => park.total_evaluations > 0)
+                    .sort((a, b) => b.average_rating - a.average_rating)
+                    .slice(0, 5)
+                    .map((park, index) => (
+                      <div key={park.park_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                            index === 0 ? 'bg-yellow-500 text-white' : 
+                            index === 1 ? 'bg-gray-400 text-white' : 
+                            index === 2 ? 'bg-orange-500 text-white' : 
+                            'bg-blue-500 text-white'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          <div>
+                            <div className="font-medium">{park.park_name}</div>
+                            <div className="text-sm text-gray-600">{park.total_evaluations} evaluaciones</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold">{park.average_rating.toFixed(1)}</div>
+                          <StarRating rating={Math.round(park.average_rating)} />
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Estadísticas temporales */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Actividad Reciente
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {evaluations.filter(e => {
+                      const today = new Date();
+                      const evalDate = new Date(e.created_at);
+                      return evalDate.toDateString() === today.toDateString();
+                    }).length}
+                  </div>
+                  <div className="text-sm text-gray-600">Evaluaciones hoy</div>
+                </div>
+                
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">
+                    {evaluations.filter(e => {
+                      const weekAgo = new Date();
+                      weekAgo.setDate(weekAgo.getDate() - 7);
+                      const evalDate = new Date(e.created_at);
+                      return evalDate >= weekAgo;
+                    }).length}
+                  </div>
+                  <div className="text-sm text-gray-600">Últimos 7 días</div>
+                </div>
+                
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {evaluations.filter(e => {
+                      const monthAgo = new Date();
+                      monthAgo.setMonth(monthAgo.getMonth() - 1);
+                      const evalDate = new Date(e.created_at);
+                      return evalDate >= monthAgo;
+                    }).length}
+                  </div>
+                  <div className="text-sm text-gray-600">Último mes</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Análisis de criterios */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                Análisis por Criterios
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {evaluations.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      { key: 'cleanliness', label: 'Limpieza', color: 'bg-blue-500' },
+                      { key: 'safety', label: 'Seguridad', color: 'bg-green-500' },
+                      { key: 'maintenance', label: 'Mantenimiento', color: 'bg-yellow-500' },
+                      { key: 'accessibility', label: 'Accesibilidad', color: 'bg-purple-500' },
+                      { key: 'amenities', label: 'Amenidades', color: 'bg-pink-500' },
+                      { key: 'activities', label: 'Actividades', color: 'bg-indigo-500' },
+                      { key: 'staff', label: 'Personal', color: 'bg-orange-500' },
+                      { key: 'natural_beauty', label: 'Belleza Natural', color: 'bg-teal-500' }
+                    ].map(criterion => {
+                      // Calcular promedio del criterio basado en las evaluaciones
+                      const averageScore = evaluations.reduce((sum, evaluation) => sum + (evaluation[criterion.key as keyof ParkEvaluation] as number || 0), 0) / evaluations.length;
+                      
+                      return (
+                        <div key={criterion.key} className="text-center p-4 border rounded-lg">
+                          <div className="text-lg font-bold">{averageScore.toFixed(1)}</div>
+                          <div className="text-sm text-gray-600 mb-2">{criterion.label}</div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`${criterion.color} h-2 rounded-full`} 
+                              style={{ width: `${(averageScore / 5) * 100}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Award className="h-8 w-8 mx-auto mb-2" />
+                    <p>No hay datos de criterios disponibles</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Información demográfica */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Perfil de Visitantes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {evaluations.length > 0 ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-center p-3 bg-blue-50 rounded-lg">
+                          <div className="text-xl font-bold text-blue-600">
+                            {evaluations.filter(e => e.is_frequent_visitor).length}
+                          </div>
+                          <div className="text-sm text-gray-600">Visitantes frecuentes</div>
+                        </div>
+                        <div className="text-center p-3 bg-green-50 rounded-lg">
+                          <div className="text-xl font-bold text-green-600">
+                            {evaluations.filter(e => !e.is_frequent_visitor).length}
+                          </div>
+                          <div className="text-sm text-gray-600">Visitantes ocasionales</div>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-4">
+                        <h4 className="font-medium mb-2">Ciudades de origen</h4>
+                        <div className="space-y-2">
+                          {(() => {
+                            const cities = evaluations.reduce((acc, e) => {
+                              if (e.evaluator_city) {
+                                acc[e.evaluator_city] = (acc[e.evaluator_city] || 0) + 1;
+                              }
+                              return acc;
+                            }, {} as Record<string, number>);
+                            
+                            return Object.entries(cities)
+                              .sort(([, a], [, b]) => b - a)
+                              .slice(0, 5)
+                              .map(([city, count]) => (
+                                <div key={city} className="flex justify-between items-center">
+                                  <span className="text-sm">{city}</span>
+                                  <Badge variant="secondary">{count}</Badge>
+                                </div>
+                              ));
+                          })()}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Users className="h-8 w-8 mx-auto mb-2" />
+                      <p>No hay datos demográficos disponibles</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5" />
+                  Participación
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {evaluations.length > 0 ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-center p-3 bg-purple-50 rounded-lg">
+                          <div className="text-xl font-bold text-purple-600">
+                            {evaluations.filter(e => e.comments).length}
+                          </div>
+                          <div className="text-sm text-gray-600">Con comentarios</div>
+                        </div>
+                        <div className="text-center p-3 bg-orange-50 rounded-lg">
+                          <div className="text-xl font-bold text-orange-600">
+                            {evaluations.filter(e => e.suggestions).length}
+                          </div>
+                          <div className="text-sm text-gray-600">Con sugerencias</div>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-4">
+                        <h4 className="font-medium mb-2">Distribución por calificación</h4>
+                        <div className="space-y-2">
+                          {[5, 4, 3, 2, 1].map(rating => {
+                            const count = evaluations.filter(e => e.overall_rating === rating).length;
+                            const percentage = evaluations.length > 0 ? (count / evaluations.length) * 100 : 0;
+                            
+                            return (
+                              <div key={rating} className="flex items-center gap-2">
+                                <span className="text-sm w-8">{rating}★</span>
+                                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                  <div 
+                                    className="bg-yellow-500 h-2 rounded-full" 
+                                    style={{ width: `${percentage}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-sm w-8">{count}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <MessageCircle className="h-8 w-8 mx-auto mb-2" />
+                      <p>No hay datos de participación disponibles</p>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
