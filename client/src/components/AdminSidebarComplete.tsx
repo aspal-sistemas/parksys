@@ -462,9 +462,9 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 7. RESERVAS DE ESPACIOS */}
+          {/* 7. RESERVAS */}
           <ModuleNav 
-            title="Reservas de Espacios" 
+            title="Reservas" 
             icon={<CalendarClock className="h-5 w-5" />}
             value="space-reservations"
             defaultOpen={location.startsWith('/admin/space-reservations')}
