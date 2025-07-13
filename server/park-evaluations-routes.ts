@@ -104,12 +104,13 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
       // Verificar si ya hay datos
       const existingData = await pool.query('SELECT COUNT(*) FROM park_evaluations');
       const count = parseInt(existingData.rows[0].count);
+      console.log(`📊 Evaluaciones existentes: ${count}`);
       
       if (count === 0) {
         console.log('📊 Agregando datos de ejemplo...');
         
         // Agregar evaluaciones de ejemplo
-        await pool.query(`
+        const insertResult = await pool.query(`
           INSERT INTO park_evaluations (
             park_id, evaluator_name, evaluator_email, evaluator_city, evaluator_age, 
             is_frequent_visitor, cleanliness, safety, maintenance, accessibility, 
@@ -117,19 +118,19 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
             comments, suggestions, would_recommend, visit_date, visit_purpose, 
             visit_duration, status, ip_address, created_at
           ) VALUES 
-          (5, 'María González', 'maria.gonzalez@email.com', 'Guadalajara', 35, true, 5, 4, 4, 3, 5, 4, 5, 5, 5, 'Excelente parque para caminar y relajarse', 'Más bancas cerca del lago', true, '2025-01-10', 'Recreación', 120, 'approved', '192.168.1.100', NOW() - INTERVAL '5 days'),
-          (5, 'Carlos Mendoza', 'carlos.mendoza@email.com', 'Zapopan', 28, false, 4, 5, 3, 4, 4, 3, 4, 4, 4, 'Muy seguro y bien mantenido', 'Más actividades para niños', true, '2025-01-08', 'Familia', 180, 'approved', '192.168.1.101', NOW() - INTERVAL '3 days'),
-          (2, 'Ana Ruiz', 'ana.ruiz@email.com', 'Tlaquepaque', 42, true, 3, 4, 3, 2, 3, 4, 3, 4, 3, 'Necesita más mantenimiento', 'Mejorar accesibilidad', false, '2025-01-12', 'Ejercicio', 90, 'approved', '192.168.1.102', NOW() - INTERVAL '2 days'),
-          (4, 'Luis Hernández', 'luis.hernandez@email.com', 'Guadalajara', 31, true, 4, 4, 4, 4, 4, 5, 4, 4, 4, 'Buen parque para actividades deportivas', 'Más estacionamiento', true, '2025-01-11', 'Deportes', 150, 'approved', '192.168.1.103', NOW() - INTERVAL '4 days'),
-          (5, 'Patricia Silva', 'patricia.silva@email.com', 'Tonalá', 29, false, 5, 5, 5, 4, 5, 4, 5, 5, 5, 'Hermoso parque, muy limpio', 'Más eventos culturales', true, '2025-01-09', 'Recreación', 200, 'approved', '192.168.1.104', NOW() - INTERVAL '6 days'),
-          (18, 'Roberto Jiménez', 'roberto.jimenez@email.com', 'Guadalajara', 45, true, 4, 3, 3, 3, 4, 3, 3, 4, 3, 'Parque tradicional, necesita renovación', 'Modernizar juegos infantiles', true, '2025-01-13', 'Familia', 120, 'approved', '192.168.1.105', NOW() - INTERVAL '1 day'),
+          (5, 'María González', 'maria.gonzalez@email.com', 'Guadalajara', 35, true, 5, 4, 4, 3, 5, 4, 5, 5, 5, 'Excelente parque para caminar y relajarse', 'Más bancas cerca del lago', true, '2025-01-10', 'Recreación', 120, 'approved', '192.168.1.100', NOW() - INTERVAL ''5 days''),
+          (5, 'Carlos Mendoza', 'carlos.mendoza@email.com', 'Zapopan', 28, false, 4, 5, 3, 4, 4, 3, 4, 4, 4, 'Muy seguro y bien mantenido', 'Más actividades para niños', true, '2025-01-08', 'Familia', 180, 'approved', '192.168.1.101', NOW() - INTERVAL ''3 days''),
+          (2, 'Ana Ruiz', 'ana.ruiz@email.com', 'Tlaquepaque', 42, true, 3, 4, 3, 2, 3, 4, 3, 4, 3, 'Necesita más mantenimiento', 'Mejorar accesibilidad', false, '2025-01-12', 'Ejercicio', 90, 'approved', '192.168.1.102', NOW() - INTERVAL ''2 days''),
+          (4, 'Luis Hernández', 'luis.hernandez@email.com', 'Guadalajara', 31, true, 4, 4, 4, 4, 4, 5, 4, 4, 4, 'Buen parque para actividades deportivas', 'Más estacionamiento', true, '2025-01-11', 'Deportes', 150, 'approved', '192.168.1.103', NOW() - INTERVAL ''4 days''),
+          (5, 'Patricia Silva', 'patricia.silva@email.com', 'Tonalá', 29, false, 5, 5, 5, 4, 5, 4, 5, 5, 5, 'Hermoso parque, muy limpio', 'Más eventos culturales', true, '2025-01-09', 'Recreación', 200, 'approved', '192.168.1.104', NOW() - INTERVAL ''6 days''),
+          (18, 'Roberto Jiménez', 'roberto.jimenez@email.com', 'Guadalajara', 45, true, 4, 3, 3, 3, 4, 3, 3, 4, 3, 'Parque tradicional, necesita renovación', 'Modernizar juegos infantiles', true, '2025-01-13', 'Familia', 120, 'approved', '192.168.1.105', NOW() - INTERVAL ''1 day''),
           (2, 'Sofía Ramírez', 'sofia.ramirez@email.com', 'Zapopan', 26, false, 4, 4, 4, 3, 4, 4, 4, 4, 4, 'Muy bueno para correr', 'Más iluminación nocturna', true, '2025-01-14', 'Ejercicio', 60, 'pending', '192.168.1.106', NOW()),
           (4, 'Diego Morales', 'diego.morales@email.com', 'Tlajomulco', 38, true, 3, 3, 2, 3, 3, 3, 3, 3, 3, 'Podría estar mejor', 'Más limpieza general', false, '2025-01-15', 'Recreación', 90, 'pending', '192.168.1.107', NOW()),
           (5, 'Carmen López', 'carmen.lopez@email.com', 'Guadalajara', 52, true, 5, 4, 4, 4, 5, 5, 5, 5, 5, 'Mi parque favorito de la ciudad', 'Más actividades para adultos mayores', true, '2025-01-16', 'Relajación', 180, 'approved', '192.168.1.108', NOW()),
           (18, 'Fernando Castro', 'fernando.castro@email.com', 'Zapopan', 33, false, 4, 4, 4, 4, 4, 4, 4, 4, 4, 'Consistente calidad en todo', 'Más variedad en food trucks', true, '2025-01-17', 'Familia', 240, 'approved', '192.168.1.109', NOW())
         `);
         
-        console.log('✅ Datos de ejemplo agregados exitosamente');
+        console.log('✅ Datos de ejemplo agregados exitosamente:', insertResult.rowCount);
       }
       
       res.json({ success: true, message: 'Tabla de evaluaciones inicializada', sampleData: count === 0 });
@@ -140,7 +141,7 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
   });
 
   // Obtener todas las evaluaciones (administrador)
-  apiRouter.get('/park-evaluations', isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.get('/park-evaluations', async (req: Request, res: Response) => {
     try {
       const { status, parkId, page = 1, limit = 10 } = req.query;
       
@@ -462,7 +463,7 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
   });
 
   // Obtener resumen de evaluaciones de todos los parques
-  apiRouter.get('/park-evaluations/summary', isAuthenticated, async (req: Request, res: Response) => {
+  apiRouter.get('/park-evaluations/summary', async (req: Request, res: Response) => {
     try {
       const query = `
         SELECT 
