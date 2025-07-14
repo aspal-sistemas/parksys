@@ -181,7 +181,7 @@ const SponsorsManagement = () => {
   const onSubmitPackage = (data: PackageFormData) => {
     const formattedData = {
       ...data,
-      price: parseFloat(data.price).toString(),
+      price: parseFloat(data.price), // Convertir a número para el backend
       benefits: data.benefits.filter(benefit => benefit.trim() !== '')
     };
     createPackageMutation.mutate(formattedData);
@@ -190,7 +190,7 @@ const SponsorsManagement = () => {
   const onSubmitSponsor = (data: SponsorFormData) => {
     const formattedData = {
       ...data,
-      contractValue: parseFloat(data.contractValue).toString()
+      contractValue: parseFloat(data.contractValue) // Convertir a número para el backend
     };
     createSponsorMutation.mutate(formattedData);
   };
