@@ -33,10 +33,12 @@ export default function AccountingCategories() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: categories, isLoading } = useQuery({
+  const { data: categoriesData, isLoading } = useQuery({
     queryKey: ['/api/accounting/categories'],
     enabled: true
   });
+
+  const categories = categoriesData?.categories || [];
 
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),

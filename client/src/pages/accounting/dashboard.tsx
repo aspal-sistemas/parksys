@@ -57,23 +57,11 @@ export default function AccountingDashboard() {
     <AdminLayout>
       <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setLocation('/admin')}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Volver al Dashboard
-        </Button>
-        <div className="flex-1 text-center space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">Módulo de Contabilidad</h1>
-          <p className="text-gray-600 max-w-4xl mx-auto">
-            Sistema contable completo que se integra automáticamente con las transacciones para generar reportes financieros precisos
-          </p>
-        </div>
-        <div className="w-32"></div> {/* Spacer para centrar el contenido */}
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold text-gray-900">Módulo de Contabilidad</h1>
+        <p className="text-gray-600 max-w-4xl mx-auto">
+          Sistema contable completo que se integra automáticamente con las transacciones para generar reportes financieros precisos
+        </p>
       </div>
 
       {/* Integración Automática Banner */}
