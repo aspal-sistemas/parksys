@@ -548,10 +548,41 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   // Obtener todos los eventos patrocinados
   apiRouter.get('/sponsor-events', async (req: Request, res: Response) => {
     try {
-      const events = await db
-        .select()
-        .from(sponsorEvents)
-        .orderBy(desc(sponsorEvents.createdAt));
+      const result = await pool.query(`
+        SELECT 
+          se.*,
+          s.name as sponsor_name,
+          s.logo as sponsor_logo,
+          sc.contract_number,
+          sc.title as contract_title
+        FROM sponsor_events se
+        LEFT JOIN sponsors s ON se.sponsor_id = s.id
+        LEFT JOIN sponsorship_contracts sc ON se.contract_id = sc.id
+        ORDER BY se.event_date DESC
+      `);
+      
+      // Mapear a camelCase para el frontend
+      const events = result.rows.map(row => ({
+        id: row.id,
+        sponsorId: row.sponsor_id,
+        contractId: row.contract_id,
+        eventName: row.event_name,
+        eventDate: row.event_date,
+        eventLocation: row.event_location,
+        sponsorshipLevel: row.sponsorship_level,
+        logoPlacement: row.logo_placement,
+        exposureMinutes: row.exposure_minutes,
+        standSize: row.stand_size,
+        activationBudget: row.activation_budget,
+        specialRequirements: row.special_requirements,
+        status: row.status,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        sponsorName: row.sponsor_name,
+        sponsorLogo: row.sponsor_logo,
+        contractNumber: row.contract_number,
+        contractTitle: row.contract_title
+      }));
       
       res.json(events);
     } catch (error) {
@@ -563,16 +594,108 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   // Crear nuevo evento patrocinado
   apiRouter.post('/sponsor-events', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const validatedData = insertSponsorEventSchema.parse(req.body);
+      const {
+        sponsorId,
+        contractId,
+        eventName,
+        eventDate,
+        eventLocation,
+        sponsorshipLevel,
+        logoPlacement,
+        exposureMinutes,
+        standSize,
+        activationBudget,
+        specialRequirements,
+        status = 'pending'
+      } = req.body;
       
-      const [newEvent] = await db
-        .insert(sponsorEvents)
-        .values(validatedData)
-        .returning();
+      const result = await pool.query(`
+        INSERT INTO sponsor_events (
+          sponsor_id, contract_id, event_name, event_date, event_location,
+          sponsorship_level, logo_placement, exposure_minutes, stand_size,
+          activation_budget, special_requirements, status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        RETURNING *
+      `, [
+        sponsorId, contractId, eventName, eventDate, eventLocation,
+        sponsorshipLevel, logoPlacement, exposureMinutes, standSize,
+        activationBudget, specialRequirements, status
+      ]);
       
-      res.status(201).json(newEvent);
+      res.status(201).json(result.rows[0]);
     } catch (error) {
       console.error('Error al crear evento patrocinado:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Actualizar evento patrocinado
+  apiRouter.put('/sponsor-events/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const {
+        sponsorId,
+        contractId,
+        eventName,
+        eventDate,
+        eventLocation,
+        sponsorshipLevel,
+        logoPlacement,
+        exposureMinutes,
+        standSize,
+        activationBudget,
+        specialRequirements,
+        status
+      } = req.body;
+      
+      const result = await pool.query(`
+        UPDATE sponsor_events SET
+          sponsor_id = $1,
+          contract_id = $2,
+          event_name = $3,
+          event_date = $4,
+          event_location = $5,
+          sponsorship_level = $6,
+          logo_placement = $7,
+          exposure_minutes = $8,
+          stand_size = $9,
+          activation_budget = $10,
+          special_requirements = $11,
+          status = $12,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $13
+        RETURNING *
+      `, [
+        sponsorId, contractId, eventName, eventDate, eventLocation,
+        sponsorshipLevel, logoPlacement, exposureMinutes, standSize,
+        activationBudget, specialRequirements, status, id
+      ]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Evento no encontrado' });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error al actualizar evento patrocinado:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Eliminar evento patrocinado
+  apiRouter.delete('/sponsor-events/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      const result = await pool.query('DELETE FROM sponsor_events WHERE id = $1 RETURNING *', [id]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Evento no encontrado' });
+      }
+      
+      res.json({ message: 'Evento eliminado exitosamente' });
+    } catch (error) {
+      console.error('Error al eliminar evento patrocinado:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   });
@@ -587,12 +710,12 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
           sponsor_id as "sponsorId",
           event_name as "eventName",
           event_date as "eventDate",
-          event_type as "eventType",
-          participants_count as "participantsCount",
-          budget_allocated as "budgetAllocated",
-          description,
+          event_location as "eventLocation",
+          sponsorship_level as "sponsorshipLevel",
+          activation_budget as "activationBudget",
+          status,
           created_at as "createdAt"
-        FROM sponsorship_events 
+        FROM sponsor_events 
         WHERE sponsor_id = $1
         ORDER BY created_at DESC
       `, [parseInt(sponsorId)]);

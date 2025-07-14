@@ -2721,12 +2721,16 @@ export const sponsorshipContracts = pgTable("sponsorship_contracts", {
 export const sponsorEvents = pgTable("sponsor_events", {
   id: serial("id").primaryKey(),
   sponsorId: integer("sponsor_id").notNull().references(() => sponsors.id),
-  eventId: integer("event_id").notNull().references(() => events.id),
   contractId: integer("contract_id").references(() => sponsorshipContracts.id),
   
+  // Información del evento
+  eventName: varchar("event_name", { length: 255 }).notNull(),
+  eventDate: date("event_date").notNull(),
+  eventLocation: varchar("event_location", { length: 255 }),
+  
   // Detalles del patrocinio
-  sponsorshipLevel: varchar("sponsorship_level", { length: 50 }).notNull(), // principal, secundario, colaborador
-  logoPlacement: varchar("logo_placement", { length: 50 }), // primary, secondary, footer
+  sponsorshipLevel: varchar("sponsorship_level", { length: 50 }).default("colaborador"), // principal, secundario, colaborador
+  logoPlacement: varchar("logo_placement", { length: 100 }), // primary, secondary, footer
   exposureMinutes: integer("exposure_minutes").default(0),
   standSize: varchar("stand_size", { length: 50 }), // premium, standard, small
   
@@ -2735,7 +2739,7 @@ export const sponsorEvents = pgTable("sponsor_events", {
   specialRequirements: text("special_requirements"),
   
   // Estado
-  status: varchar("status", { length: 50 }).default("pending"), // pending, confirmed, completed, cancelled
+  status: varchar("status", { length: 20 }).default("pending"), // pending, confirmed, completed, cancelled
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow()
