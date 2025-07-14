@@ -2698,11 +2698,11 @@ export const sponsorshipContracts = pgTable("sponsorship_contracts", {
   endDate: date("end_date").notNull(),
   
   // Detalles financieros
-  totalValue: decimal("total_value", { precision: 10, scale: 2 }).notNull(),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   
   // Estado y términos
   status: varchar("status", { length: 50 }).default("draft"), // draft, active, expired, terminated
-  terms: text("terms"),
+  termsConditions: text("terms_conditions"),
   
   // Renovación
   renewalNoticeDate: date("renewal_notice_date"),
@@ -2846,7 +2846,7 @@ export const sponsorshipRenewals = pgTable("sponsorship_renewals", {
   
   // Nuevos términos (si aplica)
   newPackageId: integer("new_package_id").references(() => sponsorshipPackages.id),
-  newValue: decimal("new_value", { precision: 10, scale: 2 }),
+  newAmount: decimal("new_amount", { precision: 10, scale: 2 }),
   newStartDate: date("new_start_date"),
   newEndDate: date("new_end_date"),
   

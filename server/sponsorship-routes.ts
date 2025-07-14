@@ -1044,36 +1044,39 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   
   // ===== DASHBOARD Y REPORTES =====
   
-  // Dashboard general de patrocinios
+  // Dashboard general de patrocinios (versión SQL pura)
   apiRouter.get('/sponsorship-dashboard', async (req: Request, res: Response) => {
     try {
-      // Obtener estadísticas generales
-      const [
-        totalSponsors,
-        activeContracts,
-        totalRevenue,
-        avgSatisfaction
-      ] = await Promise.all([
-        db.select().from(sponsors).then(result => result.length),
-        db.select().from(sponsorshipContracts).where(eq(sponsorshipContracts.status, 'active')).then(result => result.length),
-        db.select().from(sponsorshipContracts).then(result => 
-          result.reduce((sum, contract) => sum + parseFloat(contract.total_amount || '0'), 0)
-        ),
-        db.select().from(sponsorshipEvaluations).then(result => {
-          if (result.length === 0) return 0;
-          const totalSatisfaction = result.reduce((sum, evaluation) => sum + (evaluation.overallSatisfaction || 0), 0);
-          return totalSatisfaction / result.length;
-        })
-      ]);
+      console.log('📊 Iniciando consulta del dashboard...');
       
-      res.json({
+      // Usar consultas SQL directas para evitar problemas de esquema
+      const totalSponsorsQuery = await pool.query('SELECT COUNT(*) as count FROM sponsors');
+      const totalSponsors = parseInt(totalSponsorsQuery.rows[0].count);
+      console.log('✅ Total sponsors:', totalSponsors);
+      
+      const activeContractsQuery = await pool.query("SELECT COUNT(*) as count FROM sponsorship_contracts WHERE status = 'active'");
+      const activeContracts = parseInt(activeContractsQuery.rows[0].count);
+      console.log('✅ Active contracts:', activeContracts);
+      
+      const totalRevenueQuery = await pool.query('SELECT SUM(CAST(total_amount AS DECIMAL)) as total FROM sponsorship_contracts');
+      const totalRevenue = parseFloat(totalRevenueQuery.rows[0].total || '0');
+      console.log('✅ Total revenue:', totalRevenue);
+      
+      const avgSatisfactionQuery = await pool.query('SELECT AVG(rating) as avg FROM sponsorship_evaluations');
+      const avgSatisfaction = parseFloat(avgSatisfactionQuery.rows[0].avg || '0');
+      console.log('✅ Average satisfaction:', avgSatisfaction);
+      
+      const dashboardData = {
         totalSponsors,
         activeContracts,
         totalRevenue,
         avgSatisfaction: Math.round(avgSatisfaction * 10) / 10
-      });
+      };
+      
+      console.log('📊 Dashboard data:', dashboardData);
+      res.json(dashboardData);
     } catch (error) {
-      console.error('Error al obtener dashboard:', error);
+      console.error('❌ Error al obtener dashboard:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   });
@@ -1101,7 +1104,7 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
       ]);
       
       // Calcular ROI
-      const totalInvestment = parseFloat(sponsor.contractValue || '0');
+      const totalInvestment = parseFloat(sponsor.contract_value || '0');
       const totalLeads = metrics.reduce((sum, m) => sum + (m.leadsGenerated || 0), 0);
       const totalConversions = metrics.reduce((sum, m) => sum + (m.conversions || 0), 0);
       const totalImpressions = metrics.reduce((sum, m) => sum + (m.impressions || 0), 0);
