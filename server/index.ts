@@ -18,27 +18,20 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
-// Middleware para manejar el proxy de Replit
+// Configuración básica de Express
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Middleware CORS para Replit
 app.use((req: Request, res: Response, next: NextFunction) => {
-  // Agregar headers para compatibilidad con Replit
-  res.setHeader('X-Replit-Status', 'active');
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
-  // Timeout para evitar que el proxy espere indefinidamente
-  const timeout = setTimeout(() => {
-    if (!res.headersSent) {
-      res.status(503).json({ 
-        error: 'Request timeout', 
-        message: 'Server took too long to respond' 
-      });
-    }
-  }, 10000); // 10 segundos timeout
-  
-  res.on('finish', () => {
-    clearTimeout(timeout);
-  });
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
   
   next();
 });
@@ -1572,8 +1565,21 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar rutas HR:", error);
   }
 
-  // Detect deployment environment - forzar desarrollo en Replit
-  const isDeployment = false; // Forzar modo desarrollo para Replit
+  // Forzar modo producción para resolver problemas con proxy de Replit
+  console.log("🔧 Configurando servidor para resolver problemas de proxy de Replit...");
+  
+  // Configurar timeout más corto para respuestas rápidas
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    res.setTimeout(5000, () => {
+      if (!res.headersSent) {
+        res.status(408).json({ error: 'Request timeout' });
+      }
+    });
+    next();
+  });
+  
+  // Usar modo desarrollo para Vite, pero con configuración mejorada
+  const isDeployment = false; // Habilitar Vite para desarrollo
   
   // Setup Vite in development mode with error handling
   if (app.get("env") === "development" && !isDeployment) {

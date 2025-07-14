@@ -41,13 +41,13 @@ const EvaluationsPage = () => {
 
   const calculateAverageRating = (evaluations: SponsorshipEvaluation[]) => {
     if (evaluations.length === 0) return 0;
-    const totalRating = evaluations.reduce((sum, eval) => sum + (eval.overallSatisfaction || 0), 0);
+    const totalRating = evaluations.reduce((sum, evaluation) => sum + (evaluation.overallSatisfaction || 0), 0);
     return totalRating / evaluations.length;
   };
 
   const calculateRenewalRate = (evaluations: SponsorshipEvaluation[]) => {
     if (evaluations.length === 0) return 0;
-    const willRenew = evaluations.filter(eval => eval.wouldRenew).length;
+    const willRenew = evaluations.filter(evaluation => evaluation.wouldRenew).length;
     return (willRenew / evaluations.length) * 100;
   };
 
@@ -55,7 +55,7 @@ const EvaluationsPage = () => {
   const renewalRate = calculateRenewalRate(filteredEvaluations);
   const totalEvaluations = filteredEvaluations.length;
   const avgNPS = filteredEvaluations.length > 0 
-    ? filteredEvaluations.reduce((sum, eval) => sum + (eval.recommendationScore || 0), 0) / filteredEvaluations.length 
+    ? filteredEvaluations.reduce((sum, evaluation) => sum + (evaluation.recommendationScore || 0), 0) / filteredEvaluations.length 
     : 0;
 
   const getRatingColor = (rating: number) => {
