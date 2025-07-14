@@ -38,7 +38,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
 import AdminLayout from "@/components/AdminLayout";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { safeApiRequest } from '@/lib/queryClient';
 import { SponsorshipPackage, Sponsor, SponsorshipCampaign } from '@/../../shared/schema';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
@@ -95,17 +95,17 @@ const SponsorsManagement = () => {
   // Consultas para obtener datos del backend
   const { data: packages = [], isLoading: packagesLoading } = useQuery({
     queryKey: ['/api/sponsorship-packages'],
-    queryFn: () => apiRequest<SponsorshipPackage[]>('/api/sponsorship-packages')
+    queryFn: () => safeApiRequest('/api/sponsorship-packages')
   });
 
   const { data: sponsors = [], isLoading: sponsorsLoading } = useQuery({
     queryKey: ['/api/sponsors'],
-    queryFn: () => apiRequest<Sponsor[]>('/api/sponsors')
+    queryFn: () => safeApiRequest('/api/sponsors')
   });
 
   const { data: campaigns = [], isLoading: campaignsLoading } = useQuery({
     queryKey: ['/api/sponsorship-campaigns'],
-    queryFn: () => apiRequest<SponsorshipCampaign[]>('/api/sponsorship-campaigns')
+    queryFn: () => safeApiRequest('/api/sponsorship-campaigns')
   });
 
   // Estados de carga
@@ -113,9 +113,9 @@ const SponsorsManagement = () => {
 
   // Mutaciones para crear/actualizar datos
   const createPackageMutation = useMutation({
-    mutationFn: (data: PackageFormData) => apiRequest('/api/sponsorship-packages', {
+    mutationFn: (data: PackageFormData) => safeApiRequest('/api/sponsorship-packages', {
       method: 'POST',
-      body: JSON.stringify(data)
+      data
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsorship-packages'] });
@@ -128,9 +128,9 @@ const SponsorsManagement = () => {
   });
 
   const createSponsorMutation = useMutation({
-    mutationFn: (data: SponsorFormData) => apiRequest('/api/sponsors', {
+    mutationFn: (data: SponsorFormData) => safeApiRequest('/api/sponsors', {
       method: 'POST',
-      body: JSON.stringify(data)
+      data
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsors'] });
@@ -195,8 +195,9 @@ const SponsorsManagement = () => {
     createSponsorMutation.mutate(formattedData);
   };
 
-  // Filtros
-  const filteredSponsors = sponsors.filter(sponsor => {
+  // Filtros - Asegurar que sponsors sea un array
+  const sponsorsArray = Array.isArray(sponsors) ? sponsors : [];
+  const filteredSponsors = sponsorsArray.filter(sponsor => {
     const matchesSearch = sponsor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          sponsor.representative.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === "all" || sponsor.category === categoryFilter;
@@ -227,10 +228,10 @@ const SponsorsManagement = () => {
   };
 
   // Cálculos del dashboard
-  const totalRevenue = sponsors.reduce((sum, sponsor) => sum + parseFloat(sponsor.contractValue), 0);
-  const activeSponsors = sponsors.filter(s => s.status === 'activo').length;
-  const averageRenewal = sponsors.reduce((sum, sponsor) => sum + sponsor.renewalProbability, 0) / sponsors.length || 0;
-  const totalEvents = sponsors.reduce((sum, sponsor) => sum + sponsor.eventsSponsored, 0);
+  const totalRevenue = sponsorsArray.reduce((sum, sponsor) => sum + parseFloat(sponsor.contractValue), 0);
+  const activeSponsors = sponsorsArray.filter(s => s.status === 'activo').length;
+  const averageRenewal = sponsorsArray.reduce((sum, sponsor) => sum + sponsor.renewalProbability, 0) / sponsorsArray.length || 0;
+  const totalEvents = sponsorsArray.reduce((sum, sponsor) => sum + sponsor.eventsSponsored, 0);
 
   // Colores para las gráficas
   const COLORS = ['#00a587', '#067f5f', '#bcd256', '#8498a5', '#d4ad2a'];
