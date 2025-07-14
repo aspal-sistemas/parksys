@@ -1300,7 +1300,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Eliminando activos...');
       await db.execute(sql`DELETE FROM assets WHERE park_id = ${parkId}`);
       
-      // Eliminación en cascada de datos relacionados al parque
+      console.log('Eliminando módulo AMBU completo...');
+      await db.execute(sql`DELETE FROM reuniones_ambu WHERE evento_id IN (SELECT id FROM eventos_ambu WHERE parque_id = ${parkId})`);
+      await db.execute(sql`DELETE FROM documentos_ambu WHERE evento_id IN (SELECT id FROM eventos_ambu WHERE parque_id = ${parkId})`);
+      await db.execute(sql`DELETE FROM seguimiento_ambu WHERE evento_id IN (SELECT id FROM eventos_ambu WHERE parque_id = ${parkId})`);
+      await db.execute(sql`DELETE FROM costos_ambu WHERE evento_id IN (SELECT id FROM eventos_ambu WHERE parque_id = ${parkId})`);
+      await db.execute(sql`DELETE FROM solicitudes_ambu WHERE evento_id IN (SELECT id FROM eventos_ambu WHERE parque_id = ${parkId})`);
+      await db.execute(sql`DELETE FROM eventos_ambu WHERE parque_id = ${parkId}`);
+      
+      console.log('Eliminando todas las tablas relacionadas con el parque...');
+      
+      // Eliminación completa de todas las tablas con FK a parks
+      await db.execute(sql`DELETE FROM contract_events WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM contract_assets WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM park_evaluations WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM visitor_counts WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM reservable_spaces WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM active_concessions WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM park_tree_species WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM park_documents WHERE park_id = ${parkId}`);
       await db.execute(sql`DELETE FROM concessions WHERE park_id = ${parkId}`);
       await db.execute(sql`DELETE FROM concessionaire_history WHERE park_id = ${parkId}`);
       await db.execute(sql`DELETE FROM concessionaire_evaluations WHERE park_id = ${parkId}`);
@@ -1309,6 +1327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await db.execute(sql`DELETE FROM activities WHERE park_id = ${parkId}`);
       await db.execute(sql`DELETE FROM incidents WHERE park_id = ${parkId}`);
       await db.execute(sql`DELETE FROM comments WHERE park_id = ${parkId}`);
+      
       await db.execute(sql`DELETE FROM parks WHERE id = ${parkId}`);
       res.status(200).json({ message: "Park deleted successfully" });
     } catch (error) {
