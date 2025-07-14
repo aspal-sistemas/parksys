@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { db } from './db';
+import { pool } from './db';
 import { 
   sponsorshipPackages, 
   sponsors, 
@@ -266,24 +267,50 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   // Obtener todos los contratos
   apiRouter.get('/sponsorship-contracts', async (req: Request, res: Response) => {
     try {
-      const result = await pool.query(`
-        SELECT 
-          sc.*,
-          s.name as sponsor_name,
-          s.logo_url as sponsor_logo,
-          sp.name as package_name,
-          sp.tier as package_tier,
-          scamp.name as campaign_name
-        FROM sponsorship_contracts sc
-        LEFT JOIN sponsors s ON sc.sponsor_id = s.id
-        LEFT JOIN sponsorship_packages sp ON sc.package_id = sp.id
-        LEFT JOIN sponsorship_campaigns scamp ON sc.campaign_id = scamp.id
-        ORDER BY sc.created_at DESC
-      `);
+      console.log('🔍 Obteniendo contratos de patrocinio...');
       
-      res.json(result.rows);
+      // Primero, probar consulta simple
+      const contractsResult = await pool.query('SELECT * FROM sponsorship_contracts ORDER BY created_at DESC');
+      console.log('✅ Contratos base encontrados:', contractsResult.rows.length);
+      
+      // Si hay contratos, devolver directamente los datos básicos
+      if (contractsResult.rows.length > 0) {
+        // Obtener información básica de sponsors para los contratos
+        const sponsorIds = contractsResult.rows.map(contract => contract.sponsor_id).filter(id => id);
+        let sponsorNames = {};
+        
+        if (sponsorIds.length > 0) {
+          const sponsorsResult = await pool.query(`
+            SELECT id, name, logo 
+            FROM sponsors 
+            WHERE id = ANY($1)
+          `, [sponsorIds]);
+          
+          sponsorsResult.rows.forEach(sponsor => {
+            sponsorNames[sponsor.id] = {
+              name: sponsor.name,
+              logo: sponsor.logo
+            };
+          });
+        }
+        
+        // Agregar información de sponsor a cada contrato
+        const contractsWithSponsors = contractsResult.rows.map(contract => ({
+          ...contract,
+          sponsor_name: sponsorNames[contract.sponsor_id]?.name || 'Sin asignar',
+          sponsor_logo: sponsorNames[contract.sponsor_id]?.logo || null
+        }));
+        
+        console.log('✅ Contratos con sponsors:', contractsWithSponsors.length);
+        console.log('📋 Primer contrato:', contractsWithSponsors[0]);
+        res.json(contractsWithSponsors);
+      } else {
+        console.log('⚠️ No hay contratos en la base de datos');
+        res.json([]);
+      }
     } catch (error) {
-      console.error('Error al obtener contratos:', error);
+      console.error('❌ Error al obtener contratos:', error);
+      console.error('❌ Error details:', error.message);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   });
