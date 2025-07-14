@@ -18,6 +18,31 @@ import { eq } from "drizzle-orm";
 
 const app = express();
 
+// Middleware para manejar el proxy de Replit
+app.use((req: Request, res: Response, next: NextFunction) => {
+  // Agregar headers para compatibilidad con Replit
+  res.setHeader('X-Replit-Status', 'active');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  
+  // Timeout para evitar que el proxy espere indefinidamente
+  const timeout = setTimeout(() => {
+    if (!res.headersSent) {
+      res.status(503).json({ 
+        error: 'Request timeout', 
+        message: 'Server took too long to respond' 
+      });
+    }
+  }, 10000); // 10 segundos timeout
+  
+  res.on('finish', () => {
+    clearTimeout(timeout);
+  });
+  
+  next();
+});
+
 // Simple API health check - priority over static files
 app.get('/api/status', (req: Request, res: Response) => {
   try {
@@ -1547,8 +1572,8 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar rutas HR:", error);
   }
 
-  // Detect deployment environment
-  const isDeployment = process.env.REPLIT_DEPLOYMENT_ID || process.env.NODE_ENV === "production";
+  // Detect deployment environment - forzar desarrollo en Replit
+  const isDeployment = false; // Forzar modo desarrollo para Replit
   
   // Setup Vite in development mode with error handling
   if (app.get("env") === "development" && !isDeployment) {
