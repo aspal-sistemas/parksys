@@ -10,6 +10,7 @@ import { safeApiRequest } from '@/lib/queryClient';
 import { SponsorshipEvaluation } from '@/shared/schema';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import AdminLayout from '@/components/AdminLayout';
 
 const EvaluationsPage = () => {
   const [selectedSponsor, setSelectedSponsor] = useState('all');
@@ -78,19 +79,22 @@ const EvaluationsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="h-8 bg-gray-200 rounded animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-32 bg-gray-200 rounded animate-pulse" />
-          ))}
+      <AdminLayout>
+        <div className="space-y-6">
+          <div className="h-8 bg-gray-200 rounded animate-pulse" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-32 bg-gray-200 rounded animate-pulse" />
+            ))}
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -304,7 +308,8 @@ const EvaluationsPage = () => {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
