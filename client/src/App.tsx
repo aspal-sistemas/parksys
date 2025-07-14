@@ -467,6 +467,23 @@ function Router() {
           </Suspense>
         </Route>
 
+        {/* Rutas para el módulo de contabilidad */}
+        <Route path="/admin/accounting/dashboard">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de contabilidad...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/accounting/dashboard')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/accounting/categories">
+          <Suspense fallback={<div className="p-8 text-center">Cargando categorías contables...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/accounting/categories')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/accounting/transactions">
+          <Suspense fallback={<div className="p-8 text-center">Cargando transacciones contables...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/accounting/transactions')))}
+          </Suspense>
+        </Route>
+
         {/* Rutas para el módulo de marketing/patrocinios */}
         <Route path="/admin/marketing">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de marketing...</div>}>

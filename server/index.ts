@@ -1175,6 +1175,15 @@ async function initializeDatabaseAsync() {
     console.error("Error inicializando tablas de comunicaciones:", error);
   }
 
+  // Inicializar módulo de contabilidad
+  try {
+    const { createAccountingModule } = await import("./create-accounting-module");
+    await createAccountingModule();
+    console.log("Módulo de contabilidad inicializado correctamente");
+  } catch (error) {
+    console.error("Error inicializando módulo de contabilidad:", error);
+  }
+
   const routeServer = await registerRoutes(app);
 
   // Inicializar tablas de patrocinios
@@ -1213,6 +1222,10 @@ async function initializeDatabaseAsync() {
     // Importar y registrar rutas del módulo financiero
     const { registerFinanceRoutes } = await import('./finance-routes');
     registerFinanceRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Importar y registrar rutas del módulo de contabilidad
+    const { registerAccountingRoutes } = await import('./accounting-routes');
+    registerAccountingRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
     
     // Importar y registrar rutas de categorías de eventos
     const { registerEventCategoriesRoutes } = await import('./event-categories-routes');

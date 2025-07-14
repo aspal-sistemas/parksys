@@ -53,6 +53,8 @@ import {
   BadgeCheck,
   LayoutGrid,
   Flower2,
+  FolderTree,
+  BookOpen,
   Scissors,
   TreePine,
   HardHat,
@@ -523,33 +525,12 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 9. FINANZAS */}
+          {/* 9. FINANZAS SIMPLIFICADO */}
           <ModuleNav 
             title={t('navigation.finance')} 
             icon={<DollarSign className="h-5 w-5" />}
             value="finance"
           >
-            <NavItem 
-              href="/admin/finance/catalog" 
-              icon={<Tag className="h-5 w-5" />}
-              active={location === '/admin/finance/catalog'}
-            >
-              Catálogo
-            </NavItem>
-            <NavItem 
-              href="/admin/finance/incomes" 
-              icon={<TrendingUp className="h-5 w-5" />}
-              active={location === '/admin/finance/incomes'}
-            >
-              Ingresos
-            </NavItem>
-            <NavItem 
-              href="/admin/finance/expenses" 
-              icon={<TrendingDown className="h-5 w-5" />}
-              active={location === '/admin/finance/expenses'}
-            >
-              Egresos
-            </NavItem>
             <NavItem 
               href="/admin/finance/budget-planning" 
               icon={<Target className="h-5 w-5" />}
@@ -578,16 +559,39 @@ const AdminSidebarComplete: React.FC = () => {
             >
               {t('navigation.reports')}
             </NavItem>
+          </ModuleNav>
+
+          {/* 10. CONTABILIDAD */}
+          <ModuleNav 
+            title="Contabilidad" 
+            icon={<BookOpen className="h-5 w-5" />}
+            value="accounting"
+            defaultOpen={location.startsWith('/admin/accounting')}
+          >
             <NavItem 
-              href="/admin/finance/dashboard" 
+              href="/admin/accounting/dashboard" 
               icon={<BarChart className="h-5 w-5" />}
-              active={location === '/admin/finance/dashboard'}
+              active={location === '/admin/accounting/dashboard'}
             >
-              {t('navigation.dashboard')}
+              Dashboard
+            </NavItem>
+            <NavItem 
+              href="/admin/accounting/categories" 
+              icon={<FolderTree className="h-5 w-5" />}
+              active={location === '/admin/accounting/categories'}
+            >
+              Categorías
+            </NavItem>
+            <NavItem 
+              href="/admin/accounting/transactions" 
+              icon={<Receipt className="h-5 w-5" />}
+              active={location === '/admin/accounting/transactions'}
+            >
+              Transacciones
             </NavItem>
           </ModuleNav>
 
-          {/* 10. EVENTOS */}
+          {/* 11. EVENTOS */}
           <ModuleNav 
             title="Eventos" 
             icon={<CalendarDays className="h-5 w-5" />}
