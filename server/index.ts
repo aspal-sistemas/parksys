@@ -1116,6 +1116,14 @@ async function initializeDatabaseAsync() {
 
   const routeServer = await registerRoutes(app);
 
+  // Inicializar tablas de patrocinios
+  try {
+    const { createSponsorshipTables } = await import("./create-sponsorship-tables");
+    await createSponsorshipTables();
+  } catch (error) {
+    console.error("Error inicializando tablas de patrocinios:", error);
+  }
+
   // Inicializar tablas de vacaciones
   try {
     const { createVacationTables } = await import("./create-vacation-tables");
@@ -1159,6 +1167,10 @@ async function initializeDatabaseAsync() {
     // Importar y registrar rutas de concesionarios
     const { registerConcessionairesRoutes } = await import('./concessionaires-routes');
     registerConcessionairesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
+    
+    // Importar y registrar rutas de patrocinios
+    const { registerSponsorshipRoutes } = await import('./sponsorship-routes');
+    registerSponsorshipRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
 
     // Registrar rutas del módulo de evaluaciones de parques
     const { registerParkEvaluationRoutes } = await import('./park-evaluations-routes');

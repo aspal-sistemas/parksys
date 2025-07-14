@@ -2603,6 +2603,100 @@ export type InsertContractIncomeReport = z.infer<typeof insertContractIncomeRepo
 export type ContractMonthlyPayment = typeof contractMonthlyPayments.$inferSelect;
 export type InsertContractMonthlyPayment = z.infer<typeof insertContractMonthlyPaymentSchema>;
 
+// ===== SISTEMA DE PATROCINIOS =====
+
+// Tabla de paquetes de patrocinio
+export const sponsorshipPackages = pgTable("sponsorship_packages", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  level: varchar("level", { length: 50 }).notNull(), // bronce, plata, oro, platino
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  duration: integer("duration").notNull(), // meses
+  benefits: json("benefits").$type<string[]>().default([]),
+  eventsIncluded: integer("events_included").default(0),
+  exposureLevel: varchar("exposure_level", { length: 50 }).notNull(), // bajo, medio, alto, premium
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de patrocinadores
+export const sponsors = pgTable("sponsors", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  category: varchar("category", { length: 50 }).notNull(), // corporativo, local, institucional, ong
+  logo: varchar("logo", { length: 500 }),
+  
+  // Información de contacto
+  representative: varchar("representative", { length: 255 }),
+  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 50 }),
+  address: text("address"),
+  
+  // Estado del patrocinador
+  status: varchar("status", { length: 50 }).default("potencial"), // activo, potencial, inactivo, renovacion
+  level: varchar("level", { length: 50 }).notNull(), // bronce, plata, oro, platino
+  
+  // Información del contrato
+  contractValue: decimal("contract_value", { precision: 10, scale: 2 }).default("0.00"),
+  contractStart: date("contract_start"),
+  contractEnd: date("contract_end"),
+  
+  // Métricas
+  eventsSponsored: integer("events_sponsored").default(0),
+  renewalProbability: integer("renewal_probability").default(0),
+  
+  // Notas
+  notes: text("notes"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de campañas de patrocinio
+export const sponsorshipCampaigns = pgTable("sponsorship_campaigns", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  budget: decimal("budget", { precision: 10, scale: 2 }).notNull(),
+  sponsorsCount: integer("sponsors_count").default(0),
+  revenue: decimal("revenue", { precision: 10, scale: 2 }).default("0.00"),
+  status: varchar("status", { length: 50 }).default("planificacion"), // planificacion, activa, completada, cancelada
+  events: json("events").$type<string[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Schemas de validación para patrocinios
+export const insertSponsorshipPackageSchema = createInsertSchema(sponsorshipPackages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertSponsorSchema = createInsertSchema(sponsors).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertSponsorshipCampaignSchema = createInsertSchema(sponsorshipCampaigns).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Tipos TypeScript para patrocinios
+export type SponsorshipPackage = typeof sponsorshipPackages.$inferSelect;
+export type InsertSponsorshipPackage = z.infer<typeof insertSponsorshipPackageSchema>;
+
+export type Sponsor = typeof sponsors.$inferSelect;
+export type InsertSponsor = z.infer<typeof insertSponsorSchema>;
+
+export type SponsorshipCampaign = typeof sponsorshipCampaigns.$inferSelect;
+export type InsertSponsorshipCampaign = z.infer<typeof insertSponsorshipCampaignSchema>;
+
 // ===== CONCESIONES ACTIVAS - ESTRUCTURA MEJORADA =====
 
 // Tabla principal de concesiones activas (nueva estructura lógica)
