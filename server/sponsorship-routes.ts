@@ -590,6 +590,52 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   });
+
+  // Alias para compatibilidad con el frontend
+  apiRouter.get('/sponsorship-events', async (req: Request, res: Response) => {
+    try {
+      const result = await pool.query(`
+        SELECT 
+          se.*,
+          s.name as sponsor_name,
+          s.logo as sponsor_logo,
+          sc.contract_number,
+          sc.title as contract_title
+        FROM sponsor_events se
+        LEFT JOIN sponsors s ON se.sponsor_id = s.id
+        LEFT JOIN sponsorship_contracts sc ON se.contract_id = sc.id
+        ORDER BY se.event_date DESC
+      `);
+      
+      // Mapear a camelCase para el frontend
+      const events = result.rows.map(row => ({
+        id: row.id,
+        sponsorId: row.sponsor_id,
+        contractId: row.contract_id,
+        eventName: row.event_name,
+        eventDate: row.event_date,
+        eventLocation: row.event_location,
+        sponsorshipLevel: row.sponsorship_level,
+        logoPlacement: row.logo_placement,
+        exposureMinutes: row.exposure_minutes,
+        standSize: row.stand_size,
+        activationBudget: row.activation_budget,
+        specialRequirements: row.special_requirements,
+        status: row.status,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        sponsorName: row.sponsor_name,
+        sponsorLogo: row.sponsor_logo,
+        contractNumber: row.contract_number,
+        contractTitle: row.contract_title
+      }));
+      
+      res.json(events);
+    } catch (error) {
+      console.error('Error al obtener eventos patrocinados:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
   
   // Crear nuevo evento patrocinado
   apiRouter.post('/sponsor-events', isAuthenticated, async (req: Request, res: Response) => {

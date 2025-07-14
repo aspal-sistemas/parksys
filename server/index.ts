@@ -121,6 +121,19 @@ app.get('/health', (req: Request, res: Response) => {
   }
 });
 
+// Test endpoint para debugging del proxy
+app.get('/test-proxy', (req: Request, res: Response) => {
+  console.log('📡 Test proxy endpoint accessed');
+  res.json({
+    message: 'Proxy funciona correctamente',
+    timestamp: new Date().toISOString(),
+    headers: req.headers,
+    url: req.url,
+    method: req.method,
+    userAgent: req.get('User-Agent')
+  });
+});
+
 // Root API endpoint for deployment verification
 app.get('/api', (req: Request, res: Response) => {
   try {
@@ -1568,11 +1581,19 @@ async function initializeDatabaseAsync() {
   // Forzar modo producción para resolver problemas con proxy de Replit
   console.log("🔧 Configurando servidor para resolver problemas de proxy de Replit...");
   
-  // Configurar timeout más corto para respuestas rápidas
+  // Configurar headers y timeout para mejor compatibilidad con Replit
   app.use((req: Request, res: Response, next: NextFunction) => {
-    res.setTimeout(5000, () => {
+    // Headers para mejor compatibilidad con proxy de Replit
+    res.setHeader('X-Powered-By', 'ParkSys');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
+    // Timeout más largo para evitar 503s
+    res.setTimeout(15000, () => {
       if (!res.headersSent) {
-        res.status(408).json({ error: 'Request timeout' });
+        console.error(`⚠️ Timeout en ruta: ${req.method} ${req.path}`);
+        res.status(408).json({ error: 'Request timeout', path: req.path });
       }
     });
     next();
@@ -1594,6 +1615,8 @@ async function initializeDatabaseAsync() {
         try {
           await setupVite(app, appServer);
           console.log("✅ Servidor de desarrollo Vite listo - Aplicación web accesible");
+          console.log("🔗 Proxy de Replit configurado correctamente");
+          console.log("🌐 URL pública disponible");
         } catch (error) {
           console.error("Error configurando Vite (continuando sin Vite):", error);
           console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
