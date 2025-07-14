@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +23,8 @@ import {
   DollarSign,
   Calendar,
   Search,
-  Filter
+  Filter,
+  ArrowLeft
 } from 'lucide-react';
 
 interface FixedAsset {
@@ -56,6 +58,7 @@ interface FixedAssetForm {
 export default function FixedAssetsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<FixedAsset | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -255,14 +258,25 @@ export default function FixedAssetsPage() {
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <Building className="h-8 w-8 mr-3 text-blue-600" />
-              Activos Fijos
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Gestión de activos fijos con depreciación automática
-            </p>
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLocation('/admin/accounting')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver al Módulo
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                <Building className="h-8 w-8 mr-3 text-blue-600" />
+                Activos Fijos
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Gestión de activos fijos con depreciación automática
+              </p>
+            </div>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
