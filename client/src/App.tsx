@@ -493,6 +493,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/accounting/trial-balance')))}
           </Suspense>
         </Route>
+        <Route path="/admin/accounting/financial-statements">
+          <Suspense fallback={<div className="p-8 text-center">Cargando estados financieros...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/accounting/financial-statements')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/accounting/fixed-assets">
           <Suspense fallback={<div className="p-8 text-center">Cargando activos fijos...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/accounting/fixed-assets')))}

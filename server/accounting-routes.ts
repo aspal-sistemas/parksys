@@ -991,7 +991,7 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
           c.level,
           c.account_nature,
           c.full_path,
-          COALESCE(ab.opening_balance, 0) as opening_balance,
+          COALESCE(ab.beginning_balance, 0) as opening_balance,
           COALESCE(ab.ending_balance, 0) as ending_balance,
           COALESCE(
             (SELECT SUM(jed.debit) 
@@ -1071,6 +1071,202 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
       
     } catch (error) {
       console.error('Error obteniendo balanza de comprobación:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // =====================================
+  // ESTADOS FINANCIEROS
+  // =====================================
+
+  // Obtener Balance General
+  apiRouter.get('/accounting/balance-sheet', async (req: Request, res: Response) => {
+    try {
+      const { cutoff_date } = req.query;
+      const cutoffDate = cutoff_date || new Date().toISOString().split('T')[0];
+      
+      // Obtener activos (categorías con naturaleza deudora)
+      const assetsResult = await pool.query(`
+        SELECT 
+          c.id,
+          c.code,
+          c.name,
+          c.level,
+          c.account_nature,
+          c.full_path,
+          COALESCE(ab.ending_balance, 0) as balance
+        FROM accounting_categories c
+        LEFT JOIN account_balances ab ON c.id = ab.category_id 
+        WHERE c.is_active = true 
+          AND c.account_nature = 'debit'
+          AND c.code LIKE '1%'
+        ORDER BY c.code
+      `);
+
+      // Obtener pasivos (categorías con naturaleza acreedora - código 2)
+      const liabilitiesResult = await pool.query(`
+        SELECT 
+          c.id,
+          c.code,
+          c.name,
+          c.level,
+          c.account_nature,
+          c.full_path,
+          COALESCE(ab.ending_balance, 0) as balance
+        FROM accounting_categories c
+        LEFT JOIN account_balances ab ON c.id = ab.category_id 
+        WHERE c.is_active = true 
+          AND c.account_nature = 'credit'
+          AND c.code LIKE '2%'
+        ORDER BY c.code
+      `);
+
+      // Obtener patrimonio (categorías con naturaleza acreedora - código 3)
+      const equityResult = await pool.query(`
+        SELECT 
+          c.id,
+          c.code,
+          c.name,
+          c.level,
+          c.account_nature,
+          c.full_path,
+          COALESCE(ab.ending_balance, 0) as balance
+        FROM accounting_categories c
+        LEFT JOIN account_balances ab ON c.id = ab.category_id 
+        WHERE c.is_active = true 
+          AND c.account_nature = 'credit'
+          AND c.code LIKE '3%'
+        ORDER BY c.code
+      `);
+
+      res.json({
+        balanceSheet: {
+          assets: assetsResult.rows.map(row => ({
+            id: row.id,
+            code: row.code,
+            name: row.name,
+            level: row.level,
+            balance: parseFloat(row.balance)
+          })),
+          liabilities: liabilitiesResult.rows.map(row => ({
+            id: row.id,
+            code: row.code,
+            name: row.name,
+            level: row.level,
+            balance: parseFloat(row.balance)
+          })),
+          equity: equityResult.rows.map(row => ({
+            id: row.id,
+            code: row.code,
+            name: row.name,
+            level: row.level,
+            balance: parseFloat(row.balance)
+          }))
+        },
+        cutoffDate,
+        generatedAt: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error obteniendo balance general:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Obtener Estado de Resultados
+  apiRouter.get('/accounting/income-statement', async (req: Request, res: Response) => {
+    try {
+      const { cutoff_date } = req.query;
+      const cutoffDate = cutoff_date || new Date().toISOString().split('T')[0];
+      
+      // Obtener ingresos (categorías con naturaleza acreedora - código 4)
+      const revenueResult = await pool.query(`
+        SELECT 
+          c.id,
+          c.code,
+          c.name,
+          c.level,
+          c.account_nature,
+          c.full_path,
+          COALESCE(ab.ending_balance, 0) as balance,
+          COALESCE(
+            (SELECT SUM(t.amount) 
+             FROM accounting_transactions t 
+             WHERE t.category_id = c.id 
+             AND t.transaction_type = 'income'
+             AND t.date <= $1::date
+            ), 0
+          ) as period_amount
+        FROM accounting_categories c
+        LEFT JOIN account_balances ab ON c.id = ab.category_id 
+        WHERE c.is_active = true 
+          AND c.account_nature = 'credit'
+          AND c.code LIKE '4%'
+        ORDER BY c.code
+      `, [cutoffDate]);
+
+      // Obtener gastos (categorías con naturaleza deudora - código 5)
+      const expensesResult = await pool.query(`
+        SELECT 
+          c.id,
+          c.code,
+          c.name,
+          c.level,
+          c.account_nature,
+          c.full_path,
+          COALESCE(ab.ending_balance, 0) as balance,
+          COALESCE(
+            (SELECT SUM(t.amount) 
+             FROM accounting_transactions t 
+             WHERE t.category_id = c.id 
+             AND t.transaction_type = 'expense'
+             AND t.date <= $1::date
+            ), 0
+          ) as period_amount
+        FROM accounting_categories c
+        LEFT JOIN account_balances ab ON c.id = ab.category_id 
+        WHERE c.is_active = true 
+          AND c.account_nature = 'debit'
+          AND c.code LIKE '5%'
+        ORDER BY c.code
+      `, [cutoffDate]);
+
+      const revenue = revenueResult.rows.map(row => ({
+        id: row.id,
+        code: row.code,
+        name: row.name,
+        level: row.level,
+        amount: parseFloat(row.period_amount) || parseFloat(row.balance)
+      }));
+
+      const expenses = expensesResult.rows.map(row => ({
+        id: row.id,
+        code: row.code,
+        name: row.name,
+        level: row.level,
+        amount: parseFloat(row.period_amount) || parseFloat(row.balance)
+      }));
+
+      const totalRevenue = revenue.reduce((sum, item) => sum + item.amount, 0);
+      const totalExpenses = expenses.reduce((sum, item) => sum + item.amount, 0);
+      const netIncome = totalRevenue - totalExpenses;
+
+      res.json({
+        incomeStatement: {
+          revenue,
+          expenses,
+          totals: {
+            totalRevenue,
+            totalExpenses,
+            netIncome
+          }
+        },
+        cutoffDate,
+        generatedAt: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error obteniendo estado de resultados:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   });

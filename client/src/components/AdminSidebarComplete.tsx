@@ -604,6 +604,13 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Balance de Comprobación
             </NavItem>
+            <NavItem 
+              href="/admin/accounting/financial-statements" 
+              icon={<FileText className="h-5 w-5" />}
+              active={location === '/admin/accounting/financial-statements'}
+            >
+              Estados Financieros
+            </NavItem>
           </ModuleNav>
 
           {/* 11. EVENTOS */}
