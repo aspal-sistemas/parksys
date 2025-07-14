@@ -666,13 +666,7 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Eventos
             </NavItem>
-            <NavItem 
-              href="/admin/marketing/metrics" 
-              icon={<TrendingUp className="h-5 w-5" />}
-              active={location.startsWith('/admin/marketing/metrics')}
-            >
-              Métricas
-            </NavItem>
+
             <NavItem 
               href="/admin/marketing/assets" 
               icon={<Image className="h-5 w-5" />}
