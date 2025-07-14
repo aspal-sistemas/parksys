@@ -350,7 +350,7 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   apiRouter.get('/sponsors/:sponsorId/events', async (req: Request, res: Response) => {
     try {
       const { sponsorId } = req.params;
-      const result = await db.execute(`
+      const result = await pool.query(`
         SELECT 
           id,
           sponsor_id as "sponsorId",
@@ -379,7 +379,7 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   apiRouter.get('/sponsors/:sponsorId/metrics', async (req: Request, res: Response) => {
     try {
       const { sponsorId } = req.params;
-      const result = await db.execute(`
+      const result = await pool.query(`
         SELECT 
           id,
           sponsor_id as "sponsorId",
@@ -423,7 +423,7 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   apiRouter.get('/sponsors/:sponsorId/assets', async (req: Request, res: Response) => {
     try {
       const { sponsorId } = req.params;
-      const result = await db.execute(`
+      const result = await pool.query(`
         SELECT 
           id,
           sponsor_id as "sponsorId",
@@ -492,7 +492,7 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   apiRouter.get('/sponsors/:sponsorId/evaluations', async (req: Request, res: Response) => {
     try {
       const { sponsorId } = req.params;
-      const result = await db.execute(`
+      const result = await pool.query(`
         SELECT 
           id,
           sponsor_id as "sponsorId",

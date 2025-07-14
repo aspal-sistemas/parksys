@@ -69,7 +69,7 @@ const UserProfileImage: React.FC<UserProfileImageProps> = ({
         // Añadimos control para evitar que falle cuando el servidor no responde
         const controller = new AbortController();
         const timeoutId = setTimeout(() => {
-          controller.abort();
+          controller.abort('Request timeout');
         }, 3000); // 3 segundos de timeout
         
         // Agregar timestamp para evitar cache del navegador
@@ -84,8 +84,6 @@ const UserProfileImage: React.FC<UserProfileImageProps> = ({
         });
         
         // Limpiar el timeout si la petición se completó
-        clearTimeout(timeoutId);
-        
         clearTimeout(timeoutId);
         
         if (response && response.ok) {
