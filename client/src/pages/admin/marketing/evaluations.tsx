@@ -24,14 +24,15 @@ const EvaluationsPage = () => {
   const { data: allEvaluations, isLoading } = useQuery({
     queryKey: ['/api/sponsorship-evaluations'],
     queryFn: async () => {
-      if (!sponsors) return [];
-      const evaluationsPromises = sponsors.map((sponsor: any) => 
-        safeApiRequest(`/api/sponsors/${sponsor.id}/evaluations`, {})
-      );
-      const results = await Promise.all(evaluationsPromises);
-      return results.flat();
+      try {
+        return await safeApiRequest('/api/sponsorship-evaluations', {});
+      } catch (error) {
+        console.error('Error cargando evaluaciones:', error);
+        return [];
+      }
     },
-    enabled: !!sponsors
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000 // 10 minutos
   });
 
   const filteredEvaluations = allEvaluations?.filter((evaluation: SponsorshipEvaluation) => {

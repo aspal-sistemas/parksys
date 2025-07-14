@@ -25,14 +25,15 @@ const AssetsPage = () => {
   const { data: allAssets, isLoading } = useQuery({
     queryKey: ['/api/sponsor-assets'],
     queryFn: async () => {
-      if (!sponsors) return [];
-      const assetsPromises = sponsors.map((sponsor: any) => 
-        safeApiRequest(`/api/sponsors/${sponsor.id}/assets`, {})
-      );
-      const results = await Promise.all(assetsPromises);
-      return results.flat();
+      try {
+        return await safeApiRequest('/api/sponsor-assets', {});
+      } catch (error) {
+        console.error('Error cargando activos:', error);
+        return [];
+      }
     },
-    enabled: !!sponsors
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000 // 10 minutos
   });
 
   const getAssetTypeIcon = (type: string) => {

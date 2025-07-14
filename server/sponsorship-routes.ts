@@ -866,6 +866,21 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   
   // ===== ACTIVOS PROMOCIONALES =====
   
+  // Obtener todos los activos promocionales
+  apiRouter.get('/sponsor-assets', async (req: Request, res: Response) => {
+    try {
+      const assets = await db
+        .select()
+        .from(sponsorAssets)
+        .orderBy(desc(sponsorAssets.createdAt));
+      
+      res.json(assets);
+    } catch (error) {
+      console.error('Error al obtener activos:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+  
   // Obtener activos de un patrocinador
   apiRouter.get('/sponsors/:sponsorId/assets', async (req: Request, res: Response) => {
     try {
@@ -934,6 +949,21 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   });
   
   // ===== EVALUACIONES DE PATROCINIO =====
+  
+  // Obtener todas las evaluaciones de patrocinio
+  apiRouter.get('/sponsorship-evaluations', async (req: Request, res: Response) => {
+    try {
+      const evaluations = await db
+        .select()
+        .from(sponsorshipEvaluations)
+        .orderBy(desc(sponsorshipEvaluations.createdAt));
+      
+      res.json(evaluations);
+    } catch (error) {
+      console.error('Error al obtener evaluaciones:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
   
   // Obtener evaluaciones de un patrocinador
   apiRouter.get('/sponsors/:sponsorId/evaluations', async (req: Request, res: Response) => {
