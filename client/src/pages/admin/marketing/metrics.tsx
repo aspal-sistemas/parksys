@@ -24,14 +24,18 @@ const MetricsPage = () => {
   const { data: allMetrics, isLoading } = useQuery({
     queryKey: ['/api/sponsorship-metrics'],
     queryFn: async () => {
-      if (!sponsors) return [];
-      const metricsPromises = sponsors.map((sponsor: any) => 
-        safeApiRequest(`/api/sponsors/${sponsor.id}/metrics`, {})
-      );
-      const results = await Promise.all(metricsPromises);
-      return results.flat();
+      try {
+        // Usar endpoint directo para obtener todas las métricas
+        const response = await safeApiRequest('/api/sponsorship-metrics', {});
+        return response || [];
+      } catch (error) {
+        console.error('Error cargando métricas:', error);
+        return [];
+      }
     },
-    enabled: !!sponsors
+    enabled: true,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    cacheTime: 10 * 60 * 1000 // 10 minutos
   });
 
   const filteredMetrics = allMetrics?.filter((metric: SponsorshipMetrics) => {

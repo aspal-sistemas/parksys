@@ -729,6 +729,41 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   
   // ===== MÉTRICAS DE PATROCINIO =====
   
+  // Obtener todas las métricas de patrocinio
+  apiRouter.get('/sponsorship-metrics', async (req: Request, res: Response) => {
+    try {
+      const result = await pool.query(`
+        SELECT 
+          id,
+          sponsor_id as "sponsorId",
+          event_id as "eventId",
+          impressions,
+          reach,
+          engagement,
+          leads_generated as "leadsGenerated",
+          conversions,
+          brand_mentions as "brandMentions",
+          social_media_reach as "socialMediaReach",
+          website_clicks as "websiteClicks",
+          email_signups as "emailSignups",
+          measurement_period as "measurementPeriod",
+          report_date as "reportDate",
+          roi_percentage as "roiPercentage",
+          cost_per_lead as "costPerLead",
+          cost_per_conversion as "costPerConversion",
+          created_at as "createdAt",
+          updated_at as "updatedAt"
+        FROM sponsorship_metrics 
+        ORDER BY report_date DESC
+      `);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error al obtener métricas:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+  
   // Obtener métricas de un patrocinador
   apiRouter.get('/sponsors/:sponsorId/metrics', async (req: Request, res: Response) => {
     try {
@@ -737,14 +772,26 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
         SELECT 
           id,
           sponsor_id as "sponsorId",
-          metric_type as "metricType",
-          metric_value as "metricValue",
-          measurement_date as "measurementDate",
-          notes,
-          created_at as "createdAt"
+          event_id as "eventId",
+          impressions,
+          reach,
+          engagement,
+          leads_generated as "leadsGenerated",
+          conversions,
+          brand_mentions as "brandMentions",
+          social_media_reach as "socialMediaReach",
+          website_clicks as "websiteClicks",
+          email_signups as "emailSignups",
+          measurement_period as "measurementPeriod",
+          report_date as "reportDate",
+          roi_percentage as "roiPercentage",
+          cost_per_lead as "costPerLead",
+          cost_per_conversion as "costPerConversion",
+          created_at as "createdAt",
+          updated_at as "updatedAt"
         FROM sponsorship_metrics 
         WHERE sponsor_id = $1
-        ORDER BY measurement_date DESC
+        ORDER BY report_date DESC
       `, [parseInt(sponsorId)]);
       
       res.json(result.rows);
