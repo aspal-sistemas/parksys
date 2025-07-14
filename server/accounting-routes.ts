@@ -519,23 +519,23 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
     try {
       const result = await pool.query(`
         SELECT 
-          id, 
-          name, 
+          fa.id, 
+          fa.name, 
           ac.name as category,
-          acquisition_date as "acquisitionDate",
-          acquisition_cost as "acquisitionCost",
-          useful_life as "usefulLife",
-          depreciation_method as "depreciationMethod",
-          net_book_value as "currentValue",
-          accumulated_depreciation as "accumulatedDepreciation",
-          location,
-          description,
-          status,
-          created_at as "createdAt",
-          updated_at as "updatedAt"
+          fa.acquisition_date as "acquisitionDate",
+          fa.acquisition_cost as "acquisitionCost",
+          fa.useful_life as "usefulLife",
+          fa.depreciation_method as "depreciationMethod",
+          fa.net_book_value as "currentValue",
+          fa.accumulated_depreciation as "accumulatedDepreciation",
+          fa.location,
+          fa.description,
+          fa.status,
+          fa.created_at as "createdAt",
+          fa.updated_at as "updatedAt"
         FROM fixed_assets fa
-        LEFT JOIN asset_categories ac ON fa.category_id = ac.id
-        ORDER BY name
+        LEFT JOIN accounting_categories ac ON fa.category_id = ac.id
+        ORDER BY fa.name
       `);
       
       res.json(result.rows);
