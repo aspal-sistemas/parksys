@@ -1057,7 +1057,7 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
         db.select().from(sponsors).then(result => result.length),
         db.select().from(sponsorshipContracts).where(eq(sponsorshipContracts.status, 'active')).then(result => result.length),
         db.select().from(sponsorshipContracts).then(result => 
-          result.reduce((sum, contract) => sum + parseFloat(contract.totalValue || '0'), 0)
+          result.reduce((sum, contract) => sum + parseFloat(contract.total_amount || '0'), 0)
         ),
         db.select().from(sponsorshipEvaluations).then(result => {
           if (result.length === 0) return 0;
