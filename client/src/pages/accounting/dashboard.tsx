@@ -1,21 +1,26 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { DollarSign, TrendingUp, TrendingDown, Calculator, BookOpen, Receipt, PieChart } from 'lucide-react';
-
-const mockData = [
-  { month: 'Ene', ingresos: 135000, egresos: 90000, balance: 45000 },
-  { month: 'Feb', ingresos: 100000, egresos: 65000, balance: 35000 },
-  { month: 'Mar', ingresos: 18000, egresos: 50000, balance: -32000 },
-  { month: 'Abr', ingresos: 40000, egresos: 50000, balance: -10000 },
-  { month: 'May', ingresos: 100000, egresos: 50000, balance: 50000 },
-  { month: 'Jun', ingresos: 0, egresos: 0, balance: 0 },
-];
+import { useLocation } from 'wouter';
+import AdminLayout from '@/components/AdminLayout';
+import { 
+  DollarSign, 
+  Building, 
+  BookOpen, 
+  Scale, 
+  FileText, 
+  Settings, 
+  CheckCircle, 
+  ArrowRight,
+  TrendingUp,
+  BarChart3,
+  FileSpreadsheet,
+  Zap
+} from 'lucide-react';
 
 export default function AccountingDashboard() {
+  const [, setLocation] = useLocation();
+  
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['/api/accounting/dashboard'],
     enabled: true
@@ -23,203 +28,331 @@ export default function AccountingDashboard() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="h-8 w-64 bg-gray-200 rounded animate-pulse"></div>
-            <div className="h-4 w-96 bg-gray-200 rounded animate-pulse"></div>
+      <AdminLayout>
+        <div className="p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="h-8 w-64 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-4 w-96 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="h-4 w-24 bg-gray-200 rounded mb-3"></div>
+                  <div className="h-8 w-32 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 w-20 bg-gray-200 rounded"></div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 w-24 bg-gray-200 rounded mb-3"></div>
-                <div className="h-8 w-32 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 w-20 bg-gray-200 rounded"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <AdminLayout>
+      <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard Contable</h1>
-          <p className="text-gray-600 mt-1">
-            Sistema de contabilidad con categorías jerárquicas y registros automáticos
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" size="sm">
-            <Calculator className="h-4 w-4 mr-2" />
-            Configuración
-          </Button>
-          <Button size="sm" className="bg-[#00a587] hover:bg-[#067f5f]">
-            <Receipt className="h-4 w-4 mr-2" />
-            Nueva Transacción
-          </Button>
-        </div>
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold text-gray-900">Módulo de Contabilidad</h1>
+        <p className="text-gray-600 max-w-4xl mx-auto">
+          Sistema contable completo que se integra automáticamente con las transacciones para generar reportes financieros precisos
+        </p>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <TrendingUp className="h-4 w-4 mr-2 text-green-600" />
-              Ingresos Totales
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">$393,000</div>
-            <p className="text-xs text-gray-500 mt-1">+15% vs mes anterior</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <TrendingDown className="h-4 w-4 mr-2 text-red-600" />
-              Egresos Totales
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">$305,000</div>
-            <p className="text-xs text-gray-500 mt-1">-8% vs mes anterior</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <DollarSign className="h-4 w-4 mr-2 text-blue-600" />
-              Balance Neto
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">$88,000</div>
-            <p className="text-xs text-gray-500 mt-1">22% margen</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <BookOpen className="h-4 w-4 mr-2 text-purple-600" />
-              Transacciones
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">247</div>
-            <p className="text-xs text-gray-500 mt-1">+12 esta semana</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Gráfico de Flujo de Efectivo */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <BarChart className="h-5 w-5 mr-2" />
-            Flujo de Efectivo Mensual
-          </CardTitle>
-          <CardDescription>
-            Comparación de ingresos, egresos y balance neto por mes
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mockData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
-                <Bar dataKey="ingresos" fill="#00a587" name="Ingresos" />
-                <Bar dataKey="egresos" fill="#dc2626" name="Egresos" />
-                <Bar dataKey="balance" fill="#3b82f6" name="Balance" />
-              </BarChart>
-            </ResponsiveContainer>
+      {/* Integración Automática Banner */}
+      <Card className="bg-gradient-to-r from-teal-50 to-green-50 border-teal-200">
+        <CardContent className="p-6">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center">
+                <Zap className="h-5 w-5 text-white" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Integración Automática</h3>
+              <p className="text-gray-700 mb-4">
+                Este módulo se conecta automáticamente con las transacciones existentes para generar asientos contables, 
+                eliminar datos ficticios de los reportes y proporcionar estados financieros precisos.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-gray-700">Transacciones → Asientos Automáticos</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-gray-700">Saldos en Tiempo Real</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-gray-700">Reportes con Datos Reales</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-gray-700">Depreciación Automática</span>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Estado del Sistema */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Calculator className="h-5 w-5 mr-2" />
-              Estado del Sistema Contable
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Categorías Configuradas</span>
-              <Badge variant="secondary">A→B→C→D→E</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Integración SAT</span>
-              <Badge className="bg-green-100 text-green-800">Activa</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Asientos Automáticos</span>
-              <Badge className="bg-blue-100 text-blue-800">Habilitado</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Balanza de Comprobación</span>
-              <Badge className="bg-yellow-100 text-yellow-800">Cuadrada</Badge>
+      {/* Módulos Principales */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Gestión de Efectivo */}
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardContent className="p-6">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                  <DollarSign className="h-5 w-5 text-white" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Gestión de Efectivo</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Control centralizado de recursos financieros y transferencias entre centros
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setLocation('/admin/accounting/cash-management')}
+                  className="w-full"
+                >
+                  Acceder
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Activos Fijos */}
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardContent className="p-6">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                  <Building className="h-5 w-5 text-white" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Activos Fijos</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Registra y controla activos fijos con depreciación automática
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setLocation('/admin/accounting/fixed-assets')}
+                  className="w-full"
+                >
+                  Acceder
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Asientos Contables */}
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardContent className="p-6">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                  <BookOpen className="h-5 w-5 text-white" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Asientos Contables</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Libro diario con débitos y créditos balanceados
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setLocation('/admin/accounting/journal-entries')}
+                  className="w-full"
+                >
+                  Acceder
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Balance de Comprobación */}
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardContent className="p-6">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                  <Scale className="h-5 w-5 text-white" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Balance de Comprobación</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Balances por cuenta y período contable
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setLocation('/admin/accounting/trial-balance')}
+                  className="w-full"
+                >
+                  Acceder
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Estados Financieros */}
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardContent className="p-6">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Estados Financieros</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Balance General y Estado de Resultados con datos reales
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setLocation('/admin/accounting/financial-statements')}
+                  className="w-full"
+                >
+                  Acceder
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Configuración Contable */}
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardContent className="p-6">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center">
+                  <Settings className="h-5 w-5 text-white" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Configuración Contable</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Parámetros y configuraciones del sistema contable
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setLocation('/admin/accounting/settings')}
+                  className="w-full"
+                >
+                  Acceder
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Secciones Informativas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Beneficios del Sistema */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <PieChart className="h-5 w-5 mr-2" />
-              Distribución por Categorías
+            <CardTitle className="flex items-center text-teal-700">
+              <TrendingUp className="h-5 w-5 mr-2" />
+              Beneficios del Sistema
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Concesiones</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={34} className="w-20" />
-                  <span className="text-sm font-medium">34%</span>
-                </div>
+            <div className="flex items-start space-x-3">
+              <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+              <div>
+                <p className="font-medium text-gray-900">Estados Financieros Reales</p>
+                <p className="text-sm text-gray-600">Balance General y P&L con datos auténticos, no ficticios</p>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Nómina</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={63} className="w-20" />
-                  <span className="text-sm font-medium">63%</span>
-                </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+              <div>
+                <p className="font-medium text-gray-900">Automatización</p>
+                <p className="text-sm text-gray-600">Las transacciones generan asientos contables automáticamente</p>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Mantenimiento</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={8} className="w-20" />
-                  <span className="text-sm font-medium">8%</span>
-                </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+              <div>
+                <p className="font-medium text-gray-900">Cumplimiento</p>
+                <p className="text-sm text-gray-600">Plan de cuentas estándar y balances siempre cuadrados</p>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Servicios</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={12} className="w-20" />
-                  <span className="text-sm font-medium">12%</span>
-                </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+              <div>
+                <p className="font-medium text-gray-900">Control de Activos</p>
+                <p className="text-sm text-gray-600">Depreciación automática y valores actualizados</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Flujo de Datos */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-blue-700">
+              <BarChart3 className="h-5 w-5 mr-2" />
+              Flujo de Datos
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-sm font-bold text-blue-600">1</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-900">Se registra una transacción en el módulo financiero</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <span className="text-sm font-bold text-purple-600">2</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-900">Sistema genera asiento contable automáticamente</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-sm font-bold text-green-600">3</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-900">Saldos de cuentas se actualizan en tiempo real</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                <span className="text-sm font-bold text-orange-600">4</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-900">Reportes financieros reflejan datos reales</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
+    </AdminLayout>
   );
 }
