@@ -266,12 +266,22 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   // Obtener todos los contratos
   apiRouter.get('/sponsorship-contracts', async (req: Request, res: Response) => {
     try {
-      const contracts = await db
-        .select()
-        .from(sponsorshipContracts)
-        .orderBy(desc(sponsorshipContracts.createdAt));
+      const result = await pool.query(`
+        SELECT 
+          sc.*,
+          s.name as sponsor_name,
+          s.logo_url as sponsor_logo,
+          sp.name as package_name,
+          sp.tier as package_tier,
+          scamp.name as campaign_name
+        FROM sponsorship_contracts sc
+        LEFT JOIN sponsors s ON sc.sponsor_id = s.id
+        LEFT JOIN sponsorship_packages sp ON sc.package_id = sp.id
+        LEFT JOIN sponsorship_campaigns scamp ON sc.campaign_id = scamp.id
+        ORDER BY sc.created_at DESC
+      `);
       
-      res.json(contracts);
+      res.json(result.rows);
     } catch (error) {
       console.error('Error al obtener contratos:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
@@ -281,33 +291,227 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   // Crear nuevo contrato
   apiRouter.post('/sponsorship-contracts', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const validatedData = insertSponsorshipContractSchema.parse(req.body);
+      const {
+        sponsorId,
+        packageId,
+        campaignId,
+        contractNumber,
+        title,
+        description,
+        startDate,
+        endDate,
+        totalAmount,
+        paymentSchedule,
+        status,
+        termsConditions,
+        deliverables,
+        performanceMetrics,
+        contactPerson,
+        contactEmail,
+        contactPhone
+      } = req.body;
+
+      const result = await pool.query(`
+        INSERT INTO sponsorship_contracts (
+          sponsor_id, package_id, campaign_id, contract_number, title, description,
+          start_date, end_date, total_amount, payment_schedule, status,
+          terms_conditions, deliverables, performance_metrics, contact_person,
+          contact_email, contact_phone, created_by
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+        RETURNING *
+      `, [
+        sponsorId, packageId, campaignId, contractNumber, title, description,
+        startDate, endDate, totalAmount, paymentSchedule, status || 'draft',
+        termsConditions, deliverables, performanceMetrics, contactPerson,
+        contactEmail, contactPhone, 1 // created_by
+      ]);
       
-      const [newContract] = await db
-        .insert(sponsorshipContracts)
-        .values(validatedData)
-        .returning();
-      
-      res.status(201).json(newContract);
+      res.status(201).json(result.rows[0]);
     } catch (error) {
       console.error('Error al crear contrato:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   });
   
+  // Obtener un contrato específico
+  apiRouter.get('/sponsorship-contracts/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const result = await pool.query(`
+        SELECT 
+          sc.*,
+          s.name as sponsor_name,
+          s.logo_url as sponsor_logo,
+          s.contact_person as sponsor_contact,
+          s.contact_email as sponsor_email,
+          s.contact_phone as sponsor_phone,
+          sp.name as package_name,
+          sp.tier as package_tier,
+          sp.description as package_description,
+          scamp.name as campaign_name,
+          scamp.description as campaign_description
+        FROM sponsorship_contracts sc
+        LEFT JOIN sponsors s ON sc.sponsor_id = s.id
+        LEFT JOIN sponsorship_packages sp ON sc.package_id = sp.id
+        LEFT JOIN sponsorship_campaigns scamp ON sc.campaign_id = scamp.id
+        WHERE sc.id = $1
+      `, [id]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Contrato no encontrado' });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error al obtener contrato:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Actualizar contrato
+  apiRouter.put('/sponsorship-contracts/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const {
+        sponsorId,
+        packageId,
+        campaignId,
+        title,
+        description,
+        startDate,
+        endDate,
+        totalAmount,
+        paymentSchedule,
+        status,
+        signedDate,
+        termsConditions,
+        deliverables,
+        performanceMetrics,
+        contactPerson,
+        contactEmail,
+        contactPhone
+      } = req.body;
+
+      const result = await pool.query(`
+        UPDATE sponsorship_contracts SET
+          sponsor_id = $1, package_id = $2, campaign_id = $3, title = $4,
+          description = $5, start_date = $6, end_date = $7, total_amount = $8,
+          payment_schedule = $9, status = $10, signed_date = $11,
+          terms_conditions = $12, deliverables = $13, performance_metrics = $14,
+          contact_person = $15, contact_email = $16, contact_phone = $17,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $18
+        RETURNING *
+      `, [
+        sponsorId, packageId, campaignId, title, description, startDate, endDate,
+        totalAmount, paymentSchedule, status, signedDate, termsConditions,
+        deliverables, performanceMetrics, contactPerson, contactEmail, contactPhone, id
+      ]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Contrato no encontrado' });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error al actualizar contrato:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Eliminar contrato
+  apiRouter.delete('/sponsorship-contracts/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const result = await pool.query('DELETE FROM sponsorship_contracts WHERE id = $1 RETURNING *', [id]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Contrato no encontrado' });
+      }
+      
+      res.json({ message: 'Contrato eliminado exitosamente' });
+    } catch (error) {
+      console.error('Error al eliminar contrato:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
   // Obtener contratos por patrocinador
   apiRouter.get('/sponsors/:sponsorId/contracts', async (req: Request, res: Response) => {
     try {
       const { sponsorId } = req.params;
-      const contracts = await db
-        .select()
-        .from(sponsorshipContracts)
-        .where(eq(sponsorshipContracts.sponsorId, parseInt(sponsorId)))
-        .orderBy(desc(sponsorshipContracts.createdAt));
+      const result = await pool.query(`
+        SELECT 
+          sc.*,
+          s.name as sponsor_name,
+          sp.name as package_name,
+          scamp.name as campaign_name
+        FROM sponsorship_contracts sc
+        LEFT JOIN sponsors s ON sc.sponsor_id = s.id
+        LEFT JOIN sponsorship_packages sp ON sc.package_id = sp.id
+        LEFT JOIN sponsorship_campaigns scamp ON sc.campaign_id = scamp.id
+        WHERE sc.sponsor_id = $1
+        ORDER BY sc.created_at DESC
+      `, [sponsorId]);
       
-      res.json(contracts);
+      res.json(result.rows);
     } catch (error) {
       console.error('Error al obtener contratos del patrocinador:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Obtener pagos de un contrato
+  apiRouter.get('/sponsorship-contracts/:id/payments', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const result = await pool.query(`
+        SELECT * FROM contract_payments 
+        WHERE contract_id = $1 
+        ORDER BY payment_number
+      `, [id]);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error al obtener pagos:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Obtener eventos de un contrato
+  apiRouter.get('/sponsorship-contracts/:id/events', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const result = await pool.query(`
+        SELECT ce.*, p.name as park_name
+        FROM contract_events ce
+        LEFT JOIN parks p ON ce.park_id = p.id
+        WHERE ce.contract_id = $1 
+        ORDER BY ce.event_date
+      `, [id]);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error al obtener eventos:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Obtener activos de un contrato
+  apiRouter.get('/sponsorship-contracts/:id/assets', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const result = await pool.query(`
+        SELECT ca.*, p.name as park_name
+        FROM contract_assets ca
+        LEFT JOIN parks p ON ca.park_id = p.id
+        WHERE ca.contract_id = $1 
+        ORDER BY ca.created_at
+      `, [id]);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error al obtener activos:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   });

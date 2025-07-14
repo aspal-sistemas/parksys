@@ -1120,6 +1120,10 @@ async function initializeDatabaseAsync() {
   try {
     const { createSponsorshipTables } = await import("./create-sponsorship-tables");
     await createSponsorshipTables();
+    
+    const { createSponsorshipContractsTables, addSampleContractData } = await import("./create-sponsorship-contracts-tables");
+    await createSponsorshipContractsTables();
+    await addSampleContractData();
   } catch (error) {
     console.error("Error inicializando tablas de patrocinios:", error);
   }
