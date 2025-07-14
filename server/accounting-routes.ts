@@ -510,5 +510,229 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
     }
   });
 
+  // =======================================
+  // ACTIVOS FIJOS
+  // =======================================
+
+  // Obtener todos los activos fijos
+  apiRouter.get('/accounting/fixed-assets', async (req: Request, res: Response) => {
+    try {
+      const result = await pool.query(`
+        SELECT 
+          id, 
+          name, 
+          ac.name as category,
+          acquisition_date as "acquisitionDate",
+          acquisition_cost as "acquisitionCost",
+          useful_life as "usefulLife",
+          depreciation_method as "depreciationMethod",
+          net_book_value as "currentValue",
+          accumulated_depreciation as "accumulatedDepreciation",
+          location,
+          description,
+          status,
+          created_at as "createdAt",
+          updated_at as "updatedAt"
+        FROM fixed_assets fa
+        LEFT JOIN asset_categories ac ON fa.category_id = ac.id
+        ORDER BY name
+      `);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error al obtener activos fijos:', error);
+      res.status(500).json({ error: 'Error al obtener activos fijos' });
+    }
+  });
+
+  // Crear un nuevo activo fijo
+  apiRouter.post('/accounting/fixed-assets', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { 
+        name, 
+        category, 
+        acquisitionDate, 
+        acquisitionCost, 
+        usefulLife, 
+        depreciationMethod, 
+        location, 
+        description 
+      } = req.body;
+
+      // Encontrar el ID de la categoría
+      const categoryResult = await pool.query(
+        'SELECT id FROM asset_categories WHERE name = $1 LIMIT 1',
+        [category]
+      );
+      
+      const categoryId = categoryResult.rows[0]?.id || 1; // Default a categoría 1 si no se encuentra
+
+      // Calcular depreciación inicial
+      const monthsOwned = Math.floor((new Date().getTime() - new Date(acquisitionDate).getTime()) / (1000 * 60 * 60 * 24 * 30));
+      const monthlyDepreciation = acquisitionCost / (usefulLife * 12);
+      const accumulatedDepreciation = Math.min(monthsOwned * monthlyDepreciation, acquisitionCost);
+      const currentValue = acquisitionCost - accumulatedDepreciation;
+
+      const result = await pool.query(`
+        INSERT INTO fixed_assets (
+          name, 
+          category_id, 
+          acquisition_date, 
+          acquisition_cost, 
+          useful_life, 
+          depreciation_method, 
+          net_book_value, 
+          accumulated_depreciation, 
+          location, 
+          description, 
+          status,
+          created_by
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+        RETURNING *
+      `, [
+        name, 
+        categoryId, 
+        acquisitionDate, 
+        acquisitionCost, 
+        usefulLife, 
+        depreciationMethod || 'straight-line', 
+        currentValue, 
+        accumulatedDepreciation, 
+        location, 
+        description || null,
+        'active',
+        req.user?.id || 1
+      ]);
+
+      res.status(201).json(result.rows[0]);
+    } catch (error) {
+      console.error('Error al crear activo fijo:', error);
+      res.status(500).json({ error: 'Error al crear activo fijo' });
+    }
+  });
+
+  // Obtener un activo fijo específico
+  apiRouter.get('/accounting/fixed-assets/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const result = await pool.query(`
+        SELECT 
+          fa.id, 
+          fa.name, 
+          ac.name as category,
+          fa.acquisition_date as "acquisitionDate",
+          fa.acquisition_cost as "acquisitionCost",
+          fa.useful_life as "usefulLife",
+          fa.depreciation_method as "depreciationMethod",
+          fa.net_book_value as "currentValue",
+          fa.accumulated_depreciation as "accumulatedDepreciation",
+          fa.location,
+          fa.description,
+          fa.status,
+          fa.created_at as "createdAt",
+          fa.updated_at as "updatedAt"
+        FROM fixed_assets fa
+        LEFT JOIN asset_categories ac ON fa.category_id = ac.id
+        WHERE fa.id = $1
+      `, [id]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Activo fijo no encontrado' });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error al obtener activo fijo:', error);
+      res.status(500).json({ error: 'Error al obtener activo fijo' });
+    }
+  });
+
+  // Actualizar un activo fijo
+  apiRouter.put('/accounting/fixed-assets/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { 
+        name, 
+        category, 
+        acquisitionDate, 
+        acquisitionCost, 
+        usefulLife, 
+        depreciationMethod, 
+        location, 
+        description 
+      } = req.body;
+
+      // Encontrar el ID de la categoría
+      const categoryResult = await pool.query(
+        'SELECT id FROM asset_categories WHERE name = $1 LIMIT 1',
+        [category]
+      );
+      
+      const categoryId = categoryResult.rows[0]?.id || 1; // Default a categoría 1 si no se encuentra
+
+      // Recalcular depreciación
+      const monthsOwned = Math.floor((new Date().getTime() - new Date(acquisitionDate).getTime()) / (1000 * 60 * 60 * 24 * 30));
+      const monthlyDepreciation = acquisitionCost / (usefulLife * 12);
+      const accumulatedDepreciation = Math.min(monthsOwned * monthlyDepreciation, acquisitionCost);
+      const currentValue = acquisitionCost - accumulatedDepreciation;
+
+      const result = await pool.query(`
+        UPDATE fixed_assets 
+        SET 
+          name = $1, 
+          category_id = $2, 
+          acquisition_date = $3, 
+          acquisition_cost = $4, 
+          useful_life = $5, 
+          depreciation_method = $6, 
+          net_book_value = $7, 
+          accumulated_depreciation = $8, 
+          location = $9, 
+          description = $10, 
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $11 
+        RETURNING *
+      `, [
+        name, 
+        categoryId, 
+        acquisitionDate, 
+        acquisitionCost, 
+        usefulLife, 
+        depreciationMethod, 
+        currentValue, 
+        accumulatedDepreciation, 
+        location, 
+        description || null,
+        id
+      ]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Activo fijo no encontrado' });
+      }
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error al actualizar activo fijo:', error);
+      res.status(500).json({ error: 'Error al actualizar activo fijo' });
+    }
+  });
+
+  // Eliminar un activo fijo
+  apiRouter.delete('/accounting/fixed-assets/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const result = await pool.query('DELETE FROM fixed_assets WHERE id = $1 RETURNING *', [id]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Activo fijo no encontrado' });
+      }
+      
+      res.json({ message: 'Activo fijo eliminado exitosamente' });
+    } catch (error) {
+      console.error('Error al eliminar activo fijo:', error);
+      res.status(500).json({ error: 'Error al eliminar activo fijo' });
+    }
+  });
+
   console.log('✅ Rutas del módulo de contabilidad registradas correctamente');
 }
