@@ -241,7 +241,10 @@ const MetricsPage = () => {
                         {sponsor?.name || 'Patrocinador Desconocido'}
                       </h4>
                       <Badge variant="outline">
-                        {format(new Date(metric.reportDate), 'dd/MM/yyyy', { locale: es })}
+                        {metric.reportDate && !isNaN(new Date(metric.reportDate).getTime()) 
+                          ? format(new Date(metric.reportDate), 'dd/MM/yyyy', { locale: es })
+                          : 'Fecha no válida'
+                        }
                       </Badge>
                       <Badge variant="secondary">
                         {metric.measurementPeriod}
