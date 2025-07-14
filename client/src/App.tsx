@@ -467,6 +467,38 @@ function Router() {
           </Suspense>
         </Route>
 
+        {/* Rutas para el módulo de marketing/patrocinios */}
+        <Route path="/admin/marketing">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de marketing...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/marketing/dashboard')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/marketing/contracts">
+          <Suspense fallback={<div className="p-8 text-center">Cargando contratos de patrocinio...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/marketing/contracts')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/marketing/events">
+          <Suspense fallback={<div className="p-8 text-center">Cargando eventos patrocinados...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/marketing/events')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/marketing/metrics">
+          <Suspense fallback={<div className="p-8 text-center">Cargando métricas de patrocinio...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/marketing/metrics')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/marketing/assets">
+          <Suspense fallback={<div className="p-8 text-center">Cargando activos promocionales...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/marketing/assets')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/marketing/evaluations">
+          <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de patrocinio...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/marketing/evaluations')))}
+          </Suspense>
+        </Route>
+
         {/* Rutas para reset de contraseña */}
         <Route path="/reset-password">
           <Suspense fallback={<div className="p-8 text-center">Cargando página de recuperación...</div>}>

@@ -2687,6 +2687,236 @@ export const insertSponsorshipCampaignSchema = createInsertSchema(sponsorshipCam
   updatedAt: true
 });
 
+// Tabla de contratos de patrocinio
+export const sponsorshipContracts = pgTable("sponsorship_contracts", {
+  id: serial("id").primaryKey(),
+  sponsorId: integer("sponsor_id").notNull().references(() => sponsors.id),
+  packageId: integer("package_id").notNull().references(() => sponsorshipPackages.id),
+  
+  // Fechas del contrato
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  
+  // Detalles financieros
+  totalValue: decimal("total_value", { precision: 10, scale: 2 }).notNull(),
+  
+  // Estado y términos
+  status: varchar("status", { length: 50 }).default("draft"), // draft, active, expired, terminated
+  terms: text("terms"),
+  
+  // Renovación
+  renewalNoticeDate: date("renewal_notice_date"),
+  autoRenewal: boolean("auto_renewal").default(false),
+  
+  // Contacto
+  contactPerson: varchar("contact_person", { length: 255 }),
+  contactEmail: varchar("contact_email", { length: 255 }),
+  contactPhone: varchar("contact_phone", { length: 50 }),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de eventos patrocinados
+export const sponsorEvents = pgTable("sponsor_events", {
+  id: serial("id").primaryKey(),
+  sponsorId: integer("sponsor_id").notNull().references(() => sponsors.id),
+  eventId: integer("event_id").notNull().references(() => events.id),
+  contractId: integer("contract_id").references(() => sponsorshipContracts.id),
+  
+  // Detalles del patrocinio
+  sponsorshipLevel: varchar("sponsorship_level", { length: 50 }).notNull(), // principal, secundario, colaborador
+  logoPlacement: varchar("logo_placement", { length: 50 }), // primary, secondary, footer
+  exposureMinutes: integer("exposure_minutes").default(0),
+  standSize: varchar("stand_size", { length: 50 }), // premium, standard, small
+  
+  // Presupuesto y requerimientos
+  activationBudget: decimal("activation_budget", { precision: 10, scale: 2 }).default("0.00"),
+  specialRequirements: text("special_requirements"),
+  
+  // Estado
+  status: varchar("status", { length: 50 }).default("pending"), // pending, confirmed, completed, cancelled
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de métricas de patrocinio
+export const sponsorshipMetrics = pgTable("sponsorship_metrics", {
+  id: serial("id").primaryKey(),
+  sponsorId: integer("sponsor_id").notNull().references(() => sponsors.id),
+  eventId: integer("event_id").references(() => events.id),
+  
+  // Métricas de alcance
+  impressions: integer("impressions").default(0),
+  reach: integer("reach").default(0),
+  engagement: integer("engagement").default(0),
+  
+  // Métricas de conversión
+  leadsGenerated: integer("leads_generated").default(0),
+  conversions: integer("conversions").default(0),
+  
+  // Métricas de marca
+  brandMentions: integer("brand_mentions").default(0),
+  socialMediaReach: integer("social_media_reach").default(0),
+  websiteClicks: integer("website_clicks").default(0),
+  emailSignups: integer("email_signups").default(0),
+  
+  // Período de medición
+  measurementPeriod: varchar("measurement_period", { length: 50 }).default("monthly"), // daily, weekly, monthly, event
+  reportDate: date("report_date").notNull(),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de activos promocionales
+export const sponsorAssets = pgTable("sponsor_assets", {
+  id: serial("id").primaryKey(),
+  sponsorId: integer("sponsor_id").notNull().references(() => sponsors.id),
+  
+  // Información del activo
+  assetType: varchar("asset_type", { length: 50 }).notNull(), // logo, banner, video, audio, brochure
+  assetName: varchar("asset_name", { length: 255 }).notNull(),
+  
+  // Archivo
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  fileUrl: varchar("file_url", { length: 500 }).notNull(),
+  fileSize: integer("file_size"), // bytes
+  
+  // Especificaciones
+  specifications: text("specifications"), // dimensiones, formato, resolución
+  
+  // Aprobación
+  approvalStatus: varchar("approval_status", { length: 50 }).default("pending"), // pending, approved, rejected
+  approvedBy: integer("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  
+  // Uso
+  usageRights: text("usage_rights"),
+  expirationDate: date("expiration_date"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de evaluaciones de patrocinio
+export const sponsorshipEvaluations = pgTable("sponsorship_evaluations", {
+  id: serial("id").primaryKey(),
+  sponsorId: integer("sponsor_id").notNull().references(() => sponsors.id),
+  eventId: integer("event_id").references(() => events.id),
+  
+  // Calificaciones (1-10)
+  overallSatisfaction: integer("overall_satisfaction").notNull(),
+  valueForMoney: integer("value_for_money").notNull(),
+  organizationQuality: integer("organization_quality").notNull(),
+  audienceQuality: integer("audience_quality").notNull(),
+  communicationRating: integer("communication_rating").notNull(),
+  logisticsRating: integer("logistics_rating").notNull(),
+  
+  // NPS
+  recommendationScore: integer("recommendation_score").notNull(), // 0-10
+  
+  // Comentarios
+  feedback: text("feedback"),
+  improvements: text("improvements"),
+  
+  // Renovación
+  wouldRenew: boolean("would_renew").default(false),
+  
+  evaluationDate: date("evaluation_date").notNull(),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de renovaciones
+export const sponsorshipRenewals = pgTable("sponsorship_renewals", {
+  id: serial("id").primaryKey(),
+  contractId: integer("contract_id").notNull().references(() => sponsorshipContracts.id),
+  
+  // Detalles de renovación
+  reminderSentDate: date("reminder_sent_date"),
+  responseDate: date("response_date"),
+  decision: varchar("decision", { length: 50 }), // pending, accepted, rejected, negotiating
+  
+  // Nuevos términos (si aplica)
+  newPackageId: integer("new_package_id").references(() => sponsorshipPackages.id),
+  newValue: decimal("new_value", { precision: 10, scale: 2 }),
+  newStartDate: date("new_start_date"),
+  newEndDate: date("new_end_date"),
+  
+  // Comentarios
+  notes: text("notes"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de beneficios específicos por evento
+export const sponsorEventBenefits = pgTable("sponsor_event_benefits", {
+  id: serial("id").primaryKey(),
+  sponsorEventId: integer("sponsor_event_id").notNull().references(() => sponsorEvents.id),
+  
+  // Beneficio específico
+  benefitType: varchar("benefit_type", { length: 50 }).notNull(), // logo_placement, stand_space, social_media, etc.
+  benefitDescription: text("benefit_description").notNull(),
+  
+  // Especificaciones
+  specifications: text("specifications"), // tamaño, ubicación, duración
+  
+  // Estado
+  status: varchar("status", { length: 50 }).default("planned"), // planned, delivered, cancelled
+  deliveryDate: date("delivery_date"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Schemas de validación para las nuevas tablas
+export const insertSponsorshipContractSchema = createInsertSchema(sponsorshipContracts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertSponsorEventSchema = createInsertSchema(sponsorEvents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertSponsorshipMetricsSchema = createInsertSchema(sponsorshipMetrics).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertSponsorAssetSchema = createInsertSchema(sponsorAssets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  approvedAt: true
+});
+
+export const insertSponsorshipEvaluationSchema = createInsertSchema(sponsorshipEvaluations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertSponsorshipRenewalSchema = createInsertSchema(sponsorshipRenewals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertSponsorEventBenefitSchema = createInsertSchema(sponsorEventBenefits).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
 // Tipos TypeScript para patrocinios
 export type SponsorshipPackage = typeof sponsorshipPackages.$inferSelect;
 export type InsertSponsorshipPackage = z.infer<typeof insertSponsorshipPackageSchema>;
@@ -2696,6 +2926,27 @@ export type InsertSponsor = z.infer<typeof insertSponsorSchema>;
 
 export type SponsorshipCampaign = typeof sponsorshipCampaigns.$inferSelect;
 export type InsertSponsorshipCampaign = z.infer<typeof insertSponsorshipCampaignSchema>;
+
+export type SponsorshipContract = typeof sponsorshipContracts.$inferSelect;
+export type InsertSponsorshipContract = z.infer<typeof insertSponsorshipContractSchema>;
+
+export type SponsorEvent = typeof sponsorEvents.$inferSelect;
+export type InsertSponsorEvent = z.infer<typeof insertSponsorEventSchema>;
+
+export type SponsorshipMetrics = typeof sponsorshipMetrics.$inferSelect;
+export type InsertSponsorshipMetrics = z.infer<typeof insertSponsorshipMetricsSchema>;
+
+export type SponsorAsset = typeof sponsorAssets.$inferSelect;
+export type InsertSponsorAsset = z.infer<typeof insertSponsorAssetSchema>;
+
+export type SponsorshipEvaluation = typeof sponsorshipEvaluations.$inferSelect;
+export type InsertSponsorshipEvaluation = z.infer<typeof insertSponsorshipEvaluationSchema>;
+
+export type SponsorshipRenewal = typeof sponsorshipRenewals.$inferSelect;
+export type InsertSponsorshipRenewal = z.infer<typeof insertSponsorshipRenewalSchema>;
+
+export type SponsorEventBenefit = typeof sponsorEventBenefits.$inferSelect;
+export type InsertSponsorEventBenefit = z.infer<typeof insertSponsorEventBenefitSchema>;
 
 // ===== CONCESIONES ACTIVAS - ESTRUCTURA MEJORADA =====
 

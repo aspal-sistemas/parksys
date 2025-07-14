@@ -84,7 +84,8 @@ import {
   UserCog,
   Zap,
   Book,
-  Plus
+  Plus,
+  Image
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -636,18 +637,46 @@ const AdminSidebarComplete: React.FC = () => {
             value="marketing"
           >
             <NavItem 
-              href="/admin/marketing/sponsors" 
-              icon={<Handshake className="h-5 w-5" />}
-              active={location.startsWith('/admin/marketing/sponsors')}
+              href="/admin/marketing" 
+              icon={<BarChart className="h-5 w-5" />}
+              active={location === '/admin/marketing'}
             >
-              Patrocinios
+              Dashboard
             </NavItem>
             <NavItem 
-              href="/admin/marketing/reports" 
+              href="/admin/marketing/contracts" 
               icon={<FileText className="h-5 w-5" />}
-              active={location.startsWith('/admin/marketing/reports')}
+              active={location.startsWith('/admin/marketing/contracts')}
             >
-              Reportes
+              Contratos
+            </NavItem>
+            <NavItem 
+              href="/admin/marketing/events" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/admin/marketing/events')}
+            >
+              Eventos
+            </NavItem>
+            <NavItem 
+              href="/admin/marketing/metrics" 
+              icon={<TrendingUp className="h-5 w-5" />}
+              active={location.startsWith('/admin/marketing/metrics')}
+            >
+              Métricas
+            </NavItem>
+            <NavItem 
+              href="/admin/marketing/assets" 
+              icon={<Image className="h-5 w-5" />}
+              active={location.startsWith('/admin/marketing/assets')}
+            >
+              Activos
+            </NavItem>
+            <NavItem 
+              href="/admin/marketing/evaluations" 
+              icon={<Star className="h-5 w-5" />}
+              active={location.startsWith('/admin/marketing/evaluations')}
+            >
+              Evaluaciones
             </NavItem>
           </ModuleNav>
 
