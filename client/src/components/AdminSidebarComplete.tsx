@@ -88,7 +88,8 @@ import {
   Zap,
   Book,
   Plus,
-  Image
+  Image,
+  Scale
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -588,6 +589,20 @@ const AdminSidebarComplete: React.FC = () => {
               active={location === '/admin/accounting/transactions'}
             >
               Transacciones
+            </NavItem>
+            <NavItem 
+              href="/admin/accounting/journal-entries" 
+              icon={<ClipboardList className="h-5 w-5" />}
+              active={location === '/admin/accounting/journal-entries'}
+            >
+              Asientos Contables
+            </NavItem>
+            <NavItem 
+              href="/admin/accounting/trial-balance" 
+              icon={<Scale className="h-5 w-5" />}
+              active={location === '/admin/accounting/trial-balance'}
+            >
+              Balance de Comprobación
             </NavItem>
           </ModuleNav>
 

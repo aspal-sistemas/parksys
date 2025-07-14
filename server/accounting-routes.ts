@@ -734,5 +734,346 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
     }
   });
 
+  // =====================================
+  // ASIENTOS CONTABLES (JOURNAL ENTRIES)
+  // =====================================
+
+  // Obtener asientos contables
+  apiRouter.get('/accounting/journal-entries', async (req: Request, res: Response) => {
+    try {
+      const { page = 1, limit = 10, search, status, type, date_from, date_to } = req.query;
+      
+      let query = `
+        SELECT 
+          je.id,
+          je.entry_number,
+          je.date,
+          je.description,
+          je.reference,
+          je.type,
+          je.status,
+          je.total_debit,
+          je.total_credit,
+          je.created_at,
+          je.updated_at
+        FROM journal_entries je
+        WHERE 1=1
+      `;
+      
+      const params: any[] = [];
+      
+      if (search) {
+        query += ` AND (je.entry_number ILIKE $${params.length + 1} OR je.description ILIKE $${params.length + 1} OR je.reference ILIKE $${params.length + 1})`;
+        params.push(`%${search}%`);
+      }
+      
+      if (status && status !== 'all') {
+        query += ` AND je.status = $${params.length + 1}`;
+        params.push(status);
+      }
+      
+      if (type && type !== 'all') {
+        query += ` AND je.type = $${params.length + 1}`;
+        params.push(type);
+      }
+      
+      if (date_from) {
+        query += ` AND je.date >= $${params.length + 1}`;
+        params.push(date_from);
+      }
+      
+      if (date_to) {
+        query += ` AND je.date <= $${params.length + 1}`;
+        params.push(date_to);
+      }
+      
+      query += ` ORDER BY je.date DESC, je.created_at DESC`;
+      
+      // Agregar paginación
+      query += ` LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+      const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+      params.push(limit, offset);
+      
+      const result = await pool.query(query, params);
+      
+      // Contar total de registros
+      const countQuery = query.replace(/SELECT.*?FROM/, 'SELECT COUNT(*) FROM').replace(/ORDER BY.*?LIMIT.*?OFFSET.*?$/, '');
+      const countParams = params.slice(0, -2);
+      const totalResult = await pool.query(countQuery, countParams);
+      
+      res.json({
+        journalEntries: result.rows.map(row => ({
+          id: row.id,
+          entryNumber: row.entry_number,
+          date: row.date,
+          description: row.description,
+          reference: row.reference,
+          type: row.type,
+          status: row.status,
+          totalDebit: parseFloat(row.total_debit || 0),
+          totalCredit: parseFloat(row.total_credit || 0),
+          createdAt: row.created_at,
+          updatedAt: row.updated_at
+        })),
+        total: parseInt(totalResult.rows[0]?.count || '0'),
+        currentPage: parseInt(page as string),
+        totalPages: Math.ceil(parseInt(totalResult.rows[0]?.count || '0') / parseInt(limit as string))
+      });
+      
+    } catch (error) {
+      console.error('Error obteniendo asientos contables:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Crear nuevo asiento contable
+  apiRouter.post('/accounting/journal-entries', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { date, description, reference, type, entries } = req.body;
+      
+      // Validar que el total de débito sea igual al total de crédito
+      const totalDebit = entries.reduce((sum: number, entry: any) => sum + (entry.debit || 0), 0);
+      const totalCredit = entries.reduce((sum: number, entry: any) => sum + (entry.credit || 0), 0);
+      
+      if (Math.abs(totalDebit - totalCredit) > 0.01) {
+        return res.status(400).json({ error: 'El total de débito debe ser igual al total de crédito' });
+      }
+      
+      // Generar número de asiento
+      const entryNumber = `AUTO-${Date.now()}`;
+      
+      // Insertar el asiento principal
+      const journalResult = await pool.query(`
+        INSERT INTO journal_entries 
+        (entry_number, date, description, reference, type, status, total_debit, total_credit, created_by)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        RETURNING *
+      `, [entryNumber, date, description, reference, type, 'draft', totalDebit, totalCredit, req.user?.id]);
+      
+      const journalEntryId = journalResult.rows[0].id;
+      
+      // Insertar las entradas del asiento
+      for (const entry of entries) {
+        await pool.query(`
+          INSERT INTO journal_entry_details 
+          (journal_entry_id, account_id, debit, credit, description)
+          VALUES ($1, $2, $3, $4, $5)
+        `, [journalEntryId, entry.account_id, entry.debit || 0, entry.credit || 0, entry.description]);
+      }
+      
+      res.status(201).json({
+        journalEntry: {
+          id: journalResult.rows[0].id,
+          entryNumber: journalResult.rows[0].entry_number,
+          date: journalResult.rows[0].date,
+          description: journalResult.rows[0].description,
+          reference: journalResult.rows[0].reference,
+          type: journalResult.rows[0].type,
+          status: journalResult.rows[0].status,
+          totalDebit: parseFloat(journalResult.rows[0].total_debit),
+          totalCredit: parseFloat(journalResult.rows[0].total_credit),
+          createdAt: journalResult.rows[0].created_at
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error creando asiento contable:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Generar asientos automáticos
+  apiRouter.post('/accounting/journal-entries/generate-automatic', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Obtener transacciones no procesadas
+      const transactionsResult = await pool.query(`
+        SELECT t.*, c.name as category_name, c.code as category_code, c.account_nature
+        FROM accounting_transactions t
+        JOIN accounting_categories c ON t.category_id = c.id
+        WHERE t.journal_entry_id IS NULL
+        ORDER BY t.date DESC
+        LIMIT 10
+      `);
+      
+      let processedCount = 0;
+      
+      for (const transaction of transactionsResult.rows) {
+        const entryNumber = `AUTO-${transaction.id}${Date.now()}`;
+        
+        // Crear asiento automático
+        const journalResult = await pool.query(`
+          INSERT INTO journal_entries 
+          (entry_number, date, description, reference, type, status, total_debit, total_credit, created_by)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          RETURNING *
+        `, [
+          entryNumber, 
+          transaction.date, 
+          `Transacción automática: ${transaction.description}`, 
+          `TRANS-${transaction.id}`, 
+          'automatic', 
+          'approved', 
+          transaction.amount, 
+          transaction.amount,
+          req.user?.id
+        ]);
+        
+        const journalEntryId = journalResult.rows[0].id;
+        
+        // Crear entradas según el tipo de transacción
+        if (transaction.transaction_type === 'income') {
+          // Débito: Caja/Bancos, Crédito: Categoría de ingreso
+          await pool.query(`
+            INSERT INTO journal_entry_details 
+            (journal_entry_id, account_id, debit, credit, description)
+            VALUES ($1, $2, $3, $4, $5)
+          `, [journalEntryId, 1, transaction.amount, 0, 'Ingreso por ' + transaction.description]);
+          
+          await pool.query(`
+            INSERT INTO journal_entry_details 
+            (journal_entry_id, account_id, debit, credit, description)
+            VALUES ($1, $2, $3, $4, $5)
+          `, [journalEntryId, transaction.category_id, 0, transaction.amount, transaction.description]);
+        } else {
+          // Débito: Categoría de gasto, Crédito: Caja/Bancos
+          await pool.query(`
+            INSERT INTO journal_entry_details 
+            (journal_entry_id, account_id, debit, credit, description)
+            VALUES ($1, $2, $3, $4, $5)
+          `, [journalEntryId, transaction.category_id, transaction.amount, 0, transaction.description]);
+          
+          await pool.query(`
+            INSERT INTO journal_entry_details 
+            (journal_entry_id, account_id, debit, credit, description)
+            VALUES ($1, $2, $3, $4, $5)
+          `, [journalEntryId, 1, 0, transaction.amount, 'Pago por ' + transaction.description]);
+        }
+        
+        // Actualizar la transacción con el asiento creado
+        await pool.query(`
+          UPDATE accounting_transactions 
+          SET journal_entry_id = $1 
+          WHERE id = $2
+        `, [journalEntryId, transaction.id]);
+        
+        processedCount++;
+      }
+      
+      res.json({
+        message: `Se generaron ${processedCount} asientos automáticos`,
+        processedCount
+      });
+      
+    } catch (error) {
+      console.error('Error generando asientos automáticos:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // =====================================
+  // BALANZA DE COMPROBACIÓN (TRIAL BALANCE)
+  // =====================================
+
+  // Obtener balanza de comprobación
+  apiRouter.get('/accounting/trial-balance', async (req: Request, res: Response) => {
+    try {
+      const { period } = req.query;
+      
+      // Si no se especifica período, usar el mes actual
+      const selectedPeriod = period || new Date().toISOString().slice(0, 7);
+      
+      // Obtener todas las cuentas con sus saldos
+      const result = await pool.query(`
+        SELECT 
+          c.id,
+          c.code,
+          c.name,
+          c.level,
+          c.account_nature,
+          c.full_path,
+          COALESCE(ab.opening_balance, 0) as opening_balance,
+          COALESCE(ab.ending_balance, 0) as ending_balance,
+          COALESCE(
+            (SELECT SUM(jed.debit) 
+             FROM journal_entry_details jed 
+             JOIN journal_entries je ON jed.journal_entry_id = je.id 
+             WHERE jed.account_id = c.id 
+             AND DATE_TRUNC('month', je.date) = DATE_TRUNC('month', $1::date)
+            ), 0
+          ) as period_debits,
+          COALESCE(
+            (SELECT SUM(jed.credit) 
+             FROM journal_entry_details jed 
+             JOIN journal_entries je ON jed.journal_entry_id = je.id 
+             WHERE jed.account_id = c.id 
+             AND DATE_TRUNC('month', je.date) = DATE_TRUNC('month', $1::date)
+            ), 0
+          ) as period_credits
+        FROM accounting_categories c
+        LEFT JOIN account_balances ab ON c.id = ab.category_id 
+          AND ab.period = $1
+        WHERE c.is_active = true
+        ORDER BY c.code
+      `, [selectedPeriod + '-01']);
+
+      const trialBalance = result.rows.map(row => {
+        const openingBalance = parseFloat(row.opening_balance);
+        const periodDebits = parseFloat(row.period_debits);
+        const periodCredits = parseFloat(row.period_credits);
+        
+        // Calcular saldo final basado en naturaleza de la cuenta
+        let endingBalance = openingBalance;
+        if (row.account_nature === 'debit') {
+          endingBalance = openingBalance + periodDebits - periodCredits;
+        } else {
+          endingBalance = openingBalance + periodCredits - periodDebits;
+        }
+        
+        return {
+          id: row.id,
+          code: row.code,
+          name: row.name,
+          level: row.level,
+          nature: row.account_nature,
+          fullPath: row.full_path,
+          previousBalance: openingBalance,
+          debits: periodDebits,
+          credits: periodCredits,
+          currentBalance: Math.abs(endingBalance),
+          balanceType: endingBalance >= 0 ? 
+            (row.account_nature === 'debit' ? 'debit' : 'credit') : 
+            (row.account_nature === 'debit' ? 'credit' : 'debit')
+        };
+      });
+
+      // Calcular totales
+      const totals = {
+        previousBalance: {
+          debit: trialBalance.filter(item => item.nature === 'debit').reduce((sum, item) => sum + item.previousBalance, 0),
+          credit: trialBalance.filter(item => item.nature === 'credit').reduce((sum, item) => sum + item.previousBalance, 0)
+        },
+        movements: {
+          debit: trialBalance.reduce((sum, item) => sum + item.debits, 0),
+          credit: trialBalance.reduce((sum, item) => sum + item.credits, 0)
+        },
+        currentBalance: {
+          debit: trialBalance.filter(item => item.balanceType === 'debit').reduce((sum, item) => sum + item.currentBalance, 0),
+          credit: trialBalance.filter(item => item.balanceType === 'credit').reduce((sum, item) => sum + item.currentBalance, 0)
+        }
+      };
+
+      res.json({
+        trialBalance,
+        totals,
+        period: selectedPeriod,
+        generatedAt: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error obteniendo balanza de comprobación:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
   console.log('✅ Rutas del módulo de contabilidad registradas correctamente');
 }
