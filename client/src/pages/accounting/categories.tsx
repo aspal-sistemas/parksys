@@ -17,7 +17,7 @@ import { FolderTree, Plus, Edit, Trash2, Search, ChevronRight } from 'lucide-rea
 const categorySchema = z.object({
   code: z.string().min(1, 'Código es requerido'),
   name: z.string().min(1, 'Nombre es requerido'),
-  level: z.enum(['A', 'B', 'C', 'D', 'E']),
+  level: z.enum(['1', '2', '3', '4', '5']),
   parent_id: z.string().optional(),
   sat_code: z.string().optional(),
   description: z.string().optional(),
@@ -45,7 +45,7 @@ export default function AccountingCategories() {
     defaultValues: {
       code: '',
       name: '',
-      level: 'A',
+      level: '1',
       parent_id: '',
       sat_code: '',
       description: '',
@@ -152,32 +152,50 @@ export default function AccountingCategories() {
   const filteredCategories = categories?.filter((category: any) => {
     const matchesSearch = category.name.toLowerCase().includes(search.toLowerCase()) ||
                          category.code.toLowerCase().includes(search.toLowerCase());
-    const matchesLevel = selectedLevel === 'all' || category.level === selectedLevel;
+    const matchesLevel = selectedLevel === 'all' || category.level === parseInt(selectedLevel);
     return matchesSearch && matchesLevel;
   }) || [];
 
-  const getLevelColor = (level: string) => {
+  const getLevelColor = (level: number) => {
     const colors = {
-      A: 'bg-red-100 text-red-800',
-      B: 'bg-orange-100 text-orange-800',
-      C: 'bg-yellow-100 text-yellow-800',
-      D: 'bg-green-100 text-green-800',
-      E: 'bg-blue-100 text-blue-800',
+      1: 'bg-red-100 text-red-800',
+      2: 'bg-orange-100 text-orange-800',
+      3: 'bg-yellow-100 text-yellow-800',
+      4: 'bg-green-100 text-green-800',
+      5: 'bg-blue-100 text-blue-800',
     };
     return colors[level as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getLevelName = (level: number) => {
+    const names = {
+      1: 'Nivel A',
+      2: 'Nivel B', 
+      3: 'Nivel C',
+      4: 'Nivel D',
+      5: 'Nivel E'
+    };
+    return names[level as keyof typeof names] || `Nivel ${level}`;
   };
 
   const getParentCategories = (level: string) => {
     if (!categories) return [];
     const parentLevels = {
-      B: ['A'],
-      C: ['A', 'B'],
-      D: ['A', 'B', 'C'],
-      E: ['A', 'B', 'C', 'D'],
+      '2': [1],
+      '3': [1, 2],
+      '4': [1, 2, 3],
+      '5': [1, 2, 3, 4],
     };
     const validLevels = parentLevels[level as keyof typeof parentLevels] || [];
     return categories.filter((cat: any) => validLevels.includes(cat.level));
   };
+
+  // Calcular estadísticas por nivel
+  const levelStats = categories.reduce((acc: any, cat: any) => {
+    const level = cat.level;
+    acc[level] = (acc[level] || 0) + 1;
+    return acc;
+  }, {});
 
   if (isLoading) {
     return (
@@ -204,7 +222,7 @@ export default function AccountingCategories() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Categorías Contables</h1>
           <p className="text-gray-600 mt-1">
-            Sistema jerárquico de 5 niveles (A→B→C→D→E) integrado con códigos SAT
+            Gestión de categorías contables jerárquicas (A→B→C→D→E)
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -213,11 +231,19 @@ export default function AccountingCategories() {
               className="bg-[#00a587] hover:bg-[#067f5f]"
               onClick={() => {
                 setEditingCategory(null);
-                form.reset();
+                form.reset({
+                  code: '',
+                  name: '',
+                  level: '1',
+                  parent_id: '',
+                  sat_code: '',
+                  description: '',
+                  is_active: true,
+                });
               }}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Nueva Categoría
+              Agregar A
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
@@ -255,11 +281,11 @@ export default function AccountingCategories() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="A">Nivel A</SelectItem>
-                            <SelectItem value="B">Nivel B</SelectItem>
-                            <SelectItem value="C">Nivel C</SelectItem>
-                            <SelectItem value="D">Nivel D</SelectItem>
-                            <SelectItem value="E">Nivel E</SelectItem>
+                            <SelectItem value="1">Nivel A</SelectItem>
+                            <SelectItem value="2">Nivel B</SelectItem>
+                            <SelectItem value="3">Nivel C</SelectItem>
+                            <SelectItem value="4">Nivel D</SelectItem>
+                            <SelectItem value="5">Nivel E</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -282,7 +308,7 @@ export default function AccountingCategories() {
                   )}
                 />
 
-                {form.watch('level') !== 'A' && (
+                {form.watch('level') !== '1' && (
                   <FormField
                     control={form.control}
                     name="parent_id"
@@ -364,6 +390,22 @@ export default function AccountingCategories() {
         </Dialog>
       </div>
 
+      {/* Estadísticas por Nivel */}
+      <div className="grid grid-cols-5 gap-4 mb-6">
+        {[1, 2, 3, 4, 5].map((level) => (
+          <div key={level} className="text-center">
+            <div className="flex flex-col items-center space-y-2">
+              <div className="text-gray-600 text-sm">
+                {getLevelName(level)}
+              </div>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${getLevelColor(level).replace('bg-', 'bg-').replace('text-', 'text-white')}`}>
+                {levelStats[level] || 0}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Filtros */}
       <Card>
         <CardHeader>
@@ -387,11 +429,11 @@ export default function AccountingCategories() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los niveles</SelectItem>
-                <SelectItem value="A">Nivel A</SelectItem>
-                <SelectItem value="B">Nivel B</SelectItem>
-                <SelectItem value="C">Nivel C</SelectItem>
-                <SelectItem value="D">Nivel D</SelectItem>
-                <SelectItem value="E">Nivel E</SelectItem>
+                <SelectItem value="1">Nivel A</SelectItem>
+                <SelectItem value="2">Nivel B</SelectItem>
+                <SelectItem value="3">Nivel C</SelectItem>
+                <SelectItem value="4">Nivel D</SelectItem>
+                <SelectItem value="5">Nivel E</SelectItem>
               </SelectContent>
             </Select>
           </div>
