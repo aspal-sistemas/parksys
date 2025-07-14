@@ -646,6 +646,13 @@ const AdminSidebarComplete: React.FC = () => {
               Dashboard
             </NavItem>
             <NavItem 
+              href="/admin/marketing/sponsors" 
+              icon={<Building className="h-5 w-5" />}
+              active={location.startsWith('/admin/marketing/sponsors')}
+            >
+              Patrocinadores
+            </NavItem>
+            <NavItem 
               href="/admin/marketing/contracts" 
               icon={<FileText className="h-5 w-5" />}
               active={location.startsWith('/admin/marketing/contracts')}
@@ -682,58 +689,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 12. PATROCINIOS */}
-          <ModuleNav 
-            title="Patrocinios" 
-            icon={<HandHeart className="h-5 w-5" />}
-            value="sponsorship"
-            defaultOpen={location.startsWith('/admin/sponsorship')}
-          >
-            <NavItem 
-              href="/admin/sponsorship" 
-              icon={<BarChart className="h-5 w-5" />}
-              active={location === '/admin/sponsorship'}
-            >
-              Dashboard
-            </NavItem>
-            <NavItem 
-              href="/admin/sponsorship/contracts" 
-              icon={<FileText className="h-5 w-5" />}
-              active={location.startsWith('/admin/sponsorship/contracts')}
-            >
-              Contratos
-            </NavItem>
-            <NavItem 
-              href="/admin/sponsorship/events" 
-              icon={<Calendar className="h-5 w-5" />}
-              active={location.startsWith('/admin/sponsorship/events')}
-            >
-              Eventos
-            </NavItem>
-            <NavItem 
-              href="/admin/sponsorship/metrics" 
-              icon={<TrendingUp className="h-5 w-5" />}
-              active={location.startsWith('/admin/sponsorship/metrics')}
-            >
-              Métricas
-            </NavItem>
-            <NavItem 
-              href="/admin/sponsorship/assets" 
-              icon={<Image className="h-5 w-5" />}
-              active={location.startsWith('/admin/sponsorship/assets')}
-            >
-              Activos
-            </NavItem>
-            <NavItem 
-              href="/admin/sponsorship/evaluations" 
-              icon={<Star className="h-5 w-5" />}
-              active={location.startsWith('/admin/sponsorship/evaluations')}
-            >
-              Evaluaciones
-            </NavItem>
-          </ModuleNav>
-
-          {/* 13. CONCESIONES */}
+          {/* 12. CONCESIONES */}
           <ModuleNav 
             title={t('navigation.concessions')} 
             icon={<Store className="h-5 w-5" />}
