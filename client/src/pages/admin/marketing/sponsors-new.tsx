@@ -35,7 +35,7 @@ import {
   Handshake,
   Gift
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
+// Eliminadas importaciones de gráficas ya no necesarias
 import AdminLayout from "@/components/AdminLayout";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { safeApiRequest } from '@/lib/queryClient';
@@ -80,7 +80,7 @@ type PackageFormData = z.infer<typeof packageSchema>;
 type SponsorFormData = z.infer<typeof sponsorSchema>;
 
 const SponsorsManagement = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("sponsors");
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -227,14 +227,7 @@ const SponsorsManagement = () => {
     }
   };
 
-  // Cálculos del dashboard
-  const totalRevenue = sponsorsArray.reduce((sum, sponsor) => sum + parseFloat(sponsor.contractValue), 0);
-  const activeSponsors = sponsorsArray.filter(s => s.status === 'activo').length;
-  const averageRenewal = sponsorsArray.reduce((sum, sponsor) => sum + sponsor.renewalProbability, 0) / sponsorsArray.length || 0;
-  const totalEvents = sponsorsArray.reduce((sum, sponsor) => sum + sponsor.eventsSponsored, 0);
 
-  // Colores para las gráficas
-  const COLORS = ['#00a587', '#067f5f', '#bcd256', '#8498a5', '#d4ad2a'];
 
   if (isLoading) {
     return (
@@ -670,117 +663,13 @@ const SponsorsManagement = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="sponsors">Patrocinadores</TabsTrigger>
             <TabsTrigger value="packages">Paquetes</TabsTrigger>
             <TabsTrigger value="campaigns">Campañas</TabsTrigger>
           </TabsList>
 
-          {/* Dashboard Tab */}
-          <TabsContent value="dashboard" className="space-y-6">
-            {/* KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Ingresos Totales</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">Contratos activos</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Patrocinadores Activos</CardTitle>
-                  <Building className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{activeSponsors}</div>
-                  <p className="text-xs text-muted-foreground">De {sponsors.length} totales</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Probabilidad de Renovación</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{averageRenewal.toFixed(1)}%</div>
-                  <p className="text-xs text-muted-foreground">Promedio general</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Eventos Patrocinados</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{totalEvents}</div>
-                  <p className="text-xs text-muted-foreground">Total en 2025</p>
-                </CardContent>
-              </Card>
-            </div>
 
-            {/* Gráficas */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Distribución por Categoría</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <RechartsPieChart>
-                      <Pie
-                        data={[
-                          { name: 'Corporativo', value: sponsors.filter(s => s.category === 'corporativo').length },
-                          { name: 'Local', value: sponsors.filter(s => s.category === 'local').length },
-                          { name: 'Institucional', value: sponsors.filter(s => s.category === 'institucional').length },
-                          { name: 'ONG', value: sponsors.filter(s => s.category === 'ong').length }
-                        ]}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, value }) => `${name}: ${value}`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {sponsors.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </RechartsPieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Ingresos por Nivel</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={[
-                      { level: 'Platino', ingresos: sponsors.filter(s => s.level === 'platino').reduce((sum, s) => sum + parseFloat(s.contractValue), 0) },
-                      { level: 'Oro', ingresos: sponsors.filter(s => s.level === 'oro').reduce((sum, s) => sum + parseFloat(s.contractValue), 0) },
-                      { level: 'Plata', ingresos: sponsors.filter(s => s.level === 'plata').reduce((sum, s) => sum + parseFloat(s.contractValue), 0) },
-                      { level: 'Bronce', ingresos: sponsors.filter(s => s.level === 'bronce').reduce((sum, s) => sum + parseFloat(s.contractValue), 0) }
-                    ]}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="level" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
-                      <Legend />
-                      <Bar dataKey="ingresos" fill="#00a587" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
 
           {/* Sponsors Tab */}
           <TabsContent value="sponsors" className="space-y-6">
