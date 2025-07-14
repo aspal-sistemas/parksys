@@ -26,7 +26,37 @@ app.get('/api/status', (req: Request, res: Response) => {
       message: 'ParkSys - Parques de México API',
       timestamp: new Date().toISOString(),
       port: process.env.PORT || 5000,
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
+      replit: {
+        deployment_id: process.env.REPLIT_DEPLOYMENT_ID || 'development',
+        domain: process.env.REPLIT_DOMAIN || 'localhost'
+      }
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'error', 
+      message: 'Service temporarily unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Endpoint específico para verificar estado del servidor en Replit
+app.get('/server-status', (req: Request, res: Response) => {
+  try {
+    const uptime = process.uptime();
+    const memory = process.memoryUsage();
+    res.status(200).json({
+      status: 'running',
+      uptime: `${Math.floor(uptime)} segundos`,
+      memory: {
+        rss: `${Math.round(memory.rss / 1024 / 1024)} MB`,
+        heapUsed: `${Math.round(memory.heapUsed / 1024 / 1024)} MB`,
+        external: `${Math.round(memory.external / 1024 / 1024)} MB`
+      },
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      isReplit: !!process.env.REPLIT_DEPLOYMENT_ID
     });
   } catch (error) {
     res.status(503).json({ 
