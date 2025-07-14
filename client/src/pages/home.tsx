@@ -1,9 +1,8 @@
 import React from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Map, ArrowRight, MapPin, Trees, Users, Calendar, Sparkles, TrendingUp, Zap, Leaf, Shield, Heart, BookOpen, GraduationCap, Target, Award } from 'lucide-react';
+import { Map, ArrowRight, MapPin, Trees, Users, Calendar, Sparkles, TrendingUp, Zap, Leaf, Shield, Heart, BookOpen, GraduationCap, Target, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import ParkCard from '@/components/ParkCard';
 import { ExtendedPark } from '@shared/schema';
@@ -73,17 +72,7 @@ const Home: React.FC = () => {
               </Link>
             </div>
             
-            {/* Barra de búsqueda */}
-            <div className="max-w-xl relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <Input 
-                type="text" 
-                placeholder="Buscar parques por nombre o ubicación..."
-                className="pl-12 pr-4 py-4 text-base rounded-lg bg-white/95 backdrop-blur-sm border-0 shadow-lg focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
+
           </div>
           
           {/* Contenido derecho - Stats cards flotantes */}
