@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { FolderTree, Plus, Edit, Trash2, Search, ChevronRight } from 'lucide-react';
+import { AdminLayout } from '@/components/AdminLayout';
 
 const categorySchema = z.object({
   code: z.string().min(1, 'Código es requerido'),
@@ -199,24 +200,27 @@ export default function AccountingCategories() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="h-8 w-64 bg-gray-200 rounded animate-pulse"></div>
-            <div className="h-4 w-96 bg-gray-200 rounded animate-pulse"></div>
+      <AdminLayout>
+        <div className="p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="h-8 w-64 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-4 w-96 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-16 bg-gray-200 rounded animate-pulse"></div>
+            ))}
           </div>
         </div>
-        <div className="space-y-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-16 bg-gray-200 rounded animate-pulse"></div>
-          ))}
-        </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <AdminLayout>
+      <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -502,6 +506,7 @@ export default function AccountingCategories() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
