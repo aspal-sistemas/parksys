@@ -350,13 +350,23 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   apiRouter.get('/sponsors/:sponsorId/events', async (req: Request, res: Response) => {
     try {
       const { sponsorId } = req.params;
-      const events = await db
-        .select()
-        .from(sponsorEvents)
-        .where(eq(sponsorEvents.sponsorId, parseInt(sponsorId)))
-        .orderBy(desc(sponsorEvents.createdAt));
+      const result = await db.execute(`
+        SELECT 
+          id,
+          sponsor_id as "sponsorId",
+          event_name as "eventName",
+          event_date as "eventDate",
+          event_type as "eventType",
+          participants_count as "participantsCount",
+          budget_allocated as "budgetAllocated",
+          description,
+          created_at as "createdAt"
+        FROM sponsorship_events 
+        WHERE sponsor_id = $1
+        ORDER BY created_at DESC
+      `, [parseInt(sponsorId)]);
       
-      res.json(events);
+      res.json(result.rows);
     } catch (error) {
       console.error('Error al obtener eventos del patrocinador:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
@@ -369,13 +379,21 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   apiRouter.get('/sponsors/:sponsorId/metrics', async (req: Request, res: Response) => {
     try {
       const { sponsorId } = req.params;
-      const metrics = await db
-        .select()
-        .from(sponsorshipMetrics)
-        .where(eq(sponsorshipMetrics.sponsorId, parseInt(sponsorId)))
-        .orderBy(desc(sponsorshipMetrics.reportDate));
+      const result = await db.execute(`
+        SELECT 
+          id,
+          sponsor_id as "sponsorId",
+          metric_type as "metricType",
+          metric_value as "metricValue",
+          measurement_date as "measurementDate",
+          notes,
+          created_at as "createdAt"
+        FROM sponsorship_metrics 
+        WHERE sponsor_id = $1
+        ORDER BY measurement_date DESC
+      `, [parseInt(sponsorId)]);
       
-      res.json(metrics);
+      res.json(result.rows);
     } catch (error) {
       console.error('Error al obtener métricas:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
@@ -405,13 +423,22 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   apiRouter.get('/sponsors/:sponsorId/assets', async (req: Request, res: Response) => {
     try {
       const { sponsorId } = req.params;
-      const assets = await db
-        .select()
-        .from(sponsorAssets)
-        .where(eq(sponsorAssets.sponsorId, parseInt(sponsorId)))
-        .orderBy(desc(sponsorAssets.createdAt));
+      const result = await db.execute(`
+        SELECT 
+          id,
+          sponsor_id as "sponsorId",
+          asset_type as "assetType",
+          asset_name as "assetName",
+          file_url as "fileUrl",
+          file_size as "fileSize",
+          description,
+          created_at as "createdAt"
+        FROM sponsorship_assets 
+        WHERE sponsor_id = $1
+        ORDER BY created_at DESC
+      `, [parseInt(sponsorId)]);
       
-      res.json(assets);
+      res.json(result.rows);
     } catch (error) {
       console.error('Error al obtener activos:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
@@ -465,13 +492,22 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   apiRouter.get('/sponsors/:sponsorId/evaluations', async (req: Request, res: Response) => {
     try {
       const { sponsorId } = req.params;
-      const evaluations = await db
-        .select()
-        .from(sponsorshipEvaluations)
-        .where(eq(sponsorshipEvaluations.sponsorId, parseInt(sponsorId)))
-        .orderBy(desc(sponsorshipEvaluations.evaluationDate));
+      const result = await db.execute(`
+        SELECT 
+          id,
+          sponsor_id as "sponsorId",
+          evaluator_name as "evaluatorName",
+          evaluator_email as "evaluatorEmail",
+          rating,
+          feedback,
+          evaluation_date as "evaluationDate",
+          created_at as "createdAt"
+        FROM sponsorship_evaluations 
+        WHERE sponsor_id = $1
+        ORDER BY evaluation_date DESC
+      `, [parseInt(sponsorId)]);
       
-      res.json(evaluations);
+      res.json(result.rows);
     } catch (error) {
       console.error('Error al obtener evaluaciones:', error);
       res.status(500).json({ error: 'Error interno del servidor' });

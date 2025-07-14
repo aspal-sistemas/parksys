@@ -635,6 +635,7 @@ const AdminSidebarComplete: React.FC = () => {
             title="Marketing" 
             icon={<Megaphone className="h-5 w-5" />}
             value="marketing"
+            defaultOpen={location.startsWith('/admin/marketing')}
           >
             <NavItem 
               href="/admin/marketing" 
