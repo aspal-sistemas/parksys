@@ -302,9 +302,9 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
           createdAt: row.created_at,
           updatedAt: row.updated_at
         })),
-        total: parseInt(totalResult.rows[0].count),
+        total: parseInt(totalResult.rows[0]?.count || '0'),
         currentPage: parseInt(page as string),
-        totalPages: Math.ceil(parseInt(totalResult.rows[0].count) / parseInt(limit as string))
+        totalPages: Math.ceil(parseInt(totalResult.rows[0]?.count || '0') / parseInt(limit as string))
       });
       
     } catch (error) {
