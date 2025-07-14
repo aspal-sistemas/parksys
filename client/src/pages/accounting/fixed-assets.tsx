@@ -262,7 +262,7 @@ export default function FixedAssetsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setLocation('/admin/accounting')}
+              onClick={() => setLocation('/admin/accounting/dashboard')}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
