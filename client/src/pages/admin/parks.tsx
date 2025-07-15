@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, FileUp, Trash2, Eye, Edit, X, MapPin, Users, Calendar, Package, AlertTriangle, TreePine, Activity, Camera, FileText, UserCheck, Wrench } from "lucide-react";
+import { Search, Plus, FileUp, Trash2, Eye, Edit, X, MapPin, Users, Calendar, Package, AlertTriangle, TreePine, Activity, Camera, FileText, UserCheck, Wrench, Grid, List, ChevronLeft, ChevronRight } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -53,6 +53,11 @@ const AdminParks = () => {
   const [parkToDelete, setParkToDelete] = useState<Park | null>(null);
   const [parkDependencies, setParkDependencies] = useState<ParkDependencies | null>(null);
   const [loadingDependencies, setLoadingDependencies] = useState(false);
+  
+  // Pagination and view states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const itemsPerPage = 15;
 
   // Effect to handle URL parameters for amenity filtering
   useEffect(() => {
@@ -168,6 +173,17 @@ const AdminParks = () => {
     }).sort((a, b) => a.name.localeCompare(b.name));
   }, [parks, searchQuery, filterMunicipality, filterParkType, filterAmenity, parkAmenities]);
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredParks.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentParks = filteredParks.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterMunicipality, filterParkType, filterAmenity]);
+
   // Get municipality name by ID
   const getMunicipalityName = (municipalityId: number) => {
     const municipality = (municipalities as any[])?.find((m: any) => m.id === municipalityId);
@@ -196,6 +212,231 @@ const AdminParks = () => {
     setFilterMunicipality('all');
     setFilterParkType('all');
     setFilterAmenity('all');
+  };
+
+  // Pagination navigation
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Render pagination component
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+
+    return (
+      <div className="flex items-center justify-between mt-6">
+        <div className="text-sm text-gray-600">
+          Mostrando {startIndex + 1}-{Math.min(endIndex, filteredParks.length)} de {filteredParks.length} parques
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Anterior
+          </Button>
+          
+          {pages.map(page => (
+            <Button
+              key={page}
+              variant={currentPage === page ? "default" : "outline"}
+              size="sm"
+              onClick={() => handlePageClick(page)}
+              className={currentPage === page ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+            >
+              {page}
+            </Button>
+          ))}
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+          >
+            Siguiente
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  // Render list view
+  const renderListView = () => {
+    return (
+      <div className="space-y-4">
+        {currentParks.map((park: Park) => (
+          <Card key={park.id} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900">{park.name}</h3>
+                      <p className="text-sm text-gray-600">{getMunicipalityName(park.municipalityId)}</p>
+                    </div>
+                    <div className="flex items-center space-x-6 text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <MapPin className="h-4 w-4 mr-1" />
+                        <span className="max-w-xs truncate">{park.address}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Package className="h-4 w-4 mr-1" />
+                        <span>{park.area.toLocaleString()} m²</span>
+                      </div>
+                      <Badge variant="secondary">
+                        {getParkTypeLabel(park.parkType)}
+                      </Badge>
+                    </div>
+                  </div>
+                  {park.description && (
+                    <p className="mt-2 text-sm text-gray-600 line-clamp-2">{park.description}</p>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2 ml-6">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.location.href = `/admin/parks/${park.id}/view`}
+                    title="Ver detalles del parque"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.location.href = `/admin/parks/${park.id}/edit`}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.location.href = `/admin/parks/${park.id}/manage`}
+                    title="Gestión completa del parque"
+                    className="text-blue-600 hover:text-blue-700"
+                  >
+                    <Wrench className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteClick(park)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
+  // Render grid view
+  const renderGridView = () => {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {currentParks.map((park: Park) => (
+          <Card key={park.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-lg">{park.name}</CardTitle>
+                  <CardDescription className="mt-1">
+                    {getMunicipalityName(park.municipalityId)}
+                  </CardDescription>
+                </div>
+                <Badge variant="secondary">
+                  {getParkTypeLabel(park.parkType)}
+                </Badge>
+              </div>
+            </CardHeader>
+            
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center text-sm text-gray-600">
+                  <MapPin className="h-4 w-4 mr-2" />
+                  <span className="truncate">{park.address}</span>
+                </div>
+                
+                <div className="flex items-center text-sm text-gray-600">
+                  <Package className="h-4 w-4 mr-2" />
+                  <span>{park.area.toLocaleString()} m²</span>
+                </div>
+                
+                {park.description && (
+                  <p className="text-sm text-gray-600 line-clamp-2">
+                    {park.description}
+                  </p>
+                )}
+              </div>
+              
+              <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.location.href = `/admin/parks/${park.id}/view`}
+                    title="Ver detalles del parque"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.location.href = `/admin/parks/${park.id}/edit`}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.location.href = `/admin/parks/${park.id}/manage`}
+                    title="Gestión completa del parque"
+                    className="text-blue-600 hover:text-blue-700"
+                  >
+                    <Wrench className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDeleteClick(park)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
   };
 
   // Handle opening delete dialog
@@ -271,6 +512,33 @@ const AdminParks = () => {
             </Button>
           </div>
         </div>
+
+        {/* View mode toggle */}
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-gray-600">
+            {filteredParks.length} parques encontrados
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className={viewMode === 'grid' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+            >
+              <Grid className="h-4 w-4 mr-2" />
+              Fichas
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className={viewMode === 'list' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+            >
+              <List className="h-4 w-4 mr-2" />
+              Lista
+            </Button>
+          </div>
+        </div>
         
         {/* Search and filter bar */}
         <div className="flex flex-col md:flex-row items-start md:items-center gap-3 bg-white p-4 rounded-lg shadow-sm">
@@ -335,86 +603,8 @@ const AdminParks = () => {
           )}
         </div>
         
-        {/* Parks grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredParks.map((park: Park) => (
-            <Card key={park.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">{park.name}</CardTitle>
-                    <CardDescription className="mt-1">
-                      {getMunicipalityName(park.municipalityId)}
-                    </CardDescription>
-                  </div>
-                  <Badge variant="secondary">
-                    {getParkTypeLabel(park.parkType)}
-                  </Badge>
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    <span className="truncate">{park.address}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Package className="h-4 w-4 mr-2" />
-                    <span>{park.area.toLocaleString()} m²</span>
-                  </div>
-                  
-                  {park.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {park.description}
-                    </p>
-                  )}
-                </div>
-                
-                <div className="flex justify-between items-center mt-4 pt-4 border-t">
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.location.href = `/admin/parks/${park.id}/view`}
-                      title="Ver detalles del parque"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.location.href = `/admin/parks/${park.id}/edit`}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.location.href = `/admin/parks/${park.id}/manage`}
-                      title="Gestión completa del parque"
-                      className="text-blue-600 hover:text-blue-700"
-                    >
-                      <Wrench className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeleteClick(park)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {filteredParks.length === 0 && (
+        {/* Parks content */}
+        {currentParks.length === 0 ? (
           <div className="text-center py-12">
             <MapPin className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No hay parques</h3>
@@ -423,131 +613,57 @@ const AdminParks = () => {
                 ? "No se encontraron parques que coincidan con los filtros."
                 : "Comienza agregando un nuevo parque."}
             </p>
-            {(!searchQuery && filterMunicipality === 'all' && filterParkType === 'all') && (
-              <div className="mt-6">
-                <Button onClick={() => window.location.href = "/admin/parks/new"}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agregar Parque
-                </Button>
-              </div>
-            )}
           </div>
+        ) : (
+          <>
+            {viewMode === 'grid' ? renderGridView() : renderListView()}
+            {renderPagination()}
+          </>
         )}
       </div>
 
-      {/* Delete confirmation dialog with dependencies warning */}
+      {/* Delete confirmation dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="max-w-2xl">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-6 w-6 text-red-600" />
-              <AlertDialogTitle className="text-xl">¡Advertencia! Eliminación Completa</AlertDialogTitle>
-            </div>
-            <AlertDialogDescription asChild>
-              <div className="space-y-4">
-                <p className="text-gray-700">
-                  Esta acción eliminará permanentemente el parque <strong>"{parkToDelete?.name}"</strong> y 
-                  <strong className="text-red-600"> TODOS sus elementos relacionados</strong>.
-                </p>
-                
-                {loadingDependencies ? (
-                  <div className="flex items-center gap-2 p-4 bg-gray-50 rounded-lg">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                    <span>Analizando dependencias...</span>
+            <AlertDialogTitle>¿Eliminar parque?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente el parque "{parkToDelete?.name}" y todos sus datos asociados.
+              {loadingDependencies && (
+                <div className="mt-4 text-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mx-auto"></div>
+                  <p className="mt-2 text-sm text-gray-600">Verificando dependencias...</p>
+                </div>
+              )}
+              {parkDependencies && (
+                <div className="mt-4 p-4 bg-yellow-50 rounded-md">
+                  <h4 className="font-medium text-yellow-800 mb-2">Datos que serán eliminados:</h4>
+                  <div className="text-sm text-yellow-700 space-y-1">
+                    {parkDependencies.trees > 0 && <div>• {parkDependencies.trees} árboles</div>}
+                    {parkDependencies.treeMaintenances > 0 && <div>• {parkDependencies.treeMaintenances} mantenimientos de árboles</div>}
+                    {parkDependencies.activities > 0 && <div>• {parkDependencies.activities} actividades</div>}
+                    {parkDependencies.incidents > 0 && <div>• {parkDependencies.incidents} incidentes</div>}
+                    {parkDependencies.amenities > 0 && <div>• {parkDependencies.amenities} amenidades</div>}
+                    {parkDependencies.images > 0 && <div>• {parkDependencies.images} imágenes</div>}
+                    {parkDependencies.assets > 0 && <div>• {parkDependencies.assets} activos</div>}
+                    {parkDependencies.volunteers > 0 && <div>• {parkDependencies.volunteers} asignaciones de voluntarios</div>}
+                    {parkDependencies.instructors > 0 && <div>• {parkDependencies.instructors} asignaciones de instructores</div>}
+                    {parkDependencies.evaluations > 0 && <div>• {parkDependencies.evaluations} evaluaciones</div>}
+                    {parkDependencies.documents > 0 && <div>• {parkDependencies.documents} documentos</div>}
+                    <div className="font-medium mt-2">Total: {parkDependencies.total} registros asociados</div>
                   </div>
-                ) : parkDependencies ? (
-                  <div className="space-y-3">
-                    <p className="font-medium text-gray-800">Se eliminarán los siguientes elementos:</p>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      {parkDependencies.trees > 0 && (
-                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
-                          <TreePine className="h-4 w-4 text-green-600" />
-                          <span>{parkDependencies.trees} árboles</span>
-                        </div>
-                      )}
-                      {parkDependencies.treeMaintenances > 0 && (
-                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
-                          <Wrench className="h-4 w-4 text-blue-600" />
-                          <span>{parkDependencies.treeMaintenances} mantenimientos</span>
-                        </div>
-                      )}
-                      {parkDependencies.activities > 0 && (
-                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
-                          <Activity className="h-4 w-4 text-purple-600" />
-                          <span>{parkDependencies.activities} actividades</span>
-                        </div>
-                      )}
-                      {parkDependencies.incidents > 0 && (
-                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
-                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                          <span>{parkDependencies.incidents} incidencias</span>
-                        </div>
-                      )}
-                      {parkDependencies.amenities > 0 && (
-                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
-                          <Package className="h-4 w-4 text-orange-600" />
-                          <span>{parkDependencies.amenities} amenidades</span>
-                        </div>
-                      )}
-                      {parkDependencies.images > 0 && (
-                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
-                          <Camera className="h-4 w-4 text-pink-600" />
-                          <span>{parkDependencies.images} imágenes</span>
-                        </div>
-                      )}
-                      {parkDependencies.documents > 0 && (
-                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
-                          <FileText className="h-4 w-4 text-indigo-600" />
-                          <span>{parkDependencies.documents} documentos</span>
-                        </div>
-                      )}
-                      {(parkDependencies.volunteers > 0 || parkDependencies.instructors > 0) && (
-                        <div className="flex items-center gap-2 p-2 bg-yellow-50 rounded">
-                          <UserCheck className="h-4 w-4 text-amber-600" />
-                          <span>{parkDependencies.volunteers + parkDependencies.instructors} usuarios afectados</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {parkDependencies.total > 0 ? (
-                      <div className="p-3 bg-red-100 border border-red-200 rounded-lg">
-                        <p className="font-medium text-red-800">
-                          Total: {parkDependencies.total} elementos serán eliminados permanentemente
-                        </p>
-                        <p className="text-sm text-red-600 mt-1">
-                          Los voluntarios e instructores NO serán eliminados, solo se actualizará su parque preferido.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="p-3 bg-green-100 border border-green-200 rounded-lg">
-                        <p className="text-green-800">
-                          ✓ Este parque no tiene dependencias. Es seguro eliminarlo.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="p-3 bg-yellow-100 border border-yellow-200 rounded-lg">
-                    <p className="text-yellow-800">
-                      No se pudieron cargar las dependencias. ¿Continuar con la eliminación?
-                    </p>
-                  </div>
-                )}
-                
-                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                  <strong>Nota:</strong> Esta acción no se puede deshacer. Todos los datos serán eliminados permanentemente de la base de datos.
-                </p>
-              </div>
+                </div>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDeleteConfirm}
               disabled={deleteMutation.isPending || loadingDependencies}
               className="bg-red-600 hover:bg-red-700"
             >
-              {deleteMutation.isPending ? "Eliminando..." : "Confirmar Eliminación"}
+              {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
