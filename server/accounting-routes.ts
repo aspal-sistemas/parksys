@@ -345,9 +345,9 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
         description || '', 
         reference_number || '', 
         amount || 0, 
-        category_a || null, 
+        category_a || 1, // Default category_id
         transaction_type || 'income', 
-        category_a || null, 
+        category_a || 1, // Default category_a
         category_b || null, 
         category_c || null, 
         category_d || null, 
