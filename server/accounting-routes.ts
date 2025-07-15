@@ -331,8 +331,15 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
         bank, description, add_iva, amount_without_iva, iva_amount, reference_number
       } = req.body;
       
+      // Determinar la categoría principal (la más específica no vacía/null)
+      let primaryCategoryId = category_a || 28;
+      if (category_e && category_e !== 0) primaryCategoryId = category_e;
+      else if (category_d && category_d !== 0) primaryCategoryId = category_d;
+      else if (category_c && category_c !== 0) primaryCategoryId = category_c;
+      else if (category_b && category_b !== 0) primaryCategoryId = category_b;
+      
       console.log('📊 Creando nueva transacción con datos:', {
-        concept, amount, transaction_type, description, category_a, category_b, category_c
+        concept, amount, transaction_type, description, category_a, category_b, category_c, primaryCategoryId
       });
       
       const result = await pool.query(`
@@ -348,7 +355,7 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
         description || '', 
         reference_number || '', 
         amount || 0, 
-        category_a || 28, // Default category_id (first category: Activo)
+        primaryCategoryId, // Usar la categoría más específica
         transaction_type || 'income', 
         category_a || 28, // Default category_a
         category_b || null, 
