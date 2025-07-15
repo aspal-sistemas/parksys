@@ -68,14 +68,23 @@ export default function TreeMaintenancePage() {
   });
 
   // Cargar parques para el filtro
-  const { data: parks, isLoading: loadingParks } = useQuery({
+  const { data: parks, isLoading: loadingParks, error: parksError } = useQuery({
     queryKey: ['/api/parks'],
     select: (data) => {
       console.log('Datos de parques recibidos:', data);
-      // El endpoint retorna { status: "success", data: [...] }
-      return data?.data || [];
+      console.log('¿Es array?', Array.isArray(data));
+      console.log('¿Tiene data?', !!data?.data);
+      console.log('Longitud del array:', Array.isArray(data) ? data.length : data?.data?.length);
+      // El endpoint puede devolver un array directo o { status: "success", data: [...] }
+      return Array.isArray(data) ? data : (data?.data || []);
     },
   });
+
+  // Logging adicional para diagnosticar
+  React.useEffect(() => {
+    console.log('Estado de parques:', { parks, loadingParks, parksError });
+    console.log('Parques disponibles:', parks?.map(p => p.name));
+  }, [parks, loadingParks, parksError]);
 
   // Cargar todos los mantenimientos
   const { data: maintenances, isLoading: loadingMaintenances } = useQuery({
