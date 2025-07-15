@@ -183,6 +183,7 @@ export default function AccountingTransactions() {
   });
 
   const handleSubmit = (data: TransactionFormData) => {
+    console.log('📋 Datos del formulario enviados:', data);
     if (editingTransaction) {
       updateMutation.mutate({ id: editingTransaction.id, data });
     } else {
