@@ -262,6 +262,14 @@ export default function AccountingCategories() {
     return acc;
   }, {});
 
+  // Obtener códigos SAT disponibles para el selector
+  const availableSatCodes = categories.filter((cat: any) => cat.sat_code && cat.sat_code.trim() !== '')
+    .map((cat: any) => ({ code: cat.sat_code, name: cat.name }))
+    .filter((item: any, index: number, self: any[]) => 
+      index === self.findIndex((t: any) => t.code === item.code)
+    )
+    .sort((a: any, b: any) => a.code.localeCompare(b.code));
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -323,11 +331,14 @@ export default function AccountingCategories() {
                   Nueva Categoría
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl" aria-describedby="category-form-description">
                 <DialogHeader>
                   <DialogTitle>
                     {editingCategory ? 'Editar Categoría' : 'Nueva Categoría'}
                   </DialogTitle>
+                  <p id="category-form-description" className="text-sm text-muted-foreground">
+                    {editingCategory ? 'Modifica los datos de la categoría contable' : 'Crea una nueva categoría contable con código SAT oficial'}
+                  </p>
                 </DialogHeader>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -390,9 +401,24 @@ export default function AccountingCategories() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Código SAT</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Código SAT mexicano" {...field} />
-                            </FormControl>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccione código SAT" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="">Sin código SAT</SelectItem>
+                                {availableSatCodes.map((cat: any) => (
+                                  <SelectItem key={cat.code} value={cat.code}>
+                                    <div className="flex items-center space-x-2">
+                                      <span className="font-mono text-blue-600">{cat.code}</span>
+                                      <span>- {cat.name}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
