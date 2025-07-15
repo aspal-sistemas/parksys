@@ -13,7 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { FolderTree, Plus, Edit, Trash2, Search, ChevronRight, ChevronLeft, Eye, Filter, Grid, List, FileText, Building, CreditCard, PiggyBank, Wallet, Download } from 'lucide-react';
+import { FolderTree, Plus, Edit, Trash2, Search, ChevronRight, ChevronLeft, Eye, Filter, Grid, List, FileText, Building, CreditCard, PiggyBank, Wallet } from 'lucide-react';
 import { AdminLayout } from '@/components/AdminLayout';
 
 const categorySchema = z.object({
@@ -124,26 +124,6 @@ export default function AccountingCategories() {
       toast({
         title: "Error",
         description: "Error al eliminar la categoría contable.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const importSatCodesMutation = useMutation({
-    mutationFn: () => apiRequest('/api/accounting/import-sat-codes', {
-      method: 'POST',
-    }),
-    onSuccess: (data) => {
-      toast({
-        title: "Códigos SAT importados",
-        description: `Se importaron ${data.stats.total} códigos SAT exitosamente (${data.stats.inserted} nuevos, ${data.stats.updated} actualizados).`,
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/accounting/categories'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Error al importar códigos SAT.",
         variant: "destructive",
       });
     },
@@ -317,14 +297,7 @@ export default function AccountingCategories() {
               <List className="h-4 w-4 mr-2" />
               Lista
             </Button>
-            <Button 
-              onClick={() => importSatCodesMutation.mutate()}
-              disabled={importSatCodesMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              {importSatCodesMutation.isPending ? 'Importando...' : 'Importar Códigos SAT'}
-            </Button>
+
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={() => setEditingCategory(null)}>
