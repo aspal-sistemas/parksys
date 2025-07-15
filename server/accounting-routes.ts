@@ -325,32 +325,51 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
   apiRouter.post('/accounting/transactions', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { 
-        date, description, reference, amount, categoryId, transactionType, 
-        sourceModule, sourceId, isRecurring, recurringConfig 
+        concept, amount, transaction_type, category_a, category_b, category_c, 
+        category_d, category_e, transaction_date, status, income_source, 
+        bank, description, add_iva, amount_without_iva, iva_amount, reference_number
       } = req.body;
+      
+      console.log('📊 Creando nueva transacción con datos:', req.body);
       
       const result = await pool.query(`
         INSERT INTO accounting_transactions 
-        (date, description, reference, amount, category_id, transaction_type, source_module, source_id, is_recurring, recurring_config, created_by)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        (concept, date, description, reference, amount, category_id, transaction_type, 
+         category_a, category_b, category_c, category_d, category_e, status, 
+         income_source, bank, add_iva, amount_without_iva, iva_amount, created_by)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
         RETURNING *
-      `, [date, description, reference, amount, categoryId, transactionType, sourceModule, sourceId, isRecurring, recurringConfig, req.user?.id]);
+      `, [
+        concept, transaction_date, description, reference_number, amount, 
+        category_a, transaction_type, category_a, category_b, category_c, 
+        category_d, category_e, status, income_source, bank, add_iva, 
+        amount_without_iva, iva_amount, req.user?.id
+      ]);
+      
+      console.log('✅ Transacción creada exitosamente:', result.rows[0]);
       
       res.status(201).json({
         transaction: {
           id: result.rows[0].id,
           uuid: result.rows[0].uuid,
+          concept: result.rows[0].concept,
           date: result.rows[0].date,
           description: result.rows[0].description,
           reference: result.rows[0].reference,
           amount: parseFloat(result.rows[0].amount),
           categoryId: result.rows[0].category_id,
+          categoryA: result.rows[0].category_a,
+          categoryB: result.rows[0].category_b,
+          categoryC: result.rows[0].category_c,
+          categoryD: result.rows[0].category_d,
+          categoryE: result.rows[0].category_e,
           transactionType: result.rows[0].transaction_type,
-          sourceModule: result.rows[0].source_module,
-          sourceId: result.rows[0].source_id,
           status: result.rows[0].status,
-          isRecurring: result.rows[0].is_recurring,
-          recurringConfig: result.rows[0].recurring_config,
+          incomeSource: result.rows[0].income_source,
+          bank: result.rows[0].bank,
+          addIva: result.rows[0].add_iva,
+          amountWithoutIva: result.rows[0].amount_without_iva,
+          ivaAmount: result.rows[0].iva_amount,
           createdAt: result.rows[0].created_at
         }
       });

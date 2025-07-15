@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,14 +18,23 @@ import { Receipt, Plus, Edit, Trash2, Search, Filter, Calendar, DollarSign, Uplo
 import { AdminLayout } from '@/components/AdminLayout';
 
 const transactionSchema = z.object({
-  transaction_type: z.enum(['income', 'expense']),
+  concept: z.string().min(1, 'El concepto es requerido'),
   amount: z.number().min(0.01, 'El monto debe ser mayor a 0'),
-  description: z.string().min(1, 'La descripción es requerida'),
+  transaction_type: z.enum(['income', 'expense']),
+  category_a: z.number().min(1, 'La categoría A es requerida'),
+  category_b: z.number().optional(),
+  category_c: z.number().optional(),
+  category_d: z.number().optional(),
+  category_e: z.number().optional(),
   transaction_date: z.string().min(1, 'La fecha es requerida'),
-  category_id: z.number().min(1, 'La categoría es requerida'),
+  status: z.enum(['pending', 'approved', 'rejected']).default('pending'),
+  income_source: z.string().optional(),
+  bank: z.string().optional(),
+  description: z.string().optional(),
+  add_iva: z.boolean().default(false),
+  amount_without_iva: z.number().optional(),
+  iva_amount: z.number().optional(),
   reference_number: z.string().optional(),
-  cost_center_id: z.number().optional(),
-  notes: z.string().optional(),
 });
 
 type TransactionFormData = z.infer<typeof transactionSchema>;
@@ -53,14 +63,23 @@ export default function AccountingTransactions() {
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
     defaultValues: {
-      transaction_type: 'income',
+      concept: '',
       amount: 0,
-      description: '',
+      transaction_type: 'income',
+      category_a: 0,
+      category_b: 0,
+      category_c: 0,
+      category_d: 0,
+      category_e: 0,
       transaction_date: new Date().toISOString().split('T')[0],
-      category_id: 0,
+      status: 'pending',
+      income_source: '',
+      bank: '',
+      description: '',
+      add_iva: false,
+      amount_without_iva: 0,
+      iva_amount: 0,
       reference_number: '',
-      cost_center_id: 0,
-      notes: '',
     },
   });
 
@@ -121,14 +140,23 @@ export default function AccountingTransactions() {
   const handleEdit = (transaction: any) => {
     setEditingTransaction(transaction);
     form.reset({
-      transaction_type: transaction.transaction_type,
-      amount: transaction.amount,
-      description: transaction.description,
-      transaction_date: transaction.transaction_date,
-      category_id: transaction.category_id,
+      concept: transaction.concept || '',
+      amount: transaction.amount || 0,
+      transaction_type: transaction.transaction_type || 'income',
+      category_a: transaction.category_a || 0,
+      category_b: transaction.category_b || 0,
+      category_c: transaction.category_c || 0,
+      category_d: transaction.category_d || 0,
+      category_e: transaction.category_e || 0,
+      transaction_date: transaction.transaction_date || new Date().toISOString().split('T')[0],
+      status: transaction.status || 'pending',
+      income_source: transaction.income_source || '',
+      bank: transaction.bank || '',
+      description: transaction.description || '',
+      add_iva: transaction.add_iva || false,
+      amount_without_iva: transaction.amount_without_iva || 0,
+      iva_amount: transaction.iva_amount || 0,
       reference_number: transaction.reference_number || '',
-      cost_center_id: transaction.cost_center_id || 0,
-      notes: transaction.notes || '',
     });
     setIsDialogOpen(true);
   };
@@ -247,40 +275,36 @@ export default function AccountingTransactions() {
                 </DialogHeader>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="transaction_type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tipo</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Seleccionar tipo" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="income">Ingreso</SelectItem>
-                              <SelectItem value="expense">Gasto</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
+                    <p className="text-sm text-gray-600 mb-4">
+                      Completa los campos para crear una nueva transacción con categorías jerárquicas
+                    </p>
+                    
+                    {/* Concepto y Monto */}
                     <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="concept"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Concepto *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ej: Consultoría Proyecto A" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       <FormField
                         control={form.control}
                         name="amount"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Monto</FormLabel>
+                            <FormLabel>Monto *</FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
                                 step="0.01"
-                                placeholder="0.00"
+                                placeholder="0"
                                 {...field}
                                 onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                               />
@@ -289,12 +313,173 @@ export default function AccountingTransactions() {
                           </FormItem>
                         )}
                       />
+                    </div>
+
+                    {/* Tipo y Categoría A */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="transaction_type"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Tipo *</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Ingreso" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="income">Ingreso</SelectItem>
+                                <SelectItem value="expense">Gasto</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="category_a"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Categoría A *</FormLabel>
+                            <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccionar" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {Array.isArray(categories) ? categories.filter((cat: any) => cat.level === 1).map((category: any) => (
+                                  <SelectItem key={category.id} value={category.id.toString()}>
+                                    {category.code} - {category.name}
+                                  </SelectItem>
+                                )) : null}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Separador */}
+                    <hr className="my-4" />
+                    
+                    {/* Categorías Jerárquicas Adicionales */}
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Categorías Jerárquicas Adicionales (Opcional)</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="category_b"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Categoría B</FormLabel>
+                            <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Sin especificar" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {Array.isArray(categories) ? categories.filter((cat: any) => cat.level === 2).map((category: any) => (
+                                  <SelectItem key={category.id} value={category.id.toString()}>
+                                    {category.code} - {category.name}
+                                  </SelectItem>
+                                )) : null}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="category_c"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Categoría C</FormLabel>
+                            <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Sin especificar" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {Array.isArray(categories) ? categories.filter((cat: any) => cat.level === 3).map((category: any) => (
+                                  <SelectItem key={category.id} value={category.id.toString()}>
+                                    {category.code} - {category.name}
+                                  </SelectItem>
+                                )) : null}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="category_d"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Categoría D</FormLabel>
+                            <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Sin especificar" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {Array.isArray(categories) ? categories.filter((cat: any) => cat.level === 4).map((category: any) => (
+                                  <SelectItem key={category.id} value={category.id.toString()}>
+                                    {category.code} - {category.name}
+                                  </SelectItem>
+                                )) : null}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="category_e"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Categoría E</FormLabel>
+                            <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Sin especificar" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {Array.isArray(categories) ? categories.filter((cat: any) => cat.level === 5).map((category: any) => (
+                                  <SelectItem key={category.id} value={category.id.toString()}>
+                                    {category.code} - {category.name}
+                                  </SelectItem>
+                                )) : null}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Fecha y Estado */}
+                    <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="transaction_date"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Fecha</FormLabel>
+                            <FormLabel>Fecha *</FormLabel>
                             <FormControl>
                               <Input type="date" {...field} />
                             </FormControl>
@@ -302,8 +487,86 @@ export default function AccountingTransactions() {
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Estado</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Pendiente" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="pending">Pendiente</SelectItem>
+                                <SelectItem value="approved">Aprobada</SelectItem>
+                                <SelectItem value="rejected">Rechazada</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
 
+                    {/* Fuente de Ingreso y Banco */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="income_source"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fuente de Ingreso</FormLabel>
+                            <Select onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Sin especificar" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="government">Gobierno Federal</SelectItem>
+                                <SelectItem value="state">Gobierno Estatal</SelectItem>
+                                <SelectItem value="municipal">Gobierno Municipal</SelectItem>
+                                <SelectItem value="private">Sector Privado</SelectItem>
+                                <SelectItem value="donations">Donaciones</SelectItem>
+                                <SelectItem value="other">Otros</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="bank"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Banco</FormLabel>
+                            <Select onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Sin especificar" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="bbva">BBVA</SelectItem>
+                                <SelectItem value="santander">Santander</SelectItem>
+                                <SelectItem value="banorte">Banorte</SelectItem>
+                                <SelectItem value="hsbc">HSBC</SelectItem>
+                                <SelectItem value="scotiabank">Scotiabank</SelectItem>
+                                <SelectItem value="banamex">Banamex</SelectItem>
+                                <SelectItem value="other">Otro</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Descripción */}
                     <FormField
                       control={form.control}
                       name="description"
@@ -311,60 +574,86 @@ export default function AccountingTransactions() {
                         <FormItem>
                           <FormLabel>Descripción</FormLabel>
                           <FormControl>
-                            <Input placeholder="Descripción de la transacción" {...field} />
+                            <Textarea placeholder="Descripción adicional (opcional)..." {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
 
-                    <FormField
-                      control={form.control}
-                      name="category_id"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Categoría</FormLabel>
-                          <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                    {/* IVA */}
+                    <div className="space-y-3">
+                      <FormField
+                        control={form.control}
+                        name="add_iva"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Seleccionar categoría" />
-                              </SelectTrigger>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
                             </FormControl>
-                            <SelectContent>
-                              {Array.isArray(categories) ? categories.map((category: any) => (
-                                <SelectItem key={category.id} value={category.id.toString()}>
-                                  {category.code} - {category.name}
-                                </SelectItem>
-                              )) : null}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>Añadir IVA (16%)</FormLabel>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      {form.watch('add_iva') && (
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="amount_without_iva"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Monto sin IVA</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="0"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="iva_amount"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>IVA (16%)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="0"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       )}
-                    />
+                    </div>
 
+                    {/* Referencia/Comprobante */}
                     <FormField
                       control={form.control}
                       name="reference_number"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Número de Referencia</FormLabel>
+                          <FormLabel>Referencia/Comprobante</FormLabel>
                           <FormControl>
-                            <Input placeholder="Número de factura, recibo, etc." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="notes"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Notas</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Notas adicionales..." {...field} />
+                            <Input placeholder="URL o referencia del comprobante (opcional)" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
