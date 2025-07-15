@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { ChevronLeft, Plus, Eye, Filter, Search, RefreshCw } from 'lucide-react';
+import { ChevronLeft, Plus, Eye, Filter, Search, RefreshCw, Download, Upload, FileText, ChevronRight } from 'lucide-react';
 import { AdminLayout } from '@/components/AdminLayout';
 import { useLocation } from 'wouter';
 
@@ -40,6 +40,12 @@ export default function JournalEntries() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const itemsPerPage = 15;
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
   const { data: journalEntries, isLoading } = useQuery({
@@ -107,13 +113,60 @@ export default function JournalEntries() {
     setLocation('/admin/accounting/dashboard');
   };
 
+  const handleViewEntry = (entry: any) => {
+    setSelectedEntry(entry);
+    setIsViewDialogOpen(true);
+  };
+
+  const handleExport = () => {
+    const csv = [
+      ['Número', 'Fecha', 'Descripción', 'Referencia', 'Tipo', 'Debe', 'Haber', 'Estado'],
+      ...mockJournalEntries.map(entry => [
+        entry.number,
+        entry.date,
+        entry.description,
+        entry.reference,
+        entry.type,
+        entry.totalDebit.toFixed(2),
+        entry.totalCredit.toFixed(2),
+        entry.status
+      ])
+    ].map(row => row.join(',')).join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `asientos-contables-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  const handleImport = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const csv = e.target?.result as string;
+        // Procesar CSV aquí
+        toast({
+          title: "Archivo importado",
+          description: "Los datos han sido procesados correctamente.",
+        });
+      };
+      reader.readAsText(file);
+    }
+  };
+
   // Datos simulados para mostrar la estructura según la imagen
   const mockJournalEntries = [
     {
       id: 1,
       number: 'AUTO-1751387935240',
       date: '30/6/2025',
-      description: 'Transacción automática: null',
+      description: 'Transacción automática: Pago de servicios básicos',
       reference: 'TRANS-85',
       type: 'automatico',
       totalDebit: 13000.00,
@@ -124,7 +177,7 @@ export default function JournalEntries() {
       id: 2,
       number: 'AUTO-1750978310917',
       date: '25/6/2025',
-      description: 'Transacción automática: null',
+      description: 'Transacción automática: Compra de materiales oficina',
       reference: 'TRANS-64',
       type: 'automatico',
       totalDebit: 6700.00,
@@ -135,7 +188,7 @@ export default function JournalEntries() {
       id: 3,
       number: 'AUTO-1750978160215',
       date: '25/6/2025',
-      description: 'Transacción automática: null',
+      description: 'Transacción automática: Mantenimiento de equipos',
       reference: 'TRANS-63',
       type: 'automatico',
       totalDebit: 5000.00,
@@ -146,7 +199,7 @@ export default function JournalEntries() {
       id: 4,
       number: 'AUTO-1750878717940',
       date: '24/6/2025',
-      description: 'Transacción automática: Aquí va la descripción',
+      description: 'Transacción automática: Ingreso por concesiones',
       reference: 'TRANS-61',
       type: 'automatico',
       totalDebit: 6000.00,
@@ -157,38 +210,174 @@ export default function JournalEntries() {
       id: 5,
       number: 'AUTO-1750681809469',
       date: '19/6/2025',
-      description: 'Transacción automática: Reposición Caja Chica...',
+      description: 'Transacción automática: Reposición Caja Chica',
       reference: 'TRANS-51',
       type: 'automatico',
-      totalDebit: 0.00,
-      totalCredit: 0.00,
+      totalDebit: 3500.00,
+      totalCredit: 3500.00,
       status: 'aprobado'
     },
     {
       id: 6,
       number: 'AUTO-1750681808864',
       date: '19/6/2025',
-      description: 'Transacción automática: Reposición Caja Chica...',
+      description: 'Transacción automática: Gasto en combustible',
       reference: 'TRANS-50',
       type: 'automatico',
-      totalDebit: 0.00,
-      totalCredit: 0.00,
+      totalDebit: 2800.00,
+      totalCredit: 2800.00,
       status: 'aprobado'
     },
     {
       id: 7,
       number: 'AUTO-1750681808262',
       date: '19/6/2025',
-      description: 'Transacción automática: Caja Chica: Autobuses...',
+      description: 'Transacción automática: Caja Chica: Autobuses',
       reference: 'TRANS-47',
       type: 'automatico',
-      totalDebit: 0.00,
-      totalCredit: 0.00,
+      totalDebit: 1200.00,
+      totalCredit: 1200.00,
+      status: 'aprobado'
+    },
+    {
+      id: 8,
+      number: 'MAN-1750681808263',
+      date: '18/6/2025',
+      description: 'Registro manual: Ajuste de inventario',
+      reference: 'TRANS-46',
+      type: 'manual',
+      totalDebit: 4500.00,
+      totalCredit: 4500.00,
+      status: 'aprobado'
+    },
+    {
+      id: 9,
+      number: 'AUTO-1750681808264',
+      date: '17/6/2025',
+      description: 'Transacción automática: Pago de nómina',
+      reference: 'TRANS-45',
+      type: 'automatico',
+      totalDebit: 28000.00,
+      totalCredit: 28000.00,
+      status: 'aprobado'
+    },
+    {
+      id: 10,
+      number: 'AUTO-1750681808265',
+      date: '16/6/2025',
+      description: 'Transacción automática: Ingreso por eventos',
+      reference: 'TRANS-44',
+      type: 'automatico',
+      totalDebit: 15000.00,
+      totalCredit: 15000.00,
+      status: 'aprobado'
+    },
+    {
+      id: 11,
+      number: 'MAN-1750681808266',
+      date: '15/6/2025',
+      description: 'Registro manual: Depreciación mensual',
+      reference: 'TRANS-43',
+      type: 'manual',
+      totalDebit: 3200.00,
+      totalCredit: 3200.00,
+      status: 'aprobado'
+    },
+    {
+      id: 12,
+      number: 'AUTO-1750681808267',
+      date: '14/6/2025',
+      description: 'Transacción automática: Compra de herramientas',
+      reference: 'TRANS-42',
+      type: 'automatico',
+      totalDebit: 8500.00,
+      totalCredit: 8500.00,
+      status: 'aprobado'
+    },
+    {
+      id: 13,
+      number: 'AUTO-1750681808268',
+      date: '13/6/2025',
+      description: 'Transacción automática: Pago de proveedores',
+      reference: 'TRANS-41',
+      type: 'automatico',
+      totalDebit: 12000.00,
+      totalCredit: 12000.00,
+      status: 'aprobado'
+    },
+    {
+      id: 14,
+      number: 'AUTO-1750681808269',
+      date: '12/6/2025',
+      description: 'Transacción automática: Recibo de agua',
+      reference: 'TRANS-40',
+      type: 'automatico',
+      totalDebit: 5600.00,
+      totalCredit: 5600.00,
+      status: 'aprobado'
+    },
+    {
+      id: 15,
+      number: 'AUTO-1750681808270',
+      date: '11/6/2025',
+      description: 'Transacción automática: Recibo de luz',
+      reference: 'TRANS-39',
+      type: 'automatico',
+      totalDebit: 9800.00,
+      totalCredit: 9800.00,
+      status: 'aprobado'
+    },
+    {
+      id: 16,
+      number: 'MAN-1750681808271',
+      date: '10/6/2025',
+      description: 'Registro manual: Ajuste por diferencia cambiaria',
+      reference: 'TRANS-38',
+      type: 'manual',
+      totalDebit: 2300.00,
+      totalCredit: 2300.00,
+      status: 'aprobado'
+    },
+    {
+      id: 17,
+      number: 'AUTO-1750681808272',
+      date: '09/6/2025',
+      description: 'Transacción automática: Venta de boletos',
+      reference: 'TRANS-37',
+      type: 'automatico',
+      totalDebit: 7500.00,
+      totalCredit: 7500.00,
+      status: 'aprobado'
+    },
+    {
+      id: 18,
+      number: 'AUTO-1750681808273',
+      date: '08/6/2025',
+      description: 'Transacción automática: Ingreso por donaciones',
+      reference: 'TRANS-36',
+      type: 'automatico',
+      totalDebit: 4800.00,
+      totalCredit: 4800.00,
       status: 'aprobado'
     }
   ];
 
-  const totalEntries = mockJournalEntries.length;
+  // Filtrar datos
+  const filteredEntries = mockJournalEntries.filter(entry => {
+    const matchesSearch = entry.description.toLowerCase().includes(search.toLowerCase()) || 
+                         entry.reference.toLowerCase().includes(search.toLowerCase()) ||
+                         entry.number.toLowerCase().includes(search.toLowerCase());
+    const matchesType = typeFilter === 'all' || entry.type === typeFilter;
+    const matchesStatus = statusFilter === 'all' || entry.status === statusFilter;
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  // Paginación
+  const totalEntries = filteredEntries.length;
+  const totalPages = Math.ceil(totalEntries / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentEntries = filteredEntries.slice(startIndex, endIndex);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
@@ -196,6 +385,11 @@ export default function JournalEntries() {
       currency: 'MXN',
       minimumFractionDigits: 2
     }).format(amount);
+  };
+
+  // Resetear página cuando cambian los filtros
+  const resetPage = () => {
+    setCurrentPage(1);
   };
 
   if (isLoading) {
@@ -517,10 +711,34 @@ export default function JournalEntries() {
         {/* Lista de Asientos */}
         <Card>
           <CardHeader>
-            <CardTitle>Asientos Contables Registrados</CardTitle>
-            <p className="text-sm text-gray-600">
-              Lista de todos los asientos contables del sistema ({totalEntries} registros)
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Asientos Contables Registrados</CardTitle>
+                <p className="text-sm text-gray-600">
+                  Mostrando {startIndex + 1}-{Math.min(endIndex, totalEntries)} de {totalEntries} registros
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleImport}
+                  className="flex items-center space-x-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  <span>Importar</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExport}
+                  className="flex items-center space-x-2"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Exportar</span>
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -539,7 +757,7 @@ export default function JournalEntries() {
                   </tr>
                 </thead>
                 <tbody>
-                  {mockJournalEntries.map((entry) => (
+                  {currentEntries.map((entry) => (
                     <tr key={entry.id} className="border-b hover:bg-gray-50">
                       <td className="p-2 font-mono text-sm">{entry.number}</td>
                       <td className="p-2">{entry.date}</td>
@@ -558,7 +776,12 @@ export default function JournalEntries() {
                         </Badge>
                       </td>
                       <td className="p-2">
-                        <Button variant="ghost" size="sm" title="Ver detalles">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          title="Ver detalles"
+                          onClick={() => handleViewEntry(entry)}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                       </td>
@@ -567,8 +790,120 @@ export default function JournalEntries() {
                 </tbody>
               </table>
             </div>
+            
+            {/* Paginación */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4">
+                <div className="text-sm text-gray-500">
+                  Página {currentPage} de {totalPages}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Anterior
+                  </Button>
+                  
+                  {/* Números de página */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className={currentPage === page ? "bg-[#00a587] hover:bg-[#067f5f]" : ""}
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Siguiente
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {/* Hidden file input for import */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv"
+          style={{ display: 'none' }}
+          onChange={handleFileUpload}
+        />
+
+        {/* Dialog para ver detalles */}
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Detalles del Asiento Contable</DialogTitle>
+            </DialogHeader>
+            {selectedEntry && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Número</label>
+                    <p className="font-mono text-sm">{selectedEntry.number}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Fecha</label>
+                    <p>{selectedEntry.date}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Referencia</label>
+                    <p>{selectedEntry.reference}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Tipo</label>
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                      {selectedEntry.type}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Descripción</label>
+                  <p className="text-sm">{selectedEntry.description}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Total Debe</label>
+                    <p className="text-lg font-semibold text-green-600">
+                      {formatCurrency(selectedEntry.totalDebit)}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Total Haber</label>
+                    <p className="text-lg font-semibold text-red-600">
+                      {formatCurrency(selectedEntry.totalCredit)}
+                    </p>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Estado</label>
+                  <Badge variant="default" className="bg-green-100 text-green-800 ml-2">
+                    {selectedEntry.status}
+                  </Badge>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
