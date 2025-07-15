@@ -182,12 +182,27 @@ export default function TreeMaintenancePage() {
 
   // Función para obtener especies filtradas por parque
   const getSpeciesForPark = useMemo(() => {
-    if (!trees || selectedParkId === 'all') return species || [];
+    console.log('getSpeciesForPark - selectedParkId:', selectedParkId);
+    console.log('getSpeciesForPark - trees:', trees?.length);
+    console.log('getSpeciesForPark - species:', species?.length);
+    
+    if (!trees || !species) return [];
+    
+    if (selectedParkId === 'all') {
+      console.log('Retornando todas las especies:', species);
+      return species;
+    }
     
     const parkTrees = trees.filter(tree => tree.parkId === parseInt(selectedParkId));
-    const speciesInPark = new Set(parkTrees.map(tree => tree.speciesId));
+    console.log('parkTrees:', parkTrees.length);
     
-    return species?.filter(sp => speciesInPark.has(sp.id)) || [];
+    const speciesInPark = new Set(parkTrees.map(tree => tree.speciesId));
+    console.log('speciesInPark:', speciesInPark);
+    
+    const filteredSpecies = species.filter(sp => speciesInPark.has(sp.id));
+    console.log('filteredSpecies:', filteredSpecies);
+    
+    return filteredSpecies;
   }, [trees, species, selectedParkId]);
 
   // Función para obtener árboles específicos para el formulario
