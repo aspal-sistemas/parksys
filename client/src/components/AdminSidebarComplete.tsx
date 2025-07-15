@@ -177,17 +177,24 @@ const AdminSidebarComplete: React.FC = () => {
       return ['gestion'];
     }
     
+    // Rutas que pertenecen al módulo "O & M"
+    if (location.startsWith('/admin/assets') || location.startsWith('/admin/incidents') || location.startsWith('/admin/volunteers')) {
+      return ['operations'];
+    }
+    
+    // Rutas que pertenecen al módulo "Admin/Finanzas"
+    if (location.startsWith('/admin/finance') || location.startsWith('/admin/accounting') || location.startsWith('/admin/concessions')) {
+      return ['admin-finance'];
+    }
+    
+    // Rutas que pertenecen al módulo "Mkt & Comm"
+    if (location.startsWith('/admin/marketing') || location.startsWith('/admin/communications')) {
+      return ['mkt-comm'];
+    }
+    
     // Otros módulos
     if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions') || location.startsWith('/admin/settings')) return ['system'];
-    if (location.startsWith('/admin/incidents')) return ['incidents'];
-    if (location.startsWith('/admin/assets')) return ['assets'];
-    if (location.startsWith('/admin/finance')) return ['finance'];
-    if (location.startsWith('/admin/accounting')) return ['accounting'];
-    if (location.startsWith('/admin/marketing')) return ['marketing'];
-    if (location.startsWith('/admin/concessions')) return ['concessions'];
     if (location.startsWith('/admin/hr')) return ['hr'];
-    if (location.startsWith('/admin/volunteers')) return ['volunteers'];
-    if (location.startsWith('/admin/communications')) return ['communications'];
     if (location.startsWith('/admin/security')) return ['security'];
     if (location.startsWith('/admin/analytics') || location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
     return []; // Sin módulos abiertos por defecto
@@ -508,217 +515,425 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 3. ACTIVOS */}
+          {/* 3. O & M - OPERACIONES Y MANTENIMIENTO */}
           <ModuleNav 
-            title={t('navigation.assets')} 
-            icon={<Package className="h-5 w-5" />}
-            value="assets"
+            title="O & M" 
+            icon={<Wrench className="h-5 w-5" />}
+            value="operations"
+            defaultOpen={location.startsWith('/admin/assets') || location.startsWith('/admin/incidents') || location.startsWith('/admin/volunteers')}
           >
-            <NavItem 
-              href="/admin/assets" 
-              icon={<BarChart className="h-5 w-5" />}
-              active={location === '/admin/assets'}
-            >
-              {t('navigation.operativeSummary')}
-            </NavItem>
-            <NavItem 
-              href="/admin/assets/categories" 
-              icon={<Tag className="h-5 w-5" />}
-              active={location.startsWith('/admin/assets/categories')}
-            >
-              Categorías
-            </NavItem>
-            <NavItem 
-              href="/admin/assets/inventory" 
-              icon={<Archive className="h-5 w-5" />}
-              active={location.startsWith('/admin/assets/inventory')}
-            >
-              {t('navigation.inventory')}
-            </NavItem>
-            <NavItem 
-              href="/admin/assets/map" 
-              icon={<Map className="h-5 w-5" />}
-              active={location === '/admin/assets/map'}
-            >
-              {t('navigation.map')}
-            </NavItem>
-            <NavItem 
-              href="/admin/assets/maintenance" 
-              icon={<Wrench className="h-5 w-5" />}
-              active={location.startsWith('/admin/assets/maintenance') && !location.includes('/calendar')}
-            >
-              {t('navigation.maintenance')}
-            </NavItem>
-            <NavItem 
-              href="/admin/assets/maintenance/calendar" 
-              icon={<Calendar className="h-5 w-5" />}
-              active={location.startsWith('/admin/assets/maintenance/calendar')}
-            >
-              Calendario
-            </NavItem>
-            <NavItem 
-              href="/admin/assets/assignments" 
-              icon={<UserCheck className="h-5 w-5" />}
-              active={location.startsWith('/admin/assets/assignments')}
-            >
-              {t('navigation.assignments')}
-            </NavItem>
+            {/* ACTIVOS */}
+            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1">
+              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
+                <Package className="h-4 w-4 mr-2" />
+                Activos
+              </div>
+              <NavItem 
+                href="/admin/assets" 
+                icon={<BarChart className="h-4 w-4" />}
+                active={location === '/admin/assets'}
+              >
+                {t('navigation.operativeSummary')}
+              </NavItem>
+              <NavItem 
+                href="/admin/assets/categories" 
+                icon={<Tag className="h-4 w-4" />}
+                active={location.startsWith('/admin/assets/categories')}
+              >
+                Categorías
+              </NavItem>
+              <NavItem 
+                href="/admin/assets/inventory" 
+                icon={<Archive className="h-4 w-4" />}
+                active={location.startsWith('/admin/assets/inventory')}
+              >
+                {t('navigation.inventory')}
+              </NavItem>
+              <NavItem 
+                href="/admin/assets/map" 
+                icon={<Map className="h-4 w-4" />}
+                active={location === '/admin/assets/map'}
+              >
+                {t('navigation.map')}
+              </NavItem>
+              <NavItem 
+                href="/admin/assets/maintenance" 
+                icon={<Wrench className="h-4 w-4" />}
+                active={location.startsWith('/admin/assets/maintenance') && !location.includes('/calendar')}
+              >
+                {t('navigation.maintenance')}
+              </NavItem>
+              <NavItem 
+                href="/admin/assets/maintenance/calendar" 
+                icon={<Calendar className="h-4 w-4" />}
+                active={location.startsWith('/admin/assets/maintenance/calendar')}
+              >
+                Calendario
+              </NavItem>
+              <NavItem 
+                href="/admin/assets/assignments" 
+                icon={<UserCheck className="h-4 w-4" />}
+                active={location.startsWith('/admin/assets/assignments')}
+              >
+                {t('navigation.assignments')}
+              </NavItem>
+            </div>
+
+            {/* INCIDENCIAS */}
+            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
+              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
+                <AlertTriangle className="h-4 w-4 mr-2" />
+                Incidencias
+              </div>
+              <NavItem 
+                href="/admin/incidents" 
+                icon={<ClipboardList className="h-4 w-4" />}
+                active={location === '/admin/incidents'}
+              >
+                {t('navigation.listing')}
+              </NavItem>
+              <NavItem 
+                href="/admin/incidents/categories" 
+                icon={<Tag className="h-4 w-4" />}
+                active={location === '/admin/incidents/categories'}
+              >
+                {t('navigation.categories')}
+              </NavItem>
+            </div>
+
+            {/* VOLUNTARIOS */}
+            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
+              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
+                <HeartHandshake className="h-4 w-4 mr-2" />
+                Voluntarios
+              </div>
+              <NavItem 
+                href="/admin/volunteers" 
+                icon={<Users className="h-4 w-4" />}
+                active={location === '/admin/volunteers'}
+              >
+                {t('navigation.listing')}
+              </NavItem>
+              <NavItem 
+                href="/admin/volunteers/register" 
+                icon={<Plus className="h-4 w-4" />}
+                active={location === '/admin/volunteers/register'}
+              >
+                Registro
+              </NavItem>
+              <NavItem 
+                href="/admin/volunteers/evaluations" 
+                icon={<Star className="h-4 w-4" />}
+                active={location === '/admin/volunteers/evaluations'}
+              >
+                Evaluaciones
+              </NavItem>
+              <NavItem 
+                href="/admin/volunteers/recognition" 
+                icon={<Award className="h-4 w-4" />}
+                active={location === '/admin/volunteers/recognition'}
+              >
+                Reconocimientos
+              </NavItem>
+            </div>
           </ModuleNav>
 
-          {/* 7. RESERVAS */}
+          {/* 4. ADMIN/FINANZAS */}
           <ModuleNav 
-            title="Reservas" 
-            icon={<CalendarClock className="h-5 w-5" />}
-            value="space-reservations"
-            defaultOpen={location.startsWith('/admin/space-reservations')}
-          >
-            <NavItem 
-              href="/admin/space-reservations" 
-              icon={<Calendar className="h-5 w-5" />}
-              active={location === '/admin/space-reservations'}
-            >
-              Reservas Activas
-            </NavItem>
-            <NavItem 
-              href="/admin/space-reservations/spaces" 
-              icon={<MapPin className="h-5 w-5" />}
-              active={location.startsWith('/admin/space-reservations/spaces')}
-            >
-              Espacios Disponibles
-            </NavItem>
-            <NavItem 
-              href="/admin/space-reservations/new" 
-              icon={<Plus className="h-5 w-5" />}
-              active={location.startsWith('/admin/space-reservations/new')}
-            >
-              Nueva Reserva
-            </NavItem>
-            <NavItem 
-              href="/admin/space-reservations/calendar" 
-              icon={<CalendarDays className="h-5 w-5" />}
-              active={location.startsWith('/admin/space-reservations/calendar')}
-            >
-              Calendario
-            </NavItem>
-          </ModuleNav>
-
-          {/* 8. INCIDENCIAS */}
-          <ModuleNav 
-            title={t('navigation.incidents')} 
-            icon={<AlertTriangle className="h-5 w-5" />}
-            value="incidents"
-          >
-            <NavItem 
-              href="/admin/incidents" 
-              icon={<ClipboardList className="h-5 w-5" />}
-              active={location === '/admin/incidents'}
-            >
-              {t('navigation.listing')}
-            </NavItem>
-            <NavItem 
-              href="/admin/incidents/categories" 
-              icon={<Tag className="h-5 w-5" />}
-              active={location === '/admin/incidents/categories'}
-            >
-              {t('navigation.categories')}
-            </NavItem>
-          </ModuleNav>
-
-          {/* 9. FINANZAS SIMPLIFICADO */}
-          <ModuleNav 
-            title={t('navigation.finance')} 
+            title="Admin/Finanzas" 
             icon={<DollarSign className="h-5 w-5" />}
-            value="finance"
+            value="admin-finance"
+            defaultOpen={location.startsWith('/admin/finance') || location.startsWith('/admin/accounting') || location.startsWith('/admin/concessions')}
           >
-            <NavItem 
-              href="/admin/finance/budget-planning" 
-              icon={<Target className="h-5 w-5" />}
-              active={location === '/admin/finance/budget-planning'}
-            >
-              Presupuestos
-            </NavItem>
-            <NavItem 
-              href="/admin/finance/cash-flow-matrix" 
-              icon={<LayoutGrid className="h-5 w-5" />}
-              active={location === '/admin/finance/cash-flow-matrix'}
-            >
-              {t('navigation.cashFlow')}
-            </NavItem>
-            <NavItem 
-              href="/admin/finance/calculator" 
-              icon={<Calculator className="h-5 w-5" />}
-              active={location === '/admin/finance/calculator'}
-            >
-              Calculadora
-            </NavItem>
-            <NavItem 
-              href="/admin/finance/reports" 
-              icon={<FileText className="h-5 w-5" />}
-              active={location === '/admin/finance/reports'}
-            >
-              {t('navigation.reports')}
-            </NavItem>
+            {/* FINANZAS */}
+            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1">
+              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
+                <Target className="h-4 w-4 mr-2" />
+                Finanzas
+              </div>
+              <NavItem 
+                href="/admin/finance/budget-planning" 
+                icon={<Target className="h-4 w-4" />}
+                active={location === '/admin/finance/budget-planning'}
+              >
+                Presupuestos
+              </NavItem>
+              <NavItem 
+                href="/admin/finance/cash-flow-matrix" 
+                icon={<LayoutGrid className="h-4 w-4" />}
+                active={location === '/admin/finance/cash-flow-matrix'}
+              >
+                {t('navigation.cashFlow')}
+              </NavItem>
+              <NavItem 
+                href="/admin/finance/calculator" 
+                icon={<Calculator className="h-4 w-4" />}
+                active={location === '/admin/finance/calculator'}
+              >
+                Calculadora
+              </NavItem>
+              <NavItem 
+                href="/admin/finance/reports" 
+                icon={<FileText className="h-4 w-4" />}
+                active={location === '/admin/finance/reports'}
+              >
+                {t('navigation.reports')}
+              </NavItem>
+            </div>
+
+            {/* CONTABILIDAD */}
+            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
+              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Contabilidad
+              </div>
+              <NavItem 
+                href="/admin/accounting/dashboard" 
+                icon={<BarChart className="h-4 w-4" />}
+                active={location === '/admin/accounting/dashboard'}
+              >
+                Dashboard
+              </NavItem>
+              <NavItem 
+                href="/admin/accounting/categories" 
+                icon={<FolderTree className="h-4 w-4" />}
+                active={location === '/admin/accounting/categories'}
+              >
+                Categorías
+              </NavItem>
+              <NavItem 
+                href="/admin/accounting/transactions" 
+                icon={<Receipt className="h-4 w-4" />}
+                active={location === '/admin/accounting/transactions'}
+              >
+                Transacciones
+              </NavItem>
+              <NavItem 
+                href="/admin/accounting/journal-entries" 
+                icon={<ClipboardList className="h-4 w-4" />}
+                active={location === '/admin/accounting/journal-entries'}
+              >
+                Asientos Contables
+              </NavItem>
+              <NavItem 
+                href="/admin/accounting/trial-balance" 
+                icon={<Scale className="h-4 w-4" />}
+                active={location === '/admin/accounting/trial-balance'}
+              >
+                Balance de Comprobación
+              </NavItem>
+              <NavItem 
+                href="/admin/accounting/financial-statements" 
+                icon={<FileText className="h-4 w-4" />}
+                active={location === '/admin/accounting/financial-statements'}
+              >
+                Estados Financieros
+              </NavItem>
+              <NavItem 
+                href="/admin/accounting/integration" 
+                icon={<ArrowRightLeft className="h-4 w-4" />}
+                active={location === '/admin/accounting/integration'}
+              >
+                Integración Financiera
+              </NavItem>
+            </div>
+
+            {/* CONCESIONES */}
+            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
+              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
+                <Store className="h-4 w-4 mr-2" />
+                Concesiones
+              </div>
+              <NavItem 
+                href="/admin/concessions/catalog" 
+                icon={<ListChecks className="h-4 w-4" />}
+                active={location.startsWith('/admin/concessions/catalog')}
+              >
+                Catálogo
+              </NavItem>
+              <NavItem 
+                href="/admin/concessions/concessionaires" 
+                icon={<Building className="h-4 w-4" />}
+                active={location.startsWith('/admin/concessions/concessionaires')}
+              >
+                Concesionarios
+              </NavItem>
+              <NavItem 
+                href="/admin/concessions/contracts" 
+                icon={<FileText className="h-4 w-4" />}
+                active={location.startsWith('/admin/concessions/contracts')}
+              >
+                {t('navigation.contracts')}
+              </NavItem>
+              <NavItem 
+                href="/admin/concessions/active" 
+                icon={<Handshake className="h-4 w-4" />}
+                active={location.startsWith('/admin/concessions/active')}
+              >
+                Concesiones Activas
+              </NavItem>
+              <NavItem 
+                href="/admin/concessions/reports" 
+                icon={<BarChart className="h-4 w-4" />}
+                active={location.startsWith('/admin/concessions/reports')}
+              >
+                {t('navigation.reports')}
+              </NavItem>
+            </div>
           </ModuleNav>
 
-          {/* 10. CONTABILIDAD */}
+          {/* 5. MKT & COMM */}
           <ModuleNav 
-            title="Contabilidad" 
-            icon={<BookOpen className="h-5 w-5" />}
-            value="accounting"
-            defaultOpen={location.startsWith('/admin/accounting')}
+            title="Mkt & Comm" 
+            icon={<Megaphone className="h-5 w-5" />}
+            value="mkt-comm"
+            defaultOpen={location.startsWith('/admin/marketing') || location.startsWith('/admin/communications')}
+          >
+            {/* MARKETING */}
+            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1">
+              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
+                <Megaphone className="h-4 w-4 mr-2" />
+                Marketing
+              </div>
+              <NavItem 
+                href="/admin/marketing" 
+                icon={<BarChart className="h-4 w-4" />}
+                active={location === '/admin/marketing'}
+              >
+                Dashboard
+              </NavItem>
+              <NavItem 
+                href="/admin/marketing/sponsors" 
+                icon={<Building className="h-4 w-4" />}
+                active={location.startsWith('/admin/marketing/sponsors')}
+              >
+                Patrocinadores
+              </NavItem>
+              <NavItem 
+                href="/admin/marketing/contracts" 
+                icon={<FileText className="h-4 w-4" />}
+                active={location.startsWith('/admin/marketing/contracts')}
+              >
+                Contratos
+              </NavItem>
+              <NavItem 
+                href="/admin/marketing/events" 
+                icon={<Calendar className="h-4 w-4" />}
+                active={location.startsWith('/admin/marketing/events')}
+              >
+                Eventos
+              </NavItem>
+              <NavItem 
+                href="/admin/marketing/assets" 
+                icon={<Image className="h-4 w-4" />}
+                active={location.startsWith('/admin/marketing/assets')}
+              >
+                Activos
+              </NavItem>
+              <NavItem 
+                href="/admin/marketing/evaluations" 
+                icon={<Star className="h-4 w-4" />}
+                active={location.startsWith('/admin/marketing/evaluations')}
+              >
+                Evaluaciones
+              </NavItem>
+            </div>
+
+            {/* COMUNICACIÓN */}
+            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
+              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Comunicación
+              </div>
+              <NavItem 
+                href="/admin/communications" 
+                icon={<BarChart className="h-4 w-4" />}
+                active={location === '/admin/communications'}
+              >
+                Dashboard
+              </NavItem>
+              <NavItem 
+                href="/admin/communications/templates" 
+                icon={<FileText className="h-4 w-4" />}
+                active={location === '/admin/communications/templates'}
+              >
+                Plantillas
+              </NavItem>
+              <NavItem 
+                href="/admin/communications/queue" 
+                icon={<ListChecks className="h-4 w-4" />}
+                active={location === '/admin/communications/queue'}
+              >
+                Cola de Emails
+              </NavItem>
+              <NavItem 
+                href="/admin/communications/campaigns" 
+                icon={<Megaphone className="h-4 w-4" />}
+                active={location === '/admin/communications/campaigns'}
+              >
+                Campañas
+              </NavItem>
+              <NavItem 
+                href="/admin/communications/bulk" 
+                icon={<Mail className="h-4 w-4" />}
+                active={location === '/admin/communications/bulk'}
+              >
+                Envío Masivo
+              </NavItem>
+              <NavItem 
+                href="/admin/communications/analytics" 
+                icon={<TrendingUp className="h-4 w-4" />}
+                active={location === '/admin/communications/analytics'}
+              >
+                Análisis
+              </NavItem>
+            </div>
+          </ModuleNav>
+
+          {/* 6. RECURSOS HUMANOS */}
+          <ModuleNav 
+            title="Recursos Humanos" 
+            icon={<Users className="h-5 w-5" />}
+            value="hr"
           >
             <NavItem 
-              href="/admin/accounting/dashboard" 
+              href="/admin/hr/dashboard" 
               icon={<BarChart className="h-5 w-5" />}
-              active={location === '/admin/accounting/dashboard'}
+              active={location === '/admin/hr/dashboard'}
             >
               Dashboard
             </NavItem>
             <NavItem 
-              href="/admin/accounting/categories" 
-              icon={<FolderTree className="h-5 w-5" />}
-              active={location === '/admin/accounting/categories'}
+              href="/admin/hr/employees" 
+              icon={<Users className="h-5 w-5" />}
+              active={location === '/admin/hr/employees'}
             >
-              Categorías
+              Empleados
             </NavItem>
             <NavItem 
-              href="/admin/accounting/transactions" 
-              icon={<Receipt className="h-5 w-5" />}
-              active={location === '/admin/accounting/transactions'}
+              href="/admin/hr/payroll" 
+              icon={<DollarSign className="h-5 w-5" />}
+              active={location === '/admin/hr/payroll'}
             >
-              Transacciones
+              Nómina
             </NavItem>
             <NavItem 
-              href="/admin/accounting/journal-entries" 
-              icon={<ClipboardList className="h-5 w-5" />}
-              active={location === '/admin/accounting/journal-entries'}
+              href="/admin/hr/vacations" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location === '/admin/hr/vacations'}
             >
-              Asientos Contables
+              Vacaciones
             </NavItem>
             <NavItem 
-              href="/admin/accounting/trial-balance" 
-              icon={<Scale className="h-5 w-5" />}
-              active={location === '/admin/accounting/trial-balance'}
-            >
-              Balance de Comprobación
-            </NavItem>
-            <NavItem 
-              href="/admin/accounting/financial-statements" 
+              href="/admin/hr/reports" 
               icon={<FileText className="h-5 w-5" />}
-              active={location === '/admin/accounting/financial-statements'}
+              active={location === '/admin/hr/reports'}
             >
-              Estados Financieros
-            </NavItem>
-            <NavItem 
-              href="/admin/accounting/integration" 
-              icon={<ArrowRightLeft className="h-5 w-5" />}
-              active={location === '/admin/accounting/integration'}
-            >
-              Integración Financiera
+              Reportes
             </NavItem>
           </ModuleNav>
 
-          {/* 11. EVENTOS */}
+          {/* 7. EVENTOS */}
           <ModuleNav 
             title="Eventos" 
             icon={<CalendarDays className="h-5 w-5" />}
@@ -762,108 +977,41 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 11. MARKETING */}
+          {/* 8. SEGURIDAD */}
           <ModuleNav 
-            title="Marketing" 
-            icon={<Megaphone className="h-5 w-5" />}
-            value="marketing"
-            defaultOpen={location.startsWith('/admin/marketing')}
+            title="Seguridad" 
+            icon={<Shield className="h-5 w-5" />}
+            value="security"
           >
             <NavItem 
-              href="/admin/marketing" 
-              icon={<BarChart className="h-5 w-5" />}
-              active={location === '/admin/marketing'}
+              href="/admin/security" 
+              icon={<Shield className="h-5 w-5" />}
+              active={location === '/admin/security'}
             >
               Dashboard
             </NavItem>
             <NavItem 
-              href="/admin/marketing/sponsors" 
-              icon={<Building className="h-5 w-5" />}
-              active={location.startsWith('/admin/marketing/sponsors')}
+              href="/admin/security/password" 
+              icon={<Lock className="h-5 w-5" />}
+              active={location === '/admin/security/password'}
             >
-              Patrocinadores
+              Cambiar Contraseña
             </NavItem>
             <NavItem 
-              href="/admin/marketing/contracts" 
-              icon={<FileText className="h-5 w-5" />}
-              active={location.startsWith('/admin/marketing/contracts')}
+              href="/admin/security/audit" 
+              icon={<ClipboardList className="h-5 w-5" />}
+              active={location === '/admin/security/audit'}
             >
-              Contratos
+              Auditoría
             </NavItem>
             <NavItem 
-              href="/admin/marketing/events" 
-              icon={<Calendar className="h-5 w-5" />}
-              active={location.startsWith('/admin/marketing/events')}
+              href="/admin/security/settings" 
+              icon={<Settings className="h-5 w-5" />}
+              active={location === '/admin/security/settings'}
             >
-              Eventos
+              Configuración
             </NavItem>
-
-            <NavItem 
-              href="/admin/marketing/assets" 
-              icon={<Image className="h-5 w-5" />}
-              active={location.startsWith('/admin/marketing/assets')}
-            >
-              Activos
-            </NavItem>
-            <NavItem 
-              href="/admin/marketing/evaluations" 
-              icon={<Star className="h-5 w-5" />}
-              active={location.startsWith('/admin/marketing/evaluations')}
-            >
-              Evaluaciones
-            </NavItem>
-          </ModuleNav>
-
-          {/* 12. CONCESIONES */}
-          <ModuleNav 
-            title={t('navigation.concessions')} 
-            icon={<Store className="h-5 w-5" />}
-            value="concessions"
-          >
-            <NavItem 
-              href="/admin/concessions/catalog" 
-              icon={<ListChecks className="h-5 w-5" />}
-              active={location.startsWith('/admin/concessions/catalog')}
-            >
-              Catálogo
-            </NavItem>
-            <NavItem 
-              href="/admin/concessions/concessionaires" 
-              icon={<Building className="h-5 w-5" />}
-              active={location.startsWith('/admin/concessions/concessionaires')}
-            >
-              Concesionarios
-            </NavItem>
-            <NavItem 
-              href="/admin/concessions/contracts" 
-              icon={<FileText className="h-5 w-5" />}
-              active={location.startsWith('/admin/concessions/contracts')}
-            >
-              {t('navigation.contracts')}
-            </NavItem>
-            <NavItem 
-              href="/admin/concessions/active" 
-              icon={<Handshake className="h-5 w-5" />}
-              active={location.startsWith('/admin/concessions/active')}
-            >
-              Concesiones Activas
-            </NavItem>
-            <NavItem 
-              href="/admin/concessions/reports" 
-              icon={<BarChart className="h-5 w-5" />}
-              active={location.startsWith('/admin/concessions/reports')}
-            >
-              {t('navigation.reports')}
-            </NavItem>
-          </ModuleNav>
-
-          {/* 13. RECURSOS HUMANOS */}
-          <ModuleNav 
-            title="Recursos Humanos" 
-            icon={<Users className="h-5 w-5" />}
-            value="hr"
-          >
-            <NavItem 
+          </ModuleNav> 
               href="/admin/hr/employees" 
               icon={<User className="h-5 w-5" />}
               active={location.startsWith('/admin/hr/employees')}
