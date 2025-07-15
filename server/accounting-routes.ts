@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { pool } from './db';
+import { generateAccountingEntry, syncExistingTransactions, getIntegrationStats } from './finance-accounting-integration';
 
 /**
  * RUTAS DEL MÓDULO DE CONTABILIDAD
@@ -1457,6 +1458,90 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
       
     } catch (error) {
       console.error('Error obteniendo estado de resultados:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // =======================================
+  // INTEGRACIÓN CON MÓDULO FINANCIERO
+  // =======================================
+
+  // Obtener estadísticas de integración
+  apiRouter.get('/accounting/integration/stats', async (req: Request, res: Response) => {
+    try {
+      const stats = await getIntegrationStats();
+      res.json({ success: true, stats });
+    } catch (error) {
+      console.error('Error obteniendo estadísticas de integración:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Sincronizar transacciones financieras existentes
+  apiRouter.post('/accounting/integration/sync', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      await syncExistingTransactions(req.user?.id || 1);
+      const stats = await getIntegrationStats();
+      res.json({ 
+        success: true, 
+        message: 'Sincronización completada exitosamente',
+        stats 
+      });
+    } catch (error) {
+      console.error('Error en sincronización:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Generar asiento contable para transacción específica
+  apiRouter.post('/accounting/integration/generate-entry', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { transactionId, type } = req.body;
+      
+      if (!transactionId || !type) {
+        return res.status(400).json({ error: 'transactionId y type son requeridos' });
+      }
+
+      // Obtener datos de la transacción
+      const table = type === 'income' ? 'actual_incomes' : 'actual_expenses';
+      const result = await pool.query(
+        `SELECT id, amount, category_id, description, date FROM ${table} WHERE id = $1`,
+        [transactionId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Transacción no encontrada' });
+      }
+
+      const transaction = { ...result.rows[0], type };
+      await generateAccountingEntry(transaction, req.user?.id || 1);
+      
+      res.json({ 
+        success: true, 
+        message: 'Asiento contable generado exitosamente' 
+      });
+    } catch (error) {
+      console.error('Error generando asiento contable:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Sincronizar categorías financieras con categorías contables
+  apiRouter.post('/accounting/sync-financial-categories', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Importar función de sincronización
+      const { syncFinancialCategories, getSyncStats } = await import('./financial-category-sync');
+      
+      await syncFinancialCategories();
+      const stats = await getSyncStats();
+      
+      res.json({
+        success: true,
+        message: 'Categorías financieras sincronizadas exitosamente',
+        stats
+      });
+    } catch (error) {
+      console.error('Error en sincronización de categorías:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   });

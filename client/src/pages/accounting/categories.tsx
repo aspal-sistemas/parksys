@@ -69,6 +69,27 @@ export default function AccountingCategories() {
     },
   });
 
+  const syncMutation = useMutation({
+    mutationFn: () => apiRequest('/api/accounting/sync-financial-categories', {
+      method: 'POST',
+      body: JSON.stringify({})
+    }),
+    onSuccess: () => {
+      toast({
+        title: "Sincronización exitosa",
+        description: "Las categorías financieras se han sincronizado con las categorías contables"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/accounting/categories'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error en sincronización",
+        description: error.message || "No se pudo sincronizar con el módulo financiero",
+        variant: "destructive"
+      });
+    }
+  });
+
   const createMutation = useMutation({
     mutationFn: (data: CategoryFormData) => apiRequest('/api/accounting/categories', {
       method: 'POST',
@@ -308,6 +329,16 @@ export default function AccountingCategories() {
             >
               <List className="h-4 w-4 mr-2" />
               Lista
+            </Button>
+
+            <Button
+              onClick={() => syncMutation.mutate()}
+              disabled={syncMutation.isPending}
+              variant="outline"
+              size="sm"
+            >
+              <Wallet className="h-4 w-4 mr-2" />
+              {syncMutation.isPending ? 'Sincronizando...' : 'Sincronizar Finanzas'}
             </Button>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

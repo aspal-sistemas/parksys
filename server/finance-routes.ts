@@ -15,6 +15,7 @@ import {
 import { eq, and, gte, lte, sum, desc, asc, sql } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
+import { generateAccountingEntry } from "./finance-accounting-integration";
 
 // Configuración de multer para carga de archivos CSV
 const upload = multer({
@@ -871,6 +872,23 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
       incomeData.year = date.getFullYear();
       
       const [newIncome] = await db.insert(actualIncomes).values(incomeData).returning();
+      
+      // Generar asiento contable automáticamente
+      try {
+        await generateAccountingEntry({
+          id: newIncome.id,
+          type: 'income',
+          amount: parseFloat(newIncome.amount),
+          category_id: newIncome.categoryId,
+          description: newIncome.description,
+          date: newIncome.date,
+          reference: newIncome.reference
+        }, 1);
+        console.log('📊 Asiento contable generado automáticamente para ingreso:', newIncome.id);
+      } catch (error) {
+        console.warn('⚠️ Error generando asiento contable automático:', error);
+      }
+      
       res.status(201).json(newIncome);
     } catch (error) {
       console.error("Error al registrar ingreso:", error);
@@ -978,6 +996,23 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
       expenseData.year = date.getFullYear();
       
       const [newExpense] = await db.insert(actualExpenses).values(expenseData).returning();
+      
+      // Generar asiento contable automáticamente
+      try {
+        await generateAccountingEntry({
+          id: newExpense.id,
+          type: 'expense',
+          amount: parseFloat(newExpense.amount),
+          category_id: newExpense.categoryId,
+          description: newExpense.description,
+          date: newExpense.date,
+          reference: newExpense.referenceNumber
+        }, 1);
+        console.log('📊 Asiento contable generado automáticamente para gasto:', newExpense.id);
+      } catch (error) {
+        console.warn('⚠️ Error generando asiento contable automático:', error);
+      }
+      
       res.status(201).json(newExpense);
     } catch (error) {
       console.error("Error al registrar egreso:", error);
