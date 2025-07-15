@@ -537,7 +537,7 @@ const AdminSidebarComplete: React.FC = () => {
               icon={<Target className="h-5 w-5" />}
               active={location === '/admin/finance/budget-planning'}
             >
-              Planificación Presupuestaria
+              Presupuestos
             </NavItem>
             <NavItem 
               href="/admin/finance/cash-flow-matrix" 
