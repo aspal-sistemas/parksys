@@ -24,6 +24,10 @@ const categorySchema = z.object({
   sat_code: z.string().optional(),
   description: z.string().optional(),
   is_active: z.boolean().default(true),
+  type: z.enum(['activo', 'pasivo', 'capital', 'ingreso', 'costo', 'gasto']),
+  nature: z.enum(['deudora', 'acreedora']),
+  account_type: z.enum(['mayor', 'movimiento']),
+  color: z.string().optional(),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
@@ -58,6 +62,10 @@ export default function AccountingCategories() {
       sat_code: 'none',
       description: '',
       is_active: true,
+      type: 'activo',
+      nature: 'deudora',
+      account_type: 'mayor',
+      color: '#00a587',
     },
   });
 
@@ -154,6 +162,10 @@ export default function AccountingCategories() {
       sat_code: category.sat_code || 'none',
       description: category.description || '',
       is_active: category.is_active,
+      type: category.type || 'activo',
+      nature: category.nature || 'deudora',
+      account_type: category.account_type || 'mayor',
+      color: category.color || '#00a587',
     });
     setIsDialogOpen(true);
   };
@@ -368,6 +380,90 @@ export default function AccountingCategories() {
                         </FormItem>
                       )}
                     />
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="type"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Tipo</FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccione tipo" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="activo">Activo</SelectItem>
+                                <SelectItem value="pasivo">Pasivo</SelectItem>
+                                <SelectItem value="capital">Capital</SelectItem>
+                                <SelectItem value="ingreso">Ingreso</SelectItem>
+                                <SelectItem value="costo">Costo</SelectItem>
+                                <SelectItem value="gasto">Gasto</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="color"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Color</FormLabel>
+                            <FormControl>
+                              <Input type="color" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="nature"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Naturaleza</FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccione naturaleza" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="deudora">Deudora</SelectItem>
+                                <SelectItem value="acreedora">Acreedora</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="account_type"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Tipo de Cuenta</FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccione tipo de cuenta" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="mayor">Mayor</SelectItem>
+                                <SelectItem value="movimiento">de Movimiento</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}

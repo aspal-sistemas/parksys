@@ -59,16 +59,20 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
           name: row.name,
           description: row.description,
           level: row.level,
-          parentId: row.parent_id,
-          parentName: row.parent_name,
-          satCode: row.sat_code,
-          accountNature: row.account_nature,
-          fullPath: row.full_path,
-          sortOrder: row.sort_order,
-          childrenCount: parseInt(row.children_count),
-          isActive: row.is_active,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at
+          parent_id: row.parent_id,
+          parent_name: row.parent_name,
+          sat_code: row.sat_code,
+          type: row.type,
+          nature: row.nature,
+          account_type: row.account_type,
+          color: row.color,
+          account_nature: row.account_nature,
+          full_path: row.full_path,
+          sort_order: row.sort_order,
+          children_count: parseInt(row.children_count),
+          is_active: row.is_active,
+          created_at: row.created_at,
+          updated_at: row.updated_at
         }))
       });
       
@@ -82,7 +86,7 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
   apiRouter.post('/accounting/categories', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { 
-        code, name, description, level, parentId, satCode, accountNature, sortOrder 
+        code, name, description, level, parent_id, sat_code, type, nature, account_type, color, is_active 
       } = req.body;
       
       // Validar que el código no exista
@@ -97,10 +101,10 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
       
       // Construir full_path
       let fullPath = code;
-      if (parentId) {
+      if (parent_id) {
         const parent = await pool.query(
           'SELECT full_path FROM accounting_categories WHERE id = $1',
-          [parentId]
+          [parent_id]
         );
         if (parent.rows.length > 0) {
           fullPath = `${parent.rows[0].full_path}.${code}`;
@@ -109,10 +113,10 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
       
       const result = await pool.query(`
         INSERT INTO accounting_categories 
-        (code, name, description, level, parent_id, sat_code, account_nature, full_path, sort_order, created_by)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        (code, name, description, level, parent_id, sat_code, type, nature, account_type, color, is_active, full_path, sort_order, created_by)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING *
-      `, [code, name, description, level, parentId, satCode, accountNature, fullPath, sortOrder, req.user?.id]);
+      `, [code, name, description, level, parent_id, sat_code, type, nature, account_type, color, is_active, fullPath, 1, req.user?.id]);
       
       res.status(201).json({
         category: {
@@ -121,13 +125,16 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
           name: result.rows[0].name,
           description: result.rows[0].description,
           level: result.rows[0].level,
-          parentId: result.rows[0].parent_id,
-          satCode: result.rows[0].sat_code,
-          accountNature: result.rows[0].account_nature,
-          fullPath: result.rows[0].full_path,
-          sortOrder: result.rows[0].sort_order,
-          isActive: result.rows[0].is_active,
-          createdAt: result.rows[0].created_at
+          parent_id: result.rows[0].parent_id,
+          sat_code: result.rows[0].sat_code,
+          type: result.rows[0].type,
+          nature: result.rows[0].nature,
+          account_type: result.rows[0].account_type,
+          color: result.rows[0].color,
+          full_path: result.rows[0].full_path,
+          sort_order: result.rows[0].sort_order,
+          is_active: result.rows[0].is_active,
+          created_at: result.rows[0].created_at
         }
       });
       
