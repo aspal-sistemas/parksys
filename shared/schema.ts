@@ -1105,6 +1105,7 @@ export const trees = pgTable("trees", {
   id: serial("id").primaryKey(),
   species_id: integer("species_id").references(() => treeSpecies.id),
   park_id: integer("park_id").references(() => parks.id),
+  code: varchar("code", { length: 20 }).unique(), // Código único de identificación
   last_maintenance_date: date("last_maintenance_date"),
   created_by: integer("created_by"),
   created_at: timestamp("created_at").notNull().defaultNow(),
