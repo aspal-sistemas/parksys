@@ -503,6 +503,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/accounting/fixed-assets')))}
           </Suspense>
         </Route>
+        <Route path="/admin/accounting/integration">
+          <Suspense fallback={<div className="p-8 text-center">Cargando integración contable-financiera...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/accounting/integration')))}
+          </Suspense>
+        </Route>
 
         {/* Rutas para el módulo de marketing/patrocinios */}
         <Route path="/admin/marketing">

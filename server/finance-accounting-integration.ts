@@ -42,19 +42,19 @@ interface AccountingEntryLine {
 async function getAccountingCategoryMapping(transactionType: string): Promise<any> {
   // Obtener cuentas contables principales según el tipo de transacción
   const [cajaResult, operationalResult] = await Promise.all([
-    // Cuenta de efectivo (siempre presente en ambos lados)
+    // Cuenta de efectivo (código 101.01 - Caja y efectivo)
     pool.query(`
-      SELECT id, code, name, nature 
+      SELECT id, code, name, account_nature
       FROM accounting_categories 
-      WHERE code LIKE '1.1.%' AND name ILIKE '%efectivo%' OR name ILIKE '%caja%' OR name ILIKE '%bancos%'
-      ORDER BY code LIMIT 1
+      WHERE code = '101.01'
+      LIMIT 1
     `),
     // Cuenta operacional según el tipo
     pool.query(`
-      SELECT id, code, name, nature 
+      SELECT id, code, name, account_nature
       FROM accounting_categories 
-      WHERE code LIKE '${transactionType === 'income' ? '4' : '5'}.%' 
-      AND level >= 2
+      WHERE code LIKE '${transactionType === 'income' ? '4' : '5'}%' 
+      AND code != '${transactionType === 'income' ? '400' : '500'}'
       ORDER BY code LIMIT 1
     `)
   ]);

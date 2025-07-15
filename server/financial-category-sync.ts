@@ -27,9 +27,10 @@ export async function syncFinancialCategories(): Promise<void> {
       ORDER BY code
     `);
     
-    // Limpiar categorías financieras existentes
-    await pool.query('DELETE FROM income_categories');
-    await pool.query('DELETE FROM expense_categories');
+    // En lugar de eliminar categorías, vamos a sincronizarlas por código
+    // Primero marcar todas las categorías existentes como no sincronizadas
+    await pool.query('UPDATE income_categories SET is_active = false, accounting_category_id = NULL');
+    await pool.query('UPDATE expense_categories SET is_active = false, accounting_category_id = NULL');
     
     let incomeCategoriesCreated = 0;
     let expenseCategoriesCreated = 0;

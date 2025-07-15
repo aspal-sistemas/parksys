@@ -98,6 +98,20 @@ export default function AccountingIntegration() {
           </div>
           <div className="flex items-center space-x-3">
             <Button
+              onClick={() => {
+                queryClient.invalidateQueries({ queryKey: ['/api/accounting/integration/stats'] });
+                toast({
+                  title: "Estado actualizado",
+                  description: "Verificando estado actual de la integración"
+                });
+              }}
+              disabled={statsLoading}
+              variant="outline"
+            >
+              <Activity className={`h-4 w-4 mr-2 ${statsLoading ? 'animate-spin' : ''}`} />
+              {statsLoading ? 'Verificando...' : 'Verificar Estado'}
+            </Button>
+            <Button
               onClick={() => categorySyncMutation.mutate()}
               disabled={categorySyncMutation.isPending}
               variant="outline"

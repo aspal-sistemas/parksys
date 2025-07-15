@@ -611,6 +611,13 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Estados Financieros
             </NavItem>
+            <NavItem 
+              href="/admin/accounting/integration" 
+              icon={<ArrowRightLeft className="h-5 w-5" />}
+              active={location === '/admin/accounting/integration'}
+            >
+              Integración Financiera
+            </NavItem>
           </ModuleNav>
 
           {/* 11. EVENTOS */}
