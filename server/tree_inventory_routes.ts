@@ -55,7 +55,7 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
         ${parkId ? `AND t.park_id = ${parkId}` : ''}
         ${speciesId ? `AND t.species_id = ${speciesId}` : ''}
         ${healthStatus ? `AND t.health_status = '${healthStatus}'` : ''}
-        ${searchTerm ? `AND (t.location_description ILIKE '%${searchTerm}%' OR t.notes ILIKE '%${searchTerm}%' OR ts.common_name ILIKE '%${searchTerm}%' OR ts.scientific_name ILIKE '%${searchTerm}%')` : ''}
+        ${searchTerm ? `AND (t.location_description ILIKE '%${searchTerm}%' OR t.notes ILIKE '%${searchTerm}%' OR ts.common_name ILIKE '%${searchTerm}%' OR ts.scientific_name ILIKE '%${searchTerm}%' OR t.code ILIKE '%${searchTerm}%')` : ''}
       `;
       
       const countResult = await pool.query(countQuery);
@@ -65,6 +65,7 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
       const query = `
         SELECT 
           t.id,
+          t.code,
           t.species_id as "speciesId",
           ts.common_name as "speciesName",
           ts.scientific_name as "scientificName",
@@ -88,7 +89,7 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
         ${parkId ? `AND t.park_id = ${parkId}` : ''}
         ${speciesId ? `AND t.species_id = ${speciesId}` : ''}
         ${healthStatus ? `AND t.health_status = '${healthStatus}'` : ''}
-        ${searchTerm ? `AND (t.location_description ILIKE '%${searchTerm}%' OR t.notes ILIKE '%${searchTerm}%' OR ts.common_name ILIKE '%${searchTerm}%' OR ts.scientific_name ILIKE '%${searchTerm}%')` : ''}
+        ${searchTerm ? `AND (t.location_description ILIKE '%${searchTerm}%' OR t.notes ILIKE '%${searchTerm}%' OR ts.common_name ILIKE '%${searchTerm}%' OR ts.scientific_name ILIKE '%${searchTerm}%' OR t.code ILIKE '%${searchTerm}%')` : ''}
         ORDER BY t.updated_at DESC
         LIMIT ${limit} OFFSET ${offset}
       `;
@@ -150,7 +151,7 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
         ${parkId ? `AND t.park_id = ${parkId}` : ''}
         ${speciesId ? `AND t.species_id = ${speciesId}` : ''}
         ${healthStatus ? `AND t.health_status = '${healthStatus}'` : ''}
-        ${searchTerm ? `AND (t.location_description ILIKE '%${searchTerm}%' OR t.notes ILIKE '%${searchTerm}%' OR ts.common_name ILIKE '%${searchTerm}%' OR ts.scientific_name ILIKE '%${searchTerm}%')` : ''}
+        ${searchTerm ? `AND (t.location_description ILIKE '%${searchTerm}%' OR t.notes ILIKE '%${searchTerm}%' OR ts.common_name ILIKE '%${searchTerm}%' OR ts.scientific_name ILIKE '%${searchTerm}%' OR t.code ILIKE '%${searchTerm}%')` : ''}
       `;
       
       const countResult = await pool.query(countQuery);
@@ -160,6 +161,7 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
       const query = `
         SELECT 
           t.id,
+          t.code,
           t.species_id as "speciesId",
           ts.common_name as "speciesName",
           ts.scientific_name as "scientificName",
@@ -183,7 +185,7 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
         ${parkId ? `AND t.park_id = ${parkId}` : ''}
         ${speciesId ? `AND t.species_id = ${speciesId}` : ''}
         ${healthStatus ? `AND t.health_status = '${healthStatus}'` : ''}
-        ${searchTerm ? `AND (t.location_description ILIKE '%${searchTerm}%' OR t.notes ILIKE '%${searchTerm}%' OR ts.common_name ILIKE '%${searchTerm}%' OR ts.scientific_name ILIKE '%${searchTerm}%')` : ''}
+        ${searchTerm ? `AND (t.location_description ILIKE '%${searchTerm}%' OR t.notes ILIKE '%${searchTerm}%' OR ts.common_name ILIKE '%${searchTerm}%' OR ts.scientific_name ILIKE '%${searchTerm}%' OR t.code ILIKE '%${searchTerm}%')` : ''}
         ORDER BY t.updated_at DESC
         LIMIT ${limit} OFFSET ${offset}
       `;
