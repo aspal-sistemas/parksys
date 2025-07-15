@@ -325,6 +325,10 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
   // Crear nueva transacción
   apiRouter.post('/accounting/transactions', isAuthenticated, async (req: Request, res: Response) => {
     try {
+      console.log('📊 DEBUGGING - Raw request body:', req.body);
+      console.log('📊 DEBUGGING - Request headers:', req.headers);
+      console.log('📊 DEBUGGING - Content-Type:', req.get('Content-Type'));
+      
       const { 
         concept, amount, transaction_type, category_a, category_b, category_c, 
         category_d, category_e, transaction_date, status, income_source, 
