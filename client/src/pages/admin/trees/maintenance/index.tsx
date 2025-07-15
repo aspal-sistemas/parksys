@@ -315,17 +315,23 @@ export default function TreeMaintenancePage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos los parques</SelectItem>
-              {loadingParks ? (
-                <SelectItem value="loading" disabled>Cargando parques...</SelectItem>
-              ) : !parks || parks.length === 0 ? (
-                <SelectItem value="none" disabled>No hay parques disponibles</SelectItem>
-              ) : (
-                parks.map((park) => (
-                  <SelectItem key={park.id} value={park.name}>
-                    {park.name}
-                  </SelectItem>
-                ))
-              )}
+              {(() => {
+                console.log('Renderizando selector de parques:', { loadingParks, parks });
+                if (loadingParks) {
+                  return <SelectItem value="loading" disabled>Cargando parques...</SelectItem>;
+                }
+                if (!parks || parks.length === 0) {
+                  return <SelectItem value="none" disabled>No hay parques disponibles</SelectItem>;
+                }
+                return parks.map((park) => {
+                  console.log('Creando item para parque:', park.name);
+                  return (
+                    <SelectItem key={park.id} value={park.name}>
+                      {park.name}
+                    </SelectItem>
+                  );
+                });
+              })()}
             </SelectContent>
           </Select>
           
