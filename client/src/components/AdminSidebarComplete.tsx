@@ -933,49 +933,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 7. EVENTOS */}
-          <ModuleNav 
-            title="Eventos" 
-            icon={<CalendarDays className="h-5 w-5" />}
-            value="events"
-            defaultOpen={location.startsWith('/admin/events') || location.startsWith('/admin/eventos-ambu')}
-          >
-            <NavItem 
-              href="/admin/events/new" 
-              icon={<Plus className="h-5 w-5" />}
-              active={location.startsWith('/admin/events/new')}
-            >
-              Nuevo Evento
-            </NavItem>
-            <NavItem 
-              href="/admin/events/categories" 
-              icon={<Tag className="h-5 w-5" />}
-              active={location.startsWith('/admin/events/categories')}
-            >
-              Categorías
-            </NavItem>
-            <NavItem 
-              href="/admin/eventos-ambu" 
-              icon={<ListFilter className="h-5 w-5" />}
-              active={location.startsWith('/admin/eventos-ambu') && !location.includes('/calendar') && !location.includes('/tabulador')}
-            >
-              Eventos
-            </NavItem>
-            <NavItem 
-              href="/admin/eventos-ambu/calendar" 
-              icon={<Calendar className="h-5 w-5" />}
-              active={location.startsWith('/admin/eventos-ambu/calendar')}
-            >
-              Calendario
-            </NavItem>
-            <NavItem 
-              href="/admin/eventos-ambu/tabulador" 
-              icon={<DollarSign className="h-5 w-5" />}
-              active={location.startsWith('/admin/eventos-ambu/tabulador')}
-            >
-              Tabulador de Costos
-            </NavItem>
-          </ModuleNav>
+
 
           {/* 8. SEGURIDAD */}
           <ModuleNav 
@@ -1013,41 +971,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* RECURSOS HUMANOS */}
-          <ModuleNav 
-            title="Recursos Humanos" 
-            icon={<Users className="h-5 w-5" />}
-            value="hr"
-          >
-            <NavItem 
-              href="/admin/hr/employees" 
-              icon={<User className="h-5 w-5" />}
-              active={location.startsWith('/admin/hr/employees')}
-            >
-              Personal
-            </NavItem>
-            <NavItem 
-              href="/admin/hr/payroll" 
-              icon={<CreditCard className="h-5 w-5" />}
-              active={location.startsWith('/admin/hr/payroll')}
-            >
-              Nómina
-            </NavItem>
-            <NavItem 
-              href="/admin/hr/receipts" 
-              icon={<FileText className="h-5 w-5" />}
-              active={location.startsWith('/admin/hr/receipts')}
-            >
-              Recibos
-            </NavItem>
-            <NavItem 
-              href="/admin/hr/vacations" 
-              icon={<Clock className="h-5 w-5" />}
-              active={location.startsWith('/admin/hr/vacations')}
-            >
-              Vacaciones
-            </NavItem>
-          </ModuleNav>
+
 
           {/* VOLUNTARIOS */}
           <ModuleNav 
