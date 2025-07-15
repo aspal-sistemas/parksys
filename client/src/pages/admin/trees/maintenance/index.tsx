@@ -70,20 +70,26 @@ export default function TreeMaintenancePage() {
   // Cargar parques para el filtro
   const { data: parks, isLoading: loadingParks, error: parksError } = useQuery({
     queryKey: ['/api/parks'],
+    enabled: true,
+    refetchOnWindowFocus: false,
     select: (data) => {
-      console.log('Datos de parques recibidos:', data);
-      console.log('¿Es array?', Array.isArray(data));
-      console.log('¿Tiene data?', !!data?.data);
-      console.log('Longitud del array:', Array.isArray(data) ? data.length : data?.data?.length);
+      console.log('🏞️ Datos de parques recibidos:', data);
+      console.log('🏞️ ¿Es array?', Array.isArray(data));
+      console.log('🏞️ ¿Tiene data?', !!data?.data);
+      console.log('🏞️ Longitud del array:', Array.isArray(data) ? data.length : data?.data?.length);
       // El endpoint puede devolver un array directo o { status: "success", data: [...] }
-      return Array.isArray(data) ? data : (data?.data || []);
+      const result = Array.isArray(data) ? data : (data?.data || []);
+      console.log('🏞️ Resultado procesado:', result);
+      return result;
     },
   });
 
   // Logging adicional para diagnosticar
   React.useEffect(() => {
-    console.log('Estado de parques:', { parks, loadingParks, parksError });
-    console.log('Parques disponibles:', parks?.map(p => p.name));
+    console.log('🔍 Estado de parques completo:', { parks, loadingParks, parksError });
+    if (parks && parks.length > 0) {
+      console.log('🔍 Parques disponibles:', parks.map(p => `${p.id}: ${p.name}`));
+    }
   }, [parks, loadingParks, parksError]);
 
   // Cargar todos los mantenimientos
@@ -316,15 +322,18 @@ export default function TreeMaintenancePage() {
             <SelectContent>
               <SelectItem value="all">Todos los parques</SelectItem>
               {(() => {
-                console.log('Renderizando selector de parques:', { loadingParks, parks });
+                console.log('🎯 Renderizando selector de parques:', { loadingParks, parks: parks?.length });
                 if (loadingParks) {
+                  console.log('🎯 Mostrando loading...');
                   return <SelectItem value="loading" disabled>Cargando parques...</SelectItem>;
                 }
                 if (!parks || parks.length === 0) {
+                  console.log('🎯 No hay parques disponibles');
                   return <SelectItem value="none" disabled>No hay parques disponibles</SelectItem>;
                 }
-                return parks.map((park) => {
-                  console.log('Creando item para parque:', park.name);
+                console.log('🎯 Creando items para', parks.length, 'parques');
+                return parks.map((park, index) => {
+                  console.log(`🎯 Creando item ${index + 1} para parque:`, park.name);
                   return (
                     <SelectItem key={park.id} value={park.name}>
                       {park.name}
@@ -353,6 +362,35 @@ export default function TreeMaintenancePage() {
               <SelectItem value="Otro">Otro</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Botón de debug temporal */}
+        <div className="mb-4">
+          <Button
+            onClick={() => {
+              console.log('🔄 Forzando recarga de parques...');
+              // Manualmente forzar la consulta
+              fetch('/api/parks', {
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                },
+              })
+              .then(res => res.json())
+              .then(data => {
+                console.log('🔄 Datos obtenidos manualmente:', data);
+                console.log('🔄 Tipo de datos:', typeof data);
+                console.log('🔄 Es array:', Array.isArray(data));
+                console.log('🔄 Primer parque:', data[0]?.name);
+              })
+              .catch(error => {
+                console.error('🔄 Error:', error);
+              });
+            }}
+            variant="outline"
+            className="border-blue-300 text-blue-700 hover:bg-blue-50"
+          >
+            🔧 Debug Parques
+          </Button>
         </div>
 
         {/* Tabla de mantenimientos */}
