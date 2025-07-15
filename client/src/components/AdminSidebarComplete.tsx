@@ -664,7 +664,7 @@ const AdminSidebarComplete: React.FC = () => {
 
 
 
-          {/* 3. O & M - OPERACIONES Y MANTENIMIENTO */}
+          {/* 3. O & M - OPERACIONES Y MANTENIMIENTO CON SUBMENÚS COLAPSABLES */}
           <ModuleNav 
             title="O & M" 
             icon={<Wrench className="h-5 w-5" />}
@@ -672,11 +672,13 @@ const AdminSidebarComplete: React.FC = () => {
             defaultOpen={location.startsWith('/admin/assets') || location.startsWith('/admin/incidents') || location.startsWith('/admin/volunteers')}
           >
             {/* ACTIVOS */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <Package className="h-4 w-4 mr-2" />
-                Activos
-              </div>
+            <CollapsibleSubmenu
+              id="activos"
+              title="Activos"
+              icon={<Package className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('activos')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/assets" 
                 icon={<BarChart className="h-4 w-4" />}
@@ -726,14 +728,16 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 {t('navigation.assignments')}
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
 
             {/* INCIDENCIAS */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <AlertTriangle className="h-4 w-4 mr-2" />
-                Incidencias
-              </div>
+            <CollapsibleSubmenu
+              id="incidencias"
+              title="Incidencias"
+              icon={<AlertTriangle className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('incidencias')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/incidents" 
                 icon={<ClipboardList className="h-4 w-4" />}
@@ -748,14 +752,16 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 {t('navigation.categories')}
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
 
             {/* VOLUNTARIOS */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <HeartHandshake className="h-4 w-4 mr-2" />
-                Voluntarios
-              </div>
+            <CollapsibleSubmenu
+              id="voluntarios"
+              title="Voluntarios"
+              icon={<HeartHandshake className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('voluntarios')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/volunteers" 
                 icon={<Users className="h-4 w-4" />}
@@ -784,7 +790,7 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 Reconocimientos
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
           </ModuleNav>
 
           {/* 4. ADMIN/FINANZAS */}
@@ -795,11 +801,13 @@ const AdminSidebarComplete: React.FC = () => {
             defaultOpen={location.startsWith('/admin/finance') || location.startsWith('/admin/accounting') || location.startsWith('/admin/concessions')}
           >
             {/* FINANZAS */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <Target className="h-4 w-4 mr-2" />
-                Finanzas
-              </div>
+            <CollapsibleSubmenu
+              id="finanzas"
+              title="Finanzas"
+              icon={<Target className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('finanzas')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/finance/budget-planning" 
                 icon={<Target className="h-4 w-4" />}
@@ -828,14 +836,16 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 {t('navigation.reports')}
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
 
             {/* CONTABILIDAD */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <BookOpen className="h-4 w-4 mr-2" />
-                Contabilidad
-              </div>
+            <CollapsibleSubmenu
+              id="contabilidad"
+              title="Contabilidad"
+              icon={<BookOpen className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('contabilidad')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/accounting/dashboard" 
                 icon={<BarChart className="h-4 w-4" />}
@@ -885,14 +895,16 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 Integración
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
 
             {/* CONCESIONES */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <Store className="h-4 w-4 mr-2" />
-                Concesiones
-              </div>
+            <CollapsibleSubmenu
+              id="concesiones"
+              title="Concesiones"
+              icon={<Store className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('concesiones')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/concessions/catalog" 
                 icon={<ListChecks className="h-4 w-4" />}
@@ -928,7 +940,7 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 {t('navigation.reports')}
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
           </ModuleNav>
 
           {/* 5. MKT & COMM */}
@@ -939,11 +951,13 @@ const AdminSidebarComplete: React.FC = () => {
             defaultOpen={location.startsWith('/admin/marketing') || location.startsWith('/admin/communications')}
           >
             {/* MARKETING */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <Megaphone className="h-4 w-4 mr-2" />
-                Marketing
-              </div>
+            <CollapsibleSubmenu
+              id="marketing"
+              title="Marketing"
+              icon={<Megaphone className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('marketing')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/marketing" 
                 icon={<BarChart className="h-4 w-4" />}
@@ -986,14 +1000,16 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 Evaluaciones
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
 
             {/* COMUNICACIÓN */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Comunicación
-              </div>
+            <CollapsibleSubmenu
+              id="comunicacion"
+              title="Comunicación"
+              icon={<MessageSquare className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('comunicacion')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/communications" 
                 icon={<BarChart className="h-4 w-4" />}
@@ -1036,7 +1052,7 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 Análisis
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
           </ModuleNav>
 
           {/* 6. RECURSOS HUMANOS */}
