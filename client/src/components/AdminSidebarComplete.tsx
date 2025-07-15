@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import UserProfileImage from '@/components/UserProfileImage';
@@ -73,6 +73,7 @@ import {
   Star,
   ClipboardList,
   PersonStanding,
+  ChevronRight,
   UserCheck,
   Activity,
   Banknote,
@@ -224,10 +225,74 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
   );
 };
 
+// Componente para submenús colapsables dentro de "Gestión"
+const CollapsibleSubmenu: React.FC<{
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  isExpanded: boolean;
+  onToggle: (id: string) => void;
+}> = ({ id, title, icon, children, isExpanded, onToggle }) => {
+  return (
+    <div className="mb-3">
+      <button
+        onClick={() => onToggle(id)}
+        className="w-full flex items-center justify-between p-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+      >
+        <div className="flex items-center">
+          {icon}
+          <span className="ml-2">{title}</span>
+        </div>
+        <ChevronRight 
+          className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+        />
+      </button>
+      {isExpanded && (
+        <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-2">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const AdminSidebarComplete: React.FC = () => {
   const [location] = useLocation();
   const { user, logout } = useAuth();
   const { t } = useTranslation('common');
+  
+  // Estados para controlar los submenús colapsables dentro de "Gestión"
+  const [expandedSubmenus, setExpandedSubmenus] = useState<string[]>([]);
+  
+  // Función para manejar el toggle de submenús dentro de "Gestión"
+  const toggleSubmenu = (submenuId: string) => {
+    setExpandedSubmenus(prev => 
+      prev.includes(submenuId) 
+        ? prev.filter(id => id !== submenuId)
+        : [...prev, submenuId]
+    );
+  };
+  
+  // Determinar qué submenú debe estar abierto basado en la ruta actual
+  const getActiveSubmenu = () => {
+    if (location.startsWith('/admin/visitors')) return 'visitantes';
+    if (location.startsWith('/admin/parks')) return 'parques';
+    if (location.startsWith('/admin/trees')) return 'arbolado';
+    if (location.startsWith('/admin/organizador') || location.startsWith('/admin/activities')) return 'actividades';
+    if (location.startsWith('/admin/events') || location.startsWith('/admin/eventos-ambu')) return 'eventos';
+    if (location.startsWith('/admin/space-reservations')) return 'reservas';
+    if (location.startsWith('/admin/amenities')) return 'amenidades';
+    return null;
+  };
+  
+  // Inicializar submenús expandidos basado en la ruta actual
+  useEffect(() => {
+    const activeSubmenu = getActiveSubmenu();
+    if (activeSubmenu && !expandedSubmenus.includes(activeSubmenu)) {
+      setExpandedSubmenus([activeSubmenu]);
+    }
+  }, [location]);
   
   // Determinar qué módulo debe estar abierto basado en la ruta actual
   const getActiveModule = () => {
@@ -337,7 +402,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 2. GESTIÓN - MENÚ PRINCIPAL */}
+          {/* 2. GESTIÓN - MENÚ PRINCIPAL CON SUBMENÚS COLAPSABLES */}
           <ModuleNav 
             title="Gestión" 
             icon={<FolderOpen className="h-5 w-5" />}
@@ -345,11 +410,13 @@ const AdminSidebarComplete: React.FC = () => {
             defaultOpen={location.startsWith('/admin/visitors') || location.startsWith('/admin/parks') || location.startsWith('/admin/trees') || location.startsWith('/admin/organizador') || location.startsWith('/admin/activities') || location.startsWith('/admin/events') || location.startsWith('/admin/space-reservations')}
           >
             {/* VISITANTES */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <Users className="h-4 w-4 mr-2" />
-                Visitantes
-              </div>
+            <CollapsibleSubmenu
+              id="visitantes"
+              title="Visitantes"
+              icon={<Users className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('visitantes')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/visitors/count" 
                 icon={<Users className="h-4 w-4" />}
@@ -378,14 +445,16 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 Criterios
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
 
             {/* PARQUES */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <Map className="h-4 w-4 mr-2" />
-                Parques
-              </div>
+            <CollapsibleSubmenu
+              id="parques"
+              title="Parques"
+              icon={<Map className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('parques')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/parks/dashboard" 
                 icon={<BarChart className="h-4 w-4" />}
@@ -400,14 +469,16 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 {t('navigation.management')}
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
 
             {/* ARBOLADO */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <TreePine className="h-4 w-4 mr-2" />
-                Arbolado
-              </div>
+            <CollapsibleSubmenu
+              id="arbolado"
+              title="Arbolado"
+              icon={<TreePine className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('arbolado')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/trees/inventory" 
                 icon={<Archive className="h-4 w-4" />}
@@ -429,14 +500,16 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 {t('navigation.maintenance')}
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
 
             {/* ACTIVIDADES */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <Calendar className="h-4 w-4 mr-2" />
-                Actividades
-              </div>
+            <CollapsibleSubmenu
+              id="actividades"
+              title="Actividades"
+              icon={<Calendar className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('actividades')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/organizador" 
                 icon={<BarChart3 className="h-4 w-4" />}
@@ -479,14 +552,16 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 {t('navigation.instructors')}
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
 
             {/* EVENTOS */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <CalendarDays className="h-4 w-4 mr-2" />
-                Eventos
-              </div>
+            <CollapsibleSubmenu
+              id="eventos"
+              title="Eventos"
+              icon={<CalendarDays className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('eventos')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/events/new" 
                 icon={<Plus className="h-4 w-4" />}
@@ -522,14 +597,16 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 Tabulador de Costos
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
 
             {/* RESERVAS */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <CalendarClock className="h-4 w-4 mr-2" />
-                Reservas
-              </div>
+            <CollapsibleSubmenu
+              id="reservas"
+              title="Reservas"
+              icon={<CalendarClock className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('reservas')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/space-reservations" 
                 icon={<Calendar className="h-4 w-4" />}
@@ -558,14 +635,16 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 Calendario
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
 
             {/* AMENIDADES */}
-            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
-              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <Package className="h-4 w-4 mr-2" />
-                Amenidades
-              </div>
+            <CollapsibleSubmenu
+              id="amenidades"
+              title="Amenidades"
+              icon={<Package className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('amenidades')}
+              onToggle={toggleSubmenu}
+            >
               <NavItem 
                 href="/admin/amenities-dashboard" 
                 icon={<BarChart className="h-4 w-4" />}
@@ -580,7 +659,7 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 {t('navigation.management')}
               </NavItem>
-            </div>
+            </CollapsibleSubmenu>
           </ModuleNav>
 
 
