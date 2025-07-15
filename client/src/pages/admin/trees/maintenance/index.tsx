@@ -133,6 +133,35 @@ export default function TreeMaintenancePage() {
     loadParks();
   }, []);
 
+  // Reset estados cuando cambian los filtros
+  React.useEffect(() => {
+    setSelectedSpeciesId('all');
+    setSelectedTreeId(null);
+  }, [selectedParkId]);
+
+  React.useEffect(() => {
+    setSelectedHealthStatus('all');
+    setSelectedTreeId(null);
+  }, [selectedParkId, selectedSpeciesId]);
+
+  // Log para diagnosticar problemas
+  React.useEffect(() => {
+    console.log('🌳 Estado del selector de árboles:', {
+      selectedParkId,
+      selectedSpeciesId,
+      selectedTreeId,
+      totalTrees: trees?.length || 0,
+      filteredTrees: getTreesForSelection?.length || 0,
+      searchTerm,
+      getTreesForSelection: getTreesForSelection?.slice(0, 3).map(t => ({
+        id: t.id,
+        code: t.code,
+        speciesName: t.speciesName,
+        parkName: t.parkName
+      }))
+    });
+  }, [selectedParkId, selectedSpeciesId, selectedTreeId, trees, getTreesForSelection, searchTerm]);
+
   // Cargar todos los mantenimientos
   const { data: maintenances, isLoading: loadingMaintenances } = useQuery({
     queryKey: ['/api/trees/maintenances'],
@@ -854,18 +883,24 @@ export default function TreeMaintenancePage() {
                           <SelectValue placeholder={selectedParkId === 'all' ? 'Selecciona primero un parque' : 'Selecciona un árbol'} />
                         </SelectTrigger>
                         <SelectContent>
-                          {getTreesForSelection?.map((tree) => (
-                            <SelectItem key={tree.id} value={tree.id.toString()}>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="bg-green-50 text-green-700">
-                                  {tree.code}
-                                </Badge>
-                                <span className="font-medium">{tree.speciesName || 'Especie desconocida'}</span>
-                                <span className="text-muted-foreground">({tree.healthStatus})</span>
-                                <span className="text-xs text-blue-600">{tree.parkName}</span>
-                              </div>
+                          {getTreesForSelection?.length > 0 ? (
+                            getTreesForSelection.filter(tree => tree.id && tree.code).map((tree) => (
+                              <SelectItem key={tree.id} value={tree.id.toString()}>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="bg-green-50 text-green-700">
+                                    {tree.code}
+                                  </Badge>
+                                  <span className="font-medium">{tree.speciesName || 'Especie desconocida'}</span>
+                                  <span className="text-muted-foreground">({tree.healthStatus || 'N/A'})</span>
+                                  <span className="text-xs text-blue-600">{tree.parkName || 'Parque desconocido'}</span>
+                                </div>
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-trees" disabled>
+                              {selectedParkId === 'all' ? 'Selecciona un parque específico' : 'No hay árboles disponibles'}
                             </SelectItem>
-                          ))}
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
