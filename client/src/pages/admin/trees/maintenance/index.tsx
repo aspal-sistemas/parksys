@@ -49,6 +49,7 @@ import { Leaf, Wrench, Search, PlusCircle, TreePine, MapPin, Calendar } from 'lu
 export default function TreeMaintenancePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [filterPark, setFilterPark] = useState('all');
   const [open, setOpen] = useState(false);
   const [selectedTreeId, setSelectedTreeId] = useState<number | null>(null);
   const [maintenanceData, setMaintenanceData] = useState({
@@ -66,6 +67,12 @@ export default function TreeMaintenancePage() {
     select: (data) => data.data,
   });
 
+  // Cargar parques para el filtro
+  const { data: parks, isLoading: loadingParks } = useQuery({
+    queryKey: ['/api/parks'],
+    select: (data) => data.data,
+  });
+
   // Cargar todos los mantenimientos
   const { data: maintenances, isLoading: loadingMaintenances } = useQuery({
     queryKey: ['/api/trees/maintenances'],
@@ -78,7 +85,7 @@ export default function TreeMaintenancePage() {
     select: (data: any) => data || { total: 0, recent: 0, byType: [], byMonth: [] },
   });
 
-  // Filtrar mantenimientos según búsqueda y tipo
+  // Filtrar mantenimientos según búsqueda, tipo y parque
   const filteredMaintenances = React.useMemo(() => {
     if (!maintenances) return [];
     
@@ -102,8 +109,15 @@ export default function TreeMaintenancePage() {
       );
     }
     
+    // Filtrar por parque
+    if (filterPark !== 'all') {
+      allMaintenances = allMaintenances.filter(maint => 
+        maint.parkName === filterPark
+      );
+    }
+    
     return allMaintenances;
-  }, [maintenances, searchTerm, filterType]);
+  }, [maintenances, searchTerm, filterType, filterPark]);
 
   // Mutación para agregar nuevo mantenimiento
   const addMaintenanceMutation = useMutation({
@@ -273,6 +287,29 @@ export default function TreeMaintenancePage() {
           </div>
           
           <Select
+            value={filterPark}
+            onValueChange={setFilterPark}
+          >
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Filtrar por parque" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los parques</SelectItem>
+              {loadingParks ? (
+                <SelectItem value="loading" disabled>Cargando parques...</SelectItem>
+              ) : parks?.length === 0 ? (
+                <SelectItem value="none" disabled>No hay parques disponibles</SelectItem>
+              ) : (
+                parks?.map((park) => (
+                  <SelectItem key={park.id} value={park.name}>
+                    {park.name}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+          
+          <Select
             value={filterType}
             onValueChange={setFilterType}
           >
@@ -312,7 +349,7 @@ export default function TreeMaintenancePage() {
                 <Wrench className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                 <h3 className="text-lg font-medium">No hay registros de mantenimiento</h3>
                 <p className="text-muted-foreground">
-                  {searchTerm || filterType !== 'all'
+                  {searchTerm || filterType !== 'all' || filterPark !== 'all'
                     ? 'No se encontraron registros con los filtros aplicados'
                     : 'Registra el primer mantenimiento haciendo clic en "Registrar Mantenimiento"'}
                 </p>
