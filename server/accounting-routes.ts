@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { pool } from './db';
-import { generateAccountingEntry, syncExistingTransactions, getIntegrationStats } from './finance-accounting-integration';
+import { generateAccountingEntry, syncExistingTransactions, getIntegrationStats, generateAccountingJournalEntry, updateCashFlowMatrix } from './finance-accounting-integration';
 
 /**
  * RUTAS DEL MÓDULO DE CONTABILIDAD
@@ -384,6 +384,46 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
       ]);
       
       console.log('✅ Transacción creada exitosamente:', result.rows[0]);
+      
+      // INTEGRACIÓN AUTOMÁTICA: Generar asiento contable automáticamente
+      console.log('🔄 INICIANDO integración automática para transacción', result.rows[0].id);
+      try {
+        console.log('🔄 Llamando generateAccountingJournalEntry...');
+        await generateAccountingJournalEntry({
+          id: result.rows[0].id,
+          concept: result.rows[0].concept,
+          amount: parseFloat(result.rows[0].amount),
+          transaction_type: result.rows[0].transaction_type,
+          category_id: result.rows[0].category_id,
+          date: result.rows[0].date,
+          description: result.rows[0].description,
+          reference: result.rows[0].reference
+        }, req.user?.id || 1);
+        
+        console.log('🔄 Asiento contable generado automáticamente para transacción', result.rows[0].id);
+      } catch (error) {
+        console.error('⚠️ Error generando asiento contable automático:', error);
+        console.error('⚠️ Stack trace:', error.stack);
+        // No fallar la transacción si falla el asiento
+      }
+      
+      // INTEGRACIÓN AUTOMÁTICA: Actualizar matriz de flujo de efectivo
+      console.log('💰 INICIANDO actualización matriz de flujo para transacción', result.rows[0].id);
+      try {
+        console.log('💰 Llamando updateCashFlowMatrix...');
+        await updateCashFlowMatrix({
+          transaction_id: result.rows[0].id,
+          amount: parseFloat(result.rows[0].amount),
+          transaction_type: result.rows[0].transaction_type,
+          category_id: result.rows[0].category_id,
+          date: result.rows[0].date
+        });
+        
+        console.log('💰 Matriz de flujo actualizada automáticamente para transacción', result.rows[0].id);
+      } catch (error) {
+        console.error('⚠️ Error actualizando matriz de flujo:', error);
+        console.error('⚠️ Stack trace:', error.stack);
+      }
       
       res.status(201).json({
         transaction: {

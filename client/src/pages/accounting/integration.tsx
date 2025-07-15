@@ -130,6 +130,15 @@ export default function AccountingIntegration() {
           </div>
         </div>
 
+        {/* Alerta de integración automática */}
+        <Alert className="mb-6 border-green-200 bg-green-50">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            <strong>🔄 Integración Automática Activa:</strong> Las transacciones contables se procesan automáticamente al crearse, 
+            generando asientos contables y actualizando la matriz de flujo de efectivo en tiempo real.
+          </AlertDescription>
+        </Alert>
+
         {/* Estado de integración */}
         <Alert className={syncPercentage === 100 ? 'border-green-200 bg-green-50' : 'border-yellow-200 bg-yellow-50'}>
           <AlertCircle className="h-4 w-4" />
