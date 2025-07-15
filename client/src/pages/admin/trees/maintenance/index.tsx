@@ -75,28 +75,38 @@ export default function TreeMaintenancePage() {
   React.useEffect(() => {
     const loadParks = async () => {
       try {
+        console.log('🟢 INICIANDO CARGA DE PARQUES');
         setLoadingParks(true);
         const token = localStorage.getItem('token');
+        console.log('🟢 Token:', token ? 'presente' : 'ausente');
+        
         const response = await fetch('/api/parks', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
         });
+        console.log('🟢 Response status:', response.status);
+        
         const data = await response.json();
-        console.log('Parks data received:', data);
+        console.log('🟢 Parks data received:', data);
+        console.log('🟢 Data type:', typeof data);
+        console.log('🟢 Is array?', Array.isArray(data));
         
         // Manejar tanto array directo como objeto con data
         const parksArray = Array.isArray(data) ? data : (data?.data || []);
-        console.log('Parks array:', parksArray);
+        console.log('🟢 Parks array length:', parksArray.length);
+        console.log('🟢 Parks array:', parksArray);
         setParks(parksArray);
       } catch (error) {
-        console.error('Error loading parks:', error);
+        console.error('🔴 Error loading parks:', error);
         setParks([]);
       } finally {
         setLoadingParks(false);
+        console.log('🟢 Finished loading parks');
       }
     };
 
+    console.log('🟢 useEffect ejecutándose para cargar parques');
     loadParks();
   }, []);
 
