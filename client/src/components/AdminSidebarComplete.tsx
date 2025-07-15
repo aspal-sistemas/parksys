@@ -973,106 +973,11 @@ const AdminSidebarComplete: React.FC = () => {
 
 
 
-          {/* VOLUNTARIOS */}
-          <ModuleNav 
-            title={t('navigation.volunteers')} 
-            icon={<HeartHandshake className="h-5 w-5" />}
-            value="volunteers"
-          >
-            <NavItem 
-              href="/admin/volunteers" 
-              icon={<PersonStanding className="h-5 w-5" />}
-              active={location === '/admin/volunteers'}
-            >
-              {t('navigation.listing')}
-            </NavItem>
-            <NavItem 
-              href="/admin/volunteers/register" 
-              icon={<ClipboardCheck className="h-5 w-5" />}
-              active={location.startsWith('/admin/volunteers/register')}
-            >
-              Registro
-            </NavItem>
-            <NavItem 
-              href="/admin/volunteers/evaluations" 
-              icon={<Star className="h-5 w-5" />}
-              active={location.startsWith('/admin/volunteers/evaluations')}
-            >
-              Evaluaciones
-            </NavItem>
-            <NavItem 
-              href="/admin/volunteers/recognition" 
-              icon={<Award className="h-5 w-5" />}
-              active={location.startsWith('/admin/volunteers/recognition')}
-            >
-              Reconocimientos
-            </NavItem>
-          </ModuleNav>
 
-          {/* 14. COMUNICACIÓN */}
-          <ModuleNav 
-            title="Comunicación" 
-            icon={<MessageSquare className="h-5 w-5" />}
-            value="communications"
-          >
-            <NavItem 
-              href="/admin/communications" 
-              icon={<BarChart className="h-5 w-5" />}
-              active={location === '/admin/communications'}
-            >
-              Dashboard
-            </NavItem>
-            <NavItem 
-              href="/admin/communications/templates" 
-              icon={<FileText className="h-5 w-5" />}
-              active={location.startsWith('/admin/communications/templates')}
-            >
-              Plantillas
-            </NavItem>
-            <NavItem 
-              href="/admin/communications/queue" 
-              icon={<Clock className="h-5 w-5" />}
-              active={location.startsWith('/admin/communications/queue')}
-            >
-              Cola de Emails
-            </NavItem>
-            <NavItem 
-              href="/admin/communications/campaigns" 
-              icon={<Users className="h-5 w-5" />}
-              active={location.startsWith('/admin/communications/campaigns')}
-            >
-              Campañas
-            </NavItem>
-            <NavItem 
-              href="/admin/communications/bulk" 
-              icon={<Mail className="h-5 w-5" />}
-              active={location.startsWith('/admin/communications/bulk')}
-            >
-              Envío Masivo
-            </NavItem>
-            <NavItem 
-              href="/admin/communications/analytics" 
-              icon={<TrendingUp className="h-5 w-5" />}
-              active={location.startsWith('/admin/communications/analytics')}
-            >
-              Análisis
-            </NavItem>
-          </ModuleNav>
 
-          {/* 15. SEGURIDAD */}
-          <ModuleNav 
-            title="Seguridad" 
-            icon={<Shield className="h-5 w-5" />}
-            value="security"
-          >
-            <NavItem 
-              href="/admin/security" 
-              icon={<Activity className="h-5 w-5" />}
-              active={location === '/admin/security'}
-            >
-              Centro de Seguridad
-            </NavItem>
-          </ModuleNav>
+
+
+
 
         </Accordion>
       </ScrollArea>
