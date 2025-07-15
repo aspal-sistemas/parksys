@@ -62,7 +62,7 @@ export default function AccountingTransactions() {
 
   const { data: transactions, isLoading, refetch } = useQuery({
     queryKey: ['/api/accounting/transactions', search, typeFilter, categoryFilter, statusFilter, yearFilter],
-    queryFn: () => {
+    queryFn: async () => {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (typeFilter !== 'all') params.append('transaction_type', typeFilter);
@@ -70,7 +70,14 @@ export default function AccountingTransactions() {
       if (statusFilter !== 'all') params.append('status', statusFilter);
       if (yearFilter !== 'all') params.append('year', yearFilter);
       
-      return apiRequest(`/api/accounting/transactions?${params.toString()}`);
+      console.log('🔍 Construyendo URL con parámetros:', params.toString());
+      const url = `/api/accounting/transactions?${params.toString()}`;
+      console.log('🔍 URL final:', url);
+      
+      const response = await apiRequest(url);
+      console.log('🔍 Respuesta completa del servidor:', response);
+      
+      return response;
     },
     enabled: true,
     staleTime: 0,
