@@ -48,6 +48,14 @@ export default function AccountingTransactions() {
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  // Estados para categorías jerárquicas
+  const [selectedCategoryA, setSelectedCategoryA] = useState<number>(0);
+  const [selectedCategoryB, setSelectedCategoryB] = useState<number>(0);
+  const [selectedCategoryC, setSelectedCategoryC] = useState<number>(0);
+  const [selectedCategoryD, setSelectedCategoryD] = useState<number>(0);
+  const [selectedCategoryE, setSelectedCategoryE] = useState<number>(0);
+  
   const queryClient = useQueryClient();
 
   const { data: transactions, isLoading } = useQuery({
@@ -59,6 +67,27 @@ export default function AccountingTransactions() {
     queryKey: ['/api/accounting/categories'],
     enabled: true
   });
+
+  // Funciones para filtrar categorías por nivel jerárquico
+  const getCategoriesLevel1 = () => {
+    if (!categories?.categories) return [];
+    return categories.categories.filter((cat: any) => cat.level === 1);
+  };
+
+  const getCategoriesLevel2 = (parentId: number) => {
+    if (!categories?.categories) return [];
+    return categories.categories.filter((cat: any) => cat.level === 2 && cat.parentId === parentId);
+  };
+
+  const getCategoriesLevel3 = (parentId: number) => {
+    if (!categories?.categories) return [];
+    return categories.categories.filter((cat: any) => cat.level === 3 && cat.parentId === parentId);
+  };
+
+  const getCategoriesLevel4 = (parentId: number) => {
+    if (!categories?.categories) return [];
+    return categories.categories.filter((cat: any) => cat.level === 4 && cat.parentId === parentId);
+  };
 
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
@@ -139,6 +168,14 @@ export default function AccountingTransactions() {
 
   const handleEdit = (transaction: any) => {
     setEditingTransaction(transaction);
+    
+    // Configurar categorías jerárquicas seleccionadas
+    setSelectedCategoryA(transaction.category_a || 0);
+    setSelectedCategoryB(transaction.category_b || 0);
+    setSelectedCategoryC(transaction.category_c || 0);
+    setSelectedCategoryD(transaction.category_d || 0);
+    setSelectedCategoryE(transaction.category_e || 0);
+    
     form.reset({
       concept: transaction.concept || '',
       amount: transaction.amount || 0,
@@ -174,6 +211,39 @@ export default function AccountingTransactions() {
     setSubcategoryFilter('all');
     setStatusFilter('all');
     setYearFilter('all');
+  };
+
+  const resetCategorySelections = () => {
+    setSelectedCategoryA(0);
+    setSelectedCategoryB(0);
+    setSelectedCategoryC(0);
+    setSelectedCategoryD(0);
+    setSelectedCategoryE(0);
+  };
+
+  const handleDialogClose = () => {
+    setIsDialogOpen(false);
+    setEditingTransaction(null);
+    resetCategorySelections();
+    form.reset({
+      concept: '',
+      amount: 0,
+      transaction_type: 'income',
+      category_a: 0,
+      category_b: 0,
+      category_c: 0,
+      category_d: 0,
+      category_e: 0,
+      transaction_date: new Date().toISOString().split('T')[0],
+      status: 'pending',
+      income_source: '',
+      bank: '',
+      description: '',
+      add_iva: false,
+      amount_without_iva: 0,
+      iva_amount: 0,
+      reference_number: '',
+    });
   };
 
   // Datos simulados para mostrar la estructura (reemplazar con datos reales)
@@ -260,9 +330,15 @@ export default function AccountingTransactions() {
               <Download className="h-4 w-4" />
               <span>Exportar</span>
             </Button>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => !open && handleDialogClose()}>
               <DialogTrigger asChild>
-                <Button className="bg-[#00a587] hover:bg-[#067f5f] flex items-center space-x-2">
+                <Button 
+                  className="bg-[#00a587] hover:bg-[#067f5f] flex items-center space-x-2"
+                  onClick={() => {
+                    resetCategorySelections();
+                    setIsDialogOpen(true);
+                  }}
+                >
                   <Plus className="h-4 w-4" />
                   <span>Nueva Transacción</span>
                 </Button>
@@ -344,18 +420,31 @@ export default function AccountingTransactions() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Categoría A *</FormLabel>
-                            <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                            <Select onValueChange={(value) => {
+                              const categoryId = parseInt(value);
+                              field.onChange(categoryId);
+                              setSelectedCategoryA(categoryId);
+                              // Resetear categorías subsecuentes
+                              setSelectedCategoryB(0);
+                              setSelectedCategoryC(0);
+                              setSelectedCategoryD(0);
+                              setSelectedCategoryE(0);
+                              form.setValue('category_b', 0);
+                              form.setValue('category_c', 0);
+                              form.setValue('category_d', 0);
+                              form.setValue('category_e', 0);
+                            }} value={field.value?.toString()}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Seleccionar" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {Array.isArray(categories) ? categories.filter((cat: any) => cat.level === 1).map((category: any) => (
+                                {getCategoriesLevel1().map((category: any) => (
                                   <SelectItem key={category.id} value={category.id.toString()}>
                                     {category.code} - {category.name}
                                   </SelectItem>
-                                )) : null}
+                                ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -377,18 +466,33 @@ export default function AccountingTransactions() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Categoría B</FormLabel>
-                            <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                            <Select 
+                              onValueChange={(value) => {
+                                const categoryId = parseInt(value);
+                                field.onChange(categoryId);
+                                setSelectedCategoryB(categoryId);
+                                // Resetear categorías subsecuentes
+                                setSelectedCategoryC(0);
+                                setSelectedCategoryD(0);
+                                setSelectedCategoryE(0);
+                                form.setValue('category_c', 0);
+                                form.setValue('category_d', 0);
+                                form.setValue('category_e', 0);
+                              }} 
+                              value={field.value?.toString()}
+                              disabled={!selectedCategoryA}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Sin especificar" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {Array.isArray(categories) ? categories.filter((cat: any) => cat.level === 2).map((category: any) => (
+                                {getCategoriesLevel2(selectedCategoryA).map((category: any) => (
                                   <SelectItem key={category.id} value={category.id.toString()}>
                                     {category.code} - {category.name}
                                   </SelectItem>
-                                )) : null}
+                                ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -401,18 +505,31 @@ export default function AccountingTransactions() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Categoría C</FormLabel>
-                            <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                            <Select 
+                              onValueChange={(value) => {
+                                const categoryId = parseInt(value);
+                                field.onChange(categoryId);
+                                setSelectedCategoryC(categoryId);
+                                // Resetear categorías subsecuentes
+                                setSelectedCategoryD(0);
+                                setSelectedCategoryE(0);
+                                form.setValue('category_d', 0);
+                                form.setValue('category_e', 0);
+                              }} 
+                              value={field.value?.toString()}
+                              disabled={!selectedCategoryB}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Sin especificar" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {Array.isArray(categories) ? categories.filter((cat: any) => cat.level === 3).map((category: any) => (
+                                {getCategoriesLevel3(selectedCategoryB).map((category: any) => (
                                   <SelectItem key={category.id} value={category.id.toString()}>
                                     {category.code} - {category.name}
                                   </SelectItem>
-                                )) : null}
+                                ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -428,18 +545,29 @@ export default function AccountingTransactions() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Categoría D</FormLabel>
-                            <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                            <Select 
+                              onValueChange={(value) => {
+                                const categoryId = parseInt(value);
+                                field.onChange(categoryId);
+                                setSelectedCategoryD(categoryId);
+                                // Resetear categorías subsecuentes
+                                setSelectedCategoryE(0);
+                                form.setValue('category_e', 0);
+                              }} 
+                              value={field.value?.toString()}
+                              disabled={!selectedCategoryC}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Sin especificar" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {Array.isArray(categories) ? categories.filter((cat: any) => cat.level === 4).map((category: any) => (
+                                {getCategoriesLevel4(selectedCategoryC).map((category: any) => (
                                   <SelectItem key={category.id} value={category.id.toString()}>
                                     {category.code} - {category.name}
                                   </SelectItem>
-                                )) : null}
+                                ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -452,18 +580,23 @@ export default function AccountingTransactions() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Categoría E</FormLabel>
-                            <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                            <Select 
+                              onValueChange={(value) => {
+                                const categoryId = parseInt(value);
+                                field.onChange(categoryId);
+                                setSelectedCategoryE(categoryId);
+                              }} 
+                              value={field.value?.toString()}
+                              disabled={!selectedCategoryD}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Sin especificar" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {Array.isArray(categories) ? categories.filter((cat: any) => cat.level === 5).map((category: any) => (
-                                  <SelectItem key={category.id} value={category.id.toString()}>
-                                    {category.code} - {category.name}
-                                  </SelectItem>
-                                )) : null}
+                                {/* Nota: Nivel 5 no existe en el sistema actual, pero se mantiene para futuras extensiones */}
+                                <SelectItem value="0">Sin especificar</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
