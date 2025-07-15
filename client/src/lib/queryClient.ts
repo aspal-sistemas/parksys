@@ -66,7 +66,7 @@ export async function apiRequest(
     data?: unknown;
     headers?: Record<string, string>;
   } = {}
-): Promise<Response> {
+): Promise<any> {
   // Para la ruta de inicio de sesión no queremos enviar credenciales predeterminadas
   const isLoginRequest = url === '/api/login';
   const method = options.method || 'GET';
@@ -142,7 +142,7 @@ export async function apiRequest(
     }
     throw new Error(errorMessage);
   }
-  return res;
+  return res.json();
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

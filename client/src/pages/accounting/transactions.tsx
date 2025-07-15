@@ -42,8 +42,7 @@ type TransactionFormData = z.infer<typeof transactionSchema>;
 export default function AccountingTransactions() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [subcategoryFilter, setSubcategoryFilter] = useState<string>('all');
+
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
@@ -61,12 +60,11 @@ export default function AccountingTransactions() {
   const queryClient = useQueryClient();
 
   const { data: transactions, isLoading, refetch } = useQuery({
-    queryKey: ['/api/accounting/transactions', search, typeFilter, categoryFilter, statusFilter, yearFilter],
+    queryKey: ['/api/accounting/transactions', search, typeFilter, statusFilter, yearFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (typeFilter !== 'all') params.append('transaction_type', typeFilter);
-      if (categoryFilter !== 'all') params.append('category_id', categoryFilter);
       if (statusFilter !== 'all') params.append('status', statusFilter);
       if (yearFilter !== 'all') params.append('year', yearFilter);
       
@@ -102,6 +100,16 @@ export default function AccountingTransactions() {
       amount_without_iva: Math.round(amountWithoutIVA * 100) / 100,
       iva_amount: Math.round(ivaAmount * 100) / 100
     };
+  };
+
+  // Función para manejar cambios en el monto y calcular IVA automáticamente
+  const handleAmountChange = (value: string) => {
+    const amount = parseFloat(value) || 0;
+    const ivaCalculation = calculateIVA(amount);
+    
+    form.setValue('amount', amount);
+    form.setValue('amount_without_iva', ivaCalculation.amount_without_iva);
+    form.setValue('iva_amount', ivaCalculation.iva_amount);
   };
 
   // Funciones para filtrar categorías por nivel jerárquico
@@ -266,8 +274,6 @@ export default function AccountingTransactions() {
   const clearFilters = () => {
     setSearch('');
     setTypeFilter('all');
-    setCategoryFilter('all');
-    setSubcategoryFilter('all');
     setStatusFilter('all');
     setYearFilter('all');
   };
@@ -369,20 +375,20 @@ export default function AccountingTransactions() {
                   <span>Nueva Transacción</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {editingTransaction ? 'Editar Transacción' : 'Nueva Transacción'}
                   </DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-                    <p className="text-sm text-gray-600 mb-4">
+                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
+                    <p className="text-sm text-gray-600 mb-3">
                       Completa los campos para crear una nueva transacción con categorías jerárquicas
                     </p>
                     
-                    {/* Concepto y Monto */}
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* Concepto, Monto y Tipo - Más compacto */}
+                    <div className="grid grid-cols-3 gap-3">
                       <FormField
                         control={form.control}
                         name="concept"
@@ -401,32 +407,20 @@ export default function AccountingTransactions() {
                         name="amount"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Monto *</FormLabel>
+                            <FormLabel>Monto (incluye IVA) *</FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
                                 step="0.01"
                                 placeholder="0"
                                 {...field}
-                                onChange={(e) => {
-                                  const amount = parseFloat(e.target.value) || 0;
-                                  field.onChange(amount);
-                                  
-                                  // Calcular automáticamente el IVA
-                                  const ivaCalculation = calculateIVA(amount);
-                                  form.setValue('amount_without_iva', ivaCalculation.amount_without_iva);
-                                  form.setValue('iva_amount', ivaCalculation.iva_amount);
-                                }}
+                                onChange={(e) => handleAmountChange(e.target.value)}
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
-
-                    {/* Tipo y Categoría A */}
-                    <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="transaction_type"
@@ -444,6 +438,23 @@ export default function AccountingTransactions() {
                                 <SelectItem value="expense">Gasto</SelectItem>
                               </SelectContent>
                             </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Fecha y Categoría A */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormField
+                        control={form.control}
+                        name="transaction_date"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fecha *</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1027,7 +1038,7 @@ export default function AccountingTransactions() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="text-sm font-medium">Tipo</label>
                   <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -1038,37 +1049,6 @@ export default function AccountingTransactions() {
                       <SelectItem value="all">Todos los tipos</SelectItem>
                       <SelectItem value="income">Ingresos</SelectItem>
                       <SelectItem value="expense">Gastos</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium">Categoría</label>
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas las categorías</SelectItem>
-                      {Array.isArray(categories) ? categories.map((category: any) => (
-                        <SelectItem key={category.id} value={category.id.toString()}>
-                          {category.name}
-                        </SelectItem>
-                      )) : null}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Subcategoría</label>
-                  <Select value={subcategoryFilter} onValueChange={setSubcategoryFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas las subcategorías</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
