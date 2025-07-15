@@ -186,7 +186,9 @@ export default function VisitorCountPage() {
       ...csvData.map(row => headers.map(header => `"${row[header]}"`).join(','))
     ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Agregar BOM para UTF-8 para garantizar que los acentos se muestren correctamente
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `conteo-visitantes-${new Date().toISOString().split('T')[0]}.csv`;
@@ -266,7 +268,9 @@ export default function VisitorCountPage() {
       ...finalData.map(row => headers.map(header => `"${row[header]}"`).join(','))
     ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Agregar BOM para UTF-8 para garantizar que los acentos se muestren correctamente
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `plantilla-conteo-visitantes-${new Date().toISOString().split('T')[0]}.csv`;
