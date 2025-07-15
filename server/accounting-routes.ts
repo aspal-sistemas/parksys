@@ -405,6 +405,35 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
     }
   });
 
+  // Eliminar transacción
+  apiRouter.delete('/accounting/transactions/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      console.log('🗑️ Eliminando transacción con ID:', id);
+      
+      const result = await pool.query(
+        'DELETE FROM accounting_transactions WHERE id = $1 RETURNING *',
+        [id]
+      );
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Transacción no encontrada' });
+      }
+      
+      console.log('✅ Transacción eliminada exitosamente:', result.rows[0]);
+      
+      res.json({ 
+        message: 'Transacción eliminada exitosamente',
+        transaction: result.rows[0]
+      });
+      
+    } catch (error) {
+      console.error('Error eliminando transacción:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
   // =====================================
   // DASHBOARD Y ESTADÍSTICAS
   // =====================================

@@ -184,6 +184,14 @@ export default function AccountingTransactions() {
       });
       queryClient.invalidateQueries({ queryKey: ['/api/accounting/transactions'] });
     },
+    onError: (error: any) => {
+      console.error('Error eliminando transacción:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la transacción. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    },
   });
 
   const handleSubmit = (data: TransactionFormData) => {
