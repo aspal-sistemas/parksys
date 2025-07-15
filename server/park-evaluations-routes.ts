@@ -518,5 +518,79 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
     }
   });
 
+  // Endpoint para exportar estadísticas completas
+  apiRouter.get('/park-evaluations/statistics-export', async (req: Request, res: Response) => {
+    try {
+      // Obtener estadísticas por parque
+      const parkStatsQuery = `
+        SELECT 
+          p.id as park_id,
+          p.name as park_name,
+          COUNT(pe.id) as total_evaluations,
+          COUNT(CASE WHEN pe.status = 'approved' THEN 1 END) as approved_evaluations,
+          COUNT(CASE WHEN pe.status = 'pending' THEN 1 END) as pending_evaluations,
+          COUNT(CASE WHEN pe.status = 'rejected' THEN 1 END) as rejected_evaluations,
+          AVG(pe.overall_rating) as average_overall_rating,
+          AVG(pe.cleanliness) as average_cleanliness,
+          AVG(pe.safety) as average_safety,
+          AVG(pe.maintenance) as average_maintenance,
+          AVG(pe.accessibility) as average_accessibility,
+          AVG(pe.amenities) as average_amenities,
+          AVG(pe.activities) as average_activities,
+          AVG(pe.staff) as average_staff,
+          AVG(pe.natural_beauty) as average_natural_beauty,
+          COUNT(CASE WHEN pe.would_recommend = true THEN 1 END) as recommendations,
+          COUNT(CASE WHEN pe.is_frequent_visitor = true THEN 1 END) as frequent_visitors,
+          AVG(pe.evaluator_age) as average_age,
+          MAX(pe.created_at) as last_evaluation
+        FROM parks p
+        LEFT JOIN park_evaluations pe ON p.id = pe.park_id
+        GROUP BY p.id, p.name
+        ORDER BY average_overall_rating DESC NULLS LAST, total_evaluations DESC
+      `;
+
+      const parkStatsResult = await pool.query(parkStatsQuery);
+      
+      const parkStats = parkStatsResult.rows.map(row => ({
+        ...row,
+        recommendation_rate: row.total_evaluations > 0 
+          ? (Number(row.recommendations) / Number(row.total_evaluations)) * 100
+          : 0,
+      }));
+
+      // Obtener estadísticas generales del sistema
+      const generalStatsQuery = `
+        SELECT 
+          COUNT(*) as total_evaluations,
+          COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved_evaluations,
+          COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_evaluations,
+          COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected_evaluations,
+          AVG(overall_rating) as system_average,
+          AVG(evaluator_age) as average_age,
+          COUNT(DISTINCT park_id) as parks_with_evaluations
+        FROM park_evaluations
+      `;
+
+      const generalStatsResult = await pool.query(generalStatsQuery);
+      const generalStats = generalStatsResult.rows[0];
+      
+      // Calcular tasa de aprobación
+      const approvalRate = generalStats.total_evaluations > 0
+        ? (Number(generalStats.approved_evaluations) / Number(generalStats.total_evaluations)) * 100
+        : 0;
+
+      res.json({
+        parkStats,
+        generalStats: {
+          ...generalStats,
+          approval_rate: approvalRate
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error obteniendo estadísticas para exportación:', error);
+      res.status(500).json({ error: 'Error al obtener estadísticas para exportación' });
+    }
+  });
+
   console.log('✅ Rutas del módulo de evaluaciones de parques registradas correctamente');
 }

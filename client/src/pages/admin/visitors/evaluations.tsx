@@ -480,6 +480,122 @@ export default function EvaluationsPage() {
   const totalEvaluations = evaluationsData?.pagination?.total || 0;
   const totalPages = evaluationsData?.pagination?.pages || 1;
   const currentServerPage = evaluationsData?.pagination?.page || 1;
+
+  // Función para exportar estadísticas completas
+  const exportStatistics = async () => {
+    try {
+      // Obtener estadísticas completas
+      const response = await fetch('/api/park-evaluations/statistics-export');
+      if (!response.ok) {
+        throw new Error('Error al obtener estadísticas');
+      }
+      
+      const data = await response.json();
+      
+      // Crear CSV con estadísticas completas
+      const csvContent = generateStatisticsCSV(data);
+      
+      // Descargar archivo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `estadisticas-evaluaciones-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Exportación exitosa",
+        description: "Las estadísticas se han exportado correctamente.",
+      });
+    } catch (error) {
+      console.error('Error al exportar estadísticas:', error);
+      toast({
+        title: "Error",
+        description: "Error al exportar las estadísticas. Intenta nuevamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Función para generar CSV con estadísticas completas
+  const generateStatisticsCSV = (data: any) => {
+    const headers = [
+      'Parque',
+      'Total Evaluaciones',
+      'Evaluaciones Aprobadas',
+      'Evaluaciones Pendientes',
+      'Evaluaciones Rechazadas',
+      'Promedio General',
+      'Promedio Limpieza',
+      'Promedio Seguridad',
+      'Promedio Mantenimiento',
+      'Promedio Accesibilidad',
+      'Promedio Amenidades',
+      'Promedio Actividades',
+      'Promedio Personal',
+      'Promedio Belleza Natural',
+      'Tasa de Recomendación (%)',
+      'Visitantes Frecuentes',
+      'Edad Promedio Evaluadores',
+      'Última Evaluación'
+    ];
+    
+    const rows = data.parkStats.map((park: any) => [
+      `"${park.park_name}"`,
+      park.total_evaluations,
+      park.approved_evaluations,
+      park.pending_evaluations,
+      park.rejected_evaluations,
+      park.average_overall_rating?.toFixed(2) || '0',
+      park.average_cleanliness?.toFixed(2) || '0',
+      park.average_safety?.toFixed(2) || '0',
+      park.average_maintenance?.toFixed(2) || '0',
+      park.average_accessibility?.toFixed(2) || '0',
+      park.average_amenities?.toFixed(2) || '0',
+      park.average_activities?.toFixed(2) || '0',
+      park.average_staff?.toFixed(2) || '0',
+      park.average_natural_beauty?.toFixed(2) || '0',
+      park.recommendation_rate?.toFixed(1) || '0',
+      park.frequent_visitors || '0',
+      park.average_age?.toFixed(1) || '0',
+      park.last_evaluation ? new Date(park.last_evaluation).toLocaleDateString() : 'N/A'
+    ]);
+    
+    // Agregar resumen general
+    const generalStats = [
+      '',
+      '=== RESUMEN GENERAL ===',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      ''
+    ];
+    
+    const summaryRows = [
+      ['Total Sistema', data.generalStats.total_evaluations, data.generalStats.approved_evaluations, data.generalStats.pending_evaluations, data.generalStats.rejected_evaluations, data.generalStats.system_average?.toFixed(2) || '0'],
+      ['Promedio Edad', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', data.generalStats.average_age?.toFixed(1) || '0'],
+      ['Parques Evaluados', data.generalStats.parks_with_evaluations, '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+      ['Tasa Aprobación (%)', '', '', '', '', '', '', '', '', '', '', '', '', '', data.generalStats.approval_rate?.toFixed(1) || '0']
+    ];
+    
+    const csvRows = [headers, ...rows, generalStats, ...summaryRows];
+    return csvRows.map(row => row.join(',')).join('\n');
+  };
   
   // Reset pagination when filters change
   useEffect(() => {
@@ -558,12 +674,7 @@ export default function EvaluationsPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          toast({
-                            title: "Exportar datos",
-                            description: "Funcionalidad de exportación próximamente.",
-                          });
-                        }}
+                        onClick={exportStatistics}
                       >
                         <Download className="h-4 w-4 mr-2" />
                         Exportar
