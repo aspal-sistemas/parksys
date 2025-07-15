@@ -57,7 +57,7 @@ const AdminParks = () => {
   // Pagination and view states
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const itemsPerPage = 15;
+  const itemsPerPage = 10;
 
   // Effect to handle URL parameters for amenity filtering
   useEffect(() => {
