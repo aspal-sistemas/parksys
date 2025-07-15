@@ -293,6 +293,7 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
         transactions: result.rows.map(row => ({
           id: row.id,
           uuid: row.uuid,
+          concept: row.concept,
           date: row.date,
           description: row.description,
           reference: row.reference,
@@ -331,6 +332,12 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
       } = req.body;
       
       console.log('📊 Creando nueva transacción con datos:', req.body);
+      console.log('📊 Campos específicos recibidos:', {
+        concept: req.body.concept,
+        amount: req.body.amount,
+        description: req.body.description,
+        transaction_type: req.body.transaction_type
+      });
       
       const result = await pool.query(`
         INSERT INTO accounting_transactions 

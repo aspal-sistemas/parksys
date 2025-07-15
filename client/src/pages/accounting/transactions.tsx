@@ -1017,7 +1017,7 @@ export default function AccountingTransactions() {
                     realTransactions.map((transaction: any) => (
                       <tr key={transaction.id} className="border-b hover:bg-gray-50">
                         <td className="p-2">{new Date(transaction.date).toLocaleDateString('es-ES')}</td>
-                        <td className="p-2">{transaction.description || transaction.concept || 'Sin descripción'}</td>
+                        <td className="p-2">{transaction.concept || transaction.description || 'Sin descripción'}</td>
                         <td className="p-2">
                           <Badge variant="secondary">
                             {transaction.category_name || `ID: ${transaction.category_id}`}
