@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Star, Eye, CheckCircle, XCircle, Clock, Filter, Users, BarChart3, MessageSquare, MessageCircle, TrendingUp, Calendar, Award, Grid, List, Download, Upload, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { Star, Eye, CheckCircle, XCircle, Clock, Filter, Users, BarChart3, MessageSquare, MessageCircle, TrendingUp, Calendar, Award, Grid, List, Download, Upload, ChevronLeft, ChevronRight, MapPin, Shield, Wrench, Leaf, Sparkles, Accessibility } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 
 interface ParkEvaluation {
@@ -95,7 +95,7 @@ const StarRating = ({ rating }: { rating: number }) => {
   );
 };
 
-const EvaluationCard = ({ evaluation, onModerate }: { evaluation: ParkEvaluation, onModerate: (id: number, status: string, notes?: string) => void }) => {
+const EvaluationCard = ({ evaluation, onModerate, onViewDetails }: { evaluation: ParkEvaluation, onModerate: (id: number, status: string, notes?: string) => void, onViewDetails: (evaluation: ParkEvaluation) => void }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [moderationNotes, setModerationNotes] = useState('');
 
@@ -155,8 +155,19 @@ const EvaluationCard = ({ evaluation, onModerate }: { evaluation: ParkEvaluation
             {evaluation.would_recommend && <span className="text-green-600">✓ Recomendado</span>}
           </div>
           
-          {evaluation.status === 'pending' && (
-            <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onViewDetails(evaluation)}
+              className="text-blue-600 hover:bg-blue-50"
+            >
+              <Eye className="h-4 w-4 mr-1" />
+              Ver detalles
+            </Button>
+            
+            {evaluation.status === 'pending' && (
+              <div className="flex gap-2">
               <Button
                 size="sm"
                 variant="outline"
@@ -202,8 +213,9 @@ const EvaluationCard = ({ evaluation, onModerate }: { evaluation: ParkEvaluation
                   </div>
                 </DialogContent>
               </Dialog>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -248,6 +260,122 @@ const ParkSummaryCard = ({ park }: { park: ParkSummary }) => {
   );
 };
 
+const EvaluationDetailModal = ({ evaluation, onClose }: { evaluation: ParkEvaluation; onClose: () => void }) => {
+  const criteriaConfig = [
+    { key: 'cleanliness', label: 'Limpieza', icon: Sparkles, color: 'text-blue-600' },
+    { key: 'safety', label: 'Seguridad', icon: Shield, color: 'text-green-600' },
+    { key: 'maintenance', label: 'Mantenimiento', icon: Wrench, color: 'text-orange-600' },
+    { key: 'accessibility', label: 'Accesibilidad', icon: Accessibility, color: 'text-purple-600' },
+    { key: 'amenities', label: 'Amenidades', icon: MapPin, color: 'text-red-600' },
+    { key: 'activities', label: 'Actividades', icon: Calendar, color: 'text-indigo-600' },
+    { key: 'staff', label: 'Personal', icon: Users, color: 'text-teal-600' },
+    { key: 'natural_beauty', label: 'Belleza Natural', icon: Leaf, color: 'text-green-500' },
+  ];
+
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5" />
+            Detalle de Evaluación
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-6">
+          {/* Información del evaluador */}
+          <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+            <div>
+              <h3 className="font-semibold text-lg mb-2">Información del Evaluador</h3>
+              <div className="space-y-2">
+                <p><strong>Nombre:</strong> {evaluation.evaluator_name}</p>
+                <p><strong>Email:</strong> {evaluation.evaluator_email}</p>
+                <p><strong>Ciudad:</strong> {evaluation.evaluator_city}</p>
+                <p><strong>Edad:</strong> {evaluation.evaluator_age} años</p>
+                <p><strong>Visitante frecuente:</strong> {evaluation.is_frequent_visitor ? 'Sí' : 'No'}</p>
+              </div>
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg mb-2">Información de la Visita</h3>
+              <div className="space-y-2">
+                <p><strong>Parque:</strong> {evaluation.park_name}</p>
+                <p><strong>Fecha:</strong> {new Date(evaluation.visit_date).toLocaleDateString()}</p>
+                <p><strong>Propósito:</strong> {evaluation.visit_purpose}</p>
+                <p><strong>Duración:</strong> {evaluation.visit_duration} minutos</p>
+                <p><strong>Recomendaría:</strong> {evaluation.would_recommend ? 'Sí' : 'No'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Criterios de evaluación */}
+          <div>
+            <h3 className="font-semibold text-lg mb-4">Criterios de Evaluación</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {criteriaConfig.map((criteria) => {
+                const IconComponent = criteria.icon;
+                const value = evaluation[criteria.key as keyof ParkEvaluation] as number;
+                
+                return (
+                  <div key={criteria.key} className="flex items-center gap-3 p-3 border rounded-lg">
+                    <IconComponent className={`h-5 w-5 ${criteria.color}`} />
+                    <div className="flex-1">
+                      <div className="font-medium">{criteria.label}</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <StarRating rating={value} />
+                        <span className="text-sm text-gray-600">{value}/5</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Calificación general */}
+          <div className="p-4 bg-green-50 rounded-lg">
+            <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+              <Star className="h-5 w-5 text-yellow-500" />
+              Calificación General
+            </h3>
+            <div className="flex items-center gap-3">
+              <StarRating rating={evaluation.overall_rating} />
+              <span className="text-xl font-bold">{evaluation.overall_rating}/5</span>
+            </div>
+          </div>
+
+          {/* Comentarios y sugerencias */}
+          <div className="space-y-4">
+            {evaluation.comments && (
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Comentarios</h3>
+                <p className="text-gray-700 bg-gray-50 p-3 rounded-lg italic">"{evaluation.comments}"</p>
+              </div>
+            )}
+            
+            {evaluation.suggestions && (
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Sugerencias</h3>
+                <p className="text-gray-700 bg-blue-50 p-3 rounded-lg">{evaluation.suggestions}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Estado de moderación */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <h3 className="font-semibold text-lg mb-2">Estado de Moderación</h3>
+            <div className="flex items-center gap-2">
+              <EvaluationStatus status={evaluation.status} />
+              <span className="text-sm text-gray-600">
+                Evaluado el {new Date(evaluation.created_at).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default function EvaluationsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -258,6 +386,7 @@ export default function EvaluationsPage() {
   const [summaryViewMode, setSummaryViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [summaryCurrentPage, setSummaryCurrentPage] = useState(1);
+  const [selectedEvaluation, setSelectedEvaluation] = useState<ParkEvaluation | null>(null);
   const pageSize = 10;
 
   // Inicializar tabla si es necesario
@@ -527,6 +656,7 @@ export default function EvaluationsPage() {
                             key={evaluation.id}
                             evaluation={evaluation}
                             onModerate={handleModerate}
+                            onViewDetails={setSelectedEvaluation}
                           />
                         ))}
                       </div>
@@ -547,6 +677,14 @@ export default function EvaluationsPage() {
                                 <span className="text-sm text-gray-500">
                                   {new Date(evaluation.created_at).toLocaleDateString()}
                                 </span>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setSelectedEvaluation(evaluation)}
+                                  className="text-blue-600 hover:bg-blue-50"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
                                 {evaluation.status === 'pending' && (
                                   <div className="flex gap-1">
                                     <Button
@@ -683,6 +821,14 @@ export default function EvaluationsPage() {
           </Tabs>
         </div>
       </div>
+      
+      {/* Modal de detalles */}
+      {selectedEvaluation && (
+        <EvaluationDetailModal
+          evaluation={selectedEvaluation}
+          onClose={() => setSelectedEvaluation(null)}
+        />
+      )}
     </AdminLayout>
   );
 }
