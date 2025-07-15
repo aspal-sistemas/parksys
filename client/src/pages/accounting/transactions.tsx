@@ -146,6 +146,7 @@ export default function AccountingTransactions() {
         description: "La transacción ha sido registrada exitosamente.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/accounting/transactions'] });
+      queryClient.refetchQueries({ queryKey: ['/api/accounting/transactions'] });
       setIsDialogOpen(false);
       form.reset();
     },
