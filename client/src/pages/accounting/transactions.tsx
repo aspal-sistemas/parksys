@@ -58,9 +58,11 @@ export default function AccountingTransactions() {
   
   const queryClient = useQueryClient();
 
-  const { data: transactions, isLoading } = useQuery({
+  const { data: transactions, isLoading, refetch } = useQuery({
     queryKey: ['/api/accounting/transactions'],
-    enabled: true
+    enabled: true,
+    staleTime: 0,
+    gcTime: 0
   });
 
   const { data: categories } = useQuery({
@@ -273,6 +275,10 @@ export default function AccountingTransactions() {
 
   // Obtener transacciones reales de la API
   const realTransactions = transactions?.transactions || [];
+  
+  // Debug: Log de transacciones recibidas
+  console.log('📋 Transacciones recibidas de la API:', transactions);
+  console.log('📋 RealTransactions array:', realTransactions);
 
   // Calcular estadísticas
   const totalIncome = 0;
