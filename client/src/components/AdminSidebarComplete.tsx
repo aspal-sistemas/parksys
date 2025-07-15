@@ -790,7 +790,7 @@ const AdminSidebarComplete: React.FC = () => {
                 icon={<Scale className="h-4 w-4" />}
                 active={location === '/admin/accounting/trial-balance'}
               >
-                Balance de Comprobación
+                Balanza
               </NavItem>
               <NavItem 
                 href="/admin/accounting/financial-statements" 
