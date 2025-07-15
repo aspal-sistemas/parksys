@@ -340,7 +340,8 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
         RETURNING *
       `, [
-        concept, transaction_date, description, reference_number, amount, 
+        concept, transaction_date || new Date().toISOString().split('T')[0], 
+        description, reference_number, amount, 
         category_a, transaction_type, category_a, category_b, category_c, 
         category_d, category_e, status, income_source, bank, add_iva, 
         amount_without_iva, iva_amount, req.user?.id

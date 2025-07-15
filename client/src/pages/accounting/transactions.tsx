@@ -366,7 +366,7 @@ export default function AccountingTransactions() {
                   <span>Nueva Transacción</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {editingTransaction ? 'Editar Transacción' : 'Nueva Transacción'}
@@ -490,7 +490,7 @@ export default function AccountingTransactions() {
                     {/* Categorías Jerárquicas Adicionales */}
                     <h4 className="text-sm font-medium text-gray-700 mb-3">Categorías Jerárquicas Adicionales (Opcional)</h4>
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-4 gap-3">
                       <FormField
                         control={form.control}
                         name="category_b"
@@ -567,9 +567,6 @@ export default function AccountingTransactions() {
                           </FormItem>
                         )}
                       />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="category_d"
