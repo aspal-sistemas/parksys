@@ -172,13 +172,13 @@ const AdminSidebarComplete: React.FC = () => {
         location.startsWith('/admin/instructors') || 
         location.startsWith('/admin/events') || 
         location.startsWith('/admin/eventos-ambu') || 
-        location.startsWith('/admin/space-reservations')) {
+        location.startsWith('/admin/space-reservations') ||
+        location.startsWith('/admin/amenities')) {
       return ['gestion'];
     }
     
     // Otros módulos
     if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions') || location.startsWith('/admin/settings')) return ['system'];
-    if (location.startsWith('/admin/amenities')) return ['amenities'];
     if (location.startsWith('/admin/incidents')) return ['incidents'];
     if (location.startsWith('/admin/assets')) return ['assets'];
     if (location.startsWith('/admin/finance')) return ['finance'];
@@ -455,6 +455,28 @@ const AdminSidebarComplete: React.FC = () => {
                 Calendario
               </NavItem>
             </div>
+
+            {/* AMENIDADES */}
+            <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
+              <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
+                <Package className="h-4 w-4 mr-2" />
+                Amenidades
+              </div>
+              <NavItem 
+                href="/admin/amenities-dashboard" 
+                icon={<BarChart className="h-4 w-4" />}
+                active={location === '/admin/amenities-dashboard'}
+              >
+                {t('navigation.operativeSummary')}
+              </NavItem>
+              <NavItem 
+                href="/admin/amenities" 
+                icon={<Package className="h-4 w-4" />}
+                active={location === '/admin/amenities'}
+              >
+                {t('navigation.management')}
+              </NavItem>
+            </div>
           </ModuleNav>
 
           {/* 2. CONFIGURACIÓN */}
@@ -486,29 +508,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 3. AMENIDADES */}
-          <ModuleNav 
-            title={t('navigation.amenities')} 
-            icon={<Package className="h-5 w-5" />}
-            value="amenities"
-          >
-            <NavItem 
-              href="/admin/amenities-dashboard" 
-              icon={<BarChart className="h-5 w-5" />}
-              active={location === '/admin/amenities-dashboard'}
-            >
-              {t('navigation.operativeSummary')}
-            </NavItem>
-            <NavItem 
-              href="/admin/amenities" 
-              icon={<Package className="h-5 w-5" />}
-              active={location === '/admin/amenities'}
-            >
-              {t('navigation.management')}
-            </NavItem>
-          </ModuleNav>
-
-          {/* 7. ACTIVOS */}
+          {/* 3. ACTIVOS */}
           <ModuleNav 
             title={t('navigation.assets')} 
             icon={<Package className="h-5 w-5" />}

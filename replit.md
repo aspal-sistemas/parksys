@@ -82,7 +82,7 @@ The system uses environment variables for database connection and supports both 
 
 ## Changelog
 
-- July 15, 2025. Sistema de navegación sidebar completamente reorganizado con menú principal "Gestión" - Creado menú principal "Gestión" que agrupa los módulos relacionados con la operación diaria: Visitantes, Parques, Arbolado, Actividades, Eventos y Reservas. Cada submódulo organizado con bordes izquierdos y iconos diferenciados. Navegación intuitiva con detección automática de módulo activo. Configuración movida a segundo lugar después de Dashboard. Mejora significativa en UX de navegación administrativa para usuarios municipales
+- July 15, 2025. Sistema de navegación sidebar completamente reorganizado con menú principal "Gestión" - Creado menú principal "Gestión" que agrupa los módulos relacionados con la operación diaria: Visitantes, Parques, Arbolado, Actividades, Eventos, Reservas y Amenidades. Cada submódulo organizado con bordes izquierdos y iconos diferenciados. Navegación intuitiva con detección automática de módulo activo. Configuración movida a segundo lugar después de Dashboard. Mejora significativa en UX de navegación administrativa para usuarios municipales
 
 - July 15, 2025. Sistema de paginación y vista extendida implementado en catálogo de actividades - Agregada funcionalidad de paginación con 10 registros por página, controles de navegación completos con números de página clickeables. Sistema de vista dual: Grid (compacta) y Lista (extendida) con información detallada de actividades. Vista extendida muestra información completa en layout de 3 columnas: Información General, Detalles y Requisitos. Filtros por categoría, parque y búsqueda de texto. Sistema robusto de control de estados y navegación automática entre páginas
 
