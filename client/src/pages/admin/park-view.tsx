@@ -19,6 +19,7 @@ import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTrian
 import RoleBasedSidebar from "@/components/RoleBasedSidebar";
 import { MapViewer } from "@/components/ui/map-viewer";
 import ParkMultimediaViewer from "@/components/ParkMultimediaViewer";
+import ParkTreesInventory from "@/components/ParkTreesInventory";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -835,7 +836,8 @@ export default function AdminParkView() {
               <CardDescription>Estado y estadísticas de árboles en este parque</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Estadísticas generales */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <div className="text-2xl font-bold text-green-600">{park.trees?.stats?.good || 0}</div>
                   <div className="text-sm text-gray-600">Bueno</div>
@@ -853,6 +855,9 @@ export default function AdminParkView() {
                   <div className="text-sm text-gray-600">Total</div>
                 </div>
               </div>
+              
+              {/* Inventario detallado */}
+              <ParkTreesInventory parkId={parseInt(id)} />
             </CardContent>
           </Card>
         </TabsContent>
