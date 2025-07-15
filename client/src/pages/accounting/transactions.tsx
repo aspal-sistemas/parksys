@@ -270,45 +270,8 @@ export default function AccountingTransactions() {
     });
   };
 
-  // Datos simulados para mostrar la estructura (reemplazar con datos reales)
-  const mockTransactions = [
-    {
-      id: 1,
-      date: '14/7/2025',
-      description: 'Nómina - Luis Romahn',
-      category: 'Sin categoría',
-      amount: -874,
-      reference: '-',
-      status: 'Completado'
-    },
-    {
-      id: 2,
-      date: '14/7/2025',
-      description: 'Nómina - Michelle Remedios',
-      category: 'Sin categoría',
-      amount: -874,
-      reference: '-',
-      status: 'Completado'
-    },
-    {
-      id: 3,
-      date: '14/7/2025',
-      description: 'Nómina - Belinda Cámara',
-      category: 'Sin categoría',
-      amount: -874.9,
-      reference: '-',
-      status: 'Completado'
-    },
-    {
-      id: 4,
-      date: '14/7/2025',
-      description: 'Nómina - Esthelany Castillo',
-      category: 'Sin categoría',
-      amount: -874,
-      reference: '-',
-      status: 'Completado'
-    }
-  ];
+  // Obtener transacciones reales de la API
+  const realTransactions = transactions?.transactions || [];
 
   // Calcular estadísticas
   const totalIncome = 0;
@@ -1034,39 +997,75 @@ export default function AccountingTransactions() {
                   </tr>
                 </thead>
                 <tbody>
-                  {mockTransactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-b hover:bg-gray-50">
-                      <td className="p-2">{transaction.date}</td>
-                      <td className="p-2">{transaction.description}</td>
-                      <td className="p-2">
-                        <Badge variant="secondary">{transaction.category}</Badge>
-                      </td>
-                      <td className="p-2">
-                        <span className={transaction.amount < 0 ? 'text-red-500' : 'text-green-500'}>
-                          ${transaction.amount.toFixed(1)}
-                        </span>
-                      </td>
-                      <td className="p-2">{transaction.reference}</td>
-                      <td className="p-2">
-                        <Badge variant="default" className="bg-green-100 text-green-800">
-                          {transaction.status}
-                        </Badge>
-                      </td>
-                      <td className="p-2">
-                        <div className="flex items-center space-x-1">
-                          <Button variant="ghost" size="sm" title="Ver">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" title="Editar">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" title="Eliminar" className="text-red-500">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={7} className="p-8 text-center">
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                          <span className="ml-2">Cargando transacciones...</span>
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  ) : realTransactions.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="p-8 text-center text-gray-500">
+                        No hay transacciones disponibles
+                      </td>
+                    </tr>
+                  ) : (
+                    realTransactions.map((transaction: any) => (
+                      <tr key={transaction.id} className="border-b hover:bg-gray-50">
+                        <td className="p-2">{new Date(transaction.date).toLocaleDateString('es-ES')}</td>
+                        <td className="p-2">{transaction.description || transaction.concept || 'Sin descripción'}</td>
+                        <td className="p-2">
+                          <Badge variant="secondary">
+                            {transaction.category_name || `ID: ${transaction.category_id}`}
+                          </Badge>
+                        </td>
+                        <td className="p-2">
+                          <span className={transaction.transaction_type === 'expense' ? 'text-red-500' : 'text-green-500'}>
+                            ${parseFloat(transaction.amount).toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="p-2">{transaction.reference || transaction.reference_number || '-'}</td>
+                        <td className="p-2">
+                          <Badge variant="default" className={
+                            transaction.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }>
+                            {transaction.status === 'pending' ? 'Pendiente' : 
+                             transaction.status === 'completed' ? 'Completado' : 
+                             'Rechazado'}
+                          </Badge>
+                        </td>
+                        <td className="p-2">
+                          <div className="flex items-center space-x-1">
+                            <Button variant="ghost" size="sm" title="Ver">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              title="Editar"
+                              onClick={() => handleEdit(transaction)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              title="Eliminar" 
+                              className="text-red-500"
+                              onClick={() => handleDelete(transaction.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
