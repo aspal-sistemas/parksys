@@ -220,8 +220,8 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
       
       const tree = result.rows[0];
       
-      // Crear código de árbol
-      const code = `ARB-${String(tree.id).padStart(5, '0')}`;
+      // Usar el código real almacenado en la base de datos
+      const code = tree.code;
       
       // Obtener información de la especie
       let speciesInfo = null;
