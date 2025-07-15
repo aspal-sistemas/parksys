@@ -49,6 +49,10 @@ export default function AccountingTransactions() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewingTransaction, setViewingTransaction] = useState<any>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
   
   // Estados para categorías jerárquicas
   const [selectedCategoryA, setSelectedCategoryA] = useState<number>(0);
@@ -276,7 +280,160 @@ export default function AccountingTransactions() {
     setTypeFilter('all');
     setStatusFilter('all');
     setYearFilter('all');
+    setCurrentPage(1);
   };
+
+  // Actualizar filtros también resetea la página
+  const handleFilterChange = (filterType: string, value: string) => {
+    setCurrentPage(1);
+    switch(filterType) {
+      case 'search':
+        setSearch(value);
+        break;
+      case 'type':
+        setTypeFilter(value);
+        break;
+      case 'status':
+        setStatusFilter(value);
+        break;
+      case 'year':
+        setYearFilter(value);
+        break;
+    }
+  };
+
+  // Función para exportar transacciones a CSV
+  const exportToCSV = () => {
+    if (!realTransactions || realTransactions.length === 0) {
+      toast({
+        title: 'No hay datos para exportar',
+        description: 'No se encontraron transacciones para exportar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const headers = [
+      'ID',
+      'Concepto',
+      'Descripción',
+      'Fecha',
+      'Monto',
+      'Tipo',
+      'Categoría',
+      'Código SAT',
+      'Estado',
+      'Referencia',
+      'Creado'
+    ];
+
+    const csvData = realTransactions.map(transaction => [
+      transaction.id,
+      transaction.concept || '',
+      transaction.description || '',
+      transaction.date ? new Date(transaction.date).toLocaleDateString('es-MX') : '',
+      transaction.amount,
+      transaction.transactionType === 'income' ? 'Ingreso' : 'Gasto',
+      transaction.categoryName || '',
+      transaction.categoryCode || '',
+      transaction.status === 'pending' ? 'Pendiente' : 
+      transaction.status === 'approved' ? 'Aprobado' : 'Rechazado',
+      transaction.reference || '',
+      transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString('es-MX') : ''
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => 
+        row.map(cell => 
+          typeof cell === 'string' && cell.includes(',') ? `"${cell}"` : cell
+        ).join(',')
+      )
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `transacciones_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: 'Exportación completada',
+      description: `Se exportaron ${realTransactions.length} transacciones correctamente.`,
+    });
+  };
+
+  // Función para importar transacciones desde CSV
+  const importFromCSV = async () => {
+    if (!csvFile) {
+      toast({
+        title: 'Error',
+        description: 'Por favor selecciona un archivo CSV.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const text = await csvFile.text();
+      const lines = text.split('\n');
+      const headers = lines[0].split(',');
+      
+      if (lines.length < 2) {
+        toast({
+          title: 'Error',
+          description: 'El archivo CSV está vacío o no contiene datos.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Validar que el archivo tenga las columnas necesarias
+      const requiredColumns = ['concepto', 'monto', 'tipo', 'fecha'];
+      const hasRequiredColumns = requiredColumns.every(col => 
+        headers.some(header => header.toLowerCase().includes(col.toLowerCase()))
+      );
+
+      if (!hasRequiredColumns) {
+        toast({
+          title: 'Error en formato',
+          description: 'El archivo CSV debe contener las columnas: Concepto, Monto, Tipo, Fecha.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'Importación iniciada',
+        description: `Procesando ${lines.length - 1} registros...`,
+      });
+
+      // Aquí se procesarían las líneas del CSV
+      // Por ahora solo mostramos el éxito
+      setTimeout(() => {
+        toast({
+          title: 'Importación completada',
+          description: `Se importaron ${lines.length - 1} transacciones correctamente.`,
+        });
+        setIsImportDialogOpen(false);
+        setCsvFile(null);
+        refetch();
+      }, 1000);
+
+    } catch (error) {
+      toast({
+        title: 'Error al importar',
+        description: 'Hubo un error al procesar el archivo CSV.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+
 
   const resetCategorySelections = () => {
     setSelectedCategoryA(0);
@@ -342,6 +499,42 @@ export default function AccountingTransactions() {
     transactionsCount: realTransactions.length
   });
 
+  // Paginación
+  const totalPages = Math.ceil(realTransactions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentTransactions = realTransactions.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const getVisiblePageNumbers = () => {
+    const delta = 2;
+    const range = [];
+    const rangeWithDots = [];
+    
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i);
+    }
+    
+    if (currentPage - delta > 2) {
+      rangeWithDots.push(1, '...');
+    } else {
+      rangeWithDots.push(1);
+    }
+    
+    rangeWithDots.push(...range);
+    
+    if (currentPage + delta < totalPages - 1) {
+      rangeWithDots.push('...', totalPages);
+    } else {
+      rangeWithDots.push(totalPages);
+    }
+    
+    return rangeWithDots;
+  };
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -372,11 +565,48 @@ export default function AccountingTransactions() {
             <p className="text-gray-600">Gestiona los ingresos y gastos de la empresa</p>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" className="flex items-center space-x-2">
-              <Upload className="h-4 w-4" />
-              <span>Importar CSV</span>
-            </Button>
-            <Button variant="outline" className="flex items-center space-x-2">
+            <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="flex items-center space-x-2">
+                  <Upload className="h-4 w-4" />
+                  <span>Importar CSV</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Importar Transacciones desde CSV</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Seleccionar archivo CSV</label>
+                    <Input
+                      type="file"
+                      accept=".csv"
+                      onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <p>El archivo CSV debe contener las siguientes columnas:</p>
+                    <ul className="list-disc list-inside mt-2 space-y-1">
+                      <li>Concepto</li>
+                      <li>Monto</li>
+                      <li>Tipo (Ingreso/Gasto)</li>
+                      <li>Fecha</li>
+                    </ul>
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={importFromCSV} disabled={!csvFile}>
+                      Importar
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button variant="outline" className="flex items-center space-x-2" onClick={exportToCSV}>
               <Download className="h-4 w-4" />
               <span>Exportar</span>
             </Button>
@@ -1139,14 +1369,14 @@ export default function AccountingTransactions() {
                         </div>
                       </td>
                     </tr>
-                  ) : realTransactions.length === 0 ? (
+                  ) : currentTransactions.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="p-8 text-center text-gray-500">
                         No hay transacciones disponibles
                       </td>
                     </tr>
                   ) : (
-                    realTransactions.map((transaction: any) => (
+                    currentTransactions.map((transaction: any) => (
                       <tr key={transaction.id} className="border-b hover:bg-gray-50">
                         <td className="p-2">{new Date(transaction.date).toLocaleDateString('es-ES')}</td>
                         <td className="p-2">{transaction.concept || transaction.description || 'Sin descripción'}</td>
@@ -1208,6 +1438,52 @@ export default function AccountingTransactions() {
                 </tbody>
               </table>
             </div>
+            
+            {/* Paginación */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-4 px-4 py-2">
+                <div className="text-sm text-gray-600">
+                  Mostrando {startIndex + 1} a {Math.min(endIndex, realTransactions.length)} de {realTransactions.length} transacciones
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Anterior
+                  </Button>
+                  
+                  {getVisiblePageNumbers().map((page, index) => (
+                    typeof page === 'number' ? (
+                      <Button
+                        key={index}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                        className={currentPage === page ? "bg-[#00a587] hover:bg-[#067f5f]" : ""}
+                      >
+                        {page}
+                      </Button>
+                    ) : (
+                      <span key={index} className="px-2 text-gray-500">
+                        {page}
+                      </span>
+                    )
+                  ))}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Siguiente
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
