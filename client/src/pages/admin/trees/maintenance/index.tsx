@@ -71,8 +71,9 @@ export default function TreeMaintenancePage() {
   const { data: parks, isLoading: loadingParks } = useQuery({
     queryKey: ['/api/parks'],
     select: (data) => {
-      console.log('Datos de parques recibidos:', data?.data);
-      return data.data;
+      console.log('Datos de parques recibidos:', data);
+      // El endpoint retorna { status: "success", data: [...] }
+      return data?.data || [];
     },
   });
 
@@ -295,7 +296,10 @@ export default function TreeMaintenancePage() {
           
           <Select
             value={filterPark}
-            onValueChange={setFilterPark}
+            onValueChange={(value) => {
+              console.log('Cambiando filtro de parque a:', value);
+              setFilterPark(value);
+            }}
           >
             <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Filtrar por parque" />
@@ -304,10 +308,10 @@ export default function TreeMaintenancePage() {
               <SelectItem value="all">Todos los parques</SelectItem>
               {loadingParks ? (
                 <SelectItem value="loading" disabled>Cargando parques...</SelectItem>
-              ) : parks?.length === 0 ? (
+              ) : !parks || parks.length === 0 ? (
                 <SelectItem value="none" disabled>No hay parques disponibles</SelectItem>
               ) : (
-                parks?.map((park) => (
+                parks.map((park) => (
                   <SelectItem key={park.id} value={park.name}>
                     {park.name}
                   </SelectItem>
