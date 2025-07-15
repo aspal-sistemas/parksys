@@ -81,21 +81,21 @@ export default function AccountingTransactions() {
 
   const getCategoriesLevel2 = (parentId: number) => {
     if (!categories?.categories || !parentId) return [];
-    const level2Categories = categories.categories.filter((cat: any) => cat.level === 2 && cat.parent_id === parentId);
+    const level2Categories = categories.categories.filter((cat: any) => cat.level === 2 && cat.parentId === parentId);
     console.log(`🔍 Categorías nivel 2 para parent ${parentId}:`, level2Categories);
     return level2Categories;
   };
 
   const getCategoriesLevel3 = (parentId: number) => {
     if (!categories?.categories || !parentId) return [];
-    const level3Categories = categories.categories.filter((cat: any) => cat.level === 3 && cat.parent_id === parentId);
+    const level3Categories = categories.categories.filter((cat: any) => cat.level === 3 && cat.parentId === parentId);
     console.log(`🔍 Categorías nivel 3 para parent ${parentId}:`, level3Categories);
     return level3Categories;
   };
 
   const getCategoriesLevel4 = (parentId: number) => {
     if (!categories?.categories || !parentId) return [];
-    const level4Categories = categories.categories.filter((cat: any) => cat.level === 4 && cat.parent_id === parentId);
+    const level4Categories = categories.categories.filter((cat: any) => cat.level === 4 && cat.parentId === parentId);
     console.log(`🔍 Categorías nivel 4 para parent ${parentId}:`, level4Categories);
     return level4Categories;
   };
