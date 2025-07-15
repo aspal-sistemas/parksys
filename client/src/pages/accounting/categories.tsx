@@ -54,8 +54,8 @@ export default function AccountingCategories() {
       code: '',
       name: '',
       level: '1',
-      parent_id: '',
-      sat_code: '',
+      parent_id: 'none',
+      sat_code: 'none',
       description: '',
       is_active: true,
     },
@@ -150,10 +150,11 @@ export default function AccountingCategories() {
   });
 
   const handleSubmit = (data: CategoryFormData) => {
-    // Convert "none" to null for parent_id
+    // Convert "none" to null for parent_id and sat_code
     const formData = {
       ...data,
-      parent_id: data.parent_id === "none" ? null : data.parent_id
+      parent_id: data.parent_id === "none" ? null : data.parent_id,
+      sat_code: data.sat_code === "none" ? null : data.sat_code
     };
     
     if (editingCategory) {
@@ -170,7 +171,7 @@ export default function AccountingCategories() {
       name: category.name,
       level: category.level,
       parent_id: category.parent_id ? category.parent_id.toString() : 'none',
-      sat_code: category.sat_code || '',
+      sat_code: category.sat_code || 'none',
       description: category.description || '',
       is_active: category.is_active,
     });
@@ -408,7 +409,7 @@ export default function AccountingCategories() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="">Sin código SAT</SelectItem>
+                                <SelectItem value="none">Sin código SAT</SelectItem>
                                 {availableSatCodes.map((cat: any) => (
                                   <SelectItem key={cat.code} value={cat.code}>
                                     <div className="flex items-center space-x-2">
