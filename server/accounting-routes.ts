@@ -60,7 +60,7 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
           name: row.name,
           description: row.description,
           level: row.level,
-          parent_id: row.parent_id,
+          parentId: row.parent_id, // Convertir a camelCase
           parent_name: row.parent_name,
           sat_code: row.sat_code,
           type: row.type,
