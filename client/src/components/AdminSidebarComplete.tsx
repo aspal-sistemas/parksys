@@ -1011,7 +1011,15 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Configuración
             </NavItem>
-          </ModuleNav> 
+          </ModuleNav>
+
+          {/* RECURSOS HUMANOS */}
+          <ModuleNav 
+            title="Recursos Humanos" 
+            icon={<Users className="h-5 w-5" />}
+            value="hr"
+          >
+            <NavItem 
               href="/admin/hr/employees" 
               icon={<User className="h-5 w-5" />}
               active={location.startsWith('/admin/hr/employees')}
