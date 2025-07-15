@@ -53,6 +53,7 @@ import {
   BadgeCheck,
   LayoutGrid,
   Flower2,
+  FolderOpen,
   FolderTree,
   BookOpen,
   Scissors,
@@ -240,10 +241,39 @@ const AdminSidebarComplete: React.FC = () => {
             {t('navigation.dashboard')}
           </NavItem>
 
-          {/* 1. GESTIÓN - MENÚ PRINCIPAL */}
+          {/* 1. CONFIGURACIÓN */}
+          <ModuleNav 
+            title={t('navigation.settings')} 
+            icon={<Settings className="h-5 w-5" />}
+            value="system"
+          >
+            <NavItem 
+              href="/admin/settings" 
+              icon={<Settings className="h-5 w-5" />}
+              active={location === '/admin/settings'}
+            >
+              {t('navigation.settings')}
+            </NavItem>
+            <NavItem 
+              href="/admin/users" 
+              icon={<UserCheck className="h-5 w-5" />}
+              active={location === '/admin/users'}
+            >
+              {t('navigation.users')}
+            </NavItem>
+            <NavItem 
+              href="/admin/permissions" 
+              icon={<Shield className="h-5 w-5" />}
+              active={location === '/admin/permissions'}
+            >
+              {t('navigation.permissions')}
+            </NavItem>
+          </ModuleNav>
+
+          {/* 2. GESTIÓN - MENÚ PRINCIPAL */}
           <ModuleNav 
             title="Gestión" 
-            icon={<Settings className="h-5 w-5" />}
+            icon={<FolderOpen className="h-5 w-5" />}
             value="gestion"
             defaultOpen={location.startsWith('/admin/visitors') || location.startsWith('/admin/parks') || location.startsWith('/admin/trees') || location.startsWith('/admin/organizador') || location.startsWith('/admin/activities') || location.startsWith('/admin/events') || location.startsWith('/admin/space-reservations')}
           >
@@ -486,34 +516,7 @@ const AdminSidebarComplete: React.FC = () => {
             </div>
           </ModuleNav>
 
-          {/* 2. CONFIGURACIÓN */}
-          <ModuleNav 
-            title={t('navigation.settings')} 
-            icon={<Settings className="h-5 w-5" />}
-            value="system"
-          >
-            <NavItem 
-              href="/admin/settings" 
-              icon={<Settings className="h-5 w-5" />}
-              active={location === '/admin/settings'}
-            >
-              {t('navigation.settings')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users" 
-              icon={<UserCheck className="h-5 w-5" />}
-              active={location === '/admin/users'}
-            >
-              {t('navigation.users')}
-            </NavItem>
-            <NavItem 
-              href="/admin/permissions" 
-              icon={<Shield className="h-5 w-5" />}
-              active={location === '/admin/permissions'}
-            >
-              {t('navigation.permissions')}
-            </NavItem>
-          </ModuleNav>
+
 
           {/* 3. O & M - OPERACIONES Y MANTENIMIENTO */}
           <ModuleNav 
