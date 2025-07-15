@@ -182,27 +182,25 @@ export default function TreeMaintenancePage() {
 
   // Función para obtener especies filtradas por parque
   const getSpeciesForPark = useMemo(() => {
-    console.log('getSpeciesForPark - selectedParkId:', selectedParkId);
-    console.log('getSpeciesForPark - trees:', trees?.length);
-    console.log('getSpeciesForPark - species:', species?.length);
-    
     if (!trees || !species) return [];
     
     if (selectedParkId === 'all') {
-      console.log('Retornando todas las especies:', species);
       return species;
     }
     
-    const parkTrees = trees.filter(tree => tree.parkId === parseInt(selectedParkId));
-    console.log('parkTrees:', parkTrees.length);
+    // Convertir selectedParkId a número para la comparación
+    const parkIdNum = parseInt(selectedParkId);
+    const parkTrees = trees.filter(tree => tree.parkId === parkIdNum);
+    
+    // Si no hay árboles en el parque, retornar todas las especies
+    if (parkTrees.length === 0) {
+      return species;
+    }
     
     const speciesInPark = new Set(parkTrees.map(tree => tree.speciesId));
-    console.log('speciesInPark:', speciesInPark);
-    
     const filteredSpecies = species.filter(sp => speciesInPark.has(sp.id));
-    console.log('filteredSpecies:', filteredSpecies);
     
-    return filteredSpecies;
+    return filteredSpecies.length > 0 ? filteredSpecies : species;
   }, [trees, species, selectedParkId]);
 
   // Función para obtener árboles específicos para el formulario
@@ -219,8 +217,18 @@ export default function TreeMaintenancePage() {
       filteredTrees = filteredTrees.filter(tree => tree.speciesId === parseInt(selectedSpeciesId));
     }
     
+    // Filtrar por término de búsqueda (código del árbol)
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filteredTrees = filteredTrees.filter(tree => 
+        tree.code?.toLowerCase().includes(term) ||
+        tree.speciesName?.toLowerCase().includes(term) ||
+        tree.parkName?.toLowerCase().includes(term)
+      );
+    }
+    
     return filteredTrees.slice(0, 50);
-  }, [trees, selectedParkId, selectedSpeciesId]);
+  }, [trees, selectedParkId, selectedSpeciesId, searchTerm]);
 
   // Filtrar mantenimientos según búsqueda, tipo y parque
   const filteredMaintenances = React.useMemo(() => {
@@ -798,36 +806,88 @@ export default function TreeMaintenancePage() {
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="form-tree">Árbol Específico</Label>
-                    <Select 
-                      value={selectedTreeId?.toString() || ""} 
-                      onValueChange={(value) => setSelectedTreeId(Number(value))}
-                      disabled={selectedParkId === 'all'}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={selectedParkId === 'all' ? 'Selecciona primero un parque' : 'Selecciona un árbol'} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getTreesForSelection?.map((tree) => (
-                          <SelectItem key={tree.id} value={tree.id.toString()}>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline">{tree.code}</Badge>
-                              <span>{tree.speciesName || 'Especie desconocida'}</span>
-                              <span className="text-muted-foreground">({tree.healthStatus})</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="tree-search">Buscar por Código de Árbol</Label>
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="tree-search"
+                            placeholder="Buscar por código (ej: BSK-001, PAR-025)..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10"
+                          />
+                        </div>
+                        {searchTerm && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSearchTerm('')}
+                            className="shrink-0"
+                          >
+                            Limpiar
+                          </Button>
+                        )}
+                      </div>
+                      {searchTerm && getTreesForSelection.length > 0 && (
+                        <div className="p-2 bg-blue-50 rounded-md text-sm text-blue-700">
+                          <div className="flex items-center gap-2">
+                            <Info className="h-4 w-4" />
+                            <span>
+                              Encontrados {getTreesForSelection.length} árboles que coinciden con "{searchTerm}"
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="form-tree">Árbol Específico</Label>
+                      <Select 
+                        value={selectedTreeId?.toString() || ""} 
+                        onValueChange={(value) => setSelectedTreeId(Number(value))}
+                        disabled={selectedParkId === 'all'}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={selectedParkId === 'all' ? 'Selecciona primero un parque' : 'Selecciona un árbol'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getTreesForSelection?.map((tree) => (
+                            <SelectItem key={tree.id} value={tree.id.toString()}>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="bg-green-50 text-green-700">
+                                  {tree.code}
+                                </Badge>
+                                <span className="font-medium">{tree.speciesName || 'Especie desconocida'}</span>
+                                <span className="text-muted-foreground">({tree.healthStatus})</span>
+                                <span className="text-xs text-blue-600">{tree.parkName}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   
                   {selectedTreeId && (
-                    <div className="p-3 bg-green-50 rounded-md border border-green-200">
-                      <div className="flex items-center gap-2 text-green-700">
+                    <div className="p-4 bg-green-50 rounded-md border border-green-200">
+                      <div className="flex items-center gap-2 text-green-700 mb-2">
                         <CheckCircle className="h-4 w-4" />
                         <span className="font-medium">Árbol seleccionado correctamente</span>
                       </div>
+                      {(() => {
+                        const selectedTreeData = trees?.find(tree => tree.id === selectedTreeId);
+                        return selectedTreeData ? (
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div><strong>Código:</strong> {selectedTreeData.code}</div>
+                            <div><strong>Especie:</strong> {selectedTreeData.speciesName}</div>
+                            <div><strong>Parque:</strong> {selectedTreeData.parkName}</div>
+                            <div><strong>Estado:</strong> {selectedTreeData.healthStatus}</div>
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
                   )}
                 </CardContent>
