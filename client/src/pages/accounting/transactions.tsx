@@ -48,6 +48,8 @@ export default function AccountingTransactions() {
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [viewingTransaction, setViewingTransaction] = useState<any>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
   
   // Estados para categorías jerárquicas
   const [selectedCategoryA, setSelectedCategoryA] = useState<number>(0);
@@ -223,6 +225,11 @@ export default function AccountingTransactions() {
       reference_number: transaction.reference_number || '',
     });
     setIsDialogOpen(true);
+  };
+
+  const handleView = (transaction: any) => {
+    setViewingTransaction(transaction);
+    setViewDialogOpen(true);
   };
 
   const handleDelete = (id: string) => {
@@ -821,6 +828,102 @@ export default function AccountingTransactions() {
                 </Form>
               </DialogContent>
             </Dialog>
+
+            {/* Diálogo de visualización */}
+            <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Detalles de la Transacción</DialogTitle>
+                </DialogHeader>
+                {viewingTransaction && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">ID</label>
+                        <p className="text-sm text-gray-900">{viewingTransaction.id}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">UUID</label>
+                        <p className="text-sm text-gray-900 font-mono">{viewingTransaction.uuid}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Fecha</label>
+                        <p className="text-sm text-gray-900">{new Date(viewingTransaction.date).toLocaleDateString('es-ES')}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Tipo</label>
+                        <Badge variant={viewingTransaction.transactionType === 'income' ? 'default' : 'destructive'}>
+                          {viewingTransaction.transactionType === 'income' ? 'Ingreso' : 'Gasto'}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Concepto</label>
+                      <p className="text-sm text-gray-900">{viewingTransaction.concept || 'No especificado'}</p>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Descripción</label>
+                      <p className="text-sm text-gray-900">{viewingTransaction.description || 'No especificado'}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Monto</label>
+                        <p className={`text-lg font-semibold ${viewingTransaction.transactionType === 'expense' ? 'text-red-500' : 'text-green-500'}`}>
+                          ${parseFloat(viewingTransaction.amount).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Estado</label>
+                        <Badge variant="default" className={
+                          viewingTransaction.status === 'completed' ? 'bg-green-100 text-green-800' :
+                          viewingTransaction.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          viewingTransaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }>
+                          {viewingTransaction.status === 'pending' ? 'Pendiente' : 
+                           viewingTransaction.status === 'completed' ? 'Completado' : 
+                           viewingTransaction.status === 'approved' ? 'Aprobado' : 
+                           'Rechazado'}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Categoría</label>
+                      <Badge variant="secondary" className="ml-2">
+                        {viewingTransaction.categoryName || `ID: ${viewingTransaction.categoryId}`}
+                      </Badge>
+                      <span className="text-sm text-gray-500 ml-2">
+                        Código: {viewingTransaction.categoryCode || 'N/A'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Creado</label>
+                        <p className="text-sm text-gray-900">{new Date(viewingTransaction.createdAt).toLocaleString('es-ES')}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Actualizado</label>
+                        <p className="text-sm text-gray-900">{new Date(viewingTransaction.updatedAt).toLocaleString('es-ES')}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4">
+                      <Button onClick={() => setViewDialogOpen(false)}>
+                        Cerrar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -999,7 +1102,6 @@ export default function AccountingTransactions() {
                     <th className="text-left p-2">Descripción</th>
                     <th className="text-left p-2">Categoría</th>
                     <th className="text-left p-2">Monto</th>
-                    <th className="text-left p-2">Referencia</th>
                     <th className="text-left p-2">Estado</th>
                     <th className="text-left p-2">Acciones</th>
                   </tr>
@@ -1032,10 +1134,9 @@ export default function AccountingTransactions() {
                         </td>
                         <td className="p-2">
                           <span className={transaction.transaction_type === 'expense' ? 'text-red-500' : 'text-green-500'}>
-                            ${parseFloat(transaction.amount).toFixed(2)}
+                            ${parseFloat(transaction.amount).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         </td>
-                        <td className="p-2">{transaction.reference || transaction.reference_number || '-'}</td>
                         <td className="p-2">
                           <Badge variant="default" className={
                             transaction.status === 'completed' ? 'bg-green-100 text-green-800' :
@@ -1051,7 +1152,12 @@ export default function AccountingTransactions() {
                         </td>
                         <td className="p-2">
                           <div className="flex items-center space-x-1">
-                            <Button variant="ghost" size="sm" title="Ver">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              title="Ver"
+                              onClick={() => handleView(transaction)}
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
                             <Button 
