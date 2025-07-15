@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { Router } from "express";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { 
   incomeCategories,
   incomeSubcategories,
@@ -1071,7 +1071,7 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
 
   // ============ FLUJO DE EFECTIVO ============
   
-  // Obtener matriz de flujo de efectivo con datos reales
+  // Obtener matriz de flujo de efectivo desde cash_flow_matrix
   apiRouter.get("/cash-flow-matrix", async (req: Request, res: Response) => {
     try {
       const year = parseInt(req.query.year as string) || new Date().getFullYear();
@@ -1079,101 +1079,137 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
       
       console.log(`=== MATRIZ DE FLUJO DE EFECTIVO PARA AÑO: ${year}, PARQUE: ${parkId || 'TODOS'} ===`);
       
-      // Obtener categorías activas
-      const incomeCategsList = await db.select().from(incomeCategories).where(eq(incomeCategories.isActive, true));
-      const expenseCategsList = await db.select().from(expenseCategories).where(eq(expenseCategories.isActive, true));
+      // Obtener datos de la tabla cash_flow_matrix usando pool.query
+      const cashFlowQuery = `
+        SELECT 
+          cfm.category_id,
+          cfm.category_name,
+          cfm.transaction_type,
+          cfm.month,
+          SUM(cfm.amount) as total_amount
+        FROM cash_flow_matrix cfm
+        WHERE cfm.year = $1
+        GROUP BY cfm.category_id, cfm.category_name, cfm.transaction_type, cfm.month
+        ORDER BY cfm.category_id, cfm.month
+      `;
       
-      // Obtener ingresos reales agrupados por categoría y mes
-      const incomeConditions = [eq(actualIncomes.year, year)];
-      if (parkId) incomeConditions.push(eq(actualIncomes.parkId, parkId));
+      const cashFlowResult = await pool.query(cashFlowQuery, [year]);
+      console.log(`💰 Encontrados ${cashFlowResult.rows.length} registros en matriz de flujo`);
+      console.log(`🔍 Datos raw de cash_flow_matrix:`, cashFlowResult.rows);
       
-      const actualIncomesData = await db.select({
-        categoryId: actualIncomes.categoryId,
-        month: actualIncomes.month,
-        total: sum(actualIncomes.amount)
-      })
-      .from(actualIncomes)
-      .where(and(...incomeConditions))
-      .groupBy(actualIncomes.categoryId, actualIncomes.month);
+      // Verificar que tenemos datos para procesar
+      if (cashFlowResult.rows.length === 0) {
+        console.log(`⚠️ No hay datos para procesar para el año ${year}`);
+        return res.json({
+          year,
+          months: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+          categories: [],
+          summaries: {
+            monthly: {
+              income: new Array(12).fill(0),
+              expenses: new Array(12).fill(0),
+              net: new Array(12).fill(0)
+            },
+            annual: {
+              income: 0,
+              expenses: 0,
+              net: 0
+            }
+          }
+        });
+      }
       
-      // Obtener egresos reales agrupados por categoría y mes
-      const expenseConditions = [eq(actualExpenses.year, year)];
-      if (parkId) expenseConditions.push(eq(actualExpenses.parkId, parkId));
-      
-      const actualExpensesData = await db.select({
-        categoryId: actualExpenses.categoryId,
-        month: actualExpenses.month,
-        total: sum(actualExpenses.amount)
-      })
-      .from(actualExpenses)
-      .where(and(...expenseConditions))
-      .groupBy(actualExpenses.categoryId, actualExpenses.month);
-      
-      console.log(`Ingresos reales encontrados: ${actualIncomesData.length} registros`);
-      console.log(`Egresos reales encontrados: ${actualExpensesData.length} registros`);
-      
-      const categories = [];
+      // Procesar datos para crear estructura de matriz
       const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+      const categories = [];
       
-      // Procesar categorías de ingresos
-      for (const category of incomeCategsList) {
-        const monthlyValues = new Array(12).fill(0);
-        let total = 0;
-        
-        // Llenar con datos reales
-        actualIncomesData.forEach(income => {
-          if (income.categoryId === category.id) {
-            const monthIndex = income.month - 1;
-            const amount = parseFloat(income.total || '0');
-            monthlyValues[monthIndex] = amount;
-            total += amount;
-          }
-        });
-        
-        categories.push({
-          name: category.name,
-          type: 'income',
-          monthlyValues,
-          total
-        });
-      }
+      // Procesar datos de cash_flow_matrix directamente
+      const categoryMap = new Map();
       
-      // Procesar categorías de egresos
-      for (const category of expenseCategsList) {
-        const monthlyValues = new Array(12).fill(0);
-        let total = 0;
+      // Procesar datos reales de cash_flow_matrix
+      cashFlowResult.rows.forEach(row => {
+        const categoryId = row.category_id;
+        const categoryName = row.category_name;
+        const transactionType = row.transaction_type;
+        const month = row.month;
+        const amount = parseFloat(row.total_amount);
         
-        // Llenar con datos reales
-        actualExpensesData.forEach(expense => {
-          if (expense.categoryId === category.id) {
-            const monthIndex = expense.month - 1;
-            const amount = parseFloat(expense.total || '0');
-            monthlyValues[monthIndex] = amount;
-            total += amount;
-          }
-        });
+        console.log(`🔍 Procesando: ${categoryName} (${categoryId}), ${transactionType}, mes ${month}, monto: ${amount}`);
         
-        categories.push({
-          name: category.name,
-          type: 'expense',
-          monthlyValues,
-          total
-        });
-      }
-      
-      // Calcular resúmenes
-      const monthlyIncomes = new Array(12).fill(0);
-      const monthlyExpenses = new Array(12).fill(0);
-      
-      categories.forEach(category => {
-        for (let i = 0; i < 12; i++) {
-          if (category.type === 'income') {
-            monthlyIncomes[i] += category.monthlyValues[i];
-          } else {
-            monthlyExpenses[i] += category.monthlyValues[i];
-          }
+        if (!categoryMap.has(categoryId)) {
+          categoryMap.set(categoryId, {
+            id: categoryId,
+            name: categoryName,
+            incomeMonthlyValues: new Array(12).fill(0),
+            expenseMonthlyValues: new Array(12).fill(0),
+            totalIncome: 0,
+            totalExpense: 0
+          });
+        }
+        
+        const category = categoryMap.get(categoryId);
+        
+        if (transactionType === 'income') {
+          category.incomeMonthlyValues[month - 1] = Math.abs(amount);
+          category.totalIncome += Math.abs(amount);
+        } else if (transactionType === 'expense') {
+          category.expenseMonthlyValues[month - 1] = Math.abs(amount);
+          category.totalExpense += Math.abs(amount);
         }
       });
+      
+      console.log(`📊 Procesamiento completado. Categorías encontradas: ${categoryMap.size}`);
+      
+      // Crear categorías separadas para ingresos y gastos
+      categoryMap.forEach(category => {
+        console.log(`📊 Revisando categoría: ${category.name}, ingresos: ${category.totalIncome}, gastos: ${category.totalExpense}`);
+        
+        if (category.totalIncome > 0) {
+          const incomeCategory = {
+            name: category.name,
+            type: 'income',
+            monthlyValues: category.incomeMonthlyValues,
+            total: category.totalIncome
+          };
+          console.log(`✅ Agregando categoría de ingresos: ${incomeCategory.name}, total: ${incomeCategory.total}`);
+          categories.push(incomeCategory);
+        }
+        if (category.totalExpense > 0) {
+          const expenseCategory = {
+            name: category.name,
+            type: 'expense',
+            monthlyValues: category.expenseMonthlyValues,
+            total: category.totalExpense
+          };
+          console.log(`✅ Agregando categoría de gastos: ${expenseCategory.name}, total: ${expenseCategory.total}`);
+          categories.push(expenseCategory);
+        }
+      });
+      
+      // Calcular totales mensuales
+      const monthlyIncome = new Array(12).fill(0);
+      const monthlyExpenses = new Array(12).fill(0);
+      const monthlyNet = new Array(12).fill(0);
+      
+      categories.forEach(category => {
+        category.monthlyValues.forEach((amount, index) => {
+          if (category.type === 'income') {
+            monthlyIncome[index] += amount;
+          } else {
+            monthlyExpenses[index] += amount;
+          }
+        });
+      });
+      
+      // Calcular flujo neto
+      for (let i = 0; i < 12; i++) {
+        monthlyNet[i] = monthlyIncome[i] - monthlyExpenses[i];
+      }
+      
+      // Calcular totales anuales
+      const annualIncome = monthlyIncome.reduce((sum, val) => sum + val, 0);
+      const annualExpenses = monthlyExpenses.reduce((sum, val) => sum + val, 0);
+      const annualNet = annualIncome - annualExpenses;
       
       const result = {
         year,
@@ -1181,19 +1217,20 @@ export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticat
         categories,
         summaries: {
           monthly: {
-            income: monthlyIncomes,
+            income: monthlyIncome,
             expenses: monthlyExpenses,
-            net: monthlyIncomes.map((income, i) => income - monthlyExpenses[i])
+            net: monthlyNet
           },
           annual: {
-            income: monthlyIncomes.reduce((sum, val) => sum + val, 0),
-            expenses: monthlyExpenses.reduce((sum, val) => sum + val, 0),
-            net: monthlyIncomes.reduce((sum, val) => sum + val, 0) - monthlyExpenses.reduce((sum, val) => sum + val, 0)
+            income: annualIncome,
+            expenses: annualExpenses,
+            net: annualNet
           }
         }
       };
-      
-      console.log(`Resultado: ${categories.length} categorías, ingresos anuales: ${result.summaries.annual.income}`);
+
+      console.log(`📊 Matriz de flujo generada: ${categories.length} categorías totales`);
+      console.log(`💰 Totales anuales: Ingresos: $${annualIncome}, Gastos: $${annualExpenses}, Neto: $${annualNet}`);
       res.json(result);
       
     } catch (error) {
