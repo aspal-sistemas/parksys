@@ -150,10 +150,16 @@ export default function AccountingCategories() {
   });
 
   const handleSubmit = (data: CategoryFormData) => {
+    // Convert "none" to null for parent_id
+    const formData = {
+      ...data,
+      parent_id: data.parent_id === "none" ? null : data.parent_id
+    };
+    
     if (editingCategory) {
-      updateMutation.mutate({ id: editingCategory.id, data });
+      updateMutation.mutate({ id: editingCategory.id, data: formData });
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(formData);
     }
   };
 
@@ -163,7 +169,7 @@ export default function AccountingCategories() {
       code: category.code,
       name: category.name,
       level: category.level,
-      parent_id: category.parent_id || '',
+      parent_id: category.parent_id ? category.parent_id.toString() : 'none',
       sat_code: category.sat_code || '',
       description: category.description || '',
       is_active: category.is_active,
@@ -404,9 +410,9 @@ export default function AccountingCategories() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="">Sin categoría padre</SelectItem>
+                                <SelectItem value="none">Sin categoría padre</SelectItem>
                                 {getParentCategories(form.watch('level')).map((cat: any) => (
-                                  <SelectItem key={cat.id} value={cat.id}>
+                                  <SelectItem key={cat.id} value={cat.id.toString()}>
                                     {cat.code} - {cat.name}
                                   </SelectItem>
                                 ))}
@@ -560,10 +566,15 @@ export default function AccountingCategories() {
                         </Badge>
                       </div>
                       <CardTitle className="text-lg">{category.name}</CardTitle>
-                      <div className="text-sm text-gray-600">
-                        <div>Código: <span className="font-mono">{category.code}</span></div>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <div>Código: <span className="font-mono font-semibold">{category.code}</span></div>
                         {category.sat_code && (
-                          <div>SAT: <span className="font-mono">{category.sat_code}</span></div>
+                          <div className="flex items-center space-x-2">
+                            <span>SAT: <span className="font-mono font-semibold text-blue-600">{category.sat_code}</span></span>
+                            <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-700">
+                              Oficial
+                            </Badge>
+                          </div>
                         )}
                       </div>
                     </CardHeader>
@@ -657,7 +668,16 @@ export default function AccountingCategories() {
                               )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="font-mono text-sm">{category.sat_code || '-'}</span>
+                              {category.sat_code ? (
+                                <div className="flex items-center space-x-2">
+                                  <span className="font-mono text-sm font-semibold text-blue-600">{category.sat_code}</span>
+                                  <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-700">
+                                    Oficial
+                                  </Badge>
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <Badge variant={category.is_active ? 'default' : 'secondary'}>
