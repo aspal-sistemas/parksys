@@ -199,10 +199,38 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
         </div>
       </AccordionTrigger>
       <AccordionContent className="pl-2 pb-0">
-        <div className="flex flex-col gap-1 pt-1">
+        <div className="flex flex-col gap-1 pt-1" style={{ '--module-color': colors.iconColor } as any}>
           {React.Children.map(children, (child) => {
-            if (React.isValidElement(child) && child.type === NavItem) {
-              return React.cloneElement(child, { moduleColor: colors.iconColor });
+            if (React.isValidElement(child)) {
+              if (child.type === NavItem) {
+                return React.cloneElement(child, { moduleColor: colors.iconColor });
+              }
+              // Si es un div, procesar sus hijos recursivamente
+              if (child.type === 'div') {
+                return React.cloneElement(child, {
+                  children: React.Children.map(child.props.children, (grandChild) => {
+                    if (React.isValidElement(grandChild)) {
+                      if (grandChild.type === NavItem) {
+                        return React.cloneElement(grandChild, { moduleColor: colors.iconColor });
+                      }
+                      // Si es un div con clase que contiene iconos, aplicar color
+                      if (grandChild.type === 'div' && grandChild.props.className?.includes('flex items-center')) {
+                        return React.cloneElement(grandChild, {
+                          children: React.Children.map(grandChild.props.children, (icon) => {
+                            if (React.isValidElement(icon) && icon.props.className?.includes('h-4 w-4')) {
+                              return React.cloneElement(icon, {
+                                className: cn(icon.props.className, colors.iconColor)
+                              });
+                            }
+                            return icon;
+                          })
+                        });
+                      }
+                    }
+                    return grandChild;
+                  })
+                });
+              }
             }
             return child;
           })}
@@ -292,7 +320,6 @@ const AdminSidebarComplete: React.FC = () => {
             href="/admin" 
             icon={<Home className="h-5 w-5" />}
             active={location === '/admin'}
-            moduleColor="text-gray-600"
           >
             {t('navigation.dashboard')}
           </NavItem>
@@ -336,14 +363,13 @@ const AdminSidebarComplete: React.FC = () => {
             {/* VISITANTES */}
             <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1">
               <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <Users className="h-4 w-4 mr-2 text-green-600" />
+                <Users className="h-4 w-4 mr-2" />
                 Visitantes
               </div>
               <NavItem 
                 href="/admin/visitors/count" 
                 icon={<Users className="h-4 w-4" />}
                 active={location === '/admin/visitors/count'}
-                moduleColor="text-green-600"
               >
                 Conteo de Visitantes
               </NavItem>
@@ -351,7 +377,6 @@ const AdminSidebarComplete: React.FC = () => {
                 href="/admin/visitors/dashboard" 
                 icon={<Activity className="h-4 w-4" />}
                 active={location === '/admin/visitors/dashboard'}
-                moduleColor="text-green-600"
               >
                 Dashboard de Visitantes
               </NavItem>
@@ -359,7 +384,6 @@ const AdminSidebarComplete: React.FC = () => {
                 href="/admin/visitors/evaluations" 
                 icon={<Star className="h-4 w-4" />}
                 active={location === '/admin/visitors/evaluations'}
-                moduleColor="text-green-600"
               >
                 Evaluaciones
               </NavItem>
@@ -367,7 +391,6 @@ const AdminSidebarComplete: React.FC = () => {
                 href="/admin/visitors/criteria" 
                 icon={<Settings className="h-4 w-4" />}
                 active={location === '/admin/visitors/criteria'}
-                moduleColor="text-green-600"
               >
                 Criterios de Evaluación
               </NavItem>
@@ -376,14 +399,13 @@ const AdminSidebarComplete: React.FC = () => {
             {/* PARQUES */}
             <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
               <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <Map className="h-4 w-4 mr-2 text-green-600" />
+                <Map className="h-4 w-4 mr-2" />
                 Parques
               </div>
               <NavItem 
                 href="/admin/parks/dashboard" 
                 icon={<BarChart className="h-4 w-4" />}
                 active={location === '/admin/parks/dashboard'}
-                moduleColor="text-green-600"
               >
                 {t('navigation.operativeSummary')}
               </NavItem>
@@ -391,7 +413,6 @@ const AdminSidebarComplete: React.FC = () => {
                 href="/admin/parks" 
                 icon={<Map className="h-4 w-4" />}
                 active={location === '/admin/parks'}
-                moduleColor="text-green-600"
               >
                 {t('navigation.management')}
               </NavItem>
@@ -400,14 +421,13 @@ const AdminSidebarComplete: React.FC = () => {
             {/* ARBOLADO */}
             <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
               <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <TreePine className="h-4 w-4 mr-2 text-green-600" />
+                <TreePine className="h-4 w-4 mr-2" />
                 Arbolado
               </div>
               <NavItem 
                 href="/admin/trees/inventory" 
                 icon={<Archive className="h-4 w-4" />}
                 active={location.startsWith('/admin/trees/inventory')}
-                moduleColor="text-green-600"
               >
                 {t('navigation.inventory')}
               </NavItem>
@@ -415,7 +435,6 @@ const AdminSidebarComplete: React.FC = () => {
                 href="/admin/trees/species" 
                 icon={<Leaf className="h-4 w-4" />}
                 active={location.startsWith('/admin/trees/species')}
-                moduleColor="text-green-600"
               >
                 {t('navigation.species')}
               </NavItem>
@@ -423,7 +442,6 @@ const AdminSidebarComplete: React.FC = () => {
                 href="/admin/trees/maintenance" 
                 icon={<Scissors className="h-4 w-4" />}
                 active={location.startsWith('/admin/trees/maintenance')}
-                moduleColor="text-green-600"
               >
                 {t('navigation.maintenance')}
               </NavItem>
@@ -432,14 +450,13 @@ const AdminSidebarComplete: React.FC = () => {
             {/* ACTIVIDADES */}
             <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-4">
               <div className="font-medium text-sm text-gray-700 mb-2 flex items-center">
-                <Calendar className="h-4 w-4 mr-2 text-green-600" />
+                <Calendar className="h-4 w-4 mr-2" />
                 Actividades
               </div>
               <NavItem 
                 href="/admin/organizador" 
                 icon={<BarChart3 className="h-4 w-4" />}
                 active={location.startsWith('/admin/organizador')}
-                moduleColor="text-green-600"
               >
                 Dashboard
               </NavItem>
@@ -447,7 +464,6 @@ const AdminSidebarComplete: React.FC = () => {
                 href="/admin/activities/categories" 
                 icon={<Tag className="h-4 w-4" />}
                 active={location.startsWith('/admin/activities/categories')}
-                moduleColor="text-green-600"
               >
                 Categorías
               </NavItem>
