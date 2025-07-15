@@ -333,6 +333,15 @@ export default function EvaluationsPage() {
   const parkSummary = summaryData?.parks || [];
   const parks = parksData?.parks || parksData || [];
 
+  console.log('🔍 Debugging data:', { 
+    evaluationsData, 
+    evaluations: evaluations.length,
+    summaryData, 
+    parkSummary: parkSummary.length,
+    parksData,
+    parks: parks.length 
+  });
+
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
