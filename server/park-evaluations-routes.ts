@@ -143,7 +143,7 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
   // Obtener todas las evaluaciones (administrador)
   apiRouter.get('/park-evaluations', async (req: Request, res: Response) => {
     try {
-      const { status, parkId, page = 1, limit = 10 } = req.query;
+      const { status, parkId, search, page = 1, limit = 10 } = req.query;
       
       // Validar y convertir parámetros numéricos
       const pageNum = Number(page) || 1;
@@ -176,13 +176,24 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
         paramIndex++;
       }
 
+      if (search && search.trim() !== '') {
+        baseQuery += ` AND (
+          LOWER(pe.evaluator_name) LIKE LOWER($${paramIndex}) OR
+          LOWER(p.name) LIKE LOWER($${paramIndex}) OR
+          LOWER(pe.evaluator_city) LIKE LOWER($${paramIndex}) OR
+          LOWER(pe.comments) LIKE LOWER($${paramIndex})
+        )`;
+        params.push(`%${search.trim()}%`);
+        paramIndex++;
+      }
+
       baseQuery += ` ORDER BY pe.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
       params.push(limitNum, offset);
 
       const result = await pool.query(baseQuery, params);
       
       // Contar total para paginación
-      let countQuery = `SELECT COUNT(*) as total FROM park_evaluations pe WHERE 1=1`;
+      let countQuery = `SELECT COUNT(*) as total FROM park_evaluations pe LEFT JOIN parks p ON pe.park_id = p.id WHERE 1=1`;
       const countParams: any[] = [];
       let countParamIndex = 1;
 
@@ -195,6 +206,17 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
       if (parkId && parkId !== 'all') {
         countQuery += ` AND pe.park_id = $${countParamIndex}`;
         countParams.push(Number(parkId));
+        countParamIndex++;
+      }
+
+      if (search && search.trim() !== '') {
+        countQuery += ` AND (
+          LOWER(pe.evaluator_name) LIKE LOWER($${countParamIndex}) OR
+          LOWER(p.name) LIKE LOWER($${countParamIndex}) OR
+          LOWER(pe.evaluator_city) LIKE LOWER($${countParamIndex}) OR
+          LOWER(pe.comments) LIKE LOWER($${countParamIndex})
+        )`;
+        countParams.push(`%${search.trim()}%`);
       }
 
       const countResult = await pool.query(countQuery, countParams);

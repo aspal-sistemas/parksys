@@ -267,9 +267,20 @@ export default function EvaluationsPage() {
 
   // Obtener evaluaciones usando fetch directo
   const { data: evaluationsData, isLoading, error: evaluationsError } = useQuery({
-    queryKey: ['/api/park-evaluations', selectedStatus, selectedPark, currentPage],
+    queryKey: ['/api/park-evaluations', selectedStatus, selectedPark, searchTerm, currentPage],
     queryFn: async () => {
-      const response = await fetch(`/api/park-evaluations?status=${selectedStatus}&parkId=${selectedPark}&page=${currentPage}&limit=${pageSize}`);
+      const params = new URLSearchParams({
+        status: selectedStatus,
+        parkId: selectedPark,
+        page: currentPage.toString(),
+        limit: pageSize.toString()
+      });
+      
+      if (searchTerm && searchTerm.trim() !== '') {
+        params.append('search', searchTerm.trim());
+      }
+      
+      const response = await fetch(`/api/park-evaluations?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch evaluations');
       }
@@ -335,7 +346,12 @@ export default function EvaluationsPage() {
   const evaluations = evaluationsData?.evaluations || [];
   const parkSummary = summaryData?.parks || [];
   const parks = parksData?.parks || parksData || [];
-
+  
+  // Usar datos de paginación del servidor
+  const totalEvaluations = evaluationsData?.pagination?.total || 0;
+  const totalPages = evaluationsData?.pagination?.pages || 1;
+  const currentServerPage = evaluationsData?.pagination?.page || 1;
+  
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
@@ -345,33 +361,21 @@ export default function EvaluationsPage() {
     setSummaryCurrentPage(1);
   }, [searchTerm]);
 
-  // Filter and paginate data
-  const filteredEvaluations = evaluations.filter((evaluation: ParkEvaluation) => {
-    const matchesStatus = selectedStatus === 'all' || evaluation.status === selectedStatus;
-    const matchesPark = selectedPark === 'all' || evaluation.park_id.toString() === selectedPark;
-    const matchesSearch = searchTerm === '' || 
-      evaluation.evaluator_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      evaluation.park_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      evaluation.evaluator_city.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesPark && matchesSearch;
-  });
-
+  // Para el resumen, mantener filtrado local
   const filteredParkSummary = parkSummary.filter((park: ParkSummary) => {
     const matchesSearch = searchTerm === '' || 
       park.park_name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
-  // Pagination
-  const totalEvaluations = filteredEvaluations.length;
-  const totalPages = Math.ceil(totalEvaluations / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const paginatedEvaluations = filteredEvaluations.slice(startIndex, startIndex + pageSize);
-
+  // Paginación del resumen (local)
   const totalSummaryItems = filteredParkSummary.length;
   const totalSummaryPages = Math.ceil(totalSummaryItems / pageSize);
   const summaryStartIndex = (summaryCurrentPage - 1) * pageSize;
   const paginatedSummary = filteredParkSummary.slice(summaryStartIndex, summaryStartIndex + pageSize);
+  
+  // Para evaluaciones, usar directamente los datos del servidor (ya paginados)
+  const paginatedEvaluations = evaluations;
 
   return (
     <AdminLayout>
@@ -574,7 +578,7 @@ export default function EvaluationsPage() {
                     {totalPages > 1 && (
                       <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
                         <div className="text-sm text-gray-500">
-                          Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(startIndex + pageSize, totalEvaluations)} de {totalEvaluations} evaluaciones
+                          Página {currentPage} de {totalPages} - Mostrando {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalEvaluations)} de {totalEvaluations} evaluaciones
                         </div>
                         <div className="flex items-center gap-2">
                           <Button
