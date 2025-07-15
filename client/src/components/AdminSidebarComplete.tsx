@@ -355,14 +355,14 @@ const AdminSidebarComplete: React.FC = () => {
                 icon={<Users className="h-4 w-4" />}
                 active={location === '/admin/visitors/count'}
               >
-                Conteo de Visitantes
+                Conteo
               </NavItem>
               <NavItem 
                 href="/admin/visitors/dashboard" 
                 icon={<Activity className="h-4 w-4" />}
                 active={location === '/admin/visitors/dashboard'}
               >
-                Dashboard de Visitantes
+                Dashboard
               </NavItem>
               <NavItem 
                 href="/admin/visitors/evaluations" 
@@ -376,7 +376,7 @@ const AdminSidebarComplete: React.FC = () => {
                 icon={<Settings className="h-4 w-4" />}
                 active={location === '/admin/visitors/criteria'}
               >
-                Criterios de Evaluación
+                Criterios
               </NavItem>
             </div>
 
