@@ -953,6 +953,7 @@ export default function AccountingTransactions() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todos los estados</SelectItem>
+                      <SelectItem value="approved">Aprobado</SelectItem>
                       <SelectItem value="completed">Completado</SelectItem>
                       <SelectItem value="pending">Pendiente</SelectItem>
                     </SelectContent>
@@ -1038,11 +1039,13 @@ export default function AccountingTransactions() {
                         <td className="p-2">
                           <Badge variant="default" className={
                             transaction.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            transaction.status === 'approved' ? 'bg-green-100 text-green-800' :
                             transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-red-100 text-red-800'
                           }>
                             {transaction.status === 'pending' ? 'Pendiente' : 
                              transaction.status === 'completed' ? 'Completado' : 
+                             transaction.status === 'approved' ? 'Aprobado' : 
                              'Rechazado'}
                           </Badge>
                         </td>
