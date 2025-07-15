@@ -31,7 +31,7 @@ const transactionSchema = z.object({
   income_source: z.string().optional(),
   bank: z.string().optional(),
   description: z.string().optional(),
-  add_iva: z.boolean().default(false),
+  add_iva: z.boolean().default(true),
   amount_without_iva: z.number().optional(),
   iva_amount: z.number().optional(),
   reference_number: z.string().optional(),
@@ -70,6 +70,18 @@ export default function AccountingTransactions() {
 
   // Debug: Log de categorías recibidas
   console.log('📋 Todas las categorías recibidas:', categories);
+
+  // Función para calcular automáticamente el IVA
+  const calculateIVA = (totalAmount: number) => {
+    const IVA_RATE = 0.16; // 16% IVA mexicano
+    const amountWithoutIVA = totalAmount / (1 + IVA_RATE);
+    const ivaAmount = totalAmount - amountWithoutIVA;
+    
+    return {
+      amount_without_iva: Math.round(amountWithoutIVA * 100) / 100,
+      iva_amount: Math.round(ivaAmount * 100) / 100
+    };
+  };
 
   // Funciones para filtrar categorías por nivel jerárquico
   const getCategoriesLevel1 = () => {
@@ -116,7 +128,7 @@ export default function AccountingTransactions() {
       income_source: '',
       bank: '',
       description: '',
-      add_iva: false,
+      add_iva: true,
       amount_without_iva: 0,
       iva_amount: 0,
       reference_number: '',
@@ -201,7 +213,7 @@ export default function AccountingTransactions() {
       income_source: transaction.income_source || '',
       bank: transaction.bank || '',
       description: transaction.description || '',
-      add_iva: transaction.add_iva || false,
+      add_iva: true, // Siempre activado
       amount_without_iva: transaction.amount_without_iva || 0,
       iva_amount: transaction.iva_amount || 0,
       reference_number: transaction.reference_number || '',
@@ -250,7 +262,7 @@ export default function AccountingTransactions() {
       income_source: '',
       bank: '',
       description: '',
-      add_iva: false,
+      add_iva: true, // Siempre activado por defecto
       amount_without_iva: 0,
       iva_amount: 0,
       reference_number: '',
@@ -393,7 +405,15 @@ export default function AccountingTransactions() {
                                 step="0.01"
                                 placeholder="0"
                                 {...field}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                onChange={(e) => {
+                                  const amount = parseFloat(e.target.value) || 0;
+                                  field.onChange(amount);
+                                  
+                                  // Calcular automáticamente el IVA
+                                  const ivaCalculation = calculateIVA(amount);
+                                  form.setValue('amount_without_iva', ivaCalculation.amount_without_iva);
+                                  form.setValue('iva_amount', ivaCalculation.iva_amount);
+                                }}
                               />
                             </FormControl>
                             <FormMessage />
@@ -734,18 +754,23 @@ export default function AccountingTransactions() {
                           <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                             <FormControl>
                               <Checkbox
-                                checked={field.value}
+                                checked={true}
+                                disabled={true}
                                 onCheckedChange={field.onChange}
                               />
                             </FormControl>
                             <div className="space-y-1 leading-none">
-                              <FormLabel>Añadir IVA (16%)</FormLabel>
+                              <FormLabel>IVA (16%) - Siempre aplicado</FormLabel>
+                              <p className="text-sm text-muted-foreground">
+                                El IVA se calcula automáticamente al ingresar el monto
+                              </p>
                             </div>
                           </FormItem>
                         )}
                       />
                       
-                      {form.watch('add_iva') && (
+                      {/* Siempre mostrar los campos de IVA */}
+                      {true && (
                         <div className="grid grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
@@ -759,7 +784,9 @@ export default function AccountingTransactions() {
                                     step="0.01"
                                     placeholder="0"
                                     {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                    value={field.value || 0}
+                                    readOnly
+                                    className="bg-gray-50"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -778,7 +805,9 @@ export default function AccountingTransactions() {
                                     step="0.01"
                                     placeholder="0"
                                     {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                    value={field.value || 0}
+                                    readOnly
+                                    className="bg-gray-50"
                                   />
                                 </FormControl>
                                 <FormMessage />
