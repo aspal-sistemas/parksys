@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus, Filter, SortAsc, Map as MapIcon, Eye, Download } from "lucide-react";
-import AdminSidebarComplete from "@/components/AdminSidebarComplete";
+import AdminLayout from "@/components/AdminLayout";
 import { MapViewer } from "@/components/ui/map-viewer";
 import ParkMultimediaViewer from "@/components/ParkMultimediaViewer";
 import ParkTreesInventory from "@/components/ParkTreesInventory";
@@ -449,10 +449,8 @@ export default function AdminParkView() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <AdminSidebarComplete />
-      <div className="flex-1 overflow-auto">
-        <div className="p-6 max-w-7xl mx-auto">
+    <AdminLayout>
+      <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -1503,9 +1501,8 @@ export default function AdminParkView() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
 
