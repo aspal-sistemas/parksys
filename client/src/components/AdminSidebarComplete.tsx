@@ -804,7 +804,7 @@ const AdminSidebarComplete: React.FC = () => {
                 icon={<ArrowRightLeft className="h-4 w-4" />}
                 active={location === '/admin/accounting/integration'}
               >
-                Integración Financiera
+                Integración
               </NavItem>
             </div>
 
@@ -840,7 +840,7 @@ const AdminSidebarComplete: React.FC = () => {
                 icon={<Handshake className="h-4 w-4" />}
                 active={location.startsWith('/admin/concessions/active')}
               >
-                Concesiones Activas
+                C. Activas
               </NavItem>
               <NavItem 
                 href="/admin/concessions/reports" 
