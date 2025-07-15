@@ -545,22 +545,22 @@ export default function EvaluationsPage() {
     
     const rows = data.parkStats.map((park: any) => [
       `"${park.park_name}"`,
-      park.total_evaluations,
-      park.approved_evaluations,
-      park.pending_evaluations,
-      park.rejected_evaluations,
-      park.average_overall_rating?.toFixed(2) || '0',
-      park.average_cleanliness?.toFixed(2) || '0',
-      park.average_safety?.toFixed(2) || '0',
-      park.average_maintenance?.toFixed(2) || '0',
-      park.average_accessibility?.toFixed(2) || '0',
-      park.average_amenities?.toFixed(2) || '0',
-      park.average_activities?.toFixed(2) || '0',
-      park.average_staff?.toFixed(2) || '0',
-      park.average_natural_beauty?.toFixed(2) || '0',
-      park.recommendation_rate?.toFixed(1) || '0',
-      park.frequent_visitors || '0',
-      park.average_age?.toFixed(1) || '0',
+      park.total_evaluations || 0,
+      park.approved_evaluations || 0,
+      park.pending_evaluations || 0,
+      park.rejected_evaluations || 0,
+      park.average_overall_rating ? Number(park.average_overall_rating).toFixed(2) : '0.00',
+      park.average_cleanliness ? Number(park.average_cleanliness).toFixed(2) : '0.00',
+      park.average_safety ? Number(park.average_safety).toFixed(2) : '0.00',
+      park.average_maintenance ? Number(park.average_maintenance).toFixed(2) : '0.00',
+      park.average_accessibility ? Number(park.average_accessibility).toFixed(2) : '0.00',
+      park.average_amenities ? Number(park.average_amenities).toFixed(2) : '0.00',
+      park.average_activities ? Number(park.average_activities).toFixed(2) : '0.00',
+      park.average_staff ? Number(park.average_staff).toFixed(2) : '0.00',
+      park.average_natural_beauty ? Number(park.average_natural_beauty).toFixed(2) : '0.00',
+      park.recommendation_rate ? Number(park.recommendation_rate).toFixed(1) : '0.0',
+      park.frequent_visitors || 0,
+      park.average_age ? Number(park.average_age).toFixed(1) : '0.0',
       park.last_evaluation ? new Date(park.last_evaluation).toLocaleDateString() : 'N/A'
     ]);
     
@@ -587,10 +587,10 @@ export default function EvaluationsPage() {
     ];
     
     const summaryRows = [
-      ['Total Sistema', data.generalStats.total_evaluations, data.generalStats.approved_evaluations, data.generalStats.pending_evaluations, data.generalStats.rejected_evaluations, data.generalStats.system_average?.toFixed(2) || '0'],
-      ['Promedio Edad', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', data.generalStats.average_age?.toFixed(1) || '0'],
-      ['Parques Evaluados', data.generalStats.parks_with_evaluations, '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-      ['Tasa Aprobación (%)', '', '', '', '', '', '', '', '', '', '', '', '', '', data.generalStats.approval_rate?.toFixed(1) || '0']
+      ['Total Sistema', data.generalStats.total_evaluations || 0, data.generalStats.approved_evaluations || 0, data.generalStats.pending_evaluations || 0, data.generalStats.rejected_evaluations || 0, data.generalStats.system_average ? Number(data.generalStats.system_average).toFixed(2) : '0.00'],
+      ['Promedio Edad', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', data.generalStats.average_age ? Number(data.generalStats.average_age).toFixed(1) : '0.0'],
+      ['Parques Evaluados', data.generalStats.parks_with_evaluations || 0, '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+      ['Tasa Aprobación (%)', '', '', '', '', '', '', '', '', '', '', '', '', '', data.generalStats.approval_rate ? Number(data.generalStats.approval_rate).toFixed(1) : '0.0']
     ];
     
     const csvRows = [headers, ...rows, generalStats, ...summaryRows];
