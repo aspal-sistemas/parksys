@@ -136,14 +136,63 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
   value,
   defaultOpen
 }) => {
+  // Define color schemes for each module
+  const getModuleColors = (moduleValue: string) => {
+    const colorSchemes = {
+      'system': {
+        iconColor: 'text-emerald-600',
+        textColor: 'text-emerald-700',
+        hoverBg: 'hover:bg-emerald-50'
+      },
+      'gestion': {
+        iconColor: 'text-green-600',
+        textColor: 'text-green-700', 
+        hoverBg: 'hover:bg-green-50'
+      },
+      'operations': {
+        iconColor: 'text-teal-600',
+        textColor: 'text-teal-700',
+        hoverBg: 'hover:bg-teal-50'
+      },
+      'admin-finance': {
+        iconColor: 'text-cyan-600',
+        textColor: 'text-cyan-700',
+        hoverBg: 'hover:bg-cyan-50'
+      },
+      'marketing': {
+        iconColor: 'text-lime-600',
+        textColor: 'text-lime-700',
+        hoverBg: 'hover:bg-lime-50'
+      },
+      'hr': {
+        iconColor: 'text-emerald-700',
+        textColor: 'text-emerald-800',
+        hoverBg: 'hover:bg-emerald-50'
+      },
+      'security': {
+        iconColor: 'text-slate-600',
+        textColor: 'text-slate-700',
+        hoverBg: 'hover:bg-slate-50'
+      }
+    };
+    
+    return colorSchemes[moduleValue] || {
+      iconColor: 'text-gray-600',
+      textColor: 'text-gray-700',
+      hoverBg: 'hover:bg-gray-50'
+    };
+  };
+
+  const colors = getModuleColors(value);
+  
   const iconWithClass = React.cloneElement(icon as React.ReactElement, {
-    className: cn((icon as React.ReactElement).props.className, 'menu-icon')
+    className: cn((icon as React.ReactElement).props.className, 'menu-icon', colors.iconColor)
   });
 
   return (
     <AccordionItem value={value} className="border-0">
-      <AccordionTrigger className="py-2 hover:no-underline">
-        <div className="flex items-center text-sm font-medium">
+      <AccordionTrigger className={cn("py-2 hover:no-underline", colors.hoverBg)}>
+        <div className={cn("flex items-center text-sm font-medium", colors.textColor)}>
           <div className="mr-2">{iconWithClass}</div>
           {title}
         </div>
