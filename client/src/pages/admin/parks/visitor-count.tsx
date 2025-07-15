@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,11 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminLayout } from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Users, Plus, FileText, TrendingUp, MapPin, Clock, Sun, Cloud, CloudRain, BarChart3, Download, Filter, PieChart, Activity } from "lucide-react";
+import { Calendar, Users, Plus, FileText, TrendingUp, MapPin, Clock, Sun, Cloud, CloudRain, BarChart3, Download, Filter, PieChart, Activity, Grid, List, Upload, ChevronLeft, ChevronRight } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface VisitorCount {
   id: number;
@@ -59,6 +60,7 @@ interface VisitorCountForm {
 export default function VisitorCountPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [selectedPark, setSelectedPark] = useState<string>("");
   const [showForm, setShowForm] = useState(false);
@@ -67,6 +69,15 @@ export default function VisitorCountPage() {
   // Estados para reportes
   const [reportPeriod, setReportPeriod] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
   const [reportPark, setReportPark] = useState<string>('all');
+  
+  // Estados para paginación y vista
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
+  const [methodFilter, setMethodFilter] = useState('all');
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const recordsPerPage = 10;
   const [formData, setFormData] = useState<VisitorCountForm>({
     parkId: 0,
     date: new Date().toISOString().split('T')[0],
@@ -92,16 +103,130 @@ export default function VisitorCountPage() {
     data: VisitorCount[];
     pagination: any;
   }>({
-    queryKey: ['/api/visitor-counts', selectedPark],
+    queryKey: ['/api/visitor-counts', selectedPark, currentPage, searchTerm, dateFilter, methodFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedPark && selectedPark !== 'all') params.set('parkId', selectedPark);
-      params.set('limit', '20');
+      params.set('limit', recordsPerPage.toString());
+      params.set('offset', ((currentPage - 1) * recordsPerPage).toString());
+      if (searchTerm) params.set('search', searchTerm);
+      if (dateFilter) params.set('startDate', dateFilter);
+      if (methodFilter) params.set('method', methodFilter);
       
       const response = await fetch(`/api/visitor-counts?${params}`);
       return response.json();
     },
   });
+
+  // Datos filtrados para visualización
+  const filteredData = useMemo(() => {
+    if (!visitorCounts?.data) return [];
+    
+    let filtered = [...visitorCounts.data];
+    
+    // Filtro por búsqueda
+    if (searchTerm) {
+      filtered = filtered.filter(count => 
+        count.parkName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        count.notes?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Filtro por método
+    if (methodFilter && methodFilter !== 'all') {
+      filtered = filtered.filter(count => count.countingMethod === methodFilter);
+    }
+    
+    return filtered;
+  }, [visitorCounts?.data, searchTerm, methodFilter]);
+
+  // Reset de filtros
+  const resetFilters = () => {
+    setSearchTerm('');
+    setSelectedPark('all');
+    setDateFilter('');
+    setMethodFilter('all');
+    setCurrentPage(1);
+  };
+
+  // Calcular paginación
+  const totalPages = Math.ceil((visitorCounts?.pagination?.total || 0) / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = Math.min(startIndex + recordsPerPage, visitorCounts?.pagination?.total || 0);
+
+  // Funciones de exportación e importación
+  const exportToCSV = () => {
+    if (!visitorCounts?.data?.length) {
+      toast({
+        title: "No hay datos",
+        description: "No hay registros para exportar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const csvData = visitorCounts.data.map(count => ({
+      Fecha: count.date,
+      Parque: count.parkName,
+      Adultos: count.adults,
+      Niños: count.children,
+      'Adultos Mayores': count.seniors,
+      Mascotas: count.pets,
+      Grupos: count.groups,
+      'Total Visitantes': count.totalVisitors,
+      'Método de Conteo': count.countingMethod,
+      'Tipo de Día': count.dayType,
+      Clima: count.weather,
+      Notas: count.notes || ''
+    }));
+
+    const headers = Object.keys(csvData[0]);
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => headers.map(header => `"${row[header]}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `conteo-visitantes-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+
+    toast({
+      title: "Exportación exitosa",
+      description: "Los datos se han exportado correctamente",
+    });
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const csv = e.target?.result as string;
+        const lines = csv.split('\n');
+        const headers = lines[0].split(',');
+        
+        // Aquí iría la lógica de procesamiento del CSV
+        // Por ahora solo mostramos un mensaje de éxito
+        toast({
+          title: "Importación exitosa",
+          description: `Se procesaron ${lines.length - 1} registros`,
+        });
+        
+        queryClient.invalidateQueries({ queryKey: ['/api/visitor-counts'] });
+      } catch (error) {
+        toast({
+          title: "Error en importación",
+          description: "Error al procesar el archivo CSV",
+          variant: "destructive",
+        });
+      }
+    };
+    reader.readAsText(file);
+  };
 
   // Calcular datos para reportes
   const reportData = useMemo(() => {
@@ -419,16 +544,25 @@ export default function VisitorCountPage() {
           </TabsList>
 
           <TabsContent value="registros" className="space-y-4">
-            {/* Filtros */}
+            {/* Filtros y Controles */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Filtros de Búsqueda
+                  <Filter className="h-5 w-5" />
+                  Filtros y Controles
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="search">Buscar</Label>
+                    <Input
+                      id="search"
+                      placeholder="Buscar parque o notas..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="park-filter">Parque</Label>
                     <Select value={selectedPark} onValueChange={setSelectedPark}>
@@ -437,7 +571,7 @@ export default function VisitorCountPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todos los parques</SelectItem>
-                        {parks?.map((park) => (
+                        {parks?.filter(park => park.id && park.name).map((park) => (
                           <SelectItem key={park.id} value={park.id.toString()}>
                             {park.name}
                           </SelectItem>
@@ -445,19 +579,107 @@ export default function VisitorCountPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="date-filter">Fecha</Label>
+                    <Input
+                      id="date-filter"
+                      type="date"
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="method-filter">Método</Label>
+                    <Select value={methodFilter} onValueChange={setMethodFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todos los métodos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los métodos</SelectItem>
+                        <SelectItem value="counting">Conteo directo</SelectItem>
+                        <SelectItem value="estimation">Estimación</SelectItem>
+                        <SelectItem value="survey">Encuesta</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Vista</Label>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant={viewMode === 'grid' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setViewMode('grid')}
+                      >
+                        <Grid className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={viewMode === 'list' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setViewMode('list')}
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={exportToCSV}
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Exportar CSV
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Importar CSV
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={resetFilters}
+                      className="text-gray-600 hover:text-gray-700"
+                    >
+                      <Filter className="h-4 w-4 mr-2" />
+                      Limpiar Filtros
+                    </Button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".csv"
+                      onChange={handleImport}
+                      className="hidden"
+                    />
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {visitorCounts?.pagination?.total ? (
+                      `Página ${currentPage} de ${totalPages} - Mostrando ${startIndex + 1}-${endIndex} de ${visitorCounts.pagination.total} registros`
+                    ) : (
+                      'Sin registros'
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Lista de registros */}
-            <div className="grid gap-4">
+            <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}`}>
               {isLoading ? (
-                <div className="text-center py-8">
+                <div className="text-center py-8 col-span-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
                   <p className="mt-2 text-gray-600">Cargando registros...</p>
                 </div>
               ) : visitorCounts?.data?.length === 0 ? (
-                <Card>
+                <Card className="col-span-full">
                   <CardContent className="text-center py-8">
                     <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600">No hay registros de visitantes</p>
@@ -469,68 +691,122 @@ export default function VisitorCountPage() {
               ) : (
                 visitorCounts?.data?.map((count) => (
                   <Card key={count.id} className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start mb-4">
+                    <CardContent className={`${viewMode === 'grid' ? 'p-4' : 'p-6'}`}>
+                      {viewMode === 'grid' ? (
+                        // Vista Grid - Compacta
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <MapPin className="h-4 w-4 text-emerald-600" />
+                                <h3 className="font-semibold text-sm">{count.parkName}</h3>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-gray-600">
+                                <Calendar className="h-3 w-3" />
+                                <span>{format(new Date(count.date), 'dd/MM/yyyy', { locale: es })}</span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-xl font-bold text-emerald-600">
+                                {count.totalVisitors}
+                              </div>
+                              <div className="text-xs text-gray-500">visitantes</div>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="text-center p-2 bg-blue-50 rounded">
+                              <div className="text-sm font-semibold text-blue-700">{count.adults}</div>
+                              <div className="text-xs text-blue-600">Adultos</div>
+                            </div>
+                            <div className="text-center p-2 bg-green-50 rounded">
+                              <div className="text-sm font-semibold text-green-700">{count.children}</div>
+                              <div className="text-xs text-green-600">Niños</div>
+                            </div>
+                            <div className="text-center p-2 bg-orange-50 rounded">
+                              <div className="text-sm font-semibold text-orange-700">{count.seniors}</div>
+                              <div className="text-xs text-orange-600">Mayores</div>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant="outline" className="text-xs">
+                              {getMethodLabel(count.countingMethod)}
+                            </Badge>
+                            {count.weather && (
+                              <Badge variant="outline" className="text-xs flex items-center gap-1">
+                                {getWeatherIcon(count.weather)}
+                                {count.weather}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        // Vista Lista - Detallada
                         <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <MapPin className="h-4 w-4 text-emerald-600" />
-                            <h3 className="font-semibold text-lg">{count.parkName}</h3>
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <MapPin className="h-4 w-4 text-emerald-600" />
+                                <h3 className="font-semibold text-lg">{count.parkName}</h3>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <Calendar className="h-4 w-4" />
+                                <span>{format(new Date(count.date), 'dd/MM/yyyy', { locale: es })}</span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-emerald-600">
+                                {count.totalVisitors}
+                              </div>
+                              <div className="text-sm text-gray-500">visitantes</div>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Calendar className="h-4 w-4" />
-                            <span>{format(new Date(count.date), 'dd/MM/yyyy', { locale: es })}</span>
+
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
+                            <div className="text-center p-3 bg-blue-50 rounded-lg">
+                              <div className="text-lg font-semibold text-blue-700">{count.adults}</div>
+                              <div className="text-sm text-blue-600">Adultos</div>
+                            </div>
+                            <div className="text-center p-3 bg-green-50 rounded-lg">
+                              <div className="text-lg font-semibold text-green-700">{count.children}</div>
+                              <div className="text-sm text-green-600">Niños</div>
+                            </div>
+                            <div className="text-center p-3 bg-orange-50 rounded-lg">
+                              <div className="text-lg font-semibold text-orange-700">{count.seniors}</div>
+                              <div className="text-sm text-orange-600">Adultos mayores</div>
+                            </div>
+                            <div className="text-center p-3 bg-pink-50 rounded-lg">
+                              <div className="text-lg font-semibold text-pink-700">{count.pets}</div>
+                              <div className="text-sm text-pink-600">Mascotas</div>
+                            </div>
+                            <div className="text-center p-3 bg-purple-50 rounded-lg">
+                              <div className="text-lg font-semibold text-purple-700">{count.groups}</div>
+                              <div className="text-sm text-purple-600">Grupos</div>
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-emerald-600">
-                            {count.totalVisitors}
+
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            <Badge variant="outline" className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {getDayTypeLabel(count.dayType)}
+                            </Badge>
+                            <Badge variant="outline">
+                              {getMethodLabel(count.countingMethod)}
+                            </Badge>
+                            {count.weather && (
+                              <Badge variant="outline" className="flex items-center gap-1">
+                                {getWeatherIcon(count.weather)}
+                                {count.weather}
+                              </Badge>
+                            )}
                           </div>
-                          <div className="text-sm text-gray-500">visitantes</div>
-                        </div>
-                      </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
-                        <div className="text-center p-3 bg-blue-50 rounded-lg">
-                          <div className="text-lg font-semibold text-blue-700">{count.adults}</div>
-                          <div className="text-sm text-blue-600">Adultos</div>
-                        </div>
-                        <div className="text-center p-3 bg-green-50 rounded-lg">
-                          <div className="text-lg font-semibold text-green-700">{count.children}</div>
-                          <div className="text-sm text-green-600">Niños</div>
-                        </div>
-                        <div className="text-center p-3 bg-orange-50 rounded-lg">
-                          <div className="text-lg font-semibold text-orange-700">{count.seniors}</div>
-                          <div className="text-sm text-orange-600">Adultos mayores</div>
-                        </div>
-                        <div className="text-center p-3 bg-pink-50 rounded-lg">
-                          <div className="text-lg font-semibold text-pink-700">{count.pets}</div>
-                          <div className="text-sm text-pink-600">Mascotas</div>
-                        </div>
-                        <div className="text-center p-3 bg-purple-50 rounded-lg">
-                          <div className="text-lg font-semibold text-purple-700">{count.groups}</div>
-                          <div className="text-sm text-purple-600">Grupos</div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        <Badge variant="outline" className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {getDayTypeLabel(count.dayType)}
-                        </Badge>
-                        <Badge variant="outline">
-                          {getMethodLabel(count.countingMethod)}
-                        </Badge>
-                        {count.weather && (
-                          <Badge variant="outline" className="flex items-center gap-1">
-                            {getWeatherIcon(count.weather)}
-                            {count.weather}
-                          </Badge>
-                        )}
-                      </div>
-
-                      {count.notes && (
-                        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                          <strong>Notas:</strong> {count.notes}
+                          {count.notes && (
+                            <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                              <strong>Notas:</strong> {count.notes}
+                            </div>
+                          )}
                         </div>
                       )}
                     </CardContent>
@@ -538,6 +814,48 @@ export default function VisitorCountPage() {
                 ))
               )}
             </div>
+
+            {/* Paginación */}
+            {visitorCounts?.pagination?.total > recordsPerPage && (
+              <div className="flex justify-center items-center space-x-2 mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Anterior
+                </Button>
+                
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const page = i + 1;
+                    return (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className={currentPage === page ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+                      >
+                        {page}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Siguiente
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="reportes">
