@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, Clock, MapPin, Users, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, AlertCircle, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 
@@ -52,6 +52,9 @@ const VerActividadesPage = () => {
   const [categoriaActiva, setCategoriaActiva] = useState<string>("todas");
   const [busqueda, setBusqueda] = useState<string>("");
   const [parqueFiltro, setParqueFiltro] = useState<string>("todos");
+  const [paginaActual, setPaginaActual] = useState<number>(1);
+  const [vistaExtendida, setVistaExtendida] = useState<boolean>(false);
+  const registrosPorPagina = 10;
 
   // Consulta para obtener la lista de parques
   const { data: parques = [] } = useQuery<{ id: number, name: string }[]>({
@@ -100,6 +103,17 @@ const VerActividadesPage = () => {
     return categoriaCoincide && busquedaCoincide && parqueCoincide;
   });
 
+  // Paginación
+  const totalPaginas = Math.ceil(actividadesPorCategoria.length / registrosPorPagina);
+  const indiceInicio = (paginaActual - 1) * registrosPorPagina;
+  const indiceFin = indiceInicio + registrosPorPagina;
+  const actividadesPaginadas = actividadesPorCategoria.slice(indiceInicio, indiceFin);
+
+  // Resetear página cuando cambian los filtros
+  React.useEffect(() => {
+    setPaginaActual(1);
+  }, [categoriaActiva, busqueda, parqueFiltro]);
+
   // Función para renderizar la badge de estado de una actividad
   const renderEstadoBadge = (actividad: Actividad) => {
     const ahora = new Date();
@@ -115,6 +129,282 @@ const VerActividadesPage = () => {
     }
   };
 
+  // Función para renderizar vista extendida
+  const renderVistaExtendida = (actividad: Actividad) => (
+    <Card key={actividad.id} className="overflow-hidden">
+      <CardHeader className="bg-gray-50 pb-3">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <CardTitle className="text-xl mb-2">{actividad.title}</CardTitle>
+            <CardDescription className="text-base">{actividad.description}</CardDescription>
+          </div>
+          <div className="ml-4 flex flex-col gap-2">
+            {renderEstadoBadge(actividad)}
+            {actividad.isFree === false ? (
+              actividad.price ? (
+                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                  ${Number(actividad.price).toFixed(2)} MXN
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                  Precio: Consultar
+                </Badge>
+              )
+            ) : actividad.isFree === true ? (
+              <Badge className="bg-green-50 text-green-700 border-green-200 border">Gratuita</Badge>
+            ) : (
+              <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+                Sin información de precio
+              </Badge>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-3">
+            <h4 className="font-medium text-gray-900">Información General</h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center">
+                <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                <span>{actividad.parqueNombre}</span>
+              </div>
+              <div className="flex items-center">
+                <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                <span>
+                  {actividad.startDate && format(new Date(actividad.startDate), "PPP", { locale: es })}
+                </span>
+              </div>
+              <div className="flex items-center">
+                <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                <span>
+                  {actividad.duration ? `${actividad.duration} min` : 'Consultar detalles'}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <h4 className="font-medium text-gray-900">Detalles</h4>
+            <div className="space-y-2 text-sm">
+              {actividad.capacity && (
+                <div className="flex items-center">
+                  <Users className="h-4 w-4 mr-2 text-gray-500" />
+                  <span>Capacidad: {actividad.capacity} personas</span>
+                </div>
+              )}
+              {actividad.location && (
+                <div>
+                  <span className="font-medium">Ubicación específica:</span>
+                  <Badge variant="secondary" className="ml-2 text-xs">
+                    {actividad.location}
+                  </Badge>
+                </div>
+              )}
+              {actividad.isRecurring && actividad.recurringDays && actividad.recurringDays.length > 0 && (
+                <div>
+                  <span className="font-medium block mb-1">Días recurrentes:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {actividad.recurringDays.map((dia: string) => (
+                      <Badge key={dia} variant="outline" className="text-xs">
+                        {dia.charAt(0).toUpperCase() + dia.slice(1)}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <h4 className="font-medium text-gray-900">Requisitos</h4>
+            <div className="space-y-2 text-sm">
+              {actividad.materials && (
+                <div>
+                  <span className="font-medium">Materiales:</span>
+                  <p className="text-gray-600 mt-1">{actividad.materials}</p>
+                </div>
+              )}
+              {actividad.requirements && (
+                <div>
+                  <span className="font-medium">Requisitos:</span>
+                  <p className="text-gray-600 mt-1">{actividad.requirements}</p>
+                </div>
+              )}
+              {!actividad.materials && !actividad.requirements && (
+                <p className="text-gray-400 italic">No hay requisitos específicos</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="border-t bg-gray-50 flex justify-between">
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="text-red-600 hover:text-red-800 hover:bg-red-50"
+          onClick={() => {
+            if (window.confirm(`¿Estás seguro de que deseas eliminar la actividad "${actividad.title}"? Esta acción no se puede deshacer.`)) {
+              fetch(`/api/activities/${actividad.id}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+              })
+              .then(response => {
+                if (response.ok) {
+                  window.location.reload();
+                } else {
+                  alert('No se pudo eliminar la actividad. Inténtalo de nuevo.');
+                }
+              })
+              .catch(error => {
+                console.error('Error al eliminar la actividad:', error);
+                alert('Error al eliminar la actividad. Inténtalo de nuevo.');
+              });
+            }
+          }}
+        >
+          Borrar
+        </Button>
+        <Button 
+          variant="default" 
+          size="sm"
+          onClick={() => setLocation(`/admin/organizador/catalogo/editar/${actividad.id}`)}
+        >
+          Editar
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+
+  // Función para renderizar vista grid normal
+  const renderVistaGrid = (actividad: Actividad) => (
+    <Card key={actividad.id} className="overflow-hidden">
+      <CardHeader className="bg-gray-50 pb-3">
+        <div className="flex justify-between items-start">
+          <CardTitle className="text-lg">{actividad.title}</CardTitle>
+          {renderEstadoBadge(actividad)}
+        </div>
+        {actividad.parqueNombre && (
+          <CardDescription className="flex items-center mt-1">
+            <MapPin className="h-3.5 w-3.5 mr-1" />
+            {actividad.parqueNombre}
+          </CardDescription>
+        )}
+      </CardHeader>
+      <CardContent className="pt-4">
+        <p className="text-sm mb-4">{actividad.description}</p>
+        <div className="space-y-2 text-sm">
+          <div className="flex items-center">
+            <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+            <span>
+              {actividad.startDate && format(new Date(actividad.startDate), "PPP", { locale: es })}
+              {actividad.endDate && ` - ${format(new Date(actividad.endDate), "PPP", { locale: es })}`}
+            </span>
+          </div>
+          
+          <div className="flex items-center">
+            <Clock className="h-4 w-4 mr-2 text-gray-500" />
+            {actividad.duration ? 
+              <span>Duración: {actividad.duration} min</span> :
+              <span>Horario: Consultar detalles</span>
+            }
+          </div>
+          
+          {actividad.capacity && (
+            <div className="flex items-center">
+              <Users className="h-4 w-4 mr-2 text-gray-500" />
+              <span>Capacidad: {actividad.capacity} personas</span>
+            </div>
+          )}
+          
+          {actividad.isRecurring && actividad.recurringDays && actividad.recurringDays.length > 0 && (
+            <div className="flex items-start">
+              <Calendar className="h-4 w-4 mr-2 text-gray-500 mt-0.5" />
+              <div>
+                <span className="block">Actividad recurrente:</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {actividad.recurringDays.map((dia: string) => (
+                    <Badge key={dia} variant="outline" className="text-xs">
+                      {dia.charAt(0).toUpperCase() + dia.slice(1)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {actividad.location && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium mb-1">Ubicación:</h4>
+            <Badge variant="secondary" className="text-xs">
+              {actividad.location}
+            </Badge>
+          </div>
+        )}
+
+        <div className="mt-4">
+          {actividad.isFree === false ? (
+            actividad.price ? (
+              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                Precio: ${Number(actividad.price).toFixed(2)} MXN
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                Precio: Consultar
+              </Badge>
+            )
+          ) : actividad.isFree === true ? (
+            <Badge className="bg-green-50 text-green-700 border-green-200 border">Gratuita</Badge>
+          ) : (
+            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+              Sin información de precio
+            </Badge>
+          )}
+        </div>
+      </CardContent>
+      <CardFooter className="border-t bg-gray-50 flex justify-between">
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="text-red-600 hover:text-red-800 hover:bg-red-50"
+          onClick={() => {
+            if (window.confirm(`¿Estás seguro de que deseas eliminar la actividad "${actividad.title}"? Esta acción no se puede deshacer.`)) {
+              fetch(`/api/activities/${actividad.id}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+              })
+              .then(response => {
+                if (response.ok) {
+                  window.location.reload();
+                } else {
+                  alert('No se pudo eliminar la actividad. Inténtalo de nuevo.');
+                }
+              })
+              .catch(error => {
+                console.error('Error al eliminar la actividad:', error);
+                alert('Error al eliminar la actividad. Inténtalo de nuevo.');
+              });
+            }
+          }}
+        >
+          Borrar
+        </Button>
+        <Button 
+          variant="default" 
+          size="sm"
+          onClick={() => setLocation(`/admin/organizador/catalogo/editar/${actividad.id}`)}
+        >
+          Editar
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+
   return (
     <AdminLayout>
       <div className="mb-6">
@@ -129,7 +419,7 @@ const VerActividadesPage = () => {
         </p>
       </div>
 
-      {/* Filtros */}
+      {/* Filtros y controles de vista */}
       <div className="mb-6 flex flex-col md:flex-row gap-4">
         <div className="flex-1">
           <Input
@@ -153,6 +443,24 @@ const VerActividadesPage = () => {
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={vistaExtendida ? "outline" : "default"}
+            size="sm"
+            onClick={() => setVistaExtendida(false)}
+          >
+            <Grid className="h-4 w-4 mr-2" />
+            Grid
+          </Button>
+          <Button
+            variant={vistaExtendida ? "default" : "outline"}
+            size="sm"
+            onClick={() => setVistaExtendida(true)}
+          >
+            <List className="h-4 w-4 mr-2" />
+            Lista
+          </Button>
         </div>
       </div>
 
@@ -197,143 +505,61 @@ const VerActividadesPage = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {actividadesPorCategoria.map((actividad) => (
-                  <Card key={actividad.id} className="overflow-hidden">
-                    <CardHeader className="bg-gray-50 pb-3">
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-lg">{actividad.title}</CardTitle>
-                        {renderEstadoBadge(actividad)}
-                      </div>
-                      {actividad.parqueNombre && (
-                        <CardDescription className="flex items-center mt-1">
-                          <MapPin className="h-3.5 w-3.5 mr-1" />
-                          {actividad.parqueNombre}
-                        </CardDescription>
-                      )}
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                      <p className="text-sm mb-4">{actividad.description}</p>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                          <span>
-                            {actividad.startDate && format(new Date(actividad.startDate), "PPP", { locale: es })}
-                            {actividad.endDate && ` - ${format(new Date(actividad.endDate), "PPP", { locale: es })}`}
-                          </span>
-                        </div>
-                        
-                        {/* Duración - Usamos un valor por defecto si no está disponible */}
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                          {actividad.duration ? 
-                            <span>Duración: {actividad.duration} min</span> :
-                            <span>Horario: Consultar detalles</span>
-                          }
-                        </div>
-                        
-                        {/* Capacidad */}
-                        {actividad.capacity && (
-                          <div className="flex items-center">
-                            <Users className="h-4 w-4 mr-2 text-gray-500" />
-                            <span>Capacidad: {actividad.capacity} personas</span>
-                          </div>
-                        )}
-                        
-                        {/* Actividad recurrente */}
-                        {actividad.isRecurring && actividad.recurringDays && actividad.recurringDays.length > 0 && (
-                          <div className="flex items-start">
-                            <Calendar className="h-4 w-4 mr-2 text-gray-500 mt-0.5" />
-                            <div>
-                              <span className="block">Actividad recurrente:</span>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {actividad.recurringDays.map((dia: string) => (
-                                  <Badge key={dia} variant="outline" className="text-xs">
-                                    {dia.charAt(0).toUpperCase() + dia.slice(1)}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Ubicación */}
-                      {actividad.location && (
-                        <div className="mt-4">
-                          <h4 className="text-sm font-medium mb-1">Ubicación:</h4>
-                          <Badge variant="secondary" className="text-xs">
-                            {actividad.location}
-                          </Badge>
-                        </div>
-                      )}
-
-                      {/* Precio - Lógica corregida usando isFree */}
-                      <div className="mt-4">
-                        {actividad.isFree === false ? (
-                          actividad.price ? (
-                            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                              Precio: ${Number(actividad.price).toFixed(2)} MXN
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
-                              Precio: Consultar
-                            </Badge>
-                          )
-                        ) : actividad.isFree === true ? (
-                          <Badge className="bg-green-50 text-green-700 border-green-200 border">Gratuita</Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-                            Sin información de precio
-                          </Badge>
-                        )}
-                      </div>
-                    </CardContent>
-                    <CardFooter className="border-t bg-gray-50 flex justify-between">
-                      <Button 
-                        variant="outline" 
+              <div>
+                {/* Información de paginación */}
+                <div className="mb-4 text-sm text-gray-600">
+                  Mostrando {indiceInicio + 1}-{Math.min(indiceFin, actividadesPorCategoria.length)} de {actividadesPorCategoria.length} actividades
+                </div>
+                
+                {/* Vista Grid o Lista */}
+                <div className={vistaExtendida ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"}>
+                  {actividadesPaginadas.map((actividad) => 
+                    vistaExtendida ? renderVistaExtendida(actividad) : renderVistaGrid(actividad)
+                  )}
+                </div>
+                
+                {/* Controles de paginación */}
+                {totalPaginas > 1 && (
+                  <div className="mt-8 flex justify-between items-center">
+                    <div className="text-sm text-gray-600">
+                      Página {paginaActual} de {totalPaginas}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
                         size="sm"
-                        className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                        onClick={() => {
-                          // Mostrar alerta de confirmación
-                          if (window.confirm(`¿Estás seguro de que deseas eliminar la actividad "${actividad.title}"? Esta acción no se puede deshacer.`)) {
-                            // Lógica para eliminar la actividad
-                            fetch(`/api/activities/${actividad.id}`, {
-                              method: 'DELETE',
-                              headers: {
-                                'Authorization': `Bearer ${localStorage.getItem('token')}`
-                              }
-                            })
-                            .then(response => {
-                              if (response.ok) {
-                                // Recargar la página para ver los cambios
-                                window.location.reload();
-                              } else {
-                                alert('No se pudo eliminar la actividad. Inténtalo de nuevo.');
-                              }
-                            })
-                            .catch(error => {
-                              console.error('Error al eliminar la actividad:', error);
-                              alert('Error al eliminar la actividad. Inténtalo de nuevo.');
-                            });
-                          }
-                        }}
+                        onClick={() => setPaginaActual(Math.max(1, paginaActual - 1))}
+                        disabled={paginaActual === 1}
                       >
-                        Borrar
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Anterior
                       </Button>
-                      <Button 
-                        variant="default" 
+                      
+                      {/* Números de página */}
+                      {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((pagina) => (
+                        <Button
+                          key={pagina}
+                          variant={pagina === paginaActual ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setPaginaActual(pagina)}
+                          className={pagina === paginaActual ? "bg-primary text-primary-foreground" : ""}
+                        >
+                          {pagina}
+                        </Button>
+                      ))}
+                      
+                      <Button
+                        variant="outline"
                         size="sm"
-                        onClick={() => {
-                          // Redirigir a la página de edición con el ID de la actividad
-                          setLocation(`/admin/organizador/catalogo/editar/${actividad.id}`);
-                        }}
+                        onClick={() => setPaginaActual(Math.min(totalPaginas, paginaActual + 1))}
+                        disabled={paginaActual === totalPaginas}
                       >
-                        Editar
+                        Siguiente
+                        <ChevronRight className="h-4 w-4 ml-1" />
                       </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </TabsContent>
