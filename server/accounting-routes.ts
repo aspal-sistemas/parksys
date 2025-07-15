@@ -511,6 +511,189 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
   });
 
   // =======================================
+  // CÓDIGOS SAT
+  // =======================================
+
+  // Importar códigos SAT oficiales
+  apiRouter.post('/accounting/import-sat-codes', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Códigos SAT principales estructurados
+      const satCodes = [
+        // ACTIVO - 100
+        { code: '100', name: 'Activo', level: 1, parent_code: null, account_nature: 'debit', section: 'Activo' },
+        { code: '100.01', name: 'Activo a corto plazo', level: 2, parent_code: '100', account_nature: 'debit', section: 'Activo' },
+        { code: '101', name: 'Caja', level: 3, parent_code: '100.01', account_nature: 'debit', section: 'Activo' },
+        { code: '101.01', name: 'Caja y efectivo', level: 4, parent_code: '101', account_nature: 'debit', section: 'Activo' },
+        { code: '102', name: 'Bancos', level: 3, parent_code: '100.01', account_nature: 'debit', section: 'Activo' },
+        { code: '102.01', name: 'Bancos nacionales', level: 4, parent_code: '102', account_nature: 'debit', section: 'Activo' },
+        { code: '102.02', name: 'Bancos extranjeros', level: 4, parent_code: '102', account_nature: 'debit', section: 'Activo' },
+        { code: '103', name: 'Inversiones', level: 3, parent_code: '100.01', account_nature: 'debit', section: 'Activo' },
+        { code: '103.01', name: 'Inversiones temporales', level: 4, parent_code: '103', account_nature: 'debit', section: 'Activo' },
+        { code: '105', name: 'Clientes', level: 3, parent_code: '100.01', account_nature: 'debit', section: 'Activo' },
+        { code: '105.01', name: 'Clientes nacionales', level: 4, parent_code: '105', account_nature: 'debit', section: 'Activo' },
+        { code: '115', name: 'Inventario', level: 3, parent_code: '100.01', account_nature: 'debit', section: 'Activo' },
+        { code: '115.01', name: 'Inventario', level: 4, parent_code: '115', account_nature: 'debit', section: 'Activo' },
+        
+        // ACTIVO FIJO - 100.02
+        { code: '100.02', name: 'Activo a largo plazo', level: 2, parent_code: '100', account_nature: 'debit', section: 'Activo' },
+        { code: '151', name: 'Terrenos', level: 3, parent_code: '100.02', account_nature: 'debit', section: 'Activo' },
+        { code: '151.01', name: 'Terrenos', level: 4, parent_code: '151', account_nature: 'debit', section: 'Activo' },
+        { code: '152', name: 'Edificios', level: 3, parent_code: '100.02', account_nature: 'debit', section: 'Activo' },
+        { code: '152.01', name: 'Edificios', level: 4, parent_code: '152', account_nature: 'debit', section: 'Activo' },
+        { code: '153', name: 'Maquinaria y equipo', level: 3, parent_code: '100.02', account_nature: 'debit', section: 'Activo' },
+        { code: '153.01', name: 'Maquinaria y equipo', level: 4, parent_code: '153', account_nature: 'debit', section: 'Activo' },
+        { code: '154', name: 'Automóviles, autobuses, camiones de carga', level: 3, parent_code: '100.02', account_nature: 'debit', section: 'Activo' },
+        { code: '154.01', name: 'Automóviles, autobuses, camiones de carga', level: 4, parent_code: '154', account_nature: 'debit', section: 'Activo' },
+        { code: '155', name: 'Mobiliario y equipo de oficina', level: 3, parent_code: '100.02', account_nature: 'debit', section: 'Activo' },
+        { code: '155.01', name: 'Mobiliario y equipo de oficina', level: 4, parent_code: '155', account_nature: 'debit', section: 'Activo' },
+        { code: '156', name: 'Equipo de cómputo', level: 3, parent_code: '100.02', account_nature: 'debit', section: 'Activo' },
+        { code: '156.01', name: 'Equipo de cómputo', level: 4, parent_code: '156', account_nature: 'debit', section: 'Activo' },
+        
+        // PASIVO - 200
+        { code: '200', name: 'Pasivo', level: 1, parent_code: null, account_nature: 'credit', section: 'Pasivo' },
+        { code: '200.01', name: 'Pasivo a corto plazo', level: 2, parent_code: '200', account_nature: 'credit', section: 'Pasivo' },
+        { code: '201', name: 'Proveedores', level: 3, parent_code: '200.01', account_nature: 'credit', section: 'Pasivo' },
+        { code: '201.01', name: 'Proveedores nacionales', level: 4, parent_code: '201', account_nature: 'credit', section: 'Pasivo' },
+        { code: '202', name: 'Cuentas por pagar a corto plazo', level: 3, parent_code: '200.01', account_nature: 'credit', section: 'Pasivo' },
+        { code: '202.01', name: 'Documentos por pagar bancario y financiero nacional', level: 4, parent_code: '202', account_nature: 'credit', section: 'Pasivo' },
+        { code: '210', name: 'Provisión de sueldos y salarios por pagar', level: 3, parent_code: '200.01', account_nature: 'credit', section: 'Pasivo' },
+        { code: '210.01', name: 'Provisión de sueldos y salarios por pagar', level: 4, parent_code: '210', account_nature: 'credit', section: 'Pasivo' },
+        { code: '213', name: 'Impuestos y derechos por pagar', level: 3, parent_code: '200.01', account_nature: 'credit', section: 'Pasivo' },
+        { code: '213.01', name: 'IVA por pagar', level: 4, parent_code: '213', account_nature: 'credit', section: 'Pasivo' },
+        { code: '213.03', name: 'ISR por pagar', level: 4, parent_code: '213', account_nature: 'credit', section: 'Pasivo' },
+        
+        // PASIVO LARGO PLAZO - 200.02
+        { code: '200.02', name: 'Pasivo a largo plazo', level: 2, parent_code: '200', account_nature: 'credit', section: 'Pasivo' },
+        { code: '251', name: 'Acreedores diversos a largo plazo', level: 3, parent_code: '200.02', account_nature: 'credit', section: 'Pasivo' },
+        { code: '251.01', name: 'Socios, accionistas o representante legal', level: 4, parent_code: '251', account_nature: 'credit', section: 'Pasivo' },
+        { code: '252', name: 'Cuentas por pagar a largo plazo', level: 3, parent_code: '200.02', account_nature: 'credit', section: 'Pasivo' },
+        { code: '252.01', name: 'Documentos bancarios y financieros por pagar a largo plazo', level: 4, parent_code: '252', account_nature: 'credit', section: 'Pasivo' },
+        
+        // CAPITAL - 300
+        { code: '300', name: 'Capital', level: 1, parent_code: null, account_nature: 'credit', section: 'Capital' },
+        { code: '301', name: 'Capital social', level: 2, parent_code: '300', account_nature: 'credit', section: 'Capital' },
+        { code: '301.01', name: 'Capital social', level: 3, parent_code: '301', account_nature: 'credit', section: 'Capital' },
+        { code: '302', name: 'Aportaciones para futuros aumentos de capital', level: 2, parent_code: '300', account_nature: 'credit', section: 'Capital' },
+        { code: '302.01', name: 'Aportaciones para futuros aumentos de capital', level: 3, parent_code: '302', account_nature: 'credit', section: 'Capital' },
+        { code: '303', name: 'Prima en venta de acciones', level: 2, parent_code: '300', account_nature: 'credit', section: 'Capital' },
+        { code: '303.01', name: 'Prima en venta de acciones', level: 3, parent_code: '303', account_nature: 'credit', section: 'Capital' },
+        { code: '304', name: 'Reserva legal', level: 2, parent_code: '300', account_nature: 'credit', section: 'Capital' },
+        { code: '304.01', name: 'Reserva legal', level: 3, parent_code: '304', account_nature: 'credit', section: 'Capital' },
+        { code: '305', name: 'Otras reservas', level: 2, parent_code: '300', account_nature: 'credit', section: 'Capital' },
+        { code: '305.01', name: 'Otras reservas', level: 3, parent_code: '305', account_nature: 'credit', section: 'Capital' },
+        { code: '306', name: 'Utilidades retenidas', level: 2, parent_code: '300', account_nature: 'credit', section: 'Capital' },
+        { code: '306.01', name: 'Utilidades retenidas', level: 3, parent_code: '306', account_nature: 'credit', section: 'Capital' },
+        
+        // INGRESOS - 400
+        { code: '400', name: 'Ingresos', level: 1, parent_code: null, account_nature: 'credit', section: 'Ingresos' },
+        { code: '401', name: 'Ingresos por ventas', level: 2, parent_code: '400', account_nature: 'credit', section: 'Ingresos' },
+        { code: '401.01', name: 'Ventas', level: 3, parent_code: '401', account_nature: 'credit', section: 'Ingresos' },
+        { code: '402', name: 'Ingresos por servicios', level: 2, parent_code: '400', account_nature: 'credit', section: 'Ingresos' },
+        { code: '402.01', name: 'Ingresos por servicios', level: 3, parent_code: '402', account_nature: 'credit', section: 'Ingresos' },
+        { code: '403', name: 'Ingresos por arrendamiento', level: 2, parent_code: '400', account_nature: 'credit', section: 'Ingresos' },
+        { code: '403.01', name: 'Ingresos por arrendamiento', level: 3, parent_code: '403', account_nature: 'credit', section: 'Ingresos' },
+        { code: '404', name: 'Ingresos por intereses', level: 2, parent_code: '400', account_nature: 'credit', section: 'Ingresos' },
+        { code: '404.01', name: 'Ingresos por intereses', level: 3, parent_code: '404', account_nature: 'credit', section: 'Ingresos' },
+        { code: '405', name: 'Otros ingresos', level: 2, parent_code: '400', account_nature: 'credit', section: 'Ingresos' },
+        { code: '405.01', name: 'Otros ingresos', level: 3, parent_code: '405', account_nature: 'credit', section: 'Ingresos' },
+        
+        // GASTOS - 500
+        { code: '500', name: 'Gastos', level: 1, parent_code: null, account_nature: 'debit', section: 'Gastos' },
+        { code: '501', name: 'Gastos de administración', level: 2, parent_code: '500', account_nature: 'debit', section: 'Gastos' },
+        { code: '501.01', name: 'Sueldos y salarios', level: 3, parent_code: '501', account_nature: 'debit', section: 'Gastos' },
+        { code: '501.02', name: 'Honorarios', level: 3, parent_code: '501', account_nature: 'debit', section: 'Gastos' },
+        { code: '501.03', name: 'Arrendamientos', level: 3, parent_code: '501', account_nature: 'debit', section: 'Gastos' },
+        { code: '501.04', name: 'Servicios públicos', level: 3, parent_code: '501', account_nature: 'debit', section: 'Gastos' },
+        { code: '501.05', name: 'Mantenimiento y reparaciones', level: 3, parent_code: '501', account_nature: 'debit', section: 'Gastos' },
+        { code: '502', name: 'Gastos de venta', level: 2, parent_code: '500', account_nature: 'debit', section: 'Gastos' },
+        { code: '502.01', name: 'Publicidad y promoción', level: 3, parent_code: '502', account_nature: 'debit', section: 'Gastos' },
+        { code: '502.02', name: 'Comisiones sobre ventas', level: 3, parent_code: '502', account_nature: 'debit', section: 'Gastos' },
+        { code: '503', name: 'Gastos financieros', level: 2, parent_code: '500', account_nature: 'debit', section: 'Gastos' },
+        { code: '503.01', name: 'Intereses pagados', level: 3, parent_code: '503', account_nature: 'debit', section: 'Gastos' },
+        { code: '503.02', name: 'Comisiones bancarias', level: 3, parent_code: '503', account_nature: 'debit', section: 'Gastos' },
+        { code: '504', name: 'Otros gastos', level: 2, parent_code: '500', account_nature: 'debit', section: 'Gastos' },
+        { code: '504.01', name: 'Otros gastos', level: 3, parent_code: '504', account_nature: 'debit', section: 'Gastos' }
+      ];
+
+      let insertedCount = 0;
+      let updatedCount = 0;
+
+      for (const satCode of satCodes) {
+        try {
+          // Buscar categoría padre si existe
+          let parentId = null;
+          if (satCode.parent_code) {
+            const parentResult = await pool.query(
+              'SELECT id FROM accounting_categories WHERE code = $1 LIMIT 1',
+              [satCode.parent_code]
+            );
+            if (parentResult.rows.length > 0) {
+              parentId = parentResult.rows[0].id;
+            }
+          }
+
+          // Verificar si ya existe
+          const existingResult = await pool.query(
+            'SELECT id FROM accounting_categories WHERE code = $1',
+            [satCode.code]
+          );
+
+          if (existingResult.rows.length > 0) {
+            // Actualizar existente
+            await pool.query(`
+              UPDATE accounting_categories 
+              SET name = $1, level = $2, parent_id = $3, sat_code = $4, 
+                  account_nature = $5, description = $6, updated_at = NOW()
+              WHERE code = $7
+            `, [
+              satCode.name,
+              satCode.level,
+              parentId,
+              satCode.code,
+              satCode.account_nature,
+              `Código SAT oficial - ${satCode.section}`,
+              satCode.code
+            ]);
+            updatedCount++;
+          } else {
+            // Insertar nuevo
+            await pool.query(`
+              INSERT INTO accounting_categories 
+              (code, name, level, parent_id, sat_code, account_nature, is_active, description, created_at, updated_at)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+            `, [
+              satCode.code,
+              satCode.name,
+              satCode.level,
+              parentId,
+              satCode.code,
+              satCode.account_nature,
+              true,
+              `Código SAT oficial - ${satCode.section}`
+            ]);
+            insertedCount++;
+          }
+        } catch (error) {
+          console.error(`Error procesando código SAT ${satCode.code}:`, error);
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Códigos SAT importados exitosamente`,
+        stats: {
+          inserted: insertedCount,
+          updated: updatedCount,
+          total: insertedCount + updatedCount
+        }
+      });
+    } catch (error) {
+      console.error('Error al importar códigos SAT:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // =======================================
   // ACTIVOS FIJOS
   // =======================================
 
