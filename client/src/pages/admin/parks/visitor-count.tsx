@@ -198,6 +198,86 @@ export default function VisitorCountPage() {
     });
   };
 
+  const downloadTemplate = () => {
+    // Crear plantilla CSV con columnas requeridas y datos de ejemplo
+    const templateData = [
+      {
+        'Fecha': '2025-01-15',
+        'Parque': 'Bosque Los Colomos',
+        'Adultos': '150',
+        'Niños': '75',
+        'Adultos Mayores': '30',
+        'Mascotas': '20',
+        'Grupos': '5',
+        'Método de Conteo': 'counting',
+        'Tipo de Día': 'normal',
+        'Clima': 'sunny',
+        'Notas': 'Día regular, buen clima'
+      },
+      {
+        'Fecha': '2025-01-16',
+        'Parque': 'Parque Metropolitano',
+        'Adultos': '200',
+        'Niños': '100',
+        'Adultos Mayores': '40',
+        'Mascotas': '25',
+        'Grupos': '8',
+        'Método de Conteo': 'estimation',
+        'Tipo de Día': 'weekend',
+        'Clima': 'cloudy',
+        'Notas': 'Fin de semana, mucha actividad'
+      }
+    ];
+
+    // Agregar filas de instrucciones en la plantilla
+    const instructionRows = [
+      {
+        'Fecha': '--- INSTRUCCIONES ---',
+        'Parque': 'Formato: YYYY-MM-DD',
+        'Adultos': 'Nombre del parque',
+        'Niños': 'Número entero',
+        'Adultos Mayores': 'Número entero',
+        'Mascotas': 'Número entero',
+        'Grupos': 'Número entero',
+        'Método de Conteo': 'counting/estimation/survey',
+        'Tipo de Día': 'normal/weekend/holiday',
+        'Clima': 'sunny/cloudy/rainy',
+        'Notas': 'Opcional - Observaciones'
+      },
+      {
+        'Fecha': '--- ELIMINAR ESTA FILA ---',
+        'Parque': 'Eliminar filas de instrucciones',
+        'Adultos': 'antes de importar',
+        'Niños': '',
+        'Adultos Mayores': '',
+        'Mascotas': '',
+        'Grupos': '',
+        'Método de Conteo': '',
+        'Tipo de Día': '',
+        'Clima': '',
+        'Notas': ''
+      }
+    ];
+
+    const finalData = [...instructionRows, ...templateData];
+    const headers = Object.keys(finalData[0]);
+    const csvContent = [
+      headers.join(','),
+      ...finalData.map(row => headers.map(header => `"${row[header]}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `plantilla-conteo-visitantes-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+
+    toast({
+      title: "Plantilla descargada",
+      description: "La plantilla CSV se ha descargado correctamente. Completa los datos y vuelve a importar.",
+    });
+  };
+
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -634,6 +714,15 @@ export default function VisitorCountPage() {
                     >
                       <Upload className="h-4 w-4 mr-2" />
                       Importar CSV
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={downloadTemplate}
+                      className="text-purple-600 hover:text-purple-700"
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Plantilla CSV
                     </Button>
                     <Button
                       variant="outline"
