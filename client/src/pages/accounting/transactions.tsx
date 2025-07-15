@@ -140,7 +140,7 @@ export default function AccountingTransactions() {
   const createMutation = useMutation({
     mutationFn: (data: TransactionFormData) => apiRequest('/api/accounting/transactions', {
       method: 'POST',
-      body: JSON.stringify(data),
+      data: data,
     }),
     onSuccess: () => {
       toast({
@@ -158,7 +158,7 @@ export default function AccountingTransactions() {
     mutationFn: ({ id, data }: { id: string; data: TransactionFormData }) => 
       apiRequest(`/api/accounting/transactions/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(data),
+        data: data,
       }),
     onSuccess: () => {
       toast({

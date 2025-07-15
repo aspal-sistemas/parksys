@@ -325,22 +325,14 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
   // Crear nueva transacción
   apiRouter.post('/accounting/transactions', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      console.log('📊 DEBUGGING - Raw request body:', req.body);
-      console.log('📊 DEBUGGING - Request headers:', req.headers);
-      console.log('📊 DEBUGGING - Content-Type:', req.get('Content-Type'));
-      
       const { 
         concept, amount, transaction_type, category_a, category_b, category_c, 
         category_d, category_e, transaction_date, status, income_source, 
         bank, description, add_iva, amount_without_iva, iva_amount, reference_number
       } = req.body;
       
-      console.log('📊 Creando nueva transacción con datos:', req.body);
-      console.log('📊 Campos específicos recibidos:', {
-        concept: req.body.concept,
-        amount: req.body.amount,
-        description: req.body.description,
-        transaction_type: req.body.transaction_type
+      console.log('📊 Creando nueva transacción con datos:', {
+        concept, amount, transaction_type, description, category_a, category_b, category_c
       });
       
       const result = await pool.query(`
