@@ -265,39 +265,42 @@ export default function EvaluationsPage() {
     apiRequest('/api/park-evaluations/init', { method: 'POST' }).catch(() => {});
   }, []);
 
-  // Obtener evaluaciones
+  // Obtener evaluaciones usando fetch directo
   const { data: evaluationsData, isLoading, error: evaluationsError } = useQuery({
     queryKey: ['/api/park-evaluations', selectedStatus, selectedPark, currentPage],
     queryFn: async () => {
-      const response = await apiRequest(`/api/park-evaluations?status=${selectedStatus}&parkId=${selectedPark}&page=${currentPage}&limit=${pageSize}`);
+      const response = await fetch(`/api/park-evaluations?status=${selectedStatus}&parkId=${selectedPark}&page=${currentPage}&limit=${pageSize}`);
       if (!response.ok) {
         throw new Error('Failed to fetch evaluations');
       }
-      return response.json();
+      const data = await response.json();
+      return data;
     },
   });
 
-  // Obtener resumen de parques
+  // Obtener resumen de parques usando fetch directo
   const { data: summaryData, error: summaryError } = useQuery({
     queryKey: ['/api/park-evaluations/summary'],
     queryFn: async () => {
-      const response = await apiRequest('/api/park-evaluations/summary');
+      const response = await fetch('/api/park-evaluations/summary');
       if (!response.ok) {
         throw new Error('Failed to fetch summary');
       }
-      return response.json();
+      const data = await response.json();
+      return data;
     },
   });
 
-  // Obtener lista de parques para filtros
+  // Obtener lista de parques para filtros usando fetch directo
   const { data: parksData, error: parksError } = useQuery({
     queryKey: ['/api/parks'],
     queryFn: async () => {
-      const response = await apiRequest('/api/parks');
+      const response = await fetch('/api/parks');
       if (!response.ok) {
         throw new Error('Failed to fetch parks');
       }
-      return response.json();
+      const data = await response.json();
+      return data;
     },
   });
 
@@ -332,15 +335,6 @@ export default function EvaluationsPage() {
   const evaluations = evaluationsData?.evaluations || [];
   const parkSummary = summaryData?.parks || [];
   const parks = parksData?.parks || parksData || [];
-
-  console.log('🔍 Debugging data:', { 
-    evaluationsData, 
-    evaluations: evaluations.length,
-    summaryData, 
-    parkSummary: parkSummary.length,
-    parksData,
-    parks: parks.length 
-  });
 
   // Reset pagination when filters change
   useEffect(() => {
