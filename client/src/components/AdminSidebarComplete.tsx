@@ -160,7 +160,7 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
         textColor: 'text-cyan-700',
         hoverBg: 'hover:bg-cyan-50'
       },
-      'marketing': {
+      'mkt-comm': {
         iconColor: 'text-lime-600',
         textColor: 'text-lime-700',
         hoverBg: 'hover:bg-lime-50'
@@ -199,37 +199,21 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
         </div>
       </AccordionTrigger>
       <AccordionContent className="pl-2 pb-0">
-        <div className="flex flex-col gap-1 pt-1" style={{ '--module-color': colors.iconColor } as any}>
+        <div className="flex flex-col gap-1 pt-1">
           {React.Children.map(children, (child) => {
             if (React.isValidElement(child)) {
               if (child.type === NavItem) {
                 return React.cloneElement(child, { moduleColor: colors.iconColor });
               }
-              // Si es un div, procesar sus hijos recursivamente
+              // Si es un div, procesar sus hijos recursivamente pero evitar bucles infinitos
               if (child.type === 'div') {
-                return React.cloneElement(child, {
-                  children: React.Children.map(child.props.children, (grandChild) => {
-                    if (React.isValidElement(grandChild)) {
-                      if (grandChild.type === NavItem) {
-                        return React.cloneElement(grandChild, { moduleColor: colors.iconColor });
-                      }
-                      // Si es un div con clase que contiene iconos, aplicar color
-                      if (grandChild.type === 'div' && grandChild.props.className?.includes('flex items-center')) {
-                        return React.cloneElement(grandChild, {
-                          children: React.Children.map(grandChild.props.children, (icon) => {
-                            if (React.isValidElement(icon) && icon.props.className?.includes('h-4 w-4')) {
-                              return React.cloneElement(icon, {
-                                className: cn(icon.props.className, colors.iconColor)
-                              });
-                            }
-                            return icon;
-                          })
-                        });
-                      }
-                    }
-                    return grandChild;
-                  })
+                const processedChildren = React.Children.map(child.props.children, (grandChild) => {
+                  if (React.isValidElement(grandChild) && grandChild.type === NavItem) {
+                    return React.cloneElement(grandChild, { moduleColor: colors.iconColor });
+                  }
+                  return grandChild;
                 });
+                return React.cloneElement(child, { children: processedChildren });
               }
             }
             return child;
