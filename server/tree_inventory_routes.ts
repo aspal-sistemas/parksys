@@ -14,7 +14,102 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
   console.log('🌳 Registrando rutas de inventario de árboles - RUTAS ESPECÍFICAS PRIMERO');
   
   // RUTAS ESPECÍFICAS PRIMERO - antes que rutas con parámetros
-  // GET: Listar árboles con paginación y filtros
+  // GET: Listar árboles con paginación y filtros (ruta principal para inventario)
+  apiRouter.get('/trees', async (req: Request, res: Response) => {
+    try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+      
+      // Función para corregir encoding UTF-8 
+      const fixEncoding = (text: string): string => {
+        // Corregir problemas comunes de encoding UTF-8
+        return text
+          .replace(/Ã¡/g, 'á')
+          .replace(/Ã©/g, 'é')
+          .replace(/Ã­/g, 'í')
+          .replace(/Ã³/g, 'ó')
+          .replace(/Ãº/g, 'ú')
+          .replace(/Ã±/g, 'ñ')
+          .replace(/Ã /g, 'à')
+          .replace(/Ã¨/g, 'è')
+          .replace(/Ã¬/g, 'ì')
+          .replace(/Ã²/g, 'ò')
+          .replace(/Ã¹/g, 'ù');
+      };
+
+      // Filtros
+      const parkId = req.query.parkId && req.query.parkId !== 'all' ? Number(req.query.parkId) : undefined;
+      const speciesId = req.query.speciesId && req.query.speciesId !== 'all' ? Number(req.query.speciesId) : undefined;
+      const healthStatus = req.query.healthStatus && req.query.healthStatus !== 'all' ? String(req.query.healthStatus) : undefined;
+      const searchTerm = req.query.search ? fixEncoding(String(req.query.search)) : undefined;
+      
+      // Usar SQL directo para evitar problemas de esquema inconsistente
+      
+      // Contar el total de registros para la paginación (incluyendo búsqueda en especies)
+      const countQuery = `
+        SELECT COUNT(*) as count
+        FROM trees t
+        LEFT JOIN tree_species ts ON t.species_id = ts.id
+        WHERE 1=1
+        ${parkId ? `AND t.park_id = ${parkId}` : ''}
+        ${speciesId ? `AND t.species_id = ${speciesId}` : ''}
+        ${healthStatus ? `AND t.health_status = '${healthStatus}'` : ''}
+        ${searchTerm ? `AND (t.location_description ILIKE '%${searchTerm}%' OR t.notes ILIKE '%${searchTerm}%' OR ts.common_name ILIKE '%${searchTerm}%' OR ts.scientific_name ILIKE '%${searchTerm}%')` : ''}
+      `;
+      
+      const countResult = await pool.query(countQuery);
+      const totalCount = parseInt(countResult.rows[0].count);
+      
+      // Usar SQL directo para evitar problemas de esquema
+      const query = `
+        SELECT 
+          t.id,
+          t.species_id as "speciesId",
+          ts.common_name as "speciesName",
+          ts.scientific_name as "scientificName",
+          t.park_id as "parkId",
+          p.name as "parkName",
+          t.latitude,
+          t.longitude,
+          t.planting_date as "plantingDate",
+          t.development_stage as "developmentStage",
+          t.age_estimate as "ageEstimate",
+          t.height,
+          t.trunk_diameter as "diameter",
+          t.canopy_coverage as "canopyCoverage",
+          t.health_status as "healthStatus",
+          t.last_maintenance_date as "lastInspectionDate",
+          t.image_url as "imageUrl"
+        FROM trees t
+        LEFT JOIN tree_species ts ON t.species_id = ts.id
+        LEFT JOIN parks p ON t.park_id = p.id
+        WHERE 1=1
+        ${parkId ? `AND t.park_id = ${parkId}` : ''}
+        ${speciesId ? `AND t.species_id = ${speciesId}` : ''}
+        ${healthStatus ? `AND t.health_status = '${healthStatus}'` : ''}
+        ${searchTerm ? `AND (t.location_description ILIKE '%${searchTerm}%' OR t.notes ILIKE '%${searchTerm}%' OR ts.common_name ILIKE '%${searchTerm}%' OR ts.scientific_name ILIKE '%${searchTerm}%')` : ''}
+        ORDER BY t.updated_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `;
+      
+      const treesResult = await pool.query(query);
+      const treesList = treesResult.rows;
+      
+      res.json({
+        data: treesList,
+        page,
+        perPage: limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit)
+      });
+    } catch (error) {
+      console.error('Error al obtener árboles:', error);
+      res.status(500).json({ message: 'Error al obtener el inventario de árboles' });
+    }
+  });
+
+  // GET: Listar árboles con paginación y filtros (ruta alternativa para compatibilidad)
   apiRouter.get('/trees/inventory', async (req: Request, res: Response) => {
     try {
       const page = Number(req.query.page) || 1;
