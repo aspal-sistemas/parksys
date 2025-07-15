@@ -238,8 +238,10 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
   // Obtener todas las transacciones
   apiRouter.get('/accounting/transactions', async (req: Request, res: Response) => {
     try {
-      const { page = 1, limit = 10, search, category_id, transaction_type, date_from, date_to } = req.query;
+      const { page = 1, limit = 10, search, category_id, transaction_type, status, year, date_from, date_to } = req.query;
       const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+      
+      console.log('📊 Parámetros de filtro recibidos:', { search, category_id, transaction_type, status, year });
       
       let query = `
         SELECT 
@@ -255,7 +257,7 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
       const params: any[] = [];
       
       if (search) {
-        query += ` AND (t.description ILIKE $${params.length + 1} OR t.reference ILIKE $${params.length + 1})`;
+        query += ` AND (t.description ILIKE $${params.length + 1} OR t.reference ILIKE $${params.length + 1} OR t.concept ILIKE $${params.length + 1})`;
         params.push(`%${search}%`);
       }
       
@@ -267,6 +269,16 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
       if (transaction_type) {
         query += ` AND t.transaction_type = $${params.length + 1}`;
         params.push(transaction_type);
+      }
+      
+      if (status) {
+        query += ` AND t.status = $${params.length + 1}`;
+        params.push(status);
+      }
+      
+      if (year) {
+        query += ` AND EXTRACT(YEAR FROM t.date) = $${params.length + 1}`;
+        params.push(year);
       }
       
       if (date_from) {

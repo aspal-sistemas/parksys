@@ -61,7 +61,17 @@ export default function AccountingTransactions() {
   const queryClient = useQueryClient();
 
   const { data: transactions, isLoading, refetch } = useQuery({
-    queryKey: ['/api/accounting/transactions'],
+    queryKey: ['/api/accounting/transactions', search, typeFilter, categoryFilter, statusFilter, yearFilter],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (typeFilter !== 'all') params.append('transaction_type', typeFilter);
+      if (categoryFilter !== 'all') params.append('category_id', categoryFilter);
+      if (statusFilter !== 'all') params.append('status', statusFilter);
+      if (yearFilter !== 'all') params.append('year', yearFilter);
+      
+      return apiRequest(`/api/accounting/transactions?${params.toString()}`);
+    },
     enabled: true,
     staleTime: 0,
     gcTime: 0
@@ -1137,7 +1147,7 @@ export default function AccountingTransactions() {
                         <td className="p-2">{transaction.concept || transaction.description || 'Sin descripción'}</td>
                         <td className="p-2">
                           <Badge variant="secondary">
-                            {transaction.category_name || `ID: ${transaction.category_id}`}
+                            {transaction.categoryName || `ID: ${transaction.categoryId}`}
                           </Badge>
                         </td>
                         <td className="p-2">
