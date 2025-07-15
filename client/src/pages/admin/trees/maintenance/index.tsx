@@ -70,7 +70,10 @@ export default function TreeMaintenancePage() {
   // Cargar parques para el filtro
   const { data: parks, isLoading: loadingParks } = useQuery({
     queryKey: ['/api/parks'],
-    select: (data) => data.data,
+    select: (data) => {
+      console.log('Datos de parques recibidos:', data?.data);
+      return data.data;
+    },
   });
 
   // Cargar todos los mantenimientos
@@ -91,14 +94,17 @@ export default function TreeMaintenancePage() {
     
     let allMaintenances = [...maintenances];
     
+    console.log('Filtros aplicados:', { searchTerm, filterType, filterPark });
+    console.log('Mantenimientos originales:', allMaintenances);
+    
     // Filtrar por término de búsqueda
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       allMaintenances = allMaintenances.filter(maint => 
-        maint.treeCode.toLowerCase().includes(term) ||
-        maint.parkName.toLowerCase().includes(term) ||
-        maint.speciesName.toLowerCase().includes(term) ||
-        maint.performedBy.toLowerCase().includes(term)
+        maint.treeCode?.toLowerCase().includes(term) ||
+        maint.parkName?.toLowerCase().includes(term) ||
+        maint.speciesName?.toLowerCase().includes(term) ||
+        maint.performedBy?.toLowerCase().includes(term)
       );
     }
     
@@ -116,6 +122,7 @@ export default function TreeMaintenancePage() {
       );
     }
     
+    console.log('Mantenimientos filtrados:', allMaintenances);
     return allMaintenances;
   }, [maintenances, searchTerm, filterType, filterPark]);
 
