@@ -82,6 +82,10 @@ The system uses environment variables for database connection and supports both 
 
 ## Changelog
 
+- July 15, 2025. Problema de vibración en módulo "Mkt & Comm" completamente resuelto - Identificado y corregido error crítico donde el módulo usaba valor "mkt-comm" pero el esquema de colores solo tenía "marketing" definido. Actualizado esquema de colores para usar "mkt-comm" correctamente con colores lime. Simplificado procesamiento recursivo para evitar bucles infinitos que causaban re-renderizado constante. Eliminado procesamiento excesivo de iconos anidados. Módulo ahora funciona correctamente sin efectos de vibración
+
+- July 15, 2025. Nomenclatura del módulo de contabilidad actualizada - Cambiado "Balance de Comprobación" por "Balanza" en todas las referencias: título principal de la página /admin/accounting/trial-balance, tarjeta del dashboard de contabilidad, comentarios del código backend y mensajes de consola. Actualización completa de terminología contable según solicitud del usuario
+
 - July 15, 2025. Sistema de navegación sidebar completamente reorganizado con menú principal "Gestión" - Creado menú principal "Gestión" que agrupa los módulos relacionados con la operación diaria: Visitantes, Parques, Arbolado, Actividades, Eventos, Reservas y Amenidades. Cada submódulo organizado con bordes izquierdos y iconos diferenciados. Navegación intuitiva con detección automática de módulo activo. Configuración movida a segundo lugar después de Dashboard. Mejora significativa en UX de navegación administrativa para usuarios municipales
 
 - July 15, 2025. Orden de módulos del sidebar reorganizado según especificaciones del usuario - Módulo "Configuración" movido arriba del módulo "Gestión" para priorizar acceso a configuración del sistema. Icono del módulo "Gestión" cambiado de Settings a FolderOpen para diferenciarlo del módulo "Configuración" y representar mejor su función de gestión operativa. Orden final: Dashboard, Configuración, Gestión, O & M, Admin/Finanzas, Mkt & Comm, Recursos Humanos, Seguridad. Navegación optimizada con iconos distintivos para cada módulo

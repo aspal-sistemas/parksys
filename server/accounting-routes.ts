@@ -1287,10 +1287,10 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
   });
 
   // =====================================
-  // BALANZA DE COMPROBACIÓN (TRIAL BALANCE)
+  // BALANZA (TRIAL BALANCE)
   // =====================================
 
-  // Obtener balanza de comprobación
+  // Obtener balanza
   apiRouter.get('/accounting/trial-balance', async (req: Request, res: Response) => {
     try {
       const { period } = req.query;
@@ -1386,7 +1386,7 @@ export function registerAccountingRoutes(app: any, apiRouter: any, isAuthenticat
       });
       
     } catch (error) {
-      console.error('Error obteniendo balanza de comprobación:', error);
+      console.error('Error obteniendo balanza:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   });

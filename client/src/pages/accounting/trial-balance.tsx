@@ -26,7 +26,7 @@ export default function TrialBalance() {
 
   const handleExport = () => {
     // Implementar exportación
-    console.log('Exportando balance de comprobación...');
+    console.log('Exportando balanza...');
   };
 
   const handlePrint = () => {
@@ -221,7 +221,7 @@ export default function TrialBalance() {
               <span>Regresar</span>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Balanza de Comprobación</h1>
+              <h1 className="text-3xl font-bold">Balanza</h1>
               <p className="text-gray-600">Estado de saldos y movimientos contables</p>
             </div>
           </div>
