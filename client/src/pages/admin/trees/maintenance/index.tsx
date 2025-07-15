@@ -67,30 +67,38 @@ export default function TreeMaintenancePage() {
     select: (data) => data.data,
   });
 
-  // Cargar parques para el filtro
-  const { data: parks, isLoading: loadingParks, error: parksError } = useQuery({
-    queryKey: ['/api/parks'],
-    enabled: true,
-    refetchOnWindowFocus: false,
-    select: (data) => {
-      console.log('🏞️ Datos de parques recibidos:', data);
-      console.log('🏞️ ¿Es array?', Array.isArray(data));
-      console.log('🏞️ ¿Tiene data?', !!data?.data);
-      console.log('🏞️ Longitud del array:', Array.isArray(data) ? data.length : data?.data?.length);
-      // El endpoint puede devolver un array directo o { status: "success", data: [...] }
-      const result = Array.isArray(data) ? data : (data?.data || []);
-      console.log('🏞️ Resultado procesado:', result);
-      return result;
-    },
-  });
+  // Estado para parques
+  const [parks, setParks] = React.useState([]);
+  const [loadingParks, setLoadingParks] = React.useState(true);
 
-  // Logging adicional para diagnosticar
+  // Cargar parques directamente con fetch
   React.useEffect(() => {
-    console.log('🔍 Estado de parques completo:', { parks, loadingParks, parksError });
-    if (parks && parks.length > 0) {
-      console.log('🔍 Parques disponibles:', parks.map(p => `${p.id}: ${p.name}`));
-    }
-  }, [parks, loadingParks, parksError]);
+    const loadParks = async () => {
+      try {
+        setLoadingParks(true);
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/parks', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        console.log('Parks data received:', data);
+        
+        // Manejar tanto array directo como objeto con data
+        const parksArray = Array.isArray(data) ? data : (data?.data || []);
+        console.log('Parks array:', parksArray);
+        setParks(parksArray);
+      } catch (error) {
+        console.error('Error loading parks:', error);
+        setParks([]);
+      } finally {
+        setLoadingParks(false);
+      }
+    };
+
+    loadParks();
+  }, []);
 
   // Cargar todos los mantenimientos
   const { data: maintenances, isLoading: loadingMaintenances } = useQuery({
@@ -321,26 +329,17 @@ export default function TreeMaintenancePage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos los parques</SelectItem>
-              {(() => {
-                console.log('🎯 Renderizando selector de parques:', { loadingParks, parks: parks?.length });
-                if (loadingParks) {
-                  console.log('🎯 Mostrando loading...');
-                  return <SelectItem value="loading" disabled>Cargando parques...</SelectItem>;
-                }
-                if (!parks || parks.length === 0) {
-                  console.log('🎯 No hay parques disponibles');
-                  return <SelectItem value="none" disabled>No hay parques disponibles</SelectItem>;
-                }
-                console.log('🎯 Creando items para', parks.length, 'parques');
-                return parks.map((park, index) => {
-                  console.log(`🎯 Creando item ${index + 1} para parque:`, park.name);
-                  return (
-                    <SelectItem key={park.id} value={park.name}>
-                      {park.name}
-                    </SelectItem>
-                  );
-                });
-              })()}
+              {loadingParks ? (
+                <SelectItem value="loading" disabled>Cargando parques...</SelectItem>
+              ) : !parks || parks.length === 0 ? (
+                <SelectItem value="none" disabled>No hay parques disponibles</SelectItem>
+              ) : (
+                parks.map((park) => (
+                  <SelectItem key={park.id} value={park.name}>
+                    {park.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           
@@ -364,34 +363,7 @@ export default function TreeMaintenancePage() {
           </Select>
         </div>
 
-        {/* Botón de debug temporal */}
-        <div className="mb-4">
-          <Button
-            onClick={() => {
-              console.log('🔄 Forzando recarga de parques...');
-              // Manualmente forzar la consulta
-              fetch('/api/parks', {
-                headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                },
-              })
-              .then(res => res.json())
-              .then(data => {
-                console.log('🔄 Datos obtenidos manualmente:', data);
-                console.log('🔄 Tipo de datos:', typeof data);
-                console.log('🔄 Es array:', Array.isArray(data));
-                console.log('🔄 Primer parque:', data[0]?.name);
-              })
-              .catch(error => {
-                console.error('🔄 Error:', error);
-              });
-            }}
-            variant="outline"
-            className="border-blue-300 text-blue-700 hover:bg-blue-50"
-          >
-            🔧 Debug Parques
-          </Button>
-        </div>
+
 
         {/* Tabla de mantenimientos */}
         <Card>
