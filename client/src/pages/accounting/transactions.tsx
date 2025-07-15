@@ -318,11 +318,29 @@ export default function AccountingTransactions() {
   console.log('📋 Transacciones recibidas de la API:', transactions);
   console.log('📋 RealTransactions array:', realTransactions);
 
-  // Calcular estadísticas
-  const totalIncome = 0;
-  const totalExpenses = 14964.9;
+  // Calcular estadísticas reales desde las transacciones
+  const totalIncome = realTransactions
+    .filter(t => t.transactionType === 'income')
+    .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  const totalExpenses = realTransactions
+    .filter(t => t.transactionType === 'expense')
+    .reduce((sum, t) => sum + Number(t.amount), 0);
+
   const netBalance = totalIncome - totalExpenses;
-  const pendingTransactions = 1;
+  
+  const pendingTransactions = realTransactions
+    .filter(t => t.status === 'pending')
+    .length;
+
+  // Debug: Log de cálculos
+  console.log('📊 Cálculos del dashboard:', {
+    totalIncome,
+    totalExpenses,
+    netBalance,
+    pendingTransactions,
+    transactionsCount: realTransactions.length
+  });
 
   if (isLoading) {
     return (
@@ -971,7 +989,7 @@ export default function AccountingTransactions() {
                 <ArrowUp className="h-8 w-8 text-green-500" />
                 <div>
                   <div className="text-sm text-gray-600">Ingresos</div>
-                  <div className="text-2xl font-bold">${totalIncome.toFixed(1)}</div>
+                  <div className="text-2xl font-bold">${totalIncome.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</div>
                 </div>
               </div>
             </CardContent>
@@ -982,7 +1000,7 @@ export default function AccountingTransactions() {
                 <ArrowDown className="h-8 w-8 text-red-500" />
                 <div>
                   <div className="text-sm text-gray-600">Gastos</div>
-                  <div className="text-2xl font-bold text-red-500">${totalExpenses.toFixed(1)}</div>
+                  <div className="text-2xl font-bold text-red-500">${totalExpenses.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</div>
                 </div>
               </div>
             </CardContent>
@@ -994,7 +1012,7 @@ export default function AccountingTransactions() {
                 <div>
                   <div className="text-sm text-gray-600">Balance Neto</div>
                   <div className={`text-2xl font-bold ${netBalance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    ${netBalance.toFixed(1)}
+                    ${netBalance.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                   </div>
                 </div>
               </div>
