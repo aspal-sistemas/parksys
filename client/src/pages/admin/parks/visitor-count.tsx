@@ -520,14 +520,6 @@ export default function VisitorCountPage() {
           </div>
           <div className="flex items-center space-x-3">
             <Button 
-              variant="outline"
-              onClick={() => window.location.href = '/admin/parks/visitor-dashboard'}
-              className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
-            >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Dashboard de Análisis
-            </Button>
-            <Button 
               onClick={() => setShowForm(true)}
               className="bg-emerald-600 hover:bg-emerald-700"
             >
