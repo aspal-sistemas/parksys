@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Edit, Eye, Users, MapPin, Calendar, Award, Clock } from "lucide-react";
+import { Plus, Search, Edit, Eye, Users, MapPin, Calendar, Award, Clock, Download, Upload, ChevronLeft, ChevronRight, FileText, Filter } from "lucide-react";
 
 interface Volunteer {
   id: number;
@@ -31,10 +31,18 @@ export default function VolunteersPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Estados para filtros y paginación
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [parkFilter, setParkFilter] = useState("all");
+  const [ageFilter, setAgeFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  
+  const itemsPerPage = 10;
 
   // Obtener voluntarios
   const { data: volunteersData, isLoading } = useQuery({
@@ -48,7 +56,7 @@ export default function VolunteersPage() {
     queryKey: ['/api/parks'],
   });
 
-  // Filtrar voluntarios
+  // Filtrar voluntarios con filtros extendidos
   const filteredVolunteers = volunteers.filter((volunteer: any) => {
     const matchesSearch = 
       (volunteer.firstName?.toLowerCase() || volunteer.full_name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
@@ -57,8 +65,85 @@ export default function VolunteersPage() {
     
     const matchesStatus = statusFilter === "all" || volunteer.status === statusFilter;
     
-    return matchesSearch && matchesStatus;
+    const matchesPark = parkFilter === "all" || volunteer.preferred_park_id?.toString() === parkFilter;
+    
+    const matchesAge = ageFilter === "all" || (() => {
+      const age = volunteer.age || 0;
+      switch(ageFilter) {
+        case "18-25": return age >= 18 && age <= 25;
+        case "26-35": return age >= 26 && age <= 35;
+        case "36-45": return age >= 36 && age <= 45;
+        case "46+": return age >= 46;
+        default: return true;
+      }
+    })();
+    
+    return matchesSearch && matchesStatus && matchesPark && matchesAge;
   });
+
+  // Paginación
+  const totalPages = Math.ceil(filteredVolunteers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
+
+  // Resetear página cuando cambian los filtros
+  const resetPage = () => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  };
+
+  // Funciones de exportar/importar CSV
+  const exportToCSV = () => {
+    const headers = ['ID', 'Nombre Completo', 'Email', 'Teléfono', 'Edad', 'Estado', 'Habilidades', 'Experiencia', 'Parque Preferido', 'Fecha Ingreso'];
+    
+    const csvData = filteredVolunteers.map((volunteer: any) => [
+      volunteer.id,
+      volunteer.full_name || `${volunteer.firstName || ''} ${volunteer.lastName || ''}`.trim(),
+      volunteer.email,
+      volunteer.phone || '',
+      volunteer.age || '',
+      volunteer.status || 'active',
+      volunteer.skills || '',
+      volunteer.previous_experience || '',
+      volunteer.preferred_park_id || '',
+      new Date(volunteer.created_at || volunteer.createdAt).toLocaleDateString()
+    ]);
+
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `voluntarios_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    toast({
+      title: "Exportación exitosa",
+      description: `Se exportaron ${filteredVolunteers.length} voluntarios a CSV`,
+    });
+  };
+
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const csv = e.target?.result as string;
+      const lines = csv.split('\n');
+      const headers = lines[0].split(',').map(h => h.replace(/"/g, ''));
+      
+      toast({
+        title: "Importación en desarrollo",
+        description: `Se detectaron ${lines.length - 1} registros en el archivo CSV`,
+      });
+    };
+    reader.readAsText(file);
+  };
 
   const handleViewDetails = (volunteer: Volunteer) => {
     setSelectedVolunteer(volunteer);
@@ -82,6 +167,23 @@ export default function VolunteersPage() {
     }
   };
 
+  // Funciones de paginación
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="container mx-auto p-6">
@@ -97,39 +199,6 @@ export default function VolunteersPage() {
             Nuevo Voluntario
           </Button>
         </div>
-
-        {/* Filtros */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg">Filtros de Búsqueda</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Buscar por nombre o email..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los estados</SelectItem>
-                  <SelectItem value="activo">Activo</SelectItem>
-                  <SelectItem value="inactivo">Inactivo</SelectItem>
-                  <SelectItem value="suspendido">Suspendido</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -192,6 +261,95 @@ export default function VolunteersPage() {
           </Card>
         </div>
 
+        {/* Filtros extendidos */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filtros de Búsqueda
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Buscar por nombre o email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los estados</SelectItem>
+                  <SelectItem value="active">Activo</SelectItem>
+                  <SelectItem value="inactive">Inactivo</SelectItem>
+                  <SelectItem value="suspended">Suspendido</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={parkFilter} onValueChange={setParkFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Parque" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los parques</SelectItem>
+                  {parks && parks.map((park: any) => (
+                    <SelectItem key={park.id} value={park.id.toString()}>
+                      {park.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={ageFilter} onValueChange={setAgeFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Edad" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las edades</SelectItem>
+                  <SelectItem value="18-25">18-25 años</SelectItem>
+                  <SelectItem value="26-35">26-35 años</SelectItem>
+                  <SelectItem value="36-45">36-45 años</SelectItem>
+                  <SelectItem value="46+">46+ años</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Botones de exportar/importar */}
+            <div className="flex gap-2 mt-4">
+              <Button 
+                variant="outline" 
+                onClick={exportToCSV}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Exportar CSV
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                Importar CSV
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                style={{ display: 'none' }}
+                onChange={handleFileImport}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Lista de voluntarios */}
         <Card>
           <CardHeader>
@@ -211,8 +369,53 @@ export default function VolunteersPage() {
                 <p className="text-gray-500">No se encontraron voluntarios</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {filteredVolunteers.map((volunteer: any) => (
+              <>
+                {/* Información de paginación */}
+                <div className="flex justify-between items-center mb-4">
+                  <p className="text-sm text-gray-500">
+                    Mostrando {startIndex + 1} a {Math.min(endIndex, filteredVolunteers.length)} de {filteredVolunteers.length} voluntarios
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePreviousPage}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Anterior
+                    </Button>
+                    
+                    {/* Números de página */}
+                    <div className="flex gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                          className={currentPage === page ? "bg-green-600 hover:bg-green-700" : ""}
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages}
+                    >
+                      Siguiente
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Lista de voluntarios paginados */}
+                <div className="space-y-4">
+                  {paginatedVolunteers.map((volunteer: any) => (
                   <div key={volunteer.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
@@ -272,7 +475,8 @@ export default function VolunteersPage() {
                     </div>
                   </div>
                 ))}
-              </div>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
