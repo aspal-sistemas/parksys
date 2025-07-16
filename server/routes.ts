@@ -961,15 +961,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       const treeStats = treeStatsQuery.rows[0];
 
-      const volunteers = await storage.getAllVolunteers();
-      const parkVolunteers = volunteers.filter(volunteer => volunteer.preferredParkId === parkId);
-
-      // Get incidents count for this park
-      const incidentsQuery = await pool.query(
-        'SELECT COUNT(*) as count FROM incidents WHERE park_id = $1',
+      // Get volunteers data for this park
+      const volunteersQuery = await pool.query(
+        'SELECT id, full_name, skills, is_active, preferred_park_id FROM volunteers WHERE preferred_park_id = $1',
         [parkId]
       );
-      const incidentsCount = parseInt(incidentsQuery.rows[0].count);
+      const parkVolunteers = volunteersQuery.rows;
+
+      // Get incidents data for this park
+      const incidentsQuery = await pool.query(
+        'SELECT id, title, severity, status, created_at FROM incidents WHERE park_id = $1 ORDER BY created_at DESC LIMIT 10',
+        [parkId]
+      );
+      const incidents = incidentsQuery.rows.map((incident: any) => ({
+        id: incident.id,
+        title: incident.title,
+        status: incident.status,
+        priority: incident.severity,
+        createdAt: incident.created_at.toISOString()
+      }));
+      const incidentsCount = incidents.length;
 
       // Get evaluations data for this park
       const evaluationsQuery = await pool.query(
@@ -991,7 +1002,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate statistics
       const stats = {
         totalActivities: parkActivities.length,
-        activeVolunteers: parkVolunteers.filter(v => v.isActive).length,
+        activeVolunteers: parkVolunteers.filter(v => v.is_active).length,
         totalTrees: parseInt(treeStats.total),
         totalAssets: assets.length,
         averageEvaluation: averageEvaluation,
@@ -1060,9 +1071,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         evaluations: [], // Can be implemented when we have evaluations
         volunteers: parkVolunteers.map((volunteer: any) => ({
           id: volunteer.id,
-          fullName: volunteer.fullName || "Sin nombre",
+          fullName: volunteer.full_name || "Sin nombre",
           skills: volunteer.skills || "Sin habilidades definidas",
-          isActive: volunteer.isActive
+          isActive: volunteer.is_active
         })),
         stats
       };
