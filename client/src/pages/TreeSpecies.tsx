@@ -24,6 +24,7 @@ import {
 import PublicLayout from '@/components/PublicLayout';
 import { Link, useLocation } from 'wouter';
 import parkImage from '@assets/park-with-lake-and-stone-bridge-old-european-town-2024-12-04-10-14-36-utc_1751508535544.jpg';
+import AdSpace from '@/components/AdSpace';
 
 interface TreeSpecies {
   id: number;
@@ -355,6 +356,15 @@ export default function TreeSpecies() {
         </div>
         
         <div className="max-w-7xl mx-auto px-4 py-12">
+
+          {/* Publicidad Header */}
+          <div className="mb-8 flex justify-center">
+            <AdSpace 
+              spaceId="4"
+              position="header"
+              pageType="tree-species"
+            />
+          </div>
 
           {/* Controles */}
           <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
