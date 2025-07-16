@@ -112,32 +112,31 @@ interface ParkDetails {
     instructorName?: string;
     participantCount: number;
   }>;
-  trees: Array<{
-    id: number;
-    species: string;
-    condition: string;
-    plantedDate: string;
-    lastMaintenance?: string;
-  }>;
+  trees: {
+    data: Array<{
+      id: number;
+      speciesId: number;
+      condition: string;
+      plantedDate?: string;
+      lastMaintenance?: string;
+      locationDescription?: string;
+      code?: string;
+    }>;
+    stats: {
+      total: number;
+      good: number;
+      regular: number;
+      bad: number;
+    };
+  };
   assets: Array<{
     id: number;
     name: string;
-    category: string;
-    status: string;
+    type: string;
     condition: string;
-    lastMaintenance?: string;
-    latitude?: number;
-    longitude?: number;
-    locationDescription?: string;
-    serialNumber?: string;
-    manufacturer?: string;
-    model?: string;
-    notes?: string;
+    location: string;
     acquisitionDate?: string;
-    acquisitionCost?: string;
-    currentValue?: string;
-    nextMaintenanceDate?: string;
-    amenityId?: number;
+    lastMaintenanceDate?: string;
   }>;
   incidents: Array<{
     id: number;

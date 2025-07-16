@@ -991,7 +991,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get assets data for this park
       const assetsQuery = await pool.query(
-        'SELECT id, name, type, condition, location, acquisition_date, last_maintenance_date FROM assets WHERE park_id = $1',
+        'SELECT id, name, category_id, condition, location_description as location, acquisition_date, last_maintenance_date FROM assets WHERE park_id = $1',
         [parkId]
       );
       const assets = assetsQuery.rows;
@@ -1054,7 +1054,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         assets: assets.map((asset: any) => ({
           id: asset.id,
           name: asset.name,
-          type: asset.type,
+          type: asset.category_id || "Sin categoría",
           condition: asset.condition,
           location: asset.location,
           acquisitionDate: asset.acquisition_date?.toISOString(),
