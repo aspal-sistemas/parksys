@@ -23,7 +23,7 @@ const Parks: React.FC = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const parksPerPage = 7;
+  const parksPerPage = 5;
   
   // Reset scroll to top when component mounts
   useEffect(() => {
