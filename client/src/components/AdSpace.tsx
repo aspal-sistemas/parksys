@@ -57,15 +57,17 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     ? placementsResponse.data[0] 
     : null;
 
-  // Debug logging
-  console.log('🎯 AdSpace Debug:', {
-    spaceId,
-    position,
-    pageType,
-    isLoading,
-    placementsResponse,
-    activePlacement
-  });
+  // Debug logging (solo en desarrollo)
+  if (import.meta.env.DEV) {
+    console.log('🎯 AdSpace Debug:', {
+      spaceId,
+      position,
+      pageType,
+      isLoading,
+      placementsResponse,
+      activePlacement
+    });
+  }
 
   // Registrar impresión cuando el componente es visible
   useEffect(() => {

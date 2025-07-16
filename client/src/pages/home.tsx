@@ -81,11 +81,6 @@ const Home: React.FC = () => {
                 pageType="homepage" 
                 className="rounded-lg shadow-xl border-2 border-white/20 backdrop-blur-sm"
               />
-              
-              {/* Banner de prueba temporal */}
-              <div className="w-full max-w-4xl mx-auto h-20 bg-yellow-400 border-2 border-yellow-500 rounded-lg shadow-lg mt-4 flex items-center justify-center">
-                <p className="text-black font-bold">🎯 BANNER DE PRUEBA - Si ves esto, el posicionamiento funciona</p>
-              </div>
             </div>
 
           </div>
