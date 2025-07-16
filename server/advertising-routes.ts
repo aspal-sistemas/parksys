@@ -493,7 +493,28 @@ router.get('/public/ads', async (req, res) => {
   try {
     const { pageType, pageId, spaceKey } = req.query;
     
-    let query = db.select({
+    // Construir condiciones dinámicamente
+    const conditions = [
+      eq(adPlacements.isActive, true),
+      lte(adPlacements.startDate, new Date()),
+      gte(adPlacements.endDate, new Date())
+    ];
+    
+    if (pageType) {
+      conditions.push(eq(adPlacements.pageType, pageType as string));
+    }
+    
+    if (pageId) {
+      conditions.push(
+        sql`(${adPlacements.pageId} = ${parseInt(pageId as string)} OR ${adPlacements.pageId} IS NULL)`
+      );
+    }
+    
+    if (spaceKey) {
+      conditions.push(eq(adSpaces.spaceKey, spaceKey as string));
+    }
+
+    const query = db.select({
       id: adPlacements.id,
       advertisement: {
         id: advertisements.id,
@@ -513,28 +534,7 @@ router.get('/public/ads', async (req, res) => {
     }).from(adPlacements)
       .leftJoin(advertisements, eq(adPlacements.adId, advertisements.id))
       .leftJoin(adSpaces, eq(adPlacements.spaceId, adSpaces.id))
-      .leftJoin(adCampaigns, eq(advertisements.campaignId, adCampaigns.id))
-      .where(and(
-        eq(adPlacements.isActive, true),
-        lte(adPlacements.startDate, new Date()),
-        gte(adPlacements.endDate, new Date()),
-        eq(advertisements.status, 'active'),
-        eq(adCampaigns.status, 'active')
-      ));
-    
-    if (pageType) {
-      query = query.where(eq(adPlacements.pageType, pageType as string));
-    }
-    
-    if (pageId) {
-      query = query.where(
-        sql`(${adPlacements.pageId} = ${parseInt(pageId as string)} OR ${adPlacements.pageId} IS NULL)`
-      );
-    }
-    
-    if (spaceKey) {
-      query = query.where(eq(adSpaces.spaceKey, spaceKey as string));
-    }
+      .where(and(...conditions));
     
     const ads = await query.orderBy(desc(advertisements.priority));
     

@@ -171,7 +171,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de publicidad
   apiRouter.use('/advertising', advertisingRoutes);
-  console.log('📢 Rutas de publicidad registradas');
+  
+  // Registramos las rutas de gestión de publicidad
+  const advertisingManagementRoutes = await import('./advertising-management-routes');
+  apiRouter.use('/advertising-management', advertisingManagementRoutes.default);
+  console.log('📢 Rutas de publicidad y gestión registradas');
 
   // Rutas de edición específicas con nombres únicos
   apiRouter.put("/income-categories/:id", async (req: Request, res: Response) => {
