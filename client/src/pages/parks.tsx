@@ -218,8 +218,63 @@ const Parks: React.FC = () => {
 
             {/* Sidebar Publicitario */}
             <div className="lg:col-span-1">
-              <div className="sticky top-4">
+              <div className="sticky top-4 space-y-6">
+                {/* Espacio publicitario principal */}
                 <AdSpace spaceId="2" position="sidebar" pageType="parks" />
+                
+                {/* Espacio publicitario secundario - deportes */}
+                <div className="bg-white rounded-lg border shadow-sm p-4">
+                  <div className="text-center">
+                    <img 
+                      src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80"
+                      alt="Clases de deportes en parques"
+                      className="w-full h-40 object-cover rounded-lg mb-3"
+                    />
+                    <h3 className="font-semibold text-gray-900 mb-2">Clases de Deportes</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Actividades deportivas gratuitas en parques públicos
+                    </p>
+                    <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                      Inscríbete Ahora
+                    </button>
+                  </div>
+                </div>
+
+                {/* Espacio publicitario terciario - eventos */}
+                <div className="bg-white rounded-lg border shadow-sm p-4">
+                  <div className="text-center">
+                    <img 
+                      src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80"
+                      alt="Eventos culturales en parques"
+                      className="w-full h-40 object-cover rounded-lg mb-3"
+                    />
+                    <h3 className="font-semibold text-gray-900 mb-2">Eventos Culturales</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Disfruta de conciertos y festivales al aire libre
+                    </p>
+                    <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                      Ver Calendario
+                    </button>
+                  </div>
+                </div>
+
+                {/* Espacio publicitario cuaternario - naturaleza */}
+                <div className="bg-white rounded-lg border shadow-sm p-4">
+                  <div className="text-center">
+                    <img 
+                      src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80"
+                      alt="Talleres de naturaleza"
+                      className="w-full h-40 object-cover rounded-lg mb-3"
+                    />
+                    <h3 className="font-semibold text-gray-900 mb-2">Talleres de Naturaleza</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Aprende sobre flora y fauna local
+                    </p>
+                    <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                      Más Información
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
