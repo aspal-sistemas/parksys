@@ -316,7 +316,7 @@ function ActivitiesPage() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
-  const activitiesPerPage = 12;
+  const activitiesPerPage = 9;
 
   // Obtener todas las actividades con imágenes
   const { data: activitiesData = [], isLoading } = useQuery<ActivityData[]>({
