@@ -185,23 +185,6 @@ export default function TreeSpeciesDetail() {
           </div>
         </div>
 
-        {/* Espacio para publicidad institucional */}
-        <div className="mb-8">
-          <Card className="bg-gradient-to-r from-green-100 to-blue-100 border-dashed border-2 border-green-300">
-            <CardContent className="p-6 text-center">
-              <div className="text-green-600 mb-2">
-                <Users className="w-8 h-8 mx-auto" />
-              </div>
-              <h3 className="text-lg font-semibold text-green-800 mb-2">
-                Espacio Publicitario Institucional
-              </h3>
-              <p className="text-green-700 text-sm">
-                Área reservada para anuncios institucionales o publicitarios
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Navegación por pestañas */}
         <div className="mb-6">
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
@@ -341,21 +324,6 @@ export default function TreeSpeciesDetail() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Espacio para publicidad */}
-            <Card className="bg-gradient-to-r from-blue-100 to-green-100 border-dashed border-2 border-blue-300">
-              <CardContent className="p-6 text-center">
-                <div className="text-blue-600 mb-2">
-                  <Home className="w-8 h-8 mx-auto" />
-                </div>
-                <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                  Espacio Publicitario
-                </h3>
-                <p className="text-blue-700 text-sm">
-                  Área reservada para anuncios relacionados con jardinería o medio ambiente
-                </p>
-              </CardContent>
-            </Card>
           </div>
         )}
 
@@ -408,23 +376,6 @@ export default function TreeSpeciesDetail() {
             </Card>
           </div>
         )}
-
-        {/* Espacio final para publicidad */}
-        <div className="mt-8">
-          <Card className="bg-gradient-to-r from-purple-100 to-pink-100 border-dashed border-2 border-purple-300">
-            <CardContent className="p-6 text-center">
-              <div className="text-purple-600 mb-2">
-                <TreePine className="w-8 h-8 mx-auto" />
-              </div>
-              <h3 className="text-lg font-semibold text-purple-800 mb-2">
-                Espacio Publicitario Premium
-              </h3>
-              <p className="text-purple-700 text-sm">
-                Área destacada para anuncios institucionales o patrocinadores premium
-              </p>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
