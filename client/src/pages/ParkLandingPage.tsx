@@ -22,8 +22,7 @@ import {
   User,
   ExternalLink,
   Users,
-  Heart,
-  Wrench
+  Heart
 } from 'lucide-react';
 import { ExtendedPark } from '@shared/schema';
 import { Badge } from '@/components/ui/badge';
@@ -622,47 +621,7 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
-            {/* Instalaciones y Equipos */}
-            {park.assets && park.assets.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <Wrench className="h-6 w-6 text-gray-600" />
-                    Instalaciones y Equipos
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {park.assets.map((asset) => (
-                      <div key={asset.id} className="p-4 bg-gray-50 rounded-lg border">
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold text-gray-900">{asset.name}</h4>
-                          <Badge 
-                            variant="outline" 
-                            className={`text-xs ${
-                              asset.condition === 'Excelente' ? 'border-green-300 text-green-700' :
-                              asset.condition === 'Bueno' ? 'border-blue-300 text-blue-700' :
-                              asset.condition === 'Regular' ? 'border-yellow-300 text-yellow-700' :
-                              'border-red-300 text-red-700'
-                            }`}
-                          >
-                            {asset.condition}
-                          </Badge>
-                        </div>
-                        {asset.description && (
-                          <p className="text-gray-600 text-sm mb-2">{asset.description}</p>
-                        )}
-                        {asset.category && (
-                          <Badge variant="secondary" className="text-xs">
-                            {asset.category}
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+
           </div>
 
           {/* Sidebar */}
