@@ -275,6 +275,24 @@ const Parks: React.FC = () => {
                     </button>
                   </div>
                 </div>
+
+                {/* Espacio publicitario quinario - familia */}
+                <div className="bg-white rounded-lg border shadow-sm p-4">
+                  <div className="text-center">
+                    <img 
+                      src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80"
+                      alt="Actividades familiares"
+                      className="w-full h-40 object-cover rounded-lg mb-3"
+                    />
+                    <h3 className="font-semibold text-gray-900 mb-2">Actividades Familiares</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Diversión para toda la familia en espacios verdes
+                    </p>
+                    <button className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors text-sm">
+                      Explorar
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
