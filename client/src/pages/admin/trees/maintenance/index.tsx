@@ -144,23 +144,7 @@ export default function TreeMaintenancePage() {
     setSelectedTreeId(null);
   }, [selectedParkId, selectedSpeciesId]);
 
-  // Log para diagnosticar problemas
-  React.useEffect(() => {
-    console.log('🌳 Estado del selector de árboles:', {
-      selectedParkId,
-      selectedSpeciesId,
-      selectedTreeId,
-      totalTrees: trees?.length || 0,
-      filteredTrees: getTreesForSelection?.length || 0,
-      searchTerm,
-      getTreesForSelection: getTreesForSelection?.slice(0, 3).map(t => ({
-        id: t.id,
-        code: t.code,
-        speciesName: t.speciesName,
-        parkName: t.parkName
-      }))
-    });
-  }, [selectedParkId, selectedSpeciesId, selectedTreeId, trees, getTreesForSelection, searchTerm]);
+
 
   // Cargar todos los mantenimientos
   const { data: maintenances, isLoading: loadingMaintenances } = useQuery({
@@ -258,6 +242,24 @@ export default function TreeMaintenancePage() {
     
     return filteredTrees.slice(0, 50);
   }, [trees, selectedParkId, selectedSpeciesId, searchTerm]);
+
+  // Log para diagnosticar problemas
+  React.useEffect(() => {
+    console.log('🌳 Estado del selector de árboles:', {
+      selectedParkId,
+      selectedSpeciesId,
+      selectedTreeId,
+      totalTrees: trees?.length || 0,
+      filteredTrees: getTreesForSelection?.length || 0,
+      searchTerm,
+      getTreesForSelection: getTreesForSelection?.slice(0, 3).map(t => ({
+        id: t.id,
+        code: t.code,
+        speciesName: t.speciesName,
+        parkName: t.parkName
+      }))
+    });
+  }, [selectedParkId, selectedSpeciesId, selectedTreeId, trees, getTreesForSelection, searchTerm]);
 
   // Filtrar mantenimientos según búsqueda, tipo y parque
   const filteredMaintenances = React.useMemo(() => {
