@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/AdminLayout';
 import { LayoutGrid, Monitor, Search, Filter, Plus, Edit, Trash2, Eye } from 'lucide-react';
 
@@ -24,6 +29,64 @@ const AdSpaces = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPageType, setFilterPageType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    page_type: '',
+    position: '',
+    page_identifier: '',
+    width: '',
+    height: '',
+    category: 'commercial',
+    is_active: true
+  });
+  
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Mutación para crear espacios
+  const createSpaceMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch('/api/advertising/spaces', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error('Error al crear el espacio publicitario');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/advertising/spaces'] });
+      setIsCreateModalOpen(false);
+      setFormData({
+        name: '',
+        description: '',
+        page_type: '',
+        position: '',
+        page_identifier: '',
+        width: '',
+        height: '',
+        category: 'commercial',
+        is_active: true
+      });
+      toast({
+        title: "Éxito",
+        description: "Espacio publicitario creado correctamente",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo crear el espacio publicitario",
+        variant: "destructive",
+      });
+    },
+  });
 
   const { data: apiResponse, isLoading, error } = useQuery({
     queryKey: ['/api/advertising/spaces'],
@@ -71,6 +134,11 @@ const AdSpaces = () => {
       'content': 'Contenido'
     };
     return positions[position as keyof typeof positions] || position;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createSpaceMutation.mutate(formData);
   };
 
   if (isLoading) {
@@ -139,10 +207,139 @@ const AdSpaces = () => {
                   <SelectItem value="inactive">Inactivos</SelectItem>
                 </SelectContent>
               </Select>
-              <Button className="bg-[#00a587] hover:bg-[#067f5f]">
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Espacio
-              </Button>
+              <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nuevo Espacio
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Crear Nuevo Espacio Publicitario</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Nombre del Espacio</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="ej: Header Principal Homepage"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="description">Descripción</Label>
+                      <Textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Descripción del espacio publicitario"
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="page_type">Tipo de Página</Label>
+                        <Select value={formData.page_type} onValueChange={(value) => setFormData(prev => ({ ...prev, page_type: value }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="parks">Parques</SelectItem>
+                            <SelectItem value="tree-species">Especies Arbóreas</SelectItem>
+                            <SelectItem value="activities">Actividades</SelectItem>
+                            <SelectItem value="concessions">Concesiones</SelectItem>
+                            <SelectItem value="homepage">Homepage</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="position">Posición</Label>
+                        <Select value={formData.position} onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar posición" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="header">Header</SelectItem>
+                            <SelectItem value="sidebar">Sidebar</SelectItem>
+                            <SelectItem value="footer">Footer</SelectItem>
+                            <SelectItem value="hero">Hero</SelectItem>
+                            <SelectItem value="content">Contenido</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="page_identifier">Identificador de Página</Label>
+                      <Input
+                        id="page_identifier"
+                        value={formData.page_identifier}
+                        onChange={(e) => setFormData(prev => ({ ...prev, page_identifier: e.target.value }))}
+                        placeholder="ej: homepage, park-detail, activities-list"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="width">Ancho (px)</Label>
+                        <Input
+                          id="width"
+                          type="number"
+                          value={formData.width}
+                          onChange={(e) => setFormData(prev => ({ ...prev, width: e.target.value }))}
+                          placeholder="ej: 300"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="height">Alto (px)</Label>
+                        <Input
+                          id="height"
+                          type="number"
+                          value={formData.height}
+                          onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
+                          placeholder="ej: 250"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="category">Categoría</Label>
+                      <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="commercial">Comercial</SelectItem>
+                          <SelectItem value="institutional">Institucional</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="is_active"
+                        checked={formData.is_active}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                      />
+                      <Label htmlFor="is_active">Activo</Label>
+                    </div>
+                    
+                    <div className="flex justify-end space-x-2">
+                      <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button type="submit" className="bg-[#00a587] hover:bg-[#067f5f]" disabled={createSpaceMutation.isPending}>
+                        {createSpaceMutation.isPending ? 'Creando...' : 'Crear Espacio'}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>
