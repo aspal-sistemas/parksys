@@ -233,14 +233,17 @@ export default function TreeSpecies() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Consulta para obtener todas las especies de árboles
-  const { data: treeSpecies = [], isLoading } = useQuery<TreeSpecies[]>({
+  const { data: treeSpeciesResponse, isLoading } = useQuery<{data: TreeSpecies[], pagination: any}>({
     queryKey: ['/api/tree-species'],
     queryFn: async () => {
-      const response = await fetch('/api/tree-species');
+      const response = await fetch('/api/tree-species?limit=1000'); // Obtener muchos registros para página pública
       if (!response.ok) throw new Error('Error cargando especies arbóreas');
       return response.json();
     }
   });
+
+  // Extraer los datos de la respuesta
+  const treeSpecies = treeSpeciesResponse?.data || [];
 
   // Filtrar especies
   const filteredSpecies = useMemo(() => {
