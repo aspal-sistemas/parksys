@@ -489,92 +489,183 @@ function ActivitiesPage() {
 
       {/* Contenido Principal */}
       <section className="max-w-7xl mx-auto px-4 py-8">
-        {currentActivities.length === 0 ? (
-          <div className="text-center py-16">
-            <Activity className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No se encontraron actividades</h3>
-            <p className="text-gray-500">Intenta ajustar los filtros para ver más resultados.</p>
-            <Button 
-              onClick={() => {
-                setSearchQuery('');
-                setFilterPark('all');
-                setFilterCategory('all');
-              }}
-              className="mt-4 bg-green-600 hover:bg-green-700"
-            >
-              Limpiar filtros
-            </Button>
-          </div>
-        ) : (
-          <>
-            {/* Header de resultados */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="text-gray-600">
-                Mostrando {startIndex + 1}-{Math.min(endIndex, totalActivities)} de {totalActivities} actividades
-              </div>
-              <Link href="/parks">
-                <Button variant="outline" size="sm" className="text-green-600 border-green-200 hover:bg-green-50">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Ver parques
-                </Button>
-              </Link>
-            </div>
-
-            {/* Grid/List de actividades */}
-            <div className={viewMode === 'grid' 
-              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
-              : "space-y-4"
-            }>
-              {currentActivities.map((activity) => (
-                <ActivityCard 
-                  key={activity.id} 
-                  activity={activity} 
-                  viewMode={viewMode}
-                />
-              ))}
-            </div>
-
-            {/* Paginación */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-12">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="border-green-200 text-green-700 hover:bg-green-50"
+        <div className="flex gap-8">
+          {/* Contenido principal - 3/4 del ancho */}
+          <div className="flex-1">
+            {currentActivities.length === 0 ? (
+              <div className="text-center py-16">
+                <Activity className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No se encontraron actividades</h3>
+                <p className="text-gray-500">Intenta ajustar los filtros para ver más resultados.</p>
+                <Button 
+                  onClick={() => {
+                    setSearchQuery('');
+                    setFilterPark('all');
+                    setFilterCategory('all');
+                  }}
+                  className="mt-4 bg-green-600 hover:bg-green-700"
                 >
-                  Anterior
-                </Button>
-                
-                {[...Array(totalPages)].map((_, i) => (
-                  <Button
-                    key={i + 1}
-                    variant={currentPage === i + 1 ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={currentPage === i + 1 
-                      ? 'bg-green-600 hover:bg-green-700' 
-                      : 'border-green-200 text-green-700 hover:bg-green-50'
-                    }
-                  >
-                    {i + 1}
-                  </Button>
-                ))}
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="border-green-200 text-green-700 hover:bg-green-50"
-                >
-                  Siguiente
+                  Limpiar filtros
                 </Button>
               </div>
+            ) : (
+              <>
+                {/* Header de resultados */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="text-gray-600">
+                    Mostrando {startIndex + 1}-{Math.min(endIndex, totalActivities)} de {totalActivities} actividades
+                  </div>
+                  <Link href="/parks">
+                    <Button variant="outline" size="sm" className="text-green-600 border-green-200 hover:bg-green-50">
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Ver parques
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Grid/List de actividades */}
+                <div className={viewMode === 'grid' 
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
+                  : "space-y-4"
+                }>
+                  {currentActivities.map((activity) => (
+                    <ActivityCard 
+                      key={activity.id} 
+                      activity={activity} 
+                      viewMode={viewMode}
+                    />
+                  ))}
+                </div>
+
+                {/* Paginación */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-12">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="border-green-200 text-green-700 hover:bg-green-50"
+                    >
+                      Anterior
+                    </Button>
+                    
+                    {[...Array(totalPages)].map((_, i) => (
+                      <Button
+                        key={i + 1}
+                        variant={currentPage === i + 1 ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={currentPage === i + 1 
+                          ? 'bg-green-600 hover:bg-green-700' 
+                          : 'border-green-200 text-green-700 hover:bg-green-50'
+                        }
+                      >
+                        {i + 1}
+                      </Button>
+                    ))}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="border-green-200 text-green-700 hover:bg-green-50"
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
+          </div>
+
+          {/* Sidebar publicitario - 1/4 del ancho */}
+          <div className="w-80 space-y-6 sticky top-24 self-start">
+            <div className="space-y-6">
+              {/* Espacio publicitario principal - sistema */}
+              <div className="bg-white rounded-lg border shadow-sm">
+                <AdSpace 
+                  spaceId="9" 
+                  position="sidebar" 
+                  pageType="activities" 
+                />
+              </div>
+
+              {/* Espacio publicitario secundario - deportes */}
+              <div className="bg-white rounded-lg border shadow-sm p-4">
+                <div className="text-center">
+                  <img 
+                    src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80"
+                    alt="Clases de deportes"
+                    className="w-full h-40 object-cover rounded-lg mb-3"
+                  />
+                  <h3 className="font-semibold text-gray-900 mb-2">Clases de Deportes</h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Fútbol, básquetbol, tenis y más
+                  </p>
+                  <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                    Inscribirse
+                  </button>
+                </div>
+              </div>
+
+              {/* Espacio publicitario terciario - arte */}
+              <div className="bg-white rounded-lg border shadow-sm p-4">
+                <div className="text-center">
+                  <img 
+                    src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80"
+                    alt="Talleres de arte"
+                    className="w-full h-40 object-cover rounded-lg mb-3"
+                  />
+                  <h3 className="font-semibold text-gray-900 mb-2">Talleres de Arte</h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Pintura, escultura y artes plásticas
+                  </p>
+                  <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                    Conoce Más
+                  </button>
+                </div>
+              </div>
+
+              {/* Espacio publicitario cuaternario - música */}
+              <div className="bg-white rounded-lg border shadow-sm p-4">
+                <div className="text-center">
+                  <img 
+                    src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80"
+                    alt="Clases de música"
+                    className="w-full h-40 object-cover rounded-lg mb-3"
+                  />
+                  <h3 className="font-semibold text-gray-900 mb-2">Clases de Música</h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Aprende instrumentos al aire libre
+                  </p>
+                  <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                    Ver Horarios
+                  </button>
+                </div>
+              </div>
+
+              {/* Espacio publicitario quinario - fitness */}
+              <div className="bg-white rounded-lg border shadow-sm p-4">
+                <div className="text-center">
+                  <img 
+                    src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80"
+                    alt="Actividades de fitness"
+                    className="w-full h-40 object-cover rounded-lg mb-3"
+                  />
+                  <h3 className="font-semibold text-gray-900 mb-2">Fitness al Aire Libre</h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Yoga, aeróbicos y entrenamiento funcional
+                  </p>
+                  <button className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors text-sm">
+                    Únete Ahora
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
       </div>
     </PublicLayout>
