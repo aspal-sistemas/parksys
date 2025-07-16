@@ -963,7 +963,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get volunteers data for this park
       const volunteersQuery = await pool.query(
-        'SELECT id, full_name, skills, is_active, preferred_park_id FROM volunteers WHERE preferred_park_id = $1',
+        'SELECT id, full_name, skills, status, preferred_park_id FROM volunteers WHERE preferred_park_id = $1',
         [parkId]
       );
       const parkVolunteers = volunteersQuery.rows;
@@ -1002,7 +1002,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate statistics
       const stats = {
         totalActivities: parkActivities.length,
-        activeVolunteers: parkVolunteers.filter(v => v.is_active).length,
+        activeVolunteers: parkVolunteers.filter(v => v.status === 'active').length,
         totalTrees: parseInt(treeStats.total),
         totalAssets: assets.length,
         averageEvaluation: averageEvaluation,
@@ -1073,7 +1073,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: volunteer.id,
           fullName: volunteer.full_name || "Sin nombre",
           skills: volunteer.skills || "Sin habilidades definidas",
-          isActive: volunteer.is_active
+          isActive: volunteer.status === 'active'
         })),
         stats
       };
