@@ -3066,6 +3066,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category: row.category,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
+        parkName: row.parkName,
+        assetName: row.assetName,
         park: {
           id: row.parkId,
           name: row.parkName
