@@ -333,24 +333,28 @@ export default function TreeSpecies() {
 
   return (
     <PublicLayout>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="p-3 bg-green-600 rounded-full">
-                <Trees className="h-8 w-8 text-white" />
-              </div>
-              <h1 className="text-4xl font-bold text-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+        {/* Hero Section con imagen */}
+        <div className="relative h-96 overflow-hidden">
+          <img 
+            src={parkImage} 
+            alt="Parque urbano con árboles" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-white">
+              <h1 className="text-4xl md:text-6xl font-bold mb-4">
                 Especies Arbóreas
               </h1>
+              <p className="text-lg md:text-xl max-w-2xl mx-auto px-4">
+                Descubre la diversidad de árboles en nuestros parques urbanos de Guadalajara
+              </p>
             </div>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Descubre la diversidad de árboles en los parques urbanos de Guadalajara. 
-              Cada especie contribuye al ecosistema urbano y al bienestar de nuestra comunidad.
-            </p>
           </div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 py-12">
 
           {/* Controles */}
           <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
