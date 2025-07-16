@@ -330,7 +330,7 @@ router.delete('/advertisements/:id', async (req, res) => {
 // =====================================
 
 // Obtener todas las asignaciones
-router.get('/placements', async (req, res) => {
+router.get('/assignments', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
@@ -386,7 +386,7 @@ router.get('/placements', async (req, res) => {
 });
 
 // Crear nueva asignación
-router.post('/placements', async (req, res) => {
+router.post('/assignments', async (req, res) => {
   try {
     const {
       ad_space_id,
@@ -409,6 +409,57 @@ router.post('/placements', async (req, res) => {
   } catch (error) {
     console.error('Error creando asignación:', error);
     res.status(500).json({ error: 'Error creando asignación publicitaria' });
+  }
+});
+
+// Actualizar asignación
+router.put('/assignments/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      ad_space_id,
+      advertisement_id,
+      start_date,
+      end_date,
+      frequency,
+      priority,
+      is_active
+    } = req.body;
+
+    const result = await pool.query(`
+      UPDATE ad_placements 
+      SET ad_space_id = $1, advertisement_id = $2, start_date = $3, end_date = $4,
+          frequency = $5, priority = $6, is_active = $7, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $8
+      RETURNING *
+    `, [ad_space_id, advertisement_id, start_date, end_date, frequency, priority, is_active, id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Asignación no encontrada' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error actualizando asignación:', error);
+    res.status(500).json({ error: 'Error actualizando asignación publicitaria' });
+  }
+});
+
+// Eliminar asignación
+router.delete('/assignments/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query('DELETE FROM ad_placements WHERE id = $1 RETURNING *', [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Asignación no encontrada' });
+    }
+
+    res.json({ message: 'Asignación eliminada exitosamente' });
+  } catch (error) {
+    console.error('Error eliminando asignación:', error);
+    res.status(500).json({ error: 'Error eliminando asignación publicitaria' });
   }
 });
 

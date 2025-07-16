@@ -578,6 +578,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/advertising/advertisements')))}
           </Suspense>
         </Route>
+        <Route path="/admin/advertising/assignments">
+          <Suspense fallback={<div className="p-8 text-center">Cargando asignaciones publicitarias...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/advertising/assignments')))}
+          </Suspense>
+        </Route>
 
         {/* Rutas para reset de contraseña */}
         <Route path="/reset-password">

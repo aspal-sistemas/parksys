@@ -1040,9 +1040,9 @@ const AdminSidebarComplete: React.FC = () => {
                 Campañas
               </NavItem>
               <NavItem 
-                href="/admin/advertising/placements" 
+                href="/admin/advertising/assignments" 
                 icon={<MapPin className="h-4 w-4" />}
-                active={location.startsWith('/admin/advertising/placements')}
+                active={location.startsWith('/admin/advertising/assignments')}
               >
                 Asignaciones
               </NavItem>
