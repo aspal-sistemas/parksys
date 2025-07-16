@@ -125,7 +125,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
   const baseStyles = {
     header: 'w-full max-w-6xl mx-auto h-24 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
     hero: 'w-full max-w-4xl mx-auto h-20 bg-white/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg',
-    sidebar: 'w-full max-w-xs h-64 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
+    sidebar: 'w-full h-64 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
     footer: 'w-full max-w-6xl mx-auto h-20 bg-white border border-gray-200 rounded-lg shadow-sm mt-6'
   };
 
@@ -145,42 +145,81 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
       </button>
 
       {/* Contenido del anuncio */}
-      <div className="h-full flex items-center justify-between p-4">
-        {/* Imagen del anuncio */}
-        {advertisement.imageUrl && (
-          <div className="flex-shrink-0 mr-4">
-            <img
-              src={advertisement.imageUrl}
-              alt={advertisement.title}
-              className="h-full w-auto max-h-16 object-contain rounded"
-            />
-          </div>
+      <div className={`h-full ${position === 'sidebar' ? 'flex flex-col' : 'flex items-center justify-between'} p-4`}>
+        {position === 'sidebar' ? (
+          // Layout vertical para sidebar
+          <>
+            {/* Imagen del anuncio */}
+            {advertisement.imageUrl && (
+              <div className="flex-shrink-0 mb-3">
+                <img
+                  src={advertisement.imageUrl}
+                  alt={advertisement.title}
+                  className="w-full h-32 object-cover rounded"
+                />
+              </div>
+            )}
+
+            {/* Contenido textual */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-semibold text-gray-900 text-sm truncate">
+                  {advertisement.title}
+                </h4>
+                <ExternalLink className="h-3 w-3 text-gray-400 ml-1 flex-shrink-0" />
+              </div>
+              <p className="text-xs text-gray-600 line-clamp-3 mb-3">
+                {advertisement.description}
+              </p>
+              
+              {/* Indicador de publicidad */}
+              <div className="flex justify-center">
+                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                  Publicidad
+                </span>
+              </div>
+            </div>
+          </>
+        ) : (
+          // Layout horizontal para otras posiciones
+          <>
+            {/* Imagen del anuncio */}
+            {advertisement.imageUrl && (
+              <div className="flex-shrink-0 mr-4">
+                <img
+                  src={advertisement.imageUrl}
+                  alt={advertisement.title}
+                  className="h-full w-auto max-h-16 object-contain rounded"
+                />
+              </div>
+            )}
+
+            {/* Contenido textual */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center mb-1">
+                <h4 className="font-semibold text-gray-900 text-sm truncate">
+                  {advertisement.title}
+                </h4>
+                <ExternalLink className="h-3 w-3 text-gray-400 ml-1 flex-shrink-0" />
+              </div>
+              <p className="text-xs text-gray-600 line-clamp-2">
+                {advertisement.description}
+              </p>
+              {advertisement.altText && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {advertisement.altText}
+                </p>
+              )}
+            </div>
+
+            {/* Indicador de publicidad */}
+            <div className="flex-shrink-0 ml-4">
+              <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                Publicidad
+              </span>
+            </div>
+          </>
         )}
-
-        {/* Contenido textual */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center mb-1">
-            <h4 className="font-semibold text-gray-900 text-sm truncate">
-              {advertisement.title}
-            </h4>
-            <ExternalLink className="h-3 w-3 text-gray-400 ml-1 flex-shrink-0" />
-          </div>
-          <p className="text-xs text-gray-600 line-clamp-2">
-            {advertisement.description}
-          </p>
-          {advertisement.altText && (
-            <p className="text-xs text-gray-500 mt-1">
-              {advertisement.altText}
-            </p>
-          )}
-        </div>
-
-        {/* Indicador de publicidad */}
-        <div className="flex-shrink-0 ml-4">
-          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
-            Publicidad
-          </span>
-        </div>
       </div>
 
       {/* Overlay de hover */}
