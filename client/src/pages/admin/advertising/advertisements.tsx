@@ -81,16 +81,20 @@ const AdAdvertisements: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Obtener anuncios
-  const { data: advertisements = [], isLoading } = useQuery({
-    queryKey: ['/api/advertising/advertisements'],
-    queryFn: () => apiRequest('/api/advertising/advertisements')
+  const { data: advertisementData = [], isLoading } = useQuery({
+    queryKey: ['/api/advertising-management/advertisements'],
+    queryFn: () => apiRequest('/api/advertising-management/advertisements')
   });
 
   // Obtener campañas
-  const { data: campaigns = [] } = useQuery({
-    queryKey: ['/api/advertising/campaigns'],
-    queryFn: () => apiRequest('/api/advertising/campaigns')
+  const { data: campaignData = [] } = useQuery({
+    queryKey: ['/api/advertising-management/campaigns'],
+    queryFn: () => apiRequest('/api/advertising-management/campaigns')
   });
+
+  // Validación defensiva para asegurar que las variables sean siempre arrays
+  const campaigns = Array.isArray(campaignData) ? campaignData : [];
+  const advertisements = Array.isArray(advertisementData) ? advertisementData : [];
 
   // Mutación para crear anuncio
   const createAdMutation = useMutation({

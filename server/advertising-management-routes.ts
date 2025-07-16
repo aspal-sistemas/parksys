@@ -183,10 +183,10 @@ router.get('/advertisements', async (req, res) => {
         COUNT(DISTINCT m.id) FILTER (WHERE m.event_type = 'click') as total_clicks,
         ROUND(
           COALESCE(
-            (COUNT(DISTINCT m.id) FILTER (WHERE m.event_type = 'click')::float / 
+            (COUNT(DISTINCT m.id) FILTER (WHERE m.event_type = 'click')::numeric / 
              NULLIF(COUNT(DISTINCT m.id) FILTER (WHERE m.event_type = 'impression'), 0)) * 100,
             0
-          ), 2
+          )::numeric, 2
         ) as click_rate
       FROM advertisements a
       LEFT JOIN ad_campaigns c ON a.campaign_id = c.id
@@ -479,10 +479,10 @@ router.get('/metrics', async (req, res) => {
         COUNT(DISTINCT id) FILTER (WHERE event_type = 'click') as total_clicks,
         ROUND(
           COALESCE(
-            (COUNT(DISTINCT id) FILTER (WHERE event_type = 'click')::float / 
+            (COUNT(DISTINCT id) FILTER (WHERE event_type = 'click')::numeric / 
              NULLIF(COUNT(DISTINCT id) FILTER (WHERE event_type = 'impression'), 0)) * 100,
             0
-          ), 2
+          )::numeric, 2
         ) as click_rate,
         COUNT(DISTINCT DATE(created_at)) as active_days
       FROM ad_metrics
@@ -509,10 +509,10 @@ router.get('/metrics/spaces', async (req, res) => {
         COUNT(DISTINCT m.id) FILTER (WHERE m.event_type = 'click') as clicks,
         ROUND(
           COALESCE(
-            (COUNT(DISTINCT m.id) FILTER (WHERE m.event_type = 'click')::float / 
+            (COUNT(DISTINCT m.id) FILTER (WHERE m.event_type = 'click')::numeric / 
              NULLIF(COUNT(DISTINCT m.id) FILTER (WHERE m.event_type = 'impression'), 0)) * 100,
             0
-          ), 2
+          )::numeric, 2
         ) as click_rate
       FROM ad_spaces s
       LEFT JOIN ad_metrics m ON s.id = m.ad_space_id AND m.event_date >= CURRENT_DATE - INTERVAL '30 days'
