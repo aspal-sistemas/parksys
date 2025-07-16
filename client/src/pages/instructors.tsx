@@ -242,9 +242,9 @@ const InstructorsPage: React.FC = () => {
         <AdSpace spaceId="12" position="header" pageType="instructors" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
         {/* Filtros y Controles */}
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="bg-white rounded-2xl shadow-sm border p-6">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               {/* Búsqueda */}
