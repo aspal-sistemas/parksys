@@ -2199,6 +2199,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==========================================
+  // ENDPOINTS PARA GESTIÓN DE VOLUNTARIOS DE PARQUES
+  // ==========================================
+
+  // Obtener voluntarios asignados a un parque específico
+  apiRouter.get("/parks/:id/volunteers", async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.id);
+      
+      const volunteersQuery = await pool.query(
+        `SELECT 
+          id, 
+          full_name, 
+          email, 
+          phone, 
+          skills, 
+          status, 
+          age,
+          gender,
+          created_at,
+          profile_image_url,
+          interest_areas,
+          available_days,
+          available_hours,
+          previous_experience
+        FROM volunteers 
+        WHERE preferred_park_id = $1 AND status = 'active'
+        ORDER BY created_at DESC`,
+        [parkId]
+      );
+      
+      const volunteers = volunteersQuery.rows.map((volunteer: any) => ({
+        id: volunteer.id,
+        fullName: volunteer.full_name || "Sin nombre",
+        email: volunteer.email || '',
+        phone: volunteer.phone || '',
+        skills: volunteer.skills || '',
+        status: volunteer.status || 'active',
+        age: volunteer.age || null,
+        gender: volunteer.gender || '',
+        createdAt: volunteer.created_at ? volunteer.created_at.toISOString() : new Date().toISOString(),
+        profileImageUrl: volunteer.profile_image_url || null,
+        interestAreas: Array.isArray(volunteer.interest_areas) ? volunteer.interest_areas.join(', ') : '',
+        availableDays: Array.isArray(volunteer.available_days) ? volunteer.available_days.join(', ') : '',
+        availability: volunteer.available_hours || '',
+        experience: volunteer.previous_experience || '',
+        preferredParkId: parkId
+      }));
+      
+      res.json(volunteers);
+    } catch (error) {
+      console.error('Error fetching park volunteers:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Asignar voluntario a un parque
+  apiRouter.post("/parks/:id/volunteers", async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.id);
+      const { volunteerId } = req.body;
+      
+      if (!volunteerId) {
+        return res.status(400).json({ error: 'volunteerId es requerido' });
+      }
+      
+      // Verificar que el voluntario existe y está activo
+      const volunteerCheck = await pool.query(
+        'SELECT id, status FROM volunteers WHERE id = $1',
+        [volunteerId]
+      );
+      
+      if (volunteerCheck.rows.length === 0) {
+        return res.status(404).json({ error: 'Voluntario no encontrado' });
+      }
+      
+      if (volunteerCheck.rows[0].status !== 'active') {
+        return res.status(400).json({ error: 'Solo se pueden asignar voluntarios activos' });
+      }
+      
+      // Verificar que el parque existe
+      const parkCheck = await pool.query(
+        'SELECT id FROM parks WHERE id = $1',
+        [parkId]
+      );
+      
+      if (parkCheck.rows.length === 0) {
+        return res.status(404).json({ error: 'Parque no encontrado' });
+      }
+      
+      // Asignar el voluntario al parque
+      await pool.query(
+        'UPDATE volunteers SET preferred_park_id = $1 WHERE id = $2',
+        [parkId, volunteerId]
+      );
+      
+      res.json({ 
+        message: 'Voluntario asignado correctamente',
+        volunteerId,
+        parkId 
+      });
+    } catch (error) {
+      console.error('Error assigning volunteer to park:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Remover voluntario de un parque
+  apiRouter.delete("/parks/:id/volunteers/:volunteerId", async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.id);
+      const volunteerId = parseInt(req.params.volunteerId);
+      
+      // Verificar que el voluntario está asignado a este parque
+      const volunteerCheck = await pool.query(
+        'SELECT id, preferred_park_id FROM volunteers WHERE id = $1',
+        [volunteerId]
+      );
+      
+      if (volunteerCheck.rows.length === 0) {
+        return res.status(404).json({ error: 'Voluntario no encontrado' });
+      }
+      
+      if (volunteerCheck.rows[0].preferred_park_id !== parkId) {
+        return res.status(400).json({ error: 'El voluntario no está asignado a este parque' });
+      }
+      
+      // Remover la asignación del voluntario
+      await pool.query(
+        'UPDATE volunteers SET preferred_park_id = NULL WHERE id = $1',
+        [volunteerId]
+      );
+      
+      res.json({ 
+        message: 'Voluntario removido correctamente del parque',
+        volunteerId,
+        parkId 
+      });
+    } catch (error) {
+      console.error('Error removing volunteer from park:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
   // Get images for a specific park
   apiRouter.get("/parks/:id/images", async (req: Request, res: Response) => {
     try {

@@ -10,6 +10,7 @@ import ParkMultimediaManager from "@/components/ParkMultimediaManager";
 import ParkAmenitiesManager from "@/components/ParkAmenitiesManager";
 import ParkTreeSpeciesManager from "@/components/ParkTreeSpeciesManager";
 import ParkActivitiesManager from "@/components/ParkActivitiesManager";
+import ParkVolunteersManager from "@/components/ParkVolunteersManager";
 
 export default function ParkManage() {
   const { id } = useParams();
@@ -187,16 +188,16 @@ export default function ParkManage() {
             <TabsContent value="voluntarios" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Gestión de Voluntarios</CardTitle>
+                  <CardTitle className="text-2xl text-green-600 flex items-center gap-2">
+                    <Users className="h-6 w-6" />
+                    Gestión de Voluntarios del Parque
+                  </CardTitle>
                   <CardDescription>
-                    Administra los voluntarios asignados al parque.
+                    Administra los voluntarios asignados al parque. Selecciona voluntarios disponibles de la columna izquierda para asignarlos a este parque.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8 text-gray-500">
-                    <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p>Funcionalidad de gestión de voluntarios próximamente</p>
-                  </div>
+                  <ParkVolunteersManager parkId={parseInt(id!)} />
                 </CardContent>
               </Card>
             </TabsContent>
