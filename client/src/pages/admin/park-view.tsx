@@ -236,9 +236,9 @@ export default function AdminParkView() {
   const [isAssetMapModalOpen, setIsAssetMapModalOpen] = React.useState(false);
   const [selectedAsset, setSelectedAsset] = React.useState<any>(null);
   
-  // Get complete park data from the main API endpoint that has all fields
+  // Get complete park data from the details API endpoint that has all fields
   const { data: park, isLoading, error, refetch: refetchPark } = useQuery<ParkDetails>({
-    queryKey: [`/api/parks/${id}`, refreshKey],
+    queryKey: [`/api/parks/${id}/details`, refreshKey],
     enabled: !!id,
   });
 

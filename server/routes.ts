@@ -915,12 +915,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/parks/:id/details", async (req: Request, res: Response) => {
     try {
       const parkId = parseInt(req.params.id);
+      console.log(`[DETAILS] Obteniendo detalles del parque ${parkId}`);
       
       // Get basic park information
       const park = await storage.getPark(parkId);
       if (!park) {
         return res.status(404).json({ error: "Parque no encontrado" });
       }
+      console.log(`[DETAILS] Parque encontrado: ${park.name}`);
 
       // Get municipality  
       const municipalities = await storage.getMunicipalities();
@@ -995,6 +997,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         averageEvaluation: averageEvaluation,
         pendingIncidents: incidentsCount
       };
+      
+      console.log(`[DETAILS] Estadísticas calculadas:`, stats);
 
       // Build response
       const response = {
