@@ -155,7 +155,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
                 <img
                   src={advertisement.imageUrl}
                   alt={advertisement.title}
-                  className="w-full h-32 object-cover rounded"
+                  className="w-full h-32 object-contain rounded bg-gray-50"
                 />
               </div>
             )}
