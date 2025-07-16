@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
 import { Link, useLocation } from 'wouter';
+import parkImage from '@assets/park-with-lake-and-stone-bridge-old-european-town-2024-12-04-10-14-36-utc_1751508535544.jpg';
 
 interface TreeSpecies {
   id: number;
@@ -147,6 +148,16 @@ function TreeSpeciesCard({ species, viewMode }: { species: TreeSpecies; viewMode
                   <p className="text-sm text-gray-600 line-clamp-2">{species.ecologicalBenefits}</p>
                 </div>
               )}
+              
+              {/* Botón Ver más información */}
+              <div className="text-center mt-4">
+                <Button 
+                  className="bg-[#00a587] hover:bg-[#067f5f] text-white px-6 py-2"
+                  size="sm"
+                >
+                  Ver más información
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -223,6 +234,16 @@ function TreeSpeciesCard({ species, viewMode }: { species: TreeSpecies; viewMode
               <p className="text-sm text-gray-600 line-clamp-2">{species.ecologicalBenefits}</p>
             </div>
           )}
+          
+          {/* Botón Ver más información */}
+          <div className="text-center">
+            <Button 
+              className="bg-[#00a587] hover:bg-[#067f5f] text-white px-6 py-2"
+              size="sm"
+            >
+              Ver más información
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -235,6 +256,8 @@ export default function TreeSpecies() {
   const [originFilter, setOriginFilter] = useState('all');
   const [growthRateFilter, setGrowthRateFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Consulta para obtener todas las especies de árboles
   const { data: treeSpeciesResponse, isLoading } = useQuery<{data: TreeSpecies[], pagination: any}>({
@@ -265,6 +288,17 @@ export default function TreeSpecies() {
       return matchesSearch && matchesOrigin && matchesGrowthRate;
     });
   }, [treeSpecies, searchTerm, originFilter, growthRateFilter]);
+
+  // Calcular paginación
+  const totalItems = filteredSpecies.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedSpecies = filteredSpecies.slice(startIndex, startIndex + itemsPerPage);
+
+  // Resetear a página 1 cuando cambian los filtros
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, originFilter, growthRateFilter]);
 
   if (isLoading) {
     return (
@@ -429,11 +463,70 @@ export default function TreeSpecies() {
 
           {/* Resultados */}
           {filteredSpecies.length > 0 ? (
-            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}>
-              {filteredSpecies.map((species) => (
-                <TreeSpeciesCard key={species.id} species={species} viewMode={viewMode} />
-              ))}
-            </div>
+            <>
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}>
+                {paginatedSpecies.map((species) => (
+                  <TreeSpeciesCard key={species.id} species={species} viewMode={viewMode} />
+                ))}
+              </div>
+              
+              {/* Información de paginación */}
+              <div className="flex items-center justify-between mt-8">
+                <div className="text-sm text-gray-600">
+                  Mostrando {startIndex + 1} a {Math.min(startIndex + itemsPerPage, totalItems)} de {totalItems} especies
+                </div>
+                
+                {/* Controles de paginación */}
+                {totalPages > 1 && (
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Anterior
+                    </Button>
+                    
+                    {/* Números de página */}
+                    <div className="flex space-x-1">
+                      {[...Array(totalPages)].map((_, i) => {
+                        const page = i + 1;
+                        if (
+                          page === 1 ||
+                          page === totalPages ||
+                          (page >= currentPage - 1 && page <= currentPage + 1)
+                        ) {
+                          return (
+                            <Button
+                              key={page}
+                              variant={currentPage === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(page)}
+                              className={currentPage === page ? "bg-[#00a587] hover:bg-[#067f5f]" : ""}
+                            >
+                              {page}
+                            </Button>
+                          );
+                        } else if (page === currentPage - 2 || page === currentPage + 2) {
+                          return <span key={page} className="px-2 text-gray-500">...</span>;
+                        }
+                        return null;
+                      })}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </>
           ) : (
             <div className="text-center py-12">
               <Trees className="h-16 w-16 text-gray-400 mx-auto mb-4" />
