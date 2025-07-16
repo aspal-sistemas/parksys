@@ -961,9 +961,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       const treeStats = treeStatsQuery.rows[0];
 
-      // Get volunteers data for this park
+      // Get volunteers data for this park - usar solo columnas existentes
       const volunteersQuery = await pool.query(
-        'SELECT id, full_name, skills, status, preferred_park_id FROM volunteers WHERE preferred_park_id = $1',
+        `SELECT 
+          id, 
+          full_name, 
+          email, 
+          phone, 
+          skills, 
+          status, 
+          preferred_park_id,
+          available_hours,
+          previous_experience,
+          age,
+          gender,
+          created_at,
+          profile_image_url,
+          address,
+          emergency_contact,
+          emergency_phone,
+          legal_consent,
+          interest_areas,
+          available_days
+        FROM volunteers 
+        WHERE preferred_park_id = $1 AND status = 'active'
+        ORDER BY created_at DESC`,
         [parkId]
       );
       const parkVolunteers = volunteersQuery.rows;
@@ -1072,8 +1094,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         volunteers: parkVolunteers.map((volunteer: any) => ({
           id: volunteer.id,
           fullName: volunteer.full_name || "Sin nombre",
-          skills: volunteer.skills || "Sin habilidades definidas",
-          isActive: volunteer.status === 'active'
+          firstName: '', // No disponible en esta tabla
+          lastName: '', // No disponible en esta tabla
+          email: volunteer.email || '',
+          phone: volunteer.phone || '',
+          skills: volunteer.skills || '',
+          status: volunteer.status || 'active',
+          availability: volunteer.available_hours || '',
+          experience: volunteer.previous_experience || '',
+          age: volunteer.age || null,
+          gender: volunteer.gender || '',
+          createdAt: volunteer.created_at ? volunteer.created_at.toISOString() : new Date().toISOString(),
+          profileImageUrl: volunteer.profile_image_url || null,
+          address: volunteer.address || '',
+          emergencyContactName: volunteer.emergency_contact || '',
+          emergencyContactPhone: volunteer.emergency_phone || '',
+          legalConsent: volunteer.legal_consent || false,
+          isActive: volunteer.status === 'active',
+          preferredPark: park.name,
+          hoursLogged: 0, // Esto podría venir de una tabla separada de horas
+          lastActivity: volunteer.created_at ? volunteer.created_at.toISOString() : null,
+          notes: '',
+          interestAreas: Array.isArray(volunteer.interest_areas) ? volunteer.interest_areas.join(', ') : 'Sin áreas de interés especificadas',
+          availableDays: Array.isArray(volunteer.available_days) ? volunteer.available_days.join(', ') : 'Sin días especificados'
         })),
         stats
       };
