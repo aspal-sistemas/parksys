@@ -946,8 +946,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const volunteers = await storage.getAllVolunteers();
       const parkVolunteers = volunteers.filter(volunteer => volunteer.preferredParkId === parkId);
 
+      // Get incidents count for this park
+      const incidentsQuery = await pool.query(
+        'SELECT COUNT(*) as count FROM incidents WHERE park_id = $1',
+        [parkId]
+      );
+      const incidentsCount = parseInt(incidentsQuery.rows[0].count);
+
       // For now, we'll use empty arrays for data we don't have direct access to
-      const incidents: any[] = [];
       const documents: any[] = [];
 
       // Calculate statistics
@@ -956,7 +962,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activeVolunteers: parkVolunteers.filter(v => v.isActive).length,
         totalTrees: parkTrees.length,
         averageEvaluation: 4.2, // Can be calculated when we have evaluations
-        pendingIncidents: incidents.length
+        pendingIncidents: incidentsCount
       };
 
       // Build response

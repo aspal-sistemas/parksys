@@ -786,13 +786,12 @@ export default function AdminParkView() {
         <TabsContent value="incidents" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Incidencias ({park.incidents?.length || 0})</CardTitle>
+              <CardTitle>Incidencias ({park.stats?.pendingIncidents || 0})</CardTitle>
               <CardDescription>Reportes e incidencias del parque</CardDescription>
             </CardHeader>
             <CardContent>
               <ParkIncidentsInventory 
                 parkId={parseInt(id)} 
-                incidents={park.incidents || []} 
               />
             </CardContent>
           </Card>

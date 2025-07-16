@@ -1,42 +1,60 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight, Search, AlertTriangle, Calendar, User, Filter, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, AlertTriangle, Calendar, User, Filter, Plus, Eye, Loader } from 'lucide-react';
 import { Link } from 'wouter';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface Incident {
   id: number;
   title: string;
   description: string;
   status: string;
-  priority: string;
-  type: string;
+  severity: string;
+  category: string;
   location: string;
-  reportedBy: string;
-  assignedTo?: string;
+  reporterName: string;
+  reporterEmail: string;
+  parkId: number;
+  parkName: string;
+  assetId?: number;
+  assetName?: string;
   createdAt: string;
   updatedAt: string;
-  resolvedAt?: string;
-  notes?: string;
 }
 
 interface ParkIncidentsInventoryProps {
   parkId: number;
-  incidents: Incident[];
 }
 
-const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId, incidents }) => {
+const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [severityFilter, setSeverityFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState('desc');
   const itemsPerPage = 10;
+
+  // Cargar incidencias específicas del parque
+  const { data: incidents = [], isLoading, error } = useQuery({
+    queryKey: ['incidents', parkId],
+    queryFn: async () => {
+      const response = await fetch(`/api/incidents?parkId=${parkId}`);
+      if (!response.ok) {
+        throw new Error('Error al cargar incidencias');
+      }
+      return response.json();
+    },
+    enabled: !!parkId,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
 
   // Función para filtrar y ordenar incidencias
   const getFilteredAndSortedIncidents = () => {
@@ -48,8 +66,8 @@ const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId,
         incident.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         incident.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         incident.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        incident.reportedBy?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        incident.assignedTo?.toLowerCase().includes(searchTerm.toLowerCase())
+        incident.reporterName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        incident.assetName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -58,14 +76,14 @@ const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId,
       filtered = filtered.filter(incident => incident.status?.toLowerCase() === statusFilter.toLowerCase());
     }
 
-    // Filtrar por prioridad
-    if (priorityFilter !== 'all') {
-      filtered = filtered.filter(incident => incident.priority?.toLowerCase() === priorityFilter.toLowerCase());
+    // Filtrar por severidad
+    if (severityFilter !== 'all') {
+      filtered = filtered.filter(incident => incident.severity?.toLowerCase() === severityFilter.toLowerCase());
     }
 
-    // Filtrar por tipo
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter(incident => incident.type?.toLowerCase() === typeFilter.toLowerCase());
+    // Filtrar por categoría
+    if (categoryFilter !== 'all') {
+      filtered = filtered.filter(incident => incident.category?.toLowerCase() === categoryFilter.toLowerCase());
     }
 
     // Ordenar
@@ -82,17 +100,17 @@ const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId,
           aValue = a.status?.toLowerCase() || '';
           bValue = b.status?.toLowerCase() || '';
           break;
-        case 'priority':
-          aValue = a.priority?.toLowerCase() || '';
-          bValue = b.priority?.toLowerCase() || '';
+        case 'severity':
+          aValue = a.severity?.toLowerCase() || '';
+          bValue = b.severity?.toLowerCase() || '';
           break;
-        case 'type':
-          aValue = a.type?.toLowerCase() || '';
-          bValue = b.type?.toLowerCase() || '';
+        case 'category':
+          aValue = a.category?.toLowerCase() || '';
+          bValue = b.category?.toLowerCase() || '';
           break;
-        case 'reportedBy':
-          aValue = a.reportedBy?.toLowerCase() || '';
-          bValue = b.reportedBy?.toLowerCase() || '';
+        case 'reporterName':
+          aValue = a.reporterName?.toLowerCase() || '';
+          bValue = b.reporterName?.toLowerCase() || '';
           break;
         case 'updatedAt':
           aValue = a.updatedAt || '';
@@ -121,7 +139,7 @@ const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId,
   // Resetear página cuando cambian los filtros
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, priorityFilter, typeFilter, sortBy, sortOrder]);
+  }, [searchTerm, statusFilter, severityFilter, categoryFilter, sortBy, sortOrder]);
 
   // Crear mapas de valores únicos normalizados
   const createUniqueValueMap = (values: (string | undefined)[]) => {
@@ -138,57 +156,70 @@ const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId,
   };
 
   const uniqueStatuses = createUniqueValueMap(incidents.map(incident => incident.status));
-  const uniquePriorities = createUniqueValueMap(incidents.map(incident => incident.priority));
-  const uniqueTypes = createUniqueValueMap(incidents.map(incident => incident.type));
+  const uniqueSeverities = createUniqueValueMap(incidents.map(incident => incident.severity));
+  const uniqueCategories = createUniqueValueMap(incidents.map(incident => incident.category));
 
   const clearFilters = () => {
     setSearchTerm('');
     setStatusFilter('all');
-    setPriorityFilter('all');
-    setTypeFilter('all');
+    setSeverityFilter('all');
+    setCategoryFilter('all');
     setSortBy('createdAt');
     setSortOrder('desc');
   };
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      abierto: "destructive",
-      abierta: "destructive",
-      "en proceso": "secondary",
-      "en_proceso": "secondary",
-      procesando: "secondary",
-      resuelto: "outline",
-      resuelta: "outline",
-      completado: "default",
-      completada: "default",
-      cerrado: "default",
-      cerrada: "default"
+      pending: "destructive",
+      assigned: "secondary",
+      in_progress: "secondary",
+      review: "outline",
+      resolved: "default",
+      closed: "default",
+      rejected: "destructive"
     };
     return variants[status?.toLowerCase()] || "secondary";
   };
 
-  const getPriorityBadge = (priority: string) => {
+  const getSeverityBadge = (severity: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      alta: "destructive",
+      urgent: "destructive",
       high: "destructive",
-      media: "secondary",
-      medium: "secondary",
-      baja: "outline",
+      normal: "secondary",
       low: "outline"
     };
-    return variants[priority?.toLowerCase()] || "secondary";
+    return variants[severity?.toLowerCase()] || "secondary";
   };
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'No registrada';
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: es });
+    } catch (error) {
+      return 'Fecha inválida';
+    }
   };
+
+  // Mostrar estado de carga
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader className="h-8 w-8 animate-spin text-gray-500" />
+        <span className="ml-2 text-gray-600">Cargando incidencias...</span>
+      </div>
+    );
+  }
+
+  // Mostrar error si lo hay
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        <AlertTriangle className="h-12 w-12 mx-auto mb-3" />
+        <p className="text-lg font-medium mb-2">Error al cargar incidencias</p>
+        <p className="text-sm">Por favor, intenta recargar la página.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -239,37 +270,38 @@ const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId,
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            {/* Filtro por prioridad */}
+            {/* Filtro por severidad */}
             <div>
-              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <Select value={severityFilter} onValueChange={setSeverityFilter}>
                 <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Prioridad" />
+                  <SelectValue placeholder="Severidad" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas las prioridades</SelectItem>
-                  {uniquePriorities.map(priority => (
-                    <SelectItem key={priority} value={priority}>
-                      {priority === 'alta' ? 'Alta' : 
-                       priority === 'media' ? 'Media' :
-                       priority === 'baja' ? 'Baja' :
-                       priority.charAt(0).toUpperCase() + priority.slice(1)}
+                  <SelectItem value="all">Todas las severidades</SelectItem>
+                  {uniqueSeverities.map(severity => (
+                    <SelectItem key={severity} value={severity}>
+                      {severity === 'urgent' ? 'Urgente' : 
+                       severity === 'high' ? 'Alta' :
+                       severity === 'normal' ? 'Normal' :
+                       severity === 'low' ? 'Baja' :
+                       severity.charAt(0).toUpperCase() + severity.slice(1)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Filtro por tipo */}
+            {/* Filtro por categoría */}
             <div>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Tipo" />
+                  <SelectValue placeholder="Categoría" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los tipos</SelectItem>
-                  {uniqueTypes.map(type => (
-                    <SelectItem key={type} value={type}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                  <SelectItem value="all">Todas las categorías</SelectItem>
+                  {uniqueCategories.map(category => (
+                    <SelectItem key={category} value={category}>
+                      {category.charAt(0).toUpperCase() + category.slice(1)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -287,8 +319,9 @@ const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId,
                   <SelectItem value="updatedAt">Fecha de Actualización</SelectItem>
                   <SelectItem value="title">Título</SelectItem>
                   <SelectItem value="status">Estado</SelectItem>
-                  <SelectItem value="priority">Prioridad</SelectItem>
-                  <SelectItem value="type">Tipo</SelectItem>
+                  <SelectItem value="severity">Severidad</SelectItem>
+                  <SelectItem value="category">Categoría</SelectItem>
+                  <SelectItem value="reporterName">Reportado por</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -334,10 +367,21 @@ const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId,
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-semibold text-lg">{incident.title}</h4>
                     <Badge variant={getStatusBadge(incident.status)}>
-                      {incident.status}
+                      {incident.status === 'pending' ? 'Pendiente' :
+                       incident.status === 'assigned' ? 'Asignada' :
+                       incident.status === 'in_progress' ? 'En Progreso' :
+                       incident.status === 'review' ? 'En Revisión' :
+                       incident.status === 'resolved' ? 'Resuelta' :
+                       incident.status === 'closed' ? 'Cerrada' :
+                       incident.status === 'rejected' ? 'Rechazada' :
+                       incident.status}
                     </Badge>
-                    <Badge variant={getPriorityBadge(incident.priority)}>
-                      {incident.priority}
+                    <Badge variant={getSeverityBadge(incident.severity)}>
+                      {incident.severity === 'urgent' ? 'Urgente' :
+                       incident.severity === 'high' ? 'Alta' :
+                       incident.severity === 'normal' ? 'Normal' :
+                       incident.severity === 'low' ? 'Baja' :
+                       incident.severity}
                     </Badge>
                   </div>
                   
@@ -346,8 +390,8 @@ const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId,
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="font-medium text-gray-700">Tipo:</span>
-                        <span className="text-gray-600">{incident.type || 'Sin especificar'}</span>
+                        <span className="font-medium text-gray-700">Categoría:</span>
+                        <span className="text-gray-600">{incident.category || 'Sin especificar'}</span>
                       </div>
                       
                       <div className="flex items-center gap-2 text-sm">
@@ -358,13 +402,13 @@ const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId,
                       <div className="flex items-center gap-2 text-sm">
                         <User className="h-4 w-4 text-gray-500" />
                         <span className="font-medium text-gray-700">Reportado por:</span>
-                        <span className="text-gray-600">{incident.reportedBy}</span>
+                        <span className="text-gray-600">{incident.reporterName}</span>
                       </div>
                       
-                      {incident.assignedTo && (
+                      {incident.assetName && (
                         <div className="flex items-center gap-2 text-sm">
-                          <span className="font-medium text-gray-700">Asignado a:</span>
-                          <span className="text-gray-600">{incident.assignedTo}</span>
+                          <span className="font-medium text-gray-700">Activo:</span>
+                          <span className="text-gray-600">{incident.assetName}</span>
                         </div>
                       )}
                     </div>
@@ -381,22 +425,23 @@ const ParkIncidentsInventory: React.FC<ParkIncidentsInventoryProps> = ({ parkId,
                         <span className="text-gray-600">{formatDate(incident.updatedAt)}</span>
                       </div>
                       
-                      {incident.resolvedAt && (
+                      {incident.reporterEmail && (
                         <div className="flex items-center gap-2 text-sm">
-                          <span className="font-medium text-gray-700">Resuelto:</span>
-                          <span className="text-gray-600">{formatDate(incident.resolvedAt)}</span>
+                          <span className="font-medium text-gray-700">Email:</span>
+                          <span className="text-gray-600">{incident.reporterEmail}</span>
                         </div>
                       )}
                     </div>
                   </div>
                   
-                  {incident.notes && (
-                    <div className="mt-3 p-3 bg-yellow-50 rounded-md">
-                      <p className="text-sm text-yellow-800">
-                        <span className="font-medium">Notas:</span> {incident.notes}
-                      </p>
-                    </div>
-                  )}
+                  <div className="mt-3 flex gap-2">
+                    <Link href={`/admin/incidents/${incident.id}`}>
+                      <Button variant="outline" size="sm">
+                        <Eye className="h-4 w-4 mr-2" />
+                        Ver Detalle
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
                 
                 <div className="ml-4 flex flex-col gap-2">
