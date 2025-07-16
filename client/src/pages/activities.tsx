@@ -31,6 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PublicLayout from '@/components/PublicLayout';
+import AdSpace from '@/components/AdSpace';
 
 interface ActivityData {
   id: number;
@@ -475,6 +476,15 @@ function ActivitiesPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Banner Publicitario */}
+      <section className="max-w-7xl mx-auto px-4 py-4">
+        <AdSpace 
+          spaceId="7" 
+          position="header" 
+          pageType="activities" 
+        />
       </section>
 
       {/* Contenido Principal */}

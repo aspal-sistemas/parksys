@@ -57,6 +57,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { AdSpace } from '@/components/AdSpace';
 
 function ActivityDetailPage() {
   const params = useParams();
@@ -325,7 +326,12 @@ function ActivityDetailPage() {
               </CardContent>
             </Card>
 
-
+            {/* Espacio Publicitario */}
+            <AdSpace 
+              spaceId="11" 
+              position="sidebar" 
+              pageType="activity-detail" 
+            />
 
             {/* Información adicional */}
             {(activity?.requirements || activity?.materials || (activity?.specialNeeds && activity.specialNeeds.length > 0)) && (
