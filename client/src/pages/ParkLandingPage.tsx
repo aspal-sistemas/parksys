@@ -723,6 +723,15 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
+            {/* Publicidad Sidebar */}
+            <div className="sticky top-4">
+              <AdSpace 
+                spaceId="2"
+                position="sidebar"
+                pageType="parks"
+              />
+            </div>
+
             {/* Estadísticas de Árboles */}
             {park.treeStats && park.treeStats.total > 0 && (
               <Card>
@@ -1096,102 +1105,6 @@ function ParkLandingPage() {
                 </CardContent>
               </Card>
             )}
-          </div>
-          
-          {/* Sidebar Column */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Publicidad Sidebar */}
-            <div className="sticky top-4">
-              <AdSpace 
-                spaceId="2"
-                position="sidebar"
-                pageType="parks"
-              />
-            </div>
-            
-            {/* Información de contacto */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Phone className="h-5 w-5 text-green-600" />
-                  Contacto
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-700">33 3668 0600</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-700">parques@guadalajara.gob.mx</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-700">Guadalajara, Jalisco</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Horarios de atención */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Clock className="h-5 w-5 text-green-600" />
-                  Horarios
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Lunes - Viernes</span>
-                    <span className="text-sm font-medium">7:00 - 19:30</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Sábados</span>
-                    <span className="text-sm font-medium">8:00 - 18:00</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Domingos</span>
-                    <span className="text-sm font-medium">8:00 - 17:00</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Accesos rápidos */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <ExternalLink className="h-5 w-5 text-green-600" />
-                  Enlaces útiles
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Link href="/activities" className="block">
-                    <Button variant="outline" className="w-full justify-start text-sm">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Ver todas las actividades
-                    </Button>
-                  </Link>
-                  <Link href="/tree-species" className="block">
-                    <Button variant="outline" className="w-full justify-start text-sm">
-                      <Trees className="h-4 w-4 mr-2" />
-                      Catálogo de especies
-                    </Button>
-                  </Link>
-                  <Link href="/volunteers" className="block">
-                    <Button variant="outline" className="w-full justify-start text-sm">
-                      <Heart className="h-4 w-4 mr-2" />
-                      Únete como voluntario
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
