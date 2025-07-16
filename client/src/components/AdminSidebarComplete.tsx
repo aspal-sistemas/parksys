@@ -91,7 +91,8 @@ import {
   Book,
   Plus,
   Image,
-  Scale
+  Scale,
+  Monitor
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -321,7 +322,7 @@ const AdminSidebarComplete: React.FC = () => {
     }
     
     // Rutas que pertenecen al módulo "Mkt & Comm"
-    if (location.startsWith('/admin/marketing') || location.startsWith('/admin/communications')) {
+    if (location.startsWith('/admin/marketing') || location.startsWith('/admin/communications') || location.startsWith('/admin/advertising')) {
       return ['mkt-comm'];
     }
     
@@ -999,6 +1000,58 @@ const AdminSidebarComplete: React.FC = () => {
                 active={location.startsWith('/admin/marketing/evaluations')}
               >
                 Evaluaciones
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* PUBLICIDAD DIGITAL */}
+            <CollapsibleSubmenu
+              id="advertising"
+              title="Publicidad Digital"
+              icon={<Monitor className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('advertising')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/advertising" 
+                icon={<BarChart className="h-4 w-4" />}
+                active={location === '/admin/advertising'}
+              >
+                Dashboard
+              </NavItem>
+              <NavItem 
+                href="/admin/advertising/spaces" 
+                icon={<LayoutGrid className="h-4 w-4" />}
+                active={location.startsWith('/admin/advertising/spaces')}
+              >
+                Espacios Publicitarios
+              </NavItem>
+              <NavItem 
+                href="/admin/advertising/advertisements" 
+                icon={<Image className="h-4 w-4" />}
+                active={location.startsWith('/admin/advertising/advertisements')}
+              >
+                Anuncios
+              </NavItem>
+              <NavItem 
+                href="/admin/advertising/campaigns" 
+                icon={<Target className="h-4 w-4" />}
+                active={location.startsWith('/admin/advertising/campaigns')}
+              >
+                Campañas
+              </NavItem>
+              <NavItem 
+                href="/admin/advertising/placements" 
+                icon={<MapPin className="h-4 w-4" />}
+                active={location.startsWith('/admin/advertising/placements')}
+              >
+                Asignaciones
+              </NavItem>
+              <NavItem 
+                href="/admin/advertising/analytics" 
+                icon={<TrendingUp className="h-4 w-4" />}
+                active={location.startsWith('/admin/advertising/analytics')}
+              >
+                Análisis
               </NavItem>
             </CollapsibleSubmenu>
 

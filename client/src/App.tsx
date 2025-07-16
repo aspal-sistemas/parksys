@@ -562,6 +562,13 @@ function Router() {
           </Suspense>
         </Route>
 
+        {/* Rutas para el módulo de publicidad digital */}
+        <Route path="/admin/advertising">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de publicidad...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/advertising/dashboard')))}
+          </Suspense>
+        </Route>
+
         {/* Rutas para reset de contraseña */}
         <Route path="/reset-password">
           <Suspense fallback={<div className="p-8 text-center">Cargando página de recuperación...</div>}>
