@@ -84,6 +84,9 @@ export default function TreeMaintenancePage() {
     followUpRequired: false,
     recommendations: '',
   });
+
+  // Estado para el campo de código del árbol
+  const [treeCode, setTreeCode] = useState('');
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -261,6 +264,48 @@ export default function TreeMaintenancePage() {
     });
   }, [selectedParkId, selectedSpeciesId, selectedTreeId, trees, getTreesForSelection, searchTerm]);
 
+  // Función para buscar árbol por código y auto-completar campos
+  const handleTreeCodeSearch = React.useCallback((code: string) => {
+    if (!code || !trees) return;
+    
+    const foundTree = trees.find(tree => 
+      tree.code?.toLowerCase() === code.toLowerCase().trim()
+    );
+    
+    if (foundTree) {
+      // Auto-completar los campos del formulario
+      setSelectedParkId(foundTree.parkId.toString());
+      setSelectedSpeciesId(foundTree.speciesId.toString());
+      setSelectedTreeId(foundTree.id);
+      setSelectedTree({
+        id: foundTree.id,
+        code: foundTree.code || '',
+        speciesName: foundTree.speciesName || '',
+        parkName: foundTree.parkName || '',
+        healthStatus: foundTree.healthStatus || '',
+        plantingDate: foundTree.plantingDate || ''
+      });
+      
+      console.log('🎯 Árbol encontrado por código:', {
+        code: foundTree.code,
+        tree: foundTree,
+        parkId: foundTree.parkId,
+        speciesId: foundTree.speciesId
+      });
+    } else {
+      // Limpiar selección si no se encuentra el árbol
+      setSelectedTreeId(null);
+      setSelectedTree(null);
+    }
+  }, [trees]);
+
+  // Efecto para buscar por código cuando cambie el valor
+  React.useEffect(() => {
+    if (treeCode.trim()) {
+      handleTreeCodeSearch(treeCode);
+    }
+  }, [treeCode, handleTreeCodeSearch]);
+
   // Filtrar mantenimientos según búsqueda, tipo y parque
   const filteredMaintenances = React.useMemo(() => {
     if (!maintenances) return [];
@@ -359,6 +404,12 @@ export default function TreeMaintenancePage() {
         recommendations: '',
       });
       setSelectedTreeId(null);
+      setSelectedTree(null);
+      setTreeCode('');
+      setSelectedParkId('all');
+      setSelectedSpeciesId('all');
+      setSelectedHealthStatus('all');
+      setSearchTerm('');
     },
     onError: (error: Error) => {
       toast({
@@ -368,6 +419,41 @@ export default function TreeMaintenancePage() {
       });
     }
   });
+
+  // Función para resetear el formulario
+  const resetForm = () => {
+    setMaintenanceData({
+      maintenanceType: '',
+      notes: '',
+      performedBy: '',
+      urgency: 'normal',
+      estimatedCost: '',
+      nextMaintenanceDate: '',
+      maintenanceDate: new Date().toISOString().split('T')[0],
+      materialsUsed: '',
+      workHours: '',
+      weatherConditions: '',
+      beforeCondition: '',
+      afterCondition: '',
+      followUpRequired: false,
+      recommendations: '',
+    });
+    setSelectedTreeId(null);
+    setSelectedTree(null);
+    setTreeCode('');
+    setSelectedParkId('all');
+    setSelectedSpeciesId('all');
+    setSelectedHealthStatus('all');
+    setSearchTerm('');
+  };
+
+  // Resetear formulario al cerrar el modal
+  const handleModalClose = (isOpen: boolean) => {
+    if (!isOpen) {
+      resetForm();
+    }
+    setOpen(isOpen);
+  };
 
   const handleAddMaintenance = () => {
     if (!selectedTreeId) {
@@ -752,7 +838,7 @@ export default function TreeMaintenancePage() {
       </div>
 
       {/* Modal de Agregar Mantenimiento - Versión Avanzada */}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleModalClose}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -776,13 +862,82 @@ export default function TreeMaintenancePage() {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <TreePine className="h-5 w-5 text-green-600" />
-                    Selección Jerárquica de Árbol
+                    Selección de Árbol
                   </CardTitle>
                   <CardDescription>
-                    Filtra primero por parque, luego por especie para encontrar el árbol específico
+                    Ingresa el código del árbol o busca por filtros jerárquicos
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Campo de código del árbol - PRIMER CAMPO */}
+                  <div className="space-y-2">
+                    <Label htmlFor="tree-code-input" className="text-base font-medium">
+                      Código del Árbol
+                    </Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="tree-code-input"
+                        placeholder="Ingresa el código del árbol (ej: FRE-BOS-631, MEZ-PAR-616)..."
+                        value={treeCode}
+                        onChange={(e) => setTreeCode(e.target.value)}
+                        className="pl-10 h-12 text-base"
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Al ingresar un código válido, los campos de parque, especie y árbol se completarán automáticamente.
+                    </p>
+                    
+                    {/* Información del árbol encontrado */}
+                    {selectedTree && treeCode && (
+                      <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <span className="font-medium text-green-800">Árbol encontrado</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <span className="font-medium">Código:</span> {selectedTree.code}
+                          </div>
+                          <div>
+                            <span className="font-medium">Especie:</span> {selectedTree.speciesName}
+                          </div>
+                          <div>
+                            <span className="font-medium">Parque:</span> {selectedTree.parkName}
+                          </div>
+                          <div>
+                            <span className="font-medium">Estado:</span> 
+                            <Badge variant="outline" className="ml-1">
+                              {selectedTree.healthStatus}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Mensaje cuando no se encuentra el árbol */}
+                    {treeCode && !selectedTree && (
+                      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                          <span className="font-medium text-yellow-800">
+                            No se encontró un árbol con el código "{treeCode}"
+                          </span>
+                        </div>
+                        <p className="text-sm text-yellow-700 mt-1">
+                          Verifica que el código sea correcto o usa los filtros para buscar manualmente.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Separador */}
+                  <div className="flex items-center gap-4 my-6">
+                    <Separator className="flex-1" />
+                    <span className="text-sm text-muted-foreground font-medium">O busca por filtros</span>
+                    <Separator className="flex-1" />
+                  </div>
+
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="form-park">Parque</Label>
