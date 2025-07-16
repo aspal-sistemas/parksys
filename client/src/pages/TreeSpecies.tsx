@@ -22,7 +22,7 @@ import {
   Info
 } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 
 interface TreeSpecies {
   id: number;
@@ -67,7 +67,8 @@ function TreeSpeciesCard({ species, viewMode }: { species: TreeSpecies; viewMode
 
   if (viewMode === 'list') {
     return (
-      <Card className="hover:shadow-lg transition-shadow duration-200">
+      <Link href={`/tree-species/${species.id}`}>
+        <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer">
         <CardContent className="p-6">
           <div className="flex gap-6">
             {/* Imagen */}
@@ -150,12 +151,14 @@ function TreeSpeciesCard({ species, viewMode }: { species: TreeSpecies; viewMode
           </div>
         </CardContent>
       </Card>
+      </Link>
     );
   }
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200">
-      <CardContent className="p-0">
+    <Link href={`/tree-species/${species.id}`}>
+      <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+        <CardContent className="p-0">
         {/* Imagen */}
         <div className="relative h-48 overflow-hidden">
           {species.photoUrl ? (
@@ -223,6 +226,7 @@ function TreeSpeciesCard({ species, viewMode }: { species: TreeSpecies; viewMode
         </div>
       </CardContent>
     </Card>
+    </Link>
   );
 }
 

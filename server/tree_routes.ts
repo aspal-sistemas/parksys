@@ -861,6 +861,97 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
     }
   });
 
+  // Obtener datos detallados de una especie con censo por parques
+  apiRouter.get("/tree-species/:id/detail", async (req: Request, res: Response) => {
+    try {
+      const id = Number(req.params.id);
+      
+      // Obtener información de la especie
+      const speciesResult = await db.execute(sql`
+        SELECT * FROM tree_species
+        WHERE id = ${id}
+      `);
+      
+      if (!speciesResult.rows || speciesResult.rows.length === 0) {
+        return res.status(404).json({ message: "Especie de árbol no encontrada" });
+      }
+      
+      // Mapear datos de la especie
+      const speciesRow = speciesResult.rows[0] as any;
+      const species = {
+        id: speciesRow.id,
+        commonName: speciesRow.common_name,
+        scientificName: speciesRow.scientific_name,
+        family: speciesRow.family,
+        origin: speciesRow.origin,
+        climateZone: speciesRow.climate_zone,
+        growthRate: speciesRow.growth_rate,
+        heightMature: speciesRow.height_mature,
+        canopyDiameter: speciesRow.canopy_diameter,
+        lifespan: speciesRow.lifespan,
+        imageUrl: speciesRow.image_url,
+        description: speciesRow.description,
+        maintenanceRequirements: speciesRow.maintenance_requirements,
+        waterRequirements: speciesRow.water_requirements,
+        sunRequirements: speciesRow.sun_requirements,
+        soilRequirements: speciesRow.soil_requirements,
+        ecologicalBenefits: speciesRow.ecological_benefits,
+        ornamentalValue: speciesRow.ornamental_value,
+        commonUses: speciesRow.common_uses,
+        isEndangered: speciesRow.is_endangered,
+        iconColor: speciesRow.icon_color,
+        iconType: speciesRow.icon_type,
+        customIconUrl: speciesRow.custom_icon_url,
+        photoUrl: speciesRow.photo_url,
+        photoCaption: speciesRow.photo_caption,
+        createdAt: speciesRow.created_at,
+        updatedAt: speciesRow.updated_at
+      };
+      
+      // Obtener censo por parques
+      const censusResult = await db.execute(sql`
+        SELECT 
+          p.id as park_id,
+          p.name as park_name,
+          COUNT(t.id) as tree_count,
+          AVG(CASE WHEN t.height_meters > 0 THEN t.height_meters ELSE NULL END) as average_height,
+          COUNT(CASE WHEN t.health_status = 'Saludable' THEN 1 END) as healthy_count,
+          MAX(t.updated_at) as last_updated
+        FROM parks p
+        LEFT JOIN trees t ON p.id = t.park_id AND t.species_id = ${id}
+        WHERE EXISTS (
+          SELECT 1 FROM trees t2 WHERE t2.park_id = p.id AND t2.species_id = ${id}
+        )
+        GROUP BY p.id, p.name
+        ORDER BY tree_count DESC
+      `);
+      
+      const census = censusResult.rows.map((row: any) => ({
+        parkId: row.park_id,
+        parkName: row.park_name,
+        treeCount: parseInt(row.tree_count) || 0,
+        averageHeight: parseFloat(row.average_height) || 0,
+        healthyCount: parseInt(row.healthy_count) || 0,
+        totalTrees: parseInt(row.tree_count) || 0,
+        lastUpdated: row.last_updated || new Date().toISOString()
+      }));
+      
+      // Calcular totales
+      const totalTrees = census.reduce((sum, park) => sum + park.treeCount, 0);
+      const totalParks = census.length;
+      
+      res.json({
+        species,
+        census,
+        totalTrees,
+        totalParks
+      });
+    } catch (error) {
+      console.error("Error al obtener datos detallados de especie:", error);
+      res.status(500).json({ message: "Error al obtener datos detallados de especie" });
+    }
+  });
+
   // Crear nueva especie de árbol (requiere autenticación)
   apiRouter.post("/tree-species", isAuthenticated, async (req: Request, res: Response) => {
     try {
