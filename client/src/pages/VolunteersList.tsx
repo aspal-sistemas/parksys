@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import {
   Filter
 } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
+import AdSpace from '@/components/AdSpace';
 
 interface Volunteer {
   id: number;
@@ -42,6 +43,8 @@ export default function VolunteersList() {
   const [skillFilter, setSkillFilter] = useState('all');
   const [genderFilter, setGenderFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   // Consulta para obtener todos los voluntarios
   const { data: volunteers = [], isLoading, error } = useQuery<Volunteer[]>({
@@ -65,6 +68,17 @@ export default function VolunteersList() {
     
     return matchesSearch && matchesSkill && matchesGender && volunteer.status === 'active';
   });
+
+  // Paginación
+  const totalPages = Math.ceil(filteredVolunteers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentVolunteers = filteredVolunteers.slice(startIndex, endIndex);
+
+  // Resetear página cuando cambian los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, skillFilter, genderFilter]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -199,12 +213,20 @@ export default function VolunteersList() {
         </div>
       </div>
 
-      {/* Lista de voluntarios */}
+      {/* Lista de voluntarios con sidebar */}
       <div className="py-8">
         <div className="container mx-auto px-4">
-          {viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredVolunteers.map((volunteer) => (
+          <div className="flex gap-8">
+            {/* Contenido principal */}
+            <div className="flex-1">
+              {/* Información de paginación */}
+              <div className="mb-6 text-sm text-gray-600 text-center">
+                Mostrando {startIndex + 1} a {Math.min(endIndex, filteredVolunteers.length)} de {filteredVolunteers.length} voluntarios
+              </div>
+
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {currentVolunteers.map((volunteer) => (
                 <Card key={volunteer.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex items-start space-x-4">
@@ -285,7 +307,7 @@ export default function VolunteersList() {
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredVolunteers.map((volunteer) => (
+              {currentVolunteers.map((volunteer) => (
                 <Card key={volunteer.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
@@ -331,13 +353,87 @@ export default function VolunteersList() {
             </div>
           )}
           
-          {filteredVolunteers.length === 0 && (
-            <div className="text-center py-12">
-              <Users className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">No se encontraron voluntarios</h3>
-              <p className="text-gray-500">Intenta ajustar los filtros de búsqueda.</p>
+              {filteredVolunteers.length === 0 && (
+                <div className="text-center py-12">
+                  <Users className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No se encontraron voluntarios</h3>
+                  <p className="text-gray-500">Intenta ajustar los filtros de búsqueda.</p>
+                </div>
+              )}
+
+              {/* Paginación */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center space-x-2 mt-8">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="text-primary border-primary hover:bg-primary hover:text-white"
+                  >
+                    Anterior
+                  </Button>
+                  
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={currentPage === pageNum ? "bg-primary text-white" : "text-primary border-primary hover:bg-primary hover:text-white"}
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="text-primary border-primary hover:bg-primary hover:text-white"
+                  >
+                    Siguiente
+                  </Button>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Sidebar Publicitario */}
+            <div className="w-80 flex-shrink-0 hidden lg:block">
+              <div className="sticky top-4 space-y-4">
+                {/* Espacio 1 - Programas de Voluntariado */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                  <AdSpace spaceId="20" position="sidebar" pageType="homepage" />
+                </div>
+
+                {/* Espacio 2 - Capacitación */}
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                  <AdSpace spaceId="21" position="sidebar" pageType="homepage" />
+                </div>
+
+                {/* Espacio 3 - Eventos Comunitarios */}
+                <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
+                  <AdSpace spaceId="22" position="sidebar" pageType="homepage" />
+                </div>
+
+                {/* Espacio 4 - Beneficios para Voluntarios */}
+                <div className="bg-gradient-to-br from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
+                  <AdSpace spaceId="23" position="sidebar" pageType="homepage" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

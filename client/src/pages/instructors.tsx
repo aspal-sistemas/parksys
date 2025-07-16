@@ -405,7 +405,7 @@ const InstructorsPage: React.FC = () => {
                           Evaluar
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
+                      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>Evaluar a {instructor.full_name}</DialogTitle>
                           <DialogDescription>
@@ -479,7 +479,7 @@ const InstructorsPage: React.FC = () => {
                             Evaluar
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>Evaluar a {instructor.full_name}</DialogTitle>
                             <DialogDescription>
@@ -521,11 +521,6 @@ const InstructorsPage: React.FC = () => {
 
               {/* Espacio 4 - Eventos */}
               <div className="bg-gradient-to-br from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
-                <AdSpace spaceId="13" position="sidebar" pageType="instructor-profile" />
-              </div>
-
-              {/* Espacio 5 - Recursos */}
-              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-lg border border-teal-200">
                 <AdSpace spaceId="13" position="sidebar" pageType="instructor-profile" />
               </div>
             </div>
