@@ -9,6 +9,7 @@ import ExtendedParksList from '@/components/ExtendedParksList';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
 import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1751508792698.jpg';
+import AdSpace from '@/components/AdSpace';
 const Parks: React.FC = () => {
   const [filters, setFilters] = useState<{
     search?: string;
@@ -165,6 +166,11 @@ const Parks: React.FC = () => {
         </div>
       </div>
 
+      {/* Espacio Publicitario - Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-3">
+        <AdSpace spaceId="1" position="header" pageType="parks" />
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Filtros modernos */}
         <div className="mb-8">
@@ -177,33 +183,45 @@ const Parks: React.FC = () => {
           </div>
         </div>
 
-        {/* Resultados */}
+        {/* Resultados con Sidebar */}
         <div className="mb-8" id="resultados-busqueda">
-          <div className="bg-white rounded-2xl shadow-sm border p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Resultados de Búsqueda
-                </h2>
-                <p className="text-gray-600 mt-1">
-                  {totalParks} parques encontrados que coinciden con tus criterios
-                </p>
-              </div>
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg border border-green-200">
-                <div className="text-sm text-gray-600">
-                  Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalParks)} de {totalParks}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Contenido Principal */}
+            <div className="lg:col-span-3">
+              <div className="bg-white rounded-2xl shadow-sm border p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Resultados de Búsqueda
+                    </h2>
+                    <p className="text-gray-600 mt-1">
+                      {totalParks} parques encontrados que coinciden con tus criterios
+                    </p>
+                  </div>
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg border border-green-200">
+                    <div className="text-sm text-gray-600">
+                      Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalParks)} de {totalParks}
+                    </div>
+                  </div>
                 </div>
+                
+                <ExtendedParksList 
+                  parks={parks}
+                  isLoading={isLoading}
+                  onParkSelect={(park: ExtendedPark) => {
+                    setSelectedParkId(park.id);
+                    setModalOpen(true);
+                  }}
+                />
               </div>
             </div>
-            
-            <ExtendedParksList 
-              parks={parks}
-              isLoading={isLoading}
-              onParkSelect={(park: ExtendedPark) => {
-                setSelectedParkId(park.id);
-                setModalOpen(true);
-              }}
-            />
+
+            {/* Sidebar Publicitario */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-4">
+                <AdSpace spaceId="2" position="sidebar" pageType="parks" />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -316,6 +334,11 @@ const Parks: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Espacio Publicitario - Footer */}
+        <div className="mt-8 mb-6">
+          <AdSpace spaceId="3" position="footer" pageType="parks" />
         </div>
       </div>
 
