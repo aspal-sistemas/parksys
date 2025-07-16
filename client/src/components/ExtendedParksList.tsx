@@ -57,17 +57,24 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
     return (
       <div className="space-y-4">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
-            <div className="flex gap-6">
-              <div className="w-48 h-32 bg-gray-200 rounded-lg flex-shrink-0"></div>
-              <div className="flex-1 space-y-3">
-                <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+          <div key={i} className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse">
+            {/* Sección superior */}
+            <div className="flex gap-4 mb-3">
+              <div className="w-40 h-24 bg-gray-200 rounded-lg flex-shrink-0"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-5 bg-gray-200 rounded w-1/3"></div>
                 <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                <div className="flex gap-2">
-                  {[...Array(4)].map((_, j) => (
-                    <div key={j} className="h-6 w-20 bg-gray-200 rounded"></div>
-                  ))}
-                </div>
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              </div>
+              <div className="w-32 h-8 bg-gray-200 rounded"></div>
+            </div>
+            {/* Amenidades ancho completo */}
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+              <div className="grid grid-cols-4 gap-2">
+                {[...Array(8)].map((_, j) => (
+                  <div key={j} className="h-6 bg-gray-200 rounded"></div>
+                ))}
               </div>
             </div>
           </div>
@@ -92,10 +99,11 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
           key={park.id}
           className="bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all duration-200"
         >
-          <div className="p-6">
-            <div className="flex gap-6">
+          <div className="p-4">
+            {/* Sección superior con imagen, título y botón */}
+            <div className="flex gap-4 mb-3">
               {/* Imagen del parque */}
-              <div className="w-48 h-32 flex-shrink-0">
+              <div className="w-40 h-24 flex-shrink-0">
                 {park.primaryImage ? (
                   <img
                     src={park.primaryImage}
@@ -113,12 +121,11 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                 )}
               </div>
 
-              {/* Información del parque */}
+              {/* Información básica del parque */}
               <div className="flex-1 min-w-0">
-                
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-gray-900">
                       {park.name}
                     </h3>
                     <div className="flex items-center text-gray-600 mt-1">
@@ -126,64 +133,14 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                       <span className="text-sm">{park.address}</span>
                     </div>
                   </div>
-
                 </div>
 
                 {/* Descripción */}
                 {park.description && (
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                  <p className="text-gray-600 text-sm mt-2 line-clamp-2">
                     {park.description}
                   </p>
                 )}
-
-                {/* Amenidades del parque */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Amenidades, Instalaciones y Servicios:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {park.amenities && park.amenities.length > 0 ? (
-                      park.amenities.slice(0, 8).map((amenity, index) => (
-                        <div
-                          key={`${park.id}-${amenity.id}-${index}`}
-                          className="flex items-center gap-1 bg-primary-50 text-primary-700 px-2 py-1 rounded-md text-xs"
-                        >
-                          <AmenityIcon 
-                            name={amenity.icon || 'default'} 
-                            customIconUrl={amenity.customIconUrl || null}
-                            iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
-                            size={24} 
-                            className="text-primary-600" 
-                          />
-                          <span>{amenity.name}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <span className="text-gray-400 text-sm italic">Sin instalaciones registradas</span>
-                    )}
-                    {park.amenities && park.amenities.length > 8 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{park.amenities.length - 8} más
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                {/* Información adicional */}
-                <div className="flex items-center gap-6 text-sm text-gray-500">
-                  {park.postalCode && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      <span>CP: {park.postalCode}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    <span>Abierto Diariamente</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3 w-3" />
-                    <span>Parque Público</span>
-                  </div>
-                </div>
               </div>
 
               {/* Botón de acción y Green Flag Award */}
@@ -207,6 +164,55 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                     title="Green Flag Award"
                   />
                 )}
+              </div>
+            </div>
+
+            {/* Amenidades del parque - Ancho completo */}
+            <div className="mb-2">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">Amenidades, Instalaciones y Servicios:</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                {park.amenities && park.amenities.length > 0 ? (
+                  park.amenities.slice(0, 12).map((amenity, index) => (
+                    <div
+                      key={`${park.id}-${amenity.id}-${index}`}
+                      className="flex items-center gap-1 bg-primary-50 text-primary-700 px-2 py-1 rounded-md text-xs min-w-0"
+                    >
+                      <AmenityIcon 
+                        name={amenity.icon || 'default'} 
+                        customIconUrl={amenity.customIconUrl || null}
+                        iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
+                        size={16} 
+                        className="text-primary-600 flex-shrink-0" 
+                      />
+                      <span className="truncate">{amenity.name}</span>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-gray-400 text-sm italic col-span-full">Sin instalaciones registradas</span>
+                )}
+                {park.amenities && park.amenities.length > 12 && (
+                  <Badge variant="secondary" className="text-xs">
+                    +{park.amenities.length - 12} más
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Información adicional compacta */}
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              {park.postalCode && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  <span>CP: {park.postalCode}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                <span>Abierto Diariamente</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Star className="h-3 w-3" />
+                <span>Parque Público</span>
               </div>
             </div>
           </div>
