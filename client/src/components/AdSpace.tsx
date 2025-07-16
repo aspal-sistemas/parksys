@@ -4,8 +4,8 @@ import { X, ExternalLink } from 'lucide-react';
 
 interface AdSpaceProps {
   spaceId: string;
-  position: 'header' | 'sidebar' | 'footer' | 'hero';
-  pageType: 'homepage' | 'parks' | 'tree-species' | 'activities' | 'concessions' | 'activity-detail';
+  position: 'header' | 'sidebar' | 'footer' | 'hero' | 'profile';
+  pageType: 'homepage' | 'parks' | 'tree-species' | 'activities' | 'concessions' | 'activity-detail' | 'instructors';
   className?: string;
 }
 
@@ -126,6 +126,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     header: 'w-full max-w-6xl mx-auto h-24 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
     hero: 'w-full max-w-4xl mx-auto h-20 bg-white/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg',
     sidebar: 'w-full h-64 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
+    profile: 'w-full h-48 bg-white border border-gray-200 rounded-lg shadow-sm',
     footer: 'w-full max-w-6xl mx-auto h-20 bg-white border border-gray-200 rounded-lg shadow-sm mt-6'
   };
 

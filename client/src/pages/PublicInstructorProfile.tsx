@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
 import InstructorEvaluationsList from '@/components/InstructorEvaluationsList';
+import AdSpace from '@/components/AdSpace';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -239,6 +240,11 @@ function PublicInstructorProfile() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Espacio Publicitario - Debajo de Información del Instructor */}
+            <div className="mt-6">
+              <AdSpace spaceId="13" position="profile" pageType="instructors" />
+            </div>
           </div>
 
           {/* Evaluaciones y Bio */}
