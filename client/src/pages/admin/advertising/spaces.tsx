@@ -216,15 +216,15 @@ const AdSpaces = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Dimensiones:</span>
-                    <span className="text-sm text-gray-600">{space.dimensions}</span>
+                    <span className="text-sm text-gray-600">{space.dimensions || 'Responsive'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Tamaño máximo:</span>
-                    <span className="text-sm font-bold text-[#00a587]">{Math.round(space.maxFileSize / 1024 / 1024)}MB</span>
+                    <span className="text-sm font-bold text-[#00a587]">{space.maxFileSize ? Math.round(space.maxFileSize / 1024 / 1024) + 'MB' : 'Sin límite'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Formatos:</span>
-                    <span className="text-sm text-gray-600">{space.allowedFormats.join(', ')}</span>
+                    <span className="text-sm text-gray-600">{space.allowedFormats ? space.allowedFormats.join(', ') : 'Todos'}</span>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-4">

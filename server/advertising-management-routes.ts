@@ -45,28 +45,15 @@ const upload = multer({
 router.get('/spaces', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT 
-        s.*,
-        COUNT(DISTINCT p.id) as active_ads,
-        COUNT(DISTINCT m.id) FILTER (WHERE m.event_type = 'impression') as total_impressions,
-        ROUND(
-          COALESCE(
-            (COUNT(DISTINCT m.id) FILTER (WHERE m.event_type = 'click')::float / 
-             NULLIF(COUNT(DISTINCT m.id) FILTER (WHERE m.event_type = 'impression'), 0)) * 100,
-            0
-          ), 2
-        ) as click_rate
-      FROM ad_spaces s
-      LEFT JOIN ad_placements p ON s.id = p.ad_space_id AND p.is_active = true
-      LEFT JOIN ad_metrics m ON s.id = m.ad_space_id AND m.event_date >= CURRENT_DATE - INTERVAL '30 days'
-      GROUP BY s.id
-      ORDER BY s.created_at DESC
+      SELECT * FROM ad_spaces
+      ORDER BY created_at DESC
     `);
     
+    console.log('✅ Espacios obtenidos exitosamente:', result.rows.length);
     res.json(result.rows);
   } catch (error) {
-    console.error('Error obteniendo espacios:', error);
-    res.status(500).json({ error: 'Error obteniendo espacios publicitarios' });
+    console.error('❌ Error obteniendo espacios:', error);
+    res.status(500).json({ error: 'Error obteniendo espacios publicitarios: ' + error.message });
   }
 });
 
@@ -78,24 +65,28 @@ router.post('/spaces', async (req, res) => {
       description,
       page_type,
       position,
-      dimensions,
-      max_file_size,
-      allowed_formats,
+      page_identifier,
+      width,
+      height,
+      category,
       is_active = true
     } = req.body;
 
+    console.log('🔧 Creando espacio con datos:', req.body);
+
     const result = await pool.query(`
       INSERT INTO ad_spaces (
-        name, description, page_type, position, dimensions, 
-        max_file_size, allowed_formats, is_active
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        name, description, page_type, position, page_identifier, 
+        width, height, category, is_active
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
-    `, [name, description, page_type, position, dimensions, max_file_size, allowed_formats, is_active]);
+    `, [name, description, page_type, position, page_identifier, width, height, category, is_active]);
 
+    console.log('✅ Espacio creado exitosamente:', result.rows[0]);
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    console.error('Error creando espacio:', error);
-    res.status(500).json({ error: 'Error creando espacio publicitario' });
+    console.error('❌ Error creando espacio:', error);
+    res.status(500).json({ error: 'Error creando espacio publicitario: ' + error.message });
   }
 });
 
@@ -108,29 +99,33 @@ router.put('/spaces/:id', async (req, res) => {
       description,
       page_type,
       position,
-      dimensions,
-      max_file_size,
-      allowed_formats,
+      page_identifier,
+      width,
+      height,
+      category,
       is_active
     } = req.body;
+
+    console.log('🔧 Actualizando espacio con datos:', req.body);
 
     const result = await pool.query(`
       UPDATE ad_spaces 
       SET name = $1, description = $2, page_type = $3, position = $4, 
-          dimensions = $5, max_file_size = $6, allowed_formats = $7, 
-          is_active = $8, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $9
+          page_identifier = $5, width = $6, height = $7, category = $8,
+          is_active = $9, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $10
       RETURNING *
-    `, [name, description, page_type, position, dimensions, max_file_size, allowed_formats, is_active, id]);
+    `, [name, description, page_type, position, page_identifier, width, height, category, is_active, id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Espacio no encontrado' });
     }
 
+    console.log('✅ Espacio actualizado exitosamente:', result.rows[0]);
     res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error actualizando espacio:', error);
-    res.status(500).json({ error: 'Error actualizando espacio publicitario' });
+    console.error('❌ Error actualizando espacio:', error);
+    res.status(500).json({ error: 'Error actualizando espacio publicitario: ' + error.message });
   }
 });
 
