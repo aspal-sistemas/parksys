@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import PublicLayout from '@/components/PublicLayout';
+import AdSpace from '@/components/AdSpace';
 import heroImage from '@assets/barista-making-tasty-coffee-on-a-professional-mach-2025-01-07-23-28-05-utc_1751509914385.jpg';
 
 interface Concession {
@@ -126,6 +127,13 @@ export default function ConcessionsList() {
         </div>
       </div>
 
+      {/* Espacio Publicitario Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-4 mb-6">
+          <AdSpace spaceId="8" position="header" pageType="concessions" />
+        </div>
+      </div>
+
       {/* Filtros */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
@@ -204,9 +212,13 @@ export default function ConcessionsList() {
           </div>
         </div>
 
-        {/* Grid de concesiones */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {currentConcessions.map((concession: Concession) => (
+        {/* Layout con Sidebar Publicitario */}
+        <div className="flex gap-6">
+          {/* Contenido Principal */}
+          <div className="flex-1 min-w-0">
+            {/* Grid de concesiones */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {currentConcessions.map((concession: Concession) => (
             <div key={concession.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
               {/* Image Section */}
               <div className="aspect-video w-full bg-gradient-to-br from-[#00a587] via-[#067f5f] to-[#8498a5] relative overflow-hidden">
@@ -271,7 +283,39 @@ export default function ConcessionsList() {
                 </div>
               </div>
             </div>
-          ))}
+              ))}
+            </div>
+          </div>
+
+          {/* Sidebar Publicitario */}
+          <div className="w-80 flex-shrink-0 hidden lg:block">
+            <div className="sticky top-4 space-y-4">
+              {/* Espacio 1 - Servicios */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                <AdSpace spaceId="9" position="sidebar" pageType="concessions" />
+              </div>
+
+              {/* Espacio 2 - Oportunidades */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <AdSpace spaceId="9" position="sidebar" pageType="concessions" />
+              </div>
+
+              {/* Espacio 3 - Inversión */}
+              <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
+                <AdSpace spaceId="9" position="sidebar" pageType="concessions" />
+              </div>
+
+              {/* Espacio 4 - Eventos */}
+              <div className="bg-gradient-to-br from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
+                <AdSpace spaceId="9" position="sidebar" pageType="concessions" />
+              </div>
+
+              {/* Espacio 5 - Recursos */}
+              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-lg border border-teal-200">
+                <AdSpace spaceId="9" position="sidebar" pageType="concessions" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Paginación */}

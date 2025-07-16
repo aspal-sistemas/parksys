@@ -333,10 +333,14 @@ const InstructorsPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Vista Grid */}
-        {viewMode === 'grid' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-            {currentInstructors.map((instructor) => (
+        {/* Layout con Sidebar Publicitario */}
+        <div className="flex gap-6">
+          {/* Contenido Principal */}
+          <div className="flex-1 min-w-0">
+            {/* Vista Grid */}
+            {viewMode === 'grid' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {currentInstructors.map((instructor) => (
               <Card key={instructor.id} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white">
                 <CardHeader className="text-center pb-2">
                   <Avatar className="h-20 w-20 mx-auto mb-4 ring-4 ring-primary/10">
@@ -495,6 +499,38 @@ const InstructorsPage: React.FC = () => {
             ))}
           </div>
         )}
+          </div>
+
+          {/* Sidebar Publicitario */}
+          <div className="w-80 flex-shrink-0 hidden lg:block">
+            <div className="sticky top-4 space-y-4">
+              {/* Espacio 1 - Certificaciones */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                <AdSpace spaceId="13" position="sidebar" pageType="instructors" />
+              </div>
+
+              {/* Espacio 2 - Capacitación */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <AdSpace spaceId="14" position="sidebar" pageType="instructors" />
+              </div>
+
+              {/* Espacio 3 - Oportunidades */}
+              <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
+                <AdSpace spaceId="15" position="sidebar" pageType="instructors" />
+              </div>
+
+              {/* Espacio 4 - Eventos */}
+              <div className="bg-gradient-to-br from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
+                <AdSpace spaceId="16" position="sidebar" pageType="instructors" />
+              </div>
+
+              {/* Espacio 5 - Recursos */}
+              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-lg border border-teal-200">
+                <AdSpace spaceId="17" position="sidebar" pageType="instructors" />
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Paginación */}
         {totalPages > 1 && (
