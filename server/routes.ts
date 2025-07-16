@@ -3674,6 +3674,147 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import incidents from CSV
+  apiRouter.post("/incidents/import", upload.single('file'), async (req: Request, res: Response) => {
+    try {
+      console.log("📥 POST /api/incidents/import - Iniciando importación de incidencias");
+      
+      if (!req.file) {
+        return res.status(400).json({ error: "No se ha seleccionado ningún archivo" });
+      }
+
+      const file = req.file;
+      console.log("📄 Archivo recibido:", file.originalname, file.mimetype);
+      
+      // Validar que sea un archivo CSV
+      if (file.mimetype !== 'text/csv' && !file.originalname.endsWith('.csv')) {
+        return res.status(400).json({ error: "El archivo debe ser un CSV" });
+      }
+
+      // Parsear el archivo CSV
+      const csvData = file.buffer.toString('utf8');
+      const lines = csvData.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 2) {
+        return res.status(400).json({ error: "El archivo CSV debe contener al menos una fila de datos" });
+      }
+
+      // Extraer headers
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      console.log("📋 Headers encontrados:", headers);
+
+      // Validar headers requeridos
+      const requiredHeaders = ['titulo', 'descripcion', 'parque_id', 'categoria', 'estado'];
+      const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+      
+      if (missingHeaders.length > 0) {
+        return res.status(400).json({ 
+          error: `Faltan columnas requeridas: ${missingHeaders.join(', ')}` 
+        });
+      }
+
+      const { pool } = await import("./db");
+      let importedCount = 0;
+      let errors = [];
+
+      // Procesar cada fila de datos
+      for (let i = 1; i < lines.length; i++) {
+        try {
+          const values = lines[i].split(',').map(v => v.trim());
+          const row: any = {};
+          
+          // Mapear valores a headers
+          headers.forEach((header, index) => {
+            row[header] = values[index] || '';
+          });
+
+          // Validar datos requeridos
+          if (!row.titulo || !row.descripcion || !row.parque_id) {
+            errors.push(`Fila ${i + 1}: Faltan campos requeridos`);
+            continue;
+          }
+
+          // Validar que el parque existe
+          const parkCheck = await pool.query(`
+            SELECT id FROM parks WHERE id = $1
+          `, [parseInt(row.parque_id)]);
+          
+          if (parkCheck.rows.length === 0) {
+            errors.push(`Fila ${i + 1}: El parque con ID ${row.parque_id} no existe`);
+            continue;
+          }
+
+          // Validar estado
+          const validStatuses = ['pending', 'assigned', 'in_progress', 'review', 'resolved', 'closed', 'rejected'];
+          const status = row.estado || 'pending';
+          
+          if (!validStatuses.includes(status)) {
+            errors.push(`Fila ${i + 1}: Estado '${status}' no es válido`);
+            continue;
+          }
+
+          // Validar prioridad
+          const priority = row.prioridad || 'normal';
+          const validPriorities = ['low', 'normal', 'high', 'urgent'];
+          
+          if (!validPriorities.includes(priority)) {
+            errors.push(`Fila ${i + 1}: Prioridad '${priority}' no es válida`);
+            continue;
+          }
+
+          // Insertar la incidencia
+          const insertQuery = `
+            INSERT INTO incidents (
+              title, description, park_id, category, status, severity, 
+              location, reporter_name, reporter_email, reporter_phone,
+              created_at, updated_at
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()
+            )
+          `;
+          
+          const insertValues = [
+            row.titulo,
+            row.descripcion,
+            parseInt(row.parque_id),
+            row.categoria || 'general',
+            status,
+            priority,
+            row.ubicacion || '',
+            row.reportero_nombre || 'Importación CSV',
+            row.reportero_email || '',
+            row.reportero_telefono || ''
+          ];
+
+          await pool.query(insertQuery, insertValues);
+          importedCount++;
+          
+        } catch (error) {
+          console.error(`Error procesando fila ${i + 1}:`, error);
+          errors.push(`Fila ${i + 1}: Error al procesar - ${error.message}`);
+        }
+      }
+
+      console.log(`✅ Importación completada: ${importedCount} incidencias importadas`);
+      console.log(`❌ Errores encontrados: ${errors.length}`);
+
+      res.json({
+        success: true,
+        message: `Importación completada: ${importedCount} incidencias importadas`,
+        imported: importedCount,
+        errors: errors.length,
+        errorDetails: errors.slice(0, 10) // Mostrar solo los primeros 10 errores
+      });
+
+    } catch (error) {
+      console.error("Error en importación de incidencias:", error);
+      res.status(500).json({ 
+        error: "Error interno del servidor",
+        details: error.message 
+      });
+    }
+  });
+
   // Get all municipalities
   apiRouter.get("/municipalities", async (_req: Request, res: Response) => {
     try {

@@ -11,7 +11,11 @@ import {
   ArrowUpDown,
   MapPin,
   User,
-  Plus
+  Plus,
+  Download,
+  Upload,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -406,6 +410,16 @@ const AdminIncidents = () => {
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [showAssetIncidentForm, setShowAssetIncidentForm] = useState(false);
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  
+  // CSV import state
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importPreview, setImportPreview] = useState<any[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
+  
   // Variable global con TypeScript
   declare global {
     interface Window {
@@ -430,6 +444,16 @@ const AdminIncidents = () => {
       }
     }
   }, []);
+
+  // Fetch incident categories
+  const { data: incidentCategories = [] } = useQuery({
+    queryKey: ['/api/incident-categories'],
+    queryFn: async () => {
+      const response = await fetch('/api/incident-categories');
+      if (!response.ok) throw new Error('Failed to fetch incident categories');
+      return response.json();
+    }
+  });
 
   // Fetch all incidents
   const { 
@@ -739,7 +763,30 @@ const AdminIncidents = () => {
   };
 
   // Get category label
-  const getCategoryLabel = (category: string) => {
+  const getCategoryLabel = (category: string, categories: any[] = []) => {
+    // First try to find the category in the fetched categories
+    const categoryNumber = parseInt(category.replace('category_', ''));
+    const foundCategory = categories.find(cat => cat.id === categoryNumber);
+    
+    console.log('🔍 getCategoryLabel llamada con:', category, 'categories:', categories);
+    
+    if (foundCategory) {
+      console.log('🎯 Categoría encontrada:', foundCategory);
+      return foundCategory.name;
+    }
+    
+    // If not found, try to convert category_X to number
+    if (category.startsWith('category_')) {
+      const numericCategory = parseInt(category.replace('category_', ''));
+      console.log('🔄 Convertido de', category, 'a', numericCategory);
+      const categoryById = categories.find(cat => cat.id === numericCategory);
+      if (categoryById) {
+        console.log('🎯 Categoría encontrada:', categoryById);
+        return categoryById.name;
+      }
+    }
+    
+    // Fallback to original mapping
     const categoryMap: Record<string, string> = {
       'damage': 'Daño',
       'vandalism': 'Vandalismo',
@@ -751,6 +798,223 @@ const AdminIncidents = () => {
     };
     return categoryMap[category] || category;
   };
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredIncidents.length / itemsPerPage);
+  const paginatedIncidents = filteredIncidents.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterPark, filterStatus, filterCategory]);
+
+  // CSV Export function
+  const handleExportCSV = () => {
+    const headers = [
+      'ID',
+      'Título',
+      'Descripción',
+      'Parque',
+      'Categoría',
+      'Estado',
+      'Prioridad',
+      'Reportado por',
+      'Email',
+      'Ubicación',
+      'Fecha de creación',
+      'Fecha de actualización'
+    ];
+
+    const csvData = filteredIncidents.map(incident => [
+      incident.id,
+      incident.title,
+      incident.description,
+      getParkName(incident.parkId),
+      getCategoryLabel(incident.category, incidentCategories),
+      incident.status,
+      incident.priority || 'normal',
+      incident.reporterName,
+      incident.reporterEmail,
+      incident.location,
+      format(new Date(incident.createdAt), 'yyyy-MM-dd HH:mm:ss'),
+      format(new Date(incident.updatedAt), 'yyyy-MM-dd HH:mm:ss')
+    ]);
+
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `incidencias_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    
+    toast({
+      title: 'Exportación completada',
+      description: 'Las incidencias se han exportado exitosamente a CSV.',
+    });
+  };
+
+  // Download CSV template
+  const downloadTemplate = () => {
+    const headers = [
+      'titulo',
+      'descripcion',
+      'parque_id',
+      'categoria',
+      'estado',
+      'prioridad',
+      'reportado_por',
+      'email',
+      'ubicacion'
+    ];
+
+    const sampleData = [
+      [
+        'Ejemplo: Banca dañada',
+        'Descripción detallada del problema',
+        '5',
+        'category_1',
+        'pending',
+        'normal',
+        'Juan Pérez',
+        'juan@ejemplo.com',
+        'Área de descanso'
+      ]
+    ];
+
+    const csvContent = [headers, ...sampleData]
+      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'plantilla_incidencias.csv';
+    link.click();
+  };
+
+  // Handle file upload for CSV import
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImportFile(file);
+      
+      // Parse CSV for preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        const lines = text.split('\n');
+        const headers = lines[0].split(',').map(h => h.replace(/"/g, ''));
+        const data = lines.slice(1, 6).map(line => {
+          const values = line.split(',').map(v => v.replace(/"/g, ''));
+          return headers.reduce((obj, header, index) => {
+            obj[header] = values[index] || '';
+            return obj;
+          }, {} as any);
+        });
+        setImportPreview(data.filter(row => row.titulo)); // Filter empty rows
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  // Process CSV import
+  const handleImportCSV = async () => {
+    if (!importFile) return;
+
+    setIsImporting(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', importFile);
+
+      const response = await fetch('/api/incidents/import', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer direct-token-admin',
+          'X-User-Id': '1'
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al importar incidencias');
+      }
+
+      const result = await response.json();
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/incidents'] });
+      
+      toast({
+        title: 'Importación completada',
+        description: `Se han importado ${result.imported} incidencias exitosamente.`,
+      });
+      
+      setShowImportDialog(false);
+      setImportFile(null);
+      setImportPreview([]);
+      
+    } catch (error) {
+      console.error('Error importing CSV:', error);
+      toast({
+        title: 'Error de importación',
+        description: 'No se pudo importar el archivo CSV. Verifique el formato.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  // Pagination component
+  const PaginationControls = () => (
+    <div className="flex items-center justify-between px-4 py-3 bg-white border-t">
+      <div className="flex items-center text-sm text-gray-500">
+        Mostrando {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredIncidents.length)} de {filteredIncidents.length} incidencias
+      </div>
+      
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Anterior
+        </Button>
+        
+        <div className="flex items-center space-x-1">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            <Button
+              key={page}
+              variant={currentPage === page ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCurrentPage(page)}
+              className={currentPage === page ? "bg-[#00a587] hover:bg-[#008c75]" : ""}
+            >
+              {page}
+            </Button>
+          ))}
+        </div>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Siguiente
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <AdminLayout title="Gestión de Incidencias">
@@ -888,15 +1152,35 @@ const AdminIncidents = () => {
             )}
           </div>
 
-          {/* Add Report Incident button */}
-          <Button 
-            variant="default"
-            onClick={() => setShowAssetIncidentForm(true)}
-            className="whitespace-nowrap"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Reportar Incidencia
-          </Button>
+          {/* CSV and Report buttons */}
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={handleExportCSV}
+              className="whitespace-nowrap"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Exportar CSV
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={() => setShowImportDialog(true)}
+              className="whitespace-nowrap"
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Importar CSV
+            </Button>
+            
+            <Button 
+              variant="default"
+              onClick={() => setShowAssetIncidentForm(true)}
+              className="whitespace-nowrap"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Reportar Incidencia
+            </Button>
+          </div>
         </div>
         
         {/* Incidents table */}
@@ -950,7 +1234,7 @@ const AdminIncidents = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredIncidents.map(incident => (
+                {paginatedIncidents.map(incident => (
                   <TableRow 
                     key={incident.id}
                     className="cursor-pointer hover:bg-gray-50"
@@ -966,16 +1250,130 @@ const AdminIncidents = () => {
                       </div>
                     </TableCell>
                     <TableCell>{getParkName(incident.parkId)}</TableCell>
-                    <TableCell>{getCategoryLabel(incident.category)}</TableCell>
+                    <TableCell>{getCategoryLabel(incident.category, incidentCategories)}</TableCell>
                     <TableCell>{getStatusBadge(incident.status)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           )}
+          
+          {/* Pagination Controls */}
+          {filteredIncidents.length > itemsPerPage && <PaginationControls />}
         </div>
       </div>
       
+      {/* CSV Import Dialog */}
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Importar Incidencias desde CSV</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-600">
+                Sube un archivo CSV con las incidencias que deseas importar
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={downloadTemplate}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Descargar plantilla
+              </Button>
+            </div>
+            
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="hidden"
+                id="csv-file-input"
+              />
+              <label
+                htmlFor="csv-file-input"
+                className="cursor-pointer block text-center"
+              >
+                <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                <p className="mt-2 text-sm text-gray-600">
+                  Haz clic para seleccionar un archivo CSV
+                </p>
+              </label>
+            </div>
+            
+            {importFile && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm font-medium text-green-800">
+                  Archivo seleccionado: {importFile.name}
+                </p>
+              </div>
+            )}
+            
+            {importPreview.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium">Vista previa (primeras 5 filas):</h4>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full border border-gray-300">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Título</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Parque</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importPreview.map((row, index) => (
+                        <tr key={index} className="border-t">
+                          <td className="px-3 py-2 text-sm">{row.titulo}</td>
+                          <td className="px-3 py-2 text-sm">{row.descripcion}</td>
+                          <td className="px-3 py-2 text-sm">{row.parque_id}</td>
+                          <td className="px-3 py-2 text-sm">{row.categoria}</td>
+                          <td className="px-3 py-2 text-sm">{row.estado}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowImportDialog(false);
+                  setImportFile(null);
+                  setImportPreview([]);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleImportCSV}
+                disabled={!importFile || isImporting}
+              >
+                {isImporting ? (
+                  <>
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    Importando...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Importar CSV
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Incident detail dialog */}
       {selectedIncident && (
         <IncidentDetail 
