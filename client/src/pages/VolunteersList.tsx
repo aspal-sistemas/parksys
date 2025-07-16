@@ -414,22 +414,17 @@ export default function VolunteersList() {
               <div className="sticky top-4 space-y-4">
                 {/* Espacio 1 - Programas de Voluntariado */}
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-                  <AdSpace spaceId="20" position="sidebar" pageType="homepage" />
+                  <AdSpace spaceId="20" position="sidebar" pageType="volunteers" />
                 </div>
 
                 {/* Espacio 2 - Capacitación */}
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-                  <AdSpace spaceId="21" position="sidebar" pageType="homepage" />
+                  <AdSpace spaceId="21" position="sidebar" pageType="volunteers" />
                 </div>
 
                 {/* Espacio 3 - Eventos Comunitarios */}
                 <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
-                  <AdSpace spaceId="22" position="sidebar" pageType="homepage" />
-                </div>
-
-                {/* Espacio 4 - Beneficios para Voluntarios */}
-                <div className="bg-gradient-to-br from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
-                  <AdSpace spaceId="23" position="sidebar" pageType="homepage" />
+                  <AdSpace spaceId="22" position="sidebar" pageType="volunteers" />
                 </div>
               </div>
             </div>
