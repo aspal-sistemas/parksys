@@ -7,7 +7,8 @@ import logoImage from '@assets/logo_1751306368691.png';
 const Header: React.FC = () => {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activitiesMenuOpen, setActivitiesMenuOpen] = useState(false);
+  const [contentMenuOpen, setContentMenuOpen] = useState(false);
+  const [usersMenuOpen, setUsersMenuOpen] = useState(false);
   
   const isAdmin = location.startsWith('/admin');
   
@@ -15,13 +16,22 @@ const Header: React.FC = () => {
     setMobileMenuOpen(prev => !prev);
   };
 
-  const toggleActivitiesMenu = () => {
-    setActivitiesMenuOpen(prev => !prev);
+  const toggleContentMenu = () => {
+    setContentMenuOpen(prev => !prev);
   };
 
-  const isActivitiesActive = location === '/activities' || 
-                            location === '/calendar' || 
-                            location === '/instructors';
+  const toggleUsersMenu = () => {
+    setUsersMenuOpen(prev => !prev);
+  };
+
+  const isContentActive = location === '/activities' || 
+                          location === '/calendar' || 
+                          location === '/concessions';
+
+  const isUsersActive = location === '/tree-species' || 
+                        location === '/fauna' || 
+                        location === '/volunteers' || 
+                        location === '/instructors';
 
   return (
     <header className="bg-white shadow-sm">
@@ -60,15 +70,15 @@ const Header: React.FC = () => {
                   Parques
                 </Link>
                 
-                {/* Menú de Actividades con dropdown */}
+                {/* Menú de Contenido con dropdown */}
                 <div className="relative group">
                   <button
                     className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium flex items-center ${
-                      isActivitiesActive
+                      isContentActive
                         ? 'border-primary text-gray-900' 
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}>
-                    Actividades
+                    Contenido
                     <ChevronDown className="ml-1 h-3 w-3" />
                   </button>
                   
@@ -83,6 +93,41 @@ const Header: React.FC = () => {
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                         Calendario
                       </Link>
+                      <Link href="/concessions"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                        Concesiones
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Menú de Usuarios con dropdown */}
+                <div className="relative group">
+                  <button
+                    className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium flex items-center ${
+                      isUsersActive
+                        ? 'border-primary text-gray-900' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}>
+                    Usuarios
+                    <ChevronDown className="ml-1 h-3 w-3" />
+                  </button>
+                  
+                  {/* Dropdown menu */}
+                  <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="py-1">
+                      <Link href="/tree-species"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                        Arbolado
+                      </Link>
+                      <Link href="/fauna"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                        Fauna
+                      </Link>
+                      <Link href="/volunteers"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                        Voluntarios
+                      </Link>
                       <Link href="/instructors"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                         Instructores
@@ -90,24 +135,6 @@ const Header: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                
-                <Link href="/concessions"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
-                    location === '/concessions' 
-                      ? 'border-primary text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}>
-                  Concesiones
-                </Link>
-                
-                <Link href="/volunteers"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
-                    location === '/volunteers' 
-                      ? 'border-primary text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}>
-                  Voluntarios
-                </Link>
                 
                 {/* Enlace de registro de voluntarios removido */}
                 
@@ -178,20 +205,20 @@ const Header: React.FC = () => {
               Parques
             </Link>
             
-            {/* Menú móvil de Actividades organizado */}
+            {/* Menú móvil de Contenido */}
             <div className="space-y-1">
               <button
-                onClick={toggleActivitiesMenu}
+                onClick={toggleContentMenu}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium ${
-                  isActivitiesActive
+                  isContentActive
                     ? 'bg-primary-50 text-primary-700' 
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}>
-                Actividades
-                <ChevronDown className={`h-4 w-4 transition-transform ${activitiesMenuOpen ? 'rotate-180' : ''}`} />
+                Contenido
+                <ChevronDown className={`h-4 w-4 transition-transform ${contentMenuOpen ? 'rotate-180' : ''}`} />
               </button>
               
-              {activitiesMenuOpen && (
+              {contentMenuOpen && (
                 <div className="ml-4 space-y-1">
                   <Link href="/activities"
                     className={`block px-3 py-2 rounded-md text-sm font-medium ${
@@ -211,6 +238,60 @@ const Header: React.FC = () => {
                     Calendario
                   </Link>
                   
+                  <Link href="/concessions"
+                    className={`block px-3 py-2 rounded-md text-sm font-medium ${
+                      location === '/concessions' 
+                        ? 'bg-primary-100 text-primary-800' 
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}>
+                    Concesiones
+                  </Link>
+                </div>
+              )}
+            </div>
+            
+            {/* Menú móvil de Usuarios */}
+            <div className="space-y-1">
+              <button
+                onClick={toggleUsersMenu}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium ${
+                  isUsersActive
+                    ? 'bg-primary-50 text-primary-700' 
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}>
+                Usuarios
+                <ChevronDown className={`h-4 w-4 transition-transform ${usersMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {usersMenuOpen && (
+                <div className="ml-4 space-y-1">
+                  <Link href="/tree-species"
+                    className={`block px-3 py-2 rounded-md text-sm font-medium ${
+                      location === '/tree-species' 
+                        ? 'bg-primary-100 text-primary-800' 
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}>
+                    Arbolado
+                  </Link>
+                  
+                  <Link href="/fauna"
+                    className={`block px-3 py-2 rounded-md text-sm font-medium ${
+                      location === '/fauna' 
+                        ? 'bg-primary-100 text-primary-800' 
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}>
+                    Fauna
+                  </Link>
+                  
+                  <Link href="/volunteers"
+                    className={`block px-3 py-2 rounded-md text-sm font-medium ${
+                      location === '/volunteers' 
+                        ? 'bg-primary-100 text-primary-800' 
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}>
+                    Voluntarios
+                  </Link>
+                  
                   <Link href="/instructors"
                     className={`block px-3 py-2 rounded-md text-sm font-medium ${
                       location === '/instructors' 
@@ -222,24 +303,6 @@ const Header: React.FC = () => {
                 </div>
               )}
             </div>
-            
-            <Link href="/concessions"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                location === '/concessions' 
-                  ? 'bg-primary-50 text-primary-700' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}>
-              Concesiones
-            </Link>
-            
-            <Link href="/volunteers"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                location === '/volunteers' 
-                  ? 'bg-primary-50 text-primary-700' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}>
-              Voluntarios
-            </Link>
             
             {/* Enlace móvil de registro de voluntarios removido */}
             
