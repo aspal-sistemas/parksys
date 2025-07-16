@@ -22,7 +22,7 @@ interface AdPlacement {
     description: string;
     imageUrl: string;
     targetUrl: string;
-    company: string;
+    altText: string;
     isActive: boolean;
   };
 }
@@ -56,6 +56,16 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
   const activePlacement = placementsResponse?.success && placementsResponse.data?.length > 0 
     ? placementsResponse.data[0] 
     : null;
+
+  // Debug logging
+  console.log('🎯 AdSpace Debug:', {
+    spaceId,
+    position,
+    pageType,
+    isLoading,
+    placementsResponse,
+    activePlacement
+  });
 
   // Registrar impresión cuando el componente es visible
   useEffect(() => {
@@ -112,7 +122,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
   // Estilos base según la posición
   const baseStyles = {
     header: 'w-full max-w-6xl mx-auto h-24 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
-    hero: 'absolute top-4 left-4 right-4 h-20 bg-white/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg z-10',
+    hero: 'w-full max-w-4xl mx-auto h-20 bg-white/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg',
     sidebar: 'w-full max-w-xs h-64 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
     footer: 'w-full max-w-6xl mx-auto h-20 bg-white border border-gray-200 rounded-lg shadow-sm mt-6'
   };
@@ -156,9 +166,9 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
           <p className="text-xs text-gray-600 line-clamp-2">
             {advertisement.description}
           </p>
-          {advertisement.company && (
+          {advertisement.altText && (
             <p className="text-xs text-gray-500 mt-1">
-              {advertisement.company}
+              {advertisement.altText}
             </p>
           )}
         </div>
