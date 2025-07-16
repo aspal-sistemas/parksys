@@ -914,7 +914,7 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
           p.id as park_id,
           p.name as park_name,
           COUNT(t.id) as tree_count,
-          AVG(CASE WHEN t.height_meters > 0 THEN t.height_meters ELSE NULL END) as average_height,
+          AVG(CASE WHEN t.height > 0 THEN t.height ELSE NULL END) as average_height,
           COUNT(CASE WHEN t.health_status = 'Saludable' THEN 1 END) as healthy_count,
           MAX(t.updated_at) as last_updated
         FROM parks p
