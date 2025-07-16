@@ -43,7 +43,7 @@ import { Loader2, MapPin, Ruler, ArrowLeft, Sprout, TreeDeciduous } from 'lucide
 
 // Esquema de validación para el formulario
 const treeSchema = z.object({
-  code: z.string().min(2, { message: 'El código debe tener al menos 2 caracteres' }),
+  code: z.string().optional(), // Código opcional - se genera automáticamente
   speciesId: z.string().min(1, { message: 'Debe seleccionar una especie' }),
   parkId: z.string().min(1, { message: 'Debe seleccionar un parque' }),
   latitude: z.string().min(1, { message: 'La latitud es obligatoria' }),
@@ -138,6 +138,11 @@ function NewTreePage() {
         speciesId: parseInt(data.speciesId),
         parkId: parseInt(data.parkId),
       };
+
+      // Remover el campo code si está vacío para que el backend genere automáticamente
+      if (!formattedData.code || formattedData.code.trim() === '') {
+        delete formattedData.code;
+      }
 
       await apiRequest('/api/trees', {
         method: 'POST',
@@ -267,12 +272,17 @@ function NewTreePage() {
                         name="code"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Código Identificador*</FormLabel>
+                            <FormLabel>Código Identificador</FormLabel>
                             <FormControl>
-                              <Input placeholder="Ej: AZU-0023" {...field} />
+                              <Input 
+                                placeholder="Se genera automáticamente" 
+                                {...field} 
+                                disabled
+                                className="bg-gray-50 text-gray-500"
+                              />
                             </FormControl>
                             <FormDescription>
-                              Código único del árbol en el inventario
+                              El código único se genera automáticamente usando el formato ESPECIE-PARQUE-NÚMERO
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
