@@ -175,6 +175,7 @@ interface ParkDetails {
     totalActivities: number;
     activeVolunteers: number;
     totalTrees: number;
+    totalAssets: number;
     averageEvaluation: number;
     pendingIncidents: number;
   };
@@ -375,7 +376,7 @@ export default function AdminParkView() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -419,6 +420,18 @@ export default function AdminParkView() {
               <div>
                 <p className="text-2xl font-bold">{park.stats?.averageEvaluation?.toFixed(1) || '0.0'}</p>
                 <p className="text-sm text-gray-600">Evaluación</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Settings className="h-8 w-8 text-purple-600" />
+              <div>
+                <p className="text-2xl font-bold">{park.stats?.totalAssets || 0}</p>
+                <p className="text-sm text-gray-600">Activos</p>
               </div>
             </div>
           </CardContent>

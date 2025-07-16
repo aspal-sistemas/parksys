@@ -940,8 +940,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const activities = await storage.getAllActivities();
       const parkActivities = activities.filter(activity => activity.parkId === parkId).slice(0, 20);
 
-      const trees = await storage.getTrees();
-      const parkTrees = trees.filter(tree => tree.parkId === parkId).slice(0, 50);
+      // Get trees data with statistics for this park
+      const treesQuery = await pool.query(
+        'SELECT id, species_id, condition, planting_date, last_maintenance_date, location_description, code FROM trees WHERE park_id = $1',
+        [parkId]
+      );
+      const parkTrees = treesQuery.rows;
+      
+      // Get tree statistics
+      const treeStatsQuery = await pool.query(
+        `SELECT 
+          COUNT(*) as total,
+          COUNT(CASE WHEN condition = 'Bueno' THEN 1 END) as good,
+          COUNT(CASE WHEN condition = 'Regular' THEN 1 END) as regular,
+          COUNT(CASE WHEN condition = 'Malo' THEN 1 END) as bad
+        FROM trees WHERE park_id = $1`,
+        [parkId]
+      );
+      const treeStats = treeStatsQuery.rows[0];
 
       const volunteers = await storage.getAllVolunteers();
       const parkVolunteers = volunteers.filter(volunteer => volunteer.preferredParkId === parkId);
@@ -953,6 +969,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       const incidentsCount = parseInt(incidentsQuery.rows[0].count);
 
+      // Get evaluations data for this park
+      const evaluationsQuery = await pool.query(
+        'SELECT AVG(overall_rating) as avg_rating FROM park_evaluations WHERE park_id = $1',
+        [parkId]
+      );
+      const averageEvaluation = parseFloat(evaluationsQuery.rows[0].avg_rating) || 0;
+
+      // Get assets data for this park
+      const assetsQuery = await pool.query(
+        'SELECT id, name, type, condition, location, acquisition_date, last_maintenance_date FROM assets WHERE park_id = $1',
+        [parkId]
+      );
+      const assets = assetsQuery.rows;
+
       // For now, we'll use empty arrays for data we don't have direct access to
       const documents: any[] = [];
 
@@ -960,8 +990,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const stats = {
         totalActivities: parkActivities.length,
         activeVolunteers: parkVolunteers.filter(v => v.isActive).length,
-        totalTrees: parkTrees.length,
-        averageEvaluation: 4.2, // Can be calculated when we have evaluations
+        totalTrees: parseInt(treeStats.total),
+        totalAssets: assets.length,
+        averageEvaluation: averageEvaluation,
         pendingIncidents: incidentsCount
       };
 
@@ -988,14 +1019,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
           instructorName: activity.instructorName || "",
           participantCount: activity.participantCount || 0
         })),
-        trees: parkTrees.map((tree: any) => ({
-          id: tree.id,
-          species: tree.species,
-          condition: tree.condition || "bueno",
-          plantedDate: tree.plantedDate.toISOString(),
-          lastMaintenance: tree.lastMaintenanceDate?.toISOString()
+        trees: {
+          data: parkTrees.map((tree: any) => ({
+            id: tree.id,
+            speciesId: tree.species_id,
+            condition: tree.condition || "bueno",
+            plantedDate: tree.planting_date?.toISOString(),
+            lastMaintenance: tree.last_maintenance_date?.toISOString(),
+            locationDescription: tree.location_description,
+            code: tree.code
+          })),
+          stats: {
+            total: parseInt(treeStats.total),
+            good: parseInt(treeStats.good),
+            regular: parseInt(treeStats.regular),
+            bad: parseInt(treeStats.bad)
+          }
+        },
+        assets: assets.map((asset: any) => ({
+          id: asset.id,
+          name: asset.name,
+          type: asset.type,
+          condition: asset.condition,
+          location: asset.location,
+          acquisitionDate: asset.acquisition_date?.toISOString(),
+          lastMaintenanceDate: asset.last_maintenance_date?.toISOString()
         })),
-        assets: [], // Can be implemented when we have assets table
         incidents: incidents,
         documents: documents,
         images: images.map((img: any) => ({
