@@ -1,0 +1,129 @@
+import { pgTable, serial, varchar, text, timestamp, integer, boolean, decimal, jsonb } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
+import { createInsertSchema } from 'drizzle-zod';
+import { z } from 'zod';
+
+// Campañas publicitarias
+export const adCampaigns = pgTable('ad_campaigns', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  client: varchar('client', { length: 255 }).notNull(),
+  description: text('description'),
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date').notNull(),
+  status: varchar('status', { length: 50 }).notNull().default('active'), // active, paused, completed, cancelled
+  budget: decimal('budget', { precision: 10, scale: 2 }),
+  priority: integer('priority').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Espacios publicitarios disponibles
+export const adSpaces = pgTable('ad_spaces', {
+  id: serial('id').primaryKey(),
+  spaceKey: varchar('space_key', { length: 100 }).notNull().unique(), // header_banner, sidebar_primary, etc.
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  dimensions: varchar('dimensions', { length: 50 }), // 1200x90, 300x250, etc.
+  locationType: varchar('location_type', { length: 50 }).notNull(), // header, sidebar, footer, content, modal
+  pageTypes: jsonb('page_types').notNull(), // ['parks', 'species', 'activities', 'concessions', 'home']
+  maxAds: integer('max_ads').default(1), // Máximo número de anuncios simultáneos
+  status: varchar('status', { length: 50 }).notNull().default('active'),
+  createdAt: timestamp('created_at').defaultNow()
+});
+
+// Anuncios individuales
+export const advertisements = pgTable('advertisements', {
+  id: serial('id').primaryKey(),
+  campaignId: integer('campaign_id').references(() => adCampaigns.id),
+  title: varchar('title', { length: 255 }).notNull(),
+  content: text('content'),
+  imageUrl: varchar('image_url', { length: 500 }),
+  linkUrl: varchar('link_url', { length: 500 }),
+  type: varchar('type', { length: 50 }).notNull(), // banner, text, video, interactive
+  priority: integer('priority').default(0),
+  status: varchar('status', { length: 50 }).notNull().default('active'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Asignaciones de anuncios a espacios
+export const adPlacements = pgTable('ad_placements', {
+  id: serial('id').primaryKey(),
+  adId: integer('ad_id').references(() => advertisements.id),
+  spaceId: integer('space_id').references(() => adSpaces.id),
+  pageType: varchar('page_type', { length: 50 }).notNull(), // parks, species, activities, concessions, home
+  pageId: integer('page_id'), // ID específico de la página (opcional, null = todas las páginas del tipo)
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date').notNull(),
+  isActive: boolean('is_active').default(true),
+  impressions: integer('impressions').default(0),
+  clicks: integer('clicks').default(0),
+  createdAt: timestamp('created_at').defaultNow()
+});
+
+// Métricas de rendimiento
+export const adAnalytics = pgTable('ad_analytics', {
+  id: serial('id').primaryKey(),
+  placementId: integer('placement_id').references(() => adPlacements.id),
+  date: timestamp('date').notNull(),
+  impressions: integer('impressions').default(0),
+  clicks: integer('clicks').default(0),
+  conversions: integer('conversions').default(0),
+  createdAt: timestamp('created_at').defaultNow()
+});
+
+// Relaciones
+export const adCampaignsRelations = relations(adCampaigns, ({ many }) => ({
+  advertisements: many(advertisements)
+}));
+
+export const adSpacesRelations = relations(adSpaces, ({ many }) => ({
+  placements: many(adPlacements)
+}));
+
+export const advertisementsRelations = relations(advertisements, ({ one, many }) => ({
+  campaign: one(adCampaigns, {
+    fields: [advertisements.campaignId],
+    references: [adCampaigns.id]
+  }),
+  placements: many(adPlacements)
+}));
+
+export const adPlacementsRelations = relations(adPlacements, ({ one, many }) => ({
+  advertisement: one(advertisements, {
+    fields: [adPlacements.adId],
+    references: [advertisements.id]
+  }),
+  space: one(adSpaces, {
+    fields: [adPlacements.spaceId],
+    references: [adSpaces.id]
+  }),
+  analytics: many(adAnalytics)
+}));
+
+export const adAnalyticsRelations = relations(adAnalytics, ({ one }) => ({
+  placement: one(adPlacements, {
+    fields: [adAnalytics.placementId],
+    references: [adPlacements.id]
+  })
+}));
+
+// Schemas de validación
+export const insertAdCampaignSchema = createInsertSchema(adCampaigns);
+export const insertAdSpaceSchema = createInsertSchema(adSpaces);
+export const insertAdvertisementSchema = createInsertSchema(advertisements);
+export const insertAdPlacementSchema = createInsertSchema(adPlacements);
+export const insertAdAnalyticsSchema = createInsertSchema(adAnalytics);
+
+// Tipos
+export type AdCampaign = typeof adCampaigns.$inferSelect;
+export type InsertAdCampaign = z.infer<typeof insertAdCampaignSchema>;
+export type AdSpace = typeof adSpaces.$inferSelect;
+export type InsertAdSpace = z.infer<typeof insertAdSpaceSchema>;
+export type Advertisement = typeof advertisements.$inferSelect;
+export type InsertAdvertisement = z.infer<typeof insertAdvertisementSchema>;
+export type AdPlacement = typeof adPlacements.$inferSelect;
+export type InsertAdPlacement = z.infer<typeof insertAdPlacementSchema>;
+export type AdAnalytics = typeof adAnalytics.$inferSelect;
+export type InsertAdAnalytics = z.infer<typeof insertAdAnalyticsSchema>;

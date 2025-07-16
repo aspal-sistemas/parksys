@@ -50,6 +50,7 @@ import { registerUserRoutes } from "./userRoutes";
 import { updateSkillsRouter } from "./updateSkills";
 import { registerEventRoutes } from "./events-routes";
 import { registerActivityRoutes } from "./activitiesRoutes";
+import advertisingRoutes from "./advertising-routes";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
   insertActivitySchema, insertDocumentSchema, insertParkImageSchema,
@@ -167,6 +168,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerFinanceRoutes(app, apiRouter, isAuthenticated);
   registerBudgetRoutes(app, apiRouter, isAuthenticated);
   registerFinanceUpdateRoutes(app, apiRouter);
+  
+  // Registramos las rutas del módulo de publicidad
+  apiRouter.use('/advertising', advertisingRoutes);
+  console.log('📢 Rutas de publicidad registradas');
 
   // Rutas de edición específicas con nombres únicos
   apiRouter.put("/income-categories/:id", async (req: Request, res: Response) => {
